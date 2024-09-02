@@ -7,17 +7,12 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.RefreshQueue
 import java.awt.EventQueue.invokeLater
 import java.io.BufferedReader
 import java.io.InputStreamReader
-import javax.swing.JCheckBox
-import javax.swing.JComponent
-import javax.swing.JPanel
-import javax.swing.JTextField
 import kotlin.concurrent.thread
 
 
@@ -129,26 +124,6 @@ class AiderAction : AnAction() {
         val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
         e.presentation.isEnabledAndVisible = project != null && files != null && files.isNotEmpty()
     }
-}
-
-class AiderInputDialog(project: Project) : DialogWrapper(project) {
-    private val inputTextField = JTextField(30)
-    private val yesCheckBox = JCheckBox("Add --yes flag", false)
-
-    init {
-        title = "Aider Command"
-        init()
-    }
-
-    override fun createCenterPanel(): JComponent {
-        val panel = JPanel()
-        panel.add(inputTextField)
-        panel.add(yesCheckBox)
-        return panel
-    }
-
-    fun getInputText(): String = inputTextField.text
-    fun isYesFlagChecked(): Boolean = yesCheckBox.isSelected
 }
 
 
