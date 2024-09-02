@@ -28,6 +28,7 @@ class AiderAction : AnAction() {
                 val message = dialog.getInputText()
                 val useYesFlag = dialog.isYesFlagChecked()
                 val selectedCommand = dialog.getSelectedCommand()
+                val additionalArgs = dialog.getAdditionalArgs()
                 val filePaths = files.joinToString(" ") { it.path }
                 val readOnlyFiles = dialog.getReadOnlyFiles()
 
@@ -44,6 +45,9 @@ class AiderAction : AnAction() {
                         if (readOnlyFiles.isNotEmpty()) {
                             commandArgs.add("--read")
                             commandArgs.addAll(readOnlyFiles)
+                        }
+                        if (additionalArgs.isNotEmpty()) {
+                            commandArgs.addAll(additionalArgs.split(" "))
                         }
                         val processBuilder = ProcessBuilder(commandArgs)
                         processBuilder.redirectErrorStream(true)
