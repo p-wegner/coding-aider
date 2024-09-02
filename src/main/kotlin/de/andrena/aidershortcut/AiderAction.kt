@@ -10,7 +10,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.RefreshQueue
-import com.intellij.terminal.JBTerminalWidget
+import com.intellij.openapi.wm.ToolWindowManager
+import com.intellij.terminal.TerminalView
+import com.intellij.terminal.ui.TerminalSession
 import java.awt.EventQueue.invokeLater
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -54,15 +56,11 @@ class AiderAction : AnAction() {
         readOnlyFiles: List<String>
     ) {
         val terminalView = TerminalView.getInstance(project)
-        val terminalToolWindow = terminalView.getToolWindow("Terminal")
+        val terminalSession = terminalView.createLocalTerminalSession(project.basePath)
+        terminalSession.start()
 
-        terminalToolWindow?.show {
-            val terminal = terminalView.createLocalShellWidget(project.basePath, "Aider")
-            val shellTerminal = terminal as? JBTerminalWidget ?: return@show
-
-            val command = buildAiderCommand("", useYesFlag, selectedCommand, additionalArgs, filePaths, readOnlyFiles, true)
-            shellTerminal.executeCommand(command)
-        }
+        val command = buildAiderCommand("", useYesFlag, selectedCommand, additionalArgs, filePaths, readOnlyFiles, true)
+        terminalSession.executeCommand(command)
     }
 
     private fun executeWithProgressDialog(
