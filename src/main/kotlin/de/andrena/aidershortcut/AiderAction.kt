@@ -26,53 +26,42 @@ class AiderAction : AnAction() {
         if (project != null && !files.isNullOrEmpty()) {
             val dialog = AiderInputDialog(project, files.map { it.path })
             if (dialog.showAndGet()) {
-                val message = dialog.getInputText()
-                val useYesFlag = dialog.isYesFlagChecked()
-                val selectedCommand = dialog.getSelectedCommand()
-                val additionalArgs = dialog.getAdditionalArgs()
-                val filePaths = files.joinToString(" ") { it.path }
-                val readOnlyFiles = dialog.getReadOnlyFiles()
-                val isShellMode = dialog.isShellMode()
-
-                if (isShellMode) {
-                    executeInTerminal(project, useYesFlag, selectedCommand, additionalArgs, filePaths, readOnlyFiles)
+                val commandData = collectCommandData(dialog, files)
+                if (commandData.isShellMode) {
+                    executeInTerminal(project, commandData)
                 } else {
-                    executeWithProgressDialog(project, message, useYesFlag, selectedCommand, additionalArgs, filePaths, readOnlyFiles, files)
+                    executeWithProgressDialog(project, commandData, files)
                 }
             }
         }
     }
 
-    private fun executeInTerminal(
-        project: Project,
-        useYesFlag: Boolean,
-        selectedCommand: String,
-        additionalArgs: String,
-        filePaths: String,
-        readOnlyFiles: List<String>
-    ) {
+    private fun collectCommandData(dialog: AiderInputDialog, files: Array<VirtualFile>): CommandData {
+        return CommandData(
+            message = dialog.getInputText(),
+            useYesFlag = dialog.isYesFlagChecked(),
+            selectedCommand = dialog.getSelectedCommand(),
+            additionalArgs = dialog.getAdditionalArgs(),
+            filePaths = files.joinToString(" ") { it.path },
+            readOnlyFiles = dialog.getReadOnlyFiles(),
+            isShellMode = dialog.isShellMode()
+        )
+    }
+
+    private fun executeInTerminal(project: Project, commandData: CommandData) {
         val terminalView = TerminalToolWindowManager.getInstance(project)
         val terminalSession = terminalView.createLocalShellWidget(project.basePath,"Aider",true)
 
-        val command = buildAiderCommand("", useYesFlag, selectedCommand, additionalArgs, filePaths, readOnlyFiles, true)
+        val command = buildAiderCommand(commandData, true)
         terminalSession.executeCommand(command)
     }
 
-    private fun executeWithProgressDialog(
-        project: Project,
-        message: String,
-        useYesFlag: Boolean,
-        selectedCommand: String,
-        additionalArgs: String,
-        filePaths: String,
-        readOnlyFiles: List<String>,
-        files: Array<VirtualFile>
-    ) {
+    private fun executeWithProgressDialog(project: Project, commandData: CommandData, files: Array<VirtualFile>) {
         val progressDialog = ProgressDialog(project, "Aider Command in Progress")
         thread {
             val output = StringBuilder()
             try {
-                val commandArgs = buildAiderCommand(message, useYesFlag, selectedCommand, additionalArgs, filePaths, readOnlyFiles, false).split(" ")
+                val commandArgs = buildAiderCommand(commandData, false).split(" ")
                 val processBuilder = ProcessBuilder(commandArgs)
                 processBuilder.redirectErrorStream(true)
 
@@ -118,46 +107,34 @@ class AiderAction : AnAction() {
                     )
                 }
             } finally {
-                invokeLater {
-                    ApplicationManager.getApplication().invokeLater {
-                        WriteAction.runAndWait<Throwable> {
-                            VirtualFileManager.getInstance().refreshWithoutFileWatcher(false)
-                            RefreshQueue.getInstance().refresh(true, true, null, *files)
-                        }
-                        progressDialog.updateProgress(
-                            output.toString(),
-                            "Files refreshed. Aider command completed."
-                        )
-                    }
-                }
+                refreshFiles(files, progressDialog, output.toString())
                 progressDialog.finish()
             }
         }
     }
 
-    private fun buildAiderCommand(
-        message: String,
-        useYesFlag: Boolean,
-        selectedCommand: String,
-        additionalArgs: String,
-        filePaths: String,
-        readOnlyFiles: List<String>,
-        isShellMode: Boolean
-    ): String {
-        val command = StringBuilder("aider $selectedCommand --file $filePaths")
-        if (useYesFlag) {
-            command.append(" --yes")
+    private fun buildAiderCommand(commandData: CommandData, isShellMode: Boolean): String {
+        return StringBuilder("aider ${commandData.selectedCommand} --file ${commandData.filePaths}").apply {
+            if (commandData.useYesFlag) append(" --yes")
+            if (!isShellMode) append(" -m \"${commandData.message}\"")
+            if (commandData.readOnlyFiles.isNotEmpty()) append(" --read ${commandData.readOnlyFiles.joinToString(" ")}")
+            if (commandData.additionalArgs.isNotEmpty()) append(" ${commandData.additionalArgs}")
+        }.toString()
+    }
+
+    private fun refreshFiles(files: Array<VirtualFile>, progressDialog: ProgressDialog, output: String) {
+        invokeLater {
+            ApplicationManager.getApplication().invokeLater {
+                WriteAction.runAndWait<Throwable> {
+                    VirtualFileManager.getInstance().refreshWithoutFileWatcher(false)
+                    RefreshQueue.getInstance().refresh(true, true, null, *files)
+                }
+                progressDialog.updateProgress(
+                    output,
+                    "Files refreshed. Aider command completed."
+                )
+            }
         }
-        if (!isShellMode) {
-            command.append(" -m \"$message\"")
-        }
-        if (readOnlyFiles.isNotEmpty()) {
-            command.append(" --read ${readOnlyFiles.joinToString(" ")}")
-        }
-        if (additionalArgs.isNotEmpty()) {
-            command.append(" $additionalArgs")
-        }
-        return command.toString()
     }
 
     private fun pollProcessAndReadOutput(
@@ -191,3 +168,14 @@ class AiderAction : AnAction() {
         e.presentation.isEnabledAndVisible = project != null && !files.isNullOrEmpty()
     }
 }
+package de.andrena.aidershortcut
+
+data class CommandData(
+    val message: String,
+    val useYesFlag: Boolean,
+    val selectedCommand: String,
+    val additionalArgs: String,
+    val filePaths: String,
+    val readOnlyFiles: List<String>,
+    val isShellMode: Boolean
+)
