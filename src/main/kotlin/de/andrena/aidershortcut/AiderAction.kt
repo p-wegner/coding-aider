@@ -3,21 +3,22 @@ package de.andrena.aidershortcut
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.vfs.newvfs.RefreshQueue
 import java.awt.EventQueue.invokeLater
 import java.io.BufferedReader
 import java.io.InputStreamReader
-import javax.swing.*
-import java.awt.BorderLayout
+import javax.swing.JCheckBox
+import javax.swing.JComponent
+import javax.swing.JPanel
+import javax.swing.JTextField
 import kotlin.concurrent.thread
-import com.intellij.openapi.wm.WindowManager
-import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.openapi.vfs.newvfs.RefreshQueue
-import com.intellij.openapi.application.WriteAction
-import com.intellij.openapi.application.ApplicationManager
 
 
 class AiderAction : AnAction() {
@@ -27,7 +28,7 @@ class AiderAction : AnAction() {
         val project: Project? = e.project
         val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
 
-        if (project != null && files != null && files.isNotEmpty()) {
+        if (project != null && !files.isNullOrEmpty()) {
             val dialog = AiderInputDialog(project)
             if (dialog.showAndGet()) {
                 val message = dialog.getInputText()
@@ -150,38 +151,4 @@ class AiderInputDialog(project: Project) : DialogWrapper(project) {
     fun isYesFlagChecked(): Boolean = yesCheckBox.isSelected
 }
 
-
-class ProgressDialog(project: Project, title: String) {
-    private val dialog: JDialog
-    private val outputTextArea = JTextArea(20, 50).apply {
-        isEditable = false
-        lineWrap = true
-        wrapStyleWord = true
-    }
-    private val scrollPane = JScrollPane(outputTextArea)
-
-    init {
-        val projectFrame = WindowManager.getInstance().getFrame(project)
-        dialog = JDialog(projectFrame, title, false) // false means non-modal
-        dialog.contentPane.add(scrollPane, BorderLayout.CENTER)
-        dialog.pack()
-        dialog.setLocationRelativeTo(projectFrame)
-        dialog.isVisible = true
-    }
-
-    fun updateProgress(output: String, message: String) {
-        SwingUtilities.invokeLater {
-            outputTextArea.text = output
-            dialog.title = message
-            outputTextArea.caretPosition = outputTextArea.document.length
-        }
-    }
-
-    fun finish() {
-        SwingUtilities.invokeLater {
-            dialog.title = "Aider Command Completed"
-            dialog.dispose()
-        }
-    }
-}
 
