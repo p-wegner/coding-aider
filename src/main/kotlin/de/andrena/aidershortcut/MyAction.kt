@@ -17,6 +17,7 @@ import javax.swing.JPanel
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import kotlin.concurrent.thread
+import javax.swing.SwingUtilities
 
 class MyAction : AnAction() {
     private val LOG = Logger.getInstance(MyAction::class.java)
@@ -61,6 +62,10 @@ class MyAction : AnAction() {
                     fun appendText(text: String) {
                         textArea.append(text)
                         textArea.caretPosition = textArea.document.length
+                    }
+
+                    fun invokeLater(runnable: Runnable) {
+                        SwingUtilities.invokeLater(runnable)
                     }
                 }
 
@@ -108,9 +113,9 @@ class MyAction : AnAction() {
                         }
                     }
                 }
+            }
         }
     }
-}
 
     override fun update(e: AnActionEvent) {
         val project: Project? = e.project
