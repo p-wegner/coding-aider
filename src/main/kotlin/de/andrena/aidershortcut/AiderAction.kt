@@ -54,46 +54,6 @@ class AiderAction : AnAction() {
         e.presentation.isEnabledAndVisible = project != null && !files.isNullOrEmpty()
     }
 }
-package de.andrena.aidershortcut.settings
-
-import com.intellij.openapi.components.PersistentStateComponent
-import com.intellij.openapi.components.Service
-import com.intellij.openapi.components.State
-import com.intellij.openapi.components.Storage
-import com.intellij.openapi.project.Project
-
-@State(
-    name = "de.andrena.aidershortcut.settings.AiderSettingsState",
-    storages = [Storage("AiderSettings.xml")]
-)
-@Service(Service.Level.PROJECT)
-class AiderSettingsState : PersistentStateComponent<AiderSettingsState.State> {
-    data class State(
-        var lastTestResult: String = ""
-    )
-
-    private var myState = State()
-
-    override fun getState(): State = myState
-
-    override fun loadState(state: State) {
-        myState = state
-    }
-
-    companion object {
-        fun getInstance(project: Project): AiderSettingsState =
-            project.getService(AiderSettingsState::class.java)
-    }
-}
-package de.andrena.aidershortcut.settings
-
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.Messages
-import java.io.BufferedReader
-import java.io.InputStreamReader
-
-class AiderTestCommand(private val project: Project) {
-    fun execute() {
         try {
             val process = ProcessBuilder("aider", "--help").start()
             val reader = BufferedReader(InputStreamReader(process.inputStream))
