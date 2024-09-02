@@ -45,24 +45,7 @@ class AiderAction : AnAction() {
 
                         val process = processBuilder.start()
 
-                        val reader = BufferedReader(InputStreamReader(process.inputStream))
-                        var line: String?
-                        val startTime = System.currentTimeMillis()
-
-                        while (reader.readLine().also { line = it } != null) {
-                            output.append(line).append("\n")
-                            LOG.info("Aider output: $line")
-                            val runningTime = (System.currentTimeMillis() - startTime) / 1000
-                            invokeLater {
-                                progressDialog.updateProgress(
-                                    output.toString(),
-                                    "Aider command in progress ($runningTime seconds)"
-                                )
-                            }
-                            if (!process.isAlive || runningTime > 300) { // 5 minutes timeout
-                                break
-                            }
-                        }
+                        pollProcessAndReadOutput(process, output, progressDialog)
 
                         if (process.isAlive) {
                             process.destroy()
@@ -108,13 +91,41 @@ class AiderAction : AnAction() {
                                     VirtualFileManager.getInstance().refreshWithoutFileWatcher(false)
                                     RefreshQueue.getInstance().refresh(true, true, null, *files)
                                 }
-                                progressDialog.updateProgress(output.toString(), "Files refreshed. Aider command completed.")
+                                progressDialog.updateProgress(
+                                    output.toString(),
+                                    "Files refreshed. Aider command completed."
+                                )
                             }
                         }
                         progressDialog.finish()
                     }
 
                 }
+            }
+        }
+    }
+
+    private fun pollProcessAndReadOutput(
+        process: Process,
+        output: StringBuilder,
+        progressDialog: ProgressDialog
+    ) {
+        val reader = BufferedReader(InputStreamReader(process.inputStream))
+        val startTime = System.currentTimeMillis()
+
+        var line: String?
+        while (reader.readLine().also { line = it } != null) {
+            output.append(line).append("\n")
+            LOG.info("Aider output: $line")
+            val runningTime = (System.currentTimeMillis() - startTime) / 1000
+            invokeLater {
+                progressDialog.updateProgress(
+                    output.toString(),
+                    "Aider command in progress ($runningTime seconds)"
+                )
+            }
+            if (!process.isAlive || runningTime > 300) { // 5 minutes timeout
+                break
             }
         }
     }
