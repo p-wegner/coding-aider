@@ -20,6 +20,7 @@
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
+    <depends>org.jetbrains.plugins.terminal</depends>
     <actions>
         <action id="de.andrena.aidershortcut.AiderAction"
                 class="de.andrena.aidershortcut.AiderAction"
