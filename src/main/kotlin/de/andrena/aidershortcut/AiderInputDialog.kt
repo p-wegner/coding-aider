@@ -4,14 +4,15 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import javax.swing.*
 import javax.swing.event.ListSelectionListener
+import java.awt.GridLayout
 
 class AiderInputDialog(project: Project, files: List<String>) : DialogWrapper(project) {
     private val inputTextField = JTextField(30)
     private val yesCheckBox = JCheckBox("Add --yes flag", false)
     private val commandOptions = arrayOf("--mini", "--sonnet", "--4", "--4o")
     private val commandComboBox = JComboBox(commandOptions)
-    private val readOnlyFilesList = JList<String>(DefaultListModel<String>())
-    private val readOnlyToggleMap = mutableMapOf<String, Boolean>()
+    private val readOnlyFilesPanel = JPanel(GridLayout(0, 1)) // Vertical layout for checkboxes
+    private val readOnlyToggleMap = mutableMapOf<String, JCheckBox>()
 
     init {
         title = "Aider Command"
@@ -20,28 +21,21 @@ class AiderInputDialog(project: Project, files: List<String>) : DialogWrapper(pr
     }
 
     private fun setupReadOnlyFiles(files: List<String>) {
-        val model = readOnlyFilesList.model as DefaultListModel<String>
         for (file in files) {
-            model.addElement(file)
-            readOnlyToggleMap[file] = false // Default to not read-only
-        }
-        readOnlyFilesList.addListSelectionListener { event ->
-            if (!event.valueIsAdjusting) {
-                val selectedFile = readOnlyFilesList.selectedValue
-                if (selectedFile != null) {
-                    readOnlyToggleMap[selectedFile] = !readOnlyToggleMap[selectedFile]!!
-                }
-            }
+            val checkBox = JCheckBox(file)
+            readOnlyToggleMap[file] = checkBox
+            readOnlyFilesPanel.add(checkBox)
         }
     }
 
     override fun createCenterPanel(): JComponent {
         val panel = JPanel()
+        panel.layout = BoxLayout(panel, BoxLayout.Y_AXIS) // Vertical layout for main panel
         panel.add(inputTextField)
         panel.add(yesCheckBox)
         panel.add(commandComboBox)
         panel.add(JLabel("Select Read-only files:"))
-        panel.add(JScrollPane(readOnlyFilesList))
+        panel.add(readOnlyFilesPanel)
         return panel
     }
 
@@ -50,6 +44,6 @@ class AiderInputDialog(project: Project, files: List<String>) : DialogWrapper(pr
     fun getSelectedCommand(): String = commandComboBox.selectedItem as String
 
     fun getReadOnlyFiles(): List<String> {
-        return readOnlyToggleMap.filter { it.value }.keys.toList()
+        return readOnlyToggleMap.filter { it.value.isSelected }.keys.toList()
     }
 }
