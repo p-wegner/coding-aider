@@ -14,7 +14,6 @@ import javax.swing.*
 import java.awt.BorderLayout
 import kotlin.concurrent.thread
 import com.intellij.openapi.wm.WindowManager
-import javax.swing.*
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.RefreshQueue
 import com.intellij.openapi.application.WriteAction

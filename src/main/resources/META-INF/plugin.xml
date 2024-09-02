@@ -15,16 +15,22 @@
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description>This plugin enhances your development experience by integrating Aider support,
         providing seamless access to AI-powered coding assistance directly within your IDE.
-        </description>
+    </description>
 
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
     <actions>
-        <action id="AiderActionId" class="de.andrena.aidershortcut.AiderAction" text="Start Aider Action" description="This will instruct aider to do something">
+        <action id="de.andrena.aidershortcut.AiderAction"
+                class="de.andrena.aidershortcut.AiderAction"
+                text="Start Aider Action"
+                description="This will instruct aider to do something">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="control alt A"/>
         </action>
     </actions>
+
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
