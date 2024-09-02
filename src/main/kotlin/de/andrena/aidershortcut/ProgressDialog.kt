@@ -37,7 +37,6 @@ class ProgressDialog(project: Project, title: String) {
     fun finish() {
         SwingUtilities.invokeLater {
             dialog.title = "Aider Command Completed"
-            dialog.dispose()
         }
     }
 }
