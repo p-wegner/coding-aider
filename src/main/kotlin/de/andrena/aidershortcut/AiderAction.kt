@@ -54,27 +54,3 @@ class AiderAction : AnAction() {
         e.presentation.isEnabledAndVisible = project != null && !files.isNullOrEmpty()
     }
 }
-        try {
-            val process = ProcessBuilder("aider", "--help").start()
-            val reader = BufferedReader(InputStreamReader(process.inputStream))
-            val output = StringBuilder()
-            var line: String?
-            while (reader.readLine().also { line = it } != null) {
-                output.append(line).append("\n")
-            }
-            val exitCode = process.waitFor()
-            
-            if (exitCode == 0) {
-                Messages.showInfoMessage(project, "Aider is correctly installed and accessible.", "Aider Test Result")
-            } else {
-                Messages.showErrorDialog(project, "Aider test failed. Exit code: $exitCode", "Aider Test Result")
-            }
-            
-            // Save the test result
-            val settingsState = AiderSettingsState.getInstance(project)
-            settingsState.loadState(AiderSettingsState.State(lastTestResult = output.toString()))
-        } catch (e: Exception) {
-            Messages.showErrorDialog(project, "Error executing Aider test: ${e.message}", "Aider Test Error")
-        }
-    }
-}
