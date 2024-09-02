@@ -10,15 +10,11 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.RefreshQueue
-import com.intellij.openapi.wm.ToolWindowManager
-import com.intellij.terminal.TerminalView
-import com.intellij.terminal.ui.TerminalSession
 import java.awt.EventQueue.invokeLater
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import kotlin.concurrent.thread
-import org.jetbrains.plugins.terminal.TerminalToolWindowFactory;
-import org.jetbrains.plugins.terminal.TerminalView;
+import org.jetbrains.plugins.terminal.TerminalToolWindowManager
 
 class AiderAction : AnAction() {
     private val LOG = Logger.getInstance(AiderAction::class.java)
@@ -55,9 +51,8 @@ class AiderAction : AnAction() {
         filePaths: String,
         readOnlyFiles: List<String>
     ) {
-        val terminalView = TerminalView.getInstance(project)
-        val terminalSession = terminalView.createLocalTerminalSession(project.basePath)
-        terminalSession.start()
+        val terminalView = TerminalToolWindowManager.getInstance(project)
+        val terminalSession = terminalView.createLocalShellWidget(project.basePath,"Aider",true)
 
         val command = buildAiderCommand("", useYesFlag, selectedCommand, additionalArgs, filePaths, readOnlyFiles, true)
         terminalSession.executeCommand(command)
