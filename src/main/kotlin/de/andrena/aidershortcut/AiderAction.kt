@@ -1,6 +1,5 @@
 package de.andrena.aidershortcut
 
-import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -134,6 +133,6 @@ class AiderAction : AnAction() {
     override fun update(e: AnActionEvent) {
         val project: Project? = e.project
         val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
-        e.presentation.isEnabledAndVisible = project != null && files != null && files.isNotEmpty()
+        e.presentation.isEnabledAndVisible = project != null && !files.isNullOrEmpty()
     }
 }

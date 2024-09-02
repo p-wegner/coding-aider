@@ -7,7 +7,7 @@ import javax.swing.*
 class AiderInputDialog(project: Project) : DialogWrapper(project) {
     private val inputTextField = JTextField(30)
     private val yesCheckBox = JCheckBox("Add --yes flag", false)
-    private val commandOptions = arrayOf("--sonnet", "--4", "--4o", "--mini")
+    private val commandOptions = arrayOf("--mini","--sonnet", "--4", "--4o")
     private val commandComboBox = JComboBox(commandOptions)
 
     init {
