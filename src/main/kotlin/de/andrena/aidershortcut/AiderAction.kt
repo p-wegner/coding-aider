@@ -29,6 +29,7 @@ class AiderAction : AnAction() {
                 val useYesFlag = dialog.isYesFlagChecked()
                 val selectedCommand = dialog.getSelectedCommand()
                 val filePaths = files.joinToString(" ") { it.path }
+                val readOnlyFiles = dialog.getReadOnlyFiles()
 
                 val progressDialog = ProgressDialog(project, "Aider Command in Progress")
                 thread {
@@ -40,6 +41,10 @@ class AiderAction : AnAction() {
                             commandArgs.add("--yes")
                         }
                         commandArgs.addAll(listOf("-m", message))
+                        if (readOnlyFiles.isNotEmpty()) {
+                            commandArgs.add("--read")
+                            commandArgs.addAll(readOnlyFiles.split(" "))
+                        }
                         val processBuilder = ProcessBuilder(commandArgs)
                         processBuilder.redirectErrorStream(true)
 
