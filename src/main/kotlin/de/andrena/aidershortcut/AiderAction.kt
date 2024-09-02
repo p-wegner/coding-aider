@@ -10,11 +10,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.RefreshQueue
-import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.terminal.JBTerminalWidget
-import org.jetbrains.plugins.terminal.ShellTerminalWidget
-import org.jetbrains.plugins.terminal.TerminalView
-import org.jetbrains.plugins.terminal.TerminalViewFactory // Added import
+import com.intellij.terminal.TerminalView
+import com.intellij.terminal.TerminalViewFactory
 import java.awt.EventQueue.invokeLater
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -56,12 +54,11 @@ class AiderAction : AnAction() {
         readOnlyFiles: List<String>
     ) {
         val terminalView = TerminalView.getInstance(project)
-        val toolWindowManager = ToolWindowManager.getInstance(project)
-        val terminalToolWindow = toolWindowManager.getToolWindow("Terminal")
+        val terminalToolWindow = terminalView.getToolWindow("Terminal")
 
         terminalToolWindow?.show {
             val terminal = terminalView.createLocalShellWidget(project.basePath, "Aider")
-            val shellTerminal = terminal as? ShellTerminalWidget ?: return@show
+            val shellTerminal = terminal as? JBTerminalWidget ?: return@show
 
             val command = buildAiderCommand("", useYesFlag, selectedCommand, additionalArgs, filePaths, readOnlyFiles, true)
             shellTerminal.executeCommand(command)
