@@ -23,7 +23,7 @@ class AiderAction : AnAction() {
         val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
 
         if (project != null && !files.isNullOrEmpty()) {
-            val dialog = AiderInputDialog(project)
+            val dialog = AiderInputDialog(project, files.map { it.path })
             if (dialog.showAndGet()) {
                 val message = dialog.getInputText()
                 val useYesFlag = dialog.isYesFlagChecked()
@@ -43,7 +43,7 @@ class AiderAction : AnAction() {
                         commandArgs.addAll(listOf("-m", message))
                         if (readOnlyFiles.isNotEmpty()) {
                             commandArgs.add("--read")
-                            commandArgs.addAll(readOnlyFiles.split(" "))
+                            commandArgs.addAll(readOnlyFiles)
                         }
                         val processBuilder = ProcessBuilder(commandArgs)
                         processBuilder.redirectErrorStream(true)
