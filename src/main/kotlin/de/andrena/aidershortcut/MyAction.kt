@@ -5,11 +5,17 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.ui.Messages
+import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.diagnostic.Logger
-import java.awt.EventQueue.invokeLater
+import com.intellij.ui.components.JBScrollPane
+import com.intellij.ui.components.JBTextArea
+import java.awt.Dimension
+import java.awt.BorderLayout
+import javax.swing.JComponent
+import javax.swing.JPanel
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import kotlin.concurrent.thread
 
 class MyAction : AnAction() {
     private val LOG = Logger.getInstance(MyAction::class.java)
@@ -29,56 +35,78 @@ class MyAction : AnAction() {
             if (message != null) {
                 val filePaths = files.joinToString(" ") { it.path }
 
-                try {
-                    val processBuilder = ProcessBuilder("aider", "--mini", "--file", *filePaths.split(" ").toTypedArray(), "-m", message)
-                    processBuilder.redirectErrorStream(true)
+                val dialog = object : DialogWrapper(project) {
+                    private val textArea = JBTextArea().apply {
+                        isEditable = false
+                        lineWrap = true
+                        wrapStyleWord = true
+                    }
+                    private val scrollPane = JBScrollPane(textArea)
+                    
+                    init {
+                        init()
+                        title = "Aider Command Output"
+                        setOKButtonText("Close")
+                        setCancelButtonText("Cancel")
+                    }
+
+                    override fun createCenterPanel(): JComponent {
+                        val panel = JPanel(BorderLayout())
+                        panel.preferredSize = Dimension(600, 400)
+                        panel.add(scrollPane, BorderLayout.CENTER)
+                        return panel
+                    }
+
+                    fun appendText(text: String) {
+                        textArea.append(text)
+                        textArea.caretPosition = textArea.document.length
+                    }
+                }
+
+                dialog.show()
+
+                thread {
+                    try {
+                        val processBuilder = ProcessBuilder("aider", "--mini", "--file", *filePaths.split(" ").toTypedArray(), "-m", message)
+                        processBuilder.redirectErrorStream(true)
 
                         val process = processBuilder.start()
-                    val output = StringBuilder()
+                        val reader = BufferedReader(InputStreamReader(process.inputStream))
+                        var line: String?
 
-                    val reader = BufferedReader(InputStreamReader(process.inputStream))
-                    var line: String?
-                    var lastUpdateTime = System.currentTimeMillis()
-                    val updateInterval = 1000 // Update UI every 1 second
-                var runningTime = 0L
-
-                    while (reader.readLine().also { line = it } != null) {
-                            output.append(line).append("\n")
-                                    LOG.info("Aider output: $line")
-
-                        val currentTime = System.currentTimeMillis()
-                        if (currentTime - lastUpdateTime > updateInterval) {
-                        runningTime += (currentTime - lastUpdateTime)
-                                    invokeLater {
-                            Messages.showInfoMessage(project, "Aider command in progress (${runningTime / 1000} seconds):\n\n$output", "Aider Command")
+                        while (reader.readLine().also { line = it } != null) {
+                            LOG.info("Aider output: $line")
+                            dialog.invokeLater {
+                                dialog.appendText(line + "\n")
                             }
-                            lastUpdateTime = currentTime
+
+                            if (!dialog.isShowing) {
+                                process.destroy()
+                                break
+                            }
                         }
 
-                    // Check if the process has finished or if it's been running for too long
-                    if (!process.isAlive || runningTime > 300000) { // 5 minutes timeout
-                        break
-                    }
-                }
+                        if (process.isAlive) {
+                            process.waitFor()
+                        }
 
-                if (process.isAlive) {
-                    process.destroy()
-                    LOG.warn("Aider command timed out after 5 minutes")
-                    Messages.showWarningDialog(project, "Aider command timed out after 5 minutes.\n\nPartial Output:\n$output", "Aider Command Timeout")
-                    } else {
-                    val exitCode = process.waitFor()
-                    if (exitCode == 0) {
-                        LOG.info("Aider command executed successfully")
-                        Messages.showInfoMessage(project, "Aider command executed successfully.\n\nFinal Output:\n$output", "Aider Command")
-                    } else {
-                        LOG.error("Aider command failed with exit code $exitCode")
-                        Messages.showErrorDialog(project, "Aider command failed with exit code $exitCode.\n\nFinal Output:\n$output", "Aider Command Error")
+                        val exitCode = process.exitValue()
+                        dialog.invokeLater {
+                            if (exitCode == 0) {
+                                LOG.info("Aider command executed successfully")
+                                dialog.appendText("\nAider command executed successfully.")
+                            } else {
+                                LOG.error("Aider command failed with exit code $exitCode")
+                                dialog.appendText("\nAider command failed with exit code $exitCode.")
+                            }
+                        }
+                    } catch (e: Exception) {
+                        LOG.error("Error executing Aider command", e)
+                        dialog.invokeLater {
+                            dialog.appendText("\nError executing Aider command: ${e.message}")
+                        }
                     }
                 }
-            } catch (e: Exception) {
-                LOG.error("Error executing Aider command", e)
-                Messages.showErrorDialog(project, "Error executing Aider command: ${e.message}", "Aider Command Error")
-            }
         }
     }
 }
