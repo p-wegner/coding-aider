@@ -35,6 +35,11 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-
+        <projectConfigurable
+                instance="de.andrena.aidershortcut.settings.AiderSettingsConfigurable"
+                displayName="Aider Settings"
+                id="de.andrena.aidershortcut.settings.AiderSettingsConfigurable"
+                parentId="tools"
+                nonDefaultProject="true"/>
     </extensions>
 </idea-plugin>
