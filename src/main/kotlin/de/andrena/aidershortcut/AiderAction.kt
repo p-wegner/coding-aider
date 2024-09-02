@@ -16,7 +16,6 @@ import java.io.BufferedReader
 import java.io.InputStreamReader
 import kotlin.concurrent.thread
 
-
 class AiderAction : AnAction() {
     private val LOG = Logger.getInstance(AiderAction::class.java)
 
@@ -29,13 +28,14 @@ class AiderAction : AnAction() {
             if (dialog.showAndGet()) {
                 val message = dialog.getInputText()
                 val useYesFlag = dialog.isYesFlagChecked()
+                val selectedCommand = dialog.getSelectedCommand()
                 val filePaths = files.joinToString(" ") { it.path }
 
                 val progressDialog = ProgressDialog(project, "Aider Command in Progress")
                 thread {
                     val output = StringBuilder()
                     try {
-                        val commandArgs = mutableListOf("aider", "--mini", "--file")
+                        val commandArgs = mutableListOf("aider", selectedCommand, "--file")
                         commandArgs.addAll(filePaths.split(" "))
                         if (useYesFlag) {
                             commandArgs.add("--yes")
@@ -131,14 +131,9 @@ class AiderAction : AnAction() {
         }
     }
 
-//    @Suppress("DEPRECATION")
-//    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.OLD_EDT
-
     override fun update(e: AnActionEvent) {
         val project: Project? = e.project
         val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
         e.presentation.isEnabledAndVisible = project != null && files != null && files.isNotEmpty()
     }
 }
-
-
