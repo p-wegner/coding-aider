@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import javax.swing.*
 import java.awt.*
+import java.io.File
 
 class AiderInputDialog(project: Project, files: List<String>) : DialogWrapper(project) {
     private val inputTextArea = JTextArea(5, 30)
@@ -22,7 +23,9 @@ class AiderInputDialog(project: Project, files: List<String>) : DialogWrapper(pr
 
     private fun setupReadOnlyFiles(files: List<String>) {
         for (file in files) {
-            val checkBox = JCheckBox(file)
+            val fileName = File(file).name
+            val checkBox = JCheckBox(fileName)
+            checkBox.toolTipText = file
             readOnlyToggleMap[file] = checkBox
             readOnlyFilesPanel.add(checkBox)
         }
