@@ -10,11 +10,11 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.RefreshQueue
+import org.jetbrains.plugins.terminal.TerminalToolWindowManager
 import java.awt.EventQueue.invokeLater
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import kotlin.concurrent.thread
-import org.jetbrains.plugins.terminal.TerminalToolWindowManager
 
 class AiderAction : AnAction() {
     private val LOG = Logger.getInstance(AiderAction::class.java)
@@ -168,14 +168,4 @@ class AiderAction : AnAction() {
         e.presentation.isEnabledAndVisible = project != null && !files.isNullOrEmpty()
     }
 }
-package de.andrena.aidershortcut
 
-data class CommandData(
-    val message: String,
-    val useYesFlag: Boolean,
-    val selectedCommand: String,
-    val additionalArgs: String,
-    val filePaths: String,
-    val readOnlyFiles: List<String>,
-    val isShellMode: Boolean
-)
