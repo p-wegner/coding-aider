@@ -1,12 +1,23 @@
 package de.andrena.aidershortcut
 
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.WriteAction
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import org.jetbrains.plugins.terminal.TerminalToolWindowManager
+import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.vfs.newvfs.RefreshQueue
 import java.awt.EventQueue.invokeLater
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import kotlin.concurrent.thread
 
-class TerminalExecutor(private val project: Project, private val commandData: CommandData, private val files: Array<VirtualFile>) {
+class TerminalExecutor(
+    private val project: Project,
+    private val commandData: CommandData,
+    private val files: Array<VirtualFile>
+) {
+    private val LOG = Logger.getInstance(TerminalExecutor::class.java)
     fun execute() {
         val progressDialog = ProgressDialog(project, "Aider Command in Progress")
         thread {
