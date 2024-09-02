@@ -11,12 +11,12 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.RefreshQueue
 import com.intellij.terminal.JBTerminalWidget
-import com.intellij.terminal.TerminalView
-import com.intellij.terminal.TerminalViewFactory
 import java.awt.EventQueue.invokeLater
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import kotlin.concurrent.thread
+import org.jetbrains.plugins.terminal.TerminalToolWindowFactory;
+import org.jetbrains.plugins.terminal.TerminalView;
 
 class AiderAction : AnAction() {
     private val LOG = Logger.getInstance(AiderAction::class.java)
