@@ -15,6 +15,11 @@ import java.awt.BorderLayout
 import kotlin.concurrent.thread
 import com.intellij.openapi.wm.WindowManager
 import javax.swing.*
+import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.vfs.newvfs.RefreshQueue
+import com.intellij.openapi.application.WriteAction
+import com.intellij.openapi.application.ApplicationManager
+
 
 class AiderAction : AnAction() {
     private val LOG = Logger.getInstance(AiderAction::class.java)
@@ -32,6 +37,7 @@ class AiderAction : AnAction() {
 
                 val progressDialog = ProgressDialog(project, "Aider Command in Progress")
                 thread {
+                    val output = StringBuilder()
                     try {
                         val commandArgs = mutableListOf("aider", "--mini", "--file")
                         commandArgs.addAll(filePaths.split(" "))
@@ -43,7 +49,6 @@ class AiderAction : AnAction() {
                         processBuilder.redirectErrorStream(true)
 
                         val process = processBuilder.start()
-                        val output = StringBuilder()
 
                         val reader = BufferedReader(InputStreamReader(process.inputStream))
                         var line: String?
@@ -54,7 +59,10 @@ class AiderAction : AnAction() {
                             LOG.info("Aider output: $line")
                             val runningTime = (System.currentTimeMillis() - startTime) / 1000
                             invokeLater {
-                                progressDialog.updateProgress(output.toString(), "Aider command in progress ($runningTime seconds)")
+                                progressDialog.updateProgress(
+                                    output.toString(),
+                                    "Aider command in progress ($runningTime seconds)"
+                                )
                             }
                             if (!process.isAlive || runningTime > 300) { // 5 minutes timeout
                                 break
@@ -65,30 +73,52 @@ class AiderAction : AnAction() {
                             process.destroy()
                             LOG.warn("Aider command timed out after 5 minutes")
                             invokeLater {
-                                progressDialog.updateProgress(output.toString(), "Aider command timed out after 5 minutes")
+                                progressDialog.updateProgress(
+                                    output.toString(),
+                                    "Aider command timed out after 5 minutes"
+                                )
                             }
                         } else {
                             val exitCode = process.waitFor()
                             if (exitCode == 0) {
                                 LOG.info("Aider command executed successfully")
                                 invokeLater {
-                                    progressDialog.updateProgress(output.toString(), "Aider command executed successfully")
+                                    progressDialog.updateProgress(
+                                        output.toString(),
+                                        "Aider command executed successfully"
+                                    )
                                 }
                             } else {
                                 LOG.error("Aider command failed with exit code $exitCode")
                                 invokeLater {
-                                    progressDialog.updateProgress(output.toString(), "Aider command failed with exit code $exitCode")
+                                    progressDialog.updateProgress(
+                                        output.toString(),
+                                        "Aider command failed with exit code $exitCode"
+                                    )
                                 }
                             }
                         }
                     } catch (e: Exception) {
                         LOG.error("Error executing Aider command", e)
                         invokeLater {
-                            progressDialog.updateProgress("Error executing Aider command: ${e.message}", "Aider Command Error")
+                            progressDialog.updateProgress(
+                                "Error executing Aider command: ${e.message}",
+                                "Aider Command Error"
+                            )
                         }
                     } finally {
+                        invokeLater {
+                            ApplicationManager.getApplication().invokeLater {
+                                WriteAction.runAndWait<Throwable> {
+                                    VirtualFileManager.getInstance().refreshWithoutFileWatcher(false)
+                                    RefreshQueue.getInstance().refresh(true, true, null, *files)
+                                }
+                                progressDialog.updateProgress(output.toString(), "Files refreshed. Aider command completed.")
+                            }
+                        }
                         progressDialog.finish()
                     }
+
                 }
             }
         }
