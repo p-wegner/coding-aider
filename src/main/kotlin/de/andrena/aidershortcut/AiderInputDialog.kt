@@ -15,6 +15,7 @@ class AiderInputDialog(project: Project, files: List<String>) : DialogWrapper(pr
     private val readOnlyFilesPanel = JPanel(GridLayout(0, 1))
     private val readOnlyToggleMap = mutableMapOf<String, JCheckBox>()
     private val modeToggle = JCheckBox("Shell Mode", false)
+    private val messageLabel = JLabel("Enter your message:")
 
     init {
         title = "Aider Command"
@@ -47,7 +48,7 @@ class AiderInputDialog(project: Project, files: List<String>) : DialogWrapper(pr
 
         // Input Text Area
         gbc.gridy++
-        panel.add(JLabel("Enter your command:"), gbc)
+        panel.add(messageLabel, gbc)
 
         gbc.gridy++
         gbc.weighty = 1.0
@@ -87,9 +88,11 @@ class AiderInputDialog(project: Project, files: List<String>) : DialogWrapper(pr
         gbc.fill = GridBagConstraints.BOTH
         panel.add(JScrollPane(readOnlyFilesPanel), gbc)
 
-        // Add listener to toggle visibility of input text area
+        // Add listener to toggle visibility of input text area and change label
         modeToggle.addActionListener {
-            inputTextArea.isVisible = !modeToggle.isSelected
+            val isShellMode = modeToggle.isSelected
+            inputTextArea.isVisible = !isShellMode
+            messageLabel.text = if (isShellMode) "Shell mode enabled" else "Enter your message:"
         }
 
         return panel

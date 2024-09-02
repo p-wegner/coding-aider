@@ -38,7 +38,7 @@ class AiderAction : AnAction() {
                 val isShellMode = dialog.isShellMode()
 
                 if (isShellMode) {
-                    executeInTerminal(project, message, useYesFlag, selectedCommand, additionalArgs, filePaths, readOnlyFiles)
+                    executeInTerminal(project, useYesFlag, selectedCommand, additionalArgs, filePaths, readOnlyFiles)
                 } else {
                     executeWithProgressDialog(project, message, useYesFlag, selectedCommand, additionalArgs, filePaths, readOnlyFiles, files)
                 }
@@ -48,7 +48,6 @@ class AiderAction : AnAction() {
 
     private fun executeInTerminal(
         project: Project,
-        message: String,
         useYesFlag: Boolean,
         selectedCommand: String,
         additionalArgs: String,
@@ -63,7 +62,7 @@ class AiderAction : AnAction() {
             val terminal = terminalView.createLocalShellWidget(project.basePath, "Aider")
             val shellTerminal = terminal as? ShellTerminalWidget ?: return@show
 
-            val command = buildAiderCommand(message, useYesFlag, selectedCommand, additionalArgs, filePaths, readOnlyFiles)
+            val command = buildAiderCommand("", useYesFlag, selectedCommand, additionalArgs, filePaths, readOnlyFiles, true)
             shellTerminal.executeCommand(command)
         }
     }
@@ -82,7 +81,7 @@ class AiderAction : AnAction() {
         thread {
             val output = StringBuilder()
             try {
-                val commandArgs = buildAiderCommand(message, useYesFlag, selectedCommand, additionalArgs, filePaths, readOnlyFiles).split(" ")
+                val commandArgs = buildAiderCommand(message, useYesFlag, selectedCommand, additionalArgs, filePaths, readOnlyFiles, false).split(" ")
                 val processBuilder = ProcessBuilder(commandArgs)
                 processBuilder.redirectErrorStream(true)
 
@@ -151,13 +150,16 @@ class AiderAction : AnAction() {
         selectedCommand: String,
         additionalArgs: String,
         filePaths: String,
-        readOnlyFiles: List<String>
+        readOnlyFiles: List<String>,
+        isShellMode: Boolean
     ): String {
         val command = StringBuilder("aider $selectedCommand --file $filePaths")
         if (useYesFlag) {
             command.append(" --yes")
         }
-        command.append(" -m \"$message\"")
+        if (!isShellMode) {
+            command.append(" -m \"$message\"")
+        }
         if (readOnlyFiles.isNotEmpty()) {
             command.append(" --read ${readOnlyFiles.joinToString(" ")}")
         }
