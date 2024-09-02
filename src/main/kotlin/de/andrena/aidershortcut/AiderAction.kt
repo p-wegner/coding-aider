@@ -1,5 +1,6 @@
 package de.andrena.aidershortcut
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -129,6 +130,9 @@ class AiderAction : AnAction() {
             }
         }
     }
+
+//    @Suppress("DEPRECATION")
+//    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.OLD_EDT
 
     override fun update(e: AnActionEvent) {
         val project: Project? = e.project
