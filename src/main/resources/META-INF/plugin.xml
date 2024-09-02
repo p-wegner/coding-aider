@@ -21,7 +21,7 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
     <actions>
-        <action id="YourActionId" class="de.andrena.aidershortcut.MyAction" text="Your Menu Text" description="Your action description">
+        <action id="AiderActionId" class="de.andrena.aidershortcut.AiderAction" text="Start Aider Action" description="This will instruct aider to do something">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
         </action>
     </actions>
