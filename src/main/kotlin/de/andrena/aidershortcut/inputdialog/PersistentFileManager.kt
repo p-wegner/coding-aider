@@ -1,12 +1,13 @@
 package de.andrena.aidershortcut.inputdialog
 
+import de.andrena.aidershortcut.command.FileData
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
 
 class PersistentFileManager(private val basePath: String) {
     private val contextFile = File(basePath, ".aider.context")
-    private val persistentFiles: MutableList<String> = mutableListOf()
+    private val persistentFiles: MutableList<FileData> = mutableListOf()
 
     init {
         loadPersistentFiles()

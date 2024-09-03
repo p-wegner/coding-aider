@@ -127,22 +127,7 @@ class AiderContextView(
         }
     }
 
-    fun getPersistentFiles(): List<String> {
-        return persistentFiles.map { filePath ->
-            if (filePath in readOnlyFiles) {
-                "--read $filePath"
-            } else {
-                "--file $filePath"
-            }
-        }
-    }
-
-    fun addToPersistentFiles(filePath: String) {
-        if (filePath !in persistentFiles) {
-            persistentFiles = persistentFiles + filePath
-            updateTree()
-        }
-    }
+    fun getPersistentFiles(): List<String> = persistentFiles.map { file -> file.filePath }
 
     fun getSelectedFiles(): List<FileData> {
         return tree.selectionPaths?.mapNotNull { path ->
