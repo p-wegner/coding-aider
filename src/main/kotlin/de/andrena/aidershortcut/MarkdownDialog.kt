@@ -1,11 +1,11 @@
 package de.andrena.aidershortcut
 
-import javax.swing.JDialog
-import javax.swing.JTextArea
-import javax.swing.JScrollPane
-import javax.swing.JButton
+import com.intellij.openapi.project.Project
 import java.awt.BorderLayout
-import java.awt.event.ActionListener
+import javax.swing.JButton
+import javax.swing.JDialog
+import javax.swing.JScrollPane
+import javax.swing.JTextArea
 
 class MarkdownDialog(private val project: Project, title: String, initialText: String) : JDialog() {
     private val textArea: JTextArea = JTextArea(initialText)
