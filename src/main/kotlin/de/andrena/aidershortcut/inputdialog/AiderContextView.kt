@@ -71,6 +71,8 @@ class AiderContextView(
     }
 
     private fun updateTree() {
+        val expandedPaths = tree.getExpandedDescendants(tree.pathForRow(0))
+        
         rootNode.removeAllChildren()
 
         val uniqueFiles = (allFiles + persistentFiles).distinct().map { File(it) }
@@ -83,18 +85,34 @@ class AiderContextView(
         }
 
         (tree.model as DefaultTreeModel).reload()
+        
+        // Restore expanded state
+        expandedPaths?.forEach { path ->
+            tree.expandPath(path)
+        }
     }
 
     fun toggleReadOnlyMode() {
-        val selectedNode = tree.lastSelectedPathComponent as? DefaultMutableTreeNode
-        if (selectedNode != null && selectedNode.userObject is File) {
-            val file = selectedNode.userObject as File
-            persistentFiles = if (file.absolutePath in persistentFiles) {
-                persistentFiles - file.absolutePath
-            } else {
-                persistentFiles + file.absolutePath
+        val selectedPaths = tree.selectionPaths ?: return
+        val selectedNodes = selectedPaths.mapNotNull { it.lastPathComponent as? DefaultMutableTreeNode }
+        
+        selectedNodes.forEach { node ->
+            if (node.userObject is File) {
+                val file = node.userObject as File
+                persistentFiles = if (file.absolutePath in persistentFiles) {
+                    persistentFiles - file.absolutePath
+                } else {
+                    persistentFiles + file.absolutePath
+                }
             }
-            updateTree()
+        }
+        
+        updateTree()
+        
+        // Restore selection
+        val selectionModel = tree.selectionModel
+        selectedPaths.forEach { path ->
+            selectionModel.addSelectionPath(path)
         }
     }
 
