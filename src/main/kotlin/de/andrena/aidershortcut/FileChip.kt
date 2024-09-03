@@ -35,4 +35,8 @@ class FileChip(file: File?, isSelected: Boolean, selectionBackground: Color?, se
     fun setRemoveAction(action: () -> Unit) {
         removeButton.addActionListener { action() }
     }
+
+    fun getFile(): File? {
+        return (getComponent(0) as? JLabel)?.toolTipText?.let { File(it) }
+    }
 }
