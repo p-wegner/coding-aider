@@ -21,7 +21,6 @@ class FileChip(
     init {
         isOpaque = true
         border = EmptyBorder(2, 5, 2, 5)
-        updateColors(isSelected, selectionBackground, selectionForeground)
 
         label = JLabel(file?.name ?: "")
         label.toolTipText = file?.absolutePath
@@ -46,6 +45,7 @@ class FileChip(
         removeButton.isVisible = false
         add(removeButton)
 
+        updateColors(isSelected, selectionBackground, selectionForeground)
         updateAppearance()
     }
 
