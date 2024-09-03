@@ -27,4 +27,22 @@ class AiderHistoryHandler(private val projectPath: String) {
         val timestamp = LocalDateTime.now().format(dateTimeFormatter)
         historyFile.appendText("# $timestamp\n$command\n")
     }
+}package de.andrena.aidershortcut
+
+import java.io.File
+
+class AiderContextHandler(private val projectPath: String) {
+    private val contextFile = File(projectPath, ".aider.context")
+
+    fun loadPersistentFiles(): List<String> {
+        return if (contextFile.exists()) {
+            contextFile.readLines()
+        } else {
+            emptyList()
+        }
+    }
+
+    fun savePersistentFiles(files: List<String>) {
+        contextFile.writeText(files.joinToString("\n"))
+    }
 }

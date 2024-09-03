@@ -15,29 +15,30 @@ class AiderAction : AnAction() {
         val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
 
         if (project != null && !files.isNullOrEmpty()) {
-            val dialog = AiderInputDialog(project, files.map { it.path })
+            val contextHandler = AiderContextHandler(project.basePath ?: "")
+            val persistentFiles = contextHandler.loadPersistentFiles()
+            val allFiles = (files.map { it.path } + persistentFiles).distinct()
+
+            val dialog = AiderInputDialog(project, allFiles)
             if (dialog.showAndGet()) {
-                val commandData = collectCommandData(dialog, files)
+                val commandData = collectCommandData(dialog, allFiles)
                 if (commandData.isShellMode) {
                     ShellExecutor(project, commandData).execute()
                 } else {
                     TerminalExecutor(project, commandData, files).execute()
                 }
-                // Add the command to history
-                dialog.addToHistory(commandData.message)
-                // Add the command to history
                 dialog.addToHistory(commandData.message)
             }
         }
     }
 
-    private fun collectCommandData(dialog: AiderInputDialog, files: Array<VirtualFile>): CommandData {
+    private fun collectCommandData(dialog: AiderInputDialog, allFiles: List<String>): CommandData {
         return CommandData(
             message = dialog.getInputText(),
             useYesFlag = dialog.isYesFlagChecked(),
             selectedCommand = dialog.getSelectedCommand(),
             additionalArgs = dialog.getAdditionalArgs(),
-            filePaths = files.joinToString(" ") { it.path },
+            filePaths = allFiles.joinToString(" "),
             readOnlyFiles = dialog.getReadOnlyFiles(),
             isShellMode = dialog.isShellMode()
         )

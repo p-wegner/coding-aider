@@ -25,3 +25,63 @@ class ShellExecutor(private val project: Project, private val commandData: Comma
         }.toString()
     }
 }
+package de.andrena.aidershortcut
+
+import java.awt.BorderLayout
+import java.awt.Dimension
+import java.awt.GridLayout
+import javax.swing.*
+
+class ReadOnlyFilesView(private val files: List<String>, private val persistentFiles: List<String>) : JPanel() {
+    private val leftList = JList<String>(files.toTypedArray())
+    private val rightList = JList<String>(persistentFiles.toTypedArray())
+    private val leftModel = DefaultListModel<String>()
+    private val rightModel = DefaultListModel<String>()
+
+    init {
+        layout = BorderLayout()
+        
+        leftList.model = leftModel
+        rightList.model = rightModel
+        
+        files.forEach { leftModel.addElement(it) }
+        persistentFiles.forEach { rightModel.addElement(it) }
+
+        val leftPanel = JPanel(BorderLayout())
+        leftPanel.add(JLabel("Available Files:"), BorderLayout.NORTH)
+        leftPanel.add(JScrollPane(leftList), BorderLayout.CENTER)
+
+        val rightPanel = JPanel(BorderLayout())
+        rightPanel.add(JLabel("Persistent Files:"), BorderLayout.NORTH)
+        rightPanel.add(JScrollPane(rightList), BorderLayout.CENTER)
+
+        val buttonPanel = JPanel(GridLayout(2, 1))
+        val addButton = JButton(">>")
+        val removeButton = JButton("<<")
+
+        addButton.addActionListener {
+            leftList.selectedValuesList.forEach {
+                leftModel.removeElement(it)
+                rightModel.addElement(it)
+            }
+        }
+
+        removeButton.addActionListener {
+            rightList.selectedValuesList.forEach {
+                rightModel.removeElement(it)
+                leftModel.addElement(it)
+            }
+        }
+
+        buttonPanel.add(addButton)
+        buttonPanel.add(removeButton)
+
+        add(leftPanel, BorderLayout.WEST)
+        add(buttonPanel, BorderLayout.CENTER)
+        add(rightPanel, BorderLayout.EAST)
+
+        preferredSize = Dimension(600, 300)
+    }
+
+    fun getPersistentFiles(): List<String> = rightModel.elements().toList()
+}
