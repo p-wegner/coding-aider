@@ -2,6 +2,10 @@ package de.andrena.aidershortcut
 
 import com.intellij.openapi.project.Project
 import org.jetbrains.plugins.terminal.TerminalToolWindowManager
+import java.awt.BorderLayout
+import java.awt.Dimension
+import java.awt.GridLayout
+import javax.swing.*
 
 class ShellExecutor(private val project: Project, private val commandData: CommandData) {
     fun execute() {
@@ -25,12 +29,7 @@ class ShellExecutor(private val project: Project, private val commandData: Comma
         }.toString()
     }
 }
-package de.andrena.aidershortcut
 
-import java.awt.BorderLayout
-import java.awt.Dimension
-import java.awt.GridLayout
-import javax.swing.*
 
 class ReadOnlyFilesView(private val files: List<String>, private val persistentFiles: List<String>) : JPanel() {
     private val leftList = JList<String>(files.toTypedArray())
@@ -40,10 +39,10 @@ class ReadOnlyFilesView(private val files: List<String>, private val persistentF
 
     init {
         layout = BorderLayout()
-        
+
         leftList.model = leftModel
         rightList.model = rightModel
-        
+
         files.forEach { leftModel.addElement(it) }
         persistentFiles.forEach { rightModel.addElement(it) }
 
