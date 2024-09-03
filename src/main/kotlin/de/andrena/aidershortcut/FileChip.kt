@@ -22,7 +22,7 @@ class FileChip(file: File?, isSelected: Boolean, selectionBackground: Color?, se
 
         removeButton = JButton("×")
         removeButton.isOpaque = false
-        removeButton.contentAreaFilled = false
+        removeButton.setContentAreaFilled(false)
         removeButton.border = null
         removeButton.isVisible = false
         add(removeButton)
