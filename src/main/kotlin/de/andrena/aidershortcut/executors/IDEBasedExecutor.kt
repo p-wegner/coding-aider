@@ -9,6 +9,7 @@ import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.RefreshQueue
 import de.andrena.aidershortcut.CommandData
 import de.andrena.aidershortcut.MarkdownDialog
+import de.andrena.aidershortcut.utils.AiderCommandBuilder
 import java.awt.EventQueue.invokeLater
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -29,7 +30,7 @@ class IDEBasedExecutor(
 
         thread {
             try {
-                val commandArgs = buildAiderCommand(commandData, false).split(" ")
+                val commandArgs = AiderCommandBuilder.buildAiderCommand(commandData, false)
                 val processBuilder = ProcessBuilder(commandArgs)
                 processBuilder.redirectErrorStream(true)
 
@@ -82,24 +83,6 @@ class IDEBasedExecutor(
                 refreshFiles(files, markdownDialog, output.toString())
             }
         }
-    }
-
-    private fun buildAiderCommand(commandData: CommandData, isShellMode: Boolean): String {
-        return StringBuilder("aider ${commandData.selectedCommand}").apply {
-            if (commandData.filePaths.isNotEmpty()) {
-                commandData.filePaths.forEach { filePath ->
-                    append(" --file \"$filePath\"") // Prefixing --file before each file path
-                }
-            }
-            if (commandData.useYesFlag) append(" --yes")
-            if (!isShellMode) append(" -m \"${commandData.message}\"")
-            if (commandData.readOnlyFiles.isNotEmpty()) {
-                commandData.readOnlyFiles.forEach { readOnlyFile ->
-                    append(" --read \"$readOnlyFile\"") // Prefixing --read before each read-only file
-                }
-            }
-            if (commandData.additionalArgs.isNotEmpty()) append(" ${commandData.additionalArgs}")
-        }.toString()
     }
 
     private fun refreshFiles(files: Array<VirtualFile>, markdownDialog: MarkdownDialog, output: String) {
