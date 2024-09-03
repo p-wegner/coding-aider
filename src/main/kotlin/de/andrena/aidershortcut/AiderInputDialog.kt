@@ -6,7 +6,7 @@ import javax.swing.*
 import java.awt.*
 import java.io.File
 
-class AiderInputDialog(project: Project, files: List<String>) : DialogWrapper(project) {
+class AiderInputDialog(private val project: Project, files: List<String>) : DialogWrapper(project) {
     private val inputTextArea = JTextArea(5, 30)
     private val yesCheckBox = JCheckBox("Add --yes flag", false)
     private val commandOptions = arrayOf("--mini", "--sonnet", "--4o")
