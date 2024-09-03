@@ -7,11 +7,11 @@ import javax.swing.JButton
 import java.awt.BorderLayout
 import java.awt.event.ActionListener
 
-class MarkdownDialog : JDialog() {
-    private val textArea: JTextArea = JTextArea()
+class MarkdownDialog(private val project: Project, title: String, initialText: String) : JDialog() {
+    private val textArea: JTextArea = JTextArea(initialText)
 
     init {
-        title = "Markdown Dialog"
+        this.title = title
         setSize(400, 300)
         setLocationRelativeTo(null)
         layout = BorderLayout()
@@ -26,5 +26,14 @@ class MarkdownDialog : JDialog() {
 
     fun isCaretVisible(): Boolean {
         return textArea.caret.isVisible
+    }
+
+    fun updateProgress(output: String, message: String) {
+        textArea.text = output
+        title = message
+    }
+
+    fun finish() {
+        dispose()
     }
 }

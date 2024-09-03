@@ -18,10 +18,11 @@ class TerminalExecutor(
     private val files: Array<VirtualFile>
 ) {
     private val LOG = Logger.getInstance(TerminalExecutor::class.java)
+
     fun execute() {
+        val output = StringBuilder()
         val markdownDialog = MarkdownDialog(project, "Aider Command Output", output.toString())
         thread {
-            val output = StringBuilder()
             try {
                 val commandArgs = buildAiderCommand(commandData, false).split(" ")
                 val processBuilder = ProcessBuilder(commandArgs)
@@ -29,13 +30,13 @@ class TerminalExecutor(
 
                 val process = processBuilder.start()
 
-                pollProcessAndReadOutput(process, output, progressDialog)
+                pollProcessAndReadOutput(process, output, markdownDialog)
 
                 if (process.isAlive) {
                     process.destroy()
                     LOG.warn("Aider command timed out after 5 minutes")
                     invokeLater {
-                        progressDialog.updateProgress(
+                        markdownDialog.updateProgress(
                             output.toString(),
                             "Aider command timed out after 5 minutes"
                         )
@@ -45,7 +46,7 @@ class TerminalExecutor(
                     if (exitCode == 0) {
                         LOG.info("Aider command executed successfully")
                         invokeLater {
-                            progressDialog.updateProgress(
+                            markdownDialog.updateProgress(
                                 output.toString(),
                                 "Aider command executed successfully"
                             )
@@ -53,7 +54,7 @@ class TerminalExecutor(
                     } else {
                         LOG.error("Aider command failed with exit code $exitCode")
                         invokeLater {
-                            progressDialog.updateProgress(
+                            markdownDialog.updateProgress(
                                 output.toString(),
                                 "Aider command failed with exit code $exitCode"
                             )
@@ -63,14 +64,14 @@ class TerminalExecutor(
             } catch (e: Exception) {
                 LOG.error("Error executing Aider command", e)
                 invokeLater {
-                    progressDialog.updateProgress(
+                    markdownDialog.updateProgress(
                         "Error executing Aider command: ${e.message}",
                         "Aider Command Error"
                     )
                 }
             } finally {
-                refreshFiles(files, progressDialog, output.toString())
-                progressDialog.finish()
+                refreshFiles(files, markdownDialog, output.toString())
+                markdownDialog.finish()
             }
         }
     }
@@ -85,7 +86,7 @@ class TerminalExecutor(
         }.toString()
     }
 
-    private fun refreshFiles(files: Array<VirtualFile>, progressDialog: ProgressDialog, output: String) {
+    private fun refreshFiles(files: Array<VirtualFile>, markdownDialog: MarkdownDialog, output: String) {
         invokeLater {
             ApplicationManager.getApplication().invokeLater {
                 WriteAction.runAndWait<Throwable> {
@@ -100,7 +101,7 @@ class TerminalExecutor(
     private fun pollProcessAndReadOutput(
         process: Process,
         output: StringBuilder,
-        progressDialog: ProgressDialog
+        markdownDialog: MarkdownDialog
     ) {
         val reader = BufferedReader(InputStreamReader(process.inputStream))
         val startTime = System.currentTimeMillis()
@@ -111,7 +112,7 @@ class TerminalExecutor(
             LOG.info("Aider output: $line")
             val runningTime = (System.currentTimeMillis() - startTime) / 1000
             invokeLater {
-                progressDialog.updateProgress(
+                markdownDialog.updateProgress(
                     output.toString(),
                     "Aider command in progress ($runningTime seconds)"
                 )
