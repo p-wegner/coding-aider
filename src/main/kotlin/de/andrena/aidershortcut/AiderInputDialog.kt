@@ -2,6 +2,7 @@ package de.andrena.aidershortcut
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.ui.components.JBScrollPane
 import javax.swing.*
 import java.awt.*
 
@@ -21,8 +22,7 @@ class AiderInputDialog(private val project: Project, files: List<String>) : Dial
     init {
         title = "Aider Command"
         val persistentFiles = contextHandler.loadPersistentFiles()
-        val nonPersistentFiles = files.filter { it !in persistentFiles }
-        readOnlyFilesView = ReadOnlyFilesView(nonPersistentFiles, persistentFiles)
+        readOnlyFilesView = ReadOnlyFilesView(files, persistentFiles)
         init()
         loadHistory()
     }
@@ -59,7 +59,7 @@ class AiderInputDialog(private val project: Project, files: List<String>) : Dial
         gbc.gridy++
         gbc.weighty = 1.0
         gbc.fill = GridBagConstraints.BOTH
-        panel.add(JScrollPane(inputTextArea), gbc)
+        panel.add(JBScrollPane(inputTextArea), gbc)
         gbc.gridy++
         gbc.weighty = 0.0
         gbc.fill = GridBagConstraints.HORIZONTAL
@@ -80,6 +80,8 @@ class AiderInputDialog(private val project: Project, files: List<String>) : Dial
         gbc.gridy++
         gbc.gridx = 0
         gbc.gridwidth = GridBagConstraints.REMAINDER
+        gbc.weighty = 1.0
+        gbc.fill = GridBagConstraints.BOTH
         panel.add(readOnlyFilesView, gbc)
 
         modeToggle.addActionListener {
