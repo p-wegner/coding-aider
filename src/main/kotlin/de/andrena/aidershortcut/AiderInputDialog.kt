@@ -16,18 +16,14 @@ class AiderInputDialog(private val project: Project, files: List<String>) : Dial
     private val historyComboBox = JComboBox<String>()
     private val historyHandler = AiderHistoryHandler(project.basePath ?: "")
     private val contextHandler = AiderContextHandler(project.basePath ?: "")
-    private lateinit var readOnlyFilesView: ReadOnlyFilesView
+    private val readOnlyFilesView: ReadOnlyFilesView
 
     init {
         title = "Aider Command"
-        init()
-        setupReadOnlyFiles(files)
-        loadHistory()
-    }
-
-    private fun setupReadOnlyFiles(files: List<String>) {
         val persistentFiles = contextHandler.loadPersistentFiles()
         readOnlyFilesView = ReadOnlyFilesView(files, persistentFiles)
+        init()
+        loadHistory()
     }
 
     private fun loadHistory() {
