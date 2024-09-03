@@ -7,6 +7,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.aidershortcut.command.CommandData
+import de.andrena.aidershortcut.command.FileData
 import de.andrena.aidershortcut.executors.IDEBasedExecutor
 import de.andrena.aidershortcut.executors.ShellExecutor
 import de.andrena.aidershortcut.inputdialog.AiderInputDialog
@@ -21,7 +22,7 @@ class AiderAction : AnAction() {
         if (project != null && !files.isNullOrEmpty()) {
             val contextHandler = AiderContextHandler(project.basePath ?: "")
             val persistentFiles = contextHandler.loadPersistentFiles()
-            val allFiles = files.map { it.path } + persistentFiles
+            val allFiles = files.map { FileData(it.path, false) } + persistentFiles.map { FileData(it, true) }
 
             val dialog = AiderInputDialog(project, allFiles)
             if (dialog.showAndGet()) {
@@ -29,21 +30,20 @@ class AiderAction : AnAction() {
                 if (commandData.isShellMode) {
                     ShellExecutor(project, commandData).execute()
                 } else {
-                    IDEBasedExecutor(project, commandData, dialog.getWriteableFiles()).execute() // Pass writeableFiles as strings
+                    IDEBasedExecutor(project, commandData).execute()
                 }
                 dialog.addToHistory(commandData.message)
             }
         }
     }
 
-    private fun collectCommandData(dialog: AiderInputDialog, allFiles: List<String>): CommandData {
+    private fun collectCommandData(dialog: AiderInputDialog, allFiles: List<FileData>): CommandData {
         return CommandData(
             message = dialog.getInputText(),
             useYesFlag = dialog.isYesFlagChecked(),
             selectedCommand = dialog.getSelectedCommand(),
             additionalArgs = dialog.getAdditionalArgs(),
-            writeableFiles = dialog.getWriteableFiles(), // Get writeable files from dialog
-            readOnlyFiles = dialog.getReadOnlyFiles(),
+            files = dialog.getSelectedFiles(),
             isShellMode = dialog.isShellMode()
         )
     }

@@ -13,7 +13,7 @@ import java.awt.GridBagLayout
 import java.awt.Insets
 import javax.swing.*
 
-class AiderInputDialog(private val project: Project, files: List<String>) : DialogWrapper(project) {
+class AiderInputDialog(private val project: Project, files: List<FileData>) : DialogWrapper(project) {
     private val inputTextArea = JTextArea(5, 30)
     private val yesCheckBox = JCheckBox("Add --yes flag", false)
     private val commandOptions = arrayOf("--mini", "--sonnet", "--4o", "--deepseek")
@@ -149,8 +149,7 @@ class AiderInputDialog(private val project: Project, files: List<String>) : Dial
     fun isYesFlagChecked(): Boolean = yesCheckBox.isSelected
     fun getSelectedCommand(): String = commandComboBox.selectedItem as String
     fun getAdditionalArgs(): String = additionalArgsField.text
-    fun getReadOnlyFiles(): List<String> = aiderContextView.getPersistentFiles()
-    fun getWriteableFiles(): List<String> = aiderContextView.getSelectedFiles().map { it.absolutePath } // New method to get writable files
+    fun getSelectedFiles(): List<FileData> = aiderContextView.getSelectedFiles()
     fun isShellMode(): Boolean = modeToggle.isSelected
 
     fun addToHistory(command: String) {

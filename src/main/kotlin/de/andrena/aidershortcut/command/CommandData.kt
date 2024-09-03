@@ -5,7 +5,12 @@ data class CommandData(
     val useYesFlag: Boolean,
     val selectedCommand: String,
     val additionalArgs: String,
-    val writeableFiles: List<String>, // Renamed from filePaths to writeableFiles
-    val readOnlyFiles: List<String>,
+    val files: List<FileData>,
     val isShellMode: Boolean
+)
+package de.andrena.aidershortcut.command
+
+data class FileData(
+    val filePath: String,
+    val isReadOnly: Boolean
 )
