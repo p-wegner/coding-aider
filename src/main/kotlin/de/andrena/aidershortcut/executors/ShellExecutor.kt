@@ -15,7 +15,7 @@ class ShellExecutor(private val project: Project, private val commandData: Comma
 
     private fun buildAiderCommand(commandData: CommandData, isShellMode: Boolean): String {
         return StringBuilder("aider ${commandData.selectedCommand}").apply {
-            if (commandData.filePaths.isNotBlank()) append(" --file ${commandData.filePaths}")
+            if (commandData.filePaths.isNotEmpty()) append(" --file ${commandData.filePaths.joinToString(" ")}") // Updated to join the list
             if (commandData.useYesFlag) append(" --yes")
             if (!isShellMode) {
                 append(" -m \"${commandData.message}\"")
@@ -26,5 +26,3 @@ class ShellExecutor(private val project: Project, private val commandData: Comma
         }.toString()
     }
 }
-
-

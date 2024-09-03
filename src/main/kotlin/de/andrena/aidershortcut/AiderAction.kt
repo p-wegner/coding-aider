@@ -41,7 +41,7 @@ class AiderAction : AnAction() {
             useYesFlag = dialog.isYesFlagChecked(),
             selectedCommand = dialog.getSelectedCommand(),
             additionalArgs = dialog.getAdditionalArgs(),
-            filePaths = allFiles.joinToString(" "),
+            filePaths = allFiles, // Changed to pass the list directly
             readOnlyFiles = dialog.getReadOnlyFiles(),
             isShellMode = dialog.isShellMode()
         )
@@ -53,5 +53,3 @@ class AiderAction : AnAction() {
         e.presentation.isEnabledAndVisible = project != null && !files.isNullOrEmpty()
     }
 }
-
-
