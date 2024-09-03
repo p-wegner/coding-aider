@@ -2,6 +2,7 @@ package de.andrena.aidershortcut
 
 import com.intellij.openapi.project.Project
 import java.awt.BorderLayout
+import java.awt.EventQueue.invokeLater
 import javax.swing.JButton
 import javax.swing.JDialog
 import javax.swing.JScrollPane
