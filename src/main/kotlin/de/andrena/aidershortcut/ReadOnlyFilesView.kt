@@ -2,11 +2,13 @@ package de.andrena.aidershortcut
 
 import com.intellij.ui.CheckboxTree
 import com.intellij.ui.CheckedTreeNode
+import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.components.JBScrollPane
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.io.File
 import javax.swing.JPanel
+import javax.swing.JTree
 import javax.swing.tree.DefaultTreeModel
 
 class ReadOnlyFilesView(private val allFiles: List<String>, private val persistentFiles: List<String>) : JPanel(BorderLayout()) {
@@ -15,7 +17,25 @@ class ReadOnlyFilesView(private val allFiles: List<String>, private val persiste
 
     init {
         val model = DefaultTreeModel(rootNode)
-        tree = CheckboxTree(model)
+        tree = CheckboxTree(
+            object : CheckboxTree.CheckboxTreeCellRenderer() {
+                override fun customizeRenderer(
+                    tree: JTree,
+                    value: Any?,
+                    selected: Boolean,
+                    expanded: Boolean,
+                    leaf: Boolean,
+                    row: Int,
+                    hasFocus: Boolean
+                ) {
+                    if (value is CheckedTreeNode && value.userObject is File) {
+                        val file = value.userObject as File
+                        textRenderer.append(file.name, SimpleTextAttributes.REGULAR_ATTRIBUTES)
+                    }
+                }
+            },
+            rootNode
+        )
 
         updateTree()
 
