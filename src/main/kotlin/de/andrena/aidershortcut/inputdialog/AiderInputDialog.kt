@@ -1,6 +1,7 @@
 package de.andrena.aidershortcut.inputdialog
 
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
@@ -102,7 +103,7 @@ class AiderInputDialog(private val project: Project, files: List<String>) : Dial
             })
         }
 
-        val toolbar = ActionToolbar.createToolbar("ReadOnlyFilesToolbar", actionGroup, true)
+        val toolbar = ActionManager.getInstance().createActionToolbar("ReadOnlyFilesToolbar", actionGroup, true)
         val readOnlyPanel = JPanel(BorderLayout()).apply {
             add(toolbar.component, BorderLayout.NORTH)
             add(readOnlyFilesView, BorderLayout.CENTER)
