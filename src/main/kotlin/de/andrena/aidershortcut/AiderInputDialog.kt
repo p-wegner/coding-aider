@@ -131,6 +131,6 @@ class AiderInputDialog(project: Project, files: List<String>) : DialogWrapper(pr
     fun isShellMode(): Boolean = modeToggle.isSelected
 
     fun addToHistory(command: String) {
-        historyHandler.addToHistory(command)
+        historyHandler.addToHistory(command.removePrefix("+"))
     }
 }
