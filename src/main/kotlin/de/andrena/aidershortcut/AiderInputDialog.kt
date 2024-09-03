@@ -54,31 +54,30 @@ class AiderInputDialog(private val project: Project, files: List<String>) : Dial
     override fun createCenterPanel(): JComponent {
         val panel = JPanel(GridBagLayout())
         val gbc = GridBagConstraints().apply {
-            fill = GridBagConstraints.BOTH
+            fill = GridBagConstraints.HORIZONTAL
             insets = Insets(5, 5, 5, 5)
             weightx = 1.0
             weighty = 0.0
+            gridx = 0
+            gridy = 0
+            gridwidth = GridBagConstraints.REMAINDER
         }
 
         // Mode Toggle
-        gbc.gridx = 0
-        gbc.gridy = 0
-        gbc.gridwidth = 2
         panel.add(modeToggle, gbc)
 
         // History Combo Box
         gbc.gridy++
-        gbc.gridwidth = 2
         panel.add(historyComboBox, gbc)
+
+        // Message Label
+        gbc.gridy++
+        panel.add(messageLabel, gbc)
 
         // Input Text Area
         gbc.gridy++
         gbc.weighty = 1.0
-        panel.add(messageLabel, gbc)
-
-        gbc.gridy++
-        gbc.weighty = 1.0 // Allow the text area to take more vertical space
-        gbc.fill = GridBagConstraints.BOTH // Allow the text area to fill the available space
+        gbc.fill = GridBagConstraints.BOTH
         panel.add(JScrollPane(inputTextArea), gbc)
 
         // Yes Flag Checkbox
@@ -91,26 +90,27 @@ class AiderInputDialog(private val project: Project, files: List<String>) : Dial
         gbc.gridy++
         gbc.gridwidth = 1
         panel.add(JLabel("Select command:"), gbc)
-
         gbc.gridx = 1
+        gbc.gridwidth = GridBagConstraints.REMAINDER
         panel.add(commandComboBox, gbc)
 
         // Additional Args Field
         gbc.gridy++
         gbc.gridx = 0
+        gbc.gridwidth = 1
         panel.add(JLabel("Additional arguments:"), gbc)
-
         gbc.gridx = 1
+        gbc.gridwidth = GridBagConstraints.REMAINDER
         panel.add(additionalArgsField, gbc)
 
         // Read-only Files
         gbc.gridy++
         gbc.gridx = 0
-        gbc.gridwidth = 2
+        gbc.gridwidth = GridBagConstraints.REMAINDER
         panel.add(JLabel("Select Read-only files:"), gbc)
 
         gbc.gridy++
-        gbc.weighty = 1.0
+        gbc.weighty = 0.5
         gbc.fill = GridBagConstraints.BOTH
         panel.add(JScrollPane(readOnlyFilesPanel), gbc)
 
