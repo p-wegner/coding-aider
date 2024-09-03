@@ -69,8 +69,9 @@ class AiderContextView(
     private fun updateTree() {
         rootNode.removeAllChildren()
 
-        (allFiles + persistentFiles).distinct().forEach { filePath ->
-            val file = File(filePath)
+        val uniqueFiles = (allFiles + persistentFiles).distinct().map { File(it) }
+        
+        uniqueFiles.forEach { file ->
             val node = DefaultMutableTreeNode(file)
             rootNode.add(node)
         }
