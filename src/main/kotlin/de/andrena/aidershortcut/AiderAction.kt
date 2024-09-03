@@ -6,7 +6,6 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileManager
 import de.andrena.aidershortcut.command.CommandData
 import de.andrena.aidershortcut.executors.IDEBasedExecutor
 import de.andrena.aidershortcut.executors.ShellExecutor
@@ -30,12 +29,7 @@ class AiderAction : AnAction() {
                 if (commandData.isShellMode) {
                     ShellExecutor(project, commandData).execute()
                 } else {
-                    IDEBasedExecutor(
-                        project,
-                        commandData,
-                        dialog.getWriteableFiles().map { VirtualFileManager.getInstance().findFileByUrl(it) }
-                            .toTypedArray()
-                    ).execute() // Pass writeableFiles as VirtualFile array
+                    IDEBasedExecutor(project, commandData, dialog.getWriteableFiles()).execute() // Pass writeableFiles as strings
                 }
                 dialog.addToHistory(commandData.message)
             }

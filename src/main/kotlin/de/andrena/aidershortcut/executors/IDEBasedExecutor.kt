@@ -18,7 +18,7 @@ import kotlin.concurrent.thread
 class IDEBasedExecutor(
     private val project: Project,
     private val commandData: CommandData,
-    private val files: Array<VirtualFile>
+    private val filePaths: List<String> // Change to List<String>
 ) {
     private val LOG = Logger.getInstance(IDEBasedExecutor::class.java)
 
@@ -80,7 +80,7 @@ class IDEBasedExecutor(
                     )
                 }
             } finally {
-                refreshFiles(files, markdownDialog, output.toString())
+                refreshFiles(filePaths.mapNotNull { VirtualFileManager.getInstance().findFileByUrl(it) }.toTypedArray(), markdownDialog, output.toString())
             }
         }
     }
