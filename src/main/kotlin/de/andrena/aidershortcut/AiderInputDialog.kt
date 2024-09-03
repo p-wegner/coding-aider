@@ -54,8 +54,10 @@ class AiderInputDialog(private val project: Project, files: List<String>) : Dial
     override fun createCenterPanel(): JComponent {
         val panel = JPanel(GridBagLayout())
         val gbc = GridBagConstraints().apply {
-            fill = GridBagConstraints.HORIZONTAL
+            fill = GridBagConstraints.BOTH
             insets = Insets(5, 5, 5, 5)
+            weightx = 1.0
+            weighty = 0.0
         }
 
         // Mode Toggle
@@ -71,11 +73,10 @@ class AiderInputDialog(private val project: Project, files: List<String>) : Dial
 
         // Input Text Area
         gbc.gridy++
+        gbc.weighty = 1.0
         panel.add(messageLabel, gbc)
 
         gbc.gridy++
-        gbc.weighty = 1.0
-        gbc.fill = GridBagConstraints.BOTH
         panel.add(JScrollPane(inputTextArea), gbc)
 
         // Yes Flag Checkbox
