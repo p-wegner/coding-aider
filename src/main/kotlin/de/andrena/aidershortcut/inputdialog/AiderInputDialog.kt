@@ -1,5 +1,8 @@
 package de.andrena.aidershortcut.inputdialog
 
+import com.intellij.icons.AllIcons
+import com.intellij.openapi.actionSystem.ActionToolbar
+import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.components.JBScrollPane
@@ -86,7 +89,26 @@ class AiderInputDialog(private val project: Project, files: List<String>) : Dial
         gbc.gridwidth = GridBagConstraints.REMAINDER
         gbc.weighty = 1.0
         gbc.fill = GridBagConstraints.BOTH
-        panel.add(readOnlyFilesView, gbc)
+
+        val actionGroup = DefaultActionGroup().apply {
+            add(object : com.intellij.openapi.actionSystem.AnAction(
+                "Toggle Read-Only Mode",
+                "Toggle Read-Only Mode for selected file",
+                AllIcons.General.ReadOnlyAttribute
+            ) {
+                override fun actionPerformed(e: com.intellij.openapi.actionSystem.AnActionEvent) {
+                    readOnlyFilesView.toggleReadOnlyMode()
+                }
+            })
+        }
+
+        val toolbar = ActionToolbar.createToolbar("ReadOnlyFilesToolbar", actionGroup, true)
+        val readOnlyPanel = JPanel(BorderLayout()).apply {
+            add(toolbar.component, BorderLayout.NORTH)
+            add(readOnlyFilesView, BorderLayout.CENTER)
+        }
+
+        panel.add(readOnlyPanel, gbc)
 
         modeToggle.addActionListener {
             val isShellMode = modeToggle.isSelected

@@ -1,52 +1,42 @@
 package de.andrena.aidershortcut.inputdialog
 
-import com.intellij.ui.CheckboxTree
-import com.intellij.ui.CheckedTreeNode
-import com.intellij.ui.SimpleTextAttributes
+import com.intellij.icons.AllIcons
 import com.intellij.ui.components.JBScrollPane
+import com.intellij.ui.treeStructure.Tree
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.io.File
-import javax.swing.JButton
 import javax.swing.JPanel
-import javax.swing.JTree
+import javax.swing.tree.DefaultMutableTreeNode
+import javax.swing.tree.DefaultTreeCellRenderer
 import javax.swing.tree.DefaultTreeModel
 
-class ReadOnlyFilesView(private val allFiles: List<String>, private val persistentFiles: List<String>) :
+class ReadOnlyFilesView(private val allFiles: List<String>, private var persistentFiles: List<String>) :
     JPanel(BorderLayout()) {
-    private val rootNode = CheckedTreeNode("Files")
-    private val tree: CheckboxTree = CheckboxTree(
-        object : CheckboxTree.CheckboxTreeCellRenderer() {
-            override fun customizeRenderer(
-                tree: JTree,
-                value: Any?,
-                selected: Boolean,
-                expanded: Boolean,
-                leaf: Boolean,
-                row: Int,
-                hasFocus: Boolean
-            ) {
-                if (value is CheckedTreeNode && value.userObject is File) {
-                    val file = value.userObject as File
-                    textRenderer.append(file.name, SimpleTextAttributes.REGULAR_ATTRIBUTES)
-                }
-            }
-        },
-        rootNode
-    )
-
-    private val toggleReadOnlyButton = JButton("Toggle Read-Only Mode").apply {
-        addActionListener { toggleReadOnlyMode() }
-    }
+    private val rootNode = DefaultMutableTreeNode("Files")
+    private val tree: Tree = Tree(rootNode)
 
     init {
         updateTree()
 
-        val actionPanel = JPanel().apply {
-            add(toggleReadOnlyButton)
+        tree.cellRenderer = object : DefaultTreeCellRenderer() {
+            override fun getTreeCellRendererComponent(
+                tree: javax.swing.JTree,
+                value: Any?,
+                sel: Boolean,
+                expanded: Boolean,
+                leaf: Boolean,
+                row: Int,
+                hasFocus: Boolean
+            ) = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus).apply {
+                if (value is DefaultMutableTreeNode && value.userObject is File) {
+                    val file = value.userObject as File
+                    text = file.name
+                    icon = if (file.absolutePath in persistentFiles) AllIcons.General.ReadOnlyAttribute else AllIcons.General.InspectionsOK
+                }
+            }
         }
 
-        add(actionPanel, BorderLayout.NORTH)
         add(JBScrollPane(tree), BorderLayout.CENTER)
         preferredSize = Dimension(400, 300)
     }
@@ -56,26 +46,25 @@ class ReadOnlyFilesView(private val allFiles: List<String>, private val persiste
 
         (allFiles + persistentFiles).distinct().forEach { filePath ->
             val file = File(filePath)
-            val node = CheckedTreeNode(file)
-            node.isChecked = filePath in persistentFiles
+            val node = DefaultMutableTreeNode(file)
             rootNode.add(node)
         }
 
         (tree.model as DefaultTreeModel).reload()
     }
 
-    private fun toggleReadOnlyMode() {
-        // Implement the logic to toggle read-only mode
+    fun toggleReadOnlyMode() {
+        val selectedNode = tree.lastSelectedPathComponent as? DefaultMutableTreeNode
+        if (selectedNode != null && selectedNode.userObject is File) {
+            val file = selectedNode.userObject as File
+            persistentFiles = if (file.absolutePath in persistentFiles) {
+                persistentFiles - file.absolutePath
+            } else {
+                persistentFiles + file.absolutePath
+            }
+            updateTree()
+        }
     }
 
-    fun getPersistentFiles(): List<String> {
-        val persistentFiles = mutableListOf<String>()
-        for (i in 0 until rootNode.childCount) {
-            val child = rootNode.getChildAt(i) as CheckedTreeNode
-            if (child.isChecked) {
-                persistentFiles.add((child.userObject as File).absolutePath)
-            }
-        }
-        return persistentFiles
-    }
+    fun getPersistentFiles(): List<String> = persistentFiles
 }
