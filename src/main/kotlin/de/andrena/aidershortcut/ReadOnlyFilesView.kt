@@ -36,19 +36,13 @@ class ReadOnlyFilesView(private val allFiles: List<String>, private val persiste
 
         addButton.addActionListener {
             leftList.selectedValuesList.forEach { file ->
-                if (!rightModel.contains(file)) {
-                    leftModel.removeElement(file)
-                    rightModel.addElement(file)
-                }
+                moveFileToRightList(file)
             }
         }
 
         removeButton.addActionListener {
             rightList.selectedValuesList.forEach { file ->
-                rightModel.removeElement(file)
-                if (!leftModel.contains(file)) {
-                    leftModel.addElement(file)
-                }
+                moveFileToLeftList(file)
             }
         }
 
@@ -81,9 +75,10 @@ class ReadOnlyFilesView(private val allFiles: List<String>, private val persiste
             component.setRemoveAction {
                 val file = component.getFile()
                 if (file != null) {
-                    model.removeElement(file)
-                    if (model == rightModel && !leftModel.contains(file)) {
-                        leftModel.addElement(file)
+                    if (model == rightModel) {
+                        moveFileToLeftList(file)
+                    } else {
+                        moveFileToRightList(file)
                     }
                 }
             }
@@ -95,10 +90,33 @@ class ReadOnlyFilesView(private val allFiles: List<String>, private val persiste
         leftModel.clear()
         rightModel.clear()
 
-        allFiles.forEach { file ->
-            leftModel.addElement(File(file))
+        val persistentSet = persistentFiles.map { File(it) }.toSet()
+        
+        // Add persistent files to the right list
+        persistentSet.forEach { rightModel.addElement(it) }
+
+        // Add non-persistent files to the left list
+        allFiles.map { File(it) }
+            .filter { it !in persistentSet }
+            .forEach { leftModel.addElement(it) }
+    }
+
+    private fun moveFileToRightList(file: File) {
+        if (leftModel.contains(file)) {
+            leftModel.removeElement(file)
         }
-        persistentFiles.forEach { rightModel.addElement(File(it)) }
+        if (!rightModel.contains(file)) {
+            rightModel.addElement(file)
+        }
+    }
+
+    private fun moveFileToLeftList(file: File) {
+        if (rightModel.contains(file)) {
+            rightModel.removeElement(file)
+        }
+        if (!leftModel.contains(file)) {
+            leftModel.addElement(file)
+        }
     }
 
     fun getPersistentFiles(): List<String> = rightModel.elements().toList().map { it.absolutePath }
