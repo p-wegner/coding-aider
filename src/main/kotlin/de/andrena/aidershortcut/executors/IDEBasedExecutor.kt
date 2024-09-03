@@ -86,10 +86,14 @@ class IDEBasedExecutor(
 
     private fun buildAiderCommand(commandData: CommandData, isShellMode: Boolean): String {
         return StringBuilder("aider ${commandData.selectedCommand}").apply {
-            if (commandData.filePaths.isNotEmpty()) append(" --file ${commandData.filePaths}")
+            if (commandData.filePaths.isNotEmpty()) {
+                append(" --file ${commandData.filePaths.joinToString(" ") { "\"$it\"" }}") // Quoting file paths
+            }
             if (commandData.useYesFlag) append(" --yes")
             if (!isShellMode) append(" -m \"${commandData.message}\"")
-            if (commandData.readOnlyFiles.isNotEmpty()) append(" --read ${commandData.readOnlyFiles.joinToString(" ")}")
+            if (commandData.readOnlyFiles.isNotEmpty()) {
+                append(" --read ${commandData.readOnlyFiles.joinToString(" ") { "\"$it\"" }}") // Quoting read-only files
+            }
             if (commandData.additionalArgs.isNotEmpty()) append(" ${commandData.additionalArgs}")
         }.toString()
     }

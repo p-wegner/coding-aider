@@ -15,13 +15,17 @@ class ShellExecutor(private val project: Project, private val commandData: Comma
 
     private fun buildAiderCommand(commandData: CommandData, isShellMode: Boolean): String {
         return StringBuilder("aider ${commandData.selectedCommand}").apply {
-            if (commandData.filePaths.isNotEmpty()) append(" --file ${commandData.filePaths.joinToString(" ")}") // Updated to join the list
+            if (commandData.filePaths.isNotEmpty()) {
+                append(" --file ${commandData.filePaths.joinToString(" ") { "\"$it\"" }}") // Quoting file paths
+            }
             if (commandData.useYesFlag) append(" --yes")
             if (!isShellMode) {
                 append(" -m \"${commandData.message}\"")
                 append(" --no-suggest-shell-commands")
             }
-            if (commandData.readOnlyFiles.isNotEmpty()) append(" --read ${commandData.readOnlyFiles.joinToString(" ")}")
+            if (commandData.readOnlyFiles.isNotEmpty()) {
+                append(" --read ${commandData.readOnlyFiles.joinToString(" ") { "\"$it\"" }}") // Quoting read-only files
+            }
             if (commandData.additionalArgs.isNotEmpty()) append(" ${commandData.additionalArgs}")
         }.toString()
     }
