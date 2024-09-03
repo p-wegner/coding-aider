@@ -22,11 +22,9 @@ class AiderContextView(
     private val project: Project,
     private val allFiles: List<FileData>,
     private var persistentFiles: List<FileData>
-) :
-    JPanel(BorderLayout()) {
+) : JPanel(BorderLayout()) {
     private val rootNode = DefaultMutableTreeNode("Files")
     private val tree: Tree = Tree(rootNode)
-    private val readOnlyFiles: MutableSet<String> = mutableSetOf()
 
     init {
         updateTree()
@@ -41,16 +39,15 @@ class AiderContextView(
                 row: Int,
                 hasFocus: Boolean
             ) = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus).apply {
-                if (value is DefaultMutableTreeNode && value.userObject is File) {
-                    val file = value.userObject as File
-                    text = file.name
-                    icon = if (file.absolutePath in readOnlyFiles) {
+                if (value is DefaultMutableTreeNode && value.userObject is FileData) {
+                    val fileData = value.userObject as FileData
+                    text = File(fileData.filePath).name
+                    icon = if (fileData.isReadOnly) {
                         IconManager.getInstance().createRowIcon(AllIcons.Nodes.DataSchema)
                     } else {
                         AllIcons.Actions.Edit
                     }
-                    val isReadOnly = file.absolutePath in readOnlyFiles
-                    val tooltipText = file.absolutePath + (if (isReadOnly) " (readonly)" else "")
+                    val tooltipText = fileData.filePath + (if (fileData.isReadOnly) " (readonly)" else "")
                     toolTipText = tooltipText
                 }
             }
@@ -80,11 +77,11 @@ class AiderContextView(
 
         rootNode.removeAllChildren()
 
-        val uniqueFiles = (allFiles + persistentFiles).distinct().map { File(it.filePath) }
+        val uniqueFiles = (allFiles + persistentFiles).distinctBy { it.filePath }
 
-        uniqueFiles.forEach { file ->
-            if (!rootNode.children().asSequence().any { (it as DefaultMutableTreeNode).userObject == file }) {
-                val node = DefaultMutableTreeNode(file)
+        uniqueFiles.forEach { fileData ->
+            if (!rootNode.children().asSequence().any { (it as DefaultMutableTreeNode).userObject == fileData }) {
+                val node = DefaultMutableTreeNode(fileData)
                 rootNode.add(node)
             }
         }
@@ -115,17 +112,13 @@ class AiderContextView(
         val selectedNodes = selectedPaths.mapNotNull { it.lastPathComponent as? DefaultMutableTreeNode }
 
         selectedNodes.forEach { node ->
-            if (node.userObject is File) {
-                val file = node.userObject as File
-                if (file.absolutePath in readOnlyFiles) {
-                    readOnlyFiles.remove(file.absolutePath)
-                } else {
-                    readOnlyFiles.add(file.absolutePath)
-                }
+            if (node.userObject is FileData) {
+                val fileData = node.userObject as FileData
+                node.userObject = fileData.copy(isReadOnly = !fileData.isReadOnly)
             }
         }
 
-        updateTree()
+        (tree.model as DefaultTreeModel).reload()
 
         val selectionModel = tree.selectionModel
         selectedPaths.forEach { path ->
@@ -151,9 +144,9 @@ class AiderContextView(
         }
     }
 
-    fun getSelectedFiles(): List<File> {
+    fun getSelectedFiles(): List<FileData> {
         return tree.selectionPaths?.mapNotNull { path ->
-            (path.lastPathComponent as? DefaultMutableTreeNode)?.userObject as? File
+            (path.lastPathComponent as? DefaultMutableTreeNode)?.userObject as? FileData
         } ?: emptyList()
     }
 }
