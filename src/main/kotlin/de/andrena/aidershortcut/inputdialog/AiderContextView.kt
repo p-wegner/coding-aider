@@ -7,6 +7,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.ui.IconManager
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.treeStructure.Tree
+import de.andrena.aidershortcut.command.FileData
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.event.MouseAdapter
@@ -19,8 +20,8 @@ import javax.swing.tree.DefaultTreeModel
 
 class AiderContextView(
     private val project: Project,
-    private val allFiles: List<String>,
-    private var persistentFiles: List<String>
+    private val allFiles: List<FileData>,
+    private var persistentFiles: List<FileData>
 ) :
     JPanel(BorderLayout()) {
     private val rootNode = DefaultMutableTreeNode("Files")
@@ -76,10 +77,10 @@ class AiderContextView(
 
     private fun updateTree() {
         val expandedPaths = getExpandedPaths()
-        
+
         rootNode.removeAllChildren()
 
-        val uniqueFiles = (allFiles + persistentFiles).distinct().map { File(it) }
+        val uniqueFiles = (allFiles + persistentFiles).distinct().map { File(it.filePath) }
 
         uniqueFiles.forEach { file ->
             if (!rootNode.children().asSequence().any { (it as DefaultMutableTreeNode).userObject == file }) {
@@ -89,7 +90,7 @@ class AiderContextView(
         }
 
         (tree.model as DefaultTreeModel).reload()
-        
+
         expandedPaths.forEach { path ->
             tree.expandPath(path)
         }
@@ -112,7 +113,7 @@ class AiderContextView(
     fun toggleReadOnlyMode() {
         val selectedPaths = tree.selectionPaths ?: return
         val selectedNodes = selectedPaths.mapNotNull { it.lastPathComponent as? DefaultMutableTreeNode }
-        
+
         selectedNodes.forEach { node ->
             if (node.userObject is File) {
                 val file = node.userObject as File
@@ -123,9 +124,9 @@ class AiderContextView(
                 }
             }
         }
-        
+
         updateTree()
-        
+
         val selectionModel = tree.selectionModel
         selectedPaths.forEach { path ->
             tree.expandPath(path)
