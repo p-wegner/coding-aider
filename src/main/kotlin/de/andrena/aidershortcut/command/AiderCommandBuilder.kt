@@ -5,7 +5,7 @@ object AiderCommandBuilder {
         return buildList {
             add("aider")
             add(commandData.selectedCommand)
-            commandData.filePaths.forEach { filePath ->
+            commandData.writeableFiles.forEach { filePath -> // Updated to use writeableFiles
                 add("--file")
                 add(filePath)
             }
