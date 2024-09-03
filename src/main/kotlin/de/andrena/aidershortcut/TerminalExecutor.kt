@@ -21,7 +21,9 @@ class TerminalExecutor(
 
     fun execute() {
         val output = StringBuilder()
-        val markdownDialog = MarkdownDialog(project, "Aider Command Output", output.toString())
+        val markdownDialog = MarkdownDialog(project, "Aider Command Output", output.toString()).apply {
+            show()
+        }
         thread {
             try {
                 val commandArgs = buildAiderCommand(commandData, false).split(" ")
