@@ -19,7 +19,7 @@ class TerminalExecutor(
 ) {
     private val LOG = Logger.getInstance(TerminalExecutor::class.java)
     fun execute() {
-        val progressDialog = ProgressDialog(project, "Aider Command in Progress")
+        val markdownDialog = MarkdownDialog(project, "Aider Command Output", output.toString())
         thread {
             val output = StringBuilder()
             try {
