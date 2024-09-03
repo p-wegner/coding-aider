@@ -35,16 +35,20 @@ class ReadOnlyFilesView(private val allFiles: List<String>, private val persiste
         val removeButton = JButton("<<")
 
         addButton.addActionListener {
-            leftList.selectedValuesList.forEach {
-                leftModel.removeElement(it)
-                rightModel.addElement(it)
+            leftList.selectedValuesList.forEach { file ->
+                if (!rightModel.contains(file)) {
+                    leftModel.removeElement(file)
+                    rightModel.addElement(file)
+                }
             }
         }
 
         removeButton.addActionListener {
-            rightList.selectedValuesList.forEach {
-                rightModel.removeElement(it)
-                leftModel.addElement(it)
+            rightList.selectedValuesList.forEach { file ->
+                rightModel.removeElement(file)
+                if (!leftModel.contains(file)) {
+                    leftModel.addElement(file)
+                }
             }
         }
 
@@ -56,14 +60,35 @@ class ReadOnlyFilesView(private val allFiles: List<String>, private val persiste
         add(rightPanel, BorderLayout.EAST)
 
         preferredSize = Dimension(600, 300)
+
+        setupRemoveButtons()
+    }
+
+    private fun setupRemoveButtons() {
+        leftList.addListSelectionListener {
+            updateRemoveButtons(leftList)
+        }
+        rightList.addListSelectionListener {
+            updateRemoveButtons(rightList)
+        }
+    }
+
+    private fun updateRemoveButtons(list: JList<File>) {
+        val selectedIndices = list.selectedIndices
+        for (i in 0 until list.model.size) {
+            val component = list.getCellRenderer().getListCellRendererComponent(list, list.model.getElementAt(i), i, i in selectedIndices, false) as FileChip
+            component.setRemoveButtonVisible(i in selectedIndices)
+        }
+        list.repaint()
     }
 
     private fun updateLists() {
         leftModel.clear()
         rightModel.clear()
 
+        val persistentSet = persistentFiles.toSet()
         allFiles.forEach { file ->
-            if (file !in persistentFiles) {
+            if (file !in persistentSet) {
                 leftModel.addElement(File(file))
             }
         }
