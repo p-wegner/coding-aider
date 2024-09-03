@@ -1,6 +1,7 @@
 package de.andrena.aidershortcut.inputdialog
 
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.treeStructure.Tree
 import java.awt.BorderLayout
@@ -11,7 +12,11 @@ import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeCellRenderer
 import javax.swing.tree.DefaultTreeModel
 
-class AiderContextView(private val project: Project, private val allFiles: List<String>, private var persistentFiles: List<String>) :
+class AiderContextView(
+    private val project: Project,
+    private val allFiles: List<String>,
+    private var persistentFiles: List<String>
+) :
     JPanel(BorderLayout()) {
     private val rootNode = DefaultMutableTreeNode("Files")
     private val tree: Tree = Tree(rootNode)
@@ -32,7 +37,8 @@ class AiderContextView(private val project: Project, private val allFiles: List<
                 if (value is DefaultMutableTreeNode && value.userObject is File) {
                     val file = value.userObject as File
                     text = file.name
-                    icon = if (file.absolutePath in persistentFiles) AllIcons.Actions.Edit else AllIcons.General.InspectionsOK
+                    icon =
+                        if (file.absolutePath in persistentFiles) AllIcons.Actions.Edit else AllIcons.General.InspectionsOK
                 }
             }
         }
