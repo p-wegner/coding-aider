@@ -20,6 +20,8 @@ class ReadOnlyFilesView(private val allFiles: List<String>, private val persiste
         rightList.model = rightModel
         leftList.cellRenderer = FileChipRenderer(readOnlyFiles)
         rightList.cellRenderer = FileChipRenderer(readOnlyFiles)
+        leftList.selectionMode = ListSelectionModel.MULTIPLE_INTERVAL_SELECTION
+        rightList.selectionMode = ListSelectionModel.MULTIPLE_INTERVAL_SELECTION
 
         updateLists()
 
@@ -31,10 +33,22 @@ class ReadOnlyFilesView(private val allFiles: List<String>, private val persiste
         rightPanel.add(JLabel("Persistent Files:"), BorderLayout.NORTH)
         rightPanel.add(JScrollPane(rightList), BorderLayout.CENTER)
 
-        val buttonPanel = JPanel(GridLayout(3, 1))
+        val buttonPanel = JPanel(GridBagLayout())
         val addButton = JButton(">>")
         val removeButton = JButton("<<")
         val toggleReadOnlyButton = JButton("Toggle Read-Only")
+
+        val gbc = GridBagConstraints()
+        gbc.gridx = 0
+        gbc.gridy = 0
+        gbc.insets = Insets(5, 5, 5, 5)
+        buttonPanel.add(addButton, gbc)
+
+        gbc.gridy = 1
+        buttonPanel.add(removeButton, gbc)
+
+        gbc.gridy = 2
+        buttonPanel.add(toggleReadOnlyButton, gbc)
 
         addButton.addActionListener {
             leftList.selectedValuesList.forEach { file ->
@@ -57,15 +71,27 @@ class ReadOnlyFilesView(private val allFiles: List<String>, private val persiste
             rightList.repaint()
         }
 
-        buttonPanel.add(addButton)
-        buttonPanel.add(removeButton)
-        buttonPanel.add(toggleReadOnlyButton)
+        val mainPanel = JPanel(GridBagLayout())
+        gbc.gridx = 0
+        gbc.gridy = 0
+        gbc.weightx = 1.0
+        gbc.weighty = 1.0
+        gbc.fill = GridBagConstraints.BOTH
+        mainPanel.add(leftPanel, gbc)
 
-        add(leftPanel, BorderLayout.WEST)
-        add(buttonPanel, BorderLayout.CENTER)
-        add(rightPanel, BorderLayout.EAST)
+        gbc.gridx = 1
+        gbc.weightx = 0.0
+        gbc.fill = GridBagConstraints.NONE
+        mainPanel.add(buttonPanel, gbc)
 
-        preferredSize = Dimension(600, 300)
+        gbc.gridx = 2
+        gbc.weightx = 1.0
+        gbc.fill = GridBagConstraints.BOTH
+        mainPanel.add(rightPanel, gbc)
+
+        add(mainPanel, BorderLayout.CENTER)
+
+        preferredSize = Dimension(800, 400)
 
         setupRemoveButtons()
     }
