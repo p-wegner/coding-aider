@@ -1,8 +1,6 @@
 package de.andrena.aidershortcut
 
-import java.awt.BorderLayout
-import java.awt.Dimension
-import java.awt.GridLayout
+import java.awt.*
 import java.io.File
 import javax.swing.*
 
@@ -116,7 +114,13 @@ class ReadOnlyFilesView(private val allFiles: List<String>, private val persiste
     private fun updateRemoveButtons(list: JList<File>, model: DefaultListModel<File>) {
         val selectedIndices = list.selectedIndices
         for (i in 0 until list.model.size) {
-            val component = list.getCellRenderer().getListCellRendererComponent(list, list.model.getElementAt(i), i, i in selectedIndices, false) as FileChip
+            val component = list.getCellRenderer().getListCellRendererComponent(
+                list,
+                list.model.getElementAt(i),
+                i,
+                i in selectedIndices,
+                false
+            ) as FileChip
             component.setRemoveButtonVisible(i in selectedIndices)
             component.setRemoveAction {
                 val file = component.getFile()
@@ -137,7 +141,7 @@ class ReadOnlyFilesView(private val allFiles: List<String>, private val persiste
         rightModel.clear()
 
         val persistentSet = persistentFiles.map { File(it) }.toSet()
-        
+
         // Add persistent files to the right list
         persistentSet.forEach { rightModel.addElement(it) }
 
