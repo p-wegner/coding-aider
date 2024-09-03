@@ -6,6 +6,8 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import de.andrena.aidershortcut.executors.IDEBasedExecutor
+import de.andrena.aidershortcut.executors.ShellExecutor
 import de.andrena.aidershortcut.inputdialog.AiderInputDialog
 
 class AiderAction : AnAction() {
@@ -26,7 +28,7 @@ class AiderAction : AnAction() {
                 if (commandData.isShellMode) {
                     ShellExecutor(project, commandData).execute()
                 } else {
-                    TerminalExecutor(project, commandData, files).execute()
+                    IDEBasedExecutor(project, commandData, files).execute()
                 }
                 dialog.addToHistory(commandData.message)
             }

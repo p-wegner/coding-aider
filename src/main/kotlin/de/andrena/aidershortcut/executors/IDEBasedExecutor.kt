@@ -1,4 +1,4 @@
-package de.andrena.aidershortcut
+package de.andrena.aidershortcut.executors
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.WriteAction
@@ -7,24 +7,26 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.RefreshQueue
+import de.andrena.aidershortcut.CommandData
+import de.andrena.aidershortcut.MarkdownDialog
 import java.awt.EventQueue.invokeLater
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import kotlin.concurrent.thread
 
-class TerminalExecutor(
+class IDEBasedExecutor(
     private val project: Project,
     private val commandData: CommandData,
     private val files: Array<VirtualFile>
 ) {
-    private val LOG = Logger.getInstance(TerminalExecutor::class.java)
+    private val LOG = Logger.getInstance(IDEBasedExecutor::class.java)
 
     fun execute() {
         val output = StringBuilder()
         val markdownDialog = MarkdownDialog(project, "Aider Command Output", "Initializing Aider command...").apply {
             isVisible = true
         }
-        
+
         thread {
             try {
                 val commandArgs = buildAiderCommand(commandData, false).split(" ")
