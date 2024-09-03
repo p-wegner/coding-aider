@@ -1,10 +1,14 @@
-package de.andrena.aidershortcut
+package de.andrena.aidershortcut.inputdialog
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.components.JBScrollPane
+import de.andrena.aidershortcut.AiderContextHandler
+import de.andrena.aidershortcut.AiderHistoryHandler
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
+import java.awt.Insets
 import javax.swing.*
-import java.awt.*
 
 class AiderInputDialog(private val project: Project, files: List<String>) : DialogWrapper(project) {
     private val inputTextArea = JTextArea(5, 30)

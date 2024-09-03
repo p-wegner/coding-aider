@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import de.andrena.aidershortcut.inputdialog.AiderInputDialog
 
 class AiderAction : AnAction() {
     private val LOG = Logger.getInstance(AiderAction::class.java)

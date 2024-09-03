@@ -1,4 +1,4 @@
-package de.andrena.aidershortcut
+package de.andrena.aidershortcut.inputdialog
 
 import com.intellij.ui.CheckboxTree
 import com.intellij.ui.CheckedTreeNode
@@ -11,32 +11,30 @@ import javax.swing.JPanel
 import javax.swing.JTree
 import javax.swing.tree.DefaultTreeModel
 
-class ReadOnlyFilesView(private val allFiles: List<String>, private val persistentFiles: List<String>) : JPanel(BorderLayout()) {
+class ReadOnlyFilesView(private val allFiles: List<String>, private val persistentFiles: List<String>) :
+    JPanel(BorderLayout()) {
     private val rootNode = CheckedTreeNode("Files")
-    private val tree: CheckboxTree
+    private val tree: CheckboxTree = CheckboxTree(
+        object : CheckboxTree.CheckboxTreeCellRenderer() {
+            override fun customizeRenderer(
+                tree: JTree,
+                value: Any?,
+                selected: Boolean,
+                expanded: Boolean,
+                leaf: Boolean,
+                row: Int,
+                hasFocus: Boolean
+            ) {
+                if (value is CheckedTreeNode && value.userObject is File) {
+                    val file = value.userObject as File
+                    textRenderer.append(file.name, SimpleTextAttributes.REGULAR_ATTRIBUTES)
+                }
+            }
+        },
+        rootNode
+    )
 
     init {
-        val model = DefaultTreeModel(rootNode)
-        tree = CheckboxTree(
-            object : CheckboxTree.CheckboxTreeCellRenderer() {
-                override fun customizeRenderer(
-                    tree: JTree,
-                    value: Any?,
-                    selected: Boolean,
-                    expanded: Boolean,
-                    leaf: Boolean,
-                    row: Int,
-                    hasFocus: Boolean
-                ) {
-                    if (value is CheckedTreeNode && value.userObject is File) {
-                        val file = value.userObject as File
-                        textRenderer.append(file.name, SimpleTextAttributes.REGULAR_ATTRIBUTES)
-                    }
-                }
-            },
-            rootNode
-        )
-
         updateTree()
 
         add(JBScrollPane(tree), BorderLayout.CENTER)
@@ -45,7 +43,7 @@ class ReadOnlyFilesView(private val allFiles: List<String>, private val persiste
 
     private fun updateTree() {
         rootNode.removeAllChildren()
-        
+
         (allFiles + persistentFiles).distinct().forEach { filePath ->
             val file = File(filePath)
             val node = CheckedTreeNode(file)
