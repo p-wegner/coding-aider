@@ -21,7 +21,8 @@ class AiderInputDialog(private val project: Project, files: List<String>) : Dial
     init {
         title = "Aider Command"
         val persistentFiles = contextHandler.loadPersistentFiles()
-        readOnlyFilesView = ReadOnlyFilesView(files, persistentFiles)
+        val nonPersistentFiles = files.filter { it !in persistentFiles }
+        readOnlyFilesView = ReadOnlyFilesView(nonPersistentFiles, persistentFiles)
         init()
         loadHistory()
     }

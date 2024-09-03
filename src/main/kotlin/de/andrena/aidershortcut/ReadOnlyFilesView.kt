@@ -95,11 +95,8 @@ class ReadOnlyFilesView(private val allFiles: List<String>, private val persiste
         leftModel.clear()
         rightModel.clear()
 
-        val persistentSet = persistentFiles.toSet()
         allFiles.forEach { file ->
-            if (file !in persistentSet) {
-                leftModel.addElement(File(file))
-            }
+            leftModel.addElement(File(file))
         }
         persistentFiles.forEach { rightModel.addElement(File(it)) }
     }
