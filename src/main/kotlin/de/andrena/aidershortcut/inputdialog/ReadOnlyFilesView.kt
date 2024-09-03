@@ -1,7 +1,6 @@
 package de.andrena.aidershortcut.inputdialog
 
 import com.intellij.icons.AllIcons
-import com.intellij.icons.AllIcons.Nodes.ReadWrite
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.treeStructure.Tree
 import java.awt.BorderLayout
@@ -33,7 +32,7 @@ class ReadOnlyFilesView(private val allFiles: List<String>, private var persiste
                 if (value is DefaultMutableTreeNode && value.userObject is File) {
                     val file = value.userObject as File
                     text = file.name
-                    icon = if (file.absolutePath in persistentFiles) ReadWrite else AllIcons.General.InspectionsOK
+                    icon = if (file.absolutePath in persistentFiles) AllIcons.Actions.Edit else AllIcons.General.InspectionsOK
                 }
             }
         }
