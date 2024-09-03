@@ -1,7 +1,7 @@
 package de.andrena.aidershortcut.inputdialog
 
 import com.intellij.icons.AllIcons
-import com.intellij.icons.AllIcons.Nodes.ReadOnlyAttribute
+import com.intellij.icons.AllIcons.Nodes.ReadWrite
 import com.intellij.openapi.actionSystem.ActionToolbar
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
@@ -95,7 +95,7 @@ class AiderInputDialog(private val project: Project, files: List<String>) : Dial
             add(object : com.intellij.openapi.actionSystem.AnAction(
                 "Toggle Read-Only Mode",
                 "Toggle Read-Only Mode for selected file",
-                ReadOnlyAttribute
+                ReadWrite
             ) {
                 override fun actionPerformed(e: com.intellij.openapi.actionSystem.AnActionEvent) {
                     readOnlyFilesView.toggleReadOnlyMode()
