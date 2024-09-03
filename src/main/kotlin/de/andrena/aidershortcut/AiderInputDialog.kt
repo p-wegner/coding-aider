@@ -77,6 +77,7 @@ class AiderInputDialog(private val project: Project, files: List<String>) : Dial
         panel.add(messageLabel, gbc)
 
         gbc.gridy++
+        gbc.weighty = 1.0 // Allow the text area to take more vertical space
         panel.add(JScrollPane(inputTextArea), gbc)
 
         // Yes Flag Checkbox
