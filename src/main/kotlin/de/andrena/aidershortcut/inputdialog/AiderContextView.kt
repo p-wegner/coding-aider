@@ -25,6 +25,7 @@ class AiderContextView(
     JPanel(BorderLayout()) {
     private val rootNode = DefaultMutableTreeNode("Files")
     private val tree: Tree = Tree(rootNode)
+    private val readOnlyFiles: MutableSet<String> = mutableSetOf()
 
     init {
         updateTree()
@@ -42,12 +43,12 @@ class AiderContextView(
                 if (value is DefaultMutableTreeNode && value.userObject is File) {
                     val file = value.userObject as File
                     text = file.name
-                    icon = if (file.absolutePath in persistentFiles) {
+                    icon = if (file.absolutePath in readOnlyFiles) {
                         IconManager.getInstance().createRowIcon(AllIcons.Nodes.DataSchema)
                     } else {
                         AllIcons.Actions.Edit
                     }
-                    val isReadOnly = file.absolutePath in persistentFiles
+                    val isReadOnly = file.absolutePath in readOnlyFiles
                     val tooltipText = file.absolutePath + (if (isReadOnly) " (readonly)" else "")
                     toolTipText = tooltipText
                 }
@@ -89,7 +90,6 @@ class AiderContextView(
 
         (tree.model as DefaultTreeModel).reload()
         
-        // Restore expanded state
         expandedPaths.forEach { path ->
             tree.expandPath(path)
         }
@@ -116,17 +116,16 @@ class AiderContextView(
         selectedNodes.forEach { node ->
             if (node.userObject is File) {
                 val file = node.userObject as File
-                if (file.absolutePath in persistentFiles) {
-                    persistentFiles = persistentFiles - file.absolutePath
+                if (file.absolutePath in readOnlyFiles) {
+                    readOnlyFiles.remove(file.absolutePath)
                 } else {
-                    persistentFiles = persistentFiles + file.absolutePath
+                    readOnlyFiles.add(file.absolutePath)
                 }
             }
         }
         
         updateTree()
         
-        // Restore selection and expand paths
         val selectionModel = tree.selectionModel
         selectedPaths.forEach { path ->
             tree.expandPath(path)
@@ -134,7 +133,15 @@ class AiderContextView(
         }
     }
 
-    fun getPersistentFiles(): List<String> = persistentFiles
+    fun getPersistentFiles(): List<String> {
+        return persistentFiles.map { filePath ->
+            if (filePath in readOnlyFiles) {
+                "--read $filePath"
+            } else {
+                "--file $filePath"
+            }
+        }
+    }
 
     fun addToPersistentFiles(filePath: String) {
         if (filePath !in persistentFiles) {
