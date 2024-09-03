@@ -31,9 +31,9 @@ class ShellExecutor(private val project: Project, private val commandData: Comma
 }
 
 
-class ReadOnlyFilesView(private val files: List<String>, private val persistentFiles: List<String>) : JPanel() {
-    private val leftList = JList<String>(files.toTypedArray())
-    private val rightList = JList<String>(persistentFiles.toTypedArray())
+class ReadOnlyFilesView(private val allFiles: List<String>, private val persistentFiles: List<String>) : JPanel() {
+    private val leftList = JList<String>()
+    private val rightList = JList<String>()
     private val leftModel = DefaultListModel<String>()
     private val rightModel = DefaultListModel<String>()
 
@@ -43,8 +43,7 @@ class ReadOnlyFilesView(private val files: List<String>, private val persistentF
         leftList.model = leftModel
         rightList.model = rightModel
 
-        files.forEach { leftModel.addElement(it) }
-        persistentFiles.forEach { rightModel.addElement(it) }
+        updateLists()
 
         val leftPanel = JPanel(BorderLayout())
         leftPanel.add(JLabel("Available Files:"), BorderLayout.NORTH)
@@ -80,6 +79,18 @@ class ReadOnlyFilesView(private val files: List<String>, private val persistentF
         add(rightPanel, BorderLayout.EAST)
 
         preferredSize = Dimension(600, 300)
+    }
+
+    private fun updateLists() {
+        leftModel.clear()
+        rightModel.clear()
+        
+        allFiles.forEach { file ->
+            if (file !in persistentFiles) {
+                leftModel.addElement(file)
+            }
+        }
+        persistentFiles.forEach { rightModel.addElement(it) }
     }
 
     fun getPersistentFiles(): List<String> = rightModel.elements().toList()

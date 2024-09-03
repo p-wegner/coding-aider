@@ -92,6 +92,15 @@ class AiderInputDialog(private val project: Project, files: List<String>) : Dial
 
     override fun doOKAction() {
         super.doOKAction()
+        updateContextFile()
+    }
+
+    override fun doCancelAction() {
+        super.doCancelAction()
+        updateContextFile()
+    }
+
+    private fun updateContextFile() {
         contextHandler.savePersistentFiles(readOnlyFilesView.getPersistentFiles())
     }
 
