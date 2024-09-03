@@ -16,11 +16,14 @@ class AiderInputDialog(project: Project, files: List<String>) : DialogWrapper(pr
     private val readOnlyToggleMap = mutableMapOf<String, JCheckBox>()
     private val modeToggle = JCheckBox("Shell Mode", false)
     private val messageLabel = JLabel("Enter your message:")
+    private val historyComboBox = JComboBox<String>()
+    private val historyHandler = AiderHistoryHandler(project.basePath ?: "")
 
     init {
         title = "Aider Command"
         init()
         setupReadOnlyFiles(files)
+        loadHistory()
     }
 
     private fun setupReadOnlyFiles(files: List<String>) {
@@ -30,6 +33,19 @@ class AiderInputDialog(project: Project, files: List<String>) : DialogWrapper(pr
             checkBox.toolTipText = file
             readOnlyToggleMap[file] = checkBox
             readOnlyFilesPanel.add(checkBox)
+        }
+    }
+
+    private fun loadHistory() {
+        val history = historyHandler.getHistory()
+        historyComboBox.addItem("Select previous command...")
+        history.forEach { (_, command) ->
+            historyComboBox.addItem(command)
+        }
+        historyComboBox.addActionListener {
+            if (historyComboBox.selectedIndex > 0) {
+                inputTextArea.text = historyComboBox.selectedItem as String
+            }
         }
     }
 
@@ -45,6 +61,11 @@ class AiderInputDialog(project: Project, files: List<String>) : DialogWrapper(pr
         gbc.gridy = 0
         gbc.gridwidth = 2
         panel.add(modeToggle, gbc)
+
+        // History Combo Box
+        gbc.gridy++
+        gbc.gridwidth = 2
+        panel.add(historyComboBox, gbc)
 
         // Input Text Area
         gbc.gridy++
@@ -108,4 +129,8 @@ class AiderInputDialog(project: Project, files: List<String>) : DialogWrapper(pr
     }
 
     fun isShellMode(): Boolean = modeToggle.isSelected
+
+    fun addToHistory(command: String) {
+        historyHandler.addToHistory(command)
+    }
 }
