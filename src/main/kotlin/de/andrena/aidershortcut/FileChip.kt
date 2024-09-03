@@ -5,9 +5,11 @@ import java.awt.FlowLayout
 import java.io.File
 import javax.swing.*
 
-class FileChip(file: File?, isSelected: Boolean, selectionBackground: Color?, selectionForeground: Color?) :
+class FileChip(file: File?, isSelected: Boolean, selectionBackground: Color?, selectionForeground: Color?, isReadOnly: Boolean) :
     JPanel(FlowLayout(FlowLayout.LEFT, 5, 0)) {
     private val removeButton: JButton
+    private val readOnlyToggle: JToggleButton
+    private var isReadOnly: Boolean = isReadOnly
 
     init {
         isOpaque = true
@@ -16,6 +18,16 @@ class FileChip(file: File?, isSelected: Boolean, selectionBackground: Color?, se
         val label = JLabel(file?.name ?: "")
         label.toolTipText = file?.absolutePath
         add(label)
+
+        readOnlyToggle = JToggleButton(if (isReadOnly) "🔒" else "🔓")
+        readOnlyToggle.isSelected = isReadOnly
+        readOnlyToggle.isOpaque = false
+        readOnlyToggle.border = null
+        readOnlyToggle.addActionListener {
+            isReadOnly = readOnlyToggle.isSelected
+            readOnlyToggle.text = if (isReadOnly) "🔒" else "🔓"
+        }
+        add(readOnlyToggle)
 
         removeButton = JButton("×")
         removeButton.isOpaque = false
@@ -43,5 +55,13 @@ class FileChip(file: File?, isSelected: Boolean, selectionBackground: Color?, se
 
         background = if (isSelected) selectionBackground ?: defaultBackground else defaultBackground
         foreground = if (isSelected) selectionForeground ?: defaultForeground else defaultForeground
+    }
+
+    fun isReadOnly(): Boolean = isReadOnly
+
+    fun setReadOnly(readOnly: Boolean) {
+        isReadOnly = readOnly
+        readOnlyToggle.isSelected = readOnly
+        readOnlyToggle.text = if (readOnly) "🔒" else "🔓"
     }
 }
