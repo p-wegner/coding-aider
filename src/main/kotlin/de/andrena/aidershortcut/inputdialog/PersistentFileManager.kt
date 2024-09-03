@@ -41,9 +41,9 @@ class PersistentFileManager(private val basePath: String) {
         }
     }
 
-    fun addFile(filePath: String) {
-        if (!persistentFiles.any { it.filePath == filePath }) {
-            persistentFiles.add(FileData(filePath, true))
+    fun addFile(file: FileData) {
+        if (!persistentFiles.any { it.filePath == file.filePath }) {
+            persistentFiles.add(file)
             savePersistentFiles(persistentFiles)
         }
     }

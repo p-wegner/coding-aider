@@ -109,7 +109,7 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
                 override fun actionPerformed(e: com.intellij.openapi.actionSystem.AnActionEvent) {
                     val selectedFiles = aiderContextView.getSelectedFiles()
                     selectedFiles.forEach { file ->
-                        persistentFileManager.addFile(file.absolutePath)
+                        persistentFileManager.addFile(file)
                     }
                 }
             })
