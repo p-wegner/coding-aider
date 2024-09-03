@@ -22,8 +22,8 @@ class ReadOnlyFilesView(private val allFiles: List<String>, private val persiste
         rightList.selectionMode = ListSelectionModel.MULTIPLE_INTERVAL_SELECTION
 
         updateLists()
-
         val leftPanel = JPanel(BorderLayout())
+
         leftPanel.add(JLabel("Available Files:"), BorderLayout.NORTH)
         leftPanel.add(JScrollPane(leftList), BorderLayout.CENTER)
 
