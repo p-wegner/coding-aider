@@ -71,7 +71,7 @@ class AiderContextView(
     }
 
     private fun updateTree() {
-        val expandedPaths = tree.getExpandedDescendants(tree.pathForRow(0))
+        val expandedPaths = getExpandedPaths()
         
         rootNode.removeAllChildren()
 
@@ -87,9 +87,23 @@ class AiderContextView(
         (tree.model as DefaultTreeModel).reload()
         
         // Restore expanded state
-        expandedPaths?.forEach { path ->
+        expandedPaths.forEach { path ->
             tree.expandPath(path)
         }
+    }
+
+    private fun getExpandedPaths(): List<javax.swing.tree.TreePath> {
+        val paths = mutableListOf<javax.swing.tree.TreePath>()
+        val root = tree.model.root as DefaultMutableTreeNode
+        val e = root.depthFirstEnumeration()
+        while (e.hasMoreElements()) {
+            val node = e.nextElement() as DefaultMutableTreeNode
+            val path = javax.swing.tree.TreePath(node.path)
+            if (tree.isExpanded(path)) {
+                paths.add(path)
+            }
+        }
+        return paths
     }
 
     fun toggleReadOnlyMode() {
