@@ -12,7 +12,13 @@ class AiderInputDialog(private val project: Project, files: List<String>) : Dial
     private val commandOptions = arrayOf("--mini", "--sonnet", "--4o")
     private val commandComboBox = JComboBox(commandOptions)
     private val additionalArgsField = JTextField(20)
-    private val readOnlyFilesPanel = JPanel(GridLayout(0, 1))
+    private val readOnlyFilesPanel = JPanel(GridLayout(0, 1)).apply {
+        preferredSize = Dimension(300, 200)
+    }
+    private val readOnlyFilesScrollPane = JScrollPane(readOnlyFilesPanel).apply {
+        verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
+        horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
+    }
     private val readOnlyToggleMap = mutableMapOf<String, JCheckBox>()
     private val modeToggle = JCheckBox("Shell Mode", false)
     private val messageLabel = JLabel("Enter your message:")
@@ -110,9 +116,9 @@ class AiderInputDialog(private val project: Project, files: List<String>) : Dial
         panel.add(JLabel("Select Read-only files:"), gbc)
 
         gbc.gridy++
-        gbc.weighty = 0.5
-        gbc.fill = GridBagConstraints.BOTH
-        panel.add(JScrollPane(readOnlyFilesPanel), gbc)
+        gbc.weighty = 0.0
+        gbc.fill = GridBagConstraints.HORIZONTAL
+        panel.add(readOnlyFilesScrollPane, gbc)
 
         // Add listener to toggle visibility of input text area and change label
         modeToggle.addActionListener {
