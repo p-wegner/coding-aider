@@ -28,7 +28,7 @@
                 description="This will instruct aider to do something">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
             <add-to-group group-id="ToolsMenu" anchor="last"/>
-            <keyboard-shortcut keymap="$default" first-keystroke="control alt A"/>
+            <keyboard-shortcut keymap="$default" first-keystroke="alt A"/>
         </action>
     </actions>
 

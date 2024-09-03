@@ -2,9 +2,9 @@ package de.andrena.aidershortcut.settings
 
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
+import com.intellij.util.ui.JBUI
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
-import java.awt.Insets
 import javax.swing.JButton
 import javax.swing.JComponent
 import javax.swing.JLabel
@@ -21,7 +21,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 gridx = 0
                 gridy = 0
                 fill = GridBagConstraints.HORIZONTAL
-                insets = Insets(5, 5, 5, 5)
+                insets = JBUI.insets(5)
             }
 
             add(JLabel("Test Aider Installation:"), gbc)

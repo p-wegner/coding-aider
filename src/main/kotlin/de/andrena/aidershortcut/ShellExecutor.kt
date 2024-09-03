@@ -16,7 +16,10 @@ class ShellExecutor(private val project: Project, private val commandData: Comma
         return StringBuilder("aider ${commandData.selectedCommand}").apply {
             if (commandData.filePaths.isNotBlank()) append(" --file ${commandData.filePaths}")
             if (commandData.useYesFlag) append(" --yes")
-            if (!isShellMode) append(" -m \"${commandData.message}\"")
+            if (!isShellMode) {
+                append(" -m \"${commandData.message}\"")
+                append(" --no-suggest-shell-commands")
+            }
             if (commandData.readOnlyFiles.isNotEmpty()) append(" --read ${commandData.readOnlyFiles.joinToString(" ")}")
             if (commandData.additionalArgs.isNotEmpty()) append(" ${commandData.additionalArgs}")
         }.toString()
