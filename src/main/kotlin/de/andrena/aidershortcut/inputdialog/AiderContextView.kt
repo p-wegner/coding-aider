@@ -1,11 +1,15 @@
 package de.andrena.aidershortcut.inputdialog
 
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.treeStructure.Tree
 import java.awt.BorderLayout
 import java.awt.Dimension
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import java.io.File
 import javax.swing.JPanel
 import javax.swing.tree.DefaultMutableTreeNode
@@ -45,6 +49,21 @@ class AiderContextView(
 
         add(JBScrollPane(tree), BorderLayout.CENTER)
         preferredSize = Dimension(400, 300)
+
+        tree.addMouseListener(object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent) {
+                if (e.clickCount == 2) {
+                    val node = tree.lastSelectedPathComponent as? DefaultMutableTreeNode
+                    if (node?.userObject is File) {
+                        val file = node.userObject as File
+                        val virtualFile = LocalFileSystem.getInstance().findFileByIoFile(file)
+                        virtualFile?.let {
+                            FileEditorManager.getInstance(project).openFile(it, true)
+                        }
+                    }
+                }
+            }
+        })
     }
 
     private fun updateTree() {
