@@ -92,10 +92,7 @@ class TerminalExecutor(
                     VirtualFileManager.getInstance().refreshWithoutFileWatcher(false)
                     RefreshQueue.getInstance().refresh(true, true, null, *files)
                 }
-                progressDialog.updateProgress(
-                    output,
-                    "Files refreshed. Aider command completed."
-                )
+                markdownDialog.show()
             }
         }
     }
