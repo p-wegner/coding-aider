@@ -3,6 +3,8 @@ package de.andrena.aidershortcut.inputdialog
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.fileChooser.FileChooser
+import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.components.JBScrollPane
@@ -99,6 +101,19 @@ class AiderInputDialog(private val project: Project, files: List<String>) : Dial
             ) {
                 override fun actionPerformed(e: com.intellij.openapi.actionSystem.AnActionEvent) {
                     aiderContextView.toggleReadOnlyMode()
+                }
+            })
+            add(object : com.intellij.openapi.actionSystem.AnAction(
+                "Add File to Persistent List",
+                "Add a file to the persistent list",
+                AllIcons.Actions.AddFile
+            ) {
+                override fun actionPerformed(e: com.intellij.openapi.actionSystem.AnActionEvent) {
+                    val descriptor = FileChooserDescriptor(true, false, false, false, false, false)
+                    val file = FileChooser.chooseFile(descriptor, project, null)
+                    file?.let {
+                        aiderContextView.addToPersistentFiles(it.path)
+                    }
                 }
             })
         }

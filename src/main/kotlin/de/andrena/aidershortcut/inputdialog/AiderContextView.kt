@@ -4,6 +4,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.ui.IconManager
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.treeStructure.Tree
 import java.awt.BorderLayout
@@ -41,8 +42,11 @@ class AiderContextView(
                 if (value is DefaultMutableTreeNode && value.userObject is File) {
                     val file = value.userObject as File
                     text = file.name
-                    icon =
-                        if (file.absolutePath in persistentFiles) AllIcons.Actions.Edit else AllIcons.General.InspectionsOK
+                    icon = if (file.absolutePath in persistentFiles) {
+                        IconManager.getInstance().createRowIcon(AllIcons.General.InspectionsOK, AllIcons.Nodes.DataSchema)
+                    } else {
+                        AllIcons.General.InspectionsOK
+                    }
                 }
             }
         }
@@ -93,4 +97,11 @@ class AiderContextView(
     }
 
     fun getPersistentFiles(): List<String> = persistentFiles
+
+    fun addToPersistentFiles(filePath: String) {
+        if (filePath !in persistentFiles) {
+            persistentFiles = persistentFiles + filePath
+            updateTree()
+        }
+    }
 }
