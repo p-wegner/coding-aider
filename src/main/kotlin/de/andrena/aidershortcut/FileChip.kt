@@ -5,11 +5,16 @@ import java.awt.FlowLayout
 import java.io.File
 import javax.swing.*
 
-class FileChip(file: File?, isSelected: Boolean, selectionBackground: Color?, selectionForeground: Color?, isReadOnly: Boolean) :
+class FileChip(
+    file: File?,
+    isSelected: Boolean,
+    selectionBackground: Color?,
+    selectionForeground: Color?,
+    private var isReadOnly: Boolean
+) :
     JPanel(FlowLayout(FlowLayout.LEFT, 5, 0)) {
     private val removeButton: JButton
     private val readOnlyToggle: JToggleButton
-    private var isReadOnly: Boolean = isReadOnly
 
     init {
         isOpaque = true
