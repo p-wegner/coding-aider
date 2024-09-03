@@ -6,7 +6,8 @@ import com.intellij.ui.SimpleTextAttributes
 import com.intellij.ui.components.JBScrollPane
 import java.awt.BorderLayout
 import java.awt.Dimension
-import java.io.File
+import java.awt.event.ActionEvent
+import javax.swing.JButton
 import javax.swing.JPanel
 import javax.swing.JTree
 import javax.swing.tree.DefaultTreeModel
@@ -34,9 +35,18 @@ class ReadOnlyFilesView(private val allFiles: List<String>, private val persiste
         rootNode
     )
 
+    private val toggleReadOnlyButton = JButton("Toggle Read-Only Mode").apply {
+        addActionListener { toggleReadOnlyMode() }
+    }
+
     init {
         updateTree()
 
+        val actionPanel = JPanel().apply {
+            add(toggleReadOnlyButton)
+        }
+
+        add(actionPanel, BorderLayout.NORTH)
         add(JBScrollPane(tree), BorderLayout.CENTER)
         preferredSize = Dimension(400, 300)
     }
@@ -52,6 +62,10 @@ class ReadOnlyFilesView(private val allFiles: List<String>, private val persiste
         }
 
         (tree.model as DefaultTreeModel).reload()
+    }
+
+    private fun toggleReadOnlyMode() {
+        // Implement the logic to toggle read-only mode
     }
 
     fun getPersistentFiles(): List<String> {
