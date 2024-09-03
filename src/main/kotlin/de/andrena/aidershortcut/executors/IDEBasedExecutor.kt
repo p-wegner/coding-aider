@@ -7,9 +7,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.RefreshQueue
-import de.andrena.aidershortcut.CommandData
 import de.andrena.aidershortcut.MarkdownDialog
-import de.andrena.aidershortcut.inputdialog.AiderCommandBuilder
+import de.andrena.aidershortcut.command.AiderCommandBuilder
+import de.andrena.aidershortcut.command.CommandData
 import java.awt.EventQueue.invokeLater
 import java.io.BufferedReader
 import java.io.InputStreamReader

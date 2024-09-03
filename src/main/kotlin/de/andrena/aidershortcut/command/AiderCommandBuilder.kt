@@ -1,6 +1,4 @@
-package de.andrena.aidershortcut.inputdialog
-
-import de.andrena.aidershortcut.CommandData
+package de.andrena.aidershortcut.command
 
 object AiderCommandBuilder {
     fun buildAiderCommand(commandData: CommandData, isShellMode: Boolean): List<String> {
