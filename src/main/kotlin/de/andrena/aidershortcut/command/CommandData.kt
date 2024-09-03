@@ -8,7 +8,6 @@ data class CommandData(
     val files: List<FileData>,
     val isShellMode: Boolean
 )
-package de.andrena.aidershortcut.command
 
 data class FileData(
     val filePath: String,
