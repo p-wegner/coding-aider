@@ -141,4 +141,10 @@ class AiderContextView(
             updateTree()
         }
     }
+
+    fun getSelectedFiles(): List<File> {
+        return tree.selectionPaths?.mapNotNull { path ->
+            (path.lastPathComponent as? DefaultMutableTreeNode)?.userObject as? File
+        } ?: emptyList()
+    }
 }

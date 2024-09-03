@@ -104,15 +104,14 @@ class AiderInputDialog(private val project: Project, files: List<String>) : Dial
                 }
             })
             add(object : com.intellij.openapi.actionSystem.AnAction(
-                "Add File to Persistent List",
-                "Add a file to the persistent list",
+                "Add Selected Files to Persistent List",
+                "Add selected files to the persistent list",
                 AllIcons.Actions.AddFile
             ) {
                 override fun actionPerformed(e: com.intellij.openapi.actionSystem.AnActionEvent) {
-                    val descriptor = FileChooserDescriptor(true, false, false, false, false, false)
-                    val file = FileChooser.chooseFile(descriptor, project, null)
-                    file?.let {
-                        aiderContextView.addToPersistentFiles(it.path)
+                    val selectedFiles = aiderContextView.getSelectedFiles()
+                    selectedFiles.forEach { file ->
+                        aiderContextView.addToPersistentFiles(file.absolutePath)
                     }
                 }
             })
