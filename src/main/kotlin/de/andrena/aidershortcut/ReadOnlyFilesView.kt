@@ -66,18 +66,27 @@ class ReadOnlyFilesView(private val allFiles: List<String>, private val persiste
 
     private fun setupRemoveButtons() {
         leftList.addListSelectionListener {
-            updateRemoveButtons(leftList)
+            updateRemoveButtons(leftList, leftModel)
         }
         rightList.addListSelectionListener {
-            updateRemoveButtons(rightList)
+            updateRemoveButtons(rightList, rightModel)
         }
     }
 
-    private fun updateRemoveButtons(list: JList<File>) {
+    private fun updateRemoveButtons(list: JList<File>, model: DefaultListModel<File>) {
         val selectedIndices = list.selectedIndices
         for (i in 0 until list.model.size) {
             val component = list.getCellRenderer().getListCellRendererComponent(list, list.model.getElementAt(i), i, i in selectedIndices, false) as FileChip
             component.setRemoveButtonVisible(i in selectedIndices)
+            component.setRemoveAction {
+                val file = component.getFile()
+                if (file != null) {
+                    model.removeElement(file)
+                    if (model == rightModel && !leftModel.contains(file)) {
+                        leftModel.addElement(file)
+                    }
+                }
+            }
         }
         list.repaint()
     }

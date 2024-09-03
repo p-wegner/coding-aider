@@ -3,9 +3,7 @@ package de.andrena.aidershortcut
 import java.awt.Color
 import java.awt.FlowLayout
 import java.io.File
-import javax.swing.JButton
-import javax.swing.JLabel
-import javax.swing.JPanel
+import javax.swing.*
 
 class FileChip(file: File?, isSelected: Boolean, selectionBackground: Color?, selectionForeground: Color?) :
     JPanel(FlowLayout(FlowLayout.LEFT, 5, 0)) {
@@ -13,8 +11,7 @@ class FileChip(file: File?, isSelected: Boolean, selectionBackground: Color?, se
 
     init {
         isOpaque = true
-        background = if (isSelected) selectionBackground else Color.LIGHT_GRAY
-        foreground = if (isSelected) selectionForeground else Color.BLACK
+        updateColors(isSelected, selectionBackground, selectionForeground)
 
         val label = JLabel(file?.name ?: "")
         label.toolTipText = file?.absolutePath
@@ -38,5 +35,13 @@ class FileChip(file: File?, isSelected: Boolean, selectionBackground: Color?, se
 
     fun getFile(): File? {
         return (getComponent(0) as? JLabel)?.toolTipText?.let { File(it) }
+    }
+
+    fun updateColors(isSelected: Boolean, selectionBackground: Color?, selectionForeground: Color?) {
+        val defaultBackground = UIManager.getColor("List.background") ?: Color.WHITE
+        val defaultForeground = UIManager.getColor("List.foreground") ?: Color.BLACK
+
+        background = if (isSelected) selectionBackground ?: defaultBackground else defaultBackground
+        foreground = if (isSelected) selectionForeground ?: defaultForeground else defaultForeground
     }
 }
