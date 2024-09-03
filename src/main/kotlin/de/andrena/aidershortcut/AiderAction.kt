@@ -29,7 +29,7 @@ class AiderAction : AnAction() {
                 if (commandData.isShellMode) {
                     ShellExecutor(project, commandData).execute()
                 } else {
-                    IDEBasedExecutor(project, commandData, commandData.writeableFiles).execute() // Pass writeableFiles
+                    IDEBasedExecutor(project, commandData, dialog.getWriteableFiles().map { VirtualFileManager.getInstance().findFileByUrl(it) }.toTypedArray()).execute() // Pass writeableFiles as VirtualFile array
                 }
                 dialog.addToHistory(commandData.message)
             }
