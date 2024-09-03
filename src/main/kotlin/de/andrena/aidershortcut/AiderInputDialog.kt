@@ -9,7 +9,7 @@ import java.io.File
 class AiderInputDialog(private val project: Project, files: List<String>) : DialogWrapper(project) {
     private val inputTextArea = JTextArea(5, 30)
     private val yesCheckBox = JCheckBox("Add --yes flag", false)
-    private val commandOptions = arrayOf("--mini", "--sonnet", "--4o")
+    private val commandOptions = arrayOf("--mini", "--sonnet", "--4o", "--deepseek") // Added --deepseek
     private val commandComboBox = JComboBox(commandOptions)
     private val additionalArgsField = JTextField(20)
     private val readOnlyFilesPanel = JPanel(GridLayout(0, 1)).apply {
