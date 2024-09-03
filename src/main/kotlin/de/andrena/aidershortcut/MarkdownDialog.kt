@@ -9,31 +9,31 @@ import javax.swing.JTextArea
 
 class MarkdownDialog(private val project: Project, title: String, initialText: String) : JDialog() {
     private val textArea: JTextArea = JTextArea(initialText)
+    private val scrollPane: JScrollPane
 
     init {
         this.title = title
-        setSize(400, 300)
+        setSize(600, 400)
         setLocationRelativeTo(null)
         layout = BorderLayout()
 
-        val scrollPane = JScrollPane(textArea)
+        textArea.isEditable = false
+        scrollPane = JScrollPane(textArea)
         add(scrollPane, BorderLayout.CENTER)
 
         val button = JButton("Close")
-        button.addActionListener { dispose() }
+        button.addActionListener { isVisible = false }
         add(button, BorderLayout.SOUTH)
-    }
 
-    fun isCaretVisible(): Boolean {
-        return textArea.caret.isVisible
+        defaultCloseOperation = HIDE_ON_CLOSE
     }
 
     fun updateProgress(output: String, message: String) {
-        textArea.text = output
-        title = message
-    }
-
-    fun finish() {
-        dispose()
+        invokeLater {
+            textArea.text = output
+            this.title = message
+            textArea.caretPosition = textArea.document.length
+            scrollPane.verticalScrollBar.value = scrollPane.verticalScrollBar.maximum
+        }
     }
 }

@@ -21,14 +21,19 @@ class TerminalExecutor(
 
     fun execute() {
         val output = StringBuilder()
-        val markdownDialog = MarkdownDialog(project, "Aider Command Output", output.toString()).apply {
-            show()
+        val markdownDialog = MarkdownDialog(project, "Aider Command Output", "Initializing Aider command...").apply {
+            isVisible = true
         }
+        
         thread {
             try {
                 val commandArgs = buildAiderCommand(commandData, false).split(" ")
                 val processBuilder = ProcessBuilder(commandArgs)
                 processBuilder.redirectErrorStream(true)
+
+                invokeLater {
+                    markdownDialog.updateProgress("Starting Aider command...\n", "Aider Command In Progress")
+                }
 
                 val process = processBuilder.start()
 
@@ -39,8 +44,8 @@ class TerminalExecutor(
                     LOG.warn("Aider command timed out after 5 minutes")
                     invokeLater {
                         markdownDialog.updateProgress(
-                            output.toString(),
-                            "Aider command timed out after 5 minutes"
+                            output.toString() + "\nAider command timed out after 5 minutes",
+                            "Aider Command Timed Out"
                         )
                     }
                 } else {
@@ -49,16 +54,16 @@ class TerminalExecutor(
                         LOG.info("Aider command executed successfully")
                         invokeLater {
                             markdownDialog.updateProgress(
-                                output.toString(),
-                                "Aider command executed successfully"
+                                output.toString() + "\nAider command executed successfully",
+                                "Aider Command Completed"
                             )
                         }
                     } else {
                         LOG.error("Aider command failed with exit code $exitCode")
                         invokeLater {
                             markdownDialog.updateProgress(
-                                output.toString(),
-                                "Aider command failed with exit code $exitCode"
+                                output.toString() + "\nAider command failed with exit code $exitCode",
+                                "Aider Command Failed"
                             )
                         }
                     }
@@ -67,13 +72,12 @@ class TerminalExecutor(
                 LOG.error("Error executing Aider command", e)
                 invokeLater {
                     markdownDialog.updateProgress(
-                        "Error executing Aider command: ${e.message}",
+                        output.toString() + "\nError executing Aider command: ${e.message}",
                         "Aider Command Error"
                     )
                 }
             } finally {
                 refreshFiles(files, markdownDialog, output.toString())
-                markdownDialog.finish()
             }
         }
     }
@@ -122,6 +126,7 @@ class TerminalExecutor(
             if (!process.isAlive || runningTime > 300) { // 5 minutes timeout
                 break
             }
+            Thread.sleep(100) // Small delay to prevent UI freezing
         }
     }
 }
