@@ -40,3 +40,34 @@ class ProgressDialog(project: Project, title: String) {
         }
     }
 }
+package de.andrena.aidershortcut
+
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.DialogWrapper
+import javax.swing.*
+import java.awt.*
+import javax.swing.text.html.HTMLEditorKit
+
+class MarkdownDialog(project: Project, title: String, markdownContent: String) : DialogWrapper(project) {
+    private val textArea = JTextPane()
+
+    init {
+        title(title)
+        init()
+        textArea.contentType = "text/html"
+        textArea.text = convertMarkdownToHtml(markdownContent)
+        textArea.isEditable = false
+        textArea.isCaretVisible = false
+    }
+
+    private fun convertMarkdownToHtml(markdown: String): String {
+        // Simple conversion logic; consider using a library for complex markdown
+        return markdown.replace("\n", "<br/>")
+    }
+
+    override fun createCenterPanel(): JComponent {
+        val panel = JPanel(BorderLayout())
+        panel.add(JScrollPane(textArea), BorderLayout.CENTER)
+        return panel
+    }
+}
