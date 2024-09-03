@@ -25,12 +25,12 @@ class AiderInputDialog(private val project: Project, files: List<String>) : Dial
     private val historyComboBox = JComboBox<String>()
     private val historyHandler = AiderHistoryHandler(project.basePath ?: "")
     private val contextHandler = AiderContextHandler(project.basePath ?: "")
-    private val readOnlyFilesView: ReadOnlyFilesView
+    private val aiderContextView: AiderContextView
 
     init {
         title = "Aider Command"
         val persistentFiles = contextHandler.loadPersistentFiles()
-        readOnlyFilesView = ReadOnlyFilesView(files, persistentFiles)
+        aiderContextView = AiderContextView(files, persistentFiles)
         init()
         loadHistory()
     }
@@ -98,18 +98,18 @@ class AiderInputDialog(private val project: Project, files: List<String>) : Dial
                 AllIcons.Actions.Edit
             ) {
                 override fun actionPerformed(e: com.intellij.openapi.actionSystem.AnActionEvent) {
-                    readOnlyFilesView.toggleReadOnlyMode()
+                    aiderContextView.toggleReadOnlyMode()
                 }
             })
         }
 
-        val toolbar = ActionManager.getInstance().createActionToolbar("ReadOnlyFilesToolbar", actionGroup, true)
-        val readOnlyPanel = JPanel(BorderLayout()).apply {
+        val toolbar = ActionManager.getInstance().createActionToolbar("AiderContextToolbar", actionGroup, true)
+        val contextPanel = JPanel(BorderLayout()).apply {
             add(toolbar.component, BorderLayout.NORTH)
-            add(readOnlyFilesView, BorderLayout.CENTER)
+            add(aiderContextView, BorderLayout.CENTER)
         }
 
-        panel.add(readOnlyPanel, gbc)
+        panel.add(contextPanel, gbc)
 
         modeToggle.addActionListener {
             val isShellMode = modeToggle.isSelected
@@ -131,14 +131,14 @@ class AiderInputDialog(private val project: Project, files: List<String>) : Dial
     }
 
     private fun updateContextFile() {
-        contextHandler.savePersistentFiles(readOnlyFilesView.getPersistentFiles())
+        contextHandler.savePersistentFiles(aiderContextView.getPersistentFiles())
     }
 
     fun getInputText(): String = inputTextArea.text
     fun isYesFlagChecked(): Boolean = yesCheckBox.isSelected
     fun getSelectedCommand(): String = commandComboBox.selectedItem as String
     fun getAdditionalArgs(): String = additionalArgsField.text
-    fun getReadOnlyFiles(): List<String> = readOnlyFilesView.getPersistentFiles()
+    fun getReadOnlyFiles(): List<String> = aiderContextView.getPersistentFiles()
     fun isShellMode(): Boolean = modeToggle.isSelected
 
     fun addToHistory(command: String) {

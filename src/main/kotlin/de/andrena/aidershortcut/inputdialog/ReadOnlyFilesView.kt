@@ -11,7 +11,7 @@ import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeCellRenderer
 import javax.swing.tree.DefaultTreeModel
 
-class ReadOnlyFilesView(private val allFiles: List<String>, private var persistentFiles: List<String>) :
+class AiderContextView(private val allFiles: List<String>, private var persistentFiles: List<String>) :
     JPanel(BorderLayout()) {
     private val rootNode = DefaultMutableTreeNode("Files")
     private val tree: Tree = Tree(rootNode)
