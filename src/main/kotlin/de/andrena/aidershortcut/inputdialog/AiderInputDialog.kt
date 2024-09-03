@@ -6,8 +6,6 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.components.JBScrollPane
-import de.andrena.aidershortcut.AiderContextHandler
-import de.andrena.aidershortcut.AiderHistoryHandler
 import java.awt.BorderLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
@@ -24,12 +22,12 @@ class AiderInputDialog(private val project: Project, files: List<String>) : Dial
     private val messageLabel = JLabel("Enter your message:")
     private val historyComboBox = JComboBox<String>()
     private val historyHandler = AiderHistoryHandler(project.basePath ?: "")
-    private val contextHandler = AiderContextHandler(project.basePath ?: "")
+    private val persistentFileManager = PersistentFileManager(project.basePath ?: "")
     private val aiderContextView: AiderContextView
 
     init {
         title = "Aider Command"
-        val persistentFiles = contextHandler.loadPersistentFiles()
+        val persistentFiles = persistentFileManager.loadPersistentFiles()
         aiderContextView = AiderContextView(project, files, persistentFiles) // Pass project here
         init()
         loadHistory()
@@ -109,7 +107,7 @@ class AiderInputDialog(private val project: Project, files: List<String>) : Dial
                 override fun actionPerformed(e: com.intellij.openapi.actionSystem.AnActionEvent) {
                     val selectedFiles = aiderContextView.getSelectedFiles()
                     selectedFiles.forEach { file ->
-                        aiderContextView.addToPersistentFiles(file.absolutePath)
+                        persistentFileManager.addFile(file.absolutePath)
                     }
                 }
             })
@@ -143,7 +141,7 @@ class AiderInputDialog(private val project: Project, files: List<String>) : Dial
     }
 
     private fun updateContextFile() {
-        contextHandler.savePersistentFiles(aiderContextView.getPersistentFiles())
+        persistentFileManager.savePersistentFiles(aiderContextView.getPersistentFiles())
     }
 
     fun getInputText(): String = inputTextArea.text
@@ -157,5 +155,3 @@ class AiderInputDialog(private val project: Project, files: List<String>) : Dial
         historyHandler.addToHistory(command.removePrefix("+"))
     }
 }
-
-

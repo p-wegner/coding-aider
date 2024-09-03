@@ -116,10 +116,10 @@ class AiderContextView(
         selectedNodes.forEach { node ->
             if (node.userObject is File) {
                 val file = node.userObject as File
-                persistentFiles = if (file.absolutePath in persistentFiles) {
-                    persistentFiles - file.absolutePath
+                if (file.absolutePath in persistentFiles) {
+                    persistentFiles = persistentFiles - file.absolutePath
                 } else {
-                    persistentFiles + file.absolutePath
+                    persistentFiles = persistentFiles + file.absolutePath
                 }
             }
         }
