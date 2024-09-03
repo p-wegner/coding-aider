@@ -56,6 +56,14 @@ class AiderAction : AnAction() {
         e.presentation.isEnabledAndVisible = project != null && !files.isNullOrEmpty()
     }
 }
+package de.andrena.aidershortcut
+
+import java.io.File
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+
+class AiderHistoryHandler(private val projectPath: String) {
+    private val historyFile = File(projectPath, ".aider.input.history")
     private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
 
     fun getHistory(): List<Pair<LocalDateTime, String>> {
