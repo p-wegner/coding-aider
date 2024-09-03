@@ -47,6 +47,9 @@ class AiderContextView(
                     } else {
                         AllIcons.Actions.Edit
                     }
+                    val isReadOnly = file.absolutePath in persistentFiles
+                    val tooltipText = file.absolutePath + (if (isReadOnly) " (readonly)" else "")
+                    toolTipText = tooltipText
                 }
             }
         }
