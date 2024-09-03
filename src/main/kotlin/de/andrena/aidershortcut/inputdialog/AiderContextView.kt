@@ -126,9 +126,10 @@ class AiderContextView(
         
         updateTree()
         
-        // Restore selection
+        // Restore selection and expand paths
         val selectionModel = tree.selectionModel
         selectedPaths.forEach { path ->
+            tree.expandPath(path)
             selectionModel.addSelectionPath(path)
         }
     }
