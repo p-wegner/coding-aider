@@ -43,7 +43,7 @@ class AiderContextView(
                     val file = value.userObject as File
                     text = file.name
                     icon = if (file.absolutePath in persistentFiles) {
-                        IconManager.getInstance().createRowIcon(AllIcons.General.InspectionsOK, AllIcons.Nodes.DataSchema)
+                        IconManager.getInstance().createRowIcon(AllIcons.Nodes.DataSchema)
                     } else {
                         AllIcons.Actions.Edit
                     }
@@ -74,7 +74,7 @@ class AiderContextView(
         rootNode.removeAllChildren()
 
         val uniqueFiles = (allFiles + persistentFiles).distinct().map { File(it) }
-        
+
         uniqueFiles.forEach { file ->
             if (!rootNode.children().asSequence().any { (it as DefaultMutableTreeNode).userObject == file }) {
                 val node = DefaultMutableTreeNode(file)
