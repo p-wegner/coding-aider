@@ -31,17 +31,23 @@ class ShellExecutor(private val project: Project, private val commandData: Comma
 }
 
 
+import java.awt.Component
+import java.io.File
+import javax.swing.*
+
 class ReadOnlyFilesView(private val allFiles: List<String>, private val persistentFiles: List<String>) : JPanel() {
-    private val leftList = JList<String>()
-    private val rightList = JList<String>()
-    private val leftModel = DefaultListModel<String>()
-    private val rightModel = DefaultListModel<String>()
+    private val leftList = JList<File>()
+    private val rightList = JList<File>()
+    private val leftModel = DefaultListModel<File>()
+    private val rightModel = DefaultListModel<File>()
 
     init {
         layout = BorderLayout()
 
         leftList.model = leftModel
         rightList.model = rightModel
+        leftList.cellRenderer = FileChipRenderer()
+        rightList.cellRenderer = FileChipRenderer()
 
         updateLists()
 
@@ -87,11 +93,40 @@ class ReadOnlyFilesView(private val allFiles: List<String>, private val persiste
         
         allFiles.forEach { file ->
             if (file !in persistentFiles) {
-                leftModel.addElement(file)
+                leftModel.addElement(File(file))
             }
         }
-        persistentFiles.forEach { rightModel.addElement(it) }
+        persistentFiles.forEach { rightModel.addElement(File(it)) }
     }
 
-    fun getPersistentFiles(): List<String> = rightModel.elements().toList()
+    fun getPersistentFiles(): List<String> = rightModel.elements().toList().map { it.absolutePath }
+}
+
+class FileChipRenderer : ListCellRenderer<File> {
+    private val label = JLabel()
+
+    init {
+        label.isOpaque = true
+    }
+
+    override fun getListCellRendererComponent(
+        list: JList<out File>?,
+        value: File?,
+        index: Int,
+        isSelected: Boolean,
+        cellHasFocus: Boolean
+    ): Component {
+        label.text = value?.name ?: ""
+        label.toolTipText = value?.absolutePath
+        
+        if (isSelected) {
+            label.background = list?.selectionBackground
+            label.foreground = list?.selectionForeground
+        } else {
+            label.background = list?.background
+            label.foreground = list?.foreground
+        }
+
+        return label
+    }
 }
