@@ -3,18 +3,9 @@ package de.andrena.aidershortcut
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.openapi.vfs.newvfs.RefreshQueue
-import org.jetbrains.plugins.terminal.TerminalToolWindowManager
-import java.awt.EventQueue.invokeLater
-import java.io.BufferedReader
-import java.io.InputStreamReader
-import kotlin.concurrent.thread
 
 class AiderAction : AnAction() {
     private val LOG = Logger.getInstance(AiderAction::class.java)
@@ -58,63 +49,5 @@ class AiderAction : AnAction() {
         e.presentation.isEnabledAndVisible = project != null && !files.isNullOrEmpty()
     }
 }
-package de.andrena.aidershortcut
 
-import java.io.File
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 
-class AiderHistoryHandler(private val projectPath: String) {
-    private val historyFile = File(projectPath, ".aider.input.history")
-    private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
-
-    fun getHistory(): List<Pair<LocalDateTime, String>> {
-        if (!historyFile.exists()) return emptyList()
-
-        return historyFile.readLines()
-            .chunked(2)
-            .mapNotNull { chunk ->
-                if (chunk.size == 2 && chunk[0].startsWith("# ")) {
-                    val dateTime = LocalDateTime.parse(chunk[0].substring(2), dateTimeFormatter)
-                    val command = chunk[1].trim()
-                    dateTime to command
-                } else null
-            }
-            .reversed()
-    }
-
-    fun addToHistory(command: String) {
-        val timestamp = LocalDateTime.now().format(dateTimeFormatter)
-        historyFile.appendText("# $timestamp\n$command\n")
-    }
-}
-package de.andrena.aidershortcut
-
-import java.io.File
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-
-class AiderHistoryHandler(private val projectPath: String) {
-    private val historyFile = File(projectPath, ".aider.input.history")
-    private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
-
-    fun getHistory(): List<Pair<LocalDateTime, String>> {
-        if (!historyFile.exists()) return emptyList()
-
-        return historyFile.readLines()
-            .chunked(2)
-            .mapNotNull { chunk ->
-                if (chunk.size == 2 && chunk[0].startsWith("# ")) {
-                    val dateTime = LocalDateTime.parse(chunk[0].substring(2), dateTimeFormatter)
-                    val command = chunk[1].trim()
-                    dateTime to command
-                } else null
-            }
-            .reversed()
-    }
-
-    fun addToHistory(command: String) {
-        val timestamp = LocalDateTime.now().format(dateTimeFormatter)
-        historyFile.appendText("# $timestamp\n$command\n")
-    }
-}
