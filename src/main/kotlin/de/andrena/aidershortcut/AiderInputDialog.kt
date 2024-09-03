@@ -37,11 +37,13 @@ class AiderInputDialog(project: Project, files: List<String>) : DialogWrapper(pr
     }
 
     private fun loadHistory() {
-        val history = historyHandler.getHistory()
-        historyComboBox.addItem("Select previous command...")
-        history.forEach { commandHistory ->
-            historyComboBox.addItem(commandHistory.second)
+        val historyFile = File("${project.basePath}/.aider.input.history")
+        if (historyFile.exists()) {
+            historyFile.readLines().forEach { line ->
+                historyComboBox.addItem(line)
+            }
         }
+        historyComboBox.addItem("Select previous command...")
         historyComboBox.addActionListener {
             if (historyComboBox.selectedIndex > 0) {
                 inputTextArea.text = historyComboBox.selectedItem as String
