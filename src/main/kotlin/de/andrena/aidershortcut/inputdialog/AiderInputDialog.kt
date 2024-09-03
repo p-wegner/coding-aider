@@ -30,7 +30,7 @@ class AiderInputDialog(private val project: Project, files: List<String>) : Dial
     init {
         title = "Aider Command"
         val persistentFiles = contextHandler.loadPersistentFiles()
-        aiderContextView = AiderContextView(project, files, persistentFiles)
+        aiderContextView = AiderContextView(project, files, persistentFiles) // Pass project here
         init()
         loadHistory()
     }
