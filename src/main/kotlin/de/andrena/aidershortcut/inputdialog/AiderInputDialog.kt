@@ -8,6 +8,7 @@ import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.components.JBScrollPane
 import de.andrena.aidershortcut.AiderContextHandler
 import de.andrena.aidershortcut.AiderHistoryHandler
+import java.awt.BorderLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.Insets
