@@ -13,12 +13,12 @@ class PersistentFileManager(private val basePath: String) {
         loadPersistentFiles()
     }
 
-    fun loadPersistentFiles(): List<String> {
+    fun loadPersistentFiles(): List<FileData> {
         if (contextFile.exists()) {
             try {
                 persistentFiles.clear()
                 contextFile.readLines().forEach { line ->
-                    persistentFiles.add(line.trim())
+                    persistentFiles.add(FileData(line.trim(), true))
                 }
             } catch (e: IOException) {
                 e.printStackTrace()
@@ -27,13 +27,13 @@ class PersistentFileManager(private val basePath: String) {
         return persistentFiles
     }
 
-    fun savePersistentFiles(files: List<String>) {
+    fun savePersistentFiles(files: List<FileData>) {
         persistentFiles.clear()
         persistentFiles.addAll(files)
         try {
             FileWriter(contextFile).use { writer ->
                 persistentFiles.forEach { file ->
-                    writer.write("$file\n")
+                    writer.write("${file.filePath}\n")
                 }
             }
         } catch (e: IOException) {
@@ -42,16 +42,16 @@ class PersistentFileManager(private val basePath: String) {
     }
 
     fun addFile(filePath: String) {
-        if (filePath !in persistentFiles) {
-            persistentFiles.add(filePath)
+        if (!persistentFiles.any { it.filePath == filePath }) {
+            persistentFiles.add(FileData(filePath, true))
             savePersistentFiles(persistentFiles)
         }
     }
 
     fun removeFile(filePath: String) {
-        persistentFiles.remove(filePath)
+        persistentFiles.removeIf { it.filePath == filePath }
         savePersistentFiles(persistentFiles)
     }
 
-    fun getPersistentFiles(): List<String> = persistentFiles
+    fun getPersistentFiles(): List<FileData> = persistentFiles
 }

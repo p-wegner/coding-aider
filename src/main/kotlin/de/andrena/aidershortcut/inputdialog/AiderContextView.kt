@@ -60,9 +60,9 @@ class AiderContextView(
             override fun mouseClicked(e: MouseEvent) {
                 if (e.clickCount == 2) {
                     val node = tree.lastSelectedPathComponent as? DefaultMutableTreeNode
-                    if (node?.userObject is File) {
-                        val file = node.userObject as File
-                        val virtualFile = LocalFileSystem.getInstance().findFileByIoFile(file)
+                    if (node?.userObject is FileData) {
+                        val fileData = node.userObject as FileData
+                        val virtualFile = LocalFileSystem.getInstance().findFileByPath(fileData.filePath)
                         virtualFile?.let {
                             FileEditorManager.getInstance(project).openFile(it, true)
                         }
@@ -127,7 +127,7 @@ class AiderContextView(
         }
     }
 
-    fun getPersistentFiles(): List<String> = persistentFiles.map { file -> file.filePath }
+    fun getPersistentFiles(): List<FileData> = persistentFiles
 
     fun getSelectedFiles(): List<FileData> {
         return tree.selectionPaths?.mapNotNull { path ->
