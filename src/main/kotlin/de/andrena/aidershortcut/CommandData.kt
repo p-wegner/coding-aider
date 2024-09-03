@@ -1,17 +1,11 @@
 package de.andrena.aidershortcut
 
-data class CommandData(
-    val message: String,
-    val useYesFlag: Boolean,
-    val selectedCommand: String,
-    val additionalArgs: String,
-    val filePaths: String,
-    val readOnlyFiles: List<String>,
-    val isShellMode: Boolean
-)
-package de.andrena.aidershortcut
-
 import java.time.LocalDateTime
+
+data class CommandHistory(
+    val timestamp: LocalDateTime,
+    val command: String
+)
 
 data class CommandHistory(
     val timestamp: LocalDateTime,

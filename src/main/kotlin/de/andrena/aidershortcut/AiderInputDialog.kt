@@ -17,7 +17,7 @@ class AiderInputDialog(project: Project, files: List<String>) : DialogWrapper(pr
     private val modeToggle = JCheckBox("Shell Mode", false)
     private val messageLabel = JLabel("Enter your message:")
     private val historyComboBox = JComboBox<String>()
-    private val historyManager = CommandHistoryManager(project.basePath ?: "")
+    private val historyHandler = AiderHistoryHandler(project.basePath ?: "")
 
     init {
         title = "Aider Command"
@@ -37,10 +37,10 @@ class AiderInputDialog(project: Project, files: List<String>) : DialogWrapper(pr
     }
 
     private fun loadHistory() {
-        val history = historyManager.loadHistory()
+        val history = historyHandler.getHistory()
         historyComboBox.addItem("Select previous command...")
         history.forEach { commandHistory ->
-            historyComboBox.addItem(commandHistory.command)
+            historyComboBox.addItem(commandHistory.second)
         }
         historyComboBox.addActionListener {
             if (historyComboBox.selectedIndex > 0) {
