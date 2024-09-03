@@ -79,7 +79,7 @@ class IDEBasedExecutor(
                     )
                 }
             } finally {
-                refreshFiles(filePaths.mapNotNull { VirtualFileManager.getInstance().findFileByUrl(it) }.toTypedArray(), markdownDialog, output.toString())
+                refreshFiles(commandData.files.mapNotNull { VirtualFileManager.getInstance().findFileByUrl(it.filePath) }.toTypedArray(), markdownDialog, output.toString())
             }
         }
     }
