@@ -150,6 +150,7 @@ class AiderInputDialog(private val project: Project, files: List<String>) : Dial
     fun getSelectedCommand(): String = commandComboBox.selectedItem as String
     fun getAdditionalArgs(): String = additionalArgsField.text
     fun getReadOnlyFiles(): List<String> = aiderContextView.getPersistentFiles()
+    fun getWriteableFiles(): List<String> = aiderContextView.getSelectedFiles().map { it.absolutePath } // New method to get writable files
     fun isShellMode(): Boolean = modeToggle.isSelected
 
     fun addToHistory(command: String) {

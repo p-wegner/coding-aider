@@ -5,7 +5,7 @@ data class CommandData(
     val useYesFlag: Boolean,
     val selectedCommand: String,
     val additionalArgs: String,
-    val filePaths: List<String>,
+    val writeableFiles: List<String>, // Renamed from filePaths to writeableFiles
     val readOnlyFiles: List<String>,
     val isShellMode: Boolean
 )

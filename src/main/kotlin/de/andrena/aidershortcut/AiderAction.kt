@@ -21,7 +21,7 @@ class AiderAction : AnAction() {
         if (project != null && !files.isNullOrEmpty()) {
             val contextHandler = AiderContextHandler(project.basePath ?: "")
             val persistentFiles = contextHandler.loadPersistentFiles()
-            val allFiles = (files.map { it.path } + persistentFiles).distinct()
+            val allFiles = files.map { it.path } + persistentFiles
 
             val dialog = AiderInputDialog(project, allFiles)
             if (dialog.showAndGet()) {
@@ -29,7 +29,7 @@ class AiderAction : AnAction() {
                 if (commandData.isShellMode) {
                     ShellExecutor(project, commandData).execute()
                 } else {
-                    IDEBasedExecutor(project, commandData, files).execute()
+                    IDEBasedExecutor(project, commandData, commandData.writeableFiles).execute() // Pass writeableFiles
                 }
                 dialog.addToHistory(commandData.message)
             }
@@ -42,7 +42,7 @@ class AiderAction : AnAction() {
             useYesFlag = dialog.isYesFlagChecked(),
             selectedCommand = dialog.getSelectedCommand(),
             additionalArgs = dialog.getAdditionalArgs(),
-            filePaths = allFiles, // Changed to pass the list directly
+            writeableFiles = dialog.getWriteableFiles(), // Get writeable files from dialog
             readOnlyFiles = dialog.getReadOnlyFiles(),
             isShellMode = dialog.isShellMode()
         )
