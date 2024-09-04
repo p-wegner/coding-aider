@@ -17,7 +17,7 @@ class CommandHistoryManager(private val projectPath: String) {
             .map { entry ->
                 val lines = entry.lines()
                 val dateTime = LocalDateTime.parse(lines[0], dateTimeFormatter)
-                val command = lines.drop(1).joinToString("\n") { it.trim() }
+                val command = lines.drop(1).joinToString("\n") { it.trim().removePrefix("+").trim() }
                 CommandHistory(dateTime, command.split("\n").filter { it.isNotEmpty() })
             }
             .reversed()
