@@ -43,12 +43,15 @@ class AiderContextView(
                 if (value is DefaultMutableTreeNode && value.userObject is FileData) {
                     val fileData = value.userObject as FileData
                     text = File(fileData.filePath).name
-                    icon = if (fileData.isReadOnly) {
-                        IconManager.getInstance().createRowIcon(AllIcons.Nodes.DataSchema)
-                    } else {
-                        AllIcons.Actions.Edit
+                    icon = when {
+                        fileData.isReadOnly && isPersistent(fileData) -> IconManager.getInstance().createRowIcon(AllIcons.Nodes.DataSchema, AllIcons.Nodes.PinToolWindow)
+                        fileData.isReadOnly -> IconManager.getInstance().createRowIcon(AllIcons.Nodes.DataSchema)
+                        isPersistent(fileData) -> IconManager.getInstance().createRowIcon(AllIcons.Actions.Edit, AllIcons.Nodes.PinToolWindow)
+                        else -> AllIcons.Actions.Edit
                     }
-                    val tooltipText = fileData.filePath + (if (fileData.isReadOnly) " (readonly)" else "")
+                    val tooltipText = fileData.filePath + 
+                        (if (fileData.isReadOnly) " (readonly)" else "") + 
+                        (if (isPersistent(fileData)) " (persistent)" else "")
                     toolTipText = tooltipText
                 }
             }
@@ -159,10 +162,20 @@ class AiderContextView(
         return filesFromTree.distinctBy { it.filePath }
     }
 
-    fun addSelectedFilesToPersistentList(): Unit {
+    fun togglePersistentFile() {
         val selectedFiles = getSelectedFiles()
-        persistentFileManager.addAllFiles(selectedFiles)
+        selectedFiles.forEach { fileData ->
+            if (isPersistent(fileData)) {
+                persistentFileManager.removeFile(fileData.filePath)
+            } else {
+                persistentFileManager.addFile(fileData)
+            }
+        }
         persistentFiles = persistentFileManager.getPersistentFiles()
         updateTree()
+    }
+
+    private fun isPersistent(fileData: FileData): Boolean {
+        return persistentFiles.any { it.filePath == fileData.filePath }
     }
 }

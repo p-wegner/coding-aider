@@ -100,12 +100,12 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
                 }
             })
             add(object : com.intellij.openapi.actionSystem.AnAction(
-                "Add Selected Files to Persistent List",
-                "Add selected files to the persistent list",
-                AllIcons.Actions.AddFile
+                "Toggle Persistent Files",
+                "Toggle selected files' persistent status",
+                AllIcons.Actions.PinToolwindow
             ) {
                 override fun actionPerformed(e: com.intellij.openapi.actionSystem.AnActionEvent) {
-                    aiderContextView.addSelectedFilesToPersistentList()
+                    aiderContextView.togglePersistentFile()
                 }
             })
         }
