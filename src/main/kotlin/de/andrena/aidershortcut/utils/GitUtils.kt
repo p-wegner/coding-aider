@@ -1,16 +1,11 @@
 package de.andrena.aidershortcut.utils
 
-import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vcs.VcsException
-import com.intellij.openapi.vcs.changes.ChangeListManager
-import com.intellij.openapi.vcs.changes.ui.ChangesViewContentManager
+import com.intellij.openapi.vcs.changes.Change
+import com.intellij.openapi.vcs.changes.actions.diff.ShowDiffAction
+import com.intellij.openapi.vcs.changes.ui.ChangesComparator
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.wm.ToolWindowManager
-import git4idea.GitLocalBranch
 import git4idea.GitUtil
-import git4idea.GitVcs
-import git4idea.changes.GitChangeUtils
 import git4idea.repo.GitRepository
 
 object GitUtils {
@@ -22,55 +17,34 @@ object GitUtils {
     fun openGitComparisonTool(project: Project, commitHash: String) {
         val repository = getGitRepository(project)
         if (repository != null) {
-            try {
-                val gitVcs = GitVcs.getInstance(project)
-                val currentBranch = repository.currentBranch
-
-                val changes = ProgressManager.getInstance()
-                    .runProcessWithProgressSynchronously<List<com.intellij.openapi.vcs.changes.Change>, Exception>(
-                        {
-                            getCurrentChanges(currentBranch, project, repository, commitHash)
-                        },
-                        "Calculating Git Diff",
-                        true,
-                        project
-                    )
-
-                val changesViewContentManager = ChangesViewContentManager.getInstance(project)
-                changesViewContentManager.selectContent("Local Changes")
-
-                val toolWindowManager = ToolWindowManager.getInstance(project)
-                val changesViewToolWindow = toolWindowManager.getToolWindow("Version Control")
-                changesViewToolWindow?.show()
-            } catch (e: VcsException) {
-                // Handle exception (e.g., log it or show an error message)
+            val changes = getChanges(project, repository, commitHash)
+            if (changes.isNotEmpty()) {
+                ShowDiffAction.showDiffForChange(
+                    project,
+                    changes.sortedWith(ChangesComparator.getInstance()),
+                    0,
+                    ShowDiffAction.DiffExtendUIFactory.NONE,
+                    true
+                )
             }
         }
     }
 
-    private fun getCurrentChanges(
-        currentBranch: GitLocalBranch?,
-        project: Project,
-        repository: GitRepository,
-        commitHash: String
-    ) = (if (currentBranch != null) {
-        GitChangeUtils.getDiffWithWorkingDir(
-            project,
-            repository.root,
-            commitHash,
-            null,
-            false
-        )
-    } else {
-        emptyList()
-    }).toList()
+    private fun getChanges(project: Project, repository: GitRepository, commitHash: String): List<Change> {
+        val gitVcs = GitUtil.getRepositoryManager(project).getRepositoryForRoot(repository.root)?.vcs
+        return if (gitVcs != null) {
+            gitVcs.getDiffProvider().compare(commitHash, repository.currentRevision!!)
+        } else {
+            emptyList()
+        }
+    }
 
     private fun getGitRepository(project: Project): GitRepository? {
         return GitUtil.getRepositoryManager(project).repositories.firstOrNull()
     }
 
     private fun getChangedFiles(project: Project): List<VirtualFile> {
-        val changeListManager = ChangeListManager.getInstance(project)
+        val changeListManager = com.intellij.openapi.vcs.changes.ChangeListManager.getInstance(project)
         return changeListManager.affectedFiles
     }
 }
