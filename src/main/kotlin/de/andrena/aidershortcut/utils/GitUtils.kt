@@ -7,12 +7,12 @@ import com.intellij.openapi.vcs.history.VcsRevisionNumber
 import com.intellij.openapi.vfs.VirtualFile
 import git4idea.GitUtil
 import git4idea.repo.GitRepository
-import git4idea.repo.GitRepositoryManager
 import com.intellij.openapi.vcs.VcsException
 import com.intellij.openapi.vcs.changes.ui.ChangesViewContentManager
 import com.intellij.openapi.wm.ToolWindowManager
 import git4idea.GitVcs
 import git4idea.changes.GitChangeUtils
+import git4idea.history.GitHistoryUtils
 
 object GitUtils {
     fun getCurrentCommitHash(project: Project): String? {
@@ -25,8 +25,19 @@ object GitUtils {
         if (repository != null) {
             try {
                 val gitVcs = GitVcs.getInstance(project)
-                val revisionNumber = VcsRevisionNumber.valueOf(commitHash)
-                val changes = GitChangeUtils.getDiff(repository.root, revisionNumber, null, project)
+                val revisionNumber = VcsRevisionNumber.SHA1(commitHash)
+                val currentBranch = repository.currentBranch
+                val changes = if (currentBranch != null) {
+                    GitChangeUtils.getDiffWithWorkingDir(
+                        project,
+                        repository.root,
+                        commitHash,
+                        null,
+                        false
+                    )
+                } else {
+                    emptyList()
+                }
 
                 val changesViewContentManager = ChangesViewContentManager.getInstance(project)
                 changesViewContentManager.selectContent("Local")
