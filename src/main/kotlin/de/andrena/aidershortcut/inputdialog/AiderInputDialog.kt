@@ -150,7 +150,7 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
     fun isYesFlagChecked(): Boolean = yesCheckBox.isSelected
     fun getSelectedCommand(): String = commandComboBox.selectedItem as String
     fun getAdditionalArgs(): String = additionalArgsField.text
-    fun getSelectedFiles(): List<FileData> = aiderContextView.getAllFiles()
+    fun getAllFiles(): List<FileData> = aiderContextView.getAllFiles()
     fun isShellMode(): Boolean = modeToggle.isSelected
 
 }

@@ -37,7 +37,7 @@ class AiderAction : AnAction() {
             useYesFlag = dialog.isYesFlagChecked(),
             selectedCommand = dialog.getSelectedCommand(),
             additionalArgs = dialog.getAdditionalArgs(),
-            files = dialog.getSelectedFiles(),
+            files = dialog.getAllFiles(),
             isShellMode = dialog.isShellMode()
         )
     }

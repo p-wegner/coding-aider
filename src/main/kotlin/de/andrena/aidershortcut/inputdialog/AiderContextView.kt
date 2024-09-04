@@ -136,6 +136,17 @@ class AiderContextView(
     }
 
     fun getAllFiles(): List<FileData> {
-        return (allFiles + persistentFiles).distinctBy { it.filePath }
+        val filesFromTree = mutableListOf<FileData>()
+        val root = tree.model.root as DefaultMutableTreeNode
+        val e = root.depthFirstEnumeration()
+
+        while (e.hasMoreElements()) {
+            val node = e.nextElement() as DefaultMutableTreeNode
+            if (node.userObject is FileData) {
+                val fileData = node.userObject as FileData
+                filesFromTree.add(fileData)
+            }
+        }
+        return filesFromTree.distinctBy { it.filePath }
     }
 }
