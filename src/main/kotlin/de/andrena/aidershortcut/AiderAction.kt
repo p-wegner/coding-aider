@@ -11,6 +11,7 @@ import de.andrena.aidershortcut.executors.IDEBasedExecutor
 import de.andrena.aidershortcut.executors.ShellExecutor
 import de.andrena.aidershortcut.inputdialog.AiderInputDialog
 import de.andrena.aidershortcut.inputdialog.PersistentFileManager
+import de.andrena.aidershortcut.utils.FileTraversal
 
 class AiderAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
@@ -23,7 +24,7 @@ class AiderAction : AnAction() {
 
             files.forEach { file ->
                 if (file.isDirectory) {
-                    addFilesFromDirectory(file, allFiles)
+                    allFiles.addAll(FileTraversal.traverseDirectory(file))
                 } else {
                     allFiles.add(FileData(file.path, false))
                 }
@@ -39,16 +40,6 @@ class AiderAction : AnAction() {
                 } else {
                     IDEBasedExecutor(project, commandData).execute()
                 }
-            }
-        }
-    }
-
-    private fun addFilesFromDirectory(directory: VirtualFile, allFiles: MutableList<FileData>) {
-        directory.children.forEach { childFile ->
-            if (childFile.isDirectory) {
-                addFilesFromDirectory(childFile, allFiles)
-            } else {
-                allFiles.add(FileData(childFile.path, false))
             }
         }
     }

@@ -8,6 +8,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.aidershortcut.command.FileData
 import de.andrena.aidershortcut.inputdialog.PersistentFileManager
 import de.andrena.aidershortcut.utils.FileRefresher
+import de.andrena.aidershortcut.utils.FileTraversal
 
 class PersistentFilesAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
@@ -18,18 +19,23 @@ class PersistentFilesAction : AnAction() {
             val persistentFileManager = PersistentFileManager(project.basePath ?: "")
             val persistentFiles = persistentFileManager.getPersistentFiles()
 
-            val allFilesContained = files.all { file ->
-                persistentFiles.any { it.filePath == file.path }
+            val allFiles = files.flatMap { file ->
+                if (file.isDirectory) FileTraversal.traverseDirectory(file, true)
+                else listOf(FileData(file.path, true))
+            }
+
+            val allFilesContained = allFiles.all { file ->
+                persistentFiles.any { it.filePath == file.filePath }
             }
 
             if (allFilesContained) {
-                files.forEach { file ->
-                    persistentFileManager.removeFile(file.path)
+                allFiles.forEach { file ->
+                    persistentFileManager.removeFile(file.filePath)
                 }
             } else {
-                val filesToAdd = files.filter { file ->
-                    !persistentFiles.any { it.filePath == file.path }
-                }.map { FileData(it.path, true) }
+                val filesToAdd = allFiles.filter { file ->
+                    !persistentFiles.any { it.filePath == file.filePath }
+                }
 
                 persistentFileManager.addAllFiles(filesToAdd)
 

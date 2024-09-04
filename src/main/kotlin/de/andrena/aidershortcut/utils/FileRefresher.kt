@@ -24,3 +24,21 @@ object FileRefresher {
         }
     }
 }
+package de.andrena.aidershortcut.utils
+
+import com.intellij.openapi.vfs.VirtualFile
+import de.andrena.aidershortcut.command.FileData
+
+object FileTraversal {
+    fun traverseDirectory(directory: VirtualFile, isReadOnly: Boolean = false): List<FileData> {
+        val allFiles = mutableListOf<FileData>()
+        directory.children.forEach { childFile ->
+            if (childFile.isDirectory) {
+                allFiles.addAll(traverseDirectory(childFile, isReadOnly))
+            } else {
+                allFiles.add(FileData(childFile.path, isReadOnly))
+            }
+        }
+        return allFiles
+    }
+}
