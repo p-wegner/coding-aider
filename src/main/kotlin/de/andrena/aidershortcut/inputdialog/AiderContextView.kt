@@ -44,14 +44,18 @@ class AiderContextView(
                     val fileData = value.userObject as FileData
                     text = File(fileData.filePath).name
                     icon = when {
-                        fileData.isReadOnly && isPersistent(fileData) -> IconManager.getInstance().createRowIcon(AllIcons.Nodes.DataSchema, AllIcons.Nodes.PinToolWindow)
+                        fileData.isReadOnly && isPersistent(fileData) -> IconManager.getInstance()
+                            .createRowIcon(AllIcons.Nodes.DataSchema, AllIcons.Nodes.DataTables)
+
                         fileData.isReadOnly -> IconManager.getInstance().createRowIcon(AllIcons.Nodes.DataSchema)
-                        isPersistent(fileData) -> IconManager.getInstance().createRowIcon(AllIcons.Actions.Edit, AllIcons.Nodes.PinToolWindow)
+                        isPersistent(fileData) -> IconManager.getInstance()
+                            .createRowIcon(AllIcons.Actions.Edit, AllIcons.Nodes.DataTables)
+
                         else -> AllIcons.Actions.Edit
                     }
-                    val tooltipText = fileData.filePath + 
-                        (if (fileData.isReadOnly) " (readonly)" else "") + 
-                        (if (isPersistent(fileData)) " (persistent)" else "")
+                    val tooltipText = fileData.filePath +
+                            (if (fileData.isReadOnly) " (readonly)" else "") +
+                            (if (isPersistent(fileData)) " (persistent)" else "")
                     toolTipText = tooltipText
                 }
             }

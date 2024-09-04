@@ -102,7 +102,7 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
             add(object : com.intellij.openapi.actionSystem.AnAction(
                 "Toggle Persistent Files",
                 "Toggle selected files' persistent status",
-                AllIcons.Actions.PinToolwindow
+                AllIcons.Actions.MenuSaveall
             ) {
                 override fun actionPerformed(e: com.intellij.openapi.actionSystem.AnActionEvent) {
                     aiderContextView.togglePersistentFile()
