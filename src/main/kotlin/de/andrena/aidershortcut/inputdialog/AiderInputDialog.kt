@@ -175,6 +175,7 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
         }
 
         val toolbar = ActionManager.getInstance().createActionToolbar("AiderContextToolbar", actionGroup, true)
+        toolbar.targetComponent = aiderContextView
         val contextPanel = JPanel(BorderLayout()).apply {
             add(toolbar.component, BorderLayout.NORTH)
             add(aiderContextView, BorderLayout.CENTER)
