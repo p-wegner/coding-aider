@@ -13,9 +13,22 @@
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
-    <description>This plugin enhances your development experience by integrating Aider support,
-        providing seamless access to AI-powered coding assistance directly within your IDE.
-    </description>
+    <description><![CDATA[
+        <p>Coding-Aider is an innovative IntelliJ IDEA plugin that seamlessly integrates Aider's AI-powered coding assistance directly into your development environment. This integration enhances your productivity by providing intelligent coding suggestions and automating common development tasks.</p>
+
+        <h3>Key Features:</h3>
+        <ul>
+            <li><strong>AI-Powered Coding Assistance:</strong> Harness the power of Aider to receive intelligent coding suggestions and assistance within your IDE.</li>
+            <li><strong>Intuitive Access:</strong> Quickly initiate Aider actions via the "Start Aider Action" option in the Tools menu or Project View popup menu. Use the keyboard shortcut Alt+A for rapid access.</li>
+            <li><strong>Persistent File Management:</strong> Efficiently manage frequently used files for Aider operations with Alt+Shift+A.</li>
+            <li><strong>Dual Execution Modes:</strong> Choose between IDE-based execution for seamless integration or shell-based execution for users who prefer Aider's rich terminal interaction.</li>
+            <li><strong>Git Integration:</strong> Automatically launch a Git comparison tool post-Aider operations for easy change review.</li>
+            <li><strong>Real-time Progress Tracking:</strong> Monitor Aider command progress through an interactive Markdown dialog.</li>
+            <li><strong>Multi-File Support:</strong> Execute Aider actions on multiple files or directories while controlling the context provided to Aider from your IDE.</li>
+        </ul>
+
+        <p>Elevate your development workflow with Coding-Aider's AI-assisted capabilities. Experience the perfect blend of Aider's powerful features and IntelliJ IDEA's robust environment for a more efficient and intelligent coding process.</p>
+    ]]></description>
 
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
