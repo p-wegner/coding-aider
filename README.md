@@ -64,7 +64,3 @@ functionalities like Git integration and keyboard shortcuts.
     - Enter your coding request in the dialog
     - Review Aider's output and resulting changes in your project
 
-## Conclusion
-
-Elevate your development workflow with Coding-Aider's AI-assisted capabilities. Experience the perfect blend of Aider's
-powerful features and IntelliJ IDEA's robust environment for a more efficient and intelligent coding process.
