@@ -36,6 +36,7 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
         setOKButtonText("OK")
         setCancelButtonText("Cancel")
         setupKeyBindings()
+        setPreferredSize(600, 500)  // Set preferred size to 600x500 pixels
     }
 
     private fun setupKeyBindings() {
