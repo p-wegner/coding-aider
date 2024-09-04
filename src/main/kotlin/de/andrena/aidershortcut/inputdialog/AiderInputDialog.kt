@@ -24,13 +24,11 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
     private val messageLabel = JLabel("Enter your message:")
     private val historyComboBox = JComboBox<String>()
     private val historyHandler = AiderHistoryHandler(project.basePath ?: "")
-    private val persistentFileManager = PersistentFileManager(project.basePath ?: "")
     private val aiderContextView: AiderContextView
 
     init {
         title = "Aider Command"
-        val persistentFiles = persistentFileManager.loadPersistentFiles()
-        aiderContextView = AiderContextView(project, files, persistentFiles)
+        aiderContextView = AiderContextView(project, files)
         init()
         loadHistory()
     }
@@ -109,7 +107,7 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
                 override fun actionPerformed(e: com.intellij.openapi.actionSystem.AnActionEvent) {
                     val selectedFiles = aiderContextView.getSelectedFiles()
                     selectedFiles.forEach { file ->
-                        persistentFileManager.addFile(file)
+                        aiderContextView.addFile(file)
                     }
                 }
             })
@@ -134,16 +132,10 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
 
     override fun doOKAction() {
         super.doOKAction()
-        updateContextFile()
     }
 
     override fun doCancelAction() {
         super.doCancelAction()
-        updateContextFile()
-    }
-
-    private fun updateContextFile() {
-        persistentFileManager.savePersistentFiles(aiderContextView.getPersistentFiles())
     }
 
     fun getInputText(): String = inputTextArea.text

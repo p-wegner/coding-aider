@@ -20,11 +20,12 @@ import javax.swing.tree.DefaultTreeModel
 
 class AiderContextView(
     private val project: Project,
-    private val allFiles: List<FileData>,
-    private var persistentFiles: List<FileData>
+    private val allFiles: List<FileData>
 ) : JPanel(BorderLayout()) {
     private val rootNode = DefaultMutableTreeNode("Files")
     private val tree: Tree = Tree(rootNode)
+    private val persistentFileManager = PersistentFileManager(project.basePath ?: "")
+    private var persistentFiles: List<FileData> = persistentFileManager.loadPersistentFiles()
 
     init {
         updateTree()
@@ -114,7 +115,13 @@ class AiderContextView(
         selectedNodes.forEach { node ->
             if (node.userObject is FileData) {
                 val fileData = node.userObject as FileData
-                node.userObject = fileData.copy(isReadOnly = !fileData.isReadOnly)
+                val updatedFileData = fileData.copy(isReadOnly = !fileData.isReadOnly)
+                node.userObject = updatedFileData
+                
+                // Update persistentFiles
+                persistentFiles = persistentFiles.map { 
+                    if (it.filePath == fileData.filePath) updatedFileData else it 
+                }
             }
         }
 
@@ -125,9 +132,15 @@ class AiderContextView(
             tree.expandPath(path)
             selectionModel.addSelectionPath(path)
         }
+
+        // Save updated persistent files
+        persistentFileManager.savePersistentFiles(persistentFiles)
     }
 
-    fun getPersistentFiles(): List<FileData> = persistentFiles
+    fun getPersistentFiles(): List<FileData> {
+        persistentFileManager.savePersistentFiles(persistentFiles)
+        return persistentFiles
+    }
 
     fun getSelectedFiles(): List<FileData> {
         return tree.selectionPaths?.mapNotNull { path ->
