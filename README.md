@@ -1,5 +1,11 @@
 # Coding-Aider Plugin for IntelliJ IDEA <img src="src/main/resources/META-INF/pluginIcon.svg" alt="Coding-Aider Plugin Icon" width="40" height="40" style="vertical-align: middle;">
 
+<script src="https://plugins.jetbrains.com/assets/scripts/mp-widget.js"></script>
+<script>
+  MarketplaceWidget.setupMarketplaceWidget('card', 25249, '#marketplace-widget');
+</script>
+<div id="marketplace-widget"></div>
+
 Coding-Aider is an innovative IntelliJ IDEA plugin that seamlessly integrates Aider's AI-powered coding assistance
 directly into your development environment. This integration enhances your productivity by providing intelligent coding
 suggestions and automating common development tasks.
