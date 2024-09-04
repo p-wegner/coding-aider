@@ -17,7 +17,18 @@ class AiderAction : AnAction() {
         val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
 
         if (project != null && !files.isNullOrEmpty()) {
-            val allFiles = files.map { FileData(it.path, false) }
+            val allFiles = mutableListOf<FileData>()
+
+            files.forEach { file ->
+                if (file.isDirectory) {
+                    // Add files from the directory to the allFiles list
+                    file.children.forEach { childFile ->
+                        allFiles.add(FileData(childFile.path, false))
+                    }
+                } else {
+                    allFiles.add(FileData(file.path, false))
+                }
+            }
 
             val dialog = AiderInputDialog(project, allFiles)
             if (dialog.showAndGet()) {
