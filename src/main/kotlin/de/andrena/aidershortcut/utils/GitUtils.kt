@@ -4,7 +4,6 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.changes.actions.diff.ShowCombinedDiffAction
-import com.intellij.openapi.vfs.VirtualFile
 import git4idea.GitUtil
 import git4idea.repo.GitRepository
 
@@ -51,10 +50,4 @@ object GitUtils {
         return GitUtil.getRepositoryManager(project).repositories.firstOrNull()
     }
 
-    private fun getChangedFiles(project: Project): List<VirtualFile> {
-        return ApplicationManager.getApplication().executeOnPooledThread<List<VirtualFile>> {
-            val changeListManager = com.intellij.openapi.vcs.changes.ChangeListManager.getInstance(project)
-            changeListManager.affectedFiles
-        }.get()
-    }
 }
