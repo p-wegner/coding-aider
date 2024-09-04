@@ -7,6 +7,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.aidershortcut.command.FileData
 import de.andrena.aidershortcut.inputdialog.PersistentFileManager
+import de.andrena.aidershortcut.utils.FileRefresher
 
 class PersistentFilesAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
@@ -33,6 +34,9 @@ class PersistentFilesAction : AnAction() {
                 }.map { FileData(it.path, true) }
 
                 persistentFileManager.addAllFiles(filesToAdd)
+                
+                // Refresh the files after adding them to the persistent list
+                FileRefresher.refreshFiles(project, files)
             }
         }
     }

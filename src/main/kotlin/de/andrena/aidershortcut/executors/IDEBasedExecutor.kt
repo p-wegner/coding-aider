@@ -1,15 +1,12 @@
 package de.andrena.aidershortcut.executors
 
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.openapi.vfs.newvfs.RefreshQueue
 import de.andrena.aidershortcut.command.AiderCommandBuilder
 import de.andrena.aidershortcut.command.CommandData
 import de.andrena.aidershortcut.outputview.MarkdownDialog
+import de.andrena.aidershortcut.utils.FileRefresher
 import de.andrena.aidershortcut.utils.GitUtils
 import java.awt.EventQueue.invokeLater
 import java.io.BufferedReader
@@ -96,15 +93,7 @@ class IDEBasedExecutor(
     }
 
     private fun refreshFiles(files: Array<VirtualFile>, markdownDialog: MarkdownDialog) {
-        invokeLater {
-            ApplicationManager.getApplication().invokeLater {
-                WriteAction.runAndWait<Throwable> {
-                    VirtualFileManager.getInstance().refreshWithoutFileWatcher(false)
-                    RefreshQueue.getInstance().refresh(true, true, null, *files)
-                }
-                markdownDialog.show()
-            }
-        }
+        FileRefresher.refreshFiles(project, files, markdownDialog)
     }
 
     private fun pollProcessAndReadOutput(
