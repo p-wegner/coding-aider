@@ -12,7 +12,10 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.commandhistory.AiderHistoryHandler
-import java.awt.*
+import java.awt.BorderLayout
+import java.awt.Component
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
 import java.awt.event.KeyEvent
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -38,7 +41,6 @@ class AiderInputDialog(project: Project, files: List<FileData>) : DialogWrapper(
         setOKButtonText("OK")
         setCancelButtonText("Cancel")
         setupKeyBindings()
-        this.preferredSize.size = Dimension(600, 500)
     }
 
     private fun setupKeyBindings() {

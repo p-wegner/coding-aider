@@ -4,6 +4,10 @@ Coding-Aider is an innovative IntelliJ IDEA plugin that seamlessly integrates Ai
 directly into your development environment. This integration enhances your productivity by providing intelligent coding
 suggestions and automating common development tasks.
 
+## Example Usage
+
+![Aider Command Action Example](docs/AiderCommandAction.jpg)
+
 ## Key Features
 
 1. **AI-Powered Coding Assistance**: Harness the power of Aider to receive intelligent coding suggestions and assistance
@@ -59,10 +63,6 @@ functionalities like Git integration and keyboard shortcuts.
     - Use Alt+A or right-click to initiate an Aider action
     - Enter your coding request in the dialog
     - Review Aider's output and resulting changes in your project
-
-   ![Aider Command Action Example](docs/AiderCommandAction.jpg)
-
-   The image above shows an example of the Aider Command dialog in action. You can see the code context on the left and the command interface on the right, where you can enter your message, select command options, and view the files in context.
 
 ## Conclusion
 
