@@ -3,7 +3,7 @@ package de.andrena.aidershortcut.utils
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.changes.Change
-import com.intellij.openapi.vcs.changes.actions.diff.ShowDiffAction
+import com.intellij.openapi.vcs.changes.actions.diff.ShowCombinedDiffAction
 import com.intellij.openapi.vfs.VirtualFile
 import git4idea.GitUtil
 import git4idea.repo.GitRepository
@@ -28,7 +28,7 @@ object GitUtils {
             }.get()
 
             if (changes.isNotEmpty()) {
-                ShowDiffAction.showDiffForChange(
+                ShowCombinedDiffAction.showDiff(
                     project,
                     changes,
                 )
