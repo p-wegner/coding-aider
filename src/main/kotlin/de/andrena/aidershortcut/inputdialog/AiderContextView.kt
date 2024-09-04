@@ -134,4 +134,8 @@ class AiderContextView(
             (path.lastPathComponent as? DefaultMutableTreeNode)?.userObject as? FileData
         } ?: emptyList()
     }
+
+    fun getAllFiles(): List<FileData> {
+        return (allFiles + persistentFiles).distinctBy { it.filePath }
+    }
 }
