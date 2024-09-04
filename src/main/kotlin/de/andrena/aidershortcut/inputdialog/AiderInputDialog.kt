@@ -105,10 +105,7 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
                 AllIcons.Actions.AddFile
             ) {
                 override fun actionPerformed(e: com.intellij.openapi.actionSystem.AnActionEvent) {
-                    val selectedFiles = aiderContextView.getSelectedFiles()
-                    selectedFiles.forEach { file ->
-                        aiderContextView.addFile(file)
-                    }
+                    aiderContextView.addSelectedFilesToPersistentList()
                 }
             })
         }

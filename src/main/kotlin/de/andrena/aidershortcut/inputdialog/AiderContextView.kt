@@ -117,10 +117,10 @@ class AiderContextView(
                 val fileData = node.userObject as FileData
                 val updatedFileData = fileData.copy(isReadOnly = !fileData.isReadOnly)
                 node.userObject = updatedFileData
-                
+
                 // Update persistentFiles
-                persistentFiles = persistentFiles.map { 
-                    if (it.filePath == fileData.filePath) updatedFileData else it 
+                persistentFiles = persistentFiles.map {
+                    if (it.filePath == fileData.filePath) updatedFileData else it
                 }
             }
         }
@@ -134,13 +134,9 @@ class AiderContextView(
         }
 
         // Save updated persistent files
-        persistentFileManager.savePersistentFiles(persistentFiles)
+        persistentFileManager.savePersistentFilesToContextFile()
     }
 
-    fun getPersistentFiles(): List<FileData> {
-        persistentFileManager.savePersistentFiles(persistentFiles)
-        return persistentFiles
-    }
 
     fun getSelectedFiles(): List<FileData> {
         return tree.selectionPaths?.mapNotNull { path ->
@@ -161,5 +157,12 @@ class AiderContextView(
             }
         }
         return filesFromTree.distinctBy { it.filePath }
+    }
+
+    fun addSelectedFilesToPersistentList(): Unit {
+        val selectedFiles = getSelectedFiles()
+        persistentFileManager.addAllFiles(selectedFiles)
+        persistentFiles = persistentFileManager.getPersistentFiles()
+        updateTree()
     }
 }

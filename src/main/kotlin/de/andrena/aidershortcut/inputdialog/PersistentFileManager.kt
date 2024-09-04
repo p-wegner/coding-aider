@@ -27,9 +27,7 @@ class PersistentFileManager(private val basePath: String) {
         return persistentFiles
     }
 
-    fun savePersistentFiles(files: List<FileData>) {
-        persistentFiles.clear()
-        persistentFiles.addAll(files)
+    fun savePersistentFilesToContextFile() {
         try {
             FileWriter(contextFile).use { writer ->
                 persistentFiles.forEach { file ->
@@ -44,14 +42,17 @@ class PersistentFileManager(private val basePath: String) {
     fun addFile(file: FileData) {
         if (!persistentFiles.any { it.filePath == file.filePath }) {
             persistentFiles.add(file)
-            savePersistentFiles(persistentFiles)
+            savePersistentFilesToContextFile()
         }
     }
 
     fun removeFile(filePath: String) {
         persistentFiles.removeIf { it.filePath == filePath }
-        savePersistentFiles(persistentFiles)
+        savePersistentFilesToContextFile()
     }
 
     fun getPersistentFiles(): List<FileData> = persistentFiles
+    fun addAllFiles(selectedFiles: List<FileData>) {
+        selectedFiles.forEach { addFile(it) }
+    }
 }
