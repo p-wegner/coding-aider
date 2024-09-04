@@ -3,6 +3,7 @@ package de.andrena.codingaider.outputview
 import com.intellij.openapi.project.Project
 import java.awt.BorderLayout
 import java.awt.EventQueue.invokeLater
+import java.awt.event.KeyEvent
 import javax.swing.JButton
 import javax.swing.JDialog
 import javax.swing.JScrollPane
