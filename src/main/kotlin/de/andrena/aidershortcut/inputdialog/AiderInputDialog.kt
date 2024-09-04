@@ -33,7 +33,7 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
     }
 
     private fun loadHistory() {
-        historyComboBox.addItem(HistoryItem("", null))  // Empty entry
+        historyComboBox.addItem(HistoryItem(emptyList(), null))  // Empty entry
         historyHandler.getHistory().forEach { (dateTime, command) ->
             historyComboBox.addItem(HistoryItem(command, dateTime))
         }
@@ -42,14 +42,14 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
         historyComboBox.addActionListener {
             if (historyComboBox.selectedIndex > 0 && historyComboBox.selectedItem is HistoryItem) {
                 val selectedItem = historyComboBox.selectedItem as HistoryItem
-                inputTextArea.text = selectedItem.command
+                inputTextArea.text = selectedItem.command.joinToString("\n")
             } else {
                 inputTextArea.text = ""  // Clear the input area when empty entry is selected
             }
         }
     }
 
-    private data class HistoryItem(val command: String, val dateTime: LocalDateTime?)
+    private data class HistoryItem(val command: List<String>, val dateTime: LocalDateTime?)
 
     private inner class HistoryItemRenderer : DefaultListCellRenderer() {
         override fun getListCellRendererComponent(
@@ -61,9 +61,11 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
         ): Component {
             val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
             if (value is HistoryItem) {
-                text = value.command
+                text = value.command.firstOrNull() ?: ""
                 if (value.dateTime != null) {
-                    toolTipText = value.dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                    val formattedDate = value.dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                    val fullCommand = value.command.joinToString("\n")
+                    toolTipText = "<html>$formattedDate<br><pre>$fullCommand</pre></html>"
                 } else {
                     toolTipText = null
                 }
