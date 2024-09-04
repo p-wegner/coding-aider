@@ -28,9 +28,9 @@ class AiderAction : AnAction() {
                 val commandData = collectCommandData(dialog)
                 val parentComponent = dialog.contentPane
                 if (commandData.isShellMode) {
-                    ShellExecutor(project, commandData, parentComponent).execute()
+                    ShellExecutor(project, commandData).execute()
                 } else {
-                    IDEBasedExecutor(project, commandData, parentComponent).execute()
+                    IDEBasedExecutor(project, commandData).execute()
                 }
             }
         }

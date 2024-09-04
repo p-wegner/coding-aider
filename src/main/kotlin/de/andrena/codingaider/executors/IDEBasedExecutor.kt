@@ -16,8 +16,7 @@ import kotlin.concurrent.thread
 
 class IDEBasedExecutor(
     private val project: Project,
-    private val commandData: CommandData,
-    private val parentComponent: Component?
+    private val commandData: CommandData
 ) {
     private val LOG = Logger.getInstance(IDEBasedExecutor::class.java)
 
