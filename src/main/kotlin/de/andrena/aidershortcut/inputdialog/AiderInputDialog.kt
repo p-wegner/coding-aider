@@ -8,10 +8,9 @@ import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.components.JBScrollPane
 import de.andrena.aidershortcut.command.FileData
 import de.andrena.aidershortcut.commandhistory.AiderHistoryHandler
-import java.awt.BorderLayout
-import java.awt.GridBagConstraints
-import java.awt.GridBagLayout
-import java.awt.Insets
+import java.awt.*
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import javax.swing.*
 
 class AiderInputDialog(private val project: Project, files: List<FileData>) : DialogWrapper(project) {
