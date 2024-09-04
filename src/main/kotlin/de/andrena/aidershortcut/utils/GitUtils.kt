@@ -3,7 +3,6 @@ package de.andrena.aidershortcut.utils
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.VcsException
 import com.intellij.openapi.vcs.changes.ChangeListManager
-import com.intellij.openapi.vcs.changes.LocalChangeList
 import com.intellij.openapi.vcs.changes.ui.ChangesViewContentManager
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindowManager
@@ -36,9 +35,10 @@ object GitUtils {
                     emptyList()
                 }
 
-                val changeListManager = ChangeListManager.getInstance(project)
-                val changeList = LocalChangeList.createEmptyChangeList(project, "Changes since $commitHash")
-                changeList.changes.addAll(changes)
+//                val changeList = LocalChangeList.createEmptyChangeList(project, "Changes since $commitHash")
+//                for (change in changes) {
+//                    changeList.changes.add(change)
+//                }
 
                 val changesViewContentManager = ChangesViewContentManager.getInstance(project)
                 changesViewContentManager.selectContent("Local Changes")
