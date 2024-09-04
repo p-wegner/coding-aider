@@ -11,6 +11,7 @@ import de.andrena.aidershortcut.commandhistory.AiderHistoryHandler
 import java.awt.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.awt.event.KeyEvent
 import javax.swing.*
 
 class AiderInputDialog(private val project: Project, files: List<FileData>) : DialogWrapper(project) {
@@ -32,6 +33,13 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
         loadHistory()
         setOKButtonText("OK")
         setCancelButtonText("Cancel")
+    }
+
+    override fun createActions(): Array<Action> {
+        val actions = super.createActions()
+        (actions[0] as? DialogWrapperAction)?.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_O)
+        (actions[1] as? DialogWrapperAction)?.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_C)
+        return actions
     }
 
     override fun show() {
@@ -95,14 +103,17 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
             gridwidth = GridBagConstraints.REMAINDER
         }
 
-        modeToggle.mnemonic = 'M'.code
+        modeToggle.mnemonic = KeyEvent.VK_M
         panel.add(modeToggle, gbc)
         gbc.gridy++
-        panel.add(JLabel("Command History:"), gbc)
+        val historyLabel = JLabel("Command History:")
+        historyLabel.displayedMnemonic = KeyEvent.VK_H
+        historyLabel.labelFor = historyComboBox
+        panel.add(historyLabel, gbc)
         gbc.gridy++
         panel.add(historyComboBox, gbc)
         gbc.gridy++
-        messageLabel.displayedMnemonic = 'E'.code
+        messageLabel.displayedMnemonic = KeyEvent.VK_E
         messageLabel.labelFor = inputTextArea
         panel.add(messageLabel, gbc)
         gbc.gridy++
@@ -112,12 +123,12 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
         gbc.gridy++
         gbc.weighty = 0.0
         gbc.fill = GridBagConstraints.HORIZONTAL
-        yesCheckBox.mnemonic = 'Y'.code
+        yesCheckBox.mnemonic = KeyEvent.VK_Y
         panel.add(yesCheckBox, gbc)
         gbc.gridy++
         gbc.gridwidth = 1
         val selectCommandLabel = JLabel("Select command:")
-        selectCommandLabel.displayedMnemonic = 'S'.code
+        selectCommandLabel.displayedMnemonic = KeyEvent.VK_S
         selectCommandLabel.labelFor = commandComboBox
         panel.add(selectCommandLabel, gbc)
         gbc.gridx = 1
@@ -127,7 +138,7 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
         gbc.gridx = 0
         gbc.gridwidth = 1
         val additionalArgsLabel = JLabel("Additional arguments:")
-        additionalArgsLabel.displayedMnemonic = 'A'.code
+        additionalArgsLabel.displayedMnemonic = KeyEvent.VK_A
         additionalArgsLabel.labelFor = additionalArgsField
         panel.add(additionalArgsLabel, gbc)
         gbc.gridx = 1
