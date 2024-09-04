@@ -20,11 +20,7 @@ class AiderAction : AnAction() {
 
         if (project != null && !files.isNullOrEmpty()) {
             val persistentFileManager = PersistentFileManager(project.basePath ?: "")
-            val allFiles = mutableListOf<FileData>()
-
-            files.forEach { file ->
-                allFiles.addAll(FileTraversal.traverseFileOrDirectory(file))
-            }
+            val allFiles = FileTraversal.traverseFilesOrDirectories(files).toMutableList()
 
             allFiles.addAll(persistentFileManager.getPersistentFiles())
 

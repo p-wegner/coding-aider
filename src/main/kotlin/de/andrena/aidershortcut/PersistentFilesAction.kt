@@ -5,7 +5,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import de.andrena.aidershortcut.command.FileData
 import de.andrena.aidershortcut.inputdialog.PersistentFileManager
 import de.andrena.aidershortcut.utils.FileRefresher
 import de.andrena.aidershortcut.utils.FileTraversal
@@ -19,9 +18,7 @@ class PersistentFilesAction : AnAction() {
             val persistentFileManager = PersistentFileManager(project.basePath ?: "")
             val persistentFiles = persistentFileManager.getPersistentFiles()
 
-            val allFiles = files.flatMap { file ->
-                FileTraversal.traverseFileOrDirectory(file, true)
-            }
+            val allFiles = FileTraversal.traverseFilesOrDirectories(files, true)
 
             val allFilesContained = allFiles.all { file ->
                 persistentFiles.any { it.filePath == file.filePath }
@@ -49,9 +46,10 @@ class PersistentFilesAction : AnAction() {
         val persistentFileManager = project?.basePath?.let { PersistentFileManager(it) }
         val persistentFiles = persistentFileManager?.getPersistentFiles() ?: emptyList()
 
-        val allFilesContained = files?.all { file ->
-            persistentFiles.any { it.filePath == file.path }
-        } ?: false
+        val allFiles = files?.let { FileTraversal.traverseFilesOrDirectories(it) } ?: emptyList()
+        val allFilesContained = allFiles.all { file ->
+            persistentFiles.any { it.filePath == file.filePath }
+        }
 
         e.presentation.isEnabledAndVisible = project != null && !files.isNullOrEmpty()
         e.presentation.text = if (allFilesContained) "Remove from Persistent Files" else "Add to Persistent Files"
