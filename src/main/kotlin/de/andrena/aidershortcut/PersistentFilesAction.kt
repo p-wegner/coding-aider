@@ -17,11 +17,23 @@ class PersistentFilesAction : AnAction() {
             val persistentFileManager = PersistentFileManager(project.basePath ?: "")
             val persistentFiles = persistentFileManager.getPersistentFiles()
 
-            val filesToAdd = files.filter { file ->
-                !persistentFiles.any { it.filePath == file.path }
-            }.map { FileData(it.path, true) }
+            val allFilesContained = files.all { file ->
+                persistentFiles.any { it.filePath == file.path }
+            }
 
-            persistentFileManager.addAllFiles(filesToAdd)
+            if (allFilesContained) {
+                // Remove files from persistent list
+                files.forEach { file ->
+                    persistentFileManager.removeFile(file.path)
+                }
+            } else {
+                // Add files to persistent list
+                val filesToAdd = files.filter { file ->
+                    !persistentFiles.any { it.filePath == file.path }
+                }.map { FileData(it.path, true) }
+
+                persistentFileManager.addAllFiles(filesToAdd)
+            }
         }
     }
 
