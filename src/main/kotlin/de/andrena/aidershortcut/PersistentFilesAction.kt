@@ -23,19 +23,16 @@ class PersistentFilesAction : AnAction() {
             }
 
             if (allFilesContained) {
-                // Remove files from persistent list
                 files.forEach { file ->
                     persistentFileManager.removeFile(file.path)
                 }
             } else {
-                // Add files to persistent list
                 val filesToAdd = files.filter { file ->
                     !persistentFiles.any { it.filePath == file.path }
                 }.map { FileData(it.path, true) }
 
                 persistentFileManager.addAllFiles(filesToAdd)
-                
-                // Refresh the context file after modifying the persistent list
+
                 FileRefresher.refreshFiles(project, arrayOf(persistentFileManager.getContextFile()))
             }
         }

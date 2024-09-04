@@ -36,6 +36,7 @@
                     class="de.andrena.aidershortcut.PersistentFilesAction"
                     text="Add to Persistent Files"
                     description="Add or remove files from the persistent files list">
+                <keyboard-shortcut keymap="$default" first-keystroke="alt shift A"/>
             </action>
         </group>
     </actions>
