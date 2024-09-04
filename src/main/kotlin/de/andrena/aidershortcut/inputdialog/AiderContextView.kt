@@ -88,9 +88,21 @@ class AiderContextView(
         val uniqueFiles = (allFiles + persistentFiles).distinctBy { it.filePath }
 
         uniqueFiles.forEach { fileData ->
-            if (!rootNode.children().asSequence().any { (it as DefaultMutableTreeNode).userObject == fileData }) {
-                val node = DefaultMutableTreeNode(fileData)
-                rootNode.add(node)
+            val pathParts = fileData.filePath.split(File.separator)
+            var currentNode = rootNode
+
+            for (part in pathParts) {
+                val existingNode = currentNode.children().asSequence()
+                    .map { it as DefaultMutableTreeNode }
+                    .find { it.userObject is FileData && File(it.userObject.filePath).name == part }
+
+                currentNode = if (existingNode != null) {
+                    existingNode
+                } else {
+                    val newNode = DefaultMutableTreeNode(FileData(fileData.filePath, fileData.isReadOnly))
+                    currentNode.add(newNode)
+                    newNode
+                }
             }
         }
 
@@ -143,7 +155,6 @@ class AiderContextView(
         // Save updated persistent files
         persistentFileManager.savePersistentFilesToContextFile()
     }
-
 
     fun getSelectedFiles(): List<FileData> {
         return tree.selectionPaths?.mapNotNull { path ->

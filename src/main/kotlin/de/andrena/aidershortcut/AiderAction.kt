@@ -21,10 +21,7 @@ class AiderAction : AnAction() {
 
             files.forEach { file ->
                 if (file.isDirectory) {
-                    // Add files from the directory to the allFiles list
-                    file.children.forEach { childFile ->
-                        allFiles.add(FileData(childFile.path, false))
-                    }
+                    addFilesFromDirectory(file, allFiles)
                 } else {
                     allFiles.add(FileData(file.path, false))
                 }
@@ -38,6 +35,16 @@ class AiderAction : AnAction() {
                 } else {
                     IDEBasedExecutor(project, commandData).execute()
                 }
+            }
+        }
+    }
+
+    private fun addFilesFromDirectory(directory: VirtualFile, allFiles: MutableList<FileData>) {
+        directory.children.forEach { childFile ->
+            if (childFile.isDirectory) {
+                addFilesFromDirectory(childFile, allFiles)
+            } else {
+                allFiles.add(FileData(childFile.path, false))
             }
         }
     }
