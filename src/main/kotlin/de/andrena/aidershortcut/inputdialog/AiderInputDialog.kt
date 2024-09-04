@@ -15,6 +15,7 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.awt.event.KeyEvent
 import javax.swing.*
+import javax.swing.text.DefaultEditorKit
 
 class AiderInputDialog(private val project: Project, files: List<FileData>) : DialogWrapper(project) {
     private val inputTextArea = JTextArea(5, 30)
@@ -35,6 +36,37 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
         loadHistory()
         setOKButtonText("OK")
         setCancelButtonText("Cancel")
+        setupKeyBindings()
+    }
+
+    private fun setupKeyBindings() {
+        val inputMap = inputTextArea.getInputMap(JComponent.WHEN_FOCUSED)
+        val actionMap = inputTextArea.actionMap
+
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, KeyEvent.ALT_DOWN_MASK), "previousHistory")
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, KeyEvent.ALT_DOWN_MASK), "nextHistory")
+
+        actionMap.put("previousHistory", object : AbstractAction() {
+            override fun actionPerformed(e: java.awt.event.ActionEvent) {
+                navigateHistory(-1)
+            }
+        })
+
+        actionMap.put("nextHistory", object : AbstractAction() {
+            override fun actionPerformed(e: java.awt.event.ActionEvent) {
+                navigateHistory(1)
+            }
+        })
+    }
+
+    private fun navigateHistory(direction: Int) {
+        val currentIndex = historyComboBox.selectedIndex
+        val newIndex = (currentIndex + direction).coerceIn(0, historyComboBox.itemCount - 1)
+        if (newIndex != currentIndex) {
+            historyComboBox.selectedIndex = newIndex
+            val selectedItem = historyComboBox.selectedItem as? HistoryItem
+            inputTextArea.text = selectedItem?.command?.joinToString("\n") ?: ""
+        }
     }
 
     override fun createActions(): Array<Action> {
