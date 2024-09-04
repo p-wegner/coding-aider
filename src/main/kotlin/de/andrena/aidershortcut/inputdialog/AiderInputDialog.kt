@@ -2,20 +2,19 @@ package de.andrena.aidershortcut.inputdialog
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.components.JBScrollPane
 import de.andrena.aidershortcut.command.FileData
 import de.andrena.aidershortcut.commandhistory.AiderHistoryHandler
 import java.awt.*
+import java.awt.event.KeyEvent
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.awt.event.KeyEvent
 import javax.swing.*
-import javax.swing.text.DefaultEditorKit
 
 class AiderInputDialog(private val project: Project, files: List<FileData>) : DialogWrapper(project) {
     private val inputTextArea = JTextArea(5, 30)
@@ -225,14 +224,6 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
         inputTextArea.requestFocusInWindow()
 
         return panel
-    }
-
-    override fun doOKAction() {
-        super.doOKAction()
-    }
-
-    override fun doCancelAction() {
-        super.doCancelAction()
     }
 
     fun getInputText(): String = inputTextArea.text
