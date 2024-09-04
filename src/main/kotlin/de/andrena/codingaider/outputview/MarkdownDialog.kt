@@ -25,11 +25,11 @@ class MarkdownDialog(private val project: Project, title: String, initialText: S
 
         val button = JButton("Close").apply {
             mnemonic = KeyEvent.VK_C
-            addActionListener { isVisible = false }
+            addActionListener { dispose() }
         }
         add(button, BorderLayout.SOUTH)
 
-        defaultCloseOperation = HIDE_ON_CLOSE
+        defaultCloseOperation = DISPOSE_ON_CLOSE
     }
 
     fun updateProgress(output: String, message: String) {
