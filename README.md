@@ -1,5 +1,7 @@
 # Coding-Aider Plugin for IntelliJ IDEA
 
+![Coding-Aider Plugin Icon](src/main/resources/META-INF/pluginIcon.svg)
+
 Coding-Aider is an innovative IntelliJ IDEA plugin that seamlessly integrates Aider's AI-powered coding assistance
 directly into your development environment. This integration enhances your productivity by providing intelligent coding
 suggestions and automating common development tasks.
