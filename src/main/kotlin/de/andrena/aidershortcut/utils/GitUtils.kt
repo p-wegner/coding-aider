@@ -25,7 +25,6 @@ object GitUtils {
         if (repository != null) {
             try {
                 val gitVcs = GitVcs.getInstance(project)
-                val revisionNumber = VcsRevisionNumber.SHA1(commitHash)
                 val currentBranch = repository.currentBranch
                 val changes = if (currentBranch != null) {
                     GitChangeUtils.getDiffWithWorkingDir(
