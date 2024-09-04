@@ -7,13 +7,10 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.ui.IconManager
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.treeStructure.Tree
-import com.intellij.ui.components.JBScrollPane
-import com.intellij.ui.tree.TreeVisitor
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.tree.TreeUtil
 import de.andrena.aidershortcut.command.FileData
 import java.awt.BorderLayout
-import java.awt.Dimension
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.io.File
@@ -55,9 +52,11 @@ class AiderContextView(
                         icon = when {
                             fileData.isReadOnly && isPersistent(fileData) -> IconManager.getInstance()
                                 .createRowIcon(AllIcons.Nodes.DataSchema, AllIcons.Nodes.DataTables)
+
                             fileData.isReadOnly -> IconManager.getInstance().createRowIcon(AllIcons.Nodes.DataSchema)
                             isPersistent(fileData) -> IconManager.getInstance()
                                 .createRowIcon(AllIcons.Actions.Edit, AllIcons.Nodes.DataTables)
+
                             else -> AllIcons.Actions.Edit
                         }
                         val tooltipText = buildString {
