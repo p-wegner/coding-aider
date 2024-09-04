@@ -1,5 +1,7 @@
 package de.andrena.aidershortcut.inputdialog
 
+import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.aidershortcut.command.FileData
 import java.io.File
 import java.io.FileWriter
@@ -55,4 +57,5 @@ class PersistentFileManager(private val basePath: String) {
     fun addAllFiles(selectedFiles: List<FileData>) {
         selectedFiles.forEach { addFile(it) }
     }
+    fun getContextFile(): VirtualFile = LocalFileSystem.getInstance().findFileByIoFile(contextFile)!!
 }

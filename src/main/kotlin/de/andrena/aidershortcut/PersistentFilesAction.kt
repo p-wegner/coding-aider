@@ -35,8 +35,8 @@ class PersistentFilesAction : AnAction() {
 
                 persistentFileManager.addAllFiles(filesToAdd)
                 
-                // Refresh the files after adding them to the persistent list
-                FileRefresher.refreshFiles(project, files)
+                // Refresh the context file after modifying the persistent list
+                FileRefresher.refreshFiles(project, arrayOf(persistentFileManager.getContextFile()))
             }
         }
     }
