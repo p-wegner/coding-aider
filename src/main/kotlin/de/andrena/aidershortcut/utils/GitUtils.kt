@@ -1,5 +1,6 @@
 package de.andrena.aidershortcut.utils
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.changes.actions.diff.ShowDiffAction
@@ -9,14 +10,23 @@ import git4idea.repo.GitRepository
 
 object GitUtils {
     fun getCurrentCommitHash(project: Project): String? {
-        val repository = getGitRepository(project)
-        return repository?.currentRevision
+        return ApplicationManager.getApplication().executeOnPooledThread<String?> {
+            val repository = getGitRepository(project)
+            repository?.currentRevision
+        }.get()
     }
 
     fun openGitComparisonTool(project: Project, commitHash: String) {
-        val repository = getGitRepository(project)
-        if (repository != null) {
-            val changes = getChanges(project, repository, commitHash)
+        ApplicationManager.getApplication().invokeLater {
+            val changes = ApplicationManager.getApplication().executeOnPooledThread<List<Change>> {
+                val repository = getGitRepository(project)
+                if (repository != null) {
+                    getChanges(project, repository, commitHash)
+                } else {
+                    emptyList()
+                }
+            }.get()
+
             if (changes.isNotEmpty()) {
                 ShowDiffAction.showDiffForChange(
                     project,
@@ -31,7 +41,7 @@ object GitUtils {
         val root = repository.root
         return if (gitVcs != null) {
             val revision = gitVcs.parseRevisionNumber(commitHash) ?: return emptyList()
-            return gitVcs.diffProvider.compareWithWorkingDir(root, revision)?.toList() ?: emptyList()
+            gitVcs.diffProvider.compareWithWorkingDir(root, revision)?.toList() ?: emptyList()
         } else {
             emptyList()
         }
@@ -42,7 +52,9 @@ object GitUtils {
     }
 
     private fun getChangedFiles(project: Project): List<VirtualFile> {
-        val changeListManager = com.intellij.openapi.vcs.changes.ChangeListManager.getInstance(project)
-        return changeListManager.affectedFiles
+        return ApplicationManager.getApplication().executeOnPooledThread<List<VirtualFile>> {
+            val changeListManager = com.intellij.openapi.vcs.changes.ChangeListManager.getInstance(project)
+            changeListManager.affectedFiles
+        }.get()
     }
 }
