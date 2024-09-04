@@ -15,11 +15,11 @@ import javax.swing.*
 
 class AiderInputDialog(private val project: Project, files: List<FileData>) : DialogWrapper(project) {
     private val inputTextArea = JTextArea(5, 30)
-    private val yesCheckBox = JCheckBox("Add --yes flag", false)
-    private val commandOptions = arrayOf("--mini", "--sonnet", "--4o", "--deepseek")
+    private val yesCheckBox = JCheckBox("Add --yes flag", true)
+    private val commandOptions = arrayOf("--sonnet", "--mini", "--4o", "--deepseek")
     private val commandComboBox = JComboBox(commandOptions)
     private val additionalArgsField = JTextField(20)
-    private val modeToggle = JCheckBox("Shell Mode", false)
+    private val modeToggle = JCheckBox("Shell Mode")
     private val messageLabel = JLabel("Enter your message:")
     private val historyComboBox = JComboBox<HistoryItem>()
     private val historyHandler = AiderHistoryHandler(project.basePath ?: "")
