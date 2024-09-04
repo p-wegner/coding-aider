@@ -1,5 +1,6 @@
 package de.andrena.aidershortcut.utils
 
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.VcsException
 import com.intellij.openapi.vcs.changes.ChangeListManager
@@ -23,22 +24,25 @@ object GitUtils {
             try {
                 val gitVcs = GitVcs.getInstance(project)
                 val currentBranch = repository.currentBranch
-                val changes = if (currentBranch != null) {
-                    GitChangeUtils.getDiffWithWorkingDir(
-                        project,
-                        repository.root,
-                        commitHash,
-                        null,
-                        false
-                    )
-                } else {
-                    emptyList()
-                }
-
-//                val changeList = LocalChangeList.createEmptyChangeList(project, "Changes since $commitHash")
-//                for (change in changes) {
-//                    changeList.changes.add(change)
-//                }
+                
+                val changes = ProgressManager.getInstance().runProcessWithProgressSynchronously<List<com.intellij.openapi.vcs.changes.Change>, Exception>(
+                    {
+                        if (currentBranch != null) {
+                            GitChangeUtils.getDiffWithWorkingDir(
+                                project,
+                                repository.root,
+                                commitHash,
+                                null,
+                                false
+                            )
+                        } else {
+                            emptyList()
+                        }
+                    },
+                    "Calculating Git Diff",
+                    true,
+                    project
+                )
 
                 val changesViewContentManager = ChangesViewContentManager.getInstance(project)
                 changesViewContentManager.selectContent("Local Changes")
