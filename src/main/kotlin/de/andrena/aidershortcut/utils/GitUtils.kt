@@ -3,7 +3,6 @@ package de.andrena.aidershortcut.utils
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.changes.actions.diff.ShowDiffAction
-import com.intellij.openapi.vcs.changes.ui.ChangesComparator
 import com.intellij.openapi.vfs.VirtualFile
 import git4idea.GitUtil
 import git4idea.repo.GitRepository
@@ -21,10 +20,7 @@ object GitUtils {
             if (changes.isNotEmpty()) {
                 ShowDiffAction.showDiffForChange(
                     project,
-                    changes.sortedWith(ChangesComparator.getInstance()),
-                    0,
-                    ShowDiffAction.DiffExtendUIFactory.NONE,
-                    true
+                    changes,
                 )
             }
         }
@@ -32,8 +28,10 @@ object GitUtils {
 
     private fun getChanges(project: Project, repository: GitRepository, commitHash: String): List<Change> {
         val gitVcs = GitUtil.getRepositoryManager(project).getRepositoryForRoot(repository.root)?.vcs
+        val root = repository.root
         return if (gitVcs != null) {
-            gitVcs.getDiffProvider().compare(commitHash, repository.currentRevision!!)
+            val revision = gitVcs.parseRevisionNumber(commitHash) ?: return emptyList()
+            return gitVcs.diffProvider.compareWithWorkingDir(root, revision)?.toList() ?: emptyList()
         } else {
             emptyList()
         }
