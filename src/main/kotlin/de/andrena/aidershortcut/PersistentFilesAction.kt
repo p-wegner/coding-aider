@@ -34,9 +34,9 @@ class PersistentFilesAction : AnAction() {
                 }
 
                 persistentFileManager.addAllFiles(filesToAdd)
-
-                FileRefresher.refreshFiles(project, arrayOf(persistentFileManager.getContextFile()))
             }
+
+            FileRefresher.refreshFiles(project, arrayOf(persistentFileManager.getContextFile()))
         }
     }
 
