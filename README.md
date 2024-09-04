@@ -1,55 +1,56 @@
-# Coding-Aider Plugin
+# Coding-Aider Plugin for IntelliJ IDEA
 
-Coding-Aider is an IntelliJ IDEA plugin that integrates Aider support directly into your IDE, enhancing your development
-experience with AI-powered coding assistance.
+Coding-Aider is an innovative IntelliJ IDEA plugin that seamlessly integrates Aider's AI-powered coding assistance directly into your development environment. This integration enhances your productivity by providing intelligent coding suggestions and automating common development tasks.
 
-## Main Features
+## Key Features
 
-1. **AI-Powered Coding Assistance**: Leverage the power of Aider to get intelligent coding suggestions and assistance
-   right within your IDE.
+1. **AI-Powered Coding Assistance**: Harness the power of Aider to receive intelligent coding suggestions and assistance within your IDE.
 
-2. **Easy Access**: Start Aider actions quickly using the "Start Aider Action" option in the Tools menu or Project View
-   popup menu.
+2. **Intuitive Access**: 
+   - Quickly initiate Aider actions via the "Start Aider Action" option in the Tools menu or Project View popup menu.
+   - Use the keyboard shortcut Alt+A for rapid access.
 
-3. **Keyboard Shortcuts**: Use Alt+A to quickly invoke the Aider action.
+3. **Persistent File Management**: Efficiently manage frequently used files for Aider operations with Alt+Shift+A.
 
-4. **Persistent File Management**: Add or remove files from a persistent list for frequent Aider operations using
-   Alt+Shift+A.
+4. **Dual Execution Modes**:
+   - IDE-based execution for seamless integration.
+   - Shell-based execution for users who prefer Aider's rich terminal interaction.
 
-5. **Flexible Execution Modes**:
-    - IDE-based execution for seamless integration.
-    - Shell-based execution for users who prefer aiders rich terminal interaction.
+5. **Git Integration**: Automatically launch a Git comparison tool post-Aider operations for easy change review.
 
-6. **Git Integration**: Automatically opens a Git comparison tool after Aider operations to review changes.
+6. **Real-time Progress Tracking**: Monitor Aider command progress through an interactive Markdown dialog.
 
-7. **Progress Tracking**: View real-time progress of Aider commands in a Markdown dialog.
+7. **Multi-File Support**: Execute Aider actions on multiple files or directories while controlling the context provided to Aider from your IDE.
 
-8. **Multi-File Support**: Perform Aider actions on multiple files or directories and control the context aider gets
-   from your IDE.
+## Advantages Over Other Coding Assistant Plugins
 
-## Why Yet Another Coding Assistant Plugin?
+Coding-Aider addresses limitations in existing IntelliJ plugins, particularly for tasks involving multiple file creation or modification. Aider's unique capabilities include:
 
-Existing Intellij plugins fail to streamline common development tasks when creation or modification of multiple files is
-required.
-Aider offers a unique AI-powered coding assistant:
+1. Optimized token usage for improved speed (featuring replace edit mode, repo-map, and context control).
+2. A feature-rich terminal interface for command-line enthusiasts.
+3. An extensive range of commands to automate common development tasks.
+4. Robust recovery mechanisms with seamless Git integration.
 
-1. optimization of token usage and therefore speed (replace edit mode, repo-map, context control, ...)
-2. a rich terminal interface for users who prefer it
-3. a wide range of commands that can be used to automate common development tasks
-4. solid recovery mechanisms for when things go wrong with seamless git integration
-
-But ... Aider is a terminal-based tool, and we want to bring its power directly into your IDE and use established IDE
-features like Git integration, keyboard shortcuts and more.
+Coding-Aider brings these powerful terminal-based features directly into your IDE, leveraging established IDE functionalities like Git integration and keyboard shortcuts.
 
 ## Getting Started
 
-1. Install Aider-Chat https://aider.chat/ as a global pipx python app and ensure it is accessible from your terminal (
-   aider --help).
-2. Install the Coding-Aider plugin in your IntelliJ IDEA.
-3. Configure the Aider settings in Tools > Aider Settings.
-4. Select files or directories in your project.
-5. Use Alt+A or right-click to start an Aider action.
-6. Enter your coding request in the dialog that appears.
-7. Review the Aider output and resulting changes in your project.
+1. Install Aider-Chat:
+   - Visit https://aider.chat/
+   - Install as a global pipx Python app
+   - Ensure it's accessible from your terminal (`aider --help`)
 
-Enhance your coding workflow with AI-assisted development using Coding-Aider!
+2. Install the Coding-Aider plugin in IntelliJ IDEA.
+
+3. Configure Aider settings:
+   - Navigate to Tools > Aider Settings
+
+4. Usage:
+   - Select files or directories in your project
+   - Use Alt+A or right-click to initiate an Aider action
+   - Enter your coding request in the dialog
+   - Review Aider's output and resulting changes in your project
+
+## Conclusion
+
+Elevate your development workflow with Coding-Aider's AI-assisted capabilities. Experience the perfect blend of Aider's powerful features and IntelliJ IDEA's robust environment for a more efficient and intelligent coding process.
