@@ -33,17 +33,18 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
     }
 
     private fun loadHistory() {
+        historyComboBox.addItem(HistoryItem("", null))  // Empty entry
         historyHandler.getHistory().forEach { (dateTime, command) ->
             historyComboBox.addItem(HistoryItem(command, dateTime))
         }
         historyComboBox.renderer = HistoryItemRenderer()
-        historyComboBox.addItem(HistoryItem("Select previous command...", null))
+        historyComboBox.selectedIndex = 0  // Select the empty entry initially
         historyComboBox.addActionListener {
-            if (historyComboBox.selectedIndex >= 0 && historyComboBox.selectedItem is HistoryItem) {
+            if (historyComboBox.selectedIndex > 0 && historyComboBox.selectedItem is HistoryItem) {
                 val selectedItem = historyComboBox.selectedItem as HistoryItem
-                if (selectedItem.dateTime != null) {
-                    inputTextArea.text = selectedItem.command
-                }
+                inputTextArea.text = selectedItem.command
+            } else {
+                inputTextArea.text = ""  // Clear the input area when empty entry is selected
             }
         }
     }
@@ -84,6 +85,8 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
         }
 
         panel.add(modeToggle, gbc)
+        gbc.gridy++
+        panel.add(JLabel("Command History:"), gbc)
         gbc.gridy++
         panel.add(historyComboBox, gbc)
         gbc.gridy++
