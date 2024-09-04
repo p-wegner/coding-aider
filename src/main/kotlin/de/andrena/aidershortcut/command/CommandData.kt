@@ -9,7 +9,3 @@ data class CommandData(
     val isShellMode: Boolean
 )
 
-data class FileData(
-    val filePath: String,
-    val isReadOnly: Boolean
-)
