@@ -12,6 +12,7 @@ suggestions and automating common development tasks.
 2. **Intuitive Access**:
     - Quickly initiate Aider actions via the "Start Aider Action" option in the Tools menu or Project View popup menu.
     - Use the keyboard shortcut Alt+A for rapid access.
+    - Navigate previous commands with Alt+UP and Alt+DOWN in the message field.
 
 3. **Persistent File Management**: Efficiently manage frequently used files for Aider operations with Alt+Shift+A.
 
