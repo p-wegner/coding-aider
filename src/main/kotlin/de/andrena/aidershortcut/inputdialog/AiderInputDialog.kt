@@ -22,7 +22,7 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
     private val additionalArgsField = JTextField(20)
     private val modeToggle = JCheckBox("Shell Mode", false)
     private val messageLabel = JLabel("Enter your message:")
-    private val historyComboBox = JComboBox<String>()
+    private val historyComboBox = JComboBox<HistoryItem>()
     private val historyHandler = AiderHistoryHandler(project.basePath ?: "")
     private val aiderContextView: AiderContextView
 
@@ -34,14 +34,41 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
     }
 
     private fun loadHistory() {
-        historyHandler.getHistory().forEach { (_, command) ->
-            historyComboBox.addItem(command)
+        historyHandler.getHistory().forEach { (dateTime, command) ->
+            historyComboBox.addItem(HistoryItem(command, dateTime))
         }
-        historyComboBox.addItem("Select previous command...")
+        historyComboBox.renderer = HistoryItemRenderer()
+        historyComboBox.addItem(HistoryItem("Select previous command...", null))
         historyComboBox.addActionListener {
-            if (historyComboBox.selectedIndex > 0) {
-                inputTextArea.text = historyComboBox.selectedItem as String
+            if (historyComboBox.selectedIndex >= 0 && historyComboBox.selectedItem is HistoryItem) {
+                val selectedItem = historyComboBox.selectedItem as HistoryItem
+                if (selectedItem.dateTime != null) {
+                    inputTextArea.text = selectedItem.command
+                }
             }
+        }
+    }
+
+    private data class HistoryItem(val command: String, val dateTime: LocalDateTime?)
+
+    private inner class HistoryItemRenderer : DefaultListCellRenderer() {
+        override fun getListCellRendererComponent(
+            list: JList<*>?,
+            value: Any?,
+            index: Int,
+            isSelected: Boolean,
+            cellHasFocus: Boolean
+        ): Component {
+            val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
+            if (value is HistoryItem) {
+                text = value.command
+                if (value.dateTime != null) {
+                    toolTipText = value.dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                } else {
+                    toolTipText = null
+                }
+            }
+            return component
         }
     }
 

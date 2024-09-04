@@ -12,17 +12,16 @@ class AiderHistoryHandler(projectPath: String) {
         if (!historyFile.exists()) return emptyList()
 
         return historyFile.readLines()
-            .chunked(2)
-            .mapNotNull { chunk ->
-                if (chunk.size == 2 && chunk[0].startsWith("# ")) {
-                    val dateTime = LocalDateTime.parse(chunk[0].substring(2), dateTimeFormatter)
-                    val command = chunk[1].trim()
+            .windowed(2, 1, partialWindows = true)
+            .mapNotNull { lines ->
+                if (lines.size == 2 && lines[0].startsWith("# ") && lines[1].startsWith("+")) {
+                    val dateTime = LocalDateTime.parse(lines[0].substring(2).trim(), dateTimeFormatter)
+                    val command = lines[1].substring(1).trim()
                     dateTime to command
                 } else null
             }
             .reversed()
     }
-
 }
 
 
