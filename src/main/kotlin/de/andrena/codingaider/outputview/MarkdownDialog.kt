@@ -22,8 +22,10 @@ class MarkdownDialog(private val project: Project, title: String, initialText: S
         scrollPane = JScrollPane(textArea)
         add(scrollPane, BorderLayout.CENTER)
 
-        val button = JButton("Close")
-        button.addActionListener { isVisible = false }
+        val button = JButton("Close").apply {
+            mnemonic = KeyEvent.VK_C
+            addActionListener { isVisible = false }
+        }
         add(button, BorderLayout.SOUTH)
 
         defaultCloseOperation = HIDE_ON_CLOSE

@@ -5,7 +5,7 @@ import de.andrena.codingaider.command.AiderCommandBuilder
 import de.andrena.codingaider.command.CommandData
 import org.jetbrains.plugins.terminal.TerminalToolWindowManager
 
-class ShellExecutor(private val project: Project, private val commandData: CommandData) {
+class ShellExecutor(private val project: Project, private val commandData: CommandData, private val parentComponent: Component?) {
     fun execute() {
         val terminalView = TerminalToolWindowManager.getInstance(project)
         val terminalSession = terminalView.createLocalShellWidget(project.basePath, "Aider", true)

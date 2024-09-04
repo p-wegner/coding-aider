@@ -3,12 +3,10 @@ package de.andrena.codingaider.outputview
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
 import java.awt.BorderLayout
-import javax.swing.JDialog
-import javax.swing.JScrollPane
-import javax.swing.JTextArea
-import javax.swing.SwingUtilities
+import java.awt.event.KeyEvent
+import javax.swing.*
 
-class ProgressDialog(project: Project, title: String) {
+class ProgressDialog(project: Project, title: String, parentComponent: Component?) {
     private val dialog: JDialog
     private val outputTextArea = JTextArea(20, 50).apply {
         isEditable = false
@@ -21,8 +19,15 @@ class ProgressDialog(project: Project, title: String) {
         val projectFrame = WindowManager.getInstance().getFrame(project)
         dialog = JDialog(projectFrame, title, false) // false means non-modal
         dialog.contentPane.add(scrollPane, BorderLayout.CENTER)
+
+        val closeButton = JButton("Close").apply {
+            mnemonic = KeyEvent.VK_C
+            addActionListener { dialog.dispose() }
+        }
+        dialog.contentPane.add(closeButton, BorderLayout.SOUTH)
+
         dialog.pack()
-        dialog.setLocationRelativeTo(projectFrame)
+        dialog.setLocationRelativeTo(parentComponent ?: projectFrame)
         dialog.isVisible = true
     }
 
