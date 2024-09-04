@@ -60,6 +60,10 @@ functionalities like Git integration and keyboard shortcuts.
     - Enter your coding request in the dialog
     - Review Aider's output and resulting changes in your project
 
+   ![Aider Command Action Example](docs/AiderCommandAction.jpg)
+
+   The image above shows an example of the Aider Command dialog in action. You can see the code context on the left and the command interface on the right, where you can enter your message, select command options, and view the files in context.
+
 ## Conclusion
 
 Elevate your development workflow with Coding-Aider's AI-assisted capabilities. Experience the perfect blend of Aider's
