@@ -21,6 +21,7 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
     <depends>org.jetbrains.plugins.terminal</depends>
+    <depends>Git4Idea</depends>
     <actions>
         <action id="de.andrena.aidershortcut.AiderAction"
                 class="de.andrena.aidershortcut.AiderAction"
