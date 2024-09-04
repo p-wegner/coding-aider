@@ -23,14 +23,21 @@
     <depends>org.jetbrains.plugins.terminal</depends>
     <depends>Git4Idea</depends>
     <actions>
-        <action id="de.andrena.aidershortcut.AiderAction"
-                class="de.andrena.aidershortcut.AiderAction"
-                text="Start Aider Action"
-                description="This will instruct aider to do something">
+        <group id="de.andrena.aidershortcut.AiderActionGroup" text="Aider Actions" popup="true">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
             <add-to-group group-id="ToolsMenu" anchor="last"/>
-            <keyboard-shortcut keymap="$default" first-keystroke="alt A"/>
-        </action>
+            <action id="de.andrena.aidershortcut.AiderAction"
+                    class="de.andrena.aidershortcut.AiderAction"
+                    text="Start Aider Action"
+                    description="This will instruct aider to do something">
+                <keyboard-shortcut keymap="$default" first-keystroke="alt A"/>
+            </action>
+            <action id="de.andrena.aidershortcut.PersistentFilesAction"
+                    class="de.andrena.aidershortcut.PersistentFilesAction"
+                    text="Add to Persistent Files"
+                    description="Add or remove files from the persistent files list">
+            </action>
+        </group>
     </actions>
 
     <!-- Extension points defined by the plugin.
