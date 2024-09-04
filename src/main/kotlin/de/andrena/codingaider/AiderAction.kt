@@ -26,7 +26,6 @@ class AiderAction : AnAction() {
             val dialog = AiderInputDialog(project, allFiles.distinctBy { it.filePath })
             if (dialog.showAndGet()) {
                 val commandData = collectCommandData(dialog)
-                val parentComponent = dialog.contentPane
                 if (commandData.isShellMode) {
                     ShellExecutor(project, commandData).execute()
                 } else {

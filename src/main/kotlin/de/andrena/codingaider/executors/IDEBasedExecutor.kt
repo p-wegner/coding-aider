@@ -48,7 +48,7 @@ class IDEBasedExecutor(
                     LOG.warn("Aider command timed out after 5 minutes")
                     invokeLater {
                         markdownDialog.updateProgress(
-                            output.toString() + "\nAider command timed out after 5 minutes",
+                            "$output\nAider command timed out after 5 minutes",
                             "Aider Command Timed Out"
                         )
                     }
@@ -58,7 +58,7 @@ class IDEBasedExecutor(
                         LOG.info("Aider command executed successfully")
                         invokeLater {
                             markdownDialog.updateProgress(
-                                output.toString() + "\nAider command executed successfully",
+                                "$output\nAider command executed successfully",
                                 "Aider Command Completed"
                             )
                         }
@@ -66,7 +66,7 @@ class IDEBasedExecutor(
                         LOG.error("Aider command failed with exit code $exitCode")
                         invokeLater {
                             markdownDialog.updateProgress(
-                                output.toString() + "\nAider command failed with exit code $exitCode",
+                                "$output\nAider command failed with exit code $exitCode",
                                 "Aider Command Failed"
                             )
                         }

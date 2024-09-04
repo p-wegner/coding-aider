@@ -6,8 +6,10 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.components.JBScrollPane
+import com.intellij.util.ui.JBUI
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.commandhistory.AiderHistoryHandler
 import java.awt.*
@@ -16,15 +18,15 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.swing.*
 
-class AiderInputDialog(private val project: Project, files: List<FileData>) : DialogWrapper(project) {
+class AiderInputDialog(project: Project, files: List<FileData>) : DialogWrapper(project) {
     private val inputTextArea = JTextArea(5, 30)
     private val yesCheckBox = JCheckBox("Add --yes flag", true)
     private val commandOptions = arrayOf("--sonnet", "--mini", "--4o", "--deepseek")
-    private val commandComboBox = JComboBox(commandOptions)
+    private val commandComboBox = ComboBox(commandOptions)
     private val additionalArgsField = JTextField(20)
     private val modeToggle = JCheckBox("Shell Mode")
     private val messageLabel = JLabel("Enter your message:")
-    private val historyComboBox = JComboBox<HistoryItem>()
+    private val historyComboBox = ComboBox<HistoryItem>()
     private val historyHandler = AiderHistoryHandler(project.basePath ?: "")
     private val aiderContextView: AiderContextView
 
@@ -130,7 +132,7 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
         val panel = JPanel(GridBagLayout())
         val gbc = GridBagConstraints().apply {
             fill = GridBagConstraints.HORIZONTAL
-            insets = Insets(5, 5, 5, 5)
+            insets = JBUI.insets(5)
             weightx = 1.0
             weighty = 0.0
             gridx = 0

@@ -7,7 +7,7 @@ import java.io.File
 import java.io.FileWriter
 import java.io.IOException
 
-class PersistentFileManager(private val basePath: String) {
+class PersistentFileManager(basePath: String) {
     private val contextFile = File(basePath, ".aider.context")
     private val persistentFiles: MutableList<FileData> = mutableListOf()
 
@@ -57,5 +57,6 @@ class PersistentFileManager(private val basePath: String) {
     fun addAllFiles(selectedFiles: List<FileData>) {
         selectedFiles.forEach { addFile(it) }
     }
+
     fun getContextFile(): VirtualFile = LocalFileSystem.getInstance().findFileByIoFile(contextFile)!!
 }
