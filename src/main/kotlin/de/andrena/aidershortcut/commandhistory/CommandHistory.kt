@@ -4,5 +4,5 @@ import java.time.LocalDateTime
 
 data class CommandHistory(
     val timestamp: LocalDateTime,
-    val command: String
+    val command: List<String>
 )

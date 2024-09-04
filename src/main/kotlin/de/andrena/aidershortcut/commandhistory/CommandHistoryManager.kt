@@ -11,14 +11,14 @@ class CommandHistoryManager(private val projectPath: String) {
     fun loadHistory(): List<CommandHistory> {
         if (!historyFile.exists()) return emptyList()
 
-        return historyFile.readLines()
-            .chunked(2)
-            .mapNotNull { chunk ->
-                if (chunk.size == 2 && chunk[0].startsWith("# ")) {
-                    val dateTime = LocalDateTime.parse(chunk[0].substring(2), dateTimeFormatter)
-                    val command = chunk[1].trim()
-                    CommandHistory(dateTime, command)
-                } else null
+        return historyFile.readText()
+            .split("\n# ")
+            .drop(1)
+            .map { entry ->
+                val lines = entry.lines()
+                val dateTime = LocalDateTime.parse(lines[0], dateTimeFormatter)
+                val command = lines.drop(1).filter { it.startsWith("+") }.map { it.substring(1) }
+                CommandHistory(dateTime, command)
             }
             .reversed()
     }
