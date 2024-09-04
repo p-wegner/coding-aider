@@ -47,7 +47,7 @@ class PersistentFilesAction : AnAction() {
         val persistentFiles = persistentFileManager?.getPersistentFiles() ?: emptyList()
 
         val allFiles = files?.let { FileTraversal.traverseFilesOrDirectories(it) } ?: emptyList()
-        val allFilesContained = allFiles.all { file ->
+        val allFilesContained = allFiles.isNotEmpty() && allFiles.all { file ->
             persistentFiles.any { it.filePath == file.filePath }
         }
 
