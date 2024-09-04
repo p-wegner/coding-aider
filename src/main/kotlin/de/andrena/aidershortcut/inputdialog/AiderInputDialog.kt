@@ -30,6 +30,8 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
         aiderContextView = AiderContextView(project, files)
         init()
         loadHistory()
+        setOKButtonText("OK")
+        setCancelButtonText("Cancel")
     }
 
     private fun loadHistory() {
@@ -154,6 +156,9 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
             inputTextArea.isVisible = !isShellMode
             messageLabel.text = if (isShellMode) "Shell mode enabled" else "Enter your message:"
         }
+
+        // Set focus on the input text area when the dialog is opened
+        inputTextArea.requestFocusInWindow()
 
         return panel
     }
