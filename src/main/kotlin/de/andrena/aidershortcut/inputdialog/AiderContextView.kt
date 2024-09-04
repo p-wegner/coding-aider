@@ -94,7 +94,7 @@ class AiderContextView(
             for (part in pathParts) {
                 val existingNode = currentNode.children().asSequence()
                     .map { it as DefaultMutableTreeNode }
-                    .find { it.userObject is FileData && File(it.userObject.filePath).name == part }
+                    .find { it.userObject is FileData && File((it.userObject as FileData).filePath).name == part }
 
                 currentNode = if (existingNode != null) {
                     existingNode
