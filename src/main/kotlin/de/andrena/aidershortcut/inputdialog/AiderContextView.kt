@@ -7,6 +7,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.ui.IconManager
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.treeStructure.Tree
+import com.intellij.ui.JBSplitter
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.tree.TreeUtil
 import de.andrena.aidershortcut.command.FileData
@@ -15,6 +16,7 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.io.File
 import javax.swing.JPanel
+import javax.swing.border.TitledBorder
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeCellRenderer
 import javax.swing.tree.DefaultTreeModel
@@ -24,16 +26,18 @@ class AiderContextView(
     private val project: Project,
     private val allFiles: List<FileData>
 ) : JPanel(BorderLayout()) {
-    private val rootNode = DefaultMutableTreeNode("Files")
+    private val rootNode = DefaultMutableTreeNode("Context")
+    private val filesNode = DefaultMutableTreeNode("Files")
     private val tree: Tree = Tree(rootNode)
     private val persistentFileManager = PersistentFileManager(project.basePath ?: "")
     private var persistentFiles: List<FileData> = persistentFileManager.loadPersistentFiles()
 
     init {
+        rootNode.add(filesNode)
         updateTree()
 
         tree.apply {
-            isRootVisible = false
+            isRootVisible = true
             showsRootHandles = true
             selectionModel.selectionMode = TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION
             cellRenderer = object : DefaultTreeCellRenderer() {
@@ -46,25 +50,28 @@ class AiderContextView(
                     row: Int,
                     hasFocus: Boolean
                 ) = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus).apply {
-                    if (value is DefaultMutableTreeNode && value.userObject is FileData) {
-                        val fileData = value.userObject as FileData
-                        text = File(fileData.filePath).name
-                        icon = when {
-                            fileData.isReadOnly && isPersistent(fileData) -> IconManager.getInstance()
-                                .createRowIcon(AllIcons.Nodes.DataSchema, AllIcons.Nodes.DataTables)
-
-                            fileData.isReadOnly -> IconManager.getInstance().createRowIcon(AllIcons.Nodes.DataSchema)
-                            isPersistent(fileData) -> IconManager.getInstance()
-                                .createRowIcon(AllIcons.Actions.Edit, AllIcons.Nodes.DataTables)
-
-                            else -> AllIcons.Actions.Edit
+                    if (value is DefaultMutableTreeNode) {
+                        when (val userObject = value.userObject) {
+                            is FileData -> {
+                                text = File(userObject.filePath).name
+                                icon = when {
+                                    userObject.isReadOnly && isPersistent(userObject) -> IconManager.getInstance()
+                                        .createRowIcon(AllIcons.Nodes.DataSchema, AllIcons.Nodes.DataTables)
+                                    userObject.isReadOnly -> IconManager.getInstance().createRowIcon(AllIcons.Nodes.DataSchema)
+                                    isPersistent(userObject) -> IconManager.getInstance()
+                                        .createRowIcon(AllIcons.Actions.Edit, AllIcons.Nodes.DataTables)
+                                    else -> AllIcons.Actions.Edit
+                                }
+                                val tooltipText = buildString {
+                                    append(userObject.filePath)
+                                    if (userObject.isReadOnly) append(" (readonly)")
+                                    if (isPersistent(userObject)) append(" (persistent)")
+                                }
+                                toolTipText = tooltipText
+                            }
+                            "Context" -> icon = AllIcons.Nodes.Module
+                            "Files" -> icon = AllIcons.Nodes.Folder
                         }
-                        val tooltipText = buildString {
-                            append(fileData.filePath)
-                            if (fileData.isReadOnly) append(" (readonly)")
-                            if (isPersistent(fileData)) append(" (persistent)")
-                        }
-                        toolTipText = tooltipText
                     }
                     background = null // Remove the grey background
                 }
@@ -72,9 +79,20 @@ class AiderContextView(
         }
 
         val scrollPane = JBScrollPane(tree).apply {
-            border = JBUI.Borders.empty()
+            border = JBUI.Borders.empty(10)
         }
-        add(scrollPane, BorderLayout.CENTER)
+        
+        val contentPanel = JPanel(BorderLayout()).apply {
+            add(scrollPane, BorderLayout.CENTER)
+            border = TitledBorder(JBUI.Borders.customLine(JBUI.CurrentTheme.Focus.focusColor(), 1), "Context View")
+        }
+
+        val splitter = JBSplitter(false, 0.7f, 0.3f, 0.9f).apply {
+            firstComponent = contentPanel
+            secondComponent = JPanel() // Placeholder for future components
+        }
+
+        add(splitter, BorderLayout.CENTER)
         preferredSize = JBUI.size(400, 300)
 
         tree.addMouseListener(object : MouseAdapter() {
@@ -97,7 +115,7 @@ class AiderContextView(
 
     private fun updateTree() {
         val expandedPaths = getExpandedPaths()
-        rootNode.removeAllChildren()
+        filesNode.removeAllChildren()
 
         val uniqueFiles = (allFiles + persistentFiles).distinctBy { it.filePath }
         val fileSystem = mutableMapOf<String, DefaultMutableTreeNode>()
@@ -105,7 +123,7 @@ class AiderContextView(
         uniqueFiles.forEach { fileData ->
             val pathParts = fileData.filePath.split(File.separator)
             var currentPath = ""
-            var currentNode = rootNode
+            var currentNode = filesNode
 
             for ((index, part) in pathParts.withIndex()) {
                 currentPath += if (currentPath.isEmpty()) part else File.separator + part
