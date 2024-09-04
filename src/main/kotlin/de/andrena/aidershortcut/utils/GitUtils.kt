@@ -1,16 +1,16 @@
 package de.andrena.aidershortcut.utils
 
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vcs.changes.ChangeListManager
-import com.intellij.openapi.vfs.VirtualFile
-import git4idea.GitUtil
-import git4idea.repo.GitRepository
 import com.intellij.openapi.vcs.VcsException
+import com.intellij.openapi.vcs.changes.ChangeListManager
+import com.intellij.openapi.vcs.changes.LocalChangeList
+import com.intellij.openapi.vcs.changes.ui.ChangesViewContentManager
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindowManager
+import git4idea.GitUtil
 import git4idea.GitVcs
 import git4idea.changes.GitChangeUtils
-import com.intellij.openapi.vcs.changes.ui.ChangesViewContentManager
-import com.intellij.openapi.vcs.changes.LocalChangeList
+import git4idea.repo.GitRepository
 
 object GitUtils {
     fun getCurrentCommitHash(project: Project): String? {
@@ -38,7 +38,7 @@ object GitUtils {
 
                 val changeListManager = ChangeListManager.getInstance(project)
                 val changeList = LocalChangeList.createEmptyChangeList(project, "Changes since $commitHash")
-                changeList.addChanges(changes)
+                changeList.changes.addAll(changes)
 
                 val changesViewContentManager = ChangesViewContentManager.getInstance(project)
                 changesViewContentManager.selectContent("Local Changes")
