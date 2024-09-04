@@ -3,6 +3,8 @@ package de.andrena.aidershortcut.inputdialog
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.components.JBScrollPane
@@ -152,21 +154,21 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
         gbc.fill = GridBagConstraints.BOTH
 
         val actionGroup = DefaultActionGroup().apply {
-            add(object : com.intellij.openapi.actionSystem.AnAction(
+            add(object : AnAction(
                 "Toggle Read-Only Mode",
                 "Toggle Read-Only Mode for selected file",
                 AllIcons.Actions.Edit
             ) {
-                override fun actionPerformed(e: com.intellij.openapi.actionSystem.AnActionEvent) {
+                override fun actionPerformed(e: AnActionEvent) {
                     aiderContextView.toggleReadOnlyMode()
                 }
             })
-            add(object : com.intellij.openapi.actionSystem.AnAction(
+            add(object : AnAction(
                 "Toggle Persistent Files",
                 "Toggle selected files' persistent status",
                 AllIcons.Actions.MenuSaveall
             ) {
-                override fun actionPerformed(e: com.intellij.openapi.actionSystem.AnActionEvent) {
+                override fun actionPerformed(e: AnActionEvent) {
                     aiderContextView.togglePersistentFile()
                 }
             })
