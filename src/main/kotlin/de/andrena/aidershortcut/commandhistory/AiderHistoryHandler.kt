@@ -17,11 +17,9 @@ class AiderHistoryHandler(projectPath: String) {
             .map { entry ->
                 val lines = entry.lines()
                 val dateTime = LocalDateTime.parse(lines[0], dateTimeFormatter)
-                val command = lines.drop(1).filter { it.startsWith("+") }.map { it.substring(1) }
-                dateTime to command
+                val command = lines.drop(1).joinToString("\n") { it.trim() }
+                dateTime to command.split("\n").filter { it.isNotEmpty() }
             }
             .reversed()
     }
 }
-
-
