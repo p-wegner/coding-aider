@@ -1,4 +1,4 @@
-package de.andrena.aidershortcut
+package de.andrena.aidershortcut.commandhistory
 
 import java.time.LocalDateTime
 

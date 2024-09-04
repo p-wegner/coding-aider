@@ -6,8 +6,8 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.components.JBScrollPane
-import de.andrena.aidershortcut.AiderHistoryHandler
 import de.andrena.aidershortcut.command.FileData
+import de.andrena.aidershortcut.commandhistory.AiderHistoryHandler
 import java.awt.BorderLayout
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
@@ -150,10 +150,7 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
     fun isYesFlagChecked(): Boolean = yesCheckBox.isSelected
     fun getSelectedCommand(): String = commandComboBox.selectedItem as String
     fun getAdditionalArgs(): String = additionalArgsField.text
-    fun getSelectedFiles(): List<FileData> = aiderContextView.getSelectedFiles()
+    fun getSelectedFiles(): List<FileData> = aiderContextView.getAllFiles()
     fun isShellMode(): Boolean = modeToggle.isSelected
 
-    fun addToHistory(command: String) {
-        historyHandler.addToHistory(command.removePrefix("+"))
-    }
 }

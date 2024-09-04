@@ -1,10 +1,10 @@
-package de.andrena.aidershortcut
+package de.andrena.aidershortcut.commandhistory
 
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-class AiderHistoryHandler(private val projectPath: String) {
+class AiderHistoryHandler(projectPath: String) {
     private val historyFile = File(projectPath, ".aider.input.history")
     private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
 
@@ -23,25 +23,6 @@ class AiderHistoryHandler(private val projectPath: String) {
             .reversed()
     }
 
-    fun addToHistory(command: String) {
-        val timestamp = LocalDateTime.now().format(dateTimeFormatter)
-        historyFile.appendText("# $timestamp\n$command\n")
-    }
 }
 
 
-class AiderContextHandler(private val projectPath: String) {
-    private val contextFile = File(projectPath, ".aider.context")
-
-    fun loadPersistentFiles(): List<String> {
-        return if (contextFile.exists()) {
-            contextFile.readLines()
-        } else {
-            emptyList()
-        }
-    }
-
-    fun savePersistentFiles(files: List<String>) {
-        contextFile.writeText(files.joinToString("\n"))
-    }
-}

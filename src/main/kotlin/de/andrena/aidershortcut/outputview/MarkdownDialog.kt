@@ -1,4 +1,4 @@
-package de.andrena.aidershortcut
+package de.andrena.aidershortcut.outputview
 
 import com.intellij.openapi.project.Project
 import java.awt.BorderLayout

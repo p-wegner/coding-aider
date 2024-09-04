@@ -7,9 +7,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.RefreshQueue
-import de.andrena.aidershortcut.MarkdownDialog
 import de.andrena.aidershortcut.command.AiderCommandBuilder
 import de.andrena.aidershortcut.command.CommandData
+import de.andrena.aidershortcut.outputview.MarkdownDialog
 import java.awt.EventQueue.invokeLater
 import java.io.BufferedReader
 import java.io.InputStreamReader
@@ -79,12 +79,14 @@ class IDEBasedExecutor(
                     )
                 }
             } finally {
-                refreshFiles(commandData.files.mapNotNull { VirtualFileManager.getInstance().findFileByUrl(it.filePath) }.toTypedArray(), markdownDialog, output.toString())
+                refreshFiles(commandData.files.mapNotNull {
+                    VirtualFileManager.getInstance().findFileByUrl(it.filePath)
+                }.toTypedArray(), markdownDialog)
             }
         }
     }
 
-    private fun refreshFiles(files: Array<VirtualFile>, markdownDialog: MarkdownDialog, output: String) {
+    private fun refreshFiles(files: Array<VirtualFile>, markdownDialog: MarkdownDialog) {
         invokeLater {
             ApplicationManager.getApplication().invokeLater {
                 WriteAction.runAndWait<Throwable> {
