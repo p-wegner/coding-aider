@@ -46,6 +46,7 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
         super.show()
         SwingUtilities.invokeLater {
             inputTextArea.requestFocusInWindow()
+            inputTextArea.caretPosition = inputTextArea.document.length
         }
     }
 
