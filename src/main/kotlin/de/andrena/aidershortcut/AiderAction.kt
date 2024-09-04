@@ -23,11 +23,7 @@ class AiderAction : AnAction() {
             val allFiles = mutableListOf<FileData>()
 
             files.forEach { file ->
-                if (file.isDirectory) {
-                    allFiles.addAll(FileTraversal.traverseDirectory(file))
-                } else {
-                    allFiles.add(FileData(file.path, false))
-                }
+                allFiles.addAll(FileTraversal.traverseFileOrDirectory(file))
             }
 
             allFiles.addAll(persistentFileManager.getPersistentFiles())

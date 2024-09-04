@@ -20,8 +20,7 @@ class PersistentFilesAction : AnAction() {
             val persistentFiles = persistentFileManager.getPersistentFiles()
 
             val allFiles = files.flatMap { file ->
-                if (file.isDirectory) FileTraversal.traverseDirectory(file, true)
-                else listOf(FileData(file.path, true))
+                FileTraversal.traverseFileOrDirectory(file, true)
             }
 
             val allFilesContained = allFiles.all { file ->

@@ -30,14 +30,18 @@ import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.aidershortcut.command.FileData
 
 object FileTraversal {
-    fun traverseDirectory(directory: VirtualFile, isReadOnly: Boolean = false): List<FileData> {
+    fun traverseFileOrDirectory(file: VirtualFile, isReadOnly: Boolean = false): List<FileData> {
+        return if (file.isDirectory) {
+            traverseDirectory(file, isReadOnly)
+        } else {
+            listOf(FileData(file.path, isReadOnly))
+        }
+    }
+
+    private fun traverseDirectory(directory: VirtualFile, isReadOnly: Boolean = false): List<FileData> {
         val allFiles = mutableListOf<FileData>()
         directory.children.forEach { childFile ->
-            if (childFile.isDirectory) {
-                allFiles.addAll(traverseDirectory(childFile, isReadOnly))
-            } else {
-                allFiles.add(FileData(childFile.path, isReadOnly))
-            }
+            allFiles.addAll(traverseFileOrDirectory(childFile, isReadOnly))
         }
         return allFiles
     }
