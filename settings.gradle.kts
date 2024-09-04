@@ -5,4 +5,4 @@ pluginManagement {
     }
 }
 
-rootProject.name = "aider-shortcut"
+rootProject.name = "coding-aider"

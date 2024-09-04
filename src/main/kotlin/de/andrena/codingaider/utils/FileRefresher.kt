@@ -1,4 +1,4 @@
-package de.andrena.aidershortcut.utils
+package de.andrena.codingaider.utils
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.WriteAction
@@ -6,7 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.RefreshQueue
-import de.andrena.aidershortcut.outputview.MarkdownDialog
+import de.andrena.codingaider.outputview.MarkdownDialog
 import java.awt.EventQueue.invokeLater
 
 object FileRefresher {

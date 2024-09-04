@@ -1,7 +1,7 @@
-package de.andrena.aidershortcut.utils
+package de.andrena.codingaider.utils
 
 import com.intellij.openapi.vfs.VirtualFile
-import de.andrena.aidershortcut.command.FileData
+import de.andrena.codingaider.command.FileData
 
 object FileTraversal {
     fun traverseFileOrDirectory(file: VirtualFile, isReadOnly: Boolean = false): List<FileData> {

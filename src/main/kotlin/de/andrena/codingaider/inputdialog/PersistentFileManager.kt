@@ -1,8 +1,8 @@
-package de.andrena.aidershortcut.inputdialog
+package de.andrena.codingaider.inputdialog
 
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
-import de.andrena.aidershortcut.command.FileData
+import de.andrena.codingaider.command.FileData
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException

@@ -1,4 +1,4 @@
-package de.andrena.aidershortcut.settings
+package de.andrena.codingaider.settings
 
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project

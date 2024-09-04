@@ -1,13 +1,13 @@
-package de.andrena.aidershortcut
+package de.andrena.codingaider
 
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import de.andrena.aidershortcut.inputdialog.PersistentFileManager
-import de.andrena.aidershortcut.utils.FileRefresher
-import de.andrena.aidershortcut.utils.FileTraversal
+import de.andrena.codingaider.inputdialog.PersistentFileManager
+import de.andrena.codingaider.utils.FileRefresher
+import de.andrena.codingaider.utils.FileTraversal
 
 class PersistentFilesAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {

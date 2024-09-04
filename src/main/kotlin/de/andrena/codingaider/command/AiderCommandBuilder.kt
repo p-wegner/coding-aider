@@ -1,4 +1,4 @@
-package de.andrena.aidershortcut.command
+package de.andrena.codingaider.command
 
 object AiderCommandBuilder {
     fun buildAiderCommand(commandData: CommandData, isShellMode: Boolean): List<String> {

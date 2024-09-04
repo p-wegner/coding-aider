@@ -1,14 +1,14 @@
-package de.andrena.aidershortcut.executors
+package de.andrena.codingaider.executors
 
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
-import de.andrena.aidershortcut.command.AiderCommandBuilder
-import de.andrena.aidershortcut.command.CommandData
-import de.andrena.aidershortcut.outputview.MarkdownDialog
-import de.andrena.aidershortcut.utils.FileRefresher
-import de.andrena.aidershortcut.utils.GitUtils
+import de.andrena.codingaider.command.AiderCommandBuilder
+import de.andrena.codingaider.command.CommandData
+import de.andrena.codingaider.outputview.MarkdownDialog
+import de.andrena.codingaider.utils.FileRefresher
+import de.andrena.codingaider.utils.GitUtils
 import java.awt.EventQueue.invokeLater
 import java.io.BufferedReader
 import java.io.InputStreamReader

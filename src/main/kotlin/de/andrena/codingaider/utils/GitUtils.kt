@@ -1,4 +1,4 @@
-package de.andrena.aidershortcut.utils
+package de.andrena.codingaider.utils
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project

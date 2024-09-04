@@ -1,4 +1,4 @@
-package de.andrena.aidershortcut.command
+package de.andrena.codingaider.command
 
 data class FileData(
     val filePath: String,

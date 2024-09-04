@@ -1,4 +1,4 @@
-package de.andrena.aidershortcut.inputdialog
+package de.andrena.codingaider.inputdialog
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -10,7 +10,7 @@ import com.intellij.ui.treeStructure.Tree
 import com.intellij.ui.JBSplitter
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.tree.TreeUtil
-import de.andrena.aidershortcut.command.FileData
+import de.andrena.codingaider.command.FileData
 import java.awt.BorderLayout
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent

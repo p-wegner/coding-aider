@@ -1,8 +1,8 @@
-package de.andrena.aidershortcut.executors
+package de.andrena.codingaider.executors
 
 import com.intellij.openapi.project.Project
-import de.andrena.aidershortcut.command.AiderCommandBuilder
-import de.andrena.aidershortcut.command.CommandData
+import de.andrena.codingaider.command.AiderCommandBuilder
+import de.andrena.codingaider.command.CommandData
 import org.jetbrains.plugins.terminal.TerminalToolWindowManager
 
 class ShellExecutor(private val project: Project, private val commandData: CommandData) {

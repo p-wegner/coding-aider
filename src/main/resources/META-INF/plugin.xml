@@ -1,11 +1,11 @@
 <!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
     <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
-    <id>de.andrena.aider-shortcut</id>
+    <id>de.andrena.coding-aider</id>
 
     <!-- Public plugin name should be written in Title Case.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
-    <name>Aider-shortcut</name>
+    <name>Coding-Aider</name>
 
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
     <vendor email="peter.wegner@andrena.de" url="https://www.andrena.de">andrena objects</vendor>
@@ -23,17 +23,17 @@
     <depends>org.jetbrains.plugins.terminal</depends>
     <depends>Git4Idea</depends>
     <actions>
-        <group id="de.andrena.aidershortcut.AiderActionGroup" text="Aider Actions" popup="true">
+        <group id="de.andrena.codingaider.AiderActionGroup" text="Aider Actions" popup="true">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
             <add-to-group group-id="ToolsMenu" anchor="last"/>
-            <action id="de.andrena.aidershortcut.AiderAction"
-                    class="de.andrena.aidershortcut.AiderAction"
+            <action id="de.andrena.codingaider.AiderAction"
+                    class="de.andrena.codingaider.AiderAction"
                     text="Start Aider Action"
                     description="This will instruct aider to do something">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt A"/>
             </action>
-            <action id="de.andrena.aidershortcut.PersistentFilesAction"
-                    class="de.andrena.aidershortcut.PersistentFilesAction"
+            <action id="de.andrena.codingaider.PersistentFilesAction"
+                    class="de.andrena.codingaider.PersistentFilesAction"
                     text="Add to Persistent Files"
                     description="Add or remove files from the persistent files list">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt shift A"/>
@@ -45,9 +45,9 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
         <projectConfigurable
-                instance="de.andrena.aidershortcut.settings.AiderSettingsConfigurable"
+                instance="de.andrena.codingaider.settings.AiderSettingsConfigurable"
                 displayName="Aider Settings"
-                id="de.andrena.aidershortcut.settings.AiderSettingsConfigurable"
+                id="de.andrena.codingaider.settings.AiderSettingsConfigurable"
                 parentId="tools"
                 nonDefaultProject="true"/>
     </extensions>

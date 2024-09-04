@@ -1,4 +1,4 @@
-package de.andrena.aidershortcut.inputdialog
+package de.andrena.codingaider.inputdialog
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionManager
@@ -8,8 +8,8 @@ import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.components.JBScrollPane
-import de.andrena.aidershortcut.command.FileData
-import de.andrena.aidershortcut.commandhistory.AiderHistoryHandler
+import de.andrena.codingaider.command.FileData
+import de.andrena.codingaider.commandhistory.AiderHistoryHandler
 import java.awt.*
 import java.awt.event.KeyEvent
 import java.time.LocalDateTime
