@@ -7,6 +7,7 @@ import com.intellij.openapi.vcs.changes.ChangeListManager
 import com.intellij.openapi.vcs.changes.ui.ChangesViewContentManager
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindowManager
+import git4idea.GitLocalBranch
 import git4idea.GitUtil
 import git4idea.GitVcs
 import git4idea.changes.GitChangeUtils
@@ -24,25 +25,16 @@ object GitUtils {
             try {
                 val gitVcs = GitVcs.getInstance(project)
                 val currentBranch = repository.currentBranch
-                
-                val changes = ProgressManager.getInstance().runProcessWithProgressSynchronously<List<com.intellij.openapi.vcs.changes.Change>, Exception>(
-                    {
-                        if (currentBranch != null) {
-                            GitChangeUtils.getDiffWithWorkingDir(
-                                project,
-                                repository.root,
-                                commitHash,
-                                null,
-                                false
-                            )
-                        } else {
-                            emptyList()
-                        }
-                    },
-                    "Calculating Git Diff",
-                    true,
-                    project
-                )
+
+                val changes = ProgressManager.getInstance()
+                    .runProcessWithProgressSynchronously<List<com.intellij.openapi.vcs.changes.Change>, Exception>(
+                        {
+                            getCurrentChanges(currentBranch, project, repository, commitHash)
+                        },
+                        "Calculating Git Diff",
+                        true,
+                        project
+                    )
 
                 val changesViewContentManager = ChangesViewContentManager.getInstance(project)
                 changesViewContentManager.selectContent("Local Changes")
@@ -55,6 +47,23 @@ object GitUtils {
             }
         }
     }
+
+    private fun getCurrentChanges(
+        currentBranch: GitLocalBranch?,
+        project: Project,
+        repository: GitRepository,
+        commitHash: String
+    ) = (if (currentBranch != null) {
+        GitChangeUtils.getDiffWithWorkingDir(
+            project,
+            repository.root,
+            commitHash,
+            null,
+            false
+        )
+    } else {
+        emptyList()
+    }).toList()
 
     private fun getGitRepository(project: Project): GitRepository? {
         return GitUtil.getRepositoryManager(project).repositories.firstOrNull()
