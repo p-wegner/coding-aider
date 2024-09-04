@@ -12,6 +12,7 @@ import java.awt.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.swing.*
+import javax.swing.SwingUtilities
 
 class AiderInputDialog(private val project: Project, files: List<FileData>) : DialogWrapper(project) {
     private val inputTextArea = JTextArea(5, 30)
@@ -32,6 +33,15 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
         loadHistory()
         setOKButtonText("OK")
         setCancelButtonText("Cancel")
+        setOKActionMnemonic('O')
+        setCancelActionMnemonic('C')
+    }
+
+    override fun show() {
+        super.show()
+        SwingUtilities.invokeLater {
+            inputTextArea.requestFocusInWindow()
+        }
     }
 
     private fun loadHistory() {
@@ -88,12 +98,15 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
             gridwidth = GridBagConstraints.REMAINDER
         }
 
+        modeToggle.mnemonic = 'M'
         panel.add(modeToggle, gbc)
         gbc.gridy++
         panel.add(JLabel("Command History:"), gbc)
         gbc.gridy++
         panel.add(historyComboBox, gbc)
         gbc.gridy++
+        messageLabel.displayedMnemonic = 'E'
+        messageLabel.labelFor = inputTextArea
         panel.add(messageLabel, gbc)
         gbc.gridy++
         gbc.weighty = 1.0
@@ -102,17 +115,24 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
         gbc.gridy++
         gbc.weighty = 0.0
         gbc.fill = GridBagConstraints.HORIZONTAL
+        yesCheckBox.mnemonic = 'Y'
         panel.add(yesCheckBox, gbc)
         gbc.gridy++
         gbc.gridwidth = 1
-        panel.add(JLabel("Select command:"), gbc)
+        val selectCommandLabel = JLabel("Select command:")
+        selectCommandLabel.displayedMnemonic = 'S'
+        selectCommandLabel.labelFor = commandComboBox
+        panel.add(selectCommandLabel, gbc)
         gbc.gridx = 1
         gbc.gridwidth = GridBagConstraints.REMAINDER
         panel.add(commandComboBox, gbc)
         gbc.gridy++
         gbc.gridx = 0
         gbc.gridwidth = 1
-        panel.add(JLabel("Additional arguments:"), gbc)
+        val additionalArgsLabel = JLabel("Additional arguments:")
+        additionalArgsLabel.displayedMnemonic = 'A'
+        additionalArgsLabel.labelFor = additionalArgsField
+        panel.add(additionalArgsLabel, gbc)
         gbc.gridx = 1
         gbc.gridwidth = GridBagConstraints.REMAINDER
         panel.add(additionalArgsField, gbc)
