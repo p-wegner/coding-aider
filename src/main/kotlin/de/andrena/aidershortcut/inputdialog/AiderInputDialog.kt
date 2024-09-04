@@ -33,8 +33,8 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
         loadHistory()
         setOKButtonText("OK")
         setCancelButtonText("Cancel")
-        setOKActionMnemonic('O')
-        setCancelActionMnemonic('C')
+        setOKActionMnemonic('O'.code)
+        setCancelActionMnemonic('C'.code)
     }
 
     override fun show() {
@@ -98,14 +98,14 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
             gridwidth = GridBagConstraints.REMAINDER
         }
 
-        modeToggle.mnemonic = 'M'
+        modeToggle.mnemonic = 'M'.code
         panel.add(modeToggle, gbc)
         gbc.gridy++
         panel.add(JLabel("Command History:"), gbc)
         gbc.gridy++
         panel.add(historyComboBox, gbc)
         gbc.gridy++
-        messageLabel.displayedMnemonic = 'E'
+        messageLabel.displayedMnemonic = 'E'.code
         messageLabel.labelFor = inputTextArea
         panel.add(messageLabel, gbc)
         gbc.gridy++
@@ -115,12 +115,12 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
         gbc.gridy++
         gbc.weighty = 0.0
         gbc.fill = GridBagConstraints.HORIZONTAL
-        yesCheckBox.mnemonic = 'Y'
+        yesCheckBox.mnemonic = 'Y'.code
         panel.add(yesCheckBox, gbc)
         gbc.gridy++
         gbc.gridwidth = 1
         val selectCommandLabel = JLabel("Select command:")
-        selectCommandLabel.displayedMnemonic = 'S'
+        selectCommandLabel.displayedMnemonic = 'S'.code
         selectCommandLabel.labelFor = commandComboBox
         panel.add(selectCommandLabel, gbc)
         gbc.gridx = 1
@@ -130,7 +130,7 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
         gbc.gridx = 0
         gbc.gridwidth = 1
         val additionalArgsLabel = JLabel("Additional arguments:")
-        additionalArgsLabel.displayedMnemonic = 'A'
+        additionalArgsLabel.displayedMnemonic = 'A'.code
         additionalArgsLabel.labelFor = additionalArgsField
         panel.add(additionalArgsLabel, gbc)
         gbc.gridx = 1
