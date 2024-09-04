@@ -12,7 +12,6 @@ import java.awt.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.swing.*
-import javax.swing.SwingUtilities
 
 class AiderInputDialog(private val project: Project, files: List<FileData>) : DialogWrapper(project) {
     private val inputTextArea = JTextArea(5, 30)
