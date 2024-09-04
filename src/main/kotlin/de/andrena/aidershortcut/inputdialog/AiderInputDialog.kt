@@ -33,8 +33,6 @@ class AiderInputDialog(private val project: Project, files: List<FileData>) : Di
         loadHistory()
         setOKButtonText("OK")
         setCancelButtonText("Cancel")
-        setOKActionMnemonic('O'.code)
-        setCancelActionMnemonic('C'.code)
     }
 
     override fun show() {
