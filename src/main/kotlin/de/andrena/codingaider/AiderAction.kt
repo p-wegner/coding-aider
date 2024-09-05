@@ -90,25 +90,7 @@ class AiderAction : AnAction() {
 
 class AiderShellAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
-        val project: Project? = e.project
-        val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
-
-        if (project != null && !files.isNullOrEmpty()) {
-            val persistentFileManager = PersistentFileManager(project.basePath ?: "")
-            val allFiles = FileTraversal.traverseFilesOrDirectories(files).toMutableList()
-            allFiles.addAll(persistentFileManager.getPersistentFiles())
-
-            val commandData = CommandData(
-                message = "",
-                useYesFlag = AiderDefaults.USE_YES_FLAG,
-                selectedCommand = AiderDefaults.SELECTED_COMMAND,
-                additionalArgs = AiderDefaults.ADDITIONAL_ARGS,
-                files = allFiles.distinctBy { it.filePath },
-                isShellMode = true
-            )
-
-            ShellExecutor(project, commandData).execute()
-        }
+        AiderAction.executeAiderAction(e, true)
     }
 
     override fun update(e: AnActionEvent) {
