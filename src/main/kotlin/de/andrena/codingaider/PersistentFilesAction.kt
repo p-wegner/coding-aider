@@ -1,5 +1,6 @@
 package de.andrena.codingaider
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -54,4 +55,6 @@ class PersistentFilesAction : AnAction() {
         e.presentation.isEnabledAndVisible = project != null && !files.isNullOrEmpty()
         e.presentation.text = if (allFilesContained) "Remove from Persistent Files" else "Add to Persistent Files"
     }
+
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 }
