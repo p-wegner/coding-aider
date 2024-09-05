@@ -103,3 +103,20 @@ class AiderShellAction : AnAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 }
 
+class ShowLastCommandResultAction : AnAction() {
+    override fun actionPerformed(e: AnActionEvent) {
+        val project = e.project ?: return
+        val historyHandler = AiderHistoryHandler(project.basePath ?: "")
+        val lastCommandResult = historyHandler.getLastChatHistory()
+        
+        val dialog = MarkdownDialog(project, "Last Aider Command Result", lastCommandResult)
+        dialog.show()
+    }
+
+    override fun update(e: AnActionEvent) {
+        e.presentation.isEnabledAndVisible = e.project != null
+    }
+
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+}
+
