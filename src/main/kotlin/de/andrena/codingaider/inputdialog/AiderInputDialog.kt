@@ -22,7 +22,7 @@ import javax.swing.plaf.basic.BasicSplitPaneDivider
 import javax.swing.plaf.basic.BasicSplitPaneUI
 
 class AiderInputDialog(
-    private val project: Project,
+    val project: Project,
     files: List<FileData>
 ) : DialogWrapper(project) {
     private val settings = AiderSettings.getInstance(project)
