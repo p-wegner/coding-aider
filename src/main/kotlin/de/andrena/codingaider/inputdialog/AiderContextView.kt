@@ -5,9 +5,9 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.ui.IconManager
+import com.intellij.ui.JBSplitter
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.treeStructure.Tree
-import com.intellij.ui.JBSplitter
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.tree.TreeUtil
 import de.andrena.codingaider.command.FileData
@@ -24,7 +24,7 @@ import javax.swing.tree.TreeSelectionModel
 
 class AiderContextView(
     private val project: Project,
-    private val allFiles: List<FileData>
+    private var allFiles: List<FileData>
 ) : JPanel(BorderLayout()) {
     private val rootNode = DefaultMutableTreeNode("Context")
     private val filesNode = DefaultMutableTreeNode("Files")
@@ -57,9 +57,13 @@ class AiderContextView(
                                 icon = when {
                                     userObject.isReadOnly && isPersistent(userObject) -> IconManager.getInstance()
                                         .createRowIcon(AllIcons.Nodes.DataSchema, AllIcons.Nodes.DataTables)
-                                    userObject.isReadOnly -> IconManager.getInstance().createRowIcon(AllIcons.Nodes.DataSchema)
+
+                                    userObject.isReadOnly -> IconManager.getInstance()
+                                        .createRowIcon(AllIcons.Nodes.DataSchema)
+
                                     isPersistent(userObject) -> IconManager.getInstance()
                                         .createRowIcon(AllIcons.Actions.Edit, AllIcons.Nodes.DataTables)
+
                                     else -> AllIcons.Actions.Edit
                                 }
                                 val tooltipText = buildString {
@@ -69,6 +73,7 @@ class AiderContextView(
                                 }
                                 toolTipText = tooltipText
                             }
+
                             "Context" -> icon = AllIcons.Nodes.Module
                             "Files" -> icon = AllIcons.Nodes.Folder
                         }
@@ -81,7 +86,7 @@ class AiderContextView(
         val scrollPane = JBScrollPane(tree).apply {
             border = JBUI.Borders.empty(10)
         }
-        
+
         val contentPanel = JPanel(BorderLayout()).apply {
             add(scrollPane, BorderLayout.CENTER)
             border = TitledBorder(JBUI.Borders.customLine(JBUI.CurrentTheme.Focus.focusColor(), 1), "Context View")
