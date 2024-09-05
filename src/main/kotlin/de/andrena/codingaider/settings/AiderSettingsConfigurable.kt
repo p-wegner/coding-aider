@@ -103,7 +103,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 val apiKey = ApiKeyChecker.getApiKeyForLlm(value)
                 if (apiKey != null && !ApiKeyChecker.isApiKeyAvailableForLlm(value)) {
                     icon = UIManager.getIcon("OptionPane.errorIcon")
-                    toolTipText = "API key not found for $value"
+                    toolTipText = "API key not found in default locations for $value. This may not be an error if you're using an alternative method to provide the key."
                 } else {
                     icon = null
                     toolTipText = null
