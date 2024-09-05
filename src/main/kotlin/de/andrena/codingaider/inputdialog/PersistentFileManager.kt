@@ -29,7 +29,7 @@ class PersistentFileManager(basePath: String) {
                 val yamlData: Map<String, Any> = yaml.load(contextFile.reader())
                 (yamlData["files"] as? List<Map<String, Any>>)?.forEach { fileMap ->
                     val filePath = fileMap["path"] as? String
-                    val isReadOnly = fileMap["readOnly"] as? Boolean ?: true
+                    val isReadOnly = fileMap["readOnly"] as? Boolean ?: false
                     if (filePath != null) {
                         persistentFiles.add(FileData(filePath, isReadOnly))
                     }
