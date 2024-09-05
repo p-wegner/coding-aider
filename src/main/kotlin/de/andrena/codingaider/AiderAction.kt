@@ -15,6 +15,8 @@ import de.andrena.codingaider.inputdialog.PersistentFileManager
 import de.andrena.codingaider.settings.AiderDefaults
 import de.andrena.codingaider.utils.FileTraversal
 
+import de.andrena.codingaider.settings.AiderDefaults
+
 class AiderAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         executeAiderAction(e, false)
@@ -74,7 +76,7 @@ class AiderAction : AnAction() {
                 selectedCommand = AiderDefaults.SELECTED_COMMAND,
                 additionalArgs = AiderDefaults.ADDITIONAL_ARGS,
                 files = files,
-                isShellMode = AiderDefaults.IS_SHELL_MODE
+                isShellMode = true // Always true for direct shell mode
             )
         }
     }
