@@ -62,6 +62,22 @@ class AiderInputDialog(
         setupKeyBindings()
         llmComboBox.selectedItem = settings.llm
         llmComboBox.renderer = LlmComboBoxRenderer()
+        customizeSplitPane()
+    }
+
+    private fun customizeSplitPane() {
+        splitPane.ui = object : BasicSplitPaneUI() {
+            override fun createDivider(): BasicSplitPaneDivider {
+                return object : BasicSplitPaneDivider(this) {
+                    override fun paint(g: Graphics) {
+                        g.color = UIManager.getColor("SplitPane.background")
+                        g.fillRect(0, 0, width, height)
+                        super.paint(g)
+                    }
+                }
+            }
+        }
+        splitPane.border = null
     }
 
     private fun setupKeyBindings() {
@@ -165,10 +181,10 @@ class AiderInputDialog(
             gridy = 0
         }
 
-        // First row: Shell Mode toggle and LLM selection
-        val modeAndLlmPanel = JPanel(GridBagLayout())
+        // First row: Shell Mode toggle, LLM selection, and History
+        val firstRowPanel = JPanel(GridBagLayout())
         modeToggle.mnemonic = KeyEvent.VK_M
-        modeAndLlmPanel.add(modeToggle, GridBagConstraints().apply {
+        firstRowPanel.add(modeToggle, GridBagConstraints().apply {
             gridx = 0
             gridy = 0
             weightx = 0.0
@@ -177,30 +193,36 @@ class AiderInputDialog(
         val selectLlmLabel = JLabel("LLM:")
         selectLlmLabel.displayedMnemonic = KeyEvent.VK_L
         selectLlmLabel.labelFor = llmComboBox
-        modeAndLlmPanel.add(selectLlmLabel, GridBagConstraints().apply {
+        firstRowPanel.add(selectLlmLabel, GridBagConstraints().apply {
             gridx = 1
             gridy = 0
             weightx = 0.0
             insets = JBUI.insets(0, 5, 0, 5)
         })
-        modeAndLlmPanel.add(llmComboBox, GridBagConstraints().apply {
+        firstRowPanel.add(llmComboBox, GridBagConstraints().apply {
             gridx = 2
             gridy = 0
-            weightx = 1.0
+            weightx = 0.3
             fill = GridBagConstraints.HORIZONTAL
         })
-        topPanel.add(modeAndLlmPanel, gbc)
-
-        // Second row: History
-        gbc.gridy++
         val historyLabel = JLabel("History:")
         historyLabel.displayedMnemonic = KeyEvent.VK_H
         historyLabel.labelFor = historyComboBox
-        topPanel.add(historyLabel, gbc)
-        gbc.gridy++
-        topPanel.add(historyComboBox, gbc)
+        firstRowPanel.add(historyLabel, GridBagConstraints().apply {
+            gridx = 3
+            gridy = 0
+            weightx = 0.0
+            insets = JBUI.insets(0, 10, 0, 5)
+        })
+        firstRowPanel.add(historyComboBox, GridBagConstraints().apply {
+            gridx = 4
+            gridy = 0
+            weightx = 0.7
+            fill = GridBagConstraints.HORIZONTAL
+        })
+        topPanel.add(firstRowPanel, gbc)
 
-        // Third row: Message label and input area
+        // Second row: Message label and input area
         gbc.gridy++
         messageLabel.displayedMnemonic = KeyEvent.VK_E
         messageLabel.labelFor = inputTextArea
@@ -210,7 +232,7 @@ class AiderInputDialog(
         gbc.fill = GridBagConstraints.BOTH
         topPanel.add(JBScrollPane(inputTextArea), gbc)
 
-        // Fourth row: Yes flag and additional arguments
+        // Third row: Yes flag and additional arguments
         gbc.gridy++
         gbc.weighty = 0.0
         gbc.fill = GridBagConstraints.HORIZONTAL
@@ -220,7 +242,7 @@ class AiderInputDialog(
             gridx = 0
             gridy = 0
             weightx = 0.0
-            insets = JBUI.insets(0, 0, 0, 5)
+            insets = JBUI.insets(0, 0, 0, 10)
         })
         val additionalArgsLabel = JLabel("Args:")
         additionalArgsLabel.displayedMnemonic = KeyEvent.VK_A
