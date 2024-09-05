@@ -76,5 +76,5 @@ class PersistentFileManager(basePath: String) {
         selectedFiles.forEach { addFile(it) }
     }
 
-    fun getContextFile(): VirtualFile = LocalFileSystem.getInstance().findFileByIoFile(contextFile)!!
+    fun getContextFile(): VirtualFile? = LocalFileSystem.getInstance().findFileByIoFile(contextFile)
 }
