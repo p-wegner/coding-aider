@@ -6,7 +6,9 @@ import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
+import com.intellij.ui.dsl.builder.bindText
 import de.andrena.codingaider.utils.ApiKeyChecker
+import com.intellij.ide.BrowserUtil
 import java.awt.Component
 import javax.swing.*
 
@@ -45,6 +47,9 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                     cell(additionalArgsField)
                         .resizableColumn()
                         .align(Align.FILL)
+                    link("Aider Options Documentation") {
+                        BrowserUtil.browse("https://aider.chat/docs/config/options.html")
+                    }
                 }
                 row {
                     cell(isShellModeCheckBox)
