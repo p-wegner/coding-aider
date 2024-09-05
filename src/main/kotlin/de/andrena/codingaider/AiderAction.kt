@@ -15,7 +15,6 @@ import de.andrena.codingaider.inputdialog.PersistentFileManager
 import de.andrena.codingaider.settings.AiderDefaults
 import de.andrena.codingaider.utils.FileTraversal
 
-import de.andrena.codingaider.settings.AiderDefaults
 
 class AiderAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
