@@ -27,25 +27,28 @@ class PersistentFilesAction : AnAction() {
                 persistentFiles.any { it.filePath == file.filePath }
             }
 
-            val message = if (allFilesContained) {
+            val (message, affectedFiles) = if (allFilesContained) {
                 allFiles.forEach { file ->
                     persistentFileManager.removeFile(file.filePath)
                 }
-                "${allFiles.size} file(s) removed from persistent files."
+                Pair("Removed from persistent files:", allFiles)
             } else {
                 val filesToAdd = allFiles.filter { file ->
                     !persistentFiles.any { it.filePath == file.filePath }
                 }
                 persistentFileManager.addAllFiles(filesToAdd)
-                "${filesToAdd.size} file(s) added to persistent files."
+                Pair("Added to persistent files:", filesToAdd)
             }
 
             FileRefresher.refreshFiles(project, arrayOf(persistentFileManager.getContextFile()))
 
-            // Show notification
+            // Show notification with file names and auto-disappear
+            val fileNames = affectedFiles.joinToString("\n") { it.filePath }
+            val fullMessage = "$message\n$fileNames"
             NotificationGroupManager.getInstance()
                 .getNotificationGroup("Coding Aider Notifications")
-                .createNotification(message, NotificationType.INFORMATION)
+                .createNotification(fullMessage, NotificationType.INFORMATION)
+                .setExpired(true)
                 .notify(project)
         }
     }
