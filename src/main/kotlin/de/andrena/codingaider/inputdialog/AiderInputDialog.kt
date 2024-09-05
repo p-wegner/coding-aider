@@ -28,7 +28,9 @@ class AiderInputDialog(
 ) : DialogWrapper(project) {
     private val settings = AiderSettings.getInstance(project)
     private val inputTextArea = JTextArea(5, 30)
-    private val yesCheckBox = JCheckBox("Add --yes flag", settings.useYesFlag)
+    private val yesCheckBox = JCheckBox("Add --yes flag", settings.useYesFlag).apply {
+        toolTipText = "Automatically answer 'yes' to prompts"
+    }
     private val llmOptions = ApiKeyChecker.getAllLlmOptions().toTypedArray()
     private val llmComboBox = object : ComboBox<String>(llmOptions) {
         override fun getToolTipText(): String? {
@@ -41,7 +43,9 @@ class AiderInputDialog(
         }
     }
     private val additionalArgsField = JTextField(settings.additionalArgs, 20)
-    private val modeToggle = JCheckBox("Shell Mode", settings.isShellMode)
+    private val modeToggle = JCheckBox("Shell Mode", settings.isShellMode).apply {
+        toolTipText = "Toggle between normal mode and shell mode"
+    }
     private val messageLabel = JLabel("Enter your message:")
     private val historyComboBox = ComboBox<HistoryItem>()
     private val historyHandler = AiderHistoryHandler(project.basePath ?: "")
@@ -189,9 +193,11 @@ class AiderInputDialog(
             weightx = 0.0
             insets = JBUI.insets(0, 0, 0, 5)
         })
-        val selectLlmLabel = JLabel("LLM:")
-        selectLlmLabel.displayedMnemonic = KeyEvent.VK_L
-        selectLlmLabel.labelFor = llmComboBox
+        val selectLlmLabel = JLabel("LLM:").apply {
+            displayedMnemonic = KeyEvent.VK_L
+            labelFor = llmComboBox
+            toolTipText = "Select the Language Model to use"
+        }
         firstRowPanel.add(selectLlmLabel, GridBagConstraints().apply {
             gridx = 1
             gridy = 0
@@ -204,9 +210,11 @@ class AiderInputDialog(
             weightx = 0.3
             fill = GridBagConstraints.HORIZONTAL
         })
-        val historyLabel = JLabel("History:")
-        historyLabel.displayedMnemonic = KeyEvent.VK_H
-        historyLabel.labelFor = historyComboBox
+        val historyLabel = JLabel("History:").apply {
+            displayedMnemonic = KeyEvent.VK_H
+            labelFor = historyComboBox
+            toolTipText = "Select from previous commands"
+        }
         firstRowPanel.add(historyLabel, GridBagConstraints().apply {
             gridx = 3
             gridy = 0
@@ -243,9 +251,11 @@ class AiderInputDialog(
             weightx = 0.0
             insets = JBUI.insets(0, 0, 0, 10)
         })
-        val additionalArgsLabel = JLabel("Args:")
-        additionalArgsLabel.displayedMnemonic = KeyEvent.VK_A
-        additionalArgsLabel.labelFor = additionalArgsField
+        val additionalArgsLabel = JLabel("Args:").apply {
+            displayedMnemonic = KeyEvent.VK_A
+            labelFor = additionalArgsField
+            toolTipText = "Additional arguments for the Aider command"
+        }
         flagAndArgsPanel.add(additionalArgsLabel, GridBagConstraints().apply {
             gridx = 1
             gridy = 0
