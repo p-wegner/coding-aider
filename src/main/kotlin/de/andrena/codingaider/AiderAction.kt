@@ -41,7 +41,7 @@ class AiderAction : AnAction() {
                 allFiles.addAll(persistentFileManager.getPersistentFiles())
 
                 if (directShellMode) {
-                    val commandData = collectDefaultCommandData(allFiles)
+                    val commandData = collectDefaultCommandData(allFiles, project)
                     ShellExecutor(project, commandData).execute()
                 } else {
                     val dialog = AiderInputDialog(
