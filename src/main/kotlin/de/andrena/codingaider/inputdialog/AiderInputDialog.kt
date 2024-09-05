@@ -2,10 +2,10 @@ package de.andrena.codingaider.inputdialog
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.*
+import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
-import com.intellij.ui.components.JBLabel
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
@@ -22,7 +22,7 @@ import javax.swing.plaf.basic.BasicSplitPaneDivider
 import javax.swing.plaf.basic.BasicSplitPaneUI
 
 class AiderInputDialog(
-    project: Project,
+    private val project: Project,
     files: List<FileData>
 ) : DialogWrapper(project) {
     private val settings = AiderSettings.getInstance(project)
@@ -75,7 +75,12 @@ class AiderInputDialog(
                 ShowSettingsUtil.getInstance().showSettingsDialog(project, "Aider")
             }
         }
-        return ActionButton(settingsAction, settingsAction.templatePresentation, "AiderSettingsButton", ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE)
+        return ActionButton(
+            settingsAction,
+            settingsAction.templatePresentation,
+            "AiderSettingsButton",
+            ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
+        )
     }
 
     private fun customizeSplitPane() {
