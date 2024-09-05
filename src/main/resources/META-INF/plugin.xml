@@ -80,6 +80,11 @@
                     description="Add or remove files from the persistent files list">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt shift A"/>
             </action>
+            <action id="de.andrena.codingaider.ShowLastCommandResultAction"
+                    class="de.andrena.codingaider.ShowLastCommandResultAction"
+                    text="Show Last Aider Command Result"
+                    description="Displays the result of the last Aider command">
+            </action>
         </group>
     </actions>
 
