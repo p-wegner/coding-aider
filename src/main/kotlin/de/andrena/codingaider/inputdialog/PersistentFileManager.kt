@@ -3,8 +3,8 @@ package de.andrena.codingaider.inputdialog
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.FileData
-import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.DumperOptions
+import org.yaml.snakeyaml.Yaml
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
@@ -76,11 +76,11 @@ class PersistentFileManager(basePath: String) {
         selectedFiles.forEach { addFile(it) }
     }
 
-    fun getContextFile(): VirtualFile? {
+    fun getContextFile(): VirtualFile {
         if (!contextFile.exists()) {
             contextFile.createNewFile()
             savePersistentFilesToContextFile()
         }
-        return LocalFileSystem.getInstance().refreshAndFindFileByIoFile(contextFile)
+        return LocalFileSystem.getInstance().refreshAndFindFileByIoFile(contextFile)!!
     }
 }
