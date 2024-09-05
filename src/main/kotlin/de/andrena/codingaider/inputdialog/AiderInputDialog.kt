@@ -48,11 +48,13 @@ class AiderInputDialog(
     private val historyHandler = AiderHistoryHandler(project.basePath ?: "")
     private val aiderContextView: AiderContextView
     private val persistentFileManager: PersistentFileManager
+    private val splitPane: JSplitPane
 
     init {
         title = "Aider Command"
         persistentFileManager = PersistentFileManager(project.basePath ?: "")
         aiderContextView = AiderContextView(project, files + persistentFileManager.getPersistentFiles())
+        splitPane = JSplitPane(JSplitPane.VERTICAL_SPLIT)
         init()
         loadHistory()
         setOKButtonText("OK")
@@ -151,28 +153,54 @@ class AiderInputDialog(
 
     override fun createCenterPanel(): JComponent {
         val panel = JPanel(BorderLayout())
-        panel.border = JBUI.Borders.empty(10)
+        panel.border = JBUI.Borders.empty(5)
 
         val topPanel = JPanel(GridBagLayout())
         val gbc = GridBagConstraints().apply {
             fill = GridBagConstraints.HORIZONTAL
-            insets = JBUI.insets(5)
+            insets = JBUI.insets(2)
             weightx = 1.0
             weighty = 0.0
             gridx = 0
             gridy = 0
-            gridwidth = GridBagConstraints.REMAINDER
         }
 
+        // First row: Shell Mode toggle and LLM selection
+        val modeAndLlmPanel = JPanel(GridBagLayout())
         modeToggle.mnemonic = KeyEvent.VK_M
-        topPanel.add(modeToggle, gbc)
+        modeAndLlmPanel.add(modeToggle, GridBagConstraints().apply {
+            gridx = 0
+            gridy = 0
+            weightx = 0.0
+            insets = JBUI.insets(0, 0, 0, 5)
+        })
+        val selectLlmLabel = JLabel("LLM:")
+        selectLlmLabel.displayedMnemonic = KeyEvent.VK_L
+        selectLlmLabel.labelFor = llmComboBox
+        modeAndLlmPanel.add(selectLlmLabel, GridBagConstraints().apply {
+            gridx = 1
+            gridy = 0
+            weightx = 0.0
+            insets = JBUI.insets(0, 5, 0, 5)
+        })
+        modeAndLlmPanel.add(llmComboBox, GridBagConstraints().apply {
+            gridx = 2
+            gridy = 0
+            weightx = 1.0
+            fill = GridBagConstraints.HORIZONTAL
+        })
+        topPanel.add(modeAndLlmPanel, gbc)
+
+        // Second row: History
         gbc.gridy++
-        val historyLabel = JLabel("Command History:")
+        val historyLabel = JLabel("History:")
         historyLabel.displayedMnemonic = KeyEvent.VK_H
         historyLabel.labelFor = historyComboBox
         topPanel.add(historyLabel, gbc)
         gbc.gridy++
         topPanel.add(historyComboBox, gbc)
+
+        // Third row: Message label and input area
         gbc.gridy++
         messageLabel.displayedMnemonic = KeyEvent.VK_E
         messageLabel.labelFor = inputTextArea
@@ -181,33 +209,37 @@ class AiderInputDialog(
         gbc.weighty = 1.0
         gbc.fill = GridBagConstraints.BOTH
         topPanel.add(JBScrollPane(inputTextArea), gbc)
+
+        // Fourth row: Yes flag and additional arguments
         gbc.gridy++
         gbc.weighty = 0.0
         gbc.fill = GridBagConstraints.HORIZONTAL
+        val flagAndArgsPanel = JPanel(GridBagLayout())
         yesCheckBox.mnemonic = KeyEvent.VK_Y
-        topPanel.add(yesCheckBox, gbc)
-        gbc.gridy++
-        gbc.gridwidth = 1
-        val selectLlmLabel = JLabel("Select LLM:")
-        selectLlmLabel.displayedMnemonic = KeyEvent.VK_L
-        selectLlmLabel.labelFor = llmComboBox
-        topPanel.add(selectLlmLabel, gbc)
-        gbc.gridx = 1
-        gbc.gridwidth = GridBagConstraints.REMAINDER
-        topPanel.add(llmComboBox, gbc)
-        gbc.gridy++
-        gbc.gridx = 0
-        gbc.gridwidth = 1
-        val additionalArgsLabel = JLabel("Additional arguments:")
+        flagAndArgsPanel.add(yesCheckBox, GridBagConstraints().apply {
+            gridx = 0
+            gridy = 0
+            weightx = 0.0
+            insets = JBUI.insets(0, 0, 0, 5)
+        })
+        val additionalArgsLabel = JLabel("Args:")
         additionalArgsLabel.displayedMnemonic = KeyEvent.VK_A
         additionalArgsLabel.labelFor = additionalArgsField
-        topPanel.add(additionalArgsLabel, gbc)
-        gbc.gridx = 1
-        gbc.gridwidth = GridBagConstraints.REMAINDER
-        topPanel.add(additionalArgsField, gbc)
+        flagAndArgsPanel.add(additionalArgsLabel, GridBagConstraints().apply {
+            gridx = 1
+            gridy = 0
+            weightx = 0.0
+            insets = JBUI.insets(0, 5, 0, 5)
+        })
+        flagAndArgsPanel.add(additionalArgsField, GridBagConstraints().apply {
+            gridx = 2
+            gridy = 0
+            weightx = 1.0
+            fill = GridBagConstraints.HORIZONTAL
+        })
+        topPanel.add(flagAndArgsPanel, gbc)
 
-        panel.add(topPanel, BorderLayout.NORTH)
-
+        // Context view
         val actionGroup = DefaultActionGroup().apply {
             add(object : AnAction(
                 "Toggle Read-Only Mode",
@@ -236,7 +268,10 @@ class AiderInputDialog(
             add(aiderContextView, BorderLayout.CENTER)
         }
 
-        panel.add(contextPanel, BorderLayout.CENTER)
+        splitPane.topComponent = topPanel
+        splitPane.bottomComponent = contextPanel
+        splitPane.resizeWeight = 0.6
+        panel.add(splitPane, BorderLayout.CENTER)
 
         modeToggle.addActionListener {
             val isShellMode = modeToggle.isSelected
