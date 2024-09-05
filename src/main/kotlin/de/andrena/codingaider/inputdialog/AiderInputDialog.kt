@@ -13,10 +13,7 @@ import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.commandhistory.AiderHistoryHandler
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
-import java.awt.BorderLayout
-import java.awt.Dimension
-import java.awt.GridBagConstraints
-import java.awt.GridBagLayout
+import java.awt.*
 import java.awt.event.KeyEvent
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -72,8 +69,6 @@ class AiderInputDialog(
         customizeSplitPane()
         
         // Set minimum size for the dialog and its components
-        minimumSize = Dimension(1000, 700)
-        preferredSize = Dimension(1200, 800)
         inputTextArea.minimumSize = Dimension(300, 100)
         aiderContextView.minimumSize = Dimension(300, 200)
     }
