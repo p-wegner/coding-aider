@@ -84,7 +84,6 @@
                     class="de.andrena.codingaider.ShowLastCommandResultAction"
                     text="Show Last Aider Command Result"
                     description="Displays the result of the last Aider command">
-                <add-to-group group-id="de.andrena.codingaider.AiderActionGroup" anchor="last"/>
             </action>
         </group>
     </actions>
