@@ -92,12 +92,7 @@ class AiderContextView(
             border = TitledBorder(JBUI.Borders.customLine(JBUI.CurrentTheme.Focus.focusColor(), 1), "Context View")
         }
 
-        val splitter = JBSplitter(false, 0.7f, 0.3f, 0.9f).apply {
-            firstComponent = contentPanel
-            secondComponent = JPanel() // Placeholder for future components
-        }
-
-        add(splitter, BorderLayout.CENTER)
+        add(contentPanel, BorderLayout.CENTER)
         preferredSize = JBUI.size(400, 300)
 
         tree.addMouseListener(object : MouseAdapter() {

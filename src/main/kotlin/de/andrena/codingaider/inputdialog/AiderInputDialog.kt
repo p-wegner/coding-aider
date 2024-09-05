@@ -51,6 +51,7 @@ class AiderInputDialog(
         setCancelButtonText("Cancel")
         setupKeyBindings()
         commandComboBox.selectedItem = defaultSelectedCommand
+        minimumSize = JBUI.size(300, 400)
     }
 
     private fun setupKeyBindings() {
@@ -141,7 +142,10 @@ class AiderInputDialog(
     }
 
     override fun createCenterPanel(): JComponent {
-        val panel = JPanel(GridBagLayout())
+        val panel = JPanel(BorderLayout())
+        panel.border = JBUI.Borders.empty(10)
+
+        val topPanel = JPanel(GridBagLayout())
         val gbc = GridBagConstraints().apply {
             fill = GridBagConstraints.HORIZONTAL
             insets = JBUI.insets(5)
@@ -153,51 +157,48 @@ class AiderInputDialog(
         }
 
         modeToggle.mnemonic = KeyEvent.VK_M
-        panel.add(modeToggle, gbc)
+        topPanel.add(modeToggle, gbc)
         gbc.gridy++
         val historyLabel = JLabel("Command History:")
         historyLabel.displayedMnemonic = KeyEvent.VK_H
         historyLabel.labelFor = historyComboBox
-        panel.add(historyLabel, gbc)
+        topPanel.add(historyLabel, gbc)
         gbc.gridy++
-        panel.add(historyComboBox, gbc)
+        topPanel.add(historyComboBox, gbc)
         gbc.gridy++
         messageLabel.displayedMnemonic = KeyEvent.VK_E
         messageLabel.labelFor = inputTextArea
-        panel.add(messageLabel, gbc)
+        topPanel.add(messageLabel, gbc)
         gbc.gridy++
         gbc.weighty = 1.0
         gbc.fill = GridBagConstraints.BOTH
-        panel.add(JBScrollPane(inputTextArea), gbc)
+        topPanel.add(JBScrollPane(inputTextArea), gbc)
         gbc.gridy++
         gbc.weighty = 0.0
         gbc.fill = GridBagConstraints.HORIZONTAL
         yesCheckBox.mnemonic = KeyEvent.VK_Y
-        panel.add(yesCheckBox, gbc)
+        topPanel.add(yesCheckBox, gbc)
         gbc.gridy++
         gbc.gridwidth = 1
         val selectCommandLabel = JLabel("Select command:")
         selectCommandLabel.displayedMnemonic = KeyEvent.VK_S
         selectCommandLabel.labelFor = commandComboBox
-        panel.add(selectCommandLabel, gbc)
+        topPanel.add(selectCommandLabel, gbc)
         gbc.gridx = 1
         gbc.gridwidth = GridBagConstraints.REMAINDER
-        panel.add(commandComboBox, gbc)
+        topPanel.add(commandComboBox, gbc)
         gbc.gridy++
         gbc.gridx = 0
         gbc.gridwidth = 1
         val additionalArgsLabel = JLabel("Additional arguments:")
         additionalArgsLabel.displayedMnemonic = KeyEvent.VK_A
         additionalArgsLabel.labelFor = additionalArgsField
-        panel.add(additionalArgsLabel, gbc)
+        topPanel.add(additionalArgsLabel, gbc)
         gbc.gridx = 1
         gbc.gridwidth = GridBagConstraints.REMAINDER
-        panel.add(additionalArgsField, gbc)
-        gbc.gridy++
-        gbc.gridx = 0
-        gbc.gridwidth = GridBagConstraints.REMAINDER
-        gbc.weighty = 1.0
-        gbc.fill = GridBagConstraints.BOTH
+        topPanel.add(additionalArgsField, gbc)
+
+        panel.add(topPanel, BorderLayout.NORTH)
 
         val actionGroup = DefaultActionGroup().apply {
             add(object : AnAction(
@@ -227,7 +228,7 @@ class AiderInputDialog(
             add(aiderContextView, BorderLayout.CENTER)
         }
 
-        panel.add(contextPanel, gbc)
+        panel.add(contextPanel, BorderLayout.CENTER)
 
         modeToggle.addActionListener {
             val isShellMode = modeToggle.isSelected
