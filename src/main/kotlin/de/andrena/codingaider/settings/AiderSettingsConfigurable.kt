@@ -101,18 +101,9 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
             val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
             if (component is JLabel && value is String) {
                 val apiKey = ApiKeyChecker.getApiKeyForLlm(value)
-                if (apiKey != null) {
-                    val isKeyAvailable = ApiKeyChecker.isApiKeyAvailableForLlm(value)
-                    icon = if (isKeyAvailable) {
-                        UIManager.getIcon("OptionPane.informationIcon")
-                    } else {
-                        UIManager.getIcon("OptionPane.errorIcon")
-                    }
-                    toolTipText = if (isKeyAvailable) {
-                        "API key found for $value"
-                    } else {
-                        "API key not found for $value"
-                    }
+                if (apiKey != null && !ApiKeyChecker.isApiKeyAvailableForLlm(value)) {
+                    icon = UIManager.getIcon("OptionPane.errorIcon")
+                    toolTipText = "API key not found for $value"
                 } else {
                     icon = null
                     toolTipText = null
