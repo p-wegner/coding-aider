@@ -32,10 +32,12 @@ class AiderInputDialog(project: Project, files: List<FileData>) : DialogWrapper(
     private val historyComboBox = ComboBox<HistoryItem>()
     private val historyHandler = AiderHistoryHandler(project.basePath ?: "")
     private val aiderContextView: AiderContextView
+    private val persistentFileManager: PersistentFileManager
 
     init {
         title = "Aider Command"
-        aiderContextView = AiderContextView(project, files)
+        persistentFileManager = PersistentFileManager(project.basePath ?: "")
+        aiderContextView = AiderContextView(project, files + persistentFileManager.getPersistentFiles())
         init()
         loadHistory()
         setOKButtonText("OK")

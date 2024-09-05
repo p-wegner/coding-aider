@@ -3,15 +3,22 @@ package de.andrena.codingaider.inputdialog
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.FileData
+import org.yaml.snakeyaml.Yaml
+import org.yaml.snakeyaml.DumperOptions
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
 
 class PersistentFileManager(basePath: String) {
-    private val contextFile = File(basePath, ".aider.context")
+    private val contextFile = File(basePath, ".aider.context.yaml")
     private val persistentFiles: MutableList<FileData> = mutableListOf()
+    private val yaml: Yaml
 
     init {
+        val options = DumperOptions()
+        options.defaultFlowStyle = DumperOptions.FlowStyle.BLOCK
+        options.isPrettyFlow = true
+        yaml = Yaml(options)
         loadPersistentFiles()
     }
 
@@ -19,8 +26,13 @@ class PersistentFileManager(basePath: String) {
         if (contextFile.exists()) {
             try {
                 persistentFiles.clear()
-                contextFile.readLines().forEach { line ->
-                    persistentFiles.add(FileData(line.trim(), true))
+                val yamlData = yaml.load<Map<String, Any>>(contextFile.reader())
+                (yamlData["files"] as? List<Map<String, Any>>)?.forEach { fileMap ->
+                    val filePath = fileMap["path"] as? String
+                    val isReadOnly = fileMap["readOnly"] as? Boolean ?: true
+                    if (filePath != null) {
+                        persistentFiles.add(FileData(filePath, isReadOnly))
+                    }
                 }
             } catch (e: IOException) {
                 e.printStackTrace()
@@ -32,9 +44,15 @@ class PersistentFileManager(basePath: String) {
     fun savePersistentFilesToContextFile() {
         try {
             FileWriter(contextFile).use { writer ->
-                persistentFiles.forEach { file ->
-                    writer.write("${file.filePath}\n")
-                }
+                val data = mapOf(
+                    "files" to persistentFiles.map { file ->
+                        mapOf(
+                            "path" to file.filePath,
+                            "readOnly" to file.isReadOnly
+                        )
+                    }
+                )
+                yaml.dump(data, writer)
             }
         } catch (e: IOException) {
             e.printStackTrace()

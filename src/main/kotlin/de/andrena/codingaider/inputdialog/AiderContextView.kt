@@ -35,6 +35,9 @@ class AiderContextView(
     init {
         rootNode.add(filesNode)
         updateTree()
+        persistentFiles.forEach { file ->
+            addFileToTree(file)
+        }
 
         tree.apply {
             isRootVisible = true
