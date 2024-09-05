@@ -35,9 +35,6 @@ class AiderContextView(
     init {
         rootNode.add(filesNode)
         updateTree()
-        persistentFiles.forEach { file ->
-            addFileToTree(file)
-        }
 
         tree.apply {
             isRootVisible = true
@@ -226,10 +223,19 @@ class AiderContextView(
             }
         }
         persistentFiles = persistentFileManager.getPersistentFiles()
-        updateTree()
+        addFilesToTree(persistentFiles)
     }
 
     private fun isPersistent(fileData: FileData): Boolean {
         return persistentFiles.any { it.filePath == fileData.filePath }
+    }
+
+    fun addFilesToTree(files: List<FileData>) {
+        files.forEach { file ->
+            if (!allFiles.any { it.filePath == file.filePath }) {
+                allFiles += file
+            }
+        }
+        updateTree()
     }
 }
