@@ -42,14 +42,13 @@ class PersistentFilesAction : AnAction() {
 
             FileRefresher.refreshFiles(project, arrayOf(persistentFileManager.getContextFile()))
 
-            // Show notification with file names and auto-disappear
+            // Show notification with file names
             val fileNames = affectedFiles.joinToString("\n") { it.filePath }
             val fullMessage = "$message\n$fileNames"
-            NotificationGroupManager.getInstance()
+            val notification = NotificationGroupManager.getInstance()
                 .getNotificationGroup("Coding Aider Notifications")
                 .createNotification(fullMessage, NotificationType.INFORMATION)
-                .setExpired(true)
-                .notify(project)
+            notification.notify(project)
         }
     }
 
