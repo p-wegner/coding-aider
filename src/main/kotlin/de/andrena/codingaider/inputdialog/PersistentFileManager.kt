@@ -1,5 +1,6 @@
 package de.andrena.codingaider.inputdialog
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.FileData
@@ -54,8 +55,15 @@ class PersistentFileManager(basePath: String) {
                 )
                 yaml.dump(data, writer)
             }
+            refreshContextFile()
         } catch (e: IOException) {
             e.printStackTrace()
+        }
+    }
+
+    private fun refreshContextFile() {
+        ApplicationManager.getApplication().invokeLater {
+            LocalFileSystem.getInstance().refreshAndFindFileByIoFile(contextFile)?.refresh(false, false)
         }
     }
 

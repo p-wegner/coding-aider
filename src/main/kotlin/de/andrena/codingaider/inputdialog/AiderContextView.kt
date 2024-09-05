@@ -190,7 +190,7 @@ class AiderContextView(
             }
         }
 
-        (tree.model as DefaultTreeModel).reload()
+        updateTree()
 
         val selectionModel = tree.selectionModel
         selectedPaths.forEach { path ->
