@@ -68,17 +68,11 @@
                     description="This will instruct aider to do something">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt A"/>
             </action>
-            <action id="de.andrena.codingaider.AiderDirectShellAction"
-                    class="de.andrena.codingaider.AiderDirectShellAction"
+            <action id="de.andrena.codingaider.AiderShellAction"
+                    class="de.andrena.codingaider.AiderShellAction"
                     text="Start Aider in Shell Mode"
-                    description="This will directly start aider in shell mode with default settings">
+                    description="This will start aider in shell mode with default settings">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt shift S"/>
-            </action>
-            <action id="de.andrena.codingaider.AiderDefaultShellAction"
-                    class="de.andrena.codingaider.AiderDefaultShellAction"
-                    text="Start Aider with Default Settings"
-                    description="This will directly start aider in shell mode with default settings from AiderInputDialog">
-                <keyboard-shortcut keymap="$default" first-keystroke="alt shift D"/>
             </action>
             <action id="de.andrena.codingaider.PersistentFilesAction"
                     class="de.andrena.codingaider.PersistentFilesAction"
