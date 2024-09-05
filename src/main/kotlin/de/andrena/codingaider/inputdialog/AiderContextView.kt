@@ -178,6 +178,11 @@ class AiderContextView(
                 val updatedFileData = fileData.copy(isReadOnly = !fileData.isReadOnly)
                 node.userObject = updatedFileData
 
+                // Update allFiles
+                allFiles = allFiles.map {
+                    if (it.filePath == fileData.filePath) updatedFileData else it
+                }
+
                 // Update persistentFiles
                 persistentFiles = persistentFiles.map {
                     if (it.filePath == fileData.filePath) updatedFileData else it
@@ -192,14 +197,30 @@ class AiderContextView(
 
         updateTree()
 
+        // Restore selection
         val selectionModel = tree.selectionModel
         selectedPaths.forEach { path ->
-            tree.expandPath(path)
-            selectionModel.addSelectionPath(path)
+            val newPath = findUpdatedPath(path)
+            tree.expandPath(newPath)
+            selectionModel.addSelectionPath(newPath)
         }
 
         // Save updated persistent files
         persistentFileManager.savePersistentFilesToContextFile()
+    }
+
+    private fun findUpdatedPath(oldPath: javax.swing.tree.TreePath): javax.swing.tree.TreePath {
+        val components = oldPath.path
+        val updatedComponents = components.map { component ->
+            if (component is DefaultMutableTreeNode && component.userObject is FileData) {
+                val fileData = component.userObject as FileData
+                val updatedFileData = allFiles.find { it.filePath == fileData.filePath } ?: fileData
+                DefaultMutableTreeNode(updatedFileData)
+            } else {
+                component
+            }
+        }.toTypedArray()
+        return javax.swing.tree.TreePath(updatedComponents)
     }
 
     fun getSelectedFiles(): List<FileData> {
