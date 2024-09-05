@@ -13,17 +13,11 @@ import javax.swing.*
 class AiderSettingsConfigurable(private val project: Project) : Configurable {
     private var settingsComponent: JPanel? = null
     private val useYesFlagCheckBox = JBCheckBox("Use --yes flag by default")
-    private val llmOptions = arrayOf("--sonnet", "--mini", "--4o", "--deepseek", "")
+    private val llmOptions = ApiKeyChecker.getAllLlmOptions().toTypedArray()
     private val llmComboBox = object : JComboBox<String>(llmOptions) {
         override fun getToolTipText(): String? {
             val selectedItem = selectedItem as? String ?: return null
-            val apiKey = when {
-                selectedItem.contains("sonnet") -> "ANTHROPIC_API_KEY"
-                selectedItem.contains("mini") || selectedItem.contains("4o") -> "OPENAI_API_KEY"
-                selectedItem.contains("deepseek") -> "DEEPSEEK_API_KEY"
-                else -> return null
-            }
-            return if (ApiKeyChecker.checkApiKeys()[apiKey] == true) {
+            return if (ApiKeyChecker.isApiKeyAvailableForLlm(selectedItem)) {
                 "API key found for $selectedItem"
             } else {
                 "API key not found for $selectedItem"
@@ -106,14 +100,9 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         ): Component {
             val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
             if (component is JLabel && value is String) {
-                val apiKey = when {
-                    value.contains("sonnet") -> "ANTHROPIC_API_KEY"
-                    value.contains("mini") || value.contains("4o") -> "OPENAI_API_KEY"
-                    value.contains("deepseek") -> "DEEPSEEK_API_KEY"
-                    else -> null
-                }
+                val apiKey = ApiKeyChecker.getApiKeyForLlm(value)
                 if (apiKey != null) {
-                    val isKeyAvailable = ApiKeyChecker.checkApiKeys()[apiKey] == true
+                    val isKeyAvailable = ApiKeyChecker.isApiKeyAvailableForLlm(value)
                     icon = if (isKeyAvailable) {
                         UIManager.getIcon("OptionPane.informationIcon")
                     } else {

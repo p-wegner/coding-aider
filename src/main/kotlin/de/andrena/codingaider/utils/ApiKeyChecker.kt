@@ -4,16 +4,20 @@ import java.io.File
 import java.nio.file.Paths
 
 object ApiKeyChecker {
-    private val apiKeyMap = mapOf(
-        "OPENAI_API_KEY" to listOf("mini", "4o"),
-        "ANTHROPIC_API_KEY" to listOf("sonnet"),
-        "DEEPSEEK_API_KEY" to listOf("deepseek")
+    private val llmToApiKeyMap = mapOf(
+        "--sonnet" to "ANTHROPIC_API_KEY",
+        "--mini" to "OPENAI_API_KEY",
+        "--4o" to "OPENAI_API_KEY",
+        "--deepseek" to "DEEPSEEK_API_KEY"
     )
 
     fun checkApiKeys(): Map<String, Boolean> {
-        return apiKeyMap.mapValues { (key, _) ->
-            isApiKeyAvailable(key)
-        }
+        return llmToApiKeyMap.values.distinct().associateWith { isApiKeyAvailable(it) }
+    }
+
+    fun isApiKeyAvailableForLlm(llm: String): Boolean {
+        val apiKey = llmToApiKeyMap[llm] ?: return true // If no API key is needed, consider it available
+        return isApiKeyAvailable(apiKey)
     }
 
     private fun isApiKeyAvailable(apiKeyName: String): Boolean {
@@ -33,7 +37,7 @@ object ApiKeyChecker {
         return false
     }
 
-    fun getLlmForApiKey(apiKey: String): List<String> {
-        return apiKeyMap[apiKey] ?: emptyList()
-    }
+    fun getApiKeyForLlm(llm: String): String? = llmToApiKeyMap[llm]
+
+    fun getAllLlmOptions(): List<String> = llmToApiKeyMap.keys.toList() + ""
 }
