@@ -182,6 +182,11 @@ class AiderContextView(
                 persistentFiles = persistentFiles.map {
                     if (it.filePath == fileData.filePath) updatedFileData else it
                 }
+
+                // Update the file in persistentFileManager
+                if (isPersistent(updatedFileData)) {
+                    persistentFileManager.updateFile(updatedFileData)
+                }
             }
         }
 

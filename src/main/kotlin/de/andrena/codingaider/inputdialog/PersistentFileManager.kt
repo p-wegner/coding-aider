@@ -76,6 +76,14 @@ class PersistentFileManager(basePath: String) {
         selectedFiles.forEach { addFile(it) }
     }
 
+    fun updateFile(updatedFile: FileData) {
+        val index = persistentFiles.indexOfFirst { it.filePath == updatedFile.filePath }
+        if (index != -1) {
+            persistentFiles[index] = updatedFile
+            savePersistentFilesToContextFile()
+        }
+    }
+
     fun getContextFile(): VirtualFile {
         if (!contextFile.exists()) {
             contextFile.createNewFile()
