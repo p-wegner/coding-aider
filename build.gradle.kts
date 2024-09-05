@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "de.andrena"
-version = "1.0.3"
+version = "1.0.4-SNAPSHOT"
 
 repositories {
     mavenCentral()
@@ -25,7 +25,6 @@ intellij {
 }
 
 tasks {
-    // Set the JVM compatibility versions
     withType<JavaCompile> {
         sourceCompatibility = "17"
         targetCompatibility = "17"
