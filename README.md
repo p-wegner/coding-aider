@@ -1,6 +1,6 @@
 # Coding-Aider Plugin for IntelliJ IDEA <img src="src/main/resources/META-INF/pluginIcon.svg" alt="Coding-Aider Plugin Icon" width="40" height="40" style="vertical-align: middle;">
 
-Coding-Aider is an innovative IntelliJ IDEA plugin that seamlessly integrates Aider's AI-powered coding assistance
+Coding-Aider is an IntelliJ-based IDEA plugin that seamlessly integrates Aider's AI-powered coding assistance
 directly into your development environment. This integration enhances your productivity by providing intelligent coding
 suggestions and automating common development tasks.
 
@@ -51,16 +51,16 @@ functionalities like Git integration and keyboard shortcuts.
     - Install as a global pipx Python app
     - Ensure it's accessible from your terminal (`aider --help`)
 
-2. Install the Coding-Aider plugin in IntelliJ IDEA.
+2. Install the Coding-Aider plugin in a compatible JetBrains IDE.
+
 3. (Recommended) Globally configure API keys for LLM Providers you plan to use (
    see https://aider.chat/docs/config/dotenv.html)
 
-3. Configure Aider settings:
+4. Configure Aider settings:
     - Navigate to Tools > Aider Settings > Run Test to verify your Aider installation.
 
-4. Usage:
+5. Usage:
     - Select files or directories in your project
-    - Use Alt+A or right-click to initiate an Aider action
+    - Use Alt+A or use the entries in the right-click context menu to initiate an Aider action
     - Enter your coding request in the dialog
     - Review Aider's output and resulting changes in your project
-
