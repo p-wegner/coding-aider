@@ -145,10 +145,8 @@ class AiderInputDialog(
 
     override fun show() {
         super.show()
-        SwingUtilities.invokeLater {
-            inputTextArea.requestFocusInWindow()
-            inputTextArea.caretPosition = inputTextArea.document.length
-        }
+        inputTextArea.requestFocusInWindow()
+        inputTextArea.caretPosition = inputTextArea.document.length
     }
 
     private fun loadHistory() {
