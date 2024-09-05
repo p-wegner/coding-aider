@@ -13,8 +13,8 @@ import javax.swing.*
 class AiderSettingsConfigurable(private val project: Project) : Configurable {
     private var settingsComponent: JPanel? = null
     private val useYesFlagCheckBox = JBCheckBox("Use --yes flag by default")
-    private val llmModelOptions = arrayOf("--sonnet", "--mini", "--4o", "--deepseek", "")
-    private val llmModelComboBox = JComboBox(llmModelOptions)
+    private val llmOptions = arrayOf("--sonnet", "--mini", "--4o", "--deepseek", "")
+    private val llmComboBox = JComboBox(llmOptions)
     private val additionalArgsField = JBTextField()
     private val isShellModeCheckBox = JBCheckBox("Use Shell Mode by default")
 
@@ -54,7 +54,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     override fun isModified(): Boolean {
         val settings = AiderSettings.getInstance(project)
         return useYesFlagCheckBox.isSelected != settings.useYesFlag ||
-                llmModelComboBox.selectedItem as String != settings.llmModel ||
+                llmComboBox.selectedItem as String != settings.llm ||
                 additionalArgsField.text != settings.additionalArgs ||
                 isShellModeCheckBox.isSelected != settings.isShellMode
     }
@@ -62,7 +62,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     override fun apply() {
         val settings = AiderSettings.getInstance(project)
         settings.useYesFlag = useYesFlagCheckBox.isSelected
-        settings.llmModel = llmModelComboBox.selectedItem as String
+        settings.llm = llmComboBox.selectedItem as String
         settings.additionalArgs = additionalArgsField.text
         settings.isShellMode = isShellModeCheckBox.isSelected
     }
@@ -70,7 +70,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     override fun reset() {
         val settings = AiderSettings.getInstance(project)
         useYesFlagCheckBox.isSelected = settings.useYesFlag
-        llmModelComboBox.selectedItem = settings.llmModel
+        llmComboBox.selectedItem = settings.llm
         additionalArgsField.text = settings.additionalArgs
         isShellModeCheckBox.isSelected = settings.isShellMode
     }

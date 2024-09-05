@@ -29,8 +29,8 @@ class AiderInputDialog(
     private val settings = AiderSettings.getInstance(project)
     private val inputTextArea = JTextArea(5, 30)
     private val yesCheckBox = JCheckBox("Add --yes flag", settings.useYesFlag)
-    private val llmModelOptions = arrayOf("--sonnet", "--mini", "--4o", "--deepseek", "")
-    private val llmModelComboBox = ComboBox(llmModelOptions)
+    private val llmOptions = arrayOf("--sonnet", "--mini", "--4o", "--deepseek", "")
+    private val llmComboBox = ComboBox(llmOptions)
     private val additionalArgsField = JTextField(settings.additionalArgs, 20)
     private val modeToggle = JCheckBox("Shell Mode", settings.isShellMode)
     private val messageLabel = JLabel("Enter your message:")
@@ -48,7 +48,7 @@ class AiderInputDialog(
         setOKButtonText("OK")
         setCancelButtonText("Cancel")
         setupKeyBindings()
-        llmModelComboBox.selectedItem = settings.llmModel
+        llmComboBox.selectedItem = settings.llm
     }
 
     private fun setupKeyBindings() {
@@ -177,13 +177,13 @@ class AiderInputDialog(
         topPanel.add(yesCheckBox, gbc)
         gbc.gridy++
         gbc.gridwidth = 1
-        val selectLlmModelLabel = JLabel("Select LLM model:")
-        selectLlmModelLabel.displayedMnemonic = KeyEvent.VK_L
-        selectLlmModelLabel.labelFor = llmModelComboBox
-        topPanel.add(selectLlmModelLabel, gbc)
+        val selectLlmLabel = JLabel("Select LLM:")
+        selectLlmLabel.displayedMnemonic = KeyEvent.VK_L
+        selectLlmLabel.labelFor = llmComboBox
+        topPanel.add(selectLlmLabel, gbc)
         gbc.gridx = 1
         gbc.gridwidth = GridBagConstraints.REMAINDER
-        topPanel.add(llmModelComboBox, gbc)
+        topPanel.add(llmComboBox, gbc)
         gbc.gridy++
         gbc.gridx = 0
         gbc.gridwidth = 1
@@ -241,7 +241,7 @@ class AiderInputDialog(
 
     fun getInputText(): String = inputTextArea.text
     fun isYesFlagChecked(): Boolean = yesCheckBox.isSelected
-    fun getSelectedLlmModel(): String = llmModelComboBox.selectedItem as String
+    fun getSelectedLlm(): String = llmComboBox.selectedItem as String
     fun getAdditionalArgs(): String = additionalArgsField.text
     fun getAllFiles(): List<FileData> = aiderContextView.getAllFiles()
     fun isShellMode(): Boolean = modeToggle.isSelected
