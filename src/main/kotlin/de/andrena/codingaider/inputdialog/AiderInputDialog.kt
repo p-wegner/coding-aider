@@ -12,6 +12,7 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.commandhistory.AiderHistoryHandler
+import de.andrena.codingaider.settings.AiderSettings
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.GridBagConstraints
@@ -23,18 +24,15 @@ import javax.swing.*
 
 class AiderInputDialog(
     project: Project,
-    files: List<FileData>,
-    private val defaultUseYesFlag: Boolean,
-    private val defaultSelectedCommand: String,
-    private val defaultAdditionalArgs: String,
-    private val defaultIsShellMode: Boolean
+    files: List<FileData>
 ) : DialogWrapper(project) {
+    private val settings = AiderSettings.getInstance(project)
     private val inputTextArea = JTextArea(5, 30)
-    private val yesCheckBox = JCheckBox("Add --yes flag", defaultUseYesFlag)
+    private val yesCheckBox = JCheckBox("Add --yes flag", settings.useYesFlag)
     private val commandOptions = arrayOf("--sonnet", "--mini", "--4o", "--deepseek", "")
     private val commandComboBox = ComboBox(commandOptions)
-    private val additionalArgsField = JTextField(defaultAdditionalArgs, 20)
-    private val modeToggle = JCheckBox("Shell Mode", defaultIsShellMode)
+    private val additionalArgsField = JTextField(settings.additionalArgs, 20)
+    private val modeToggle = JCheckBox("Shell Mode", settings.isShellMode)
     private val messageLabel = JLabel("Enter your message:")
     private val historyComboBox = ComboBox<HistoryItem>()
     private val historyHandler = AiderHistoryHandler(project.basePath ?: "")
@@ -50,7 +48,7 @@ class AiderInputDialog(
         setOKButtonText("OK")
         setCancelButtonText("Cancel")
         setupKeyBindings()
-        commandComboBox.selectedItem = defaultSelectedCommand
+        commandComboBox.selectedItem = settings.selectedCommand
     }
 
     private fun setupKeyBindings() {
