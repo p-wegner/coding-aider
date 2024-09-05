@@ -14,14 +14,13 @@ import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.commandhistory.AiderHistoryHandler
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
-import java.awt.BorderLayout
-import java.awt.Component
-import java.awt.GridBagConstraints
-import java.awt.GridBagLayout
+import java.awt.*
 import java.awt.event.KeyEvent
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.swing.*
+import javax.swing.plaf.basic.BasicSplitPaneDivider
+import javax.swing.plaf.basic.BasicSplitPaneUI
 
 class AiderInputDialog(
     project: Project,
@@ -48,7 +47,7 @@ class AiderInputDialog(
     private val historyHandler = AiderHistoryHandler(project.basePath ?: "")
     private val aiderContextView: AiderContextView
     private val persistentFileManager: PersistentFileManager
-    private val splitPane: JSplitPane
+    private var splitPane: JSplitPane
 
     init {
         title = "Aider Command"
@@ -66,8 +65,8 @@ class AiderInputDialog(
     }
 
     private fun customizeSplitPane() {
-        splitPane.ui = object : BasicSplitPaneUI() {
-            override fun createDivider(): BasicSplitPaneDivider {
+        splitPane.setUI(object : BasicSplitPaneUI() {
+            override fun createDefaultDivider(): BasicSplitPaneDivider {
                 return object : BasicSplitPaneDivider(this) {
                     override fun paint(g: Graphics) {
                         g.color = UIManager.getColor("SplitPane.background")
@@ -76,7 +75,7 @@ class AiderInputDialog(
                     }
                 }
             }
-        }
+        })
         splitPane.border = null
     }
 
@@ -327,7 +326,8 @@ class AiderInputDialog(
                 val apiKey = ApiKeyChecker.getApiKeyForLlm(value)
                 if (apiKey != null && !ApiKeyChecker.isApiKeyAvailableForLlm(value)) {
                     icon = UIManager.getIcon("OptionPane.errorIcon")
-                    toolTipText = "API key not found in default locations for $value. This may not be an error if you're using an alternative method to provide the key."
+                    toolTipText =
+                        "API key not found in default locations for $value. This may not be an error if you're using an alternative method to provide the key."
                 } else {
                     icon = null
                     toolTipText = null
