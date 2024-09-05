@@ -1,12 +1,11 @@
 package de.andrena.codingaider.inputdialog
 
 import com.intellij.icons.AllIcons
-import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.actionSystem.*
+import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.ui.components.JBLabel
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
@@ -52,12 +51,14 @@ class AiderInputDialog(
     private val aiderContextView: AiderContextView
     private val persistentFileManager: PersistentFileManager
     private var splitPane: JSplitPane
+    private val settingsButton: ActionButton
 
     init {
         title = "Aider Command"
         persistentFileManager = PersistentFileManager(project.basePath ?: "")
         aiderContextView = AiderContextView(project, files + persistentFileManager.getPersistentFiles())
         splitPane = JSplitPane(JSplitPane.VERTICAL_SPLIT)
+        settingsButton = createSettingsButton()
         init()
         loadHistory()
         setOKButtonText("OK")
@@ -66,6 +67,15 @@ class AiderInputDialog(
         llmComboBox.selectedItem = settings.llm
         llmComboBox.renderer = LlmComboBoxRenderer()
         customizeSplitPane()
+    }
+
+    private fun createSettingsButton(): ActionButton {
+        val settingsAction = object : AnAction("Open Settings", "Open Aider Settings", AllIcons.General.Settings) {
+            override fun actionPerformed(e: AnActionEvent) {
+                ShowSettingsUtil.getInstance().showSettingsDialog(project, "Aider")
+            }
+        }
+        return ActionButton(settingsAction, settingsAction.templatePresentation, "AiderSettingsButton", ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE)
     }
 
     private fun customizeSplitPane() {
@@ -224,8 +234,15 @@ class AiderInputDialog(
         firstRowPanel.add(historyComboBox, GridBagConstraints().apply {
             gridx = 4
             gridy = 0
-            weightx = 0.7
+            weightx = 0.65
             fill = GridBagConstraints.HORIZONTAL
+        })
+        firstRowPanel.add(settingsButton, GridBagConstraints().apply {
+            gridx = 5
+            gridy = 0
+            weightx = 0.05
+            fill = GridBagConstraints.NONE
+            insets = JBUI.insets(0, 5, 0, 0)
         })
         topPanel.add(firstRowPanel, gbc)
 
