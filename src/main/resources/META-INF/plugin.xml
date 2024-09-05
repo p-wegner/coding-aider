@@ -14,11 +14,14 @@
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
-        <p>Coding-Aider is an IntelliJ-based IDEA plugin that seamlessly integrates Aider's AI-powered coding assistance directly into your development environment. This integration enhances your productivity by providing intelligent coding suggestions and automating common development tasks.</p>
+        <p>Seamlessly integrate Aider's AI-powered coding assistance directly into your IDE. This integration boosts your productivity by offering rapid access for precision code generation and refactoring, all while allowing you complete control over the context utilized by the LLM.</p>
+
+        <h3>Important Note</h3>
+        <p>To utilize this plugin, you must have a functional Aider installation along with access to API keys for the LLM Providers you intend to use. Alternatively, you can run a local LLM inference server, such as Ollama, to connect to Aider.</p>
 
         <h3>Key Features:</h3>
         <ul>
-            <li><strong>AI-Powered Coding Assistance:</strong> Harness the power of Aider to receive intelligent coding suggestions and assistance within your IDE.</li>
+            <li><strong>AI-Powered Coding Assistance:</strong> Harness the power of Aider to receive intelligent coding assistance within your IDE.</li>
             <li><strong>Intuitive Access:</strong>
                 <ul>
                     <li>Quickly initiate Aider actions via the "Start Aider Action" option in the Tools menu or Project View popup menu.</li>
@@ -26,7 +29,7 @@
                     <li>Navigate previous commands with Alt+UP and Alt+DOWN in the message field.</li>
                 </ul>
             </li>
-            <li><strong>Persistent File Management:</strong> Efficiently manage frequently used files for Aider operations with Alt+Shift+A.</li>
+            <li><strong>Persistent File Management:</strong> Efficiently manage frequently used files for Aider operations with Alt+Shift+A or within the Aider Command Window.</li>
             <li><strong>Dual Execution Modes:</strong>
                 <ul>
                     <li>IDE-based execution for seamless integration.</li>
@@ -49,7 +52,31 @@
 
         <p>Coding-Aider brings these powerful terminal-based features directly into your IDE, leveraging established IDE functionalities like Git integration and keyboard shortcuts.</p>
 
-        <p>Elevate your development workflow with Coding-Aider's AI-assisted capabilities. Experience the perfect blend of Aider's powerful features and IntelliJ IDEA's robust environment for a more efficient and intelligent coding process.</p>
+        <h3>Getting Started:</h3>
+        <ol>
+            <li>Install Aider-Chat:
+                <ul>
+                    <li>Visit https://aider.chat/</li>
+                    <li>Install as a global pipx Python app</li>
+                    <li>Ensure it's accessible from your terminal (`aider --help`)</li>
+                </ul>
+            </li>
+            <li>Install the Coding-Aider plugin in a compatible JetBrains IDE.</li>
+            <li>(Recommended) Globally configure API keys for LLM Providers you plan to use (see https://aider.chat/docs/config/dotenv.html)</li>
+            <li>Configure Aider settings:
+                <ul>
+                    <li>Navigate to Tools > Aider Settings > Run Test to verify your Aider installation.</li>
+                </ul>
+            </li>
+            <li>Usage:
+                <ul>
+                    <li>Select files or directories in your project</li>
+                    <li>Use Alt+A or use the entries in the right-click context menu to initiate an Aider action</li>
+                    <li>Enter your coding request in the dialog</li>
+                    <li>Review Aider's output and resulting changes in your project</li>
+                </ul>
+            </li>
+        </ol>
     ]]></description>
 
     <!-- Product and plugin compatibility requirements.

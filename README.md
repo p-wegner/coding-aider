@@ -1,16 +1,22 @@
 # Coding-Aider Plugin for IntelliJ IDEA <img src="src/main/resources/META-INF/pluginIcon.svg" alt="Coding-Aider Plugin Icon" width="40" height="40" style="vertical-align: middle;">
 
-Coding-Aider is an IntelliJ-based IDEA plugin that seamlessly integrates Aider's AI-powered coding assistance
-directly into your development environment. This integration enhances your productivity by providing intelligent coding
-suggestions and automating common development tasks.
+Seamlessly integrate Aider's AI-powered coding assistance directly into your IDE.
+This integration boosts your productivity by offering rapid access for precision code generation and refactoring, all
+while allowing you complete control over the context utilized by the LLM.
 
 ## Example Usage
 
 ![Aider Command Action Example](docs/AiderCommandAction.jpg)
 
+## Important Note
+
+To utilize this plugin, you must have a functional Aider installation along with access to API keys for the LLM
+Providers you intend to use. Alternatively, you can run a local LLM inference server, such as Ollama, to connect to
+Aider.
+
 ## Key Features
 
-1. **AI-Powered Coding Assistance**: Harness the power of Aider to receive intelligent coding suggestions and assistance
+1. **AI-Powered Coding Assistance**: Harness the power of Aider to receive intelligent coding assistance
    within your IDE.
 
 2. **Intuitive Access**:
@@ -18,7 +24,8 @@ suggestions and automating common development tasks.
     - Use the keyboard shortcut Alt+A for rapid access.
     - Navigate previous commands with Alt+UP and Alt+DOWN in the message field.
 
-3. **Persistent File Management**: Efficiently manage frequently used files for Aider operations with Alt+Shift+A.
+3. **Persistent File Management**: Efficiently manage frequently used files for Aider operations with Alt+Shift+A or
+   within the Aider Command Window.
 
 4. **Dual Execution Modes**:
     - IDE-based execution for seamless integration.
