@@ -92,5 +92,6 @@
                 id="de.andrena.codingaider.settings.AiderSettingsConfigurable"
                 parentId="tools"
                 nonDefaultProject="true"/>
+        <notificationGroup id="Coding Aider Notifications" displayType="BALLOON" key="notification.group.name"/>
     </extensions>
 </idea-plugin>
