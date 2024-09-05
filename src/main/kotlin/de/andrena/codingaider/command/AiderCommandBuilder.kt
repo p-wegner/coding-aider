@@ -4,7 +4,7 @@ object AiderCommandBuilder {
     fun buildAiderCommand(commandData: CommandData, isShellMode: Boolean): List<String> {
         return buildList {
             add("aider")
-            add(commandData.selectedCommand)
+            add(commandData.llm)
             commandData.files.forEach { fileData ->
                 if (fileData.isReadOnly) {
                     add("--read")

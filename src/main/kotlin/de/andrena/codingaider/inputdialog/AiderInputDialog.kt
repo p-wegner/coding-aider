@@ -241,7 +241,7 @@ class AiderInputDialog(
 
     fun getInputText(): String = inputTextArea.text
     fun isYesFlagChecked(): Boolean = yesCheckBox.isSelected
-    fun getSelectedLlm(): String = llmComboBox.selectedItem as String
+    fun getLlm(): String = llmComboBox.selectedItem as String
     fun getAdditionalArgs(): String = additionalArgsField.text
     fun getAllFiles(): List<FileData> = aiderContextView.getAllFiles()
     fun isShellMode(): Boolean = modeToggle.isSelected

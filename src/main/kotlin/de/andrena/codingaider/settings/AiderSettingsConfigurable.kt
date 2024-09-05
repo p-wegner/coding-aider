@@ -23,7 +23,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     override fun createComponent(): JComponent {
         val formBuilder = FormBuilder.createFormBuilder()
             .addComponent(useYesFlagCheckBox)
-            .addLabeledComponent("Default LLM Model:", llmModelComboBox)
+            .addLabeledComponent("Default LLM Model:", llmComboBox)
             .addLabeledComponent("Default Additional Arguments:", additionalArgsField)
             .addComponent(isShellModeCheckBox)
 
