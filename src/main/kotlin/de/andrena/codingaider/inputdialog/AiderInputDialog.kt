@@ -75,9 +75,13 @@ class AiderInputDialog(
                 ShowSettingsUtil.getInstance().showSettingsDialog(project, "Aider")
             }
         }
+        val presentation = Presentation("Open Settings").apply {
+            icon = AllIcons.General.Settings
+            description = "Open Aider Settings"
+        }
         return ActionButton(
             settingsAction,
-            settingsAction.templatePresentation,
+            presentation,
             "AiderSettingsButton",
             ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
         )
