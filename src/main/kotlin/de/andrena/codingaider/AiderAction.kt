@@ -75,7 +75,7 @@ class AiderAction : AnAction() {
             return CommandData(
                 message = "",
                 useYesFlag = AiderDefaults.USE_YES_FLAG,
-                selectedCommand = AiderDefaults.SELECTED_COMMAND,
+                llmModel = AiderDefaults.LLM_MODEL,
                 additionalArgs = AiderDefaults.ADDITIONAL_ARGS,
                 files = files,
                 isShellMode = true // Always true for direct shell mode

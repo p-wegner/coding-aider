@@ -10,7 +10,7 @@ import com.intellij.openapi.project.Project
 class AiderSettings : PersistentStateComponent<AiderSettings.State> {
     data class State(
         var useYesFlag: Boolean = AiderDefaults.USE_YES_FLAG,
-        var selectedCommand: String = AiderDefaults.SELECTED_COMMAND,
+        var llmModel: String = AiderDefaults.LLM_MODEL,
         var additionalArgs: String = AiderDefaults.ADDITIONAL_ARGS,
         var isShellMode: Boolean = AiderDefaults.IS_SHELL_MODE
     )
@@ -29,10 +29,10 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
             myState.useYesFlag = value
         }
 
-    var selectedCommand: String
-        get() = myState.selectedCommand
+    var llmModel: String
+        get() = myState.llmModel
         set(value) {
-            myState.selectedCommand = value
+            myState.llmModel = value
         }
 
     var additionalArgs: String

@@ -13,8 +13,8 @@ import javax.swing.*
 class AiderSettingsConfigurable(private val project: Project) : Configurable {
     private var settingsComponent: JPanel? = null
     private val useYesFlagCheckBox = JBCheckBox("Use --yes flag by default")
-    private val commandOptions = arrayOf("--sonnet", "--mini", "--4o", "--deepseek", "")
-    private val selectedCommandComboBox = JComboBox(commandOptions)
+    private val llmModelOptions = arrayOf("--sonnet", "--mini", "--4o", "--deepseek", "")
+    private val llmModelComboBox = JComboBox(llmModelOptions)
     private val additionalArgsField = JBTextField()
     private val isShellModeCheckBox = JBCheckBox("Use Shell Mode by default")
 
@@ -23,7 +23,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     override fun createComponent(): JComponent {
         val formBuilder = FormBuilder.createFormBuilder()
             .addComponent(useYesFlagCheckBox)
-            .addLabeledComponent("Default Selected Command:", selectedCommandComboBox)
+            .addLabeledComponent("Default LLM Model:", llmModelComboBox)
             .addLabeledComponent("Default Additional Arguments:", additionalArgsField)
             .addComponent(isShellModeCheckBox)
 
@@ -54,7 +54,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     override fun isModified(): Boolean {
         val settings = AiderSettings.getInstance(project)
         return useYesFlagCheckBox.isSelected != settings.useYesFlag ||
-                selectedCommandComboBox.selectedItem as String != settings.selectedCommand ||
+                llmModelComboBox.selectedItem as String != settings.llmModel ||
                 additionalArgsField.text != settings.additionalArgs ||
                 isShellModeCheckBox.isSelected != settings.isShellMode
     }
@@ -62,7 +62,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     override fun apply() {
         val settings = AiderSettings.getInstance(project)
         settings.useYesFlag = useYesFlagCheckBox.isSelected
-        settings.selectedCommand = selectedCommandComboBox.selectedItem as String
+        settings.llmModel = llmModelComboBox.selectedItem as String
         settings.additionalArgs = additionalArgsField.text
         settings.isShellMode = isShellModeCheckBox.isSelected
     }
@@ -70,7 +70,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     override fun reset() {
         val settings = AiderSettings.getInstance(project)
         useYesFlagCheckBox.isSelected = settings.useYesFlag
-        selectedCommandComboBox.selectedItem = settings.selectedCommand
+        llmModelComboBox.selectedItem = settings.llmModel
         additionalArgsField.text = settings.additionalArgs
         isShellModeCheckBox.isSelected = settings.isShellMode
     }
