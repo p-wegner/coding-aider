@@ -4,49 +4,47 @@ import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBTextField
-import com.intellij.util.ui.FormBuilder
-import com.intellij.util.ui.JBUI
-import java.awt.GridBagConstraints
-import java.awt.GridBagLayout
-import javax.swing.*
+import com.intellij.ui.dsl.builder.*
+import javax.swing.JButton
+import javax.swing.JComponent
+import javax.swing.JPanel
 
 class AiderSettingsConfigurable(private val project: Project) : Configurable {
     private var settingsComponent: JPanel? = null
     private val useYesFlagCheckBox = JBCheckBox("Use --yes flag by default")
     private val llmOptions = arrayOf("--sonnet", "--mini", "--4o", "--deepseek", "")
-    private val llmComboBox = JComboBox(llmOptions)
+    private val llmComboBox = com.intellij.openapi.ui.ComboBox(llmOptions)
     private val additionalArgsField = JBTextField()
     private val isShellModeCheckBox = JBCheckBox("Use Shell Mode by default")
 
-    override fun getDisplayName(): String = "Aider Settings"
+    override fun getDisplayName(): String = "Aider"
 
     override fun createComponent(): JComponent {
-        val formBuilder = FormBuilder.createFormBuilder()
-            .addComponent(useYesFlagCheckBox)
-            .addLabeledComponent("Default LLM Model:", llmComboBox)
-            .addLabeledComponent("Default Additional Arguments:", additionalArgsField)
-            .addComponent(isShellModeCheckBox)
-
-        settingsComponent = JPanel(GridBagLayout()).apply {
-            val gbc = GridBagConstraints().apply {
-                gridx = 0
-                gridy = 0
-                fill = GridBagConstraints.HORIZONTAL
-                insets = JBUI.insets(5)
-            }
-
-            add(formBuilder.panel, gbc)
-
-            gbc.gridy++
-            add(JLabel("Test Aider Installation:"), gbc)
-
-            gbc.gridx = 1
-            val testButton = JButton("Run Test").apply {
-                addActionListener {
-                    AiderTestCommand(project, "aider --help").execute()
+        settingsComponent = panel {
+            group("General Settings") {
+                row {
+                    cell(useYesFlagCheckBox)
+                }
+                row("Default LLM Model:") {
+                    cell(llmComboBox)
+                }
+                row("Default Additional Arguments:") {
+                    cell(additionalArgsField)
+                        .resizableColumn()
+                        .align(Align.FILL)
+                }
+                row {
+                    cell(isShellModeCheckBox)
                 }
             }
-            add(testButton, gbc)
+
+            group("Installation") {
+                row {
+                    button("Test Aider Installation") {
+                        AiderTestCommand(project, "aider --help").execute()
+                    }
+                }
+            }
         }
         return settingsComponent!!
     }
