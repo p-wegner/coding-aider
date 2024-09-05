@@ -76,7 +76,7 @@ class AiderInputDialog(
     private fun createSettingsButton(): ActionButton {
         val settingsAction = object : AnAction("Open Settings", "Open Aider Settings", AllIcons.General.Settings) {
             override fun actionPerformed(e: AnActionEvent) {
-                ShowSettingsUtil.getInstance().showSettingsDialog(project, "de.andrena.codingaider.settings.AiderSettingsConfigurable")
+                ShowSettingsUtil.getInstance().showSettingsDialog(project, "Aider Settings")
             }
         }
         val presentation = Presentation("Open Settings").apply {
