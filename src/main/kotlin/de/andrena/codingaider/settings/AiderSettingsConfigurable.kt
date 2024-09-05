@@ -4,9 +4,11 @@ import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBTextField
-import com.intellij.ui.dsl.builder.*
-import javax.swing.*
+import com.intellij.ui.dsl.builder.Align
+import com.intellij.ui.dsl.builder.panel
+import de.andrena.codingaider.utils.ApiKeyChecker
 import java.awt.Component
+import javax.swing.*
 
 class AiderSettingsConfigurable(private val project: Project) : Configurable {
     private var settingsComponent: JPanel? = null

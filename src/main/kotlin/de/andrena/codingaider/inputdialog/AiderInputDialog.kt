@@ -13,6 +13,7 @@ import com.intellij.util.ui.JBUI
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.commandhistory.AiderHistoryHandler
 import de.andrena.codingaider.settings.AiderSettings
+import de.andrena.codingaider.utils.ApiKeyChecker
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.GridBagConstraints

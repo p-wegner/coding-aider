@@ -1,0 +1,39 @@
+package de.andrena.codingaider.utils
+
+import java.io.File
+import java.nio.file.Paths
+
+object ApiKeyChecker {
+    private val apiKeyMap = mapOf(
+        "OPENAI_API_KEY" to listOf("mini", "4o"),
+        "ANTHROPIC_API_KEY" to listOf("sonnet"),
+        "DEEPSEEK_API_KEY" to listOf("deepseek")
+    )
+
+    fun checkApiKeys(): Map<String, Boolean> {
+        return apiKeyMap.mapValues { (key, _) ->
+            isApiKeyAvailable(key)
+        }
+    }
+
+    private fun isApiKeyAvailable(apiKeyName: String): Boolean {
+        // Check environment variable
+        if (System.getenv(apiKeyName) != null) return true
+
+        // Check .env file in the user's home directory
+        val homeDir = System.getProperty("user.home")
+        val envFile = File(homeDir, ".env")
+        if (envFile.exists() && envFile.readText().contains("$apiKeyName=")) return true
+
+        // Check .env file in the current working directory
+        val currentDir = Paths.get("").toAbsolutePath().toString()
+        val currentEnvFile = File(currentDir, ".env")
+        if (currentEnvFile.exists() && currentEnvFile.readText().contains("$apiKeyName=")) return true
+
+        return false
+    }
+
+    fun getLlmForApiKey(apiKey: String): List<String> {
+        return apiKeyMap[apiKey] ?: emptyList()
+    }
+}
