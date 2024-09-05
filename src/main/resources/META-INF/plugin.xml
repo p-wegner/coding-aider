@@ -93,6 +93,5 @@
                 parentId="tools"
                 nonDefaultProject="true"/>
         <notificationGroup id="Coding Aider Notifications" displayType="BALLOON"/>
-        <projectService serviceImplementation="de.andrena.codingaider.settings.AiderSettings"/>
     </extensions>
 </idea-plugin>
