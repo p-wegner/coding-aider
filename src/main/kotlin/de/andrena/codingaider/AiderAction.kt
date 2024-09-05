@@ -64,7 +64,7 @@ class AiderAction : AnAction() {
             return CommandData(
                 message = dialog.getInputText(),
                 useYesFlag = dialog.isYesFlagChecked(),
-                selectedCommand = dialog.getSelectedCommand(),
+                llm = dialog.getSelectedLlm(),
                 additionalArgs = dialog.getAdditionalArgs(),
                 files = dialog.getAllFiles(),
                 isShellMode = dialog.isShellMode()
