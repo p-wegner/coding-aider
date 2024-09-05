@@ -13,7 +13,10 @@ import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.commandhistory.AiderHistoryHandler
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
-import java.awt.*
+import java.awt.BorderLayout
+import java.awt.Dimension
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
 import java.awt.event.KeyEvent
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -26,7 +29,7 @@ class AiderInputDialog(
     files: List<FileData>
 ) : DialogWrapper(project) {
     private val settings = AiderSettings.getInstance(project)
-    private val inputTextArea = JTextArea(5, 30)
+    private val inputTextArea = JTextArea(5, 50)
     private val yesCheckBox = JCheckBox("Add --yes flag", settings.useYesFlag).apply {
         toolTipText = "Automatically answer 'yes' to prompts"
     }
@@ -67,6 +70,9 @@ class AiderInputDialog(
         llmComboBox.selectedItem = settings.llm
         llmComboBox.renderer = LlmComboBoxRenderer()
         customizeSplitPane()
+        
+        // Set minimum size for the dialog
+        minimumSize = Dimension(800, 600)
     }
 
     private fun createSettingsButton(): ActionButton {
@@ -191,12 +197,12 @@ class AiderInputDialog(
 
     override fun createCenterPanel(): JComponent {
         val panel = JPanel(BorderLayout())
-        panel.border = JBUI.Borders.empty(5)
+        panel.border = JBUI.Borders.empty(10)
 
         val topPanel = JPanel(GridBagLayout())
         val gbc = GridBagConstraints().apply {
             fill = GridBagConstraints.HORIZONTAL
-            insets = JBUI.insets(2)
+            insets = JBUI.insets(5)
             weightx = 1.0
             weighty = 0.0
             gridx = 0
@@ -210,7 +216,7 @@ class AiderInputDialog(
             gridx = 0
             gridy = 0
             weightx = 0.0
-            insets = JBUI.insets(0, 0, 0, 5)
+            insets = JBUI.insets(0, 0, 0, 10)
         })
         val selectLlmLabel = JLabel("LLM:").apply {
             displayedMnemonic = KeyEvent.VK_L
@@ -238,7 +244,7 @@ class AiderInputDialog(
             gridx = 3
             gridy = 0
             weightx = 0.0
-            insets = JBUI.insets(0, 10, 0, 5)
+            insets = JBUI.insets(0, 15, 0, 5)
         })
         firstRowPanel.add(historyComboBox, GridBagConstraints().apply {
             gridx = 4
@@ -251,7 +257,7 @@ class AiderInputDialog(
             gridy = 0
             weightx = 0.05
             fill = GridBagConstraints.NONE
-            insets = JBUI.insets(0, 5, 0, 0)
+            insets = JBUI.insets(0, 10, 0, 0)
         })
         topPanel.add(firstRowPanel, gbc)
 
