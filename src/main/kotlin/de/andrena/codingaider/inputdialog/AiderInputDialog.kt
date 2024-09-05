@@ -51,7 +51,6 @@ class AiderInputDialog(
         setCancelButtonText("Cancel")
         setupKeyBindings()
         commandComboBox.selectedItem = defaultSelectedCommand
-        minimumSize = JBUI.size(300, 400)
     }
 
     private fun setupKeyBindings() {
