@@ -24,7 +24,7 @@ import javax.swing.*
 class AiderInputDialog(project: Project, files: List<FileData>) : DialogWrapper(project) {
     private val inputTextArea = JTextArea(5, 30)
     private val yesCheckBox = JCheckBox("Add --yes flag", true)
-    private val commandOptions = arrayOf("--sonnet", "--mini", "--4o", "--deepseek")
+    private val commandOptions = arrayOf("--sonnet", "--mini", "--4o", "--deepseek", "")
     private val commandComboBox = ComboBox(commandOptions)
     private val additionalArgsField = JTextField(20)
     private val modeToggle = JCheckBox("Shell Mode")
