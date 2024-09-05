@@ -333,6 +333,7 @@ class AiderInputDialog(
         modeToggle.addActionListener {
             val isShellMode = modeToggle.isSelected
             inputTextArea.isVisible = !isShellMode
+            messageLabel.isVisible = !isShellMode
             messageLabel.text = if (isShellMode) "Shell mode enabled" else "Enter your message:"
         }
 
