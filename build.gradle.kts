@@ -12,7 +12,7 @@ repositories {
 }
 
 dependencies {
-    implementation("org.yaml:snakeyaml:1.30")
+    implementation("org.yaml:snakeyaml:2.0")
 }
 
 // Configure Gradle IntelliJ Plugin

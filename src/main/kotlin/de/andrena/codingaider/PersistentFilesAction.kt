@@ -1,5 +1,7 @@
 package de.andrena.codingaider
 
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -7,8 +9,6 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.inputdialog.PersistentFileManager
-import com.intellij.notification.NotificationGroupManager
-import com.intellij.notification.NotificationType
 import de.andrena.codingaider.utils.FileRefresher
 import de.andrena.codingaider.utils.FileTraversal
 
@@ -47,7 +47,7 @@ class PersistentFilesAction : AnAction() {
             val fullMessage = "$message\n$fileNames"
             val notification = NotificationGroupManager.getInstance()
                 .getNotificationGroup("Coding Aider Notifications")
-                .createNotification(fullMessage, NotificationType.INFORMATION)
+                .createNotification(fullMessage, NotificationType.IDE_UPDATE)
             notification.notify(project)
         }
     }
