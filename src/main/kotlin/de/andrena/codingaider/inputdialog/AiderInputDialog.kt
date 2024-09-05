@@ -71,8 +71,11 @@ class AiderInputDialog(
         llmComboBox.renderer = LlmComboBoxRenderer()
         customizeSplitPane()
         
-        // Set minimum size for the dialog
-        minimumSize = Dimension(800, 600)
+        // Set minimum size for the dialog and its components
+        minimumSize = Dimension(1000, 700)
+        preferredSize = Dimension(1200, 800)
+        inputTextArea.minimumSize = Dimension(300, 100)
+        aiderContextView.minimumSize = Dimension(300, 200)
     }
 
     private fun createSettingsButton(): ActionButton {
@@ -232,7 +235,7 @@ class AiderInputDialog(
         firstRowPanel.add(llmComboBox, GridBagConstraints().apply {
             gridx = 2
             gridy = 0
-            weightx = 0.3
+            weightx = 0.2
             fill = GridBagConstraints.HORIZONTAL
         })
         val historyLabel = JLabel("History:").apply {
@@ -249,13 +252,13 @@ class AiderInputDialog(
         firstRowPanel.add(historyComboBox, GridBagConstraints().apply {
             gridx = 4
             gridy = 0
-            weightx = 0.65
+            weightx = 0.7
             fill = GridBagConstraints.HORIZONTAL
         })
         firstRowPanel.add(settingsButton, GridBagConstraints().apply {
             gridx = 5
             gridy = 0
-            weightx = 0.05
+            weightx = 0.0
             fill = GridBagConstraints.NONE
             insets = JBUI.insets(0, 10, 0, 0)
         })
