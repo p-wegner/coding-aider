@@ -23,11 +23,11 @@ import javax.swing.*
 
 class AiderInputDialog(project: Project, files: List<FileData>) : DialogWrapper(project) {
     private val inputTextArea = JTextArea(5, 30)
-    private val yesCheckBox = JCheckBox("Add --yes flag", true)
+    private val yesCheckBox = JCheckBox("Add --yes flag", AiderDefaults.USE_YES_FLAG)
     private val commandOptions = arrayOf("--sonnet", "--mini", "--4o", "--deepseek", "")
     private val commandComboBox = ComboBox(commandOptions)
-    private val additionalArgsField = JTextField(20)
-    private val modeToggle = JCheckBox("Shell Mode")
+    private val additionalArgsField = JTextField(AiderDefaults.ADDITIONAL_ARGS, 20)
+    private val modeToggle = JCheckBox("Shell Mode", AiderDefaults.IS_SHELL_MODE)
     private val messageLabel = JLabel("Enter your message:")
     private val historyComboBox = ComboBox<HistoryItem>()
     private val historyHandler = AiderHistoryHandler(project.basePath ?: "")

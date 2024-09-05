@@ -11,40 +11,77 @@ import de.andrena.codingaider.executors.IDEBasedExecutor
 import de.andrena.codingaider.executors.ShellExecutor
 import de.andrena.codingaider.inputdialog.AiderInputDialog
 import de.andrena.codingaider.inputdialog.PersistentFileManager
+import de.andrena.codingaider.settings.AiderDefaults
 import de.andrena.codingaider.utils.FileTraversal
 
 class AiderAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
+        executeAiderAction(e, false)
+    }
+
+    override fun update(e: AnActionEvent) {
         val project: Project? = e.project
         val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
+        e.presentation.isEnabledAndVisible = project != null && !files.isNullOrEmpty()
+    }
 
-        if (project != null && !files.isNullOrEmpty()) {
-            val persistentFileManager = PersistentFileManager(project.basePath ?: "")
-            val allFiles = FileTraversal.traverseFilesOrDirectories(files).toMutableList()
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
-            allFiles.addAll(persistentFileManager.getPersistentFiles())
+    companion object {
+        fun executeAiderAction(e: AnActionEvent, directShellMode: Boolean) {
+            val project: Project? = e.project
+            val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
 
-            val dialog = AiderInputDialog(project, allFiles.distinctBy { it.filePath })
-            if (dialog.showAndGet()) {
-                val commandData = collectCommandData(dialog)
-                if (commandData.isShellMode) {
+            if (project != null && !files.isNullOrEmpty()) {
+                val persistentFileManager = PersistentFileManager(project.basePath ?: "")
+                val allFiles = FileTraversal.traverseFilesOrDirectories(files).toMutableList()
+
+                allFiles.addAll(persistentFileManager.getPersistentFiles())
+
+                if (directShellMode) {
+                    val commandData = collectDefaultCommandData(allFiles)
                     ShellExecutor(project, commandData).execute()
                 } else {
-                    IDEBasedExecutor(project, commandData).execute()
+                    val dialog = AiderInputDialog(project, allFiles.distinctBy { it.filePath })
+                    if (dialog.showAndGet()) {
+                        val commandData = collectCommandData(dialog)
+                        if (commandData.isShellMode) {
+                            ShellExecutor(project, commandData).execute()
+                        } else {
+                            IDEBasedExecutor(project, commandData).execute()
+                        }
+                    }
                 }
             }
         }
-    }
 
-    private fun collectCommandData(dialog: AiderInputDialog): CommandData {
-        return CommandData(
-            message = dialog.getInputText(),
-            useYesFlag = dialog.isYesFlagChecked(),
-            selectedCommand = dialog.getSelectedCommand(),
-            additionalArgs = dialog.getAdditionalArgs(),
-            files = dialog.getAllFiles(),
-            isShellMode = dialog.isShellMode()
-        )
+        private fun collectCommandData(dialog: AiderInputDialog): CommandData {
+            return CommandData(
+                message = dialog.getInputText(),
+                useYesFlag = dialog.isYesFlagChecked(),
+                selectedCommand = dialog.getSelectedCommand(),
+                additionalArgs = dialog.getAdditionalArgs(),
+                files = dialog.getAllFiles(),
+                isShellMode = dialog.isShellMode()
+            )
+        }
+
+        private fun collectDefaultCommandData(files: List<FileData>): CommandData {
+            return CommandData(
+                message = "",
+                useYesFlag = AiderDefaults.USE_YES_FLAG,
+                selectedCommand = AiderDefaults.SELECTED_COMMAND,
+                additionalArgs = AiderDefaults.ADDITIONAL_ARGS,
+                files = files,
+                isShellMode = AiderDefaults.IS_SHELL_MODE
+            )
+        }
+    }
+}
+
+class AiderDirectShellAction : AnAction() {
+    override fun actionPerformed(e: AnActionEvent) {
+        AiderAction.executeAiderAction(e, true)
     }
 
     override fun update(e: AnActionEvent) {
