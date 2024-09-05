@@ -6,6 +6,7 @@ data class CommandData(
     val llm: String,
     val additionalArgs: String,
     val files: List<FileData>,
-    val isShellMode: Boolean
+    val isShellMode: Boolean,
+    val lintCmd: String
 )
 

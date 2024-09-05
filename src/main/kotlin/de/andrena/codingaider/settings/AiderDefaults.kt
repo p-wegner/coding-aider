@@ -5,4 +5,5 @@ object AiderDefaults {
     const val LLM = ""
     const val ADDITIONAL_ARGS = ""
     const val IS_SHELL_MODE = false
+    const val LINT_CMD = ""
 }

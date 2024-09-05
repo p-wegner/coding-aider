@@ -12,7 +12,8 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var useYesFlag: Boolean = AiderDefaults.USE_YES_FLAG,
         var llm: String = AiderDefaults.LLM,
         var additionalArgs: String = AiderDefaults.ADDITIONAL_ARGS,
-        var isShellMode: Boolean = AiderDefaults.IS_SHELL_MODE
+        var isShellMode: Boolean = AiderDefaults.IS_SHELL_MODE,
+        var lintCmd: String = AiderDefaults.LINT_CMD
     )
 
     private var myState = State()
@@ -45,6 +46,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.isShellMode
         set(value) {
             myState.isShellMode = value
+        }
+
+    var lintCmd: String
+        get() = myState.lintCmd
+        set(value) {
+            myState.lintCmd = value
         }
 
     companion object {

@@ -22,6 +22,10 @@ object AiderCommandBuilder {
             if (commandData.additionalArgs.isNotEmpty()) {
                 addAll(commandData.additionalArgs.split(" "))
             }
+            if (commandData.lintCmd.isNotEmpty()) {
+                add("--lint-cmd")
+                add(commandData.lintCmd)
+            }
         }
     }
 }

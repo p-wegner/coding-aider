@@ -61,24 +61,28 @@ class AiderAction : AnAction() {
         }
 
         private fun collectCommandData(dialog: AiderInputDialog): CommandData {
+            val settings = AiderSettings.getInstance(dialog.project)
             return CommandData(
                 message = dialog.getInputText(),
                 useYesFlag = dialog.isYesFlagChecked(),
                 llm = dialog.getLlm(),
                 additionalArgs = dialog.getAdditionalArgs(),
                 files = dialog.getAllFiles(),
-                isShellMode = dialog.isShellMode()
+                isShellMode = dialog.isShellMode(),
+                lintCmd = settings.lintCmd
             )
         }
 
-        private fun collectDefaultCommandData(files: List<FileData>): CommandData {
+        private fun collectDefaultCommandData(files: List<FileData>, project: Project): CommandData {
+            val settings = AiderSettings.getInstance(project)
             return CommandData(
                 message = "",
                 useYesFlag = AiderDefaults.USE_YES_FLAG,
                 llm = AiderDefaults.LLM,
                 additionalArgs = AiderDefaults.ADDITIONAL_ARGS,
                 files = files,
-                isShellMode = true // Always true for direct shell mode
+                isShellMode = true, // Always true for direct shell mode
+                lintCmd = settings.lintCmd
             )
         }
     }

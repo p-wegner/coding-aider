@@ -28,6 +28,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     }
     private val additionalArgsField = JBTextField()
     private val isShellModeCheckBox = JBCheckBox("Use Shell Mode by default")
+    private val lintCmdField = JBTextField()
 
     override fun getDisplayName(): String = "Aider"
 
@@ -54,6 +55,11 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 row {
                     cell(isShellModeCheckBox)
                 }
+                row("Lint Command:") {
+                    cell(lintCmdField)
+                        .resizableColumn()
+                        .align(Align.FILL)
+                }
             }
 
             group("Installation") {
@@ -72,7 +78,8 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         return useYesFlagCheckBox.isSelected != settings.useYesFlag ||
                 llmComboBox.selectedItem as String != settings.llm ||
                 additionalArgsField.text != settings.additionalArgs ||
-                isShellModeCheckBox.isSelected != settings.isShellMode
+                isShellModeCheckBox.isSelected != settings.isShellMode ||
+                lintCmdField.text != settings.lintCmd
     }
 
     override fun apply() {
@@ -81,6 +88,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         settings.llm = llmComboBox.selectedItem as String
         settings.additionalArgs = additionalArgsField.text
         settings.isShellMode = isShellModeCheckBox.isSelected
+        settings.lintCmd = lintCmdField.text
     }
 
     override fun reset() {
@@ -89,6 +97,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         llmComboBox.selectedItem = settings.llm
         additionalArgsField.text = settings.additionalArgs
         isShellModeCheckBox.isSelected = settings.isShellMode
+        lintCmdField.text = settings.lintCmd
     }
 
     override fun disposeUIResources() {
