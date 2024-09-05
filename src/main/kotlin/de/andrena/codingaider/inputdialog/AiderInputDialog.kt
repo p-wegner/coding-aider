@@ -30,7 +30,22 @@ class AiderInputDialog(
     private val inputTextArea = JTextArea(5, 30)
     private val yesCheckBox = JCheckBox("Add --yes flag", settings.useYesFlag)
     private val llmOptions = arrayOf("--sonnet", "--mini", "--4o", "--deepseek", "")
-    private val llmComboBox = ComboBox(llmOptions)
+    private val llmComboBox = object : ComboBox<String>(llmOptions) {
+        override fun getToolTipText(): String? {
+            val selectedItem = selectedItem as? String ?: return null
+            val apiKey = when {
+                selectedItem.contains("sonnet") -> "ANTHROPIC_API_KEY"
+                selectedItem.contains("mini") || selectedItem.contains("4o") -> "OPENAI_API_KEY"
+                selectedItem.contains("deepseek") -> "DEEPSEEK_API_KEY"
+                else -> return null
+            }
+            return if (ApiKeyChecker.checkApiKeys()[apiKey] == true) {
+                "API key found for $selectedItem"
+            } else {
+                "API key not found for $selectedItem"
+            }
+        }
+    }
     private val additionalArgsField = JTextField(settings.additionalArgs, 20)
     private val modeToggle = JCheckBox("Shell Mode", settings.isShellMode)
     private val messageLabel = JLabel("Enter your message:")
@@ -49,6 +64,7 @@ class AiderInputDialog(
         setCancelButtonText("Cancel")
         setupKeyBindings()
         llmComboBox.selectedItem = settings.llm
+        llmComboBox.renderer = LlmComboBoxRenderer()
     }
 
     private fun setupKeyBindings() {
@@ -246,4 +262,40 @@ class AiderInputDialog(
     fun getAllFiles(): List<FileData> = aiderContextView.getAllFiles()
     fun isShellMode(): Boolean = modeToggle.isSelected
 
+    private inner class LlmComboBoxRenderer : DefaultListCellRenderer() {
+        override fun getListCellRendererComponent(
+            list: JList<*>?,
+            value: Any?,
+            index: Int,
+            isSelected: Boolean,
+            cellHasFocus: Boolean
+        ): Component {
+            val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
+            if (component is JLabel && value is String) {
+                val apiKey = when {
+                    value.contains("sonnet") -> "ANTHROPIC_API_KEY"
+                    value.contains("mini") || value.contains("4o") -> "OPENAI_API_KEY"
+                    value.contains("deepseek") -> "DEEPSEEK_API_KEY"
+                    else -> null
+                }
+                if (apiKey != null) {
+                    val isKeyAvailable = ApiKeyChecker.checkApiKeys()[apiKey] == true
+                    icon = if (isKeyAvailable) {
+                        UIManager.getIcon("OptionPane.informationIcon")
+                    } else {
+                        UIManager.getIcon("OptionPane.errorIcon")
+                    }
+                    toolTipText = if (isKeyAvailable) {
+                        "API key found for $value"
+                    } else {
+                        "API key not found for $value"
+                    }
+                } else {
+                    icon = null
+                    toolTipText = null
+                }
+            }
+            return component
+        }
+    }
 }
