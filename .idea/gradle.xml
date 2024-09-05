@@ -5,6 +5,8 @@
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="gradleHome" value="$PROJECT_DIR$/../../ProgramData/chocolatey/lib/gradle/tools/gradle-6.7.1" />
+        <option name="gradleJvm" value="17 (2)" />
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />

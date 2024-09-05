@@ -10,8 +10,10 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.IDEBasedExecutor
 import de.andrena.codingaider.executors.ShellExecutor
+import de.andrena.codingaider.history.AiderHistoryHandler
 import de.andrena.codingaider.inputdialog.AiderInputDialog
 import de.andrena.codingaider.inputdialog.PersistentFileManager
+import de.andrena.codingaider.outputview.MarkdownDialog
 import de.andrena.codingaider.settings.AiderDefaults
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.FileTraversal
@@ -108,7 +110,7 @@ class ShowLastCommandResultAction : AnAction() {
         val project = e.project ?: return
         val historyHandler = AiderHistoryHandler(project.basePath ?: "")
         val lastCommandResult = historyHandler.getLastChatHistory()
-        
+
         val dialog = MarkdownDialog(project, "Last Aider Command Result", lastCommandResult)
         dialog.show()
     }

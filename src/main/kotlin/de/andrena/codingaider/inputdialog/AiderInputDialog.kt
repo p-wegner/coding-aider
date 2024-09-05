@@ -10,7 +10,7 @@ import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
 import de.andrena.codingaider.command.FileData
-import de.andrena.codingaider.commandhistory.AiderHistoryHandler
+import de.andrena.codingaider.history.AiderHistoryHandler
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
 import java.awt.*
@@ -153,7 +153,7 @@ class AiderInputDialog(
 
     private fun loadHistory() {
         historyComboBox.addItem(HistoryItem(emptyList(), null))  // Empty entry
-        historyHandler.getHistory().forEach { (dateTime, command) ->
+        historyHandler.getInputHistory().forEach { (dateTime, command) ->
             historyComboBox.addItem(HistoryItem(command, dateTime))
         }
         historyComboBox.renderer = HistoryItemRenderer()
