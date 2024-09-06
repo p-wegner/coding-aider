@@ -15,6 +15,7 @@ import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
 import java.awt.*
 import java.awt.event.KeyEvent
+import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.swing.*
@@ -40,6 +41,7 @@ class AiderInputDialog(
             aiderContextView.addFilesToTree(fileDataList)
         }
     }
+
     private val llmOptions = ApiKeyChecker.getAllLlmOptions().toTypedArray()
     private val llmComboBox = object : ComboBox<String>(llmOptions) {
         override fun getToolTipText(): String? {
@@ -77,7 +79,7 @@ class AiderInputDialog(
         llmComboBox.selectedItem = settings.llm
         llmComboBox.renderer = LlmComboBoxRenderer()
         customizeSplitPane()
-        
+
         // Set minimum size for the dialog and its components
         inputTextArea.minimumSize = Dimension(300, 100)
         aiderContextView.minimumSize = Dimension(300, 200)

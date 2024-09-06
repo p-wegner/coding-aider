@@ -33,9 +33,9 @@ class AiderWebCrawlAction : AnAction() {
             val fileName = "$pageName-$combinedHash.md"
             val filePath = "$projectRoot/.aider-docs/$fileName"
 
-            if (!File(filePath).exists()) { 
+            if (!File(filePath).exists()) {
                 val webClient = WebClient()
-                webClient.options.isJavaScriptEnabled = false
+                webClient.options.isJavaScriptEnabled = true
                 val page: HtmlPage = webClient.getPage(url)
                 val htmlContent = page.asXml()
                 val markdown = FlexmarkHtmlConverter.builder().build().convert(htmlContent)

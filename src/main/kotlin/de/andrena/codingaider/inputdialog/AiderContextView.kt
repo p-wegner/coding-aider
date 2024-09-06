@@ -5,7 +5,6 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.ui.IconManager
-import com.intellij.ui.JBSplitter
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.ui.JBUI
@@ -28,7 +27,7 @@ class AiderContextView(
 ) : JPanel(BorderLayout()) {
     private val rootNode = DefaultMutableTreeNode("Context")
     private val filesNode = DefaultMutableTreeNode("Files")
-    private val markdownFilesNode = DefaultMutableTreeNode("Markdown Files")
+    private val markdownFilesNode = DefaultMutableTreeNode("Docs")
     private val tree: Tree = Tree(rootNode)
     private val persistentFileManager = PersistentFileManager(project.basePath ?: "")
     private var persistentFiles: List<FileData> = persistentFileManager.loadPersistentFiles()
@@ -120,7 +119,8 @@ class AiderContextView(
         filesNode.removeAllChildren()
 
         val markdownFiles = persistentFiles.filter { it.filePath.endsWith(".md") }
-        val otherFiles = (allFiles + persistentFiles).filterNot { it.filePath.endsWith(".md") }.distinctBy { it.filePath }
+        val otherFiles =
+            (allFiles + persistentFiles).filterNot { it.filePath.endsWith(".md") }.distinctBy { it.filePath }
         val fileSystem = mutableMapOf<String, DefaultMutableTreeNode>()
 
         otherFiles.forEach { fileData ->
