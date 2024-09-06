@@ -15,6 +15,7 @@ import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
 import java.awt.*
 import java.awt.event.KeyEvent
+import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.swing.*
@@ -30,6 +31,17 @@ class AiderInputDialog(
     private val yesCheckBox = JCheckBox("Add --yes flag", settings.useYesFlag).apply {
         toolTipText = "Automatically answer 'yes' to prompts"
     }
+
+    private fun addAiderDocsToPersistentFiles() {
+        val aiderDocsDir = File(project.basePath, ".aider-docs")
+        if (aiderDocsDir.exists() && aiderDocsDir.isDirectory) {
+            val files = aiderDocsDir.listFiles { file -> file.isFile && file.extension == "md" } ?: return
+            val fileDataList = files.map { FileData(it.absolutePath, false) }
+            persistentFileManager.addAllFiles(fileDataList)
+            aiderContextView.addFilesToTree(fileDataList)
+        }
+    }
+
     private val llmOptions = ApiKeyChecker.getAllLlmOptions().toTypedArray()
     private val llmComboBox = object : ComboBox<String>(llmOptions) {
         override fun getToolTipText(): String? {
@@ -67,7 +79,7 @@ class AiderInputDialog(
         llmComboBox.selectedItem = settings.llm
         llmComboBox.renderer = LlmComboBoxRenderer()
         customizeSplitPane()
-        
+
         // Set minimum size for the dialog and its components
         inputTextArea.minimumSize = Dimension(300, 100)
         aiderContextView.minimumSize = Dimension(300, 200)
@@ -303,6 +315,15 @@ class AiderInputDialog(
 
         // Context view
         val actionGroup = DefaultActionGroup().apply {
+            add(object : AnAction(
+                "Add .aider-docs Files",
+                "Add files from .aider-docs to persistent files",
+                AllIcons.Actions.MenuOpen
+            ) {
+                override fun actionPerformed(e: AnActionEvent) {
+                    addAiderDocsToPersistentFiles()
+                }
+            })
             add(object : AnAction(
                 "Toggle Read-Only Mode",
                 "Toggle Read-Only Mode for selected file",
