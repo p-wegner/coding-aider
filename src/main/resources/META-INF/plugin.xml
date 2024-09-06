@@ -91,6 +91,12 @@
                     description="Start an Aider web crawl action">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt W"/>
             </action>
+            <action id="de.andrena.codingaider.AiderMessageAction"
+                    class="de.andrena.codingaider.actions.AiderMessageAction"
+                    text="Run Aider with Message"
+                    description="Run Aider with a custom message">
+                <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+            </action>
         </group>
     </actions>
 
