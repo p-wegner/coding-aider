@@ -28,7 +28,8 @@ class AiderWebCrawlAction : AnAction() {
             }
             val pageName = URL(url).path.split("/").lastOrNull() ?: "index"
             val fileName = "$pageName-$urlHash.md"
-            File(fileName).writeText(markdown)
+            File(".aider-docs").mkdirs()
+            File(".aider-docs/$fileName").writeText(markdown)
         }
     }
 
