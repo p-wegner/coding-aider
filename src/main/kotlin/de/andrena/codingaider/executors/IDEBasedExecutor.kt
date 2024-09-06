@@ -25,8 +25,6 @@ class IDEBasedExecutor(
         val markdownDialog = MarkdownDialog(project, "Aider Command Output", "Initializing Aider command...").apply {
             isVisible = true
         }
-
-        // Store the current git commit hash
         val currentCommitHash = GitUtils.getCurrentCommitHash(project)
 
         thread {

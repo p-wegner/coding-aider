@@ -18,7 +18,7 @@ class CommitAction : AnAction() {
 
         if (project != null && !files.isNullOrEmpty()) {
             val commandData = CommandData(
-                message = " /commit",
+                message = "/commit",
                 useYesFlag = true,
                 llm = AiderSettings.getInstance(project).llm,
                 additionalArgs = "",
