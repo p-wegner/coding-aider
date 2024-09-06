@@ -7,6 +7,8 @@ import com.gargoylesoftware.htmlunit.WebClient
 import com.gargoylesoftware.htmlunit.html.HtmlPage
 import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter
 import com.intellij.openapi.ui.Messages
+import com.intellij.openapi.vfs.LocalFileSystem
+import de.andrena.codingaider.utils.FileRefresher
 import java.io.File
 import java.math.BigInteger
 import java.security.MessageDigest
@@ -31,6 +33,10 @@ class AiderWebCrawlAction : AnAction() {
             val projectRoot = project.basePath ?: "."
             File("$projectRoot/.aider-docs").mkdirs()
             File("$projectRoot/.aider-docs/$fileName").writeText(markdown)
+            val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(File("$projectRoot/.aider-docs/$fileName"))
+            if (virtualFile != null) {
+                FileRefresher.refreshFiles(project, arrayOf(virtualFile))
+            }
         }
     }
 
