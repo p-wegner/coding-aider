@@ -1,19 +1,20 @@
 package de.andrena.codingaider
 
+import com.gargoylesoftware.htmlunit.WebClient
+import com.gargoylesoftware.htmlunit.html.HtmlPage
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.gargoylesoftware.htmlunit.WebClient
-import com.gargoylesoftware.htmlunit.html.HtmlPage
-import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter
+import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.inputdialog.PersistentFileManager
 import de.andrena.codingaider.utils.FileRefresher
 import java.io.File
 import java.math.BigInteger
-import java.security.MessageDigest
 import java.net.URL
+import java.security.MessageDigest
 
 class AiderWebCrawlAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
@@ -28,18 +29,21 @@ class AiderWebCrawlAction : AnAction() {
             val markdown = FlexmarkHtmlConverter.builder().build().convert(htmlContent)
             val urlHash = MessageDigest.getInstance("MD5").digest(url.toByteArray()).let {
                 BigInteger(1, it).toString(16).padStart(32, '0')
-                // Add the markdown file to persistent files
-                val persistentFileManager = PersistentFileManager(project.basePath ?: "")
-                persistentFileManager.addFile(FileData("$projectRoot/.aider-docs/$fileName", false))
+
             }
             val pageName = URL(url).path.split("/").lastOrNull() ?: "index"
             val fileName = "$pageName-$urlHash.md"
             val projectRoot = project.basePath ?: "."
             File("$projectRoot/.aider-docs").mkdirs()
             File("$projectRoot/.aider-docs/$fileName").writeText(markdown)
-            val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(File("$projectRoot/.aider-docs/$fileName"))
+            val filePath = "$projectRoot/.aider-docs/$fileName"
+            val virtualFile =
+                LocalFileSystem.getInstance().refreshAndFindFileByIoFile(File(filePath))
+            val persistentFileManager = PersistentFileManager(project.basePath ?: "")
+            persistentFileManager.addFile(FileData(filePath, true))
             if (virtualFile != null) {
                 FileRefresher.refreshFiles(project, arrayOf(virtualFile))
+
             }
         }
     }

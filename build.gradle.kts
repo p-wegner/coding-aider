@@ -2,8 +2,7 @@ plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "1.9.25"
     id("org.jetbrains.intellij") version "1.17.4"
-    implementation("net.sourceforge.htmlunit:htmlunit:2.70.0")
-    implementation("com.vladsch.flexmark:flexmark-all:0.64.8")
+
 }
 
 group = "de.andrena"
@@ -15,6 +14,8 @@ repositories {
 
 dependencies {
     implementation("org.yaml:snakeyaml:2.0")
+    implementation("net.sourceforge.htmlunit:htmlunit:2.70.0")
+    implementation("com.vladsch.flexmark:flexmark-all:0.64.8")
 }
 
 // Configure Gradle IntelliJ Plugin
