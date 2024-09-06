@@ -8,6 +8,7 @@ import com.gargoylesoftware.htmlunit.html.HtmlPage
 import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.LocalFileSystem
+import de.andrena.codingaider.inputdialog.PersistentFileManager
 import de.andrena.codingaider.utils.FileRefresher
 import java.io.File
 import java.math.BigInteger
@@ -27,6 +28,9 @@ class AiderWebCrawlAction : AnAction() {
             val markdown = FlexmarkHtmlConverter.builder().build().convert(htmlContent)
             val urlHash = MessageDigest.getInstance("MD5").digest(url.toByteArray()).let {
                 BigInteger(1, it).toString(16).padStart(32, '0')
+                // Add the markdown file to persistent files
+                val persistentFileManager = PersistentFileManager(project.basePath ?: "")
+                persistentFileManager.addFile(FileData("$projectRoot/.aider-docs/$fileName", false))
             }
             val pageName = URL(url).path.split("/").lastOrNull() ?: "index"
             val fileName = "$pageName-$urlHash.md"

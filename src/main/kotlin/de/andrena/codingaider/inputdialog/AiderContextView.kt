@@ -28,12 +28,14 @@ class AiderContextView(
 ) : JPanel(BorderLayout()) {
     private val rootNode = DefaultMutableTreeNode("Context")
     private val filesNode = DefaultMutableTreeNode("Files")
+    private val markdownFilesNode = DefaultMutableTreeNode("Markdown Files")
     private val tree: Tree = Tree(rootNode)
     private val persistentFileManager = PersistentFileManager(project.basePath ?: "")
     private var persistentFiles: List<FileData> = persistentFileManager.loadPersistentFiles()
 
     init {
         rootNode.add(filesNode)
+        rootNode.add(markdownFilesNode)
         updateTree()
 
         tree.apply {
@@ -117,10 +119,11 @@ class AiderContextView(
         val expandedPaths = getExpandedPaths()
         filesNode.removeAllChildren()
 
-        val uniqueFiles = (allFiles + persistentFiles).distinctBy { it.filePath }
+        val markdownFiles = persistentFiles.filter { it.filePath.endsWith(".md") }
+        val otherFiles = (allFiles + persistentFiles).filterNot { it.filePath.endsWith(".md") }.distinctBy { it.filePath }
         val fileSystem = mutableMapOf<String, DefaultMutableTreeNode>()
 
-        uniqueFiles.forEach { fileData ->
+        otherFiles.forEach { fileData ->
             val pathParts = fileData.filePath.split(File.separator)
             var currentPath = ""
             var currentNode = filesNode
@@ -138,6 +141,12 @@ class AiderContextView(
                 }
                 currentNode = node
             }
+        }
+
+        markdownFilesNode.removeAllChildren()
+        markdownFiles.forEach { fileData ->
+            val node = DefaultMutableTreeNode(fileData)
+            markdownFilesNode.add(node)
         }
 
         (tree.model as DefaultTreeModel).reload()
