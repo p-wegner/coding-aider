@@ -25,14 +25,7 @@ class AiderWebCrawlAction : AnAction() {
             val projectRoot = project.basePath ?: "."
             File("$projectRoot/.aider-docs").mkdirs()
 
-            val webClient = WebClient()
-            webClient.options.isJavaScriptEnabled = false
-            val page: HtmlPage = webClient.getPage(url)
-            val htmlContent = page.asXml()
-            val markdown = FlexmarkHtmlConverter.builder().build().convert(htmlContent)
-
-            val combinedHashInput = url + markdown
-            val combinedHash = MessageDigest.getInstance("MD5").digest(combinedHashInput.toByteArray()).let {
+            val combinedHash = MessageDigest.getInstance("MD5").digest(url.toByteArray()).let {
                 BigInteger(1, it).toString(16).padStart(32, '0')
             }
 
@@ -40,7 +33,14 @@ class AiderWebCrawlAction : AnAction() {
             val fileName = "$pageName-$combinedHash.md"
             val filePath = "$projectRoot/.aider-docs/$fileName"
 
-            if (!File(filePath).exists()) {
+            if (!File(filePath).exists()) { 
+                val webClient = WebClient()
+                webClient.options.isJavaScriptEnabled = false
+                val page: HtmlPage = webClient.getPage(url)
+                val htmlContent = page.asXml()
+                val markdown = FlexmarkHtmlConverter.builder().build().convert(htmlContent)
+                File(filePath).writeText(markdown)
+            }
                 File(filePath).writeText(markdown)
             }
             val virtualFile =
