@@ -7,6 +7,10 @@ import com.gargoylesoftware.htmlunit.WebClient
 import com.gargoylesoftware.htmlunit.html.HtmlPage
 import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter
 import com.intellij.openapi.ui.Messages
+import java.io.File
+import java.math.BigInteger
+import java.security.MessageDigest
+import java.net.URL
 
 class AiderWebCrawlAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
@@ -19,7 +23,12 @@ class AiderWebCrawlAction : AnAction() {
             val page: HtmlPage = webClient.getPage(url)
             val htmlContent = page.asXml()
             val markdown = FlexmarkHtmlConverter.builder().build().convert(htmlContent)
-            Messages.showInfoMessage(project, markdown, "Converted Markdown")
+            val urlHash = MessageDigest.getInstance("MD5").digest(url.toByteArray()).let {
+                BigInteger(1, it).toString(16).padStart(32, '0')
+            }
+            val pageName = URL(url).path.split("/").lastOrNull() ?: "index"
+            val fileName = "$pageName-$urlHash.md"
+            File(fileName).writeText(markdown)
         }
     }
 
