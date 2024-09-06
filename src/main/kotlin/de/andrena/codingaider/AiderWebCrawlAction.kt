@@ -22,21 +22,27 @@ class AiderWebCrawlAction : AnAction() {
         val url =
             Messages.showInputDialog(project, "Enter URL to crawl:", "Aider Web Crawl", Messages.getQuestionIcon())
         if (!url.isNullOrEmpty()) {
+            val projectRoot = project.basePath ?: "."
+            File("$projectRoot/.aider-docs").mkdirs()
+
             val webClient = WebClient()
             webClient.options.isJavaScriptEnabled = false
             val page: HtmlPage = webClient.getPage(url)
             val htmlContent = page.asXml()
             val markdown = FlexmarkHtmlConverter.builder().build().convert(htmlContent)
-            val urlHash = MessageDigest.getInstance("MD5").digest(url.toByteArray()).let {
-                BigInteger(1, it).toString(16).padStart(32, '0')
 
+            val combinedHashInput = url + markdown
+            val combinedHash = MessageDigest.getInstance("MD5").digest(combinedHashInput.toByteArray()).let {
+                BigInteger(1, it).toString(16).padStart(32, '0')
             }
+
             val pageName = URL(url).path.split("/").lastOrNull() ?: "index"
-            val fileName = "$pageName-$urlHash.md"
-            val projectRoot = project.basePath ?: "."
-            File("$projectRoot/.aider-docs").mkdirs()
-            File("$projectRoot/.aider-docs/$fileName").writeText(markdown)
+            val fileName = "$pageName-$combinedHash.md"
             val filePath = "$projectRoot/.aider-docs/$fileName"
+
+            if (!File(filePath).exists()) {
+                File(filePath).writeText(markdown)
+            }
             val virtualFile =
                 LocalFileSystem.getInstance().refreshAndFindFileByIoFile(File(filePath))
             val persistentFileManager = PersistentFileManager(project.basePath ?: "")
