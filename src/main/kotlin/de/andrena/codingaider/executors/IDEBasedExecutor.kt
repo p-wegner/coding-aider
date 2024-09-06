@@ -31,7 +31,11 @@ class IDEBasedExecutor(
 
         thread {
             try {
-                val commandArgs = AiderCommandBuilder.buildAiderCommand(commandData, false)
+                val commandArgs = if (commandData.message.startsWith("/web")) {
+                    listOf("aider", commandData.llm) + commandData.message.split(" ")
+                } else {
+                    AiderCommandBuilder.buildAiderCommand(commandData, false)
+                }
                 val processBuilder = ProcessBuilder(commandArgs)
                 processBuilder.redirectErrorStream(true)
 

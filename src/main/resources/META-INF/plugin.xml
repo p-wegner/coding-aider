@@ -85,6 +85,12 @@
                     text="Show Last Aider Command Result"
                     description="Displays the result of the last Aider command">
             </action>
+            <action id="de.andrena.codingaider.AiderWebCrawlAction"
+                    class="de.andrena.codingaider.AiderWebCrawlAction"
+                    text="Aider Web Crawl"
+                    description="Start an Aider web crawl action">
+                <keyboard-shortcut keymap="$default" first-keystroke="alt W"/>
+            </action>
         </group>
     </actions>
 
