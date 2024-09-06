@@ -27,6 +27,17 @@ class AiderWebCrawlAction : AnAction() {
 
             val combinedHash = MessageDigest.getInstance("MD5").digest(url.toByteArray()).let {
                 BigInteger(1, it).toString(16).padStart(32, '0')
+                
+                val commandData = CommandData(
+                    message = "simplify",
+                    useYesFlag = false,
+                    llm = "",
+                    additionalArgs = "",
+                    files = listOf(FileData(filePath, true)),
+                    isShellMode = false,
+                    lintCmd = ""
+                )
+                IDEBasedExecutor(project, commandData).execute()
             }
 
             val pageName = URL(url).path.split("/").lastOrNull() ?: "index"
