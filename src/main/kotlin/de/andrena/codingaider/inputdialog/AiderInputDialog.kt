@@ -244,6 +244,7 @@ class AiderInputDialog(
             weightx = 0.0
             insets = JBUI.insets(0, 15, 0, 5)
         })
+        historyComboBox.preferredSize = Dimension(200, historyComboBox.preferredSize.height)
         firstRowPanel.add(historyComboBox, GridBagConstraints().apply {
             gridx = 4
             gridy = 0
