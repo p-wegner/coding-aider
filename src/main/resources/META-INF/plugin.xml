@@ -94,8 +94,8 @@
             <action id="de.andrena.codingaider.CommitAction"
                     class="de.andrena.codingaider.actions.CommitAction"
                     text="Run Aider Commit"
-                    description="Run Aider with a fixed commit message">
-                <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+                    description="Run Aider to commit">
+                <keyboard-shortcut keymap="$default" first-keystroke="alt D"/>
             </action>
         </group>
     </actions>
