@@ -10,31 +10,22 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.executors.IDEBasedExecutor
 import de.andrena.codingaider.settings.AiderSettings
 
-class AiderMessageAction : AnAction() {
+class CommitAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project: Project? = e.project
         val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
 
         if (project != null && !files.isNullOrEmpty()) {
-            val message = Messages.showInputDialog(
-                project,
-                "Enter the message for Aider:",
-                "Aider Message",
-                Messages.getQuestionIcon()
+            val commandData = CommandData(
+                message = "/commit",
+                useYesFlag = false,
+                llm = AiderSettings.getInstance(project).llm,
+                additionalArgs = "",
+                files = files.map { FileData(it.url, false) },
+                isShellMode = false,
+                lintCmd = AiderSettings.getInstance(project).lintCmd
             )
-
-            if (!message.isNullOrEmpty()) {
-                val commandData = CommandData(
-                    message = message,
-                    useYesFlag = false,
-                    llm = AiderSettings.getInstance(project).llm,
-                    additionalArgs = "",
-                    files = files.map { FileData(it.url, false) },
-                    isShellMode = false,
-                    lintCmd = AiderSettings.getInstance(project).lintCmd
-                )
-                IDEBasedExecutor(project, commandData).execute()
-            }
+            IDEBasedExecutor(project, commandData).execute()
         }
     }
 
