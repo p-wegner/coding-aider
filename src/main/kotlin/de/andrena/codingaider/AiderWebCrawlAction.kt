@@ -41,16 +41,16 @@ class AiderWebCrawlAction : AnAction() {
                 val markdown = FlexmarkHtmlConverter.builder().build().convert(htmlContent)
                 File(filePath).writeText(markdown)
             }
-                File(filePath).writeText(markdown)
-            }
+
             val virtualFile =
                 LocalFileSystem.getInstance().refreshAndFindFileByIoFile(File(filePath))
             val persistentFileManager = PersistentFileManager(project.basePath ?: "")
             persistentFileManager.addFile(FileData(filePath, true))
             if (virtualFile != null) {
                 FileRefresher.refreshFiles(project, arrayOf(virtualFile))
-
             }
+
+            Messages.showInfoMessage(project, "File saved: $filePath", "Aider Web Crawl")
         }
     }
 
