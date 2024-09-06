@@ -4,7 +4,11 @@ import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBTextField
+import com.intellij.ui.components.JBList
 import com.intellij.ui.dsl.builder.Align
+import de.andrena.codingaider.inputdialog.PersistentFileManager
+import java.awt.BorderLayout
+import javax.swing.DefaultListCellRenderer
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.dsl.builder.bindText
 import de.andrena.codingaider.utils.ApiKeyChecker
@@ -32,7 +36,25 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
 
     override fun getDisplayName(): String = "Aider"
 
+    private val persistentFileManager = PersistentFileManager(project.basePath ?: "")
+    private val persistentFilesList = JBList(persistentFileManager.getPersistentFiles().map { it.filePath })
+
     override fun createComponent(): JComponent {
+        persistentFilesList.cellRenderer = object : DefaultListCellRenderer() {
+            override fun getListCellRendererComponent(
+                list: JList<*>?,
+                value: Any?,
+                index: Int,
+                isSelected: Boolean,
+                cellHasFocus: Boolean
+            ): Component {
+                val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
+                if (component is JLabel && value is String) {
+                    component.text = value
+                }
+                return component
+            }
+        }
         settingsComponent = panel {
             group("General Settings") {
                 row {
@@ -59,6 +81,14 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                     cell(lintCmdField)
                         .resizableColumn()
                         .align(Align.FILL)
+                }
+            }
+
+            group("Persistent Files") {
+                row {
+                    scrollCell(persistentFilesList)
+                        .align(Align.FILL)
+                        .resizableColumn()
                 }
             }
 
