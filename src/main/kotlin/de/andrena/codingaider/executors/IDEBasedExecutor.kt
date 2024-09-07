@@ -22,7 +22,7 @@ class IDEBasedExecutor(
 ) {
     private val LOG = Logger.getInstance(IDEBasedExecutor::class.java)
 
-    fun execute() {
+    fun execute(): MarkdownDialog {
         val output = StringBuilder()
         val markdownDialog = MarkdownDialog(project, "Aider Command Output", "Initializing Aider command...").apply {
             isVisible = true
