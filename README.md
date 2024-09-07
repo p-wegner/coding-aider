@@ -7,7 +7,7 @@ while allowing you complete control over the context utilized by the LLM.
 ## Example Usage
 
 ![Aider Command Action Example](docs/AiderCommandAction.jpg)
-
+![Aider Command Action Example](docs/settings.jpg)
 ## Important Note
 
 To utilize this plugin, you must have a functional Aider installation along with access to API keys for the LLM
