@@ -42,6 +42,8 @@ class MarkdownDialog(private val project: Project, private val initialTitle: Str
         add(buttonPanel, BorderLayout.SOUTH)
 
         defaultCloseOperation = DISPOSE_ON_CLOSE
+        isVisible = true
+        requestFocusInWindow()
     }
 
     fun updateProgress(output: String, message: String) {
