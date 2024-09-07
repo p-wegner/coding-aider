@@ -16,9 +16,6 @@
     <description><![CDATA[
         <p>Seamlessly integrate Aider's AI-powered coding assistance directly into your IDE. This integration boosts your productivity by offering rapid access for precision code generation and refactoring, all while allowing you complete control over the context utilized by the LLM.</p>
 
-        <h3>Example Usage</h3>
-        <p>See the Aider Command Action Example in the documentation for a visual guide on how to use the plugin effectively.</p>
-
         <h3>Important Note</h3>
         <p>To utilize this plugin, you must have a functional Aider installation along with access to API keys for the LLM Providers you intend to use. Alternatively, you can run a local LLM inference server, such as Ollama, to connect to Aider.</p>
 

@@ -23,7 +23,7 @@ Aider.
     - Quickly initiate Aider actions via the "Start Aider Action" option in the Tools menu or Project View popup menu.
     - Use the keyboard shortcut Alt+A for rapid access.
     - Navigate previous commands with Alt+UP and Alt+DOWN in the message field.
-    - Automatically commit all changes using ALT + D 
+    - Automatically commit all changes with a llm generated message using ALT + D 
 
 3. **Persistent File Management**: Manage frequently used files for persistent context for Aider operations with Alt+Shift+A,
    within the Aider Command Window or the Aider Settings.
@@ -69,7 +69,7 @@ functionalities like Git integration and keyboard shortcuts.
 4. Configure Aider settings:
     - Navigate to Tools > Aider Settings > Run Test to verify your Aider installation.
 
-5. Usage:
+5. Basic Usage:
     - Select files or directories in your project
     - Use Alt+A or use the entries in the right-click context menu to initiate an Aider action
     - Enter your coding request in the dialog
