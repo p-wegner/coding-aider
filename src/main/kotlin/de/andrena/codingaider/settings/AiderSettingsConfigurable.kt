@@ -39,7 +39,6 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     private val isShellModeCheckBox = JBCheckBox("Use Shell Mode by default")
     private val lintCmdField = JBTextField()
     private val showGitComparisonToolCheckBox = JBCheckBox("Show Git Comparison Tool after execution")
-    private val showGitComparisonToolCheckBox = JBCheckBox("Show Git Comparison Tool after execution")
 
     override fun getDisplayName(): String = "Aider"
 

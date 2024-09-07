@@ -62,11 +62,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
             myState.showGitComparisonTool = value
         }
 
-    var showGitComparisonTool: Boolean
-        get() = myState.showGitComparisonTool
-        set(value) {
-            myState.showGitComparisonTool = value
-        }
+    companion object {
         fun getInstance(project: Project): AiderSettings =
             project.getService(AiderSettings::class.java)
     }
