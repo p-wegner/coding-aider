@@ -7,4 +7,5 @@ object AiderDefaults {
     const val IS_SHELL_MODE = false
     const val LINT_CMD = ""
     const val SHOW_GIT_COMPARISON_TOOL = true
+    const val ACTIVATE_IDE_EXECUTOR_AFTER_WEBCRAWL = false
 }

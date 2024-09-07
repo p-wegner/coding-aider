@@ -38,6 +38,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     private val isShellModeCheckBox = JBCheckBox("Use Shell Mode by default")
     private val lintCmdField = JBTextField()
     private val showGitComparisonToolCheckBox = JBCheckBox("Show Git Comparison Tool after execution")
+    private val activateIdeExecutorAfterWebcrawlCheckBox = JBCheckBox("Activate IDE Executor after web crawl")
 
     override fun getDisplayName(): String = "Aider"
 
@@ -87,7 +88,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                     cell(showGitComparisonToolCheckBox)
                 }
                 row {
-                    cell(showGitComparisonToolCheckBox)
+                    cell(activateIdeExecutorAfterWebcrawlCheckBox)
                 }
             }
 
@@ -122,7 +123,8 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 additionalArgsField.text != settings.additionalArgs ||
                 isShellModeCheckBox.isSelected != settings.isShellMode ||
                 lintCmdField.text != settings.lintCmd ||
-                showGitComparisonToolCheckBox.isSelected != settings.showGitComparisonTool
+                showGitComparisonToolCheckBox.isSelected != settings.showGitComparisonTool ||
+                activateIdeExecutorAfterWebcrawlCheckBox.isSelected != settings.activateIdeExecutorAfterWebcrawl
     }
 
     override fun apply() {
@@ -133,6 +135,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         settings.isShellMode = isShellModeCheckBox.isSelected
         settings.lintCmd = lintCmdField.text
         settings.showGitComparisonTool = showGitComparisonToolCheckBox.isSelected
+        settings.activateIdeExecutorAfterWebcrawl = activateIdeExecutorAfterWebcrawlCheckBox.isSelected
     }
 
     override fun reset() {
@@ -143,6 +146,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         isShellModeCheckBox.isSelected = settings.isShellMode
         lintCmdField.text = settings.lintCmd
         showGitComparisonToolCheckBox.isSelected = settings.showGitComparisonTool
+        activateIdeExecutorAfterWebcrawlCheckBox.isSelected = settings.activateIdeExecutorAfterWebcrawl
     }
 
     override fun disposeUIResources() {
