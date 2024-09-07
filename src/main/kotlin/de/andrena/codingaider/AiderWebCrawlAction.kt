@@ -47,7 +47,6 @@ class AiderWebCrawlAction : AnAction() {
                 val markdown = FlexmarkHtmlConverter.builder().build().convert(htmlContent)
                 File(filePath).writeText(markdown)
 
-                // Clean up and simplify the file using IDEBasedExecutor
                 val commandData = CommandData(
                     message = """
                         Clean up and simplify the provided file $fileName using whole file edit format. Follow these guidelines:

@@ -2,6 +2,6 @@
 <project version="4">
   <component name="de.andrena.codingaider.settings.AiderSettings">
     <option name="additionalArgs" value="--map-tokens 0" />
-    <option name="llm" value="--4o" />
+    <option name="llm" value="--sonnet" />
   </component>
 </project>
