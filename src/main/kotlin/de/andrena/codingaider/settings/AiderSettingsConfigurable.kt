@@ -27,13 +27,8 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 "API key found for $selectedItem"
             } else {
                 "API key not found for $selectedItem"
-                row {
-                    cell(showGitComparisonToolCheckBox)
-                }
             }
         }
-        settings.showGitComparisonTool = showGitComparisonToolCheckBox.isSelected
-        showGitComparisonToolCheckBox.isSelected = settings.showGitComparisonTool
     }
     private val additionalArgsField = JBTextField()
     private val isShellModeCheckBox = JBCheckBox("Use Shell Mode by default")
