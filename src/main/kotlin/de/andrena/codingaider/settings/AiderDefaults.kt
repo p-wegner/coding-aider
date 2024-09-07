@@ -8,4 +8,5 @@ object AiderDefaults {
     const val LINT_CMD = ""
     const val SHOW_GIT_COMPARISON_TOOL = true
     const val ACTIVATE_IDE_EXECUTOR_AFTER_WEBCRAWL = false
+    const val WEB_CRAWL_LLM = "--mini"
 }

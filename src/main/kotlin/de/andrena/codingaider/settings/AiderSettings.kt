@@ -16,7 +16,8 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var isShellMode: Boolean = AiderDefaults.IS_SHELL_MODE,
         var lintCmd: String = AiderDefaults.LINT_CMD,
         var showGitComparisonTool: Boolean = AiderDefaults.SHOW_GIT_COMPARISON_TOOL,
-        var activateIdeExecutorAfterWebcrawl: Boolean = AiderDefaults.ACTIVATE_IDE_EXECUTOR_AFTER_WEBCRAWL
+        var activateIdeExecutorAfterWebcrawl: Boolean = AiderDefaults.ACTIVATE_IDE_EXECUTOR_AFTER_WEBCRAWL,
+        var webCrawlLlm: String = AiderDefaults.WEB_CRAWL_LLM
     )
 
     private var myState = State()
@@ -67,6 +68,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.activateIdeExecutorAfterWebcrawl
         set(value) {
             myState.activateIdeExecutorAfterWebcrawl = value
+        }
+
+    var webCrawlLlm: String
+        get() = myState.webCrawlLlm
+        set(value) {
+            myState.webCrawlLlm = value
         }
 
     companion object {

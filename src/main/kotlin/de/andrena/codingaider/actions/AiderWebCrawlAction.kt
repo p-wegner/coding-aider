@@ -60,7 +60,7 @@ class AiderWebCrawlAction : AnAction() {
                         12. Ensure the final document is concise, well-structured, and focused on the core technical content.
                     """.trimIndent(),
                     useYesFlag = true,
-                    llm = "--mini",
+                    llm = settings.webCrawlLlm,
                     additionalArgs = "",
                     files = listOf(FileData(filePath, false)),
                     isShellMode = false,

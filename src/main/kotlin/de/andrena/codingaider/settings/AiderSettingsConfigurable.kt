@@ -39,6 +39,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     private val lintCmdField = JBTextField()
     private val showGitComparisonToolCheckBox = JBCheckBox("Show Git Comparison Tool after execution")
     private val activateIdeExecutorAfterWebcrawlCheckBox = JBCheckBox("Activate Post web crawl LLM cleanup (Experimental)")
+    private val webCrawlLlmComboBox = JComboBox(ApiKeyChecker.getAllLlmOptions().toTypedArray())
 
     override fun getDisplayName(): String = "Aider"
 
@@ -97,6 +98,8 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                         .toolTipText = "This will prompt aider to remove clutter from the crawled md. " +
                             "The feature is experimental and may easily exceed the token limit of the LLM. " +
                             "Use with caution."
+                    cell(webCrawlLlmComboBox)
+                        .label("Web Crawl LLM:")
                 }
             }
 
@@ -134,7 +137,8 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 isShellModeCheckBox.isSelected != settings.isShellMode ||
                 lintCmdField.text != settings.lintCmd ||
                 showGitComparisonToolCheckBox.isSelected != settings.showGitComparisonTool ||
-                activateIdeExecutorAfterWebcrawlCheckBox.isSelected != settings.activateIdeExecutorAfterWebcrawl
+                activateIdeExecutorAfterWebcrawlCheckBox.isSelected != settings.activateIdeExecutorAfterWebcrawl ||
+                webCrawlLlmComboBox.selectedItem as String != settings.webCrawlLlm
     }
 
     override fun apply() {
@@ -146,6 +150,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         settings.lintCmd = lintCmdField.text
         settings.showGitComparisonTool = showGitComparisonToolCheckBox.isSelected
         settings.activateIdeExecutorAfterWebcrawl = activateIdeExecutorAfterWebcrawlCheckBox.isSelected
+        settings.webCrawlLlm = webCrawlLlmComboBox.selectedItem as String
     }
 
     override fun reset() {
@@ -157,6 +162,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         lintCmdField.text = settings.lintCmd
         showGitComparisonToolCheckBox.isSelected = settings.showGitComparisonTool
         activateIdeExecutorAfterWebcrawlCheckBox.isSelected = settings.activateIdeExecutorAfterWebcrawl
+        webCrawlLlmComboBox.selectedItem = settings.webCrawlLlm
     }
 
     override fun disposeUIResources() {
