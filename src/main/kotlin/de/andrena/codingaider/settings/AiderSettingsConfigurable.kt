@@ -128,7 +128,6 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         settings.isShellMode = isShellModeCheckBox.isSelected
         settings.lintCmd = lintCmdField.text
         settings.showGitComparisonTool = showGitComparisonToolCheckBox.isSelected
-        settings.maxLinesInGitComparisonTool = maxLinesInGitComparisonToolField.value
     }
 
     override fun reset() {
@@ -139,7 +138,6 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         isShellModeCheckBox.isSelected = settings.isShellMode
         lintCmdField.text = settings.lintCmd
         showGitComparisonToolCheckBox.isSelected = settings.showGitComparisonTool
-        maxLinesInGitComparisonToolField.value = settings.maxLinesInGitComparisonTool
     }
 
     override fun disposeUIResources() {
