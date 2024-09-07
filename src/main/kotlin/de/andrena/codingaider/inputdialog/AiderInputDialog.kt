@@ -43,7 +43,10 @@ class AiderInputDialog(
             val selectedFiles = fileChooser.selectedFiles
             val fileDataList = selectedFiles.flatMap { file ->
                 if (file.isDirectory) {
-                    file.walkTopDown().filter { it.isFile }.map { FileData(it.absolutePath, false) }
+                    file.walkTopDown()
+                        .filter { it.isFile }
+                        .map { FileData(it.absolutePath, false) }
+                        .toList()
                 } else {
                     listOf(FileData(file.absolutePath, false))
                 }
