@@ -36,4 +36,17 @@ object ApiKeyChecker {
     fun getLlmForApiKey(apiKey: String): List<String> {
         return apiKeyMap[apiKey] ?: emptyList()
     }
+
+    fun getAllLlmOptions(): List<String> {
+        return apiKeyMap.values.flatten().distinct()
+    }
+
+    fun isApiKeyAvailableForLlm(llm: String): Boolean {
+        val apiKey = apiKeyMap.entries.find { (_, llms) -> llm in llms }?.key
+        return apiKey?.let { isApiKeyAvailable(it) } ?: false
+    }
+
+    fun getApiKeyForLlm(llm: String): String? {
+        return apiKeyMap.entries.find { (_, llms) -> llm in llms }?.key
+    }
 }
