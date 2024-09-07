@@ -1,17 +1,19 @@
 package de.andrena.codingaider.outputview
 
 import com.intellij.openapi.project.Project
+import com.intellij.ui.components.JBScrollPane
 import java.awt.BorderLayout
 import java.awt.EventQueue.invokeLater
 import java.awt.event.KeyEvent
 import javax.swing.*
 import kotlin.concurrent.schedule
 import java.util.Timer
+import java.util.TimerTask
 
 class MarkdownDialog(private val project: Project, title: String, initialText: String) : JDialog() {
     private val textArea: JTextArea = JTextArea(initialText)
     private val scrollPane: JScrollPane
-    private var autoCloseTimer: Timer? = null
+    private var autoCloseTimer: TimerTask? = null
     private val keepOpenButton: JButton
 
     init {
@@ -21,7 +23,7 @@ class MarkdownDialog(private val project: Project, title: String, initialText: S
         layout = BorderLayout()
 
         textArea.isEditable = false
-        scrollPane = JScrollPane(textArea)
+        scrollPane = JBScrollPane(textArea)
         add(scrollPane, BorderLayout.CENTER)
 
         val buttonPanel = JPanel()
