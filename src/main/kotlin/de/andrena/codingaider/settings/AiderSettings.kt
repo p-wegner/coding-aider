@@ -15,6 +15,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var additionalArgs: String = AiderDefaults.ADDITIONAL_ARGS,
         var isShellMode: Boolean = AiderDefaults.IS_SHELL_MODE,
         var lintCmd: String = AiderDefaults.LINT_CMD
+        var showGitComparisonTool: Boolean = AiderDefaults.SHOW_GIT_COMPARISON_TOOL
     )
 
     private var myState = State()
@@ -55,7 +56,11 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
             myState.lintCmd = value
         }
 
-    companion object {
+    var showGitComparisonTool: Boolean
+        get() = myState.showGitComparisonTool
+        set(value) {
+            myState.showGitComparisonTool = value
+        }
         fun getInstance(project: Project): AiderSettings =
             project.getService(AiderSettings::class.java)
     }

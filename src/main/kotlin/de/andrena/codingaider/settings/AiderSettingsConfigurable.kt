@@ -27,12 +27,18 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 "API key found for $selectedItem"
             } else {
                 "API key not found for $selectedItem"
+                row {
+                    cell(showGitComparisonToolCheckBox)
+                }
             }
         }
+        settings.showGitComparisonTool = showGitComparisonToolCheckBox.isSelected
+        showGitComparisonToolCheckBox.isSelected = settings.showGitComparisonTool
     }
     private val additionalArgsField = JBTextField()
     private val isShellModeCheckBox = JBCheckBox("Use Shell Mode by default")
     private val lintCmdField = JBTextField()
+    private val showGitComparisonToolCheckBox = JBCheckBox("Show Git Comparison Tool after execution")
 
     override fun getDisplayName(): String = "Aider"
 
@@ -109,7 +115,8 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 llmComboBox.selectedItem as String != settings.llm ||
                 additionalArgsField.text != settings.additionalArgs ||
                 isShellModeCheckBox.isSelected != settings.isShellMode ||
-                lintCmdField.text != settings.lintCmd
+                lintCmdField.text != settings.lintCmd ||
+                showGitComparisonToolCheckBox.isSelected != settings.showGitComparisonTool
     }
 
     override fun apply() {
