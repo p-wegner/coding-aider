@@ -38,7 +38,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     private val isShellModeCheckBox = JBCheckBox("Use Shell Mode by default")
     private val lintCmdField = JBTextField()
     private val showGitComparisonToolCheckBox = JBCheckBox("Show Git Comparison Tool after execution")
-    private val activateIdeExecutorAfterWebcrawlCheckBox = JBCheckBox("Activate IDE Executor after web crawl (Experimental)")
+    private val activateIdeExecutorAfterWebcrawlCheckBox = JBCheckBox("Activate Post web crawl LLM cleanup (Experimental)")
 
     override fun getDisplayName(): String = "Aider"
 
@@ -90,7 +90,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 row {
                     cell(activateIdeExecutorAfterWebcrawlCheckBox)
                         .component
-                        .toolTipText = "This feature is experimental and may easily exceed the token limit of the LLM. Use with caution."
+                        .toolTipText = "This will prompt aider to remove clutter from the crawled md. The feature is experimental and may easily exceed the token limit of the LLM. Use with caution."
                 }
             }
 
