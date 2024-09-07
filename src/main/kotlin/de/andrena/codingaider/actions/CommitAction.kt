@@ -21,7 +21,7 @@ class CommitAction : AnAction() {
                 message = "/commit",
                 useYesFlag = true,
                 llm = AiderSettings.getInstance(project).llm,
-                additionalArgs = "",
+                additionalArgs = "--chat-history-file test.md",
                 files = files.map { FileData(it.url, false) },
                 isShellMode = false,
                 lintCmd = AiderSettings.getInstance(project).lintCmd

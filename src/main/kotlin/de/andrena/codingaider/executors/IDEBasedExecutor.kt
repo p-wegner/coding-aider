@@ -11,6 +11,7 @@ import de.andrena.codingaider.utils.FileRefresher
 import de.andrena.codingaider.utils.GitUtils
 import java.awt.EventQueue.invokeLater
 import java.io.BufferedReader
+import java.io.File
 import java.io.InputStreamReader
 import kotlin.concurrent.thread
 
@@ -30,7 +31,7 @@ class IDEBasedExecutor(
         thread {
             try {
                 val commandArgs = AiderCommandBuilder.buildAiderCommand(commandData, false)
-                val processBuilder = ProcessBuilder(commandArgs)
+                val processBuilder = ProcessBuilder(commandArgs).directory(File(project.basePath!!))
                 processBuilder.redirectErrorStream(true)
 
                 invokeLater {

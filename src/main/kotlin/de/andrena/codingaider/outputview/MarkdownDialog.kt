@@ -15,7 +15,7 @@ class MarkdownDialog(private val project: Project, title: String, initialText: S
 
     init {
         this.title = title
-        setSize(600, 400)
+        setSize(800, 800)
         setLocationRelativeTo(null)
         layout = BorderLayout()
 

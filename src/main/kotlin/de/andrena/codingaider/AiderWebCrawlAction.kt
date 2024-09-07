@@ -38,19 +38,19 @@ class AiderWebCrawlAction : AnAction() {
 
             if (!File(filePath).exists()) {
                 val webClient = WebClient()
-                webClient.options.isJavaScriptEnabled = true
+                webClient.options.isJavaScriptEnabled = false
                 val page: HtmlPage = webClient.getPage(url)
                 val htmlContent = page.asXml()
                 val markdown = FlexmarkHtmlConverter.builder().build().convert(htmlContent)
                 File(filePath).writeText(markdown)
                 val commandData = CommandData(
                     message = """
-                        Simplify this markdown file. 
+                        Simplify this markdown file using whole file edit format. 
                         Keep all information that you think will be relevant for code documentation and how to use a certain technology.
                         If something seems out of context or irrelevant, remove it.
                     """.trimIndent(),
-                    useYesFlag = false,
-                    llm = AiderSettings.getInstance(project).llm,
+                    useYesFlag = true,
+                    llm = "--mini",
                     additionalArgs = "",
                     files = listOf(FileData(filePath, true)),
                     isShellMode = false,
