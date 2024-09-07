@@ -110,5 +110,6 @@
                 parentId="tools"
                 nonDefaultProject="true"/>
         <notificationGroup id="Coding Aider Notifications" displayType="BALLOON"/>
+        <notificationGroup id="Aider Web Crawl" displayType="BALLOON"/>
     </extensions>
 </idea-plugin>
