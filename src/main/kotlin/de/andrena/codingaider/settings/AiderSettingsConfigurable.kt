@@ -117,10 +117,8 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 row {
                     button("Test Aider Installation") {
                         val dialog = AiderTestCommand(project, "aider --help").execute()
-                        javax.swing.SwingUtilities.invokeLater {
-                            dialog?.focus()
-                            dialog?.toFront()
-                        }
+                        dialog?.focus()
+                        dialog?.toFront()
                     }
                 }
             }
