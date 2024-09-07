@@ -61,6 +61,7 @@ class IDEBasedExecutor(
                                 "$output\nAider command executed successfully",
                                 "Aider Command Completed"
                             )
+                            markdownDialog.startAutoCloseTimer()
                         }
                     } else {
                         LOG.error("Aider command failed with exit code $exitCode")
@@ -69,6 +70,7 @@ class IDEBasedExecutor(
                                 "$output\nAider command failed with exit code $exitCode",
                                 "Aider Command Failed"
                             )
+                            markdownDialog.startAutoCloseTimer()
                         }
                     }
                 }
@@ -79,6 +81,7 @@ class IDEBasedExecutor(
                         output.toString() + "\nError executing Aider command: ${e.message}",
                         "Aider Command Error"
                     )
+                    markdownDialog.startAutoCloseTimer()
                 }
             } finally {
                 refreshFiles(commandData.files.mapNotNull {
