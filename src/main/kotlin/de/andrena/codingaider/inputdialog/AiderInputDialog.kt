@@ -333,12 +333,24 @@ class AiderInputDialog(
         topPanel.add(flagAndArgsPanel, gbc)
 
         // Context view
-        val actionGroup = DefaultActionGroup().apply {
+        val fileActionGroup = DefaultActionGroup().apply {
             add(object : AnAction("Add Files", "Add files to persistent files", AllIcons.Actions.MenuOpen) {
                 override fun actionPerformed(e: AnActionEvent) {
                     addAiderDocsToPersistentFiles()
                 }
             })
+            add(object : AnAction(
+                "Remove Files",
+                "Remove selected files from the context view",
+                AllIcons.Actions.Cancel
+            ) {
+                override fun actionPerformed(e: AnActionEvent) {
+                    aiderContextView.removeSelectedFiles()
+                }
+            })
+        }
+
+        val fileStatusActionGroup = DefaultActionGroup().apply {
             add(object : AnAction(
                 "Toggle Read-Only Mode",
                 "Toggle Read-Only Mode for selected file",
@@ -357,18 +369,15 @@ class AiderInputDialog(
                     aiderContextView.togglePersistentFile()
                 }
             })
-            add(object : AnAction(
-                "Remove Files",
-                "Remove selected files from the context view",
-                AllIcons.Actions.Cancel
-            ) {
-                override fun actionPerformed(e: AnActionEvent) {
-                    aiderContextView.removeSelectedFiles()
-                }
-            })
         }
 
-        val toolbar = ActionManager.getInstance().createActionToolbar("AiderContextToolbar", actionGroup, true)
+        val combinedActionGroup = DefaultActionGroup().apply {
+            addAll(fileActionGroup)
+            addSeparator()
+            addAll(fileStatusActionGroup)
+        }
+
+        val toolbar = ActionManager.getInstance().createActionToolbar("AiderContextToolbar", combinedActionGroup, true)
         toolbar.targetComponent = aiderContextView
         val contextPanel = JPanel(BorderLayout()).apply {
             add(toolbar.component, BorderLayout.NORTH)
