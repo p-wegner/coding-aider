@@ -62,31 +62,31 @@
         <group id="de.andrena.codingaider.AiderActionGroup" text="Aider Actions" popup="true">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
             <add-to-group group-id="ToolsMenu" anchor="last"/>
-            <action id="de.andrena.codingaider.AiderAction"
-                    class="de.andrena.codingaider.AiderAction"
+            <action id="de.andrena.codingaider.actions.AiderAction"
+                    class="de.andrena.codingaider.actions.AiderAction"
                     text="Start Aider Action"
                     description="This will instruct aider to do something">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt A"/>
             </action>
-            <action id="de.andrena.codingaider.AiderShellAction"
-                    class="de.andrena.codingaider.AiderShellAction"
+            <action id="de.andrena.codingaider.actions.AiderShellAction"
+                    class="de.andrena.codingaider.actions.AiderShellAction"
                     text="Start Aider in Shell Mode"
                     description="This will start aider in shell mode with default settings">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt shift D"/>
             </action>
-            <action id="de.andrena.codingaider.PersistentFilesAction"
-                    class="de.andrena.codingaider.PersistentFilesAction"
+            <action id="de.andrena.codingaider.actions.PersistentFilesAction"
+                    class="de.andrena.codingaider.actions.PersistentFilesAction"
                     text="Add to Persistent Files"
                     description="Add or remove files from the persistent files list">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt shift A"/>
             </action>
-            <action id="de.andrena.codingaider.ShowLastCommandResultAction"
-                    class="de.andrena.codingaider.ShowLastCommandResultAction"
+            <action id="de.andrena.codingaider.actions.ShowLastCommandResultAction"
+                    class="de.andrena.codingaider.actions.ShowLastCommandResultAction"
                     text="Show Last Aider Command Result"
                     description="Displays the result of the last Aider command">
             </action>
-            <action id="de.andrena.codingaider.AiderWebCrawlAction"
-                    class="de.andrena.codingaider.AiderWebCrawlAction"
+            <action id="de.andrena.codingaider.actions.AiderWebCrawlAction"
+                    class="de.andrena.codingaider.actions.AiderWebCrawlAction"
                     text="Aider Web Crawl"
                     description="Start an Aider web crawl action">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt W"/>

@@ -1,4 +1,4 @@
-package de.andrena.codingaider
+package de.andrena.codingaider.actions
 
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
@@ -10,10 +10,8 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.IDEBasedExecutor
 import de.andrena.codingaider.executors.ShellExecutor
-import de.andrena.codingaider.history.AiderHistoryHandler
 import de.andrena.codingaider.inputdialog.AiderInputDialog
 import de.andrena.codingaider.inputdialog.PersistentFileManager
-import de.andrena.codingaider.outputview.MarkdownDialog
 import de.andrena.codingaider.settings.AiderDefaults
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.FileTraversal
@@ -100,23 +98,6 @@ class AiderShellAction : AnAction() {
         val project: Project? = e.project
         val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
         e.presentation.isEnabledAndVisible = project != null && !files.isNullOrEmpty()
-    }
-
-    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
-}
-
-class ShowLastCommandResultAction : AnAction() {
-    override fun actionPerformed(e: AnActionEvent) {
-        val project = e.project ?: return
-        val historyHandler = AiderHistoryHandler(project.basePath ?: "")
-        val lastCommandResult = historyHandler.getLastChatHistory()
-
-        val dialog = MarkdownDialog(project, "Last Aider Command Result", lastCommandResult)
-        dialog.show()
-    }
-
-    override fun update(e: AnActionEvent) {
-        e.presentation.isEnabledAndVisible = e.project != null
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT

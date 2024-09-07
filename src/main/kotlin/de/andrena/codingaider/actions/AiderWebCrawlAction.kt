@@ -1,4 +1,4 @@
-package de.andrena.codingaider
+package de.andrena.codingaider.actions
 
 import com.gargoylesoftware.htmlunit.WebClient
 import com.gargoylesoftware.htmlunit.html.HtmlPage
