@@ -129,6 +129,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         settings.additionalArgs = additionalArgsField.text
         settings.isShellMode = isShellModeCheckBox.isSelected
         settings.lintCmd = lintCmdField.text
+        settings.showGitComparisonTool = showGitComparisonToolCheckBox.isSelected
     }
 
     override fun reset() {

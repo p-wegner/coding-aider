@@ -14,7 +14,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var llm: String = AiderDefaults.LLM,
         var additionalArgs: String = AiderDefaults.ADDITIONAL_ARGS,
         var isShellMode: Boolean = AiderDefaults.IS_SHELL_MODE,
-        var lintCmd: String = AiderDefaults.LINT_CMD
+        var lintCmd: String = AiderDefaults.LINT_CMD,
         var showGitComparisonTool: Boolean = AiderDefaults.SHOW_GIT_COMPARISON_TOOL
     )
 
