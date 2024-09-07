@@ -28,7 +28,7 @@ import javax.swing.KeyStroke
 class AiderContextView(
     private val project: Project,
     private var allFiles: List<FileData>
-) : JPanel(BorderLayout()) {
+) : JPanel(BorderLayout()), Focusable {
     private val rootNode = DefaultMutableTreeNode("Context")
     private val filesNode = DefaultMutableTreeNode("Files")
     private val markdownFilesNode = DefaultMutableTreeNode("Docs")
@@ -296,5 +296,13 @@ class AiderContextView(
         persistentFiles = persistentFiles.filterNot { it in selectedFiles }
         persistentFileManager.removePersistentFiles(selectedFiles.map { it.filePath })
         updateTree()
+    }
+
+    override fun requestFocus() {
+        tree.requestFocus()
+    }
+
+    override fun requestFocusInWindow(): Boolean {
+        return tree.requestFocusInWindow()
     }
 }

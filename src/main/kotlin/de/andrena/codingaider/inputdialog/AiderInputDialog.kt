@@ -338,7 +338,13 @@ class AiderInputDialog(
                 override fun actionPerformed(e: AnActionEvent) {
                     addAiderDocsToPersistentFiles()
                 }
-            })
+
+                override fun update(e: AnActionEvent) {
+                    e.presentation.isEnabled = true
+                    e.presentation.text = "Add Files (Ctrl+A)"
+                }
+            }.also { it.registerCustomShortcutSet(CustomShortcutSet(KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_DOWN_MASK)), aiderContextView) })
+            
             add(object : AnAction(
                 "Remove Files",
                 "Remove selected files from the context view",
@@ -346,6 +352,11 @@ class AiderInputDialog(
             ) {
                 override fun actionPerformed(e: AnActionEvent) {
                     aiderContextView.removeSelectedFiles()
+                }
+
+                override fun update(e: AnActionEvent) {
+                    e.presentation.isEnabled = true
+                    e.presentation.text = "Remove Files (Del)"
                 }
             })
         }
@@ -359,7 +370,13 @@ class AiderInputDialog(
                 override fun actionPerformed(e: AnActionEvent) {
                     aiderContextView.toggleReadOnlyMode()
                 }
-            })
+
+                override fun update(e: AnActionEvent) {
+                    e.presentation.isEnabled = true
+                    e.presentation.text = "Toggle Read-Only (Ctrl+R)"
+                }
+            }.also { it.registerCustomShortcutSet(CustomShortcutSet(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK)), aiderContextView) })
+            
             add(object : AnAction(
                 "Toggle Persistent Files",
                 "Toggle selected files' persistent status",
@@ -368,7 +385,12 @@ class AiderInputDialog(
                 override fun actionPerformed(e: AnActionEvent) {
                     aiderContextView.togglePersistentFile()
                 }
-            })
+
+                override fun update(e: AnActionEvent) {
+                    e.presentation.isEnabled = true
+                    e.presentation.text = "Toggle Persistent (Ctrl+P)"
+                }
+            }.also { it.registerCustomShortcutSet(CustomShortcutSet(KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_DOWN_MASK)), aiderContextView) })
         }
 
         val combinedActionGroup = DefaultActionGroup().apply {
