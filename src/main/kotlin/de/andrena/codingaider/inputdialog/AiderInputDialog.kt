@@ -39,7 +39,7 @@ class AiderInputDialog(
             isMultiSelectionEnabled = true
         }
         
-        if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+        if (fileChooser.showOpenDialog(contentPane) == JFileChooser.APPROVE_OPTION) {
             val selectedFiles = fileChooser.selectedFiles
             val fileDataList = selectedFiles.flatMap { file ->
                 if (file.isDirectory) {
