@@ -23,9 +23,10 @@ Aider.
     - Quickly initiate Aider actions via the "Start Aider Action" option in the Tools menu or Project View popup menu.
     - Use the keyboard shortcut Alt+A for rapid access.
     - Navigate previous commands with Alt+UP and Alt+DOWN in the message field.
+    - Automatically commit all changes using ALT + D 
 
-3. **Persistent File Management**: Efficiently manage frequently used files for Aider operations with Alt+Shift+A or
-   within the Aider Command Window.
+3. **Persistent File Management**: Manage frequently used files for persistent context for Aider operations with Alt+Shift+A,
+   within the Aider Command Window or the Aider Settings.
 
 4. **Dual Execution Modes**:
     - IDE-based execution for seamless integration.
@@ -33,10 +34,12 @@ Aider.
 
 5. **Git Integration**: Automatically launch a Git comparison tool post-Aider operations for easy change review.
 
-6. **Real-time Progress Tracking**: Monitor Aider command progress through an interactive Markdown dialog.
+6. **Real-time Progress Tracking**: Monitor Aider command progress through Markdown dialog.
 
 7. **Multi-File Support**: Execute Aider actions on multiple files or directories while controlling the context provided
-   to Aider from your IDE.
+   to Aider from your IDE. 
+ 
+8. **Webcrawl (Experimental)**: Download and convert pages to markdown stored in a .aider-docs folder to add to context
 
 ## Advantages Over Other Coding Assistant Plugins
 
