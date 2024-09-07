@@ -81,10 +81,6 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                     cell(isShellModeCheckBox)
                 }
                 row("Lint Command:") {
-                    label("Lint Command:")
-                        .applyToComponent {
-                            toolTipText = "The lint command will be executed after every code change by Aider"
-                        }
                     cell(lintCmdField)
                         .resizableColumn()
                         .align(Align.FILL)
