@@ -33,10 +33,21 @@ class AiderInputDialog(
     }
 
     private fun addAiderDocsToPersistentFiles() {
-        val aiderDocsDir = File(project.basePath, ".aider-docs")
-        if (aiderDocsDir.exists() && aiderDocsDir.isDirectory) {
-            val files = aiderDocsDir.listFiles { file -> file.isFile && file.extension == "md" } ?: return
-            val fileDataList = files.map { FileData(it.absolutePath, false) }
+        val fileChooser = JFileChooser().apply {
+            currentDirectory = File(project.basePath)
+            fileSelectionMode = JFileChooser.FILES_AND_DIRECTORIES
+            isMultiSelectionEnabled = true
+        }
+        
+        if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
+            val selectedFiles = fileChooser.selectedFiles
+            val fileDataList = selectedFiles.flatMap { file ->
+                if (file.isDirectory) {
+                    file.walkTopDown().filter { it.isFile }.map { FileData(it.absolutePath, false) }
+                } else {
+                    listOf(FileData(file.absolutePath, false))
+                }
+            }
             persistentFileManager.addAllFiles(fileDataList)
             aiderContextView.addFilesToTree(fileDataList)
         }
@@ -316,12 +327,12 @@ class AiderInputDialog(
         // Context view
         val actionGroup = DefaultActionGroup().apply {
             add(object : AnAction(
-                "Add .aider-docs Files",
-                "Add files from .aider-docs to persistent files",
+                "Add Files",
+                "Add files to persistent files",
                 AllIcons.Actions.MenuOpen
             ) {
                 override fun actionPerformed(e: AnActionEvent) {
-                    addAiderDocsToPersistentFiles()
+                    (SwingUtilities.getWindowAncestor(this@AiderContextView) as? AiderInputDialog)?.addAiderDocsToPersistentFiles()
                 }
             })
             add(object : AnAction(
