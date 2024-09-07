@@ -43,7 +43,7 @@ class MarkdownDialog(private val project: Project, private val initialTitle: Str
 
         defaultCloseOperation = DISPOSE_ON_CLOSE
         isVisible = true
-        requestFocusInWindow()
+        focus()
     }
 
     fun updateProgress(output: String, message: String) {
@@ -74,5 +74,13 @@ class MarkdownDialog(private val project: Project, private val initialTitle: Str
         autoCloseTimer?.cancel()
         keepOpenButton.isVisible = false
         title = initialTitle
+    }
+
+    fun focus() {
+        invokeLater {
+            toFront()
+            requestFocus()
+            textArea.requestFocusInWindow()
+        }
     }
 }

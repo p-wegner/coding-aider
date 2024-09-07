@@ -26,6 +26,7 @@ class IDEBasedExecutor(
         val output = StringBuilder()
         val markdownDialog = MarkdownDialog(project, "Aider Command Output", "Initializing Aider command...").apply {
             isVisible = true
+            focus()
         }
         val currentCommitHash = GitUtils.getCurrentCommitHash(project)
 
