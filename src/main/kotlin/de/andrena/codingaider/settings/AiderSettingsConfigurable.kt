@@ -166,7 +166,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
 }
 
 
-    private fun updatePersistentFilesList() {
+    private fun refreshPersistentFilesList() {
         persistentFilesListModel.clear()
         persistentFilesListModel.addAll(persistentFileManager.getPersistentFiles())
     }
@@ -182,24 +182,22 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
             }
         }
         persistentFileManager.addAllFiles(fileDataList)
-        updatePersistentFilesList()
+        refreshPersistentFilesList()
     }
 
     private fun toggleReadOnlyMode() {
-        val selectedIndices = persistentFilesList.selectedIndices
-        for (index in selectedIndices) {
-            val fileData = persistentFilesListModel.getElementAt(index)
+        val selectedFiles = persistentFilesList.selectedValuesList
+        selectedFiles.forEach { fileData ->
             val updatedFileData = fileData.copy(isReadOnly = !fileData.isReadOnly)
             persistentFileManager.updateFile(updatedFileData)
-            persistentFilesListModel.set(index, updatedFileData)
         }
+        refreshPersistentFilesList()
     }
 
     private fun removeSelectedFiles() {
-        val selectedIndices = persistentFilesList.selectedIndices
-        val filesToRemove = selectedIndices.map { persistentFilesListModel.getElementAt(it) }
-        persistentFileManager.removePersistentFiles(filesToRemove.map { it.filePath })
-        updatePersistentFilesList()
+        val selectedFiles = persistentFilesList.selectedValuesList
+        persistentFileManager.removePersistentFiles(selectedFiles.map { it.filePath })
+        refreshPersistentFilesList()
     }
 
     private inner class PersistentFileRenderer : DefaultListCellRenderer() {
