@@ -19,7 +19,6 @@ class AiderTestCommand(private val project: Project, private val command: String
 
         val executor = IDEBasedExecutor(project, commandData)
         val dialog = executor.execute()
-        dialog.focus()
         return dialog
     }
 }

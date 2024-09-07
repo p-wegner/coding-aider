@@ -43,7 +43,8 @@ class MarkdownDialog(private val project: Project, private val initialTitle: Str
 
         defaultCloseOperation = DISPOSE_ON_CLOSE
         isVisible = true
-        focus()
+        setAlwaysOnTop(true)
+        setAlwaysOnTop(false)
     }
 
     fun updateProgress(output: String, message: String) {
