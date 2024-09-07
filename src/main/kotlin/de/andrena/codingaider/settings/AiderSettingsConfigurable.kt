@@ -64,7 +64,8 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 }
                 row("Default LLM Model:") {
                     cell(llmComboBox)
-                        .component.apply {
+                        .component
+                        .apply {
                             renderer = LlmComboBoxRenderer()
                         }
                 }
@@ -83,8 +84,9 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                     cell(lintCmdField)
                         .resizableColumn()
                         .align(Align.FILL)
-                        .component
-                        .toolTipText = "The lint command will be executed after every code change by Aider"
+                        .apply {
+                            component.toolTipText = "The lint command will be executed after every code change by Aider"
+                        }
                 }
                 row {
                     cell(showGitComparisonToolCheckBox)
