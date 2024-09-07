@@ -52,7 +52,9 @@ class AiderInputDialog(
                 }
             }
             persistentFileManager.addAllFiles(fileDataList)
-            aiderContextView.addFilesToTree(fileDataList)
+            
+            // Update persistent files in AiderContextView
+            aiderContextView.updatePersistentFiles(persistentFileManager.getPersistentFiles())
             
             // Refresh the context view
             aiderContextView.updateTree()

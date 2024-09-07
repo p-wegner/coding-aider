@@ -273,4 +273,9 @@ class AiderContextView(
         }
         updateTree()
     }
+
+    fun updatePersistentFiles(newPersistentFiles: List<FileData>) {
+        persistentFiles = newPersistentFiles
+        allFiles = (allFiles + persistentFiles).distinctBy { it.filePath }
+    }
 }
