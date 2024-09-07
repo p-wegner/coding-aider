@@ -70,7 +70,7 @@ class AiderWebCrawlAction : AnAction() {
                 FileRefresher.refreshFiles(project, arrayOf(virtualFile))
             }
 
-            Messages.showInfoMessage(project, "File saved: $filePath", "Aider Web Crawl")
+            // File saved message removed to improve UX
         }
     }
 
