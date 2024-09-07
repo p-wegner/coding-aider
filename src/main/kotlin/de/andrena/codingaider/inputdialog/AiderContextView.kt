@@ -20,6 +20,10 @@ import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeCellRenderer
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreeSelectionModel
+import java.awt.event.KeyEvent
+import javax.swing.AbstractAction
+import javax.swing.JComponent
+import javax.swing.KeyStroke
 
 class AiderContextView(
     private val project: Project,
