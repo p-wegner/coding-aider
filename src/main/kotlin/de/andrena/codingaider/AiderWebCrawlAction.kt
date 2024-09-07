@@ -46,6 +46,8 @@ class AiderWebCrawlAction : AnAction() {
                 val htmlContent = page.asXml()
                 val markdown = FlexmarkHtmlConverter.builder().build().convert(htmlContent)
                 File(filePath).writeText(markdown)
+
+                // Clean up and simplify the file using IDEBasedExecutor
                 val commandData = CommandData(
                     message = """
                         Clean up and simplify the provided file $fileName using whole file edit format. Follow these guidelines:
@@ -72,8 +74,8 @@ class AiderWebCrawlAction : AnAction() {
                 IDEBasedExecutor(project, commandData).execute()
             }
 
-            val virtualFile =
-                LocalFileSystem.getInstance().refreshAndFindFileByIoFile(File(filePath))
+            // Refresh the file and add it to PersistentFileManager
+            val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(File(filePath))
             val persistentFileManager = PersistentFileManager(project.basePath ?: "")
             persistentFileManager.addFile(FileData(filePath, true))
             if (virtualFile != null) {
