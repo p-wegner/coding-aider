@@ -69,8 +69,6 @@ class AiderWebCrawlAction : AnAction() {
             if (virtualFile != null) {
                 FileRefresher.refreshFiles(project, arrayOf(virtualFile))
             }
-
-            // File saved message removed to improve UX
         }
     }
 
