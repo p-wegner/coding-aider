@@ -329,13 +329,9 @@ class AiderInputDialog(
 
         // Context view
         val actionGroup = DefaultActionGroup().apply {
-            add(object : AnAction(
-                "Add Files",
-                "Add files to persistent files",
-                AllIcons.Actions.MenuOpen
-            ) {
+            add(object : AnAction("Add Files", "Add files to persistent files", AllIcons.Actions.MenuOpen) {
                 override fun actionPerformed(e: AnActionEvent) {
-                    (SwingUtilities.getWindowAncestor(this@AiderContextView) as? AiderInputDialog)?.addAiderDocsToPersistentFiles()
+                    (SwingUtilities.getWindowAncestor(tree) as? AiderInputDialog)?.addAiderDocsToPersistentFiles()
                 }
             })
             add(object : AnAction(
