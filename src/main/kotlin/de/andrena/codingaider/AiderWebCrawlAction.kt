@@ -102,7 +102,7 @@ class AiderWebCrawlAction : AnAction() {
         val persistentFileManager = PersistentFileManager(project.basePath ?: "")
         persistentFileManager.addFile(FileData(filePath, true))
         if (virtualFile != null) {
-            FileRefresher.refreshFiles(project, arrayOf(virtualFile))
+            FileRefresher.refreshFiles(arrayOf(virtualFile))
         }
     }
 

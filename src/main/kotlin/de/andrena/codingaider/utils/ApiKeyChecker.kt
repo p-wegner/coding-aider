@@ -11,10 +11,6 @@ object ApiKeyChecker {
         "--deepseek" to "DEEPSEEK_API_KEY"
     )
 
-    fun checkApiKeys(): Map<String, Boolean> {
-        return llmToApiKeyMap.values.distinct().associateWith { isApiKeyAvailable(it) }
-    }
-
     fun isApiKeyAvailableForLlm(llm: String): Boolean {
         val apiKey = llmToApiKeyMap[llm] ?: return true // If no API key is needed, consider it available
         return isApiKeyAvailable(apiKey)

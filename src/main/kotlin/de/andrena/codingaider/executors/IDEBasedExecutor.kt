@@ -100,7 +100,7 @@ class IDEBasedExecutor(
     }
 
     private fun refreshFiles(files: Array<VirtualFile>, markdownDialog: MarkdownDialog) {
-        FileRefresher.refreshFiles(project, files, markdownDialog)
+        FileRefresher.refreshFiles(files, markdownDialog)
     }
 
     private fun pollProcessAndReadOutput(

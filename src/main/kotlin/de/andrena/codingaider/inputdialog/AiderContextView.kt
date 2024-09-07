@@ -40,7 +40,6 @@ class AiderContextView(
         rootNode.add(filesNode)
         rootNode.add(markdownFilesNode)
         updateTree()
-
         tree.apply {
             isRootVisible = true
             showsRootHandles = true
@@ -286,7 +285,7 @@ class AiderContextView(
         return persistentFiles.any { it.filePath == fileData.filePath }
     }
 
-    fun addFilesToTree(files: List<FileData>) {
+    private fun addFilesToTree(files: List<FileData>) {
         files.forEach { file ->
             if (!allFiles.any { it.filePath == file.filePath }) {
                 allFiles += file

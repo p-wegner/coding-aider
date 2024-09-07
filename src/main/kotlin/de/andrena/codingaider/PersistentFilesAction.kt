@@ -40,7 +40,7 @@ class PersistentFilesAction : AnAction() {
                 Pair("Added to persistent files:", filesToAdd)
             }
 
-            FileRefresher.refreshFiles(project, arrayOf(persistentFileManager.getContextFile()))
+            FileRefresher.refreshFiles(arrayOf(persistentFileManager.getContextFile()))
 
             // Show notification with file names
             val fileNames = affectedFiles.joinToString("\n") { it.filePath }

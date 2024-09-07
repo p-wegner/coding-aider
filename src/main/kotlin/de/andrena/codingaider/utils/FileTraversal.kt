@@ -4,7 +4,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.FileData
 
 object FileTraversal {
-    fun traverseFileOrDirectory(file: VirtualFile, isReadOnly: Boolean = false): List<FileData> {
+    private fun traverseFileOrDirectory(file: VirtualFile, isReadOnly: Boolean = false): List<FileData> {
         return if (file.isDirectory) {
             file.children.flatMap { traverseFileOrDirectory(it, isReadOnly) }
         } else {

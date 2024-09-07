@@ -14,6 +14,7 @@ import de.andrena.codingaider.history.AiderHistoryHandler
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
 import java.awt.*
+import java.awt.event.InputEvent
 import java.awt.event.KeyEvent
 import java.io.File
 import java.time.LocalDateTime
