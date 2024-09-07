@@ -100,7 +100,7 @@ class IDEBasedExecutor(
             if (!process.isAlive || runningTime > 300) { // 5 minutes timeout
                 break
             }
-            Thread.sleep(100) // Small delay to prevent UI freezing
+            Thread.sleep(10) // Small delay to prevent UI freezing
         }
     }
 }
