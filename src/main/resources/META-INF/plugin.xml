@@ -97,6 +97,12 @@
                     description="Run Aider to commit">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt D"/>
             </action>
+            <action id="de.andrena.codingaider.SettingsAction"
+                    class="de.andrena.codingaider.actions.SettingsAction"
+                    text="Open Aider Settings"
+                    description="Open Aider Settings dialog"
+                    icon="AllIcons.General.Settings">
+            </action>
         </group>
     </actions>
 

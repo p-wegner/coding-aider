@@ -3,12 +3,12 @@ package de.andrena.codingaider.inputdialog
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.impl.ActionButton
-import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
+import de.andrena.codingaider.actions.SettingsAction
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.history.AiderHistoryHandler
 import de.andrena.codingaider.settings.AiderSettings
@@ -106,13 +106,7 @@ class AiderInputDialog(
     }
 
     private fun createSettingsButton(): ActionButton {
-        val settingsAction = object : AnAction("Open Settings", "Open Aider Settings", AllIcons.General.Settings) {
-            override fun actionPerformed(e: AnActionEvent) {
-                ShowSettingsUtil.getInstance().showSettingsDialog(project, "Aider Settings")
-            }
-
-            override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
-        }
+        val settingsAction = SettingsAction()
         val presentation = Presentation("Open Settings").apply {
             icon = AllIcons.General.Settings
             description = "Open Aider Settings"
