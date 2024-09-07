@@ -2,11 +2,11 @@ package de.andrena.codingaider
 
 import com.gargoylesoftware.htmlunit.WebClient
 import com.gargoylesoftware.htmlunit.html.HtmlPage
-import com.intellij.openapi.actionSystem.ActionUpdateThread
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
 import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
@@ -38,14 +38,10 @@ class AiderWebCrawlAction : AnAction() {
             val pageName = URL(url).path.split("/").lastOrNull() ?: "index"
             val fileName = "$pageName-$combinedHash.md"
             val filePath = "$docsPath/$fileName"
+            val file = File(filePath)
 
-            if (!File(filePath).exists()) {
-                val webClient = WebClient()
-                webClient.options.isJavaScriptEnabled = false
-                val page: HtmlPage = webClient.getPage(url)
-                val htmlContent = page.asXml()
-                val markdown = FlexmarkHtmlConverter.builder().build().convert(htmlContent)
-                File(filePath).writeText(markdown)
+            if (!file.exists()) {
+                crawlAndProcessWebPage(url, file)
 
                 val commandData = CommandData(
                     message = """
@@ -74,23 +70,15 @@ class AiderWebCrawlAction : AnAction() {
                 if (settings.activateIdeExecutorAfterWebcrawl) {
                     IDEBasedExecutor(project, commandData).execute()
                 }
-            }
+                // Refresh the file and add it to PersistentFileManager
+                refreshAndAddFile(project, filePath)
 
-            // Refresh the file and add it to PersistentFileManager
-            val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(File(filePath))
-            val persistentFileManager = PersistentFileManager(project.basePath ?: "")
-            persistentFileManager.addFile(FileData(filePath, true))
-            if (virtualFile != null) {
-                FileRefresher.refreshFiles(project, arrayOf(virtualFile))
-            }
-
-            // Notify the user about the next steps
-            val message = if (settings.activateIdeExecutorAfterWebcrawl) {
-                "Web page crawled and processed. The file has been added to persistent files and cleaned up using IDEBasedExecutor."
+                // Notify the user about the next steps
+                showNotification(project, "Web page crawled and processed. The file has been added to persistent files.", NotificationType.INFORMATION)
             } else {
-                "Web page crawled. The file has been added to persistent files. You can now use Aider to process it further if needed."
+                // Notify the user that the file already exists
+                showNotification(project, "The file already exists. No action taken.", NotificationType.INFORMATION)
             }
-            Messages.showInfoMessage(project, message, "Aider Web Crawl")
         }
     }
 
@@ -99,4 +87,29 @@ class AiderWebCrawlAction : AnAction() {
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+
+    private fun crawlAndProcessWebPage(url: String, file: File) {
+        val webClient = WebClient()
+        webClient.options.isJavaScriptEnabled = false
+        val page: HtmlPage = webClient.getPage(url)
+        val htmlContent = page.asXml()
+        val markdown = FlexmarkHtmlConverter.builder().build().convert(htmlContent)
+        file.writeText(markdown)
+    }
+
+    private fun refreshAndAddFile(project: com.intellij.openapi.project.Project, filePath: String) {
+        val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(File(filePath))
+        val persistentFileManager = PersistentFileManager(project.basePath ?: "")
+        persistentFileManager.addFile(FileData(filePath, true))
+        if (virtualFile != null) {
+            FileRefresher.refreshFiles(project, arrayOf(virtualFile))
+        }
+    }
+
+    private fun showNotification(project: com.intellij.openapi.project.Project, content: String, type: NotificationType) {
+        NotificationGroupManager.getInstance()
+            .getNotificationGroup("Aider Web Crawl")
+            .createNotification(content, type)
+            .notify(project)
+    }
 }
