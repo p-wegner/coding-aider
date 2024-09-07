@@ -47,7 +47,6 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
 
     override fun createComponent(): JComponent {
         persistentFilesList.cellRenderer = PersistentFileRenderer()
-        updatePersistentFilesList()
         settingsComponent = panel {
             group("General Settings") {
                 row {
@@ -162,13 +161,8 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
             }
             return component
         }
-    }
-}
 
 
-    private fun refreshPersistentFilesList() {
-        persistentFilesListModel.clear()
-        persistentFilesListModel.addAll(persistentFileManager.getPersistentFiles())
     }
 
     private fun addPersistentFiles() {
@@ -182,7 +176,6 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
             }
         }
         persistentFileManager.addAllFiles(fileDataList)
-        refreshPersistentFilesList()
     }
 
     private fun toggleReadOnlyMode() {
@@ -191,13 +184,11 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
             val updatedFileData = fileData.copy(isReadOnly = !fileData.isReadOnly)
             persistentFileManager.updateFile(updatedFileData)
         }
-        refreshPersistentFilesList()
     }
 
     private fun removeSelectedFiles() {
         val selectedFiles = persistentFilesList.selectedValuesList
         persistentFileManager.removePersistentFiles(selectedFiles.map { it.filePath })
-        refreshPersistentFilesList()
     }
 
     private inner class PersistentFileRenderer : DefaultListCellRenderer() {
@@ -215,3 +206,4 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
             return component
         }
     }
+}
