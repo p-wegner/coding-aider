@@ -22,6 +22,7 @@ import java.time.format.DateTimeFormatter
 import javax.swing.*
 import javax.swing.plaf.basic.BasicSplitPaneDivider
 import javax.swing.plaf.basic.BasicSplitPaneUI
+import kotlin.math.E
 
 class AiderInputDialog(
     val project: Project,
@@ -110,6 +111,8 @@ class AiderInputDialog(
             override fun actionPerformed(e: AnActionEvent) {
                 ShowSettingsUtil.getInstance().showSettingsDialog(project, "Aider Settings")
             }
+
+            override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
         }
         val presentation = Presentation("Open Settings").apply {
             icon = AllIcons.General.Settings
