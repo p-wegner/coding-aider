@@ -95,9 +95,9 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 row {
                     cell(activateIdeExecutorAfterWebcrawlCheckBox)
                         .component
-                        .toolTipText = "This will prompt aider to remove clutter from the crawled md. " +
-                            "The feature is experimental and may easily exceed the token limit of the LLM. " +
-                            "Use with caution."
+                        .toolTipText = "This option prompts Aider to clean up the crawled markdown. " +
+                            "Note that this experimental feature may exceed the LLM's token limit and potentially leads to high costs. " +
+                            "Use it with caution."
                     cell(webCrawlLlmComboBox)
                         .label("Web Crawl LLM:")
                 }

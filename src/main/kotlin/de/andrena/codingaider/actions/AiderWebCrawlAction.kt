@@ -23,6 +23,7 @@ import java.security.MessageDigest
 class AiderWebCrawlAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
+        val settings = AiderSettings.getInstance(project)
         val url =
             Messages.showInputDialog(project, "Enter URL to crawl:", "Aider Web Crawl", Messages.getQuestionIcon())
         if (!url.isNullOrEmpty()) {
