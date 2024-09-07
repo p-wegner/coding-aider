@@ -12,6 +12,7 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.PersistentFileManager
+import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.FileRefresher
 import java.io.File
 import java.math.BigInteger
@@ -69,7 +70,10 @@ class AiderWebCrawlAction : AnAction() {
                     isShellMode = false,
                     lintCmd = ""
                 )
-                IDEBasedExecutor(project, commandData).execute()
+                val settings = AiderSettings.getInstance(project)
+                if (settings.activateIdeExecutorAfterWebcrawl) {
+                    IDEBasedExecutor(project, commandData).execute()
+                }
             }
 
             // Refresh the file and add it to PersistentFileManager
@@ -79,6 +83,14 @@ class AiderWebCrawlAction : AnAction() {
             if (virtualFile != null) {
                 FileRefresher.refreshFiles(project, arrayOf(virtualFile))
             }
+
+            // Notify the user about the next steps
+            val message = if (settings.activateIdeExecutorAfterWebcrawl) {
+                "Web page crawled and processed. The file has been added to persistent files and cleaned up using IDEBasedExecutor."
+            } else {
+                "Web page crawled. The file has been added to persistent files. You can now use Aider to process it further if needed."
+            }
+            Messages.showInfoMessage(project, message, "Aider Web Crawl")
         }
     }
 
