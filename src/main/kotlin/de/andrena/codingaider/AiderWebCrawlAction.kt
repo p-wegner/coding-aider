@@ -16,6 +16,7 @@ import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.FileRefresher
 import java.io.File
 import java.math.BigInteger
+import java.net.URI
 import java.net.URL
 import java.security.MessageDigest
 
@@ -26,7 +27,9 @@ class AiderWebCrawlAction : AnAction() {
             Messages.showInputDialog(project, "Enter URL to crawl:", "Aider Web Crawl", Messages.getQuestionIcon())
         if (!url.isNullOrEmpty()) {
             val projectRoot = project.basePath ?: "."
-            File("$projectRoot/.aider-docs").mkdirs()
+            val domain = URI(url).host
+            val docsPath = "$projectRoot/.aider-docs/$domain"
+            File(docsPath).mkdirs()
 
             val combinedHash = MessageDigest.getInstance("MD5").digest(url.toByteArray()).let {
                 BigInteger(1, it).toString(16).padStart(32, '0')
@@ -34,7 +37,7 @@ class AiderWebCrawlAction : AnAction() {
 
             val pageName = URL(url).path.split("/").lastOrNull() ?: "index"
             val fileName = "$pageName-$combinedHash.md"
-            val filePath = "$projectRoot/.aider-docs/$fileName"
+            val filePath = "$docsPath/$fileName"
 
             if (!File(filePath).exists()) {
                 val webClient = WebClient()
