@@ -4,7 +4,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
-import de.andrena.codingaider.command.AiderCommandBuilder
+import de.andrena.codingaider.executors.CommandExecutor
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.outputview.MarkdownDialog
 import de.andrena.codingaider.settings.AiderSettings
@@ -46,51 +46,8 @@ class IDEBasedExecutor(
     }
 
     private fun executeAiderCommand(markdownDialog: MarkdownDialog) {
-        val output = StringBuilder()
-        val commandArgs = AiderCommandBuilder.buildAiderCommand(commandData, false)
-        val processBuilder = ProcessBuilder(commandArgs).directory(File(project.basePath!!))
-        processBuilder.redirectErrorStream(true)
-
-        updateDialogProgress(markdownDialog, "Starting Aider command...\n", "Aider Command In Progress")
-
-        val process = processBuilder.start()
-        pollProcessAndReadOutput(process, output, markdownDialog)
-        handleProcessCompletion(process, output, markdownDialog)
-    }
-
-    private fun handleProcessCompletion(process: Process, output: StringBuilder, markdownDialog: MarkdownDialog) {
-        if (process.isAlive) {
-            handleProcessTimeout(process, output, markdownDialog)
-        } else {
-            handleProcessExit(process, output, markdownDialog)
-        }
-    }
-
-    private fun handleProcessTimeout(process: Process, output: StringBuilder, markdownDialog: MarkdownDialog) {
-        process.destroy()
-        LOG.warn("Aider command timed out after 5 minutes")
-        updateDialogProgress(markdownDialog, "$output\nAider command timed out after 5 minutes", "Aider Command Timed Out")
-    }
-
-    private fun handleProcessExit(process: Process, output: StringBuilder, markdownDialog: MarkdownDialog) {
-        val exitCode = process.waitFor()
-        if (exitCode == 0) {
-            handleSuccessfulExecution(output, markdownDialog)
-        } else {
-            handleFailedExecution(exitCode, output, markdownDialog)
-        }
-    }
-
-    private fun handleSuccessfulExecution(output: StringBuilder, markdownDialog: MarkdownDialog) {
-        LOG.info("Aider command executed successfully")
-        updateDialogProgress(markdownDialog, "$output\nAider command executed successfully", "Aider Command Completed")
-        markdownDialog.startAutoCloseTimer()
-    }
-
-    private fun handleFailedExecution(exitCode: Int, output: StringBuilder, markdownDialog: MarkdownDialog) {
-        LOG.error("Aider command failed with exit code $exitCode")
-        updateDialogProgress(markdownDialog, "$output\nAider command failed with exit code $exitCode", "Aider Command Failed")
-        markdownDialog.startAutoCloseTimer()
+        val commandExecutor = CommandExecutor(project, commandData, markdownDialog)
+        commandExecutor.executeCommand()
     }
 
     private fun handleExecutionError(e: Exception, markdownDialog: MarkdownDialog) {
