@@ -114,7 +114,7 @@ class AiderContextView(
         TreeUtil.expandAll(tree)
     }
 
-    private fun updateTree() {
+    fun updateTree() {
         val expandedPaths = getExpandedPaths()
         filesNode.removeAllChildren()
 

@@ -53,6 +53,9 @@ class AiderInputDialog(
             }
             persistentFileManager.addAllFiles(fileDataList)
             aiderContextView.addFilesToTree(fileDataList)
+            
+            // Refresh the context view
+            aiderContextView.updateTree()
         }
     }
 
