@@ -15,6 +15,10 @@ import de.andrena.codingaider.utils.ApiKeyChecker
 import com.intellij.ide.BrowserUtil
 import java.awt.Component
 import javax.swing.*
+import com.intellij.openapi.fileChooser.FileChooser
+import com.intellij.openapi.fileChooser.FileChooserDescriptor
+import com.intellij.openapi.vfs.VirtualFile
+import de.andrena.codingaider.command.FileData
 
 class AiderSettingsConfigurable(private val project: Project) : Configurable {
     private var settingsComponent: JPanel? = null
@@ -38,24 +42,12 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     override fun getDisplayName(): String = "Aider"
 
     private val persistentFileManager = PersistentFileManager(project.basePath ?: "")
-    private val persistentFilesList = JBList(persistentFileManager.getPersistentFiles().map { it.filePath })
+    private val persistentFilesListModel = DefaultListModel<FileData>()
+    private val persistentFilesList = JBList(persistentFilesListModel)
 
     override fun createComponent(): JComponent {
-        persistentFilesList.cellRenderer = object : DefaultListCellRenderer() {
-            override fun getListCellRendererComponent(
-                list: JList<*>?,
-                value: Any?,
-                index: Int,
-                isSelected: Boolean,
-                cellHasFocus: Boolean
-            ): Component {
-                val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
-                if (component is JLabel && value is String) {
-                    component.text = value
-                }
-                return component
-            }
-        }
+        persistentFilesList.cellRenderer = PersistentFileRenderer()
+        updatePersistentFilesList()
         settingsComponent = panel {
             group("General Settings") {
                 row {
@@ -96,6 +88,11 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                     scrollCell(persistentFilesList)
                         .align(Align.FILL)
                         .resizableColumn()
+                }
+                row {
+                    button("Add Files") { addPersistentFiles() }
+                    button("Toggle Read-Only") { toggleReadOnlyMode() }
+                    button("Remove Files") { removeSelectedFiles() }
                 }
             }
 
@@ -169,3 +166,54 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
 }
 
 
+    private fun updatePersistentFilesList() {
+        persistentFilesListModel.clear()
+        persistentFilesListModel.addAll(persistentFileManager.getPersistentFiles())
+    }
+
+    private fun addPersistentFiles() {
+        val descriptor = FileChooserDescriptor(true, true, false, false, false, true)
+        val files = FileChooser.chooseFiles(descriptor, project, null)
+        val fileDataList = files.flatMap { file ->
+            if (file.isDirectory) {
+                file.children.filter { it.isValid && !it.isDirectory }.map { FileData(it.path, false) }
+            } else {
+                listOf(FileData(file.path, false))
+            }
+        }
+        persistentFileManager.addAllFiles(fileDataList)
+        updatePersistentFilesList()
+    }
+
+    private fun toggleReadOnlyMode() {
+        val selectedIndices = persistentFilesList.selectedIndices
+        for (index in selectedIndices) {
+            val fileData = persistentFilesListModel.getElementAt(index)
+            val updatedFileData = fileData.copy(isReadOnly = !fileData.isReadOnly)
+            persistentFileManager.updateFile(updatedFileData)
+            persistentFilesListModel.set(index, updatedFileData)
+        }
+    }
+
+    private fun removeSelectedFiles() {
+        val selectedIndices = persistentFilesList.selectedIndices
+        val filesToRemove = selectedIndices.map { persistentFilesListModel.getElementAt(it) }
+        persistentFileManager.removePersistentFiles(filesToRemove.map { it.filePath })
+        updatePersistentFilesList()
+    }
+
+    private inner class PersistentFileRenderer : DefaultListCellRenderer() {
+        override fun getListCellRendererComponent(
+            list: JList<*>?,
+            value: Any?,
+            index: Int,
+            isSelected: Boolean,
+            cellHasFocus: Boolean
+        ): Component {
+            val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
+            if (component is JLabel && value is FileData) {
+                component.text = "${value.filePath} ${if (value.isReadOnly) "(Read-Only)" else ""}"
+            }
+            return component
+        }
+    }
