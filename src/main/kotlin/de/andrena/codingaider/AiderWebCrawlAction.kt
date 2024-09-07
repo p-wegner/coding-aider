@@ -48,9 +48,19 @@ class AiderWebCrawlAction : AnAction() {
                 File(filePath).writeText(markdown)
                 val commandData = CommandData(
                     message = """
-                        Simplify this markdown file using whole file edit format. 
-                        Keep all information that you think will be relevant for code documentation and how to use a certain technology.
-                        If something seems out of context or irrelevant, remove it.
+                        Clean up and simplify this markdown file using whole file edit format. Follow these guidelines:
+                        1. Remove all navigation elements, headers, footers, and sidebars.
+                        2. Delete any advertisements, banners, or promotional content.
+                        3. Remove or simplify the table of contents, keeping only if it's essential for understanding the structure.
+                        4. Strip out all internal page links, but keep external links that point to important resources.
+                        5. Remove any repetitive elements or boilerplate text.
+                        6. Simplify complex HTML structures, converting them to clean markdown where possible.
+                        7. Keep all information relevant for code documentation and how to use the technology described.
+                        8. Organize the content in a logical flow, using appropriate markdown headers.
+                        9. If code snippets are present, ensure they are properly formatted in markdown code blocks.
+                        10. Remove any content that seems out of context or irrelevant to the main topic.
+                        11. Summarize lengthy paragraphs while retaining key information.
+                        12. Ensure the final document is concise, well-structured, and focused on the core technical content.
                     """.trimIndent(),
                     useYesFlag = true,
                     llm = "--mini",
