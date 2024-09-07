@@ -78,11 +78,13 @@ class AiderInputDialog(
     private val persistentFileManager: PersistentFileManager
     private var splitPane: JSplitPane
     private val settingsButton: ActionButton
+    private val tree: JTree  // Add this line
 
     init {
         title = "Aider Command"
         persistentFileManager = PersistentFileManager(project.basePath ?: "")
         aiderContextView = AiderContextView(project, files + persistentFileManager.getPersistentFiles())
+        tree = aiderContextView.tree  // Add this line
         splitPane = JSplitPane(JSplitPane.VERTICAL_SPLIT)
         settingsButton = createSettingsButton()
         init()
@@ -331,7 +333,7 @@ class AiderInputDialog(
         val actionGroup = DefaultActionGroup().apply {
             add(object : AnAction("Add Files", "Add files to persistent files", AllIcons.Actions.MenuOpen) {
                 override fun actionPerformed(e: AnActionEvent) {
-                    (SwingUtilities.getWindowAncestor(tree) as? AiderInputDialog)?.addAiderDocsToPersistentFiles()
+                    addAiderDocsToPersistentFiles()
                 }
             })
             add(object : AnAction(
