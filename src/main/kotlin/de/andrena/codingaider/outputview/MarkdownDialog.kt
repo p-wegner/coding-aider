@@ -11,15 +11,14 @@ import kotlin.concurrent.scheduleAtFixedRate
 import java.util.Timer
 import java.util.TimerTask
 
-class MarkdownDialog(private val project: Project, title: String, initialText: String) : JDialog() {
+class MarkdownDialog(private val project: Project, private val initialTitle: String, initialText: String) : JDialog() {
     private val textArea: JTextArea = JTextArea(initialText)
     private val scrollPane: JScrollPane
     private var autoCloseTimer: TimerTask? = null
     private val keepOpenButton: JButton
-    private val countdownLabel: JLabel = JLabel()
 
     init {
-        this.title = title
+        title = initialTitle
         setSize(800, 800)
         setLocationRelativeTo(null)
         layout = BorderLayout()
@@ -40,7 +39,6 @@ class MarkdownDialog(private val project: Project, title: String, initialText: S
         }
         buttonPanel.add(closeButton)
         buttonPanel.add(keepOpenButton)
-        buttonPanel.add(countdownLabel)
         add(buttonPanel, BorderLayout.SOUTH)
 
         defaultCloseOperation = DISPOSE_ON_CLOSE
@@ -49,7 +47,7 @@ class MarkdownDialog(private val project: Project, title: String, initialText: S
     fun updateProgress(output: String, message: String) {
         invokeLater {
             textArea.text = output
-            this.title = message
+            title = message
             textArea.caretPosition = textArea.document.length
             scrollPane.verticalScrollBar.value = scrollPane.verticalScrollBar.maximum
         }
@@ -57,12 +55,11 @@ class MarkdownDialog(private val project: Project, title: String, initialText: S
 
     fun startAutoCloseTimer() {
         keepOpenButton.isVisible = true
-        countdownLabel.isVisible = true
         var remainingSeconds = 30
         autoCloseTimer = Timer().scheduleAtFixedRate(0, 1000) { // Update every second
             invokeLater {
                 if (remainingSeconds > 0) {
-                    countdownLabel.text = "Closing in $remainingSeconds seconds"
+                    title = "$initialTitle - Closing in $remainingSeconds seconds"
                     remainingSeconds--
                 } else {
                     dispose()
@@ -74,6 +71,6 @@ class MarkdownDialog(private val project: Project, title: String, initialText: S
     private fun cancelAutoClose() {
         autoCloseTimer?.cancel()
         keepOpenButton.isVisible = false
-        countdownLabel.isVisible = false
+        title = initialTitle
     }
 }
