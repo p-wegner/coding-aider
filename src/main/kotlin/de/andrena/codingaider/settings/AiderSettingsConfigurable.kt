@@ -119,6 +119,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                         val dialog = AiderTestCommand(project, "aider --help").execute()
                         javax.swing.SwingUtilities.invokeLater {
                             dialog?.focus()
+                            dialog?.toFront()
                         }
                     }
                 }
