@@ -111,6 +111,16 @@ class AiderContextView(
             }
         })
 
+        val inputMap = tree.getInputMap(JComponent.WHEN_FOCUSED)
+        val actionMap = tree.actionMap
+
+        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "removeFiles")
+        actionMap.put("removeFiles", object : AbstractAction() {
+            override fun actionPerformed(e: java.awt.event.ActionEvent) {
+                removeSelectedFiles()
+            }
+        })
+
         TreeUtil.expandAll(tree)
     }
 
