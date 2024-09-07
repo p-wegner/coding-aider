@@ -55,7 +55,7 @@ class MarkdownDialog(private val project: Project, private val initialTitle: Str
 
     fun startAutoCloseTimer() {
         keepOpenButton.isVisible = true
-        var remainingSeconds = 30
+        var remainingSeconds = 10
         autoCloseTimer = Timer().scheduleAtFixedRate(0, 1000) { // Update every second
             invokeLater {
                 if (remainingSeconds > 0) {
