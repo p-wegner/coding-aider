@@ -80,7 +80,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 row {
                     cell(isShellModeCheckBox)
                 }
-                row("Lint Command:") {
+                row {
                     cell(lintCmdField)
                         .resizableColumn()
                         .align(Align.FILL)
