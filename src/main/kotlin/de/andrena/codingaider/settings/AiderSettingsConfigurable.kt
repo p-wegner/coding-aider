@@ -88,6 +88,9 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                         .resizableColumn()
                         .align(Align.FILL)
                 }
+                row {
+                    cell(showGitComparisonToolCheckBox)
+                }
             }
 
             group("Persistent Files") {
