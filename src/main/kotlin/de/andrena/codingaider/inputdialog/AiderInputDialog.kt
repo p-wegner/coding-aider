@@ -22,7 +22,6 @@ import java.time.format.DateTimeFormatter
 import javax.swing.*
 import javax.swing.plaf.basic.BasicSplitPaneDivider
 import javax.swing.plaf.basic.BasicSplitPaneUI
-import kotlin.math.E
 
 class AiderInputDialog(
     val project: Project,
