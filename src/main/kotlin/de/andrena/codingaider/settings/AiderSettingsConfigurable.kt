@@ -85,6 +85,8 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                         .align(Align.FILL)
                         .component
                         .toolTipText = "The lint command will be executed after every code change by Aider"
+                        .component
+                        .toolTipText = "The lint command will be executed after every code change by Aider"
                 }
                 row {
                     cell(showGitComparisonToolCheckBox)
