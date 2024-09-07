@@ -8,6 +8,7 @@ import de.andrena.codingaider.command.AiderCommandBuilder
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.outputview.MarkdownDialog
 import de.andrena.codingaider.settings.AiderSettings
+import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.FileRefresher
 import de.andrena.codingaider.utils.GitUtils
 import java.awt.EventQueue.invokeLater
@@ -84,6 +85,14 @@ class IDEBasedExecutor(
                 refreshFiles(commandData.files.mapNotNull {
                     VirtualFileManager.getInstance().findFileByUrl(it.filePath)
                 }.toTypedArray(), markdownDialog)
+
+                // Open the git comparison tool
+                val settings = AiderSettings.getInstance(project)
+                if (settings.showGitComparisonTool) {
+                    invokeLater {
+                        currentCommitHash?.let { GitUtils.openGitComparisonTool(project, it) }
+                    }
+                }
 
                 // Open the git comparison tool
                 val settings = AiderSettings.getInstance(project)

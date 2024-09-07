@@ -61,6 +61,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         set(value) {
             myState.showGitComparisonTool = value
         }
+
+    var showGitComparisonTool: Boolean
+        get() = myState.showGitComparisonTool
+        set(value) {
+            myState.showGitComparisonTool = value
+        }
         fun getInstance(project: Project): AiderSettings =
             project.getService(AiderSettings::class.java)
     }

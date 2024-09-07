@@ -39,6 +39,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     private val isShellModeCheckBox = JBCheckBox("Use Shell Mode by default")
     private val lintCmdField = JBTextField()
     private val showGitComparisonToolCheckBox = JBCheckBox("Show Git Comparison Tool after execution")
+    private val showGitComparisonToolCheckBox = JBCheckBox("Show Git Comparison Tool after execution")
 
     override fun getDisplayName(): String = "Aider"
 
@@ -91,6 +92,9 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 row {
                     cell(showGitComparisonToolCheckBox)
                 }
+                row {
+                    cell(showGitComparisonToolCheckBox)
+                }
             }
 
             group("Persistent Files") {
@@ -130,6 +134,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         settings.isShellMode = isShellModeCheckBox.isSelected
         settings.lintCmd = lintCmdField.text
         settings.showGitComparisonTool = showGitComparisonToolCheckBox.isSelected
+        settings.showGitComparisonTool = showGitComparisonToolCheckBox.isSelected
     }
 
     override fun reset() {
@@ -139,6 +144,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         additionalArgsField.text = settings.additionalArgs
         isShellModeCheckBox.isSelected = settings.isShellMode
         lintCmdField.text = settings.lintCmd
+        showGitComparisonToolCheckBox.isSelected = settings.showGitComparisonTool
     }
 
     override fun disposeUIResources() {

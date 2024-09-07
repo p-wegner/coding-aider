@@ -7,4 +7,5 @@ object AiderDefaults {
     const val IS_SHELL_MODE = false
     const val LINT_CMD = ""
     const val SHOW_GIT_COMPARISON_TOOL = true
+    const val SHOW_GIT_COMPARISON_TOOL = true
 }
