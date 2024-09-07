@@ -22,7 +22,7 @@ class CommitAction : AnAction() {
                 useYesFlag = true,
                 llm = AiderSettings.getInstance(project).llm,
                 additionalArgs = "",
-                files = files.map { FileData(it.url, false) },
+                files = emptyList(),
                 isShellMode = false,
                 lintCmd = AiderSettings.getInstance(project).lintCmd
             )

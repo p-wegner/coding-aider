@@ -18,6 +18,7 @@ object AiderCommandBuilder {
                 add("-m")
                 add(commandData.message)
                 add("--no-suggest-shell-commands")
+                add("--no-pretty")
             }
             if (commandData.additionalArgs.isNotEmpty()) {
                 addAll(commandData.additionalArgs.split(" "))
