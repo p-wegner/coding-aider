@@ -98,6 +98,7 @@ class IDEBasedExecutor(
                 }
             }
         }
+        return markdownDialog
     }
 
     private fun refreshFiles(files: Array<VirtualFile>, markdownDialog: MarkdownDialog) {
