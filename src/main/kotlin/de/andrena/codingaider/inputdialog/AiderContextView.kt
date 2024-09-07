@@ -261,6 +261,8 @@ class AiderContextView(
 
     fun togglePersistentFile() {
         val selectedFiles = getSelectedFiles()
+        val selectedPaths = tree.selectionPaths ?: return
+
         selectedFiles.forEach { fileData ->
             if (isPersistent(fileData)) {
                 persistentFileManager.removeFile(fileData.filePath)
@@ -270,6 +272,14 @@ class AiderContextView(
         }
         persistentFiles = persistentFileManager.getPersistentFiles()
         addFilesToTree(persistentFiles)
+
+        // Restore selection
+        tree.selectionModel.clearSelection()
+        selectedPaths.forEach { path ->
+            val newPath = findUpdatedPath(path)
+            tree.expandPath(newPath)
+            tree.addSelectionPath(newPath)
+        }
     }
 
     private fun isPersistent(fileData: FileData): Boolean {
