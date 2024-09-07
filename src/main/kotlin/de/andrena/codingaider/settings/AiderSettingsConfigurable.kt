@@ -43,7 +43,15 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
 
     private val persistentFileManager = PersistentFileManager(project.basePath ?: "")
     private val persistentFilesListModel = DefaultListModel<FileData>()
-    private val persistentFilesList = JBList(persistentFilesListModel)
+    private val persistentFilesList = JBList(persistentFilesListModel).apply {
+        addKeyListener(object : java.awt.event.KeyAdapter() {
+            override fun keyPressed(e: java.awt.event.KeyEvent) {
+                if (e.keyCode == java.awt.event.KeyEvent.VK_DELETE) {
+                    removeSelectedFiles()
+                }
+            }
+        })
+    }
 
     override fun createComponent(): JComponent {
         persistentFilesList.cellRenderer = PersistentFileRenderer()
