@@ -85,8 +85,6 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                         .align(Align.FILL)
                         .component
                         .toolTipText = "The lint command will be executed after every code change by Aider"
-                        .component
-                        .toolTipText = "The lint command will be executed after every code change by Aider"
                 }
                 row {
                     cell(showGitComparisonToolCheckBox)
@@ -94,7 +92,9 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 row {
                     cell(activateIdeExecutorAfterWebcrawlCheckBox)
                         .component
-                        .toolTipText = "This will prompt aider to remove clutter from the crawled md. The feature is experimental and may easily exceed the token limit of the LLM. Use with caution."
+                        .toolTipText = "This will prompt aider to remove clutter from the crawled md. " +
+                            "The feature is experimental and may easily exceed the token limit of the LLM. " +
+                            "Use with caution."
                 }
             }
 
