@@ -27,9 +27,10 @@
                     <li>Quickly initiate Aider actions via the "Start Aider Action" option in the Tools menu or Project View popup menu.</li>
                     <li>Use the keyboard shortcut Alt+A for rapid access.</li>
                     <li>Navigate previous commands with Alt+UP and Alt+DOWN in the message field.</li>
+                    <li>Automatically commit all changes with a llm generated message using ALT + D.</li>
                 </ul>
             </li>
-            <li><strong>Persistent File Management:</strong> Efficiently manage frequently used files for Aider operations with Alt+Shift+A or within the Aider Command Window.</li>
+            <li><strong>Persistent File Management:</strong> Manage frequently used files for persistent context for Aider operations with Alt+Shift+A, within the Aider Command Window or the Aider Settings.</li>
             <li><strong>Dual Execution Modes:</strong>
                 <ul>
                     <li>IDE-based execution for seamless integration.</li>
@@ -37,7 +38,7 @@
                 </ul>
             </li>
             <li><strong>Git Integration:</strong> Automatically launch a Git comparison tool post-Aider operations for easy change review.</li>
-            <li><strong>Real-time Progress Tracking:</strong> Monitor Aider command progress through an interactive Markdown dialog.</li>
+            <li><strong>Real-time Progress Tracking:</strong> Monitor Aider command progress through Markdown dialog.</li>
             <li><strong>Multi-File Support:</strong> Execute Aider actions on multiple files or directories while controlling the context provided to Aider from your IDE.</li>
         </ul>
 
