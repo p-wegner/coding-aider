@@ -357,6 +357,15 @@ class AiderInputDialog(
                     aiderContextView.togglePersistentFile()
                 }
             })
+            add(object : AnAction(
+                "Remove Files",
+                "Remove selected files from the context view",
+                AllIcons.Actions.Cancel
+            ) {
+                override fun actionPerformed(e: AnActionEvent) {
+                    aiderContextView.removeSelectedFiles()
+                }
+            })
         }
 
         val toolbar = ActionManager.getInstance().createActionToolbar("AiderContextToolbar", actionGroup, true)
