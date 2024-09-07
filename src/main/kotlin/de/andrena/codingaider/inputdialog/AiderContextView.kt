@@ -28,7 +28,7 @@ import javax.swing.KeyStroke
 class AiderContextView(
     private val project: Project,
     private var allFiles: List<FileData>
-) : JPanel(BorderLayout()), Focusable {
+) : JPanel(BorderLayout()) {
     private val rootNode = DefaultMutableTreeNode("Context")
     private val filesNode = DefaultMutableTreeNode("Files")
     private val markdownFilesNode = DefaultMutableTreeNode("Docs")
@@ -298,11 +298,4 @@ class AiderContextView(
         updateTree()
     }
 
-    override fun requestFocus() {
-        tree.requestFocus()
-    }
-
-    override fun requestFocusInWindow(): Boolean {
-        return tree.requestFocusInWindow()
-    }
 }
