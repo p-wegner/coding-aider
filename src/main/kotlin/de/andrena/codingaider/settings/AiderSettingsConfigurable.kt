@@ -116,7 +116,8 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
             group("Installation") {
                 row {
                     button("Test Aider Installation") {
-                        AiderTestCommand(project, "aider --help").execute()
+                        val dialog = AiderTestCommand(project, "aider --help").execute()
+                        dialog?.focus()
                     }
                 }
             }
