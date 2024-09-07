@@ -99,4 +99,9 @@ class PersistentFileManager(basePath: String) {
         }
         return LocalFileSystem.getInstance().refreshAndFindFileByIoFile(contextFile)!!
     }
+
+    fun removePersistentFiles(filePaths: List<String>) {
+        persistentFiles.removeAll { it.filePath in filePaths }
+        savePersistentFilesToContextFile()
+    }
 }
