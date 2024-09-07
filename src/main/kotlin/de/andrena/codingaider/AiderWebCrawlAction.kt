@@ -48,7 +48,7 @@ class AiderWebCrawlAction : AnAction() {
                 File(filePath).writeText(markdown)
                 val commandData = CommandData(
                     message = """
-                        Clean up and simplify this markdown file using whole file edit format. Follow these guidelines:
+                        Clean up and simplify the provided file $fileName using whole file edit format. Follow these guidelines:
                         1. Remove all navigation elements, headers, footers, and sidebars.
                         2. Delete any advertisements, banners, or promotional content.
                         3. Remove or simplify the table of contents, keeping only if it's essential for understanding the structure.
@@ -63,9 +63,9 @@ class AiderWebCrawlAction : AnAction() {
                         12. Ensure the final document is concise, well-structured, and focused on the core technical content.
                     """.trimIndent(),
                     useYesFlag = true,
-                    llm = "--mini",
+                    llm = "--4o",
                     additionalArgs = "",
-                    files = listOf(FileData(filePath, true)),
+                    files = listOf(FileData(filePath, false)),
                     isShellMode = false,
                     lintCmd = ""
                 )
