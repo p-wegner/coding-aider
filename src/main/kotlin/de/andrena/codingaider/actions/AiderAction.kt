@@ -80,7 +80,7 @@ class AiderAction : AnAction() {
                 message = "",
                 useYesFlag = AiderDefaults.USE_YES_FLAG,
                 llm = AiderDefaults.LLM,
-                additionalArgs = AiderDefaults.ADDITIONAL_ARGS,
+                additionalArgs = settings.additionalArgs,
                 files = files,
                 isShellMode = true, // Always true for direct shell mode
                 lintCmd = settings.lintCmd
