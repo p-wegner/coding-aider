@@ -134,7 +134,11 @@
         <notificationGroup id="Coding Aider Notifications" displayType="BALLOON"/>
         <notificationGroup id="Aider Web Crawl" displayType="BALLOON"/>
         <intentionAction>
-            <className>de.andrena.codingaider.intentions.FixCompileErrorIntention</className>
+            <className>de.andrena.codingaider.actions.FixCompileErrorAction</className>
+            <category>Errors</category>
+        </intentionAction>
+        <intentionAction>
+            <className>de.andrena.codingaider.actions.FixCompileErrorWithAiderAction</className>
             <category>Errors</category>
         </intentionAction>
     </extensions>
