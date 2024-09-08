@@ -41,10 +41,10 @@ class DocumentCodeAction : AnAction() {
             val fullPath = File(project.basePath, filename).absolutePath
 
             val allFiles = FileTraversal.traverseFilesOrDirectories(virtualFiles)
-            val filePaths = allFiles.map { it.filePath }
+            val fileNames = allFiles.map { File(it.filePath).name }
             
             val commandData = CommandData(
-                message = "Generate a markdown documentation for the code in the provided files and directories: $filePaths. If there are exceptional implementation details, mention them. Store the results in $fullPath.",
+                message = "Generate a markdown documentation for the code in the provided files and directories: $fileNames. If there are exceptional implementation details, mention them. Store the results in $filename.",
                 useYesFlag = true,
                 llm = AiderSettings.getInstance(project).llm,
                 additionalArgs = AiderSettings.getInstance(project).additionalArgs,
