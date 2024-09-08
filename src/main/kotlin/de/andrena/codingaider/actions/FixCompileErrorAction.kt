@@ -56,5 +56,36 @@ class FixCompileErrorAction : AnAction() {
             )
             IDEBasedExecutor(project, commandData).execute()
         }
+
+        fun getErrorMessage(project: Project, psiFile: PsiFile): String {
+            val errors = getCompileErrors(project, psiFile)
+            return errors.joinToString("\n") { it.description }
+        }
+    }
+}
+
+class FixCompileErrorWithAiderAction : AnAction() {
+    override fun update(e: AnActionEvent) {
+        val project = e.project
+        val psiFile = e.getData(CommonDataKeys.PSI_FILE)
+        e.presentation.isEnabledAndVisible = project != null && psiFile != null && FixCompileErrorAction.hasCompileErrors(project, psiFile)
+    }
+
+    override fun actionPerformed(e: AnActionEvent) {
+        val project = e.project ?: return
+        val psiFile = e.getData(CommonDataKeys.PSI_FILE) ?: return
+        val errorMessage = FixCompileErrorAction.getErrorMessage(project, psiFile)
+        
+        val commandData = CommandData(
+            message = "fix the compile error in this file: $errorMessage",
+            useYesFlag = AiderSettings.getInstance(project).useYesFlag,
+            llm = AiderSettings.getInstance(project).llm,
+            additionalArgs = AiderSettings.getInstance(project).additionalArgs,
+            files = listOf(FileData(psiFile.virtualFile.path, false)),
+            isShellMode = false,
+            lintCmd = AiderSettings.getInstance(project).lintCmd
+        )
+        
+        AiderAction.executeAiderActionWithCommandData(project, commandData)
     }
 }

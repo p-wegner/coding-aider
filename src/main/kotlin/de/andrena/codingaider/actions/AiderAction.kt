@@ -61,6 +61,14 @@ class AiderAction : AnAction() {
             }
         }
 
+        fun executeAiderActionWithCommandData(project: Project, commandData: CommandData) {
+            if (commandData.isShellMode) {
+                ShellExecutor(project, commandData).execute()
+            } else {
+                IDEBasedExecutor(project, commandData).execute()
+            }
+        }
+
         private fun collectCommandData(dialog: AiderInputDialog): CommandData {
             val settings = AiderSettings.getInstance(dialog.project)
             return CommandData(
