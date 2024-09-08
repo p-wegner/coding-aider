@@ -106,6 +106,13 @@
                     icon="AllIcons.General.Settings">
             </action>
         </group>
+        <action id="de.andrena.codingaider.actions.FixCompileErrorAction"
+                class="de.andrena.codingaider.actions.FixCompileErrorAction"
+                text="Fix with Aider"
+                description="Use Aider to fix the compile error">
+            <add-to-group group-id="ConsoleViewPopupMenu" anchor="first"/>
+            <add-to-group group-id="EditorPopupMenu" anchor="first"/>
+        </action>
     </actions>
 
     <!-- Extension points defined by the plugin.
