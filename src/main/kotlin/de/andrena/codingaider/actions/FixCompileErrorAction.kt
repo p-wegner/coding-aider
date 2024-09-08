@@ -12,6 +12,7 @@ import com.intellij.psi.PsiFile
 import com.intellij.codeInsight.daemon.impl.HighlightInfo
 import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerImpl
 import com.intellij.codeInsight.daemon.impl.HighlightInfoType
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.psi.PsiDocumentManager
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
@@ -27,7 +28,7 @@ abstract class BaseFixCompileErrorAction : AnAction() {
     }
 
     companion object {
-        fun getCompileErrors(project: Project, psiFile: PsiFile): List<HighlightInfo> {
+        private fun getCompileErrors(project: Project, psiFile: PsiFile): List<HighlightInfo> {
             val document = PsiDocumentManager.getInstance(project).getDocument(psiFile) ?: return emptyList()
             return DaemonCodeAnalyzerImpl.getHighlights(
                 document,
@@ -65,6 +66,7 @@ class FixCompileErrorAction : BaseFixCompileErrorAction() {
         val psiFile = e.getData(CommonDataKeys.PSI_FILE) ?: return
         fixCompileError(project, psiFile)
     }
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     companion object {
         fun fixCompileError(project: Project, psiFile: PsiFile) {
@@ -86,6 +88,7 @@ class FixCompileErrorAction : BaseFixCompileErrorAction() {
             fixCompileError(project, element.containingFile)
         }
     }
+
 }
 
 class FixCompileErrorWithAiderAction : BaseFixCompileErrorAction() {
@@ -94,6 +97,7 @@ class FixCompileErrorWithAiderAction : BaseFixCompileErrorAction() {
         val psiFile = e.getData(CommonDataKeys.PSI_FILE) ?: return
         showDialog(project, psiFile)
     }
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     private fun showDialog(project: Project, psiFile: PsiFile) {
         val errorMessage = getErrorMessage(project, psiFile)
@@ -124,12 +128,10 @@ class FixCompileErrorWithAiderAction : BaseFixCompileErrorAction() {
         override fun getFamilyName(): String = "Fix compile error with Aider"
         override fun getText(): String = "Fix compile error with Aider (Interactive)"
 
-        override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean {
-            return hasCompileErrors(project, element.containingFile)
-        }
+        override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean =
+            hasCompileErrors(project, element.containingFile)
 
-        override fun invoke(project: Project, editor: Editor?, element: PsiElement) {
+        override fun invoke(project: Project, editor: Editor?, element: PsiElement) =
             FixCompileErrorWithAiderAction().showDialog(project, element.containingFile)
-        }
     }
 }
