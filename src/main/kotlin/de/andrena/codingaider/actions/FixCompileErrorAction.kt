@@ -17,12 +17,14 @@ import de.andrena.codingaider.executors.IDEBasedExecutor
 import de.andrena.codingaider.settings.AiderSettings
 
 class FixCompileErrorAction : PsiElementBaseIntentionAction(), IntentionAction {
-    override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
-        return project != null && file != null && hasCompileErrors(project, file)
+    override fun isAvailable(project: Project, editor: Editor, element: PsiElement): Boolean {
+        val file = element.containingFile
+        return file != null && hasCompileErrors(project, file)
     }
 
-    override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
-        if (project != null && file != null) {
+    override fun invoke(project: Project, editor: Editor, element: PsiElement) {
+        val file = element.containingFile
+        if (file != null) {
             val errors = getCompileErrors(project, file)
             val errorMessage = errors.joinToString("\n") { it.description }
 
