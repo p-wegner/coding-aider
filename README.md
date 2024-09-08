@@ -48,7 +48,7 @@ Aider.
     - **Show Last Command Result Action**: Display the result of the last executed Aider command.
     - **Settings Action**: Quickly access Aider Settings.
 
-For a detailed description of all available actions, please refer to the [Actions Documentation](actions.md).
+For a detailed description of all available actions, please refer to the [Actions Documentation](docs/actions.md).
 
 ## Advantages Over Other Coding Assistant Plugins
 

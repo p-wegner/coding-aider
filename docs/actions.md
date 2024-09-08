@@ -22,7 +22,6 @@ Key features:
 - Handles persistent files
 
 Exceptional implementation details:
-- The class includes a companion object with utility methods for executing Aider actions
 - It supports a direct shell mode through the `AiderShellAction` subclass
 
 ## AiderWebCrawlAction
@@ -34,10 +33,6 @@ Key features:
 - Converts HTML content to markdown
 - Stores the result in a file with a unique name based on the URL
 - Optionally processes the markdown file further using an AI model
-
-Exceptional implementation details:
-- Uses MD5 hashing to generate unique filenames
-- Implements file refreshing and notification mechanisms
 
 ## CommitAction
 
@@ -63,9 +58,6 @@ Key features:
 - Supports both interactive and quick fix modes
 - Implements intention actions for IDE integration
 
-Exceptional implementation details:
-- Uses `DaemonCodeAnalyzerImpl` to retrieve compile errors
-
 ## PersistentFilesAction
 
 `PersistentFilesAction` manages the list of persistent files for Aider.
@@ -74,22 +66,12 @@ Key features:
 - Toggles files between persistent and non-persistent states
 - Provides visual feedback through notifications
 
-Exceptional implementation details:
-- Dynamically updates the action text based on the current state of selected files
-
 ## SettingsAction
 
 `SettingsAction` provides a quick way to open the Aider Settings dialog.
 
-Key features:
-- Opens the Aider Settings dialog using `ShowSettingsUtil`
-
 ## ShowLastCommandResultAction
 
 `ShowLastCommandResultAction` displays the result of the last executed Aider command.
-
-Key features:
-- Retrieves the last command result from `AiderHistoryHandler`
-- Displays the result in a markdown dialog
 
 This documentation provides an overview of the main actions in the Coding Aider plugin. Each action is designed to enhance the development experience by integrating Aider's capabilities into the IDE workflow.

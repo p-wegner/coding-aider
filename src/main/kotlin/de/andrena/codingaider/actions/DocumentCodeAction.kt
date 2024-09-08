@@ -8,7 +8,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.CommandData
-import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.IDEBasedExecutor
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.FileTraversal
@@ -38,8 +37,6 @@ class DocumentCodeAction : AnAction() {
                 Messages.getQuestionIcon()
             ) ?: return
 
-            val fullPath = File(project.basePath, filename).absolutePath
-
             val allFiles = FileTraversal.traverseFilesOrDirectories(virtualFiles)
             val fileNames = allFiles.map { File(it.filePath).name }
             
@@ -48,7 +45,7 @@ class DocumentCodeAction : AnAction() {
                 useYesFlag = true,
                 llm = AiderSettings.getInstance(project).llm,
                 additionalArgs = AiderSettings.getInstance(project).additionalArgs,
-                files = allFiles + FileData(fullPath, true),
+                files = allFiles,
                 isShellMode = false,
                 lintCmd = AiderSettings.getInstance(project).lintCmd
             )
