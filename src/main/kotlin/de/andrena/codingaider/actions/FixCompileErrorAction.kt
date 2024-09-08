@@ -21,7 +21,7 @@ class FixCompileErrorAction : AnAction() {
                 message = "fix the compile error in this file",
                 useYesFlag = true,
                 llm = AiderSettings.getInstance(project).llm,
-                additionalArgs = "",
+                additionalArgs = AiderSettings.getInstance(project).additionalArgs,
                 files = listOf(FileData(file.path, false)),
                 isShellMode = false,
                 lintCmd = AiderSettings.getInstance(project).lintCmd
