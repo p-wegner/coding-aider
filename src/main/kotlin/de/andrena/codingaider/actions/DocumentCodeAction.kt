@@ -23,7 +23,7 @@ class DocumentCodeAction : AnAction() {
     override fun update(e: AnActionEvent) {
         val project = e.project
         val files = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
-        e.presentation.isEnabledAndVisible = project != null && files != null && files.isNotEmpty()
+        e.presentation.isEnabledAndVisible = project != null && !files.isNullOrEmpty()
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT

@@ -7,7 +7,6 @@ import de.andrena.codingaider.outputview.MarkdownDialog
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
-import kotlin.concurrent.thread
 
 class CommandExecutor(
     private val project: Project,
