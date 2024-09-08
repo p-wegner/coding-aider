@@ -78,8 +78,8 @@ class AiderAction : AnAction() {
             val settings = AiderSettings.getInstance(project)
             return CommandData(
                 message = "",
-                useYesFlag = AiderDefaults.USE_YES_FLAG,
-                llm = AiderDefaults.LLM,
+                useYesFlag = settings.useYesFlag,
+                llm = settings.llm,
                 additionalArgs = settings.additionalArgs,
                 files = files,
                 isShellMode = true, // Always true for direct shell mode
