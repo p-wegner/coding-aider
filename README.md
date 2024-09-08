@@ -23,7 +23,7 @@ Aider.
     - Quickly initiate Aider actions via the "Start Aider Action" option in the Tools menu or Project View popup menu.
     - Use the keyboard shortcut Alt+A for rapid access.
     - Navigate previous commands with Alt+UP and Alt+DOWN in the message field.
-    - Automatically commit all changes with a llm generated message using ALT + D 
+    - Automatically commit all changes with an LLM-generated message using ALT + D 
 
 3. **Persistent File Management**: Manage frequently used files for persistent context for Aider operations with Alt+Shift+A,
    within the Aider Command Window or the Aider Settings.
@@ -39,7 +39,16 @@ Aider.
 7. **Multi-File Support**: Execute Aider actions on multiple files or directories while controlling the context provided
    to Aider from your IDE. 
  
-8. **Webcrawl (Experimental)**: Download and convert pages to markdown stored in a .aider-docs folder to add to context
+8. **Webcrawl (Experimental)**: Download and convert pages to markdown stored in a .aider-docs folder to add to context.
+
+9. **Various Specialized Actions**:
+    - **Commit Action**: Quickly commit changes using Aider.
+    - **Document Code Action**: Generate markdown documentation for selected files and directories.
+    - **Fix Compile Error Action**: Fix compile errors using Aider's AI capabilities.
+    - **Show Last Command Result Action**: Display the result of the last executed Aider command.
+    - **Settings Action**: Quickly access Aider Settings.
+
+For a detailed description of all available actions, please refer to the [Actions Documentation](actions.md).
 
 ## Advantages Over Other Coding Assistant Plugins
 
@@ -74,3 +83,9 @@ functionalities like Git integration and keyboard shortcuts.
     - Use Alt+A or use the entries in the right-click context menu to initiate an Aider action
     - Enter your coding request in the dialog
     - Review Aider's output and resulting changes in your project
+
+6. Advanced Usage:
+    - Use Alt+D to automatically commit changes with an LLM-generated message
+    - Use Alt+Shift+A to manage persistent files for context
+    - Utilize specialized actions like Document Code, Fix Compile Error, or Web Crawl for specific tasks
+    - Access the last command result using the Show Last Command Result action
