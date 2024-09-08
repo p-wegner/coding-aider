@@ -39,8 +39,9 @@ class DocumentCodeAction : AnAction() {
 
             val fullPath = File(project.basePath, filename).absolutePath
 
+            val files = emptyList<String>()
             val commandData = CommandData(
-                message = "Generate documentation for the code in this file. Store the results in $fullPath. Add or update comments and docstrings as appropriate for the programming language.",
+                message = "Generate a markdown documentation for the code in the provided files $files . If there are exceptional implementation details, mention them. Store the results in $fullPath.",
                 useYesFlag = true,
                 llm = AiderSettings.getInstance(project).llm,
                 additionalArgs = AiderSettings.getInstance(project).additionalArgs,
