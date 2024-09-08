@@ -101,7 +101,7 @@ class FixCompileErrorWithAiderAction : AnAction() {
         val dialog = AiderInputDialog(
             project,
             listOf(FileData(psiFile.virtualFile.path, false)),
-            "fix the compile error in this file: $errorMessage"
+            FixErrorPrompt(errorMessage)
         )
         
         if (dialog.showAndGet()) {
@@ -118,6 +118,8 @@ class FixCompileErrorWithAiderAction : AnAction() {
             AiderAction.executeAiderActionWithCommandData(project, commandData)
         }
     }
+
+    private fun FixErrorPrompt(errorMessage: String) = "fix the compile error in this file: $errorMessage"
 }
 
 class FixCompileErrorWithAiderIntention : PsiElementBaseIntentionAction(), IntentionAction {
@@ -137,7 +139,7 @@ class FixCompileErrorWithAiderIntention : PsiElementBaseIntentionAction(), Inten
             listOf(FileData(psiFile.virtualFile.path, false)
                 ),"fix the compile error in this file: $errorMessage"
         )
-        
+
         if (dialog.showAndGet()) {
             val commandData = CommandData(
                 message = dialog.getInputText(),
