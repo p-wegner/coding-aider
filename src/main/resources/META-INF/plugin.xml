@@ -112,7 +112,6 @@
                 description="Use Aider to quickly fix the compile error">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
-            <add-to-group group-id="IntentionPowerPack" anchor="last"/>
         </action>
         <action id="de.andrena.codingaider.actions.FixCompileErrorWithAiderAction"
                 class="de.andrena.codingaider.actions.FixCompileErrorWithAiderAction"
@@ -120,7 +119,6 @@
                 description="Use Aider to interactively fix the compile error">
             <add-to-group group-id="EditorPopupMenu" anchor="after" relative-to-action="de.andrena.codingaider.actions.FixCompileErrorAction"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="de.andrena.codingaider.actions.FixCompileErrorAction"/>
-            <add-to-group group-id="IntentionPowerPack" anchor="last"/>
         </action>
     </actions>
 
@@ -136,11 +134,11 @@
         <notificationGroup id="Coding Aider Notifications" displayType="BALLOON"/>
         <notificationGroup id="Aider Web Crawl" displayType="BALLOON"/>
         <intentionAction>
-            <className>de.andrena.codingaider.actions.FixCompileErrorAction</className>
+            <className>de.andrena.codingaider.actions.FixCompileErrorIntention</className>
             <category>Errors</category>
         </intentionAction>
         <intentionAction>
-            <className>de.andrena.codingaider.actions.FixCompileErrorWithAiderAction</className>
+            <className>de.andrena.codingaider.actions.FixCompileErrorWithAiderIntention</className>
             <category>Errors</category>
         </intentionAction>
     </extensions>

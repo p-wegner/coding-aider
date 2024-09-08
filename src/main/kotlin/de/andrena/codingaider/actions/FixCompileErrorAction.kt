@@ -19,22 +19,17 @@ import de.andrena.codingaider.executors.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.AiderInputDialog
 import de.andrena.codingaider.settings.AiderSettings
 
-class FixCompileErrorAction : AnAction(), PsiElementBaseIntentionAction, IntentionAction {
-    override fun getFamilyName(): String = "Fix compile error with Aider"
-    override fun getText(): String = "Quick fix compile error with Aider"
-
-    override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean {
-        return hasCompileErrors(project, element.containingFile)
-    }
-
-    override fun invoke(project: Project, editor: Editor?, element: PsiElement) {
-        fixCompileError(project, element.containingFile)
-    }
-
+class FixCompileErrorAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val psiFile = e.getData(CommonDataKeys.PSI_FILE) ?: return
         fixCompileError(project, psiFile)
+    }
+
+    override fun update(e: AnActionEvent) {
+        val project = e.project
+        val psiFile = e.getData(CommonDataKeys.PSI_FILE)
+        e.presentation.isEnabledAndVisible = project != null && psiFile != null && hasCompileErrors(project, psiFile)
     }
 
     companion object {
@@ -74,7 +69,58 @@ class FixCompileErrorAction : AnAction(), PsiElementBaseIntentionAction, Intenti
     }
 }
 
-class FixCompileErrorWithAiderAction : AnAction(), PsiElementBaseIntentionAction, IntentionAction {
+class FixCompileErrorIntention : PsiElementBaseIntentionAction(), IntentionAction {
+    override fun getFamilyName(): String = "Fix compile error with Aider"
+    override fun getText(): String = "Quick fix compile error with Aider"
+
+    override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean {
+        return FixCompileErrorAction.hasCompileErrors(project, element.containingFile)
+    }
+
+    override fun invoke(project: Project, editor: Editor?, element: PsiElement) {
+        FixCompileErrorAction.fixCompileError(project, element.containingFile)
+    }
+}
+
+class FixCompileErrorWithAiderAction : AnAction() {
+    override fun actionPerformed(e: AnActionEvent) {
+        val project = e.project ?: return
+        val psiFile = e.getData(CommonDataKeys.PSI_FILE) ?: return
+        showDialog(project, psiFile)
+    }
+
+    override fun update(e: AnActionEvent) {
+        val project = e.project
+        val psiFile = e.getData(CommonDataKeys.PSI_FILE)
+        e.presentation.isEnabledAndVisible = project != null && psiFile != null && FixCompileErrorAction.hasCompileErrors(project, psiFile)
+    }
+
+    private fun showDialog(project: Project, psiFile: PsiFile) {
+        val errorMessage = FixCompileErrorAction.getErrorMessage(project, psiFile)
+        
+        val dialog = AiderInputDialog(
+            project,
+            listOf(FileData(psiFile.virtualFile.path, false))
+        )
+        dialog.inputTextArea.text = "fix the compile error in this file: $errorMessage"
+        
+        if (dialog.showAndGet()) {
+            val commandData = CommandData(
+                message = dialog.getInputText(),
+                useYesFlag = dialog.isYesFlagChecked(),
+                llm = dialog.getLlm(),
+                additionalArgs = dialog.getAdditionalArgs(),
+                files = dialog.getAllFiles(),
+                isShellMode = dialog.isShellMode(),
+                lintCmd = AiderSettings.getInstance(project).lintCmd
+            )
+            
+            AiderAction.executeAiderActionWithCommandData(project, commandData)
+        }
+    }
+}
+
+class FixCompileErrorWithAiderIntention : PsiElementBaseIntentionAction(), IntentionAction {
     override fun getFamilyName(): String = "Fix compile error with Aider"
     override fun getText(): String = "Fix compile error with Aider (Interactive)"
 
@@ -83,16 +129,7 @@ class FixCompileErrorWithAiderAction : AnAction(), PsiElementBaseIntentionAction
     }
 
     override fun invoke(project: Project, editor: Editor?, element: PsiElement) {
-        showDialog(project, element.containingFile)
-    }
-
-    override fun actionPerformed(e: AnActionEvent) {
-        val project = e.project ?: return
-        val psiFile = e.getData(CommonDataKeys.PSI_FILE) ?: return
-        showDialog(project, psiFile)
-    }
-
-    private fun showDialog(project: Project, psiFile: PsiFile) {
+        val psiFile = element.containingFile
         val errorMessage = FixCompileErrorAction.getErrorMessage(project, psiFile)
         
         val dialog = AiderInputDialog(
