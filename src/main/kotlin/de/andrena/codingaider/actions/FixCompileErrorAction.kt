@@ -91,7 +91,7 @@ class FixCompileErrorAction : BaseFixCompileErrorAction() {
 
 }
 
-class FixCompileErrorWithAiderAction : BaseFixCompileErrorAction() {
+class FixCompileErrorInteractive : BaseFixCompileErrorAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val psiFile = e.getData(CommonDataKeys.PSI_FILE) ?: return
@@ -132,6 +132,6 @@ class FixCompileErrorWithAiderAction : BaseFixCompileErrorAction() {
             hasCompileErrors(project, element.containingFile)
 
         override fun invoke(project: Project, editor: Editor?, element: PsiElement) =
-            FixCompileErrorWithAiderAction().showDialog(project, element.containingFile)
+            FixCompileErrorInteractive().showDialog(project, element.containingFile)
     }
 }

@@ -113,8 +113,8 @@
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
         </action>
-        <action id="de.andrena.codingaider.actions.FixCompileErrorWithAiderAction"
-                class="de.andrena.codingaider.actions.FixCompileErrorWithAiderAction"
+        <action id="de.andrena.codingaider.actions.FixCompileErrorInteractive"
+                class="de.andrena.codingaider.actions.FixCompileErrorInteractive"
                 text="Fix with Aider (Interactive)"
                 description="Use Aider to interactively fix the compile error">
             <add-to-group group-id="EditorPopupMenu" anchor="after" relative-to-action="de.andrena.codingaider.actions.FixCompileErrorAction"/>
@@ -138,7 +138,7 @@
             <category>Errors</category>
         </intentionAction>
         <intentionAction>
-            <className>de.andrena.codingaider.actions.FixCompileErrorWithAiderAction$Intention</className>
+            <className>de.andrena.codingaider.actions.FixCompileErrorInteractive$Intention</className>
             <category>Errors</category>
         </intentionAction>
     </extensions>
