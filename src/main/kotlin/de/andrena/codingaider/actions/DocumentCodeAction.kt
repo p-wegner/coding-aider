@@ -5,11 +5,13 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.Messages
 import com.intellij.psi.PsiFile
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.IDEBasedExecutor
 import de.andrena.codingaider.settings.AiderSettings
+import java.io.File
 
 class DocumentCodeAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
@@ -28,12 +30,21 @@ class DocumentCodeAction : AnAction() {
 
     companion object {
         fun documentCode(project: Project, psiFile: PsiFile) {
+            val filename = Messages.showInputDialog(
+                project,
+                "Enter the filename to store the documentation:",
+                "Document Code",
+                Messages.getQuestionIcon()
+            ) ?: return
+
+            val fullPath = File(project.basePath, filename).absolutePath
+
             val commandData = CommandData(
-                message = "Generate documentation for the code in this file. Add or update comments and docstrings as appropriate for the programming language.",
+                message = "Generate documentation for the code in this file. Store the results in $fullPath. Add or update comments and docstrings as appropriate for the programming language.",
                 useYesFlag = true,
                 llm = AiderSettings.getInstance(project).llm,
                 additionalArgs = AiderSettings.getInstance(project).additionalArgs,
-                files = listOf(FileData(psiFile.virtualFile.path, false)),
+                files = listOf(FileData(psiFile.virtualFile.path, false), FileData(fullPath, true)),
                 isShellMode = false,
                 lintCmd = AiderSettings.getInstance(project).lintCmd
             )
