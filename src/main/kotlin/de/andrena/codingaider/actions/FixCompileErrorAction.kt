@@ -100,9 +100,9 @@ class FixCompileErrorWithAiderAction : AnAction() {
         
         val dialog = AiderInputDialog(
             project,
-            listOf(FileData(psiFile.virtualFile.path, false))
+            listOf(FileData(psiFile.virtualFile.path, false)),
+            "fix the compile error in this file: $errorMessage"
         )
-        dialog.inputTextArea.text = "fix the compile error in this file: $errorMessage"
         
         if (dialog.showAndGet()) {
             val commandData = CommandData(

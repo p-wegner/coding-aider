@@ -47,7 +47,8 @@ class AiderAction : AnAction() {
                 } else {
                     val dialog = AiderInputDialog(
                         project,
-                        allFiles.distinctBy { it.filePath }
+                        allFiles.distinctBy { it.filePath },
+                        ""  // You can set an initial text here if needed
                     )
                     if (dialog.showAndGet()) {
                         val commandData = collectCommandData(dialog)

@@ -25,10 +25,13 @@ import javax.swing.plaf.basic.BasicSplitPaneUI
 
 class AiderInputDialog(
     val project: Project,
-    files: List<FileData>
+    files: List<FileData>,
+    initialText: String = ""
 ) : DialogWrapper(project) {
     private val settings = AiderSettings.getInstance(project)
-    private val inputTextArea = JTextArea(5, 50)
+    private val inputTextArea = JTextArea(5, 50).apply {
+        text = initialText
+    }
     private val yesCheckBox = JCheckBox("Add --yes flag", settings.useYesFlag).apply {
         toolTipText = "Automatically answer 'yes' to prompts"
     }
