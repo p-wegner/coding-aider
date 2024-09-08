@@ -16,20 +16,20 @@ import java.io.File
 class DocumentCodeAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        val psiFile = e.getData(CommonDataKeys.PSI_FILE) ?: return
-        documentCode(project, psiFile)
+        val psiFiles = e.getData(CommonDataKeys.PSI_FILES) ?: return
+        documentCode(project, psiFiles.toList())
     }
 
     override fun update(e: AnActionEvent) {
         val project = e.project
-        val psiFile = e.getData(CommonDataKeys.PSI_FILE)
-        e.presentation.isEnabledAndVisible = project != null && psiFile != null
+        val psiFiles = e.getData(CommonDataKeys.PSI_FILES)
+        e.presentation.isEnabledAndVisible = project != null && psiFiles != null && psiFiles.isNotEmpty()
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     companion object {
-        fun documentCode(project: Project, psiFile: PsiFile) {
+        fun documentCode(project: Project, psiFiles: List<PsiFile>) {
             val filename = Messages.showInputDialog(
                 project,
                 "Enter the filename to store the documentation:",
@@ -39,13 +39,13 @@ class DocumentCodeAction : AnAction() {
 
             val fullPath = File(project.basePath, filename).absolutePath
 
-            val files = emptyList<String>()
+            val files = psiFiles.map { it.virtualFile.path }
             val commandData = CommandData(
-                message = "Generate a markdown documentation for the code in the provided files $files . If there are exceptional implementation details, mention them. Store the results in $fullPath.",
+                message = "Generate a markdown documentation for the code in the provided files $files. If there are exceptional implementation details, mention them. Store the results in $fullPath.",
                 useYesFlag = true,
                 llm = AiderSettings.getInstance(project).llm,
                 additionalArgs = AiderSettings.getInstance(project).additionalArgs,
-                files = listOf(FileData(psiFile.virtualFile.path, false), FileData(fullPath, true)),
+                files = psiFiles.map { FileData(it.virtualFile.path, false) } + FileData(fullPath, true),
                 isShellMode = false,
                 lintCmd = AiderSettings.getInstance(project).lintCmd
             )
