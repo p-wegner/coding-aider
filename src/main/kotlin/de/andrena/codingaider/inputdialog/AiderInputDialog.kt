@@ -91,7 +91,9 @@ class AiderInputDialog(
     init {
         title = "Aider Command"
         persistentFileManager = PersistentFileManager(project.basePath ?: "")
-        aiderContextView = AiderContextView(project, files + persistentFileManager.getPersistentFiles())
+        aiderContextView = AiderContextView(project, files + persistentFileManager.getPersistentFiles()) { fileName ->
+            insertTextAtCursor(fileName)
+        }
         splitPane = JSplitPane(JSplitPane.VERTICAL_SPLIT)
         settingsButton = createSettingsButton()
         init()
@@ -430,6 +432,11 @@ class AiderInputDialog(
     fun getAdditionalArgs(): String = additionalArgsField.text
     fun getAllFiles(): List<FileData> = aiderContextView.getAllFiles()
     fun isShellMode(): Boolean = modeToggle.isSelected
+
+    private fun insertTextAtCursor(text: String) {
+        val caretPosition = inputTextArea.caretPosition
+        inputTextArea.insert(text, caretPosition)
+    }
 
     private inner class LlmComboBoxRenderer : DefaultListCellRenderer() {
         override fun getListCellRendererComponent(

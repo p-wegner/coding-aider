@@ -24,10 +24,12 @@ import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeCellRenderer
 import javax.swing.tree.DefaultTreeModel
 import javax.swing.tree.TreeSelectionModel
+import javax.swing.SwingUtilities
 
 class AiderContextView(
     private val project: Project,
-    private var allFiles: List<FileData>
+    private var allFiles: List<FileData>,
+    private val onFileNameSelected: (String) -> Unit
 ) : JPanel(BorderLayout()) {
     private val rootNode = DefaultMutableTreeNode("Context")
     private val filesNode = DefaultMutableTreeNode("Files")
@@ -109,6 +111,13 @@ class AiderContextView(
                         virtualFile?.let {
                             FileEditorManager.getInstance(project).openFile(it, true)
                         }
+                    }
+                } else if (SwingUtilities.isLeftMouseButton(e) && e.isControlDown) {
+                    val node = tree.getPathForLocation(e.x, e.y)?.lastPathComponent as? DefaultMutableTreeNode
+                    if (node?.userObject is FileData) {
+                        val fileData = node.userObject as FileData
+                        val fileName = File(fileData.filePath).nameWithoutExtension
+                        onFileNameSelected(fileName)
                     }
                 }
             }
