@@ -1,13 +1,12 @@
 package de.andrena.codingaider.actions
 
-import com.intellij.openapi.actionSystem.ActionUpdateThread
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.codeInsight.intention.IntentionAction
+import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
+import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.intellij.psi.PsiManager
+import com.intellij.util.IncorrectOperationException
 import com.intellij.codeInsight.daemon.impl.HighlightInfo
 import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerImpl
 import com.intellij.codeInsight.daemon.impl.HighlightInfoType
@@ -17,14 +16,14 @@ import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.IDEBasedExecutor
 import de.andrena.codingaider.settings.AiderSettings
 
-class FixCompileErrorAction : AnAction() {
-    override fun actionPerformed(e: AnActionEvent) {
-        val project: Project? = e.project
-        val file: VirtualFile? = e.getData(CommonDataKeys.VIRTUAL_FILE)
+class FixCompileErrorAction : PsiElementBaseIntentionAction(), IntentionAction {
+    override fun isAvailable(project: Project, editor: Editor?, file: PsiFile?): Boolean {
+        return project != null && file != null && hasCompileErrors(project, file)
+    }
 
+    override fun invoke(project: Project, editor: Editor?, file: PsiFile?) {
         if (project != null && file != null) {
-            val psiFile: PsiFile? = PsiManager.getInstance(project).findFile(file)
-            val errors = getCompileErrors(project, psiFile)
+            val errors = getCompileErrors(project, file)
             val errorMessage = errors.joinToString("\n") { it.description }
 
             val commandData = CommandData(
@@ -32,7 +31,7 @@ class FixCompileErrorAction : AnAction() {
                 useYesFlag = true,
                 llm = AiderSettings.getInstance(project).llm,
                 additionalArgs = AiderSettings.getInstance(project).additionalArgs,
-                files = listOf(FileData(file.path, false)),
+                files = listOf(FileData(file.virtualFile.path, false)),
                 isShellMode = false,
                 lintCmd = AiderSettings.getInstance(project).lintCmd
             )
@@ -40,35 +39,22 @@ class FixCompileErrorAction : AnAction() {
         }
     }
 
-    override fun update(e: AnActionEvent) {
-        val project: Project? = e.project
-        val file: VirtualFile? = e.getData(CommonDataKeys.VIRTUAL_FILE)
-        val psiFile: PsiFile? =
-            if (project != null && file != null) PsiManager.getInstance(project).findFile(file) else null
+    override fun startInWriteAction(): Boolean = false
 
-        e.presentation.isEnabledAndVisible = project != null && file != null && hasCompileErrors(project, psiFile)
+    override fun getFamilyName(): String = "Fix with Aider"
+
+    override fun getText(): String = "Fix compile error with Aider"
+
+    private fun getCompileErrors(project: Project, psiFile: PsiFile): List<HighlightInfo> {
+        val document = PsiDocumentManager.getInstance(project).getDocument(psiFile) ?: return emptyList()
+        return DaemonCodeAnalyzerImpl.getHighlights(
+            document,
+            HighlightInfoType.ERROR.getSeverity(psiFile),
+            project
+        )
     }
 
-
-    private fun getCompileErrors(project: Project, psiFile: PsiFile?): List<HighlightInfo> {
-        if (psiFile == null || psiFile.virtualFile == null) return emptyList()
-
-        val document = PsiDocumentManager.getInstance(project).getDocument(psiFile)
-        return if (document != null) {
-            DaemonCodeAnalyzerImpl.getHighlights(
-                document,
-                HighlightInfoType.ERROR.getSeverity(psiFile),
-                project
-            )
-        } else {
-            emptyList()
-        }
-    }
-
-    private fun hasCompileErrors(project: Project?, psiFile: PsiFile?): Boolean {
-        if (project == null || psiFile == null) return false
+    private fun hasCompileErrors(project: Project, psiFile: PsiFile): Boolean {
         return getCompileErrors(project, psiFile).isNotEmpty()
     }
-
-    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 }
