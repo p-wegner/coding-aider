@@ -19,7 +19,7 @@ import de.andrena.codingaider.executors.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.AiderInputDialog
 import de.andrena.codingaider.settings.AiderSettings
 
-class FixCompileErrorAction : PsiElementBaseIntentionAction(), IntentionAction {
+class FixCompileErrorAction : AnAction(), IntentionAction {
     override fun getFamilyName(): String = "Fix compile error with Aider"
     override fun getText(): String = "Quick fix compile error with Aider"
 
@@ -29,6 +29,12 @@ class FixCompileErrorAction : PsiElementBaseIntentionAction(), IntentionAction {
 
     override fun invoke(project: Project, editor: Editor?, element: PsiElement) {
         fixCompileError(project, element.containingFile)
+    }
+
+    override fun actionPerformed(e: AnActionEvent) {
+        val project = e.project ?: return
+        val psiFile = e.getData(CommonDataKeys.PSI_FILE) ?: return
+        fixCompileError(project, psiFile)
     }
 
     companion object {
@@ -68,7 +74,7 @@ class FixCompileErrorAction : PsiElementBaseIntentionAction(), IntentionAction {
     }
 }
 
-class FixCompileErrorWithAiderAction : PsiElementBaseIntentionAction(), IntentionAction {
+class FixCompileErrorWithAiderAction : AnAction(), IntentionAction {
     override fun getFamilyName(): String = "Fix compile error with Aider"
     override fun getText(): String = "Fix compile error with Aider (Interactive)"
 
@@ -77,7 +83,16 @@ class FixCompileErrorWithAiderAction : PsiElementBaseIntentionAction(), Intentio
     }
 
     override fun invoke(project: Project, editor: Editor?, element: PsiElement) {
-        val psiFile = element.containingFile
+        showDialog(project, element.containingFile)
+    }
+
+    override fun actionPerformed(e: AnActionEvent) {
+        val project = e.project ?: return
+        val psiFile = e.getData(CommonDataKeys.PSI_FILE) ?: return
+        showDialog(project, psiFile)
+    }
+
+    private fun showDialog(project: Project, psiFile: PsiFile) {
         val errorMessage = FixCompileErrorAction.getErrorMessage(project, psiFile)
         
         val dialog = AiderInputDialog(
