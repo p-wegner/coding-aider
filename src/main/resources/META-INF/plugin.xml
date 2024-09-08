@@ -112,6 +112,7 @@
                 description="Use Aider to quickly fix the compile error">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
+            <add-to-group group-id="IntentionPowerPack" anchor="last"/>
         </action>
         <action id="de.andrena.codingaider.actions.FixCompileErrorWithAiderAction"
                 class="de.andrena.codingaider.actions.FixCompileErrorWithAiderAction"
@@ -119,6 +120,7 @@
                 description="Use Aider to interactively fix the compile error">
             <add-to-group group-id="EditorPopupMenu" anchor="after" relative-to-action="de.andrena.codingaider.actions.FixCompileErrorAction"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="de.andrena.codingaider.actions.FixCompileErrorAction"/>
+            <add-to-group group-id="IntentionPowerPack" anchor="last"/>
         </action>
     </actions>
 
