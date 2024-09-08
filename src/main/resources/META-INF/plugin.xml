@@ -126,5 +126,9 @@
                 nonDefaultProject="true"/>
         <notificationGroup id="Coding Aider Notifications" displayType="BALLOON"/>
         <notificationGroup id="Aider Web Crawl" displayType="BALLOON"/>
+        <intentionAction>
+            <className>de.andrena.codingaider.intentions.FixCompileErrorIntention</className>
+            <category>Errors</category>
+        </intentionAction>
     </extensions>
 </idea-plugin>
