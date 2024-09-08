@@ -120,6 +120,13 @@
             <add-to-group group-id="EditorPopupMenu" anchor="after" relative-to-action="de.andrena.codingaider.actions.FixCompileErrorAction"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="de.andrena.codingaider.actions.FixCompileErrorAction"/>
         </action>
+        <action id="de.andrena.codingaider.actions.DocumentCodeAction"
+                class="de.andrena.codingaider.actions.DocumentCodeAction"
+                text="Document Code with Aider"
+                description="Use Aider to generate documentation for the selected code">
+            <add-to-group group-id="EditorPopupMenu" anchor="after" relative-to-action="de.andrena.codingaider.actions.FixCompileErrorInteractive"/>
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="de.andrena.codingaider.actions.FixCompileErrorInteractive"/>
+        </action>
     </actions>
 
     <!-- Extension points defined by the plugin.
