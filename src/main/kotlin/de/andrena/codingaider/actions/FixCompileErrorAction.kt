@@ -10,6 +10,8 @@ import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.codeInsight.daemon.impl.HighlightInfo
 import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerImpl
+import com.intellij.codeInsight.daemon.impl.HighlightInfoType
+import com.intellij.psi.PsiDocumentManager
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.IDEBasedExecutor
@@ -41,14 +43,26 @@ class FixCompileErrorAction : AnAction() {
     override fun update(e: AnActionEvent) {
         val project: Project? = e.project
         val file: VirtualFile? = e.getData(CommonDataKeys.VIRTUAL_FILE)
-        val psiFile: PsiFile? = if (project != null && file != null) PsiManager.getInstance(project).findFile(file) else null
-        
+        val psiFile: PsiFile? =
+            if (project != null && file != null) PsiManager.getInstance(project).findFile(file) else null
+
         e.presentation.isEnabledAndVisible = project != null && file != null && hasCompileErrors(project, psiFile)
     }
 
+
     private fun getCompileErrors(project: Project, psiFile: PsiFile?): List<HighlightInfo> {
-        if (psiFile == null) return emptyList()
-        return DaemonCodeAnalyzerImpl.getHighlights(psiFile.document, HighlightInfo.SEVERITY.ERROR, project)
+        if (psiFile == null || psiFile.virtualFile == null) return emptyList()
+
+        val document = PsiDocumentManager.getInstance(project).getDocument(psiFile)
+        return if (document != null) {
+            DaemonCodeAnalyzerImpl.getHighlights(
+                document,
+                HighlightInfoType.ERROR.getSeverity(psiFile),
+                project
+            )
+        } else {
+            emptyList()
+        }
     }
 
     private fun hasCompileErrors(project: Project?, psiFile: PsiFile?): Boolean {
