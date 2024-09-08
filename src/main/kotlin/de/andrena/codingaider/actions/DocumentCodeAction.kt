@@ -11,13 +11,14 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.IDEBasedExecutor
 import de.andrena.codingaider.settings.AiderSettings
+import de.andrena.codingaider.utils.FileTraversal
 import java.io.File
 
 class DocumentCodeAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val files = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY) ?: return
-        documentCode(project, files.toList())
+        documentCode(project, files)
     }
 
     override fun update(e: AnActionEvent) {
@@ -29,7 +30,7 @@ class DocumentCodeAction : AnAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     companion object {
-        fun documentCode(project: Project, virtualFiles: List<VirtualFile>) {
+        fun documentCode(project: Project, virtualFiles: Array<VirtualFile>) {
             val filename = Messages.showInputDialog(
                 project,
                 "Enter the filename to store the documentation:",
@@ -39,13 +40,15 @@ class DocumentCodeAction : AnAction() {
 
             val fullPath = File(project.basePath, filename).absolutePath
 
-            val files = virtualFiles.map { it.path }
+            val allFiles = FileTraversal.traverseFilesOrDirectories(virtualFiles)
+            val filePaths = allFiles.map { it.filePath }
+            
             val commandData = CommandData(
-                message = "Generate a markdown documentation for the code in the provided files $files. If there are exceptional implementation details, mention them. Store the results in $fullPath.",
+                message = "Generate a markdown documentation for the code in the provided files and directories: $filePaths. If there are exceptional implementation details, mention them. Store the results in $fullPath.",
                 useYesFlag = true,
                 llm = AiderSettings.getInstance(project).llm,
                 additionalArgs = AiderSettings.getInstance(project).additionalArgs,
-                files = virtualFiles.map { FileData(it.path, false) } + FileData(fullPath, true),
+                files = allFiles + FileData(fullPath, true),
                 isShellMode = false,
                 lintCmd = AiderSettings.getInstance(project).lintCmd
             )
