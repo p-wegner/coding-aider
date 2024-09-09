@@ -7,12 +7,14 @@ import de.andrena.codingaider.outputview.MarkdownDialog
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
+import com.intellij.openapi.diagnostic.Logger
 
 class CommandExecutor(
     private val project: Project,
     private val commandData: CommandData,
     private val markdownDialog: MarkdownDialog
 ) {
+    private val logger = Logger.getInstance(CommandExecutor::class.java)
 
     fun executeCommand() {
         val output = StringBuilder()
@@ -20,6 +22,7 @@ class CommandExecutor(
         val processBuilder = ProcessBuilder(commandArgs).directory(File(project.basePath!!))
         processBuilder.redirectErrorStream(true)
 
+        logger.info("Executing Aider command: ${commandArgs.joinToString(" ")}")
         updateDialogProgress("Starting Aider command...\n", "Aider Command In Progress")
 
         val process = processBuilder.start()
