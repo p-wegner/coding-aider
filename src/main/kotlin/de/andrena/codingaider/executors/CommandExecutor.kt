@@ -23,6 +23,7 @@ class CommandExecutor(
         processBuilder.redirectErrorStream(true)
 
         logger.info("Executing Aider command: ${commandArgs.joinToString(" ")}")
+        logger.info("Using JVM default encoding: ${System.getProperty("file.encoding")}")
         updateDialogProgress("Starting Aider command...\n", "Aider Command In Progress")
 
         val process = processBuilder.start()
