@@ -49,15 +49,26 @@ class CommandExecutor(
 
     private fun handleProcessTimeout(process: Process, output: StringBuilder) {
         process.destroy()
-        updateDialogProgress("$output\nAider command timed out after 5 minutes", "Aider Command Timed Out")
+        val commandString = getCommandString()
+        updateDialogProgress("$commandString$output\nAider command timed out after 5 minutes", "Aider Command Timed Out")
     }
 
     private fun handleProcessExit(process: Process, output: StringBuilder) {
         val exitCode = process.waitFor()
+        val commandString = getCommandString()
         if (exitCode == 0) {
-            updateDialogProgress("$output\nAider command executed successfully", "Aider Command Completed")
+            updateDialogProgress("$commandString$output\nAider command executed successfully", "Aider Command Completed")
         } else {
-            updateDialogProgress("$output\nAider command failed with exit code $exitCode", "Aider Command Failed")
+            updateDialogProgress("$commandString$output\nAider command failed with exit code $exitCode", "Aider Command Failed")
+        }
+    }
+
+    private fun getCommandString(): String {
+        return if (settings.verboseCommandLogging) {
+            val commandArgs = AiderCommandBuilder.buildAiderCommand(commandData, false)
+            "Command: ${commandArgs.joinToString(" ")}\n\n"
+        } else {
+            ""
         }
     }
 
@@ -68,12 +79,7 @@ class CommandExecutor(
     private fun pollProcessAndReadOutput(process: Process, output: StringBuilder) {
         val reader = BufferedReader(InputStreamReader(process.inputStream))
         val startTime = System.currentTimeMillis()
-        val commandArgs = AiderCommandBuilder.buildAiderCommand(commandData, false)
-        val commandString = if (settings.verboseCommandLogging) {
-            "Command: ${commandArgs.joinToString(" ")}\n\n"
-        } else {
-            ""
-        }
+        val commandString = getCommandString()
 
         var line: String?
         while (reader.readLine().also { line = it } != null) {
