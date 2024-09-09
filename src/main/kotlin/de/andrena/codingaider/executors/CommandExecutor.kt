@@ -68,12 +68,18 @@ class CommandExecutor(
     private fun pollProcessAndReadOutput(process: Process, output: StringBuilder) {
         val reader = BufferedReader(InputStreamReader(process.inputStream))
         val startTime = System.currentTimeMillis()
+        val commandArgs = AiderCommandBuilder.buildAiderCommand(commandData, false)
+        val commandString = if (settings.verboseCommandLogging) {
+            "Command: ${commandArgs.joinToString(" ")}\n\n"
+        } else {
+            ""
+        }
 
         var line: String?
         while (reader.readLine().also { line = it } != null) {
             output.append(line).append("\n")
             val runningTime = (System.currentTimeMillis() - startTime) / 1000
-            updateDialogProgress(output.toString(), "Aider command in progress ($runningTime seconds)")
+            updateDialogProgress(commandString + output.toString(), "Aider command in progress ($runningTime seconds)")
             if (!process.isAlive || runningTime > 300) { // 5 minutes timeout
                 break
             }
