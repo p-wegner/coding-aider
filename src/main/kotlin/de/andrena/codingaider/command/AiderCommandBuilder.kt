@@ -16,6 +16,10 @@ object AiderCommandBuilder {
                 add(fileData.filePath)
             }
             if (commandData.useYesFlag) add("--yes")
+            if (commandData.editFormat.isNotEmpty()) {
+                add("--edit-format")
+                add(commandData.editFormat)
+            }
             if (!isShellMode) {
                 add("-m")
                 add("\"${commandData.message}\"")

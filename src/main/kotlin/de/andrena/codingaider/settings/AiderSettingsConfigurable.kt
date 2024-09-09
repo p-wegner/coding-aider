@@ -41,6 +41,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     private val activateIdeExecutorAfterWebcrawlCheckBox = JBCheckBox("Activate Post web crawl LLM cleanup (Experimental)")
     private val webCrawlLlmComboBox = JComboBox(ApiKeyChecker.getAllLlmOptions().toTypedArray())
     private val deactivateRepoMapCheckBox = JBCheckBox("Deactivate Aider's repo map (--map-tokens 0)")
+    private val editFormatComboBox = JComboBox(arrayOf("diff", "simple", "gpt-4"))
 
     override fun getDisplayName(): String = "Aider"
 
@@ -110,6 +111,13 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                             toolTipText = "This will deactivate Aider's repo map, which may improve performance for large repositories."
                         }
                 }
+                row("Edit Format:") {
+                    cell(editFormatComboBox)
+                        .component
+                        .apply {
+                            toolTipText = "Select the default edit format for Aider"
+                        }
+                }
             }
 
             group("Persistent Files") {
@@ -148,7 +156,8 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 showGitComparisonToolCheckBox.isSelected != settings.showGitComparisonTool ||
                 activateIdeExecutorAfterWebcrawlCheckBox.isSelected != settings.activateIdeExecutorAfterWebcrawl ||
                 webCrawlLlmComboBox.selectedItem as String != settings.webCrawlLlm ||
-                deactivateRepoMapCheckBox.isSelected != settings.deactivateRepoMap
+                deactivateRepoMapCheckBox.isSelected != settings.deactivateRepoMap ||
+                editFormatComboBox.selectedItem as String != settings.editFormat
     }
 
     override fun apply() {
@@ -162,6 +171,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         settings.activateIdeExecutorAfterWebcrawl = activateIdeExecutorAfterWebcrawlCheckBox.isSelected
         settings.webCrawlLlm = webCrawlLlmComboBox.selectedItem as String
         settings.deactivateRepoMap = deactivateRepoMapCheckBox.isSelected
+        settings.editFormat = editFormatComboBox.selectedItem as String
     }
 
     override fun reset() {
@@ -175,6 +185,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         activateIdeExecutorAfterWebcrawlCheckBox.isSelected = settings.activateIdeExecutorAfterWebcrawl
         webCrawlLlmComboBox.selectedItem = settings.webCrawlLlm
         deactivateRepoMapCheckBox.isSelected = settings.deactivateRepoMap
+        editFormatComboBox.selectedItem = settings.editFormat
     }
 
     override fun disposeUIResources() {

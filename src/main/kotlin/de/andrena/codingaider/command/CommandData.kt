@@ -8,6 +8,7 @@ data class CommandData(
     val files: List<FileData>,
     val isShellMode: Boolean,
     val lintCmd: String,
-    val deactivateRepoMap: Boolean = false
+    val deactivateRepoMap: Boolean = false,
+    val editFormat: String = ""
 )
 

@@ -18,7 +18,8 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var showGitComparisonTool: Boolean = AiderDefaults.SHOW_GIT_COMPARISON_TOOL,
         var activateIdeExecutorAfterWebcrawl: Boolean = AiderDefaults.ACTIVATE_IDE_EXECUTOR_AFTER_WEBCRAWL,
         var webCrawlLlm: String = AiderDefaults.WEB_CRAWL_LLM,
-        var deactivateRepoMap: Boolean = AiderDefaults.DEACTIVATE_REPO_MAP
+        var deactivateRepoMap: Boolean = AiderDefaults.DEACTIVATE_REPO_MAP,
+        var editFormat: String = AiderDefaults.EDIT_FORMAT
     )
 
     private var myState = State()
@@ -81,6 +82,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.deactivateRepoMap
         set(value) {
             myState.deactivateRepoMap = value
+        }
+
+    var editFormat: String
+        get() = myState.editFormat
+        set(value) {
+            myState.editFormat = value
         }
 
     companion object {
