@@ -78,10 +78,14 @@ class MarkdownDialog(private val project: Project, private val initialTitle: Str
     }
 
     fun focus() {
-        invokeLater {
-            toFront()
-            requestFocus()
-            textArea.requestFocusInWindow()
+        Timer().schedule(100) { // 100 ms Verzögerung
+            SwingUtilities.invokeLater {
+                toFront()
+                requestFocus()
+                isAlwaysOnTop = true
+                isAlwaysOnTop = false
+                textArea.requestFocusInWindow()
+            }
         }
     }
 }
