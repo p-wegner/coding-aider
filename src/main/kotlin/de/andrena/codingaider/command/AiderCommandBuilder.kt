@@ -8,37 +8,28 @@ object AiderCommandBuilder {
                 add(commandData.llm)
             }
             commandData.files.forEach { fileData ->
-                if (fileData.isReadOnly) {
-                    add("--read")
-                } else {
-                    add("--file")
-                }
-                add("\"${fileData.filePath}\"")
+                val fileArgument = if (fileData.isReadOnly) "--read" else "--file"
+                add("$fileArgument \"${fileData.filePath}\"")
             }
             if (commandData.useYesFlag) add("--yes")
             if (commandData.editFormat.isNotEmpty()) {
-                add("--edit-format")
-                add(commandData.editFormat)
+                add("--edit-format \"${commandData.editFormat}\"")
             }
             if (!isShellMode) {
                 add("--no-suggest-shell-commands")
-                // try different encoding when issue is reproducible
-//                add("--encoding \"UTF-16\"")
                 add("--no-pretty")
             }
             if (commandData.additionalArgs.isNotEmpty()) {
                 add(commandData.additionalArgs)
             }
             if (commandData.lintCmd.isNotEmpty()) {
-                add("--lint-cmd")
-                add("\"${commandData.lintCmd}\"")
+                add("--lint-cmd \"${commandData.lintCmd}\"")
             }
             if (commandData.deactivateRepoMap) {
                 add("--map-tokens 0")
             }
             if (!isShellMode) {
-                add("-m")
-                add("\"${commandData.message}\"")
+                add("-m \"${commandData.message}\"")
             }
         }
     }
