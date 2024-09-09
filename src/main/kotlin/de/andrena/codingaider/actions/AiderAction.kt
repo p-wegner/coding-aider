@@ -12,7 +12,6 @@ import de.andrena.codingaider.executors.IDEBasedExecutor
 import de.andrena.codingaider.executors.ShellExecutor
 import de.andrena.codingaider.inputdialog.AiderInputDialog
 import de.andrena.codingaider.inputdialog.PersistentFileManager
-import de.andrena.codingaider.settings.AiderDefaults
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.FileTraversal
 
