@@ -34,8 +34,7 @@ object AiderCommandBuilder {
                 add(commandData.lintCmd)
             }
             if (commandData.deactivateRepoMap) {
-                add("--map-tokens")
-                add("0")
+                add("--map-tokens 0")
             }
         }
     }

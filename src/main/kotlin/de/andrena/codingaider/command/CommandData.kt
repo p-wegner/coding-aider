@@ -8,5 +8,6 @@ data class CommandData(
     val files: List<FileData>,
     val isShellMode: Boolean,
     val lintCmd: String
-)
+) {
+}
 
