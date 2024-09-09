@@ -20,6 +20,8 @@ object AiderCommandBuilder {
                 add("-m")
                 add("\"${commandData.message}\"")
                 add("--no-suggest-shell-commands")
+                // try different encoding when issue is reproducible
+                // add("--encoding UTF-16")
                 add("--no-pretty")
             }
             if (commandData.additionalArgs.isNotEmpty()) {
