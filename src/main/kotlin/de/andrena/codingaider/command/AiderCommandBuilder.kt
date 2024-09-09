@@ -13,7 +13,7 @@ object AiderCommandBuilder {
                 } else {
                     add("--file")
                 }
-                add(fileData.filePath)
+                add("\"${fileData.filePath}\"")
             }
             if (commandData.useYesFlag) add("--yes")
             if (commandData.editFormat.isNotEmpty()) {
@@ -21,8 +21,6 @@ object AiderCommandBuilder {
                 add(commandData.editFormat)
             }
             if (!isShellMode) {
-                add("-m")
-                add("\"${commandData.message}\"")
                 add("--no-suggest-shell-commands")
                 // try different encoding when issue is reproducible
 //                add("--encoding \"UTF-16\"")
@@ -37,6 +35,10 @@ object AiderCommandBuilder {
             }
             if (commandData.deactivateRepoMap) {
                 add("--map-tokens 0")
+            }
+            if (!isShellMode) {
+                add("-m")
+                add("\"${commandData.message}\"")
             }
         }
     }
