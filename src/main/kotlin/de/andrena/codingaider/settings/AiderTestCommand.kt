@@ -4,7 +4,6 @@ import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.executors.IDEBasedExecutor
 import de.andrena.codingaider.outputview.MarkdownDialog
-import de.andrena.codingaider.settings.AiderSettings
 
 class AiderTestCommand(private val project: Project, private val command: String) {
     fun execute(): MarkdownDialog? {
