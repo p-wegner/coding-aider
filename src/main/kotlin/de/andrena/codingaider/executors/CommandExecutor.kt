@@ -49,13 +49,13 @@ class CommandExecutor(
 
     private fun handleProcessTimeout(process: Process, output: StringBuilder) {
         process.destroy()
-        val commandString = getCommandString()
+        val commandString = if (settings.verboseCommandLogging) getCommandString() else ""
         updateDialogProgress("$commandString$output\nAider command timed out after 5 minutes", "Aider Command Timed Out")
     }
 
     private fun handleProcessExit(process: Process, output: StringBuilder) {
         val exitCode = process.waitFor()
-        val commandString = getCommandString()
+        val commandString = if (settings.verboseCommandLogging) getCommandString() else ""
         if (exitCode == 0) {
             updateDialogProgress("$commandString$output\nAider command executed successfully", "Aider Command Completed")
         } else {
@@ -64,12 +64,8 @@ class CommandExecutor(
     }
 
     private fun getCommandString(): String {
-        return if (settings.verboseCommandLogging) {
-            val commandArgs = AiderCommandBuilder.buildAiderCommand(commandData, false)
-            "Command: ${commandArgs.joinToString(" ")}\n\n"
-        } else {
-            ""
-        }
+        val commandArgs = AiderCommandBuilder.buildAiderCommand(commandData, false)
+        return "Command: ${commandArgs.joinToString(" ")}\n\n"
     }
 
     private fun updateDialogProgress(message: String, title: String) {
