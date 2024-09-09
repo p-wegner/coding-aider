@@ -4,7 +4,9 @@ object AiderCommandBuilder {
     fun buildAiderCommand(commandData: CommandData, isShellMode: Boolean): List<String> {
         return buildList {
             add("aider")
-            add(commandData.llm)
+            if (commandData.llm.isNotEmpty()) {
+                add(commandData.llm)
+            }
             commandData.files.forEach { fileData ->
                 if (fileData.isReadOnly) {
                     add("--read")
@@ -21,7 +23,7 @@ object AiderCommandBuilder {
                 add("--no-pretty")
             }
             if (commandData.additionalArgs.isNotEmpty()) {
-                addAll(commandData.additionalArgs.split(" "))
+                add(commandData.additionalArgs)
             }
             if (commandData.lintCmd.isNotEmpty()) {
                 add("--lint-cmd")
