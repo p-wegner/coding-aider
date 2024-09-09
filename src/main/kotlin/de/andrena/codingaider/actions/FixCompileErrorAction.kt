@@ -1,19 +1,19 @@
 package de.andrena.codingaider.actions
 
+import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerImpl
+import com.intellij.codeInsight.daemon.impl.HighlightInfo
+import com.intellij.codeInsight.daemon.impl.HighlightInfoType
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.project.Project
+import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
-import com.intellij.codeInsight.daemon.impl.HighlightInfo
-import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerImpl
-import com.intellij.codeInsight.daemon.impl.HighlightInfoType
-import com.intellij.openapi.actionSystem.ActionUpdateThread
-import com.intellij.psi.PsiDocumentManager
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.IDEBasedExecutor
@@ -26,6 +26,8 @@ abstract class BaseFixCompileErrorAction : AnAction() {
         val psiFile = e.getData(CommonDataKeys.PSI_FILE)
         e.presentation.isEnabledAndVisible = project != null && psiFile != null && hasCompileErrors(project, psiFile)
     }
+
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     companion object {
         private fun getCompileErrors(project: Project, psiFile: PsiFile): List<HighlightInfo> {
@@ -46,7 +48,13 @@ abstract class BaseFixCompileErrorAction : AnAction() {
             return errors.joinToString("\n") { it.description }
         }
 
-        fun createCommandData(project: Project, psiFile: PsiFile, message: String, useYesFlag: Boolean, isShellMode: Boolean): CommandData {
+        fun createCommandData(
+            project: Project,
+            psiFile: PsiFile,
+            message: String,
+            useYesFlag: Boolean,
+            isShellMode: Boolean
+        ): CommandData {
             return CommandData(
                 message = message,
                 useYesFlag = useYesFlag,
@@ -66,12 +74,14 @@ class FixCompileErrorAction : BaseFixCompileErrorAction() {
         val psiFile = e.getData(CommonDataKeys.PSI_FILE) ?: return
         fixCompileError(project, psiFile)
     }
+
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     companion object {
         fun fixCompileError(project: Project, psiFile: PsiFile) {
             val errorMessage = getErrorMessage(project, psiFile)
-            val commandData = createCommandData(project, psiFile, "fix the compile error in this file: $errorMessage", true, false)
+            val commandData =
+                createCommandData(project, psiFile, "fix the compile error in this file: $errorMessage", true, false)
             IDEBasedExecutor(project, commandData).execute()
         }
     }
@@ -97,6 +107,7 @@ class FixCompileErrorInteractive : BaseFixCompileErrorAction() {
         val psiFile = e.getData(CommonDataKeys.PSI_FILE) ?: return
         showDialog(project, psiFile)
     }
+
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     private fun showDialog(project: Project, psiFile: PsiFile) {
@@ -106,7 +117,7 @@ class FixCompileErrorInteractive : BaseFixCompileErrorAction() {
             listOf(FileData(psiFile.virtualFile.path, false)),
             "fix the compile error in this file: $errorMessage"
         )
-        
+
         if (dialog.showAndGet()) {
             val commandData = createCommandData(
                 project,
@@ -119,7 +130,7 @@ class FixCompileErrorInteractive : BaseFixCompileErrorAction() {
                 additionalArgs = dialog.getAdditionalArgs(),
                 files = dialog.getAllFiles()
             )
-            
+
             AiderAction.executeAiderActionWithCommandData(project, commandData)
         }
     }
