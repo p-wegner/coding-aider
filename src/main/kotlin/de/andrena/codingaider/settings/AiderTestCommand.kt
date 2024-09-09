@@ -6,7 +6,7 @@ import de.andrena.codingaider.executors.IDEBasedExecutor
 import de.andrena.codingaider.outputview.MarkdownDialog
 
 class AiderTestCommand(private val project: Project, private val command: String) {
-    fun execute(): MarkdownDialog? {
+    fun execute(): MarkdownDialog {
         val settings = AiderSettings.getInstance(project)
         val commandData = CommandData(
             message = "Aider test command",

@@ -7,17 +7,15 @@ import com.intellij.ui.components.JBTextField
 import com.intellij.ui.components.JBList
 import com.intellij.ui.dsl.builder.Align
 import de.andrena.codingaider.inputdialog.PersistentFileManager
-import java.awt.BorderLayout
 import javax.swing.DefaultListCellRenderer
 import com.intellij.ui.dsl.builder.panel
-import com.intellij.ui.dsl.builder.bindText
 import de.andrena.codingaider.utils.ApiKeyChecker
 import com.intellij.ide.BrowserUtil
 import java.awt.Component
 import javax.swing.*
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
-import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.ui.ComboBox
 import de.andrena.codingaider.command.FileData
 
 class AiderSettingsConfigurable(private val project: Project) : Configurable {
@@ -39,9 +37,9 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     private val lintCmdField = JBTextField()
     private val showGitComparisonToolCheckBox = JBCheckBox("Show Git Comparison Tool after execution")
     private val activateIdeExecutorAfterWebcrawlCheckBox = JBCheckBox("Activate Post web crawl LLM cleanup (Experimental)")
-    private val webCrawlLlmComboBox = JComboBox(ApiKeyChecker.getAllLlmOptions().toTypedArray())
+    private val webCrawlLlmComboBox = ComboBox(ApiKeyChecker.getAllLlmOptions().toTypedArray())
     private val deactivateRepoMapCheckBox = JBCheckBox("Deactivate Aider's repo map (--map-tokens 0)")
-    private val editFormatComboBox = JComboBox(arrayOf("diff", "simple", "gpt-4"))
+    private val editFormatComboBox = ComboBox(arrayOf("", "whole","diff", "whole-func","diff-func"))
 
     override fun getDisplayName(): String = "Aider"
 
@@ -118,13 +116,6 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                             toolTipText = "Select the default edit format for Aider"
                         }
                 }
-                row("Edit Format:") {
-                    cell(editFormatComboBox)
-                        .component
-                        .apply {
-                            toolTipText = "Select the default edit format for Aider"
-                        }
-                }
             }
 
             group("Persistent Files") {
@@ -178,7 +169,6 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         settings.activateIdeExecutorAfterWebcrawl = activateIdeExecutorAfterWebcrawlCheckBox.isSelected
         settings.webCrawlLlm = webCrawlLlmComboBox.selectedItem as String
         settings.deactivateRepoMap = deactivateRepoMapCheckBox.isSelected
-        settings.editFormat = editFormatComboBox.selectedItem as String
         settings.editFormat = editFormatComboBox.selectedItem as String
     }
 

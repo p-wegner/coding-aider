@@ -340,7 +340,7 @@ class AiderInputDialog(
                 override fun actionPerformed(e: AnActionEvent) {
                     addAiderDocsToPersistentFiles()
                 }
-
+                override fun getActionUpdateThread()= ActionUpdateThread.BGT
                 override fun update(e: AnActionEvent) {
                     e.presentation.isEnabled = true
                     e.presentation.text = "Add Files (Ctrl+A)"
@@ -355,7 +355,7 @@ class AiderInputDialog(
                 override fun actionPerformed(e: AnActionEvent) {
                     aiderContextView.removeSelectedFiles()
                 }
-
+                override fun getActionUpdateThread()= ActionUpdateThread.BGT
                 override fun update(e: AnActionEvent) {
                     e.presentation.isEnabled = true
                     e.presentation.text = "Remove Files (Del)"
@@ -373,6 +373,7 @@ class AiderInputDialog(
                     aiderContextView.toggleReadOnlyMode()
                 }
 
+                override fun getActionUpdateThread()= ActionUpdateThread.BGT
                 override fun update(e: AnActionEvent) {
                     e.presentation.isEnabled = true
                     e.presentation.text = "Toggle Read-Only (Ctrl+R)"
@@ -387,7 +388,7 @@ class AiderInputDialog(
                 override fun actionPerformed(e: AnActionEvent) {
                     aiderContextView.togglePersistentFile()
                 }
-
+                override fun getActionUpdateThread()= ActionUpdateThread.BGT
                 override fun update(e: AnActionEvent) {
                     e.presentation.isEnabled = true
                     e.presentation.text = "Toggle Persistent (Ctrl+P)"

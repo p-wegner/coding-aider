@@ -78,7 +78,7 @@ class MarkdownDialog(private val project: Project, private val initialTitle: Str
     }
 
     fun focus() {
-        Timer().schedule(100) { // 100 ms Verzögerung
+        Timer().schedule(100) {
             SwingUtilities.invokeLater {
                 toFront()
                 requestFocus()
