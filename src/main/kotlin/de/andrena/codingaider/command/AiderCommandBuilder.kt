@@ -20,10 +20,6 @@ object AiderCommandBuilder {
                 add("--edit-format")
                 add(commandData.editFormat)
             }
-            if (commandData.editFormat.isNotEmpty()) {
-                add("--edit-format")
-                add(commandData.editFormat)
-            }
             if (!isShellMode) {
                 add("-m")
                 add("\"${commandData.message}\"")

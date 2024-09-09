@@ -42,7 +42,6 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     private val webCrawlLlmComboBox = JComboBox(ApiKeyChecker.getAllLlmOptions().toTypedArray())
     private val deactivateRepoMapCheckBox = JBCheckBox("Deactivate Aider's repo map (--map-tokens 0)")
     private val editFormatComboBox = JComboBox(arrayOf("diff", "simple", "gpt-4"))
-    private val editFormatComboBox = JComboBox(arrayOf("diff", "simple", "gpt-4"))
 
     override fun getDisplayName(): String = "Aider"
 
