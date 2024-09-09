@@ -16,7 +16,7 @@ object AiderCommandBuilder {
             if (commandData.useYesFlag) add("--yes")
             if (!isShellMode) {
                 add("-m")
-                add(commandData.message)
+                add("\"${commandData.message}\"")
                 add("--no-suggest-shell-commands")
                 add("--no-pretty")
             }
