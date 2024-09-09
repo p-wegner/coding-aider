@@ -25,7 +25,7 @@ object AiderCommandBuilder {
                 add("\"${commandData.message}\"")
                 add("--no-suggest-shell-commands")
                 // try different encoding when issue is reproducible
-                // add("--encoding UTF-16")
+//                add("--encoding \"UTF-16\"")
                 add("--no-pretty")
             }
             if (commandData.additionalArgs.isNotEmpty()) {
@@ -36,8 +36,7 @@ object AiderCommandBuilder {
                 add("\"${commandData.lintCmd}\"")
             }
             if (commandData.deactivateRepoMap) {
-                add("--map-tokens")
-                add("0")
+                add("--map-tokens 0")
             }
         }
     }
