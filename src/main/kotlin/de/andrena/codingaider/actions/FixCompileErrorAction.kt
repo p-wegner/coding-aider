@@ -45,7 +45,7 @@ abstract class BaseFixCompileErrorAction : AnAction() {
 
         fun getErrorMessage(project: Project, psiFile: PsiFile): String {
             val errors = getCompileErrors(project, psiFile)
-            return errors.joinToString("\n") { it.description }
+            return errors.joinToString("\n") { it.description ?: "Unknown error" }
         }
 
         fun createCommandData(
