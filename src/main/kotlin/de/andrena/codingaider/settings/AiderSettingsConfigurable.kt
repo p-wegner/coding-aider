@@ -106,7 +106,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                         .component
                         .apply {
                             isSelected = true
-                            toolTipText = "This will deactivate Aider's repo map, which may improve performance for large repositories."
+                            toolTipText = "This will deactivate Aider's repo map."
                         }
                 }
                 row("Edit Format:") {
@@ -135,8 +135,8 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 row {
                     button("Test Aider Installation") {
                         val dialog = AiderTestCommand(project, "aider --help").execute()
-                        dialog?.focus()
-                        dialog?.toFront()
+                        dialog.focus()
+                        dialog.toFront()
                     }
                 }
             }
