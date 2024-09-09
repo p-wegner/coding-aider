@@ -8,6 +8,7 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
 import com.intellij.openapi.diagnostic.Logger
+import de.andrena.codingaider.settings.AiderSettings
 
 class CommandExecutor(
     private val project: Project,
@@ -15,6 +16,7 @@ class CommandExecutor(
     private val markdownDialog: MarkdownDialog
 ) {
     private val logger = Logger.getInstance(CommandExecutor::class.java)
+    private val settings = AiderSettings.getInstance(project)
 
     fun executeCommand() {
         val output = StringBuilder()
@@ -24,7 +26,13 @@ class CommandExecutor(
 
         logger.info("Executing Aider command: ${commandArgs.joinToString(" ")}")
         logger.info("Using JVM default encoding: ${System.getProperty("file.encoding")}")
-        updateDialogProgress("Starting Aider command...\n", "Aider Command In Progress")
+        
+        val initialMessage = if (settings.verboseCommandLogging) {
+            "Starting Aider command...\nCommand: ${commandArgs.joinToString(" ")}\n"
+        } else {
+            "Starting Aider command...\n"
+        }
+        updateDialogProgress(initialMessage, "Aider Command In Progress")
 
         val process = processBuilder.start()
         pollProcessAndReadOutput(process, output)

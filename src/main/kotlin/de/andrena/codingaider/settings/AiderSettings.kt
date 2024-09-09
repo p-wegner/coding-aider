@@ -19,7 +19,8 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var activateIdeExecutorAfterWebcrawl: Boolean = AiderDefaults.ACTIVATE_IDE_EXECUTOR_AFTER_WEBCRAWL,
         var webCrawlLlm: String = AiderDefaults.WEB_CRAWL_LLM,
         var deactivateRepoMap: Boolean = AiderDefaults.DEACTIVATE_REPO_MAP,
-        var editFormat: String = AiderDefaults.EDIT_FORMAT
+        var editFormat: String = AiderDefaults.EDIT_FORMAT,
+        var verboseCommandLogging: Boolean = AiderDefaults.VERBOSE_COMMAND_LOGGING
     )
 
     private var myState = State()
@@ -88,6 +89,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.editFormat
         set(value) {
             myState.editFormat = value
+        }
+
+    var verboseCommandLogging: Boolean
+        get() = myState.verboseCommandLogging
+        set(value) {
+            myState.verboseCommandLogging = value
         }
 
     companion object {

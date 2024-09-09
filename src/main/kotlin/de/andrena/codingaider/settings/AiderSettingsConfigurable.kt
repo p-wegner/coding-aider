@@ -40,6 +40,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     private val webCrawlLlmComboBox = ComboBox(ApiKeyChecker.getAllLlmOptions().toTypedArray())
     private val deactivateRepoMapCheckBox = JBCheckBox("Deactivate Aider's repo map (--map-tokens 0)")
     private val editFormatComboBox = ComboBox(arrayOf("", "whole","diff", "whole-func","diff-func"))
+    private val verboseCommandLoggingCheckBox = JBCheckBox("Enable verbose Aider command logging")
 
     override fun getDisplayName(): String = "Aider"
 
@@ -116,6 +117,13 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                             toolTipText = "Select the default edit format for Aider"
                         }
                 }
+                row {
+                    cell(verboseCommandLoggingCheckBox)
+                        .component
+                        .apply {
+                            toolTipText = "If enabled, Aider command details will be logged in the dialog shown to the user"
+                        }
+                }
             }
 
             group("Persistent Files") {
@@ -155,7 +163,8 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 activateIdeExecutorAfterWebcrawlCheckBox.isSelected != settings.activateIdeExecutorAfterWebcrawl ||
                 webCrawlLlmComboBox.selectedItem as String != settings.webCrawlLlm ||
                 deactivateRepoMapCheckBox.isSelected != settings.deactivateRepoMap ||
-                editFormatComboBox.selectedItem as String != settings.editFormat
+                editFormatComboBox.selectedItem as String != settings.editFormat ||
+                verboseCommandLoggingCheckBox.isSelected != settings.verboseCommandLogging
     }
 
     override fun apply() {
@@ -170,6 +179,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         settings.webCrawlLlm = webCrawlLlmComboBox.selectedItem as String
         settings.deactivateRepoMap = deactivateRepoMapCheckBox.isSelected
         settings.editFormat = editFormatComboBox.selectedItem as String
+        settings.verboseCommandLogging = verboseCommandLoggingCheckBox.isSelected
     }
 
     override fun reset() {
@@ -184,7 +194,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         webCrawlLlmComboBox.selectedItem = settings.webCrawlLlm
         deactivateRepoMapCheckBox.isSelected = settings.deactivateRepoMap
         editFormatComboBox.selectedItem = settings.editFormat
-        editFormatComboBox.selectedItem = settings.editFormat
+        verboseCommandLoggingCheckBox.isSelected = settings.verboseCommandLogging
     }
 
     override fun disposeUIResources() {
