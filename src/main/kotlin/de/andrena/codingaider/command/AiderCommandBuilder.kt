@@ -33,6 +33,10 @@ object AiderCommandBuilder {
                 add("--lint-cmd")
                 add(commandData.lintCmd)
             }
+            if (commandData.deactivateRepoMap) {
+                add("--map-tokens")
+                add("0")
+            }
         }
     }
 }

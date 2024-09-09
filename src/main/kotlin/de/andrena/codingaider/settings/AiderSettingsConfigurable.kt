@@ -40,6 +40,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     private val showGitComparisonToolCheckBox = JBCheckBox("Show Git Comparison Tool after execution")
     private val activateIdeExecutorAfterWebcrawlCheckBox = JBCheckBox("Activate Post web crawl LLM cleanup (Experimental)")
     private val webCrawlLlmComboBox = JComboBox(ApiKeyChecker.getAllLlmOptions().toTypedArray())
+    private val deactivateRepoMapCheckBox = JBCheckBox("Deactivate Aider's repo map (--map-tokens 0)")
 
     override fun getDisplayName(): String = "Aider"
 
@@ -101,6 +102,14 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                     cell(webCrawlLlmComboBox)
                         .label("Web Crawl LLM:")
                 }
+                row {
+                    cell(deactivateRepoMapCheckBox)
+                        .component
+                        .apply {
+                            isSelected = true
+                            toolTipText = "This will deactivate Aider's repo map, which may improve performance for large repositories."
+                        }
+                }
             }
 
             group("Persistent Files") {
@@ -138,7 +147,8 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 lintCmdField.text != settings.lintCmd ||
                 showGitComparisonToolCheckBox.isSelected != settings.showGitComparisonTool ||
                 activateIdeExecutorAfterWebcrawlCheckBox.isSelected != settings.activateIdeExecutorAfterWebcrawl ||
-                webCrawlLlmComboBox.selectedItem as String != settings.webCrawlLlm
+                webCrawlLlmComboBox.selectedItem as String != settings.webCrawlLlm ||
+                deactivateRepoMapCheckBox.isSelected != settings.deactivateRepoMap
     }
 
     override fun apply() {
@@ -151,6 +161,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         settings.showGitComparisonTool = showGitComparisonToolCheckBox.isSelected
         settings.activateIdeExecutorAfterWebcrawl = activateIdeExecutorAfterWebcrawlCheckBox.isSelected
         settings.webCrawlLlm = webCrawlLlmComboBox.selectedItem as String
+        settings.deactivateRepoMap = deactivateRepoMapCheckBox.isSelected
     }
 
     override fun reset() {
@@ -163,6 +174,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         showGitComparisonToolCheckBox.isSelected = settings.showGitComparisonTool
         activateIdeExecutorAfterWebcrawlCheckBox.isSelected = settings.activateIdeExecutorAfterWebcrawl
         webCrawlLlmComboBox.selectedItem = settings.webCrawlLlm
+        deactivateRepoMapCheckBox.isSelected = settings.deactivateRepoMap
     }
 
     override fun disposeUIResources() {
