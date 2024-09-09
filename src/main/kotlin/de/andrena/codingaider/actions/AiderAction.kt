@@ -76,7 +76,8 @@ class AiderAction : AnAction() {
                 files = dialog.getAllFiles(),
                 isShellMode = dialog.isShellMode(),
                 lintCmd = settings.lintCmd,
-                deactivateRepoMap = settings.deactivateRepoMap
+                deactivateRepoMap = settings.deactivateRepoMap,
+                editFormat = settings.editFormat
             )
         }
 
@@ -90,7 +91,8 @@ class AiderAction : AnAction() {
                 files = files,
                 isShellMode = true, // Always true for direct shell mode
                 lintCmd = settings.lintCmd,
-                deactivateRepoMap = settings.deactivateRepoMap
+                deactivateRepoMap = settings.deactivateRepoMap,
+                editFormat = settings.editFormat
             )
         }
     }

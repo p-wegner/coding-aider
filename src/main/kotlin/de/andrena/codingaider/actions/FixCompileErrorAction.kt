@@ -64,7 +64,8 @@ abstract class BaseFixCompileErrorAction : AnAction() {
                 files = listOf(FileData(psiFile.virtualFile.path, false)),
                 isShellMode = isShellMode,
                 lintCmd = settings.lintCmd,
-                deactivateRepoMap = settings.deactivateRepoMap
+                deactivateRepoMap = settings.deactivateRepoMap,
+                editFormat = settings.editFormat
             )
         }
     }

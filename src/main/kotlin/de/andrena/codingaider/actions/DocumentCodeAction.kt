@@ -49,7 +49,8 @@ class DocumentCodeAction : AnAction() {
                 files = allFiles,
                 isShellMode = false,
                 lintCmd = settings.lintCmd,
-                deactivateRepoMap = settings.deactivateRepoMap
+                deactivateRepoMap = settings.deactivateRepoMap,
+                editFormat = settings.editFormat
             )
             IDEBasedExecutor(project, commandData).execute()
         }
