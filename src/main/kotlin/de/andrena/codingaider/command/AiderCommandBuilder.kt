@@ -9,11 +9,14 @@ object AiderCommandBuilder {
             }
             commandData.files.forEach { fileData ->
                 val fileArgument = if (fileData.isReadOnly) "--read" else "--file"
-                add("$fileArgument \"${fileData.filePath}\"")
+                add(fileArgument)
+                add("\"${fileData.filePath}\"")
             }
             if (commandData.useYesFlag) add("--yes")
             if (commandData.editFormat.isNotEmpty()) {
-                add("--edit-format \"${commandData.editFormat}\"")
+                add("--edit-format")
+                add(commandData.editFormat)
+
             }
             if (!isShellMode) {
                 add("--no-suggest-shell-commands")
@@ -23,13 +26,16 @@ object AiderCommandBuilder {
                 add(commandData.additionalArgs)
             }
             if (commandData.lintCmd.isNotEmpty()) {
-                add("--lint-cmd \"${commandData.lintCmd}\"")
+                add("--lint-cmd")
+                add("\"${commandData.lintCmd}\"")
             }
             if (commandData.deactivateRepoMap) {
-                add("--map-tokens 0")
+                add("--map-tokens")
+                add("0")
             }
             if (!isShellMode) {
-                add("-m \"${commandData.message}\"")
+                add("-m")
+                add("\"${commandData.message}\"")
             }
         }
     }
