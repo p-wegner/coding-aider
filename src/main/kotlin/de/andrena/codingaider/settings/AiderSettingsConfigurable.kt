@@ -42,6 +42,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     private val webCrawlLlmComboBox = JComboBox(ApiKeyChecker.getAllLlmOptions().toTypedArray())
     private val deactivateRepoMapCheckBox = JBCheckBox("Deactivate Aider's repo map (--map-tokens 0)")
     private val editFormatComboBox = JComboBox(arrayOf("diff", "simple", "gpt-4"))
+    private val editFormatComboBox = JComboBox(arrayOf("diff", "simple", "gpt-4"))
 
     override fun getDisplayName(): String = "Aider"
 
@@ -118,6 +119,13 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                             toolTipText = "Select the default edit format for Aider"
                         }
                 }
+                row("Edit Format:") {
+                    cell(editFormatComboBox)
+                        .component
+                        .apply {
+                            toolTipText = "Select the default edit format for Aider"
+                        }
+                }
             }
 
             group("Persistent Files") {
@@ -172,6 +180,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         settings.webCrawlLlm = webCrawlLlmComboBox.selectedItem as String
         settings.deactivateRepoMap = deactivateRepoMapCheckBox.isSelected
         settings.editFormat = editFormatComboBox.selectedItem as String
+        settings.editFormat = editFormatComboBox.selectedItem as String
     }
 
     override fun reset() {
@@ -185,6 +194,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         activateIdeExecutorAfterWebcrawlCheckBox.isSelected = settings.activateIdeExecutorAfterWebcrawl
         webCrawlLlmComboBox.selectedItem = settings.webCrawlLlm
         deactivateRepoMapCheckBox.isSelected = settings.deactivateRepoMap
+        editFormatComboBox.selectedItem = settings.editFormat
         editFormatComboBox.selectedItem = settings.editFormat
     }
 

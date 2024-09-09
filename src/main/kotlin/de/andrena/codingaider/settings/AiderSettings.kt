@@ -90,6 +90,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
             myState.editFormat = value
         }
 
+    var editFormat: String
+        get() = myState.editFormat
+        set(value) {
+            myState.editFormat = value
+        }
+
     companion object {
         fun getInstance(project: Project): AiderSettings =
             project.getService(AiderSettings::class.java)
