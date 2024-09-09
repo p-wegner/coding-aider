@@ -17,14 +17,16 @@ class CommitAction : AnAction() {
         val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
 
         if (project != null && !files.isNullOrEmpty()) {
+            val settings = AiderSettings.getInstance(project)
             val commandData = CommandData(
                 message = "/commit",
                 useYesFlag = true,
-                llm = AiderSettings.getInstance(project).llm,
+                llm = settings.llm,
                 additionalArgs = "",
                 files = emptyList(),
                 isShellMode = false,
-                lintCmd = AiderSettings.getInstance(project).lintCmd
+                lintCmd = settings.lintCmd,
+                deactivateRepoMap = settings.deactivateRepoMap
             )
             IDEBasedExecutor(project, commandData).execute()
         }

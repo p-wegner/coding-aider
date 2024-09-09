@@ -40,14 +40,16 @@ class DocumentCodeAction : AnAction() {
             val allFiles = FileTraversal.traverseFilesOrDirectories(virtualFiles)
             val fileNames = allFiles.map { File(it.filePath).name }
             
+            val settings = AiderSettings.getInstance(project)
             val commandData = CommandData(
                 message = "Generate a markdown documentation for the code in the provided files and directories: $fileNames. If there are exceptional implementation details, mention them. Store the results in $filename.",
                 useYesFlag = true,
-                llm = AiderSettings.getInstance(project).llm,
-                additionalArgs = AiderSettings.getInstance(project).additionalArgs,
+                llm = settings.llm,
+                additionalArgs = settings.additionalArgs,
                 files = allFiles,
                 isShellMode = false,
-                lintCmd = AiderSettings.getInstance(project).lintCmd
+                lintCmd = settings.lintCmd,
+                deactivateRepoMap = settings.deactivateRepoMap
             )
             IDEBasedExecutor(project, commandData).execute()
         }

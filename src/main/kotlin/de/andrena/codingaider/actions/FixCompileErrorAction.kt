@@ -55,14 +55,16 @@ abstract class BaseFixCompileErrorAction : AnAction() {
             useYesFlag: Boolean,
             isShellMode: Boolean
         ): CommandData {
+            val settings = AiderSettings.getInstance(project)
             return CommandData(
                 message = message,
                 useYesFlag = useYesFlag,
-                llm = AiderSettings.getInstance(project).llm,
-                additionalArgs = AiderSettings.getInstance(project).additionalArgs,
+                llm = settings.llm,
+                additionalArgs = settings.additionalArgs,
                 files = listOf(FileData(psiFile.virtualFile.path, false)),
                 isShellMode = isShellMode,
-                lintCmd = AiderSettings.getInstance(project).lintCmd
+                lintCmd = settings.lintCmd,
+                deactivateRepoMap = settings.deactivateRepoMap
             )
         }
     }
