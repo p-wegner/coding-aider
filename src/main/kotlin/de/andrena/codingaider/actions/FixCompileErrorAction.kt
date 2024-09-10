@@ -95,17 +95,15 @@ class FixCompileErrorAction : BaseFixCompileErrorAction() {
         override fun getFamilyName(): String = "Fix compile error with Aider"
         override fun getText(): String = "Quick fix compile error with Aider"
 
-        override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean {
-            return editor != null && hasCompileErrors(project, element.containingFile) && isExplicitlyInvoked()
-        }
+        override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean =
+            editor != null && hasCompileErrors(project, element.containingFile)
 
         override fun invoke(project: Project, editor: Editor?, element: PsiElement) {
+            // workaround to prevent triggering when focussed
+            if (element.containingFile.virtualFile == null) return
             fixCompileError(project, element.containingFile)
         }
 
-        private fun isExplicitlyInvoked(): Boolean {
-            return com.intellij.openapi.actionSystem.ActionPlaces.isPopupPlace(com.intellij.openapi.actionSystem.ActionPlaces.getActionPlace())
-        }
     }
 
 }
@@ -149,15 +147,14 @@ class FixCompileErrorInteractive : BaseFixCompileErrorAction() {
         override fun getText(): String = "Fix compile error with Aider (Interactive)"
 
         override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean {
-            return editor != null && hasCompileErrors(project, element.containingFile) && isExplicitlyInvoked()
+            return editor != null && hasCompileErrors(project, element.containingFile)
         }
 
         override fun invoke(project: Project, editor: Editor?, element: PsiElement) {
+            // workaround to prevent triggering when focussed
+            if (element.containingFile.virtualFile == null) return
             FixCompileErrorInteractive().showDialog(project, element.containingFile)
         }
 
-        private fun isExplicitlyInvoked(): Boolean {
-            return com.intellij.openapi.actionSystem.ActionPlaces.isPopupPlace(com.intellij.openapi.actionSystem.ActionPlaces.getActionPlace())
-        }
     }
 }
