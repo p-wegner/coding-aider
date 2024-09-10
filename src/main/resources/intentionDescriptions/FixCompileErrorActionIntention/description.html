@@ -1,94 +1,26 @@
 <html>
 <body>
-<p>This intention quickly fixes compile errors in the current file using Aider, providing a one-click solution for common compilation issues.</p>
-
-<p>When activated, it automatically sends the compile error message to Aider for resolution without any additional input from the user, streamlining the error-fixing process.</p>
-
-<p><b>Key features:</b></p>
+Fixes compile errors in the current file using AI-powered suggestions.
+<p>
+    This intention uses Aider, an AI-powered coding assistant, to automatically fix compile errors in your code. It analyzes the error messages and suggests corrections without requiring user interaction.
+</p>
+<p>
+    When you apply this intention, Aider will:
+</p>
 <ul>
-    <li><b>One-click fix:</b> Instantly attempt to resolve compile errors with a single action.</li>
-    <li><b>Automatic context gathering:</b> Collects error messages and relevant file information to provide Aider with necessary context.</li>
-    <li><b>Uses project settings:</b> Applies your predefined Aider settings for consistency across your project.</li>
-    <li><b>Non-interactive:</b> Operates without requiring further input, ideal for straightforward errors or when you want a quick solution attempt.</li>
-    <li><b>Immediate feedback:</b> Quickly applies suggested fixes, allowing you to see results instantly.</li>
-    <li><b>AI-powered solutions:</b> Leverages advanced language models to provide intelligent fixes for various types of compile errors.</li>
+    <li>Analyze the compile errors in your file</li>
+    <li>Generate a fix based on the error messages</li>
+    <li>Apply the suggested changes to your code</li>
 </ul>
-
-<p><b>When to use:</b></p>
-<ul>
-    <li>For common or simple compile errors that don't require complex context or explanation.</li>
-    <li>When you're confident in your Aider settings and want to apply them consistently.</li>
-    <li>During rapid development or debugging sessions where speed is crucial.</li>
-    <li>For repetitive errors that you know Aider can handle effectively.</li>
-    <li>When you want to quickly test an AI-suggested fix before diving deeper into the problem.</li>
-</ul>
-
-<p><b>Benefits:</b></p>
-<ul>
-    <li>Saves time by automating the error-fixing process for common issues.</li>
-    <li>Reduces context-switching by handling errors without leaving your coding environment.</li>
-    <li>Maintains coding flow by quickly resolving minor compilation issues.</li>
-    <li>Leverages AI to suggest fixes that might not be immediately obvious to the developer.</li>
-    <li>Provides a learning opportunity by showing AI-suggested solutions for common errors.</li>
-    <li>Increases productivity by reducing the time spent on routine error resolution.</li>
-    <li>Helps maintain code quality by suggesting standardized fixes for common issues.</li>
-</ul>
-
-<p><b>How it works:</b></p>
-<ol>
-    <li>The action identifies the current compile error in your file.</li>
-    <li>It gathers relevant context, including the error message and affected code.</li>
-    <li>This information is sent to Aider using your predefined project settings.</li>
-    <li>Aider analyzes the error and suggests a fix using advanced AI models.</li>
-    <li>The suggested fix is automatically applied to your code.</li>
-    <li>The IDE refreshes the file, showing the applied changes and updating error highlighting.</li>
-</ol>
-
-<p><b>Customization:</b></p>
-<ul>
-    <li>The behavior of this quick fix can be customized through your project's Aider settings.</li>
-    <li>You can adjust the AI model used, additional arguments, and other parameters to fine-tune the fix suggestions.</li>
-</ul>
-
-<p><b>Limitations:</b></p>
-<ul>
-    <li>May not be suitable for complex errors requiring in-depth analysis or multi-file changes.</li>
-    <li>The quality of fixes depends on the accuracy and completeness of the error message and gathered context.</li>
-    <li>In some cases, manual review and adjustment of the suggested fixes may be necessary.</li>
-    <li>Might not handle project-specific or highly customized code patterns optimally without additional context.</li>
-    <li>Could potentially introduce new issues if the AI misinterprets the error context in complex scenarios.</li>
-</ul>
-
-<p><b>Example scenarios:</b></p>
-<ol>
-    <li><b>Missing imports:</b> Quickly adds required import statements for undefined classes or functions.</li>
-    <li><b>Simple syntax errors:</b> Fixes common syntax issues like missing semicolons, parentheses, or brackets.</li>
-    <li><b>Type mismatches:</b> Resolves basic type incompatibilities in variable assignments or function returns.</li>
-    <li><b>Null safety in Kotlin:</b> Adds null checks or uses safe call operators (?) to handle potential null pointer exceptions.</li>
-    <li><b>Visibility modifiers:</b> Adjusts access modifiers (public, private, protected) to resolve visibility issues.</li>
-</ol>
-
-<p><b>Best practices:</b></p>
-<ul>
-    <li>Use this intention for quick fixes during initial development or prototyping phases.</li>
-    <li>Combine with regular code reviews to ensure AI-suggested fixes align with project standards.</li>
-    <li>Keep your project's Aider settings up-to-date to improve the accuracy of automatic fixes.</li>
-    <li>For frequently occurring errors, consider creating custom lint rules or templates to guide the AI.</li>
-    <li>Regularly sync your codebase to ensure the AI has the most current context for fixes.</li>
-</ul>
-
-<p>This quick fix approach is best suited for common or simple compile errors where immediate action is preferred. It uses the default settings configured in your project, making it a fast and convenient option for many scenarios. While it may not be suitable for all types of errors, especially those requiring deeper context or explanation, it can significantly speed up the process of dealing with routine compilation issues. For more complex scenarios or when you need more control over the fix process, consider using the interactive version of this intention.</p>
-
-<p>By leveraging AI in this automated manner, developers can maintain a smooth workflow, quickly overcome minor obstacles, and focus on the more creative and complex aspects of software development. It's an excellent tool for boosting productivity and maintaining code quality, especially in fast-paced development environments or when working with large codebases where quick iterations are crucial.</p>
-
-<p><b>Integration tips:</b></p>
-<ul>
-    <li>Consider using this intention as part of your pre-commit hooks for catching and fixing simple errors early.</li>
-    <li>Combine with automated testing to ensure that quick fixes don't introduce regressions.</li>
-    <li>Use in conjunction with code style formatters to maintain consistency across AI-suggested fixes.</li>
-    <li>For team settings, establish guidelines on when to use quick fixes versus more thorough, manual reviews.</li>
-</ul>
-
-<p>Remember, while this tool can significantly streamline your development process, it's important to maintain a balance between automation and manual oversight. Use it as a powerful assistant in your coding toolkit, but always be prepared to review and understand the changes it suggests, especially in critical or complex parts of your codebase.</p>
+<p>
+    This is useful for quickly resolving simple compile errors without manual intervention.
+</p>
+<!-- tooltip end -->
+<p>
+    Note: The effectiveness of the fix depends on the complexity of the error and the AI model's capabilities. Always review the changes made by the AI assistant.
+</p>
+<p>
+    To configure Aider settings, go to <a href="settings://">Settings | Tools | Aider</a>.
+</p>
 </body>
 </html>

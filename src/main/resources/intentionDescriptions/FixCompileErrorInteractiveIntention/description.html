@@ -1,126 +1,27 @@
 <html>
 <body>
-<p>This intention fixes compile errors in the current file using Aider with interactive input, providing a flexible and powerful approach to resolving compilation issues.</p>
-
-<p>When invoked, it opens a dialog where you can customize the request to Aider for fixing the compile error. This allows you to provide additional context, specific instructions, or modify the approach based on your understanding of the problem.</p>
-
-<p><b>Key features:</b></p>
+Interactively fixes compile errors in the current file using AI-powered suggestions.
+<p>
+    This intention uses Aider, an AI-powered coding assistant, to help fix compile errors in your code. It provides an interactive dialog where you can customize the fix request before applying changes.
+</p>
+<p>
+    When you apply this intention, you'll be presented with a dialog where you can:
+</p>
 <ul>
-    <li><b>Customizable input:</b> Modify the default error message or add specific instructions to guide Aider's approach.</li>
-    <li><b>LLM selection:</b> Choose between different language models (e.g., GPT-3.5, GPT-4) for the task, allowing you to balance between speed and capability.</li>
-    <li><b>Additional arguments:</b> Fine-tune the Aider command with extra parameters for advanced control over the AI's behavior.</li>
-    <li><b>File selection:</b> Include or exclude files from the fix scope, useful when the error involves multiple files or when you want to limit the AI's focus.</li>
-    <li><b>Shell mode:</b> Toggle between normal and shell mode for advanced users who need more direct control over the Aider process.</li>
-    <li><b>Yes flag:</b> Option to automatically apply suggested changes without further confirmation, speeding up the process for trusted fixes.</li>
-    <li><b>Context-aware suggestions:</b> Aider considers the full context of your code, not just the error message, for more accurate fixes.</li>
-    <li><b>Multi-file support:</b> Address errors that span across multiple files in your project.</li>
+    <li>View the current compile errors</li>
+    <li>Modify the fix request message</li>
+    <li>Choose additional files to include in the context</li>
+    <li>Select the AI model and adjust other Aider settings</li>
 </ul>
-
-<p><b>When to use:</b></p>
-<ul>
-    <li>For complex compile errors that may require additional context or specific guidance.</li>
-    <li>When you want to experiment with different AI models or Aider settings for optimal results.</li>
-    <li>In situations where you need to carefully control which files are involved in the fix.</li>
-    <li>For educational purposes, where you want to see how different inputs affect the AI's approach to solving the error.</li>
-    <li>When dealing with project-specific or framework-related errors that might need custom handling.</li>
-    <li>For errors that require consideration of multiple files or project-wide context.</li>
-    <li>When you want to provide specific instructions or constraints for the AI to follow while fixing the error.</li>
-</ul>
-
-<p><b>Benefits:</b></p>
-<ul>
-    <li>Greater control over the error-fixing process, allowing for more precise and tailored solutions.</li>
-    <li>Flexibility to adapt the AI's approach based on your understanding of the codebase and the specific error.</li>
-    <li>Opportunity to learn from and guide the AI, potentially improving your own problem-solving skills.</li>
-    <li>Ability to handle complex or unusual compile errors that may not be easily resolved with a one-size-fits-all approach.</li>
-    <li>Improved accuracy for project-specific or framework-related errors by providing custom context.</li>
-    <li>Enhanced learning experience by observing how different inputs and settings affect the AI's problem-solving approach.</li>
-    <li>Time-saving for complex errors by allowing you to guide the AI towards the most promising solution path.</li>
-</ul>
-
-<p><b>How it works:</b></p>
-<ol>
-    <li>The action identifies the current compile error and opens an interactive dialog.</li>
-    <li>You can modify the error description, select files to include, choose the AI model, and set additional parameters.</li>
-    <li>The customized request is sent to Aider for processing.</li>
-    <li>Aider analyzes the error and context, then suggests a fix based on your input.</li>
-    <li>You can review the suggested changes before applying them to your code.</li>
-    <li>If the "Yes" flag is set, changes are applied automatically; otherwise, you'll be prompted for confirmation.</li>
-</ol>
-
-<p><b>Customization options:</b></p>
-<ul>
-    <li><b>Error description:</b> Refine or expand on the automatically detected error message.</li>
-    <li><b>File selection:</b> Choose which files to include in the context for multi-file errors.</li>
-    <li><b>LLM model:</b> Select the most appropriate AI model for your specific error type.</li>
-    <li><b>Additional arguments:</b> Fine-tune Aider's behavior with custom command-line arguments.</li>
-    <li><b>Shell mode:</b> Enable for more direct control over the Aider process (advanced users).</li>
-    <li><b>Auto-apply changes:</b> Toggle the "Yes" flag to control whether fixes are applied automatically.</li>
-</ul>
-
-<p><b>Best practices:</b></p>
-<ul>
-    <li>Provide clear and concise additional context when modifying the error description.</li>
-    <li>Start with a more capable model (e.g., GPT-4) for complex errors, then switch to faster models for simpler issues.</li>
-    <li>Use file selection judiciously to provide necessary context without overwhelming the AI with irrelevant information.</li>
-    <li>Experiment with different settings to find the optimal configuration for your project and error types.</li>
-    <li>Review suggested changes carefully, especially when dealing with critical code sections.</li>
-</ul>
-
-<p>This interactive approach gives you more control over how Aider addresses the compile error, which can be particularly useful for complex errors or when you want to guide the AI's approach. It's ideal for developers who want a more hands-on experience with AI-assisted coding or need to handle tricky compilation issues. By providing this level of customization, you can leverage the full power of AI to resolve even the most challenging compile errors while maintaining full control over the process.</p>
-
-<p><b>How it works:</b></p>
-<ol>
-    <li>The action identifies the current compile error and opens an interactive dialog.</li>
-    <li>You can modify the error description, select files to include, choose the AI model, and set additional parameters.</li>
-    <li>The customized request is sent to Aider for processing.</li>
-    <li>Aider analyzes the error and context, then suggests a fix based on your input.</li>
-    <li>You can review the suggested changes before applying them to your code.</li>
-    <li>If the "Yes" flag is set, changes are applied automatically; otherwise, you'll be prompted for confirmation.</li>
-</ol>
-
-<p><b>Customization options:</b></p>
-<ul>
-    <li><b>Error description:</b> Refine or expand on the automatically detected error message.</li>
-    <li><b>File selection:</b> Choose which files to include in the context for multi-file errors.</li>
-    <li><b>LLM model:</b> Select the most appropriate AI model for your specific error type.</li>
-    <li><b>Additional arguments:</b> Fine-tune Aider's behavior with custom command-line arguments.</li>
-    <li><b>Shell mode:</b> Enable for more direct control over the Aider process (advanced users).</li>
-    <li><b>Auto-apply changes:</b> Toggle the "Yes" flag to control whether fixes are applied automatically.</li>
-</ul>
-
-<p><b>Best practices:</b></p>
-<ul>
-    <li>Provide clear and concise additional context when modifying the error description.</li>
-    <li>Start with a more capable model (e.g., GPT-4) for complex errors, then switch to faster models for simpler issues.</li>
-    <li>Use file selection judiciously to provide necessary context without overwhelming the AI with irrelevant information.</li>
-    <li>Experiment with different settings to find the optimal configuration for your project and error types.</li>
-    <li>Review suggested changes carefully, especially when dealing with critical code sections.</li>
-    <li>When dealing with framework-specific errors, include relevant configuration files in the file selection.</li>
-    <li>For errors related to external libraries, consider adding import statements or library versions to the error description.</li>
-    <li>Use shell mode for advanced scenarios, such as running custom scripts or accessing external tools during the fix process.</li>
-</ul>
-
-<p><b>Example scenarios:</b></p>
-<ol>
-    <li><b>Complex type inference error:</b> When facing a Kotlin type inference error in a complex generic function, use GPT-4 and include related files to provide full context for the type hierarchy.</li>
-    <li><b>Build configuration issue:</b> For errors related to Gradle or Maven configuration, include the build files in the file selection and use additional arguments to specify the build tool version.</li>
-    <li><b>Cross-module dependency problem:</b> When dealing with errors spanning multiple modules, carefully select files from different modules to give Aider a comprehensive view of the project structure.</li>
-    <li><b>Framework-specific annotation error:</b> For errors related to specific frameworks (e.g., Spring, Android), include the error message along with relevant configuration files and use the error description to specify the framework version.</li>
-    <li><b>Performance optimization:</b> Use this intention to not only fix errors but also to suggest performance improvements by including profiling information in the error description.</li>
-</ol>
-
-<p>This interactive approach gives you more control over how Aider addresses the compile error, which can be particularly useful for complex errors or when you want to guide the AI's approach. It's ideal for developers who want a more hands-on experience with AI-assisted coding or need to handle tricky compilation issues. By providing this level of customization, you can leverage the full power of AI to resolve even the most challenging compile errors while maintaining full control over the process.</p>
-
-<p><b>Advanced usage tips:</b></p>
-<ul>
-    <li>Combine the "Yes" flag with carefully selected files for rapid iterations on non-critical code sections.</li>
-    <li>Use shell mode to integrate custom static analysis tools into the error-fixing process.</li>
-    <li>For recurring project-specific errors, create a template of additional arguments and file selections for quick reuse.</li>
-    <li>When working with domain-specific languages or custom DSLs, provide examples of correct usage in the error description to guide the AI.</li>
-    <li>Experiment with different LLM models for various error types to create a "best model" reference for your project's common issues.</li>
-</ul>
-
-<p>By mastering the use of this interactive intention, you can significantly enhance your productivity, especially when dealing with complex or project-specific compilation issues. It serves not just as an error-fixing tool but as a powerful assistant in understanding and improving your codebase.</p>
+<p>
+    This interactive approach gives you more control over how Aider addresses the compile errors in your code.
+</p>
+<!-- tooltip end -->
+<p>
+    Note: The effectiveness of the fix depends on the complexity of the error, the AI model's capabilities, and the clarity of your instructions. Always review the changes suggested by the AI assistant.
+</p>
+<p>
+    To configure default Aider settings, go to <a href="settings://">Settings | Tools | Aider</a>.
+</p>
 </body>
 </html>
