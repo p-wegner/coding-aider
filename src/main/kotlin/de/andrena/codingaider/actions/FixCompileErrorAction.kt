@@ -97,8 +97,9 @@ class FixCompileErrorAction : BaseFixCompileErrorAction() {
         override fun getFamilyName(): String = "Fix compile error with Aider"
         override fun getText(): String = "Quick fix compile error with Aider"
 
-        override fun isAvailable(project: Project, editor: Editor?, element: PsiElement) =
-            hasCompileErrors(project, element.containingFile)
+        override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean {
+            return editor != null && hasCompileErrors(project, element.containingFile)
+        }
 
         override fun invoke(project: Project, editor: Editor?, element: PsiElement) {
             fixCompileError(project, element.containingFile)
@@ -147,8 +148,9 @@ class FixCompileErrorInteractive : BaseFixCompileErrorAction() {
         override fun getFamilyName(): String = "Fix compile error with Aider"
         override fun getText(): String = "Fix compile error with Aider (Interactive)"
 
-        override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean =
-            hasCompileErrors(project, element.containingFile)
+        override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean {
+            return editor != null && hasCompileErrors(project, element.containingFile)
+        }
 
         override fun invoke(project: Project, editor: Editor?, element: PsiElement) {
             FixCompileErrorInteractive().showDialog(project, element.containingFile)
