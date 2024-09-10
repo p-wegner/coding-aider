@@ -11,6 +11,7 @@
     <li><b>Uses project settings:</b> Applies your predefined Aider settings for consistency across your project.</li>
     <li><b>Non-interactive:</b> Operates without requiring further input, ideal for straightforward errors or when you want a quick solution attempt.</li>
     <li><b>Immediate feedback:</b> Quickly applies suggested fixes, allowing you to see results instantly.</li>
+    <li><b>AI-powered solutions:</b> Leverages advanced language models to provide intelligent fixes for various types of compile errors.</li>
 </ul>
 
 <p><b>When to use:</b></p>
@@ -19,6 +20,7 @@
     <li>When you're confident in your Aider settings and want to apply them consistently.</li>
     <li>During rapid development or debugging sessions where speed is crucial.</li>
     <li>For repetitive errors that you know Aider can handle effectively.</li>
+    <li>When you want to quickly test an AI-suggested fix before diving deeper into the problem.</li>
 </ul>
 
 <p><b>Benefits:</b></p>
@@ -28,6 +30,8 @@
     <li>Maintains coding flow by quickly resolving minor compilation issues.</li>
     <li>Leverages AI to suggest fixes that might not be immediately obvious to the developer.</li>
     <li>Provides a learning opportunity by showing AI-suggested solutions for common errors.</li>
+    <li>Increases productivity by reducing the time spent on routine error resolution.</li>
+    <li>Helps maintain code quality by suggesting standardized fixes for common issues.</li>
 </ul>
 
 <p><b>How it works:</b></p>
@@ -35,10 +39,24 @@
     <li>The action identifies the current compile error in your file.</li>
     <li>It gathers relevant context, including the error message and affected code.</li>
     <li>This information is sent to Aider using your predefined project settings.</li>
-    <li>Aider analyzes the error and suggests a fix.</li>
+    <li>Aider analyzes the error and suggests a fix using advanced AI models.</li>
     <li>The suggested fix is automatically applied to your code.</li>
+    <li>The IDE refreshes the file, showing the applied changes and updating error highlighting.</li>
 </ol>
 
-<p>This quick fix approach is best suited for common or simple compile errors where immediate action is preferred. It uses the default settings configured in your project, making it a fast and convenient option for many scenarios. While it may not be suitable for all types of errors, especially those requiring deeper context or explanation, it can significantly speed up the process of dealing with routine compilation issues.</p>
+<p><b>Customization:</b></p>
+<ul>
+    <li>The behavior of this quick fix can be customized through your project's Aider settings.</li>
+    <li>You can adjust the AI model used, additional arguments, and other parameters to fine-tune the fix suggestions.</li>
+</ul>
+
+<p><b>Limitations:</b></p>
+<ul>
+    <li>May not be suitable for complex errors requiring in-depth analysis or multi-file changes.</li>
+    <li>The quality of fixes depends on the accuracy and completeness of the error message and gathered context.</li>
+    <li>In some cases, manual review and adjustment of the suggested fixes may be necessary.</li>
+</ul>
+
+<p>This quick fix approach is best suited for common or simple compile errors where immediate action is preferred. It uses the default settings configured in your project, making it a fast and convenient option for many scenarios. While it may not be suitable for all types of errors, especially those requiring deeper context or explanation, it can significantly speed up the process of dealing with routine compilation issues. For more complex scenarios or when you need more control over the fix process, consider using the interactive version of this intention.</p>
 </body>
 </html>
