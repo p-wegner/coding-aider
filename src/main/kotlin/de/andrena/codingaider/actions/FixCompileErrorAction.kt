@@ -36,9 +36,10 @@ abstract class BaseFixCompileErrorAction : AnAction() {
     companion object {
         private fun getCompileErrors(project: Project, psiFile: PsiFile): List<HighlightInfo> {
             val document = PsiDocumentManager.getInstance(project).getDocument(psiFile) ?: return emptyList()
-            return DocumentMarkupModel.forDocument(document, project, true).allHighlighters
-                .filter { (it.errorStripeTooltip as? HighlightInfo)?.severity == HighlightSeverity.ERROR}
+            val result = DocumentMarkupModel.forDocument(document, project, true).allHighlighters
+                .filter { (it.errorStripeTooltip as? HighlightInfo)?.severity == HighlightSeverity.ERROR }
                 .map { it.errorStripeTooltip as HighlightInfo }
+            return result
         }
         fun fixErrorPrompt(errorMessage: String) = "Fix the compile error in this file:\n$errorMessage"
 
