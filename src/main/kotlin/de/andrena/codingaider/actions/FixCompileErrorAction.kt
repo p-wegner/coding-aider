@@ -112,11 +112,6 @@ class FixCompileErrorAction : BaseFixCompileErrorAction() {
 
 }
 
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.progress.Task
-
 class FixCompileErrorInteractive : BaseFixCompileErrorAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
