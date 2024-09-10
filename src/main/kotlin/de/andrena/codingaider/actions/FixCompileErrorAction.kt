@@ -56,12 +56,14 @@ abstract class BaseFixCompileErrorAction : AnAction() {
             isShellMode: Boolean
         ): CommandData {
             val settings = AiderSettings.getInstance(project)
+            val filePath = psiFile.virtualFile?.path
+            val files = filePath?.let { listOf(FileData(it, false)) } ?: emptyList()
             return CommandData(
                 message = message,
                 useYesFlag = useYesFlag,
                 llm = settings.llm,
                 additionalArgs = settings.additionalArgs,
-                files = listOf(FileData(psiFile.virtualFile.path, false)),
+                files = files,
                 isShellMode = isShellMode,
                 lintCmd = settings.lintCmd,
                 deactivateRepoMap = settings.deactivateRepoMap,
