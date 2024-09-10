@@ -5,11 +5,13 @@ import com.intellij.codeInsight.daemon.impl.HighlightInfo
 import com.intellij.codeInsight.daemon.impl.HighlightInfoType
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
+import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.editor.impl.DocumentMarkupModel
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
@@ -32,16 +34,14 @@ abstract class BaseFixCompileErrorAction : AnAction() {
     companion object {
         private fun getCompileErrors(project: Project, psiFile: PsiFile): List<HighlightInfo> {
             val document = PsiDocumentManager.getInstance(project).getDocument(psiFile) ?: return emptyList()
-            return DaemonCodeAnalyzerImpl.getHighlights(
-                document,
-                HighlightInfoType.ERROR.getSeverity(psiFile),
-                project
-            )
+            return DocumentMarkupModel.forDocument(document, project, true).allHighlighters
+                .filter { (it.errorStripeTooltip as? HighlightInfo)?.severity == HighlightSeverity.ERROR}
+                .map { it.errorStripeTooltip as HighlightInfo }
         }
+        fun fixErrorPrompt(errorMessage: String) = "Fix the compile error in this file:\n$errorMessage"
 
-        fun hasCompileErrors(project: Project, psiFile: PsiFile): Boolean {
-            return getCompileErrors(project, psiFile).isNotEmpty()
-        }
+        fun hasCompileErrors(project: Project, psiFile: PsiFile): Boolean =
+            getCompileErrors(project, psiFile).isNotEmpty()
 
         fun getErrorMessage(project: Project, psiFile: PsiFile): String {
             val errors = getCompileErrors(project, psiFile)
@@ -86,18 +86,19 @@ class FixCompileErrorAction : BaseFixCompileErrorAction() {
         fun fixCompileError(project: Project, psiFile: PsiFile) {
             val errorMessage = getErrorMessage(project, psiFile)
             val commandData =
-                createCommandData(project, psiFile, "fix the compile error in this file: $errorMessage", true, false)
+                createCommandData(project, psiFile, fixErrorPrompt(errorMessage), true, false)
             IDEBasedExecutor(project, commandData).execute()
         }
+
+
     }
 
     class Intention : PsiElementBaseIntentionAction(), IntentionAction {
         override fun getFamilyName(): String = "Fix compile error with Aider"
         override fun getText(): String = "Quick fix compile error with Aider"
 
-        override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean {
-            return hasCompileErrors(project, element.containingFile)
-        }
+        override fun isAvailable(project: Project, editor: Editor?, element: PsiElement) =
+            hasCompileErrors(project, element.containingFile)
 
         override fun invoke(project: Project, editor: Editor?, element: PsiElement) {
             fixCompileError(project, element.containingFile)
@@ -121,7 +122,7 @@ class FixCompileErrorInteractive : BaseFixCompileErrorAction() {
             val dialog = AiderInputDialog(
                 project,
                 listOf(FileData(psiFile.virtualFile.path, false)),
-                "fix the compile error in this file: $errorMessage"
+                fixErrorPrompt(errorMessage)
             )
 
             if (dialog.showAndGet()) {
