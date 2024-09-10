@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "de.andrena"
-version = "1.0.6-SNAPSHOT"
+version = "1.0.6"
 
 repositories {
     mavenCentral()
