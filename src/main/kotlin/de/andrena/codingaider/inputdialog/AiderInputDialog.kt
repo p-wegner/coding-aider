@@ -129,17 +129,18 @@ class AiderInputDialog(
             override fun createDefaultDivider(): BasicSplitPaneDivider {
                 return object : BasicSplitPaneDivider(this) {
                     override fun paint(g: Graphics) {
-                        // Do not paint the divider
+                        g.color = UIManager.getColor("SplitPane.background")
+                        g.fillRect(0, 0, width, height)
                     }
                     
                     override fun getDividerSize(): Int {
-                        return 1 // Set a minimal divider size
+                        return 5 // Set a slightly larger divider size
                     }
                 }
             }
         })
         splitPane.border = null
-        splitPane.dividerSize = 1 // Set a minimal divider size
+        splitPane.dividerSize = 5 // Set a slightly larger divider size
     }
 
     private fun setupKeyBindings() {
