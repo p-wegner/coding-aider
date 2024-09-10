@@ -117,26 +117,28 @@ class FixCompileErrorInteractive : BaseFixCompileErrorAction() {
 
     private fun showDialog(project: Project, psiFile: PsiFile) {
         val errorMessage = getErrorMessage(project, psiFile)
-        val dialog = AiderInputDialog(
-            project,
-            listOf(FileData(psiFile.virtualFile.path, false)),
-            "fix the compile error in this file: $errorMessage"
-        )
-
-        if (dialog.showAndGet()) {
-            val commandData = createCommandData(
+        com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
+            val dialog = AiderInputDialog(
                 project,
-                psiFile,
-                dialog.getInputText(),
-                dialog.isYesFlagChecked(),
-                dialog.isShellMode()
-            ).copy(
-                llm = dialog.getLlm(),
-                additionalArgs = dialog.getAdditionalArgs(),
-                files = dialog.getAllFiles()
+                listOf(FileData(psiFile.virtualFile.path, false)),
+                "fix the compile error in this file: $errorMessage"
             )
 
-            AiderAction.executeAiderActionWithCommandData(project, commandData)
+            if (dialog.showAndGet()) {
+                val commandData = createCommandData(
+                    project,
+                    psiFile,
+                    dialog.getInputText(),
+                    dialog.isYesFlagChecked(),
+                    dialog.isShellMode()
+                ).copy(
+                    llm = dialog.getLlm(),
+                    additionalArgs = dialog.getAdditionalArgs(),
+                    files = dialog.getAllFiles()
+                )
+
+                AiderAction.executeAiderActionWithCommandData(project, commandData)
+            }
         }
     }
 
@@ -147,7 +149,10 @@ class FixCompileErrorInteractive : BaseFixCompileErrorAction() {
         override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean =
             hasCompileErrors(project, element.containingFile)
 
-        override fun invoke(project: Project, editor: Editor?, element: PsiElement) =
-            FixCompileErrorInteractive().showDialog(project, element.containingFile)
+        override fun invoke(project: Project, editor: Editor?, element: PsiElement) {
+            com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
+                FixCompileErrorInteractive().showDialog(project, element.containingFile)
+            }
+        }
     }
 }
