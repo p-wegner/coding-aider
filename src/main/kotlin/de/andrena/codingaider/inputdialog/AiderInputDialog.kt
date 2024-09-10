@@ -136,13 +136,13 @@ class AiderInputDialog(
                     }
                     
                     override fun getDividerSize(): Int {
-                        return 5 // Keep the slightly larger divider size
+                        return 3
                     }
                 }
             }
         })
         splitPane.border = null
-        splitPane.dividerSize = 5 // Keep the slightly larger divider size
+        splitPane.dividerSize = 3
     }
 
     private fun setupKeyBindings() {
