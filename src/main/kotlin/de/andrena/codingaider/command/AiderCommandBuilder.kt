@@ -37,6 +37,8 @@ object AiderCommandBuilder {
                 add("-m")
                 add("\"${commandData.message}\"")
             }
+            add("--encoding")
+            add("utf-8")
         }
     }
 }
