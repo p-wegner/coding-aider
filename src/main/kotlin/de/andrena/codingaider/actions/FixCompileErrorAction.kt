@@ -151,7 +151,7 @@ class FixCompileErrorInteractive : BaseFixCompileErrorAction() {
             hasCompileErrors(project, element.containingFile)
 
         override fun invoke(project: Project, editor: Editor?, element: PsiElement) {
-            com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(project) {
+            WriteCommandAction.runWriteCommandAction(project) {
                 FixCompileErrorInteractive().showDialog(project, element.containingFile)
             }
         }
