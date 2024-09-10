@@ -116,11 +116,13 @@ class FixCompileErrorInteractive : BaseFixCompileErrorAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val psiFile = e.getData(CommonDataKeys.PSI_FILE) ?: return
+        showDialogInBGT(project, psiFile)
+    }
+
+    fun showDialogInBGT(project: Project, psiFile: PsiFile) {
         ApplicationManager.getApplication().invokeLater {
             ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Fixing Compile Error", true) {
-                override fun run(indicator: ProgressIndicator) {
-                    showDialog(project, psiFile)
-                }
+                override fun run(indicator: ProgressIndicator) = showDialog(project, psiFile)
             })
         }
     }
@@ -165,7 +167,7 @@ class FixCompileErrorInteractive : BaseFixCompileErrorAction() {
         override fun invoke(project: Project, editor: Editor?, element: PsiElement) {
             // workaround to prevent triggering when focussed
             if (element.containingFile.virtualFile == null) return
-            FixCompileErrorInteractive().showDialog(project, element.containingFile)
+            FixCompileErrorInteractive().showDialogInBGT(project, element.containingFile)
         }
 
     }
