@@ -96,8 +96,31 @@
     <li>Use file selection judiciously to provide necessary context without overwhelming the AI with irrelevant information.</li>
     <li>Experiment with different settings to find the optimal configuration for your project and error types.</li>
     <li>Review suggested changes carefully, especially when dealing with critical code sections.</li>
+    <li>When dealing with framework-specific errors, include relevant configuration files in the file selection.</li>
+    <li>For errors related to external libraries, consider adding import statements or library versions to the error description.</li>
+    <li>Use shell mode for advanced scenarios, such as running custom scripts or accessing external tools during the fix process.</li>
 </ul>
 
+<p><b>Example scenarios:</b></p>
+<ol>
+    <li><b>Complex type inference error:</b> When facing a Kotlin type inference error in a complex generic function, use GPT-4 and include related files to provide full context for the type hierarchy.</li>
+    <li><b>Build configuration issue:</b> For errors related to Gradle or Maven configuration, include the build files in the file selection and use additional arguments to specify the build tool version.</li>
+    <li><b>Cross-module dependency problem:</b> When dealing with errors spanning multiple modules, carefully select files from different modules to give Aider a comprehensive view of the project structure.</li>
+    <li><b>Framework-specific annotation error:</b> For errors related to specific frameworks (e.g., Spring, Android), include the error message along with relevant configuration files and use the error description to specify the framework version.</li>
+    <li><b>Performance optimization:</b> Use this intention to not only fix errors but also to suggest performance improvements by including profiling information in the error description.</li>
+</ol>
+
 <p>This interactive approach gives you more control over how Aider addresses the compile error, which can be particularly useful for complex errors or when you want to guide the AI's approach. It's ideal for developers who want a more hands-on experience with AI-assisted coding or need to handle tricky compilation issues. By providing this level of customization, you can leverage the full power of AI to resolve even the most challenging compile errors while maintaining full control over the process.</p>
+
+<p><b>Advanced usage tips:</b></p>
+<ul>
+    <li>Combine the "Yes" flag with carefully selected files for rapid iterations on non-critical code sections.</li>
+    <li>Use shell mode to integrate custom static analysis tools into the error-fixing process.</li>
+    <li>For recurring project-specific errors, create a template of additional arguments and file selections for quick reuse.</li>
+    <li>When working with domain-specific languages or custom DSLs, provide examples of correct usage in the error description to guide the AI.</li>
+    <li>Experiment with different LLM models for various error types to create a "best model" reference for your project's common issues.</li>
+</ul>
+
+<p>By mastering the use of this interactive intention, you can significantly enhance your productivity, especially when dealing with complex or project-specific compilation issues. It serves not just as an error-fixing tool but as a powerful assistant in understanding and improving your codebase.</p>
 </body>
 </html>

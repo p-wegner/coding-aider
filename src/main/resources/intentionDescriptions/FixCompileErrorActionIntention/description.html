@@ -55,10 +55,40 @@
     <li>May not be suitable for complex errors requiring in-depth analysis or multi-file changes.</li>
     <li>The quality of fixes depends on the accuracy and completeness of the error message and gathered context.</li>
     <li>In some cases, manual review and adjustment of the suggested fixes may be necessary.</li>
+    <li>Might not handle project-specific or highly customized code patterns optimally without additional context.</li>
+    <li>Could potentially introduce new issues if the AI misinterprets the error context in complex scenarios.</li>
+</ul>
+
+<p><b>Example scenarios:</b></p>
+<ol>
+    <li><b>Missing imports:</b> Quickly adds required import statements for undefined classes or functions.</li>
+    <li><b>Simple syntax errors:</b> Fixes common syntax issues like missing semicolons, parentheses, or brackets.</li>
+    <li><b>Type mismatches:</b> Resolves basic type incompatibilities in variable assignments or function returns.</li>
+    <li><b>Null safety in Kotlin:</b> Adds null checks or uses safe call operators (?) to handle potential null pointer exceptions.</li>
+    <li><b>Visibility modifiers:</b> Adjusts access modifiers (public, private, protected) to resolve visibility issues.</li>
+</ol>
+
+<p><b>Best practices:</b></p>
+<ul>
+    <li>Use this intention for quick fixes during initial development or prototyping phases.</li>
+    <li>Combine with regular code reviews to ensure AI-suggested fixes align with project standards.</li>
+    <li>Keep your project's Aider settings up-to-date to improve the accuracy of automatic fixes.</li>
+    <li>For frequently occurring errors, consider creating custom lint rules or templates to guide the AI.</li>
+    <li>Regularly sync your codebase to ensure the AI has the most current context for fixes.</li>
 </ul>
 
 <p>This quick fix approach is best suited for common or simple compile errors where immediate action is preferred. It uses the default settings configured in your project, making it a fast and convenient option for many scenarios. While it may not be suitable for all types of errors, especially those requiring deeper context or explanation, it can significantly speed up the process of dealing with routine compilation issues. For more complex scenarios or when you need more control over the fix process, consider using the interactive version of this intention.</p>
 
 <p>By leveraging AI in this automated manner, developers can maintain a smooth workflow, quickly overcome minor obstacles, and focus on the more creative and complex aspects of software development. It's an excellent tool for boosting productivity and maintaining code quality, especially in fast-paced development environments or when working with large codebases where quick iterations are crucial.</p>
+
+<p><b>Integration tips:</b></p>
+<ul>
+    <li>Consider using this intention as part of your pre-commit hooks for catching and fixing simple errors early.</li>
+    <li>Combine with automated testing to ensure that quick fixes don't introduce regressions.</li>
+    <li>Use in conjunction with code style formatters to maintain consistency across AI-suggested fixes.</li>
+    <li>For team settings, establish guidelines on when to use quick fixes versus more thorough, manual reviews.</li>
+</ul>
+
+<p>Remember, while this tool can significantly streamline your development process, it's important to maintain a balance between automation and manual oversight. Use it as a powerful assistant in your coding toolkit, but always be prepared to review and understand the changes it suggests, especially in critical or complex parts of your codebase.</p>
 </body>
 </html>
