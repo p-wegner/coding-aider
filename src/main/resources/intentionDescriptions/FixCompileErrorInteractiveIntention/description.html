@@ -1,23 +1,35 @@
 <html>
 <body>
-This intention fixes compile errors in the current file using Aider with interactive input.
-<p>
-It opens a dialog where you can customize the request to Aider for fixing the compile error,
-allowing you to provide additional context or specific instructions.
-</p>
-<p>
-Key features:
+<p>This intention fixes compile errors in the current file using Aider with interactive input.</p>
+
+<p>When invoked, it opens a dialog where you can customize the request to Aider for fixing the compile error. This allows you to provide additional context, specific instructions, or modify the approach based on your understanding of the problem.</p>
+
+<p><b>Key features:</b></p>
 <ul>
-    <li>Customizable input: Modify the default error message or add specific instructions.</li>
-    <li>LLM selection: Choose between different language models for the task.</li>
-    <li>Additional arguments: Fine-tune the Aider command with extra parameters.</li>
-    <li>File selection: Include or exclude files from the fix scope.</li>
-    <li>Shell mode: Toggle between normal and shell mode for advanced users.</li>
+    <li><b>Customizable input:</b> Modify the default error message or add specific instructions to guide Aider's approach.</li>
+    <li><b>LLM selection:</b> Choose between different language models (e.g., GPT-3.5, GPT-4) for the task, allowing you to balance between speed and capability.</li>
+    <li><b>Additional arguments:</b> Fine-tune the Aider command with extra parameters for advanced control over the AI's behavior.</li>
+    <li><b>File selection:</b> Include or exclude files from the fix scope, useful when the error involves multiple files or when you want to limit the AI's focus.</li>
+    <li><b>Shell mode:</b> Toggle between normal and shell mode for advanced users who need more direct control over the Aider process.</li>
+    <li><b>Yes flag:</b> Option to automatically apply suggested changes without further confirmation, speeding up the process for trusted fixes.</li>
 </ul>
-</p>
-<p>
-This interactive approach gives you more control over how Aider addresses the compile error,
-which can be particularly useful for complex errors or when you want to guide the AI's approach.
-</p>
+
+<p><b>When to use:</b></p>
+<ul>
+    <li>For complex compile errors that may require additional context or specific guidance.</li>
+    <li>When you want to experiment with different AI models or Aider settings for optimal results.</li>
+    <li>In situations where you need to carefully control which files are involved in the fix.</li>
+    <li>For educational purposes, where you want to see how different inputs affect the AI's approach to solving the error.</li>
+</ul>
+
+<p><b>Benefits:</b></p>
+<ul>
+    <li>Greater control over the error-fixing process, allowing for more precise and tailored solutions.</li>
+    <li>Flexibility to adapt the AI's approach based on your understanding of the codebase and the specific error.</li>
+    <li>Opportunity to learn from and guide the AI, potentially improving your own problem-solving skills.</li>
+    <li>Ability to handle complex or unusual compile errors that may not be easily resolved with a one-size-fits-all approach.</li>
+</ul>
+
+<p>This interactive approach gives you more control over how Aider addresses the compile error, which can be particularly useful for complex errors or when you want to guide the AI's approach. It's ideal for developers who want a more hands-on experience with AI-assisted coding or need to handle tricky compilation issues.</p>
 </body>
 </html>
