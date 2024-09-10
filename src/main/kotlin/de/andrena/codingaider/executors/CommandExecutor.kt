@@ -20,24 +20,15 @@ class CommandExecutor(
     private val settings = AiderSettings.getInstance(project)
     private val commandLogger = CommandLogger(settings, commandData)
 
-    private fun getShellCommand(): List<String> {
-        return when {
-            System.getProperty("os.name").toLowerCase().contains("win") -> listOf("cmd.exe", "/c")
-            else -> listOf("bash", "-c")
-        }
-    }
 
     fun executeCommand() {
         val output = StringBuilder()
         val commandArgs = AiderCommandBuilder.buildAiderCommand(commandData, false)
-        val shellCommand = getShellCommand() + listOf(commandArgs.joinToString(" "))
-        val processBuilder = ProcessBuilder(shellCommand).directory(File(project.basePath!!))
+        val processBuilder = ProcessBuilder(commandArgs).directory(File(project.basePath!!))
         processBuilder.environment().putIfAbsent("PYTHONIOENCODING", "utf-8")
         processBuilder.redirectErrorStream(true)
 
-        logger.info("Executing Aider command: ${shellCommand.joinToString(" ")}")
-        logger.info("Using JVM default encoding: ${System.getProperty("file.encoding")}")
-        
+        logger.info("Executing Aider command: ${commandArgs.joinToString(" ")}")
         val initialMessage = "Starting Aider command...\n${commandLogger.getCommandString(false)}"
         updateDialogProgress(initialMessage, "Aider Command In Progress")
 
