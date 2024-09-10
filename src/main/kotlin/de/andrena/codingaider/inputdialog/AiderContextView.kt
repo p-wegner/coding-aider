@@ -5,12 +5,14 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.ui.IconManager
+import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.tree.TreeUtil
 import de.andrena.codingaider.command.FileData
 import java.awt.BorderLayout
+import java.awt.Color
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.io.File
@@ -84,7 +86,8 @@ class AiderContextView(
                             "Files" -> icon = AllIcons.Nodes.Folder
                         }
                     }
-                    background = null
+                    background = if (sel) JBColor.background().brighter() else JBColor.background()
+                    foreground = JBColor.foreground()
                 }
             }
         }
@@ -95,7 +98,14 @@ class AiderContextView(
 
         val contentPanel = JPanel(BorderLayout()).apply {
             add(scrollPane, BorderLayout.CENTER)
-            border = TitledBorder(JBUI.Borders.customLine(JBUI.CurrentTheme.Focus.focusColor(), 1), "Context View")
+            border = TitledBorder(
+                JBUI.Borders.customLine(JBColor.border(), 1),
+                "Context View",
+                TitledBorder.DEFAULT_JUSTIFICATION,
+                TitledBorder.DEFAULT_POSITION,
+                null,
+                JBColor.foreground()
+            )
         }
 
         add(contentPanel, BorderLayout.CENTER)
