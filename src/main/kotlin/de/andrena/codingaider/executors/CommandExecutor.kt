@@ -9,6 +9,7 @@ import java.io.File
 import java.io.InputStreamReader
 import com.intellij.openapi.diagnostic.Logger
 import de.andrena.codingaider.settings.AiderSettings
+import java.util.concurrent.TimeUnit
 
 class CommandExecutor(
     private val project: Project,
@@ -19,13 +20,22 @@ class CommandExecutor(
     private val settings = AiderSettings.getInstance(project)
     private val commandLogger = CommandLogger(settings, commandData)
 
+    private fun getShellCommand(): List<String> {
+        return when {
+            System.getProperty("os.name").toLowerCase().contains("win") -> listOf("cmd.exe", "/c")
+            else -> listOf("bash", "-c")
+        }
+    }
+
     fun executeCommand() {
         val output = StringBuilder()
         val commandArgs = AiderCommandBuilder.buildAiderCommand(commandData, false)
-        val processBuilder = ProcessBuilder(commandArgs).directory(File(project.basePath!!))
+        val shellCommand = getShellCommand() + listOf(commandArgs.joinToString(" "))
+        val processBuilder = ProcessBuilder(shellCommand).directory(File(project.basePath!!))
+        processBuilder.environment()["PYTHONIOENCODING"] = "utf-8"
         processBuilder.redirectErrorStream(true)
 
-        logger.info("Executing Aider command: ${commandArgs.joinToString(" ")}")
+        logger.info("Executing Aider command: ${shellCommand.joinToString(" ")}")
         logger.info("Using JVM default encoding: ${System.getProperty("file.encoding")}")
         
         val initialMessage = "Starting Aider command...\n${commandLogger.getCommandString(false)}"
@@ -37,7 +47,7 @@ class CommandExecutor(
     }
 
     private fun handleProcessCompletion(process: Process, output: StringBuilder) {
-        if (process.isAlive) {
+        if (!process.waitFor(5, TimeUnit.MINUTES)) {
             handleProcessTimeout(process, output)
         } else {
             handleProcessExit(process, output)
