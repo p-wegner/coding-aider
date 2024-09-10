@@ -119,28 +119,26 @@ class FixCompileErrorInteractive : BaseFixCompileErrorAction() {
 
     private fun showDialog(project: Project, psiFile: PsiFile) {
         val errorMessage = getErrorMessage(project, psiFile)
-        com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
-            val dialog = AiderInputDialog(
+        val dialog = AiderInputDialog(
+            project,
+            listOf(FileData(psiFile.virtualFile.path, false)),
+            fixErrorPrompt(errorMessage)
+        )
+
+        if (dialog.showAndGet()) {
+            val commandData = createCommandData(
                 project,
-                listOf(FileData(psiFile.virtualFile.path, false)),
-                fixErrorPrompt(errorMessage)
+                psiFile,
+                dialog.getInputText(),
+                dialog.isYesFlagChecked(),
+                dialog.isShellMode()
+            ).copy(
+                llm = dialog.getLlm(),
+                additionalArgs = dialog.getAdditionalArgs(),
+                files = dialog.getAllFiles()
             )
 
-            if (dialog.showAndGet()) {
-                val commandData = createCommandData(
-                    project,
-                    psiFile,
-                    dialog.getInputText(),
-                    dialog.isYesFlagChecked(),
-                    dialog.isShellMode()
-                ).copy(
-                    llm = dialog.getLlm(),
-                    additionalArgs = dialog.getAdditionalArgs(),
-                    files = dialog.getAllFiles()
-                )
-
-                AiderAction.executeAiderActionWithCommandData(project, commandData)
-            }
+            AiderAction.executeAiderActionWithCommandData(project, commandData)
         }
     }
 
