@@ -19,6 +19,10 @@ import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.AiderInputDialog
 import de.andrena.codingaider.settings.AiderSettings
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
 
 abstract class BaseFixCompileErrorAction : AnAction() {
     override fun update(e: AnActionEvent) {
