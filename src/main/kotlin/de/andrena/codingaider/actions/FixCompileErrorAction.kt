@@ -10,8 +10,6 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.editor.Editor
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
@@ -152,11 +150,7 @@ class FixCompileErrorInteractive : BaseFixCompileErrorAction() {
             hasCompileErrors(project, element.containingFile)
 
         override fun invoke(project: Project, editor: Editor?, element: PsiElement) {
-            ApplicationManager.getApplication().invokeLater {
-                WriteCommandAction.runWriteCommandAction(project) {
-                    FixCompileErrorInteractive().showDialog(project, element.containingFile)
-                }
-            }
+            FixCompileErrorInteractive().showDialog(project, element.containingFile)
         }
     }
 }
