@@ -32,7 +32,7 @@ class CommandExecutor(
         val commandArgs = AiderCommandBuilder.buildAiderCommand(commandData, false)
         val shellCommand = getShellCommand() + listOf(commandArgs.joinToString(" "))
         val processBuilder = ProcessBuilder(shellCommand).directory(File(project.basePath!!))
-        processBuilder.environment()["PYTHONIOENCODING"] = "utf-8"
+        processBuilder.environment().putIfAbsent("PYTHONIOENCODING", "utf-8")
         processBuilder.redirectErrorStream(true)
 
         logger.info("Executing Aider command: ${shellCommand.joinToString(" ")}")
