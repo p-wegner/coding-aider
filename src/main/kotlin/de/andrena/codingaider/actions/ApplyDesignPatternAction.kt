@@ -138,24 +138,29 @@ class ApplyDesignPatternAction : AnAction() {
             """.trimIndent()
         }
 
-        private val patternComboBox: JComboBox<String> = ComboBox(patterns.map { pattern ->
-            patternsInfo[pattern]?.get("display_title") ?: pattern
-        }.toTypedArray()).apply {
-            renderer = PatternRenderer()
-            ToolTipManager.sharedInstance().dismissDelay = Integer.MAX_VALUE
-            toolTipText = createTooltipText(patterns.firstOrNull() ?: "")
-        }
+        private lateinit var patternComboBox: JComboBox<String>
         private val additionalInfoArea = JTextArea(5, 50)
 
         init {
             title = "Apply Design Pattern"
-            patternComboBox.addItemListener { event ->
-                if (event.stateChange == ItemEvent.SELECTED) {
-                    val selectedIndex = patternComboBox.selectedIndex
-                    patternComboBox.toolTipText = createTooltipText(patterns.getOrNull(selectedIndex) ?: "")
+            initializePatternComboBox()
+            init()
+        }
+
+        private fun initializePatternComboBox() {
+            patternComboBox = ComboBox(patterns.map { pattern ->
+                patternsInfo[pattern]?.get("display_title") ?: pattern
+            }.toTypedArray()).apply {
+                renderer = PatternRenderer()
+                ToolTipManager.sharedInstance().dismissDelay = Integer.MAX_VALUE
+                toolTipText = createTooltipText(patterns.firstOrNull() ?: "")
+                addItemListener { event ->
+                    if (event.stateChange == ItemEvent.SELECTED) {
+                        val selectedIndex = selectedIndex
+                        toolTipText = createTooltipText(patterns.getOrNull(selectedIndex) ?: "")
+                    }
                 }
             }
-            init()
         }
 
         override fun createCenterPanel(): JComponent {
