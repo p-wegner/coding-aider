@@ -190,7 +190,7 @@ class ApplyDesignPatternAction : AnAction() {
             }
         }
 
-        fun getSelectedPattern(): String = patterns[patternComboBox.selectedIndex]
+        fun getSelectedPattern(): String = patterns.getOrNull(patternComboBox.selectedIndex) ?: patterns.firstOrNull() ?: ""
         fun getAdditionalInfo(): String = additionalInfoArea.text
 
         private inner class PatternRenderer : BasicComboBoxRenderer() {
@@ -204,7 +204,7 @@ class ApplyDesignPatternAction : AnAction() {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
                 if (value is String) {
                     text = value
-                    toolTipText = createTooltipText(patterns[index])
+                    toolTipText = createTooltipText(patterns.getOrNull(index) ?: "")
                 }
                 return this
             }
