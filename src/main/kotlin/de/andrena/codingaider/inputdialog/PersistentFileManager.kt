@@ -1,20 +1,20 @@
 package de.andrena.codingaider.inputdialog
 
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.openapi.vfs.VirtualFile
-import de.andrena.codingaider.command.FileData
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VirtualFile
+import de.andrena.codingaider.command.FileData
 import java.io.File
 import java.io.IOException
 
 class PersistentFileManager(basePath: String) {
     private val contextFile = File(basePath, ".aider.context.yaml")
     private val persistentFiles: MutableList<FileData> = mutableListOf()
-    private val objectMapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule())
+    private val objectMapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
 
     init {
         loadPersistentFiles()
