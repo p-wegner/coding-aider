@@ -120,7 +120,9 @@ class ApplyDesignPatternAction : AnAction() {
 
     private class DesignPatternDialog(project: Project, private val patterns: List<String>) : DialogWrapper(project) {
         private val patternsInfo = Companion.loadDesignPatterns()
-        private val patternComboBox: JComboBox<String> = JComboBox(patterns.map { patternsInfo[it]?.get("display_title") ?: it }.toTypedArray()).apply {
+        private val patternComboBox: JComboBox<String> = JComboBox(patterns.mapNotNull { pattern ->
+            patternsInfo[pattern]?.get("display_title") ?: pattern
+        }.toTypedArray()).apply {
             renderer = PatternRenderer()
             ToolTipManager.sharedInstance().dismissDelay = Integer.MAX_VALUE
         }
