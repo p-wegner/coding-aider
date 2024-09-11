@@ -1,9 +1,5 @@
 package de.andrena.codingaider.actions
 
-fun String.capitalize(): String {
-    return this.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
-}
-
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
@@ -29,6 +25,10 @@ import java.awt.GridBagLayout
 import java.awt.event.KeyEvent
 import javax.swing.*
 import javax.swing.plaf.basic.BasicComboBoxRenderer
+
+fun String.capitalize(): String {
+    return this.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
+}
 
 class ApplyDesignPatternAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
@@ -125,7 +125,7 @@ class ApplyDesignPatternAction : AnAction() {
 
     private class DesignPatternDialog(project: Project, private val patterns: List<String>) : DialogWrapper(project) {
         private val patternsInfo = Companion.loadDesignPatterns()
-        private val patternComboBox: JComboBox<String> = ComboBox(patterns.map { pattern ->
+        private val patternComboBox: JComboBox<String> = ComboBox<String>(patterns.map { pattern ->
             patternsInfo[pattern]?.get("display_title") ?: pattern
         }.toTypedArray()).apply {
             renderer = PatternRenderer()
