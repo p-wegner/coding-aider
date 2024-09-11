@@ -77,13 +77,23 @@ class ApplyDesignPatternAction : AnAction() {
             additionalInfo: String
         ): String {
             val baseMessage = """
-                Apply the ${selectedPattern.capitalize()} design pattern to the following files: $fileNames.
-                Here's information about the pattern:
+                Analyze the following files: $fileNames.
+                Consider applying the ${selectedPattern.capitalize()} design pattern. Here's information about the pattern:
                 Description: ${patternInfo["description"]}
                 When to apply: ${patternInfo["when_to_apply"]}
                 What it does: ${patternInfo["what_it_does"]}
                 Benefits: ${patternInfo["benefits"]}
-                Please refactor the code to implement this design pattern. Provide a detailed explanation of the changes made and how they implement the ${selectedPattern.capitalize()} pattern.
+                
+                Please follow these steps:
+                1. Evaluate if applying the ${selectedPattern.capitalize()} pattern is appropriate for the given code.
+                2. If it's appropriate:
+                   a. Refactor the code to implement this design pattern.
+                   b. Provide a detailed explanation of the changes made and how they implement the ${selectedPattern.capitalize()} pattern.
+                3. If it's not appropriate:
+                   a. Do not make any changes to the code.
+                   b. Provide a detailed report explaining why the pattern is not applicable in this case.
+                
+                In both cases, justify your decision with specific references to the code and the pattern's characteristics.
             """.trimIndent()
 
             return if (additionalInfo.isNotBlank()) {
@@ -93,7 +103,7 @@ class ApplyDesignPatternAction : AnAction() {
                 Additional information provided by the user:
                 $additionalInfo
                 
-                Please take this additional information into account when applying the design pattern.
+                Please take this additional information into account when analyzing the applicability of the design pattern.
                 """.trimIndent()
             } else {
                 baseMessage
