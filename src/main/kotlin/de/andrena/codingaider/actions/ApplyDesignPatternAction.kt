@@ -104,7 +104,7 @@ class ApplyDesignPatternAction : AnAction() {
 
     private class DesignPatternDialog(project: Project, private val patterns: List<String>) : DialogWrapper(project) {
         private lateinit var patternComboBox: ComboBox<String>
-        private lateinit var additionalInfoField: com.intellij.ui.components.JBTextField
+        private val additionalInfoArea = JTextArea(5, 50)
 
         init {
             title = "Apply Design Pattern"
@@ -112,20 +112,63 @@ class ApplyDesignPatternAction : AnAction() {
         }
 
         override fun createCenterPanel(): JComponent {
-            return panel {
-                row("Select a design pattern:") {
-                    patternComboBox = comboBox(patterns).component
-                }
-                row("Additional information (optional):") {
-                    additionalInfoField = textField()
-                        .comment("Provide any specific requirements or context for applying the pattern")
-                        .focused()
-                        .component
-                }
+            val panel = JPanel(BorderLayout())
+            panel.border = JBUI.Borders.empty(10)
+
+            val topPanel = JPanel(GridBagLayout())
+            val gbc = GridBagConstraints().apply {
+                fill = GridBagConstraints.HORIZONTAL
+                insets = JBUI.insets(5)
+                weightx = 1.0
+                weighty = 0.0
+                gridx = 0
+                gridy = 0
+            }
+
+            val selectPatternLabel = JLabel("Select a design pattern:").apply {
+                displayedMnemonic = KeyEvent.VK_S
+                labelFor = patternComboBox
+            }
+            topPanel.add(selectPatternLabel, gbc)
+
+            gbc.gridy++
+            patternComboBox = ComboBox(patterns.toTypedArray())
+            topPanel.add(patternComboBox, gbc)
+
+            gbc.gridy++
+            val messageLabel = JLabel("Additional information (optional):").apply {
+                displayedMnemonic = KeyEvent.VK_A
+                labelFor = additionalInfoArea
+            }
+            topPanel.add(messageLabel, gbc)
+
+            gbc.gridy++
+            gbc.weighty = 1.0
+            gbc.fill = GridBagConstraints.BOTH
+            additionalInfoArea.lineWrap = true
+            additionalInfoArea.wrapStyleWord = true
+            topPanel.add(JBScrollPane(additionalInfoArea), gbc)
+
+            panel.add(topPanel, BorderLayout.CENTER)
+
+            return panel
+        }
+
+        override fun createActions(): Array<Action> {
+            val actions = super.createActions()
+            (actions[0] as? DialogWrapperAction)?.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_O)
+            (actions[1] as? DialogWrapperAction)?.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_C)
+            return actions
+        }
+
+        override fun show() {
+            super.show()
+            SwingUtilities.invokeLater {
+                additionalInfoArea.requestFocusInWindow()
             }
         }
 
         fun getSelectedPattern(): String = patternComboBox.selectedItem as String
-        fun getAdditionalInfo(): String = additionalInfoField.text
+        fun getAdditionalInfo(): String = additionalInfoArea.text
     }
 }
