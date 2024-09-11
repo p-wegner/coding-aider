@@ -1,9 +1,11 @@
+# Creational Patterns
 singleton:
   display_title: "Singleton Pattern"
   description: "Ensures a class has only one instance and provides a global point of access to it."
   when_to_apply: "When exactly one object is needed to coordinate actions across the system."
   what_it_does: "Restricts the instantiation of a class to one object."
   benefits: "Provides a global access point to that instance."
+  strategy_type: "Object Creation"
 
 factory_method:
   display_title: "Factory Method Pattern"
@@ -11,20 +13,56 @@ factory_method:
   when_to_apply: "When a class can't anticipate the class of objects it must create."
   what_it_does: "Creates objects without specifying the exact class of object that will be created."
   benefits: "Promotes loose coupling by eliminating the need to bind application-specific classes into the code."
+  strategy_type: "Object Creation"
 
-observer:
-  display_title: "Observer Pattern"
-  description: "Defines a one-to-many dependency between objects so that when one object changes state, all its dependents are notified and updated automatically."
-  when_to_apply: "When you need many other objects to receive an update when another object changes."
-  what_it_does: "Defines a subscription mechanism to notify multiple objects about any events that happen to the object they're observing."
-  benefits: "Promotes loose coupling between objects."
+abstract_factory:
+  display_title: "Abstract Factory Pattern"
+  description: "Provides an interface for creating families of related or dependent objects without specifying their concrete classes."
+  when_to_apply: "When a system should be independent of how its products are created, composed, and represented."
+  what_it_does: "Creates families of related objects without specifying their concrete classes."
+  benefits: "Promotes consistency among products and supports easy exchange of product families."
+  strategy_type: "Object Creation"
 
-strategy:
-  display_title: "Strategy Pattern"
-  description: "Defines a family of algorithms, encapsulates each one, and makes them interchangeable."
-  when_to_apply: "When you want to define a class that will have one behavior that is similar to other behaviors in a list."
-  what_it_does: "Lets the algorithm vary independently from clients that use it."
-  benefits: "Provides a way to configure a class with one of many behaviors."
+builder:
+  display_title: "Builder Pattern"
+  description: "Separates the construction of a complex object from its representation, allowing the same construction process to create various representations."
+  when_to_apply: "When you need to create complex objects with numerous parts that must be created in a specific order or using a specific algorithm."
+  what_it_does: "Provides a step-by-step creation of complex objects, keeping the construction process separate from the object's structure."
+  benefits: "Allows fine control over the construction process and can vary a product's internal representation."
+  strategy_type: "Object Creation"
+
+prototype:
+  display_title: "Prototype Pattern"
+  description: "Specifies the kinds of objects to create using a prototypical instance, and create new objects by copying this prototype."
+  when_to_apply: "When a system should be independent of how its products are created, composed, and represented, and when instances of a class can have one of only a few different combinations of state."
+  what_it_does: "Creates new objects by copying an existing object, known as the prototype."
+  benefits: "Reduces subclassing and hides complexities of creating new instances from the client."
+  strategy_type: "Object Creation"
+
+# Structural Patterns
+adapter:
+  display_title: "Adapter Pattern"
+  description: "Converts the interface of a class into another interface clients expect."
+  when_to_apply: "When you want to use an existing class, and its interface does not match the one you need."
+  what_it_does: "Allows classes with incompatible interfaces to work together by wrapping its own interface around that of an existing class."
+  benefits: "Increases reusability and flexibility of code by allowing incompatible interfaces to work together."
+  strategy_type: "Object Structure"
+
+bridge:
+  display_title: "Bridge Pattern"
+  description: "Decouples an abstraction from its implementation so that the two can vary independently."
+  when_to_apply: "When you want to avoid a permanent binding between an abstraction and its implementation, or when both the abstractions and their implementations should be extensible by subclassing."
+  what_it_does: "Separates an object's interface from its implementation, allowing them to be varied independently."
+  benefits: "Improves extensibility and allows the hiding of implementation details from clients."
+  strategy_type: "Object Structure"
+
+composite:
+  display_title: "Composite Pattern"
+  description: "Composes objects into tree structures to represent part-whole hierarchies."
+  when_to_apply: "When you want clients to be able to treat individual objects and compositions of objects uniformly."
+  what_it_does: "Allows you to compose objects into tree structures and then work with these structures as if they were individual objects."
+  benefits: "Simplifies client code by allowing uniform treatment of individual objects and compositions of objects."
+  strategy_type: "Object Structure"
 
 decorator:
   display_title: "Decorator Pattern"
@@ -32,3 +70,117 @@ decorator:
   when_to_apply: "When you want to add responsibilities to individual objects, not to an entire class."
   what_it_does: "Provides a flexible alternative to subclassing for extending functionality."
   benefits: "Allows behavior to be added to an individual object, either statically or dynamically, without affecting the behavior of other objects from the same class."
+  strategy_type: "Object Structure"
+
+facade:
+  display_title: "Facade Pattern"
+  description: "Provides a unified interface to a set of interfaces in a subsystem."
+  when_to_apply: "When you want to provide a simple interface to a complex subsystem."
+  what_it_does: "Defines a higher-level interface that makes the subsystem easier to use."
+  benefits: "Simplifies a complex system by providing a simpler interface, and helps to layer a system."
+  strategy_type: "Object Structure"
+
+flyweight:
+  display_title: "Flyweight Pattern"
+  description: "Uses sharing to support large numbers of fine-grained objects efficiently."
+  when_to_apply: "When an application uses a large number of objects that have some shared state among them."
+  what_it_does: "Minimizes memory usage by sharing as much data as possible with similar objects."
+  benefits: "Reduces the number of objects created, decreasing memory footprint and increasing performance."
+  strategy_type: "Object Structure"
+
+proxy:
+  display_title: "Proxy Pattern"
+  description: "Provides a surrogate or placeholder for another object to control access to it."
+  when_to_apply: "When you need to create a representative object that controls access to another object, which may be remote, expensive to create, or in need of securing."
+  what_it_does: "Controls access to the original object, allowing you to perform something either before or after the request gets through to the original object."
+  benefits: "Allows for more versatile and controlled access to objects, enabling features like lazy loading, access control, logging, and more."
+  strategy_type: "Object Structure"
+
+# Behavioral Patterns
+observer:
+  display_title: "Observer Pattern"
+  description: "Defines a one-to-many dependency between objects so that when one object changes state, all its dependents are notified and updated automatically."
+  when_to_apply: "When you need many other objects to receive an update when another object changes."
+  what_it_does: "Defines a subscription mechanism to notify multiple objects about any events that happen to the object they're observing."
+  benefits: "Promotes loose coupling between objects."
+  strategy_type: "Object Behavior"
+
+strategy:
+  display_title: "Strategy Pattern"
+  description: "Defines a family of algorithms, encapsulates each one, and makes them interchangeable."
+  when_to_apply: "When you want to define a class that will have one behavior that is similar to other behaviors in a list."
+  what_it_does: "Lets the algorithm vary independently from clients that use it."
+  benefits: "Provides a way to configure a class with one of many behaviors."
+  strategy_type: "Object Behavior"
+
+chain_of_responsibility:
+  display_title: "Chain of Responsibility Pattern"
+  description: "Passes a request along a chain of handlers. Upon receiving a request, each handler decides either to process the request or to pass it to the next handler in the chain."
+  when_to_apply: "When you want to give more than one object a chance to handle a request, or when you don't know which object should handle a request."
+  what_it_does: "Avoids coupling the sender of a request to its receiver by giving more than one object a chance to handle the request."
+  benefits: "Reduces coupling and provides flexibility in assigning responsibilities to objects."
+  strategy_type: "Object Behavior"
+
+command:
+  display_title: "Command Pattern"
+  description: "Encapsulates a request as an object, thereby letting you parameterize clients with different requests, queue or log requests, and support undoable operations."
+  when_to_apply: "When you want to parameterize objects with an action to perform, or when you want to queue, specify, and execute requests at different times."
+  what_it_does: "Turns a request into a stand-alone object that contains all information about the request."
+  benefits: "Decouples objects that produce the commands from their consumers, allowing for more flexible command handling and execution."
+  strategy_type: "Object Behavior"
+
+interpreter:
+  display_title: "Interpreter Pattern"
+  description: "Given a language, defines a representation for its grammar along with an interpreter that uses the representation to interpret sentences in the language."
+  when_to_apply: "When you need to interpret a simple language or notation and represent it as data structures."
+  what_it_does: "Defines a grammatical representation for a language and an interpreter to interpret the grammar."
+  benefits: "Provides an easy way to interpret and evaluate complex languages or expressions."
+  strategy_type: "Object Behavior"
+
+iterator:
+  display_title: "Iterator Pattern"
+  description: "Provides a way to access the elements of an aggregate object sequentially without exposing its underlying representation."
+  when_to_apply: "When you want to access a collection of objects without exposing its internal structure."
+  what_it_does: "Separates the traversal of a collection from the collection itself."
+  benefits: "Simplifies the interface of a collection and provides a uniform way to traverse different collection types."
+  strategy_type: "Object Behavior"
+
+mediator:
+  display_title: "Mediator Pattern"
+  description: "Defines an object that encapsulates how a set of objects interact."
+  when_to_apply: "When you want to reduce chaotic dependencies between objects, or when you want to centralize control of object interactions."
+  what_it_does: "Promotes loose coupling by keeping objects from referring to each other explicitly, and lets you vary their interaction independently."
+  benefits: "Reduces dependencies between objects, centralizes control, and simplifies object protocols."
+  strategy_type: "Object Behavior"
+
+memento:
+  display_title: "Memento Pattern"
+  description: "Without violating encapsulation, captures and externalizes an object's internal state so that the object can be restored to this state later."
+  when_to_apply: "When you need to create a snapshot of an object's state to be able to restore it later."
+  what_it_does: "Provides the ability to restore an object to its previous state (undo via rollback)."
+  benefits: "Preserves encapsulation boundaries and simplifies the originator by delegating the saving of state to another object."
+  strategy_type: "Object Behavior"
+
+state:
+  display_title: "State Pattern"
+  description: "Allows an object to alter its behavior when its internal state changes. The object will appear to change its class."
+  when_to_apply: "When an object's behavior depends on its state, and it must change its behavior at runtime depending on that state."
+  what_it_does: "Encapsulates state-specific behavior and delegates behavior to the current state object."
+  benefits: "Organizes state-specific code, makes state transitions explicit, and allows states to be shared."
+  strategy_type: "Object Behavior"
+
+template_method:
+  display_title: "Template Method Pattern"
+  description: "Defines the skeleton of an algorithm in an operation, deferring some steps to subclasses. It lets subclasses redefine certain steps of an algorithm without changing the algorithm's structure."
+  when_to_apply: "When you want to define the skeleton of an algorithm in an operation, deferring some steps to subclasses."
+  what_it_does: "Defines the program skeleton of an algorithm in a method, deferring some steps to subclasses."
+  benefits: "Promotes code reuse and allows fine-grained customization of algorithms in subclasses."
+  strategy_type: "Object Behavior"
+
+visitor:
+  display_title: "Visitor Pattern"
+  description: "Represents an operation to be performed on the elements of an object structure. It lets you define a new operation without changing the classes of the elements on which it operates."
+  when_to_apply: "When you want to perform operations across a diverse set of objects with different interfaces."
+  what_it_does: "Allows adding new operations to existing object structures without modifying those structures."
+  benefits: "Separates an algorithm from an object structure, allows adding new operations without modifying the objects, and gathers related operations into a single class."
+  strategy_type: "Object Behavior"
