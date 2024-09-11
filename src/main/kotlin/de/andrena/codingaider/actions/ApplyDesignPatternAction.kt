@@ -121,7 +121,7 @@ class ApplyDesignPatternAction : AnAction() {
 
     private class DesignPatternDialog(project: Project, private val patterns: List<String>) : DialogWrapper(project) {
         private val patternsInfo = Companion.loadDesignPatterns()
-        private val patternComboBox: JComboBox<String> = ComboBox(patterns.mapNotNull { pattern ->
+        private val patternComboBox: JComboBox<String> = ComboBox(patterns.map { pattern ->
             patternsInfo[pattern]?.get("display_title") ?: pattern
         }.toTypedArray()).apply {
             renderer = PatternRenderer()
@@ -190,7 +190,9 @@ class ApplyDesignPatternAction : AnAction() {
             }
         }
 
-        fun getSelectedPattern(): String = patterns.getOrNull(patternComboBox.selectedIndex) ?: patterns.firstOrNull() ?: ""
+        fun getSelectedPattern(): String =
+            patterns.getOrNull(patternComboBox.selectedIndex) ?: patterns.firstOrNull() ?: ""
+
         fun getAdditionalInfo(): String = additionalInfoArea.text
 
         private inner class PatternRenderer : BasicComboBoxRenderer() {
