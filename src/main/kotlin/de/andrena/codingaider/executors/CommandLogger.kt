@@ -5,17 +5,12 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.settings.AiderSettings
 
 class CommandLogger(private val settings: AiderSettings, private val commandData: CommandData) {
-    fun getCommandString(includeNewlines: Boolean = true): String {
-        return if (settings.verboseCommandLogging) {
+    fun getCommandString(includeNewlines: Boolean = true): String =
+        if (settings.verboseCommandLogging) {
             val commandArgs = AiderCommandBuilder.buildAiderCommand(commandData, false)
             val commandString = "Command: ${commandArgs.joinToString(" ")}"
             if (includeNewlines) "$commandString\n\n" else commandString
-        } else {
-            ""
-        }
-    }
+        } else ""
 
-    fun prependCommandToOutput(output: String): String {
-        return "${getCommandString()}$output"
-    }
+    fun prependCommandToOutput(output: String): String = "${getCommandString()}$output"
 }

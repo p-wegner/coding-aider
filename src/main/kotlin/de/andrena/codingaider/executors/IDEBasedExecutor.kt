@@ -15,41 +15,32 @@ class IDEBasedExecutor(
     private val project: Project,
     private val commandData: CommandData
 ) : CommandObserver {
-    private val LOG = Logger.getInstance(IDEBasedExecutor::class.java)
+    private val log = Logger.getInstance(IDEBasedExecutor::class.java)
     private lateinit var markdownDialog: MarkdownDialog
     private var currentCommitHash: String? = null
 
     fun execute(): MarkdownDialog {
-        markdownDialog = initializeMarkdownDialog()
-        currentCommitHash = GitUtils.getCurrentCommitHash(project)
-
-        thread {
-            try {
-                executeAiderCommand()
-            } catch (e: Exception) {
-                handleExecutionError(e)
-            }
-        }
-        return markdownDialog
-    }
-
-    private fun initializeMarkdownDialog(): MarkdownDialog {
-        return MarkdownDialog(project, "Aider Command Output", "Initializing Aider command...").apply {
+        markdownDialog = MarkdownDialog(project, "Aider Command Output", "Initializing Aider command...").apply {
             isVisible = true
             focus()
         }
+        currentCommitHash = GitUtils.getCurrentCommitHash(project)
+
+        thread { executeAiderCommand() }
+        return markdownDialog
     }
 
     private fun executeAiderCommand() {
-        val commandExecutor = CommandExecutor(project, commandData)
-        commandExecutor.addObserver(this)
-        commandExecutor.executeCommand()
-    }
-
-    private fun handleExecutionError(e: Exception) {
-        LOG.error("Error executing Aider command", e)
-        updateDialogProgress("Error executing Aider command: ${e.message}", "Aider Command Error")
-        markdownDialog.startAutoCloseTimer()
+        try {
+            CommandExecutor(project, commandData).apply {
+                addObserver(this@IDEBasedExecutor)
+                executeCommand()
+            }
+        } catch (e: Exception) {
+            log.error("Error executing Aider command", e)
+            updateDialogProgress("Error executing Aider command: ${e.message}", "Aider Command Error")
+            markdownDialog.startAutoCloseTimer()
+        }
     }
 
     private fun performPostExecutionTasks() {
@@ -60,39 +51,26 @@ class IDEBasedExecutor(
     }
 
     private fun refreshFiles() {
-        val files = commandData.files.mapNotNull {
-            VirtualFileManager.getInstance().findFileByUrl(it.filePath)
-        }.toTypedArray()
+        val files = commandData.files.mapNotNull { VirtualFileManager.getInstance().findFileByUrl(it.filePath) }.toTypedArray()
         FileRefresher.refreshFiles(files, markdownDialog)
     }
 
     private fun openGitComparisonToolIfNeeded() {
-        val settings = AiderSettings.getInstance(project)
-        if (settings.showGitComparisonTool) {
+        if (AiderSettings.getInstance(project).showGitComparisonTool) {
             currentCommitHash?.let { GitUtils.openGitComparisonTool(project, it) { markdownDialog.focus(1000) } }
         }
     }
 
     private fun updateDialogProgress(message: String, title: String) {
-        invokeLater {
-            markdownDialog.updateProgress(message, title)
-        }
+        invokeLater { markdownDialog.updateProgress(message, title) }
     }
 
-    override fun onCommandStart(command: String) {
-        updateDialogProgress(command, "Aider Command Started")
-    }
-
-    override fun onCommandProgress(output: String, runningTime: Long) {
-        updateDialogProgress(output, "Aider command in progress ($runningTime seconds)")
-    }
-
+    override fun onCommandStart(command: String) = updateDialogProgress(command, "Aider Command Started")
+    override fun onCommandProgress(output: String, runningTime: Long) = updateDialogProgress(output, "Aider command in progress ($runningTime seconds)")
     override fun onCommandComplete(output: String, exitCode: Int) {
-        val status = if (exitCode == 0) "Completed" else "Failed"
-        updateDialogProgress(output, "Aider Command $status")
+        updateDialogProgress(output, "Aider Command ${if (exitCode == 0) "Completed" else "Failed"}")
         performPostExecutionTasks()
     }
-
     override fun onCommandError(error: String) {
         updateDialogProgress(error, "Aider Command Error")
         markdownDialog.startAutoCloseTimer()
