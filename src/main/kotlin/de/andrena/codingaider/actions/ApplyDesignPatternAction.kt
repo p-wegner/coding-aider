@@ -130,11 +130,18 @@ class ApplyDesignPatternAction : AnAction() {
         }.toTypedArray()).apply {
             renderer = PatternRenderer()
             ToolTipManager.sharedInstance().dismissDelay = Integer.MAX_VALUE
+            toolTipText = createTooltipText(patterns.firstOrNull() ?: "")
         }
         private val additionalInfoArea = JTextArea(5, 50)
 
         init {
             title = "Apply Design Pattern"
+            patternComboBox.addItemListener { event ->
+                if (event.stateChange == ItemEvent.SELECTED) {
+                    val selectedIndex = patternComboBox.selectedIndex
+                    patternComboBox.toolTipText = createTooltipText(patterns.getOrNull(selectedIndex) ?: "")
+                }
+            }
             init()
         }
 
@@ -214,18 +221,18 @@ class ApplyDesignPatternAction : AnAction() {
                 }
                 return this
             }
+        }
 
-            private fun createTooltipText(pattern: String): String {
-                val info = patternsInfo[pattern] ?: return "No information available"
-                return """
-                    <html>
-                    <b>Description:</b> ${info["description"]}<br><br>
-                    <b>When to apply:</b> ${info["when_to_apply"]}<br><br>
-                    <b>What it does:</b> ${info["what_it_does"]}<br><br>
-                    <b>Benefits:</b> ${info["benefits"]}
-                    </html>
-                """.trimIndent()
-            }
+        private fun createTooltipText(pattern: String): String {
+            val info = patternsInfo[pattern] ?: return "No information available"
+            return """
+                <html>
+                <b>Description:</b> ${info["description"]}<br><br>
+                <b>When to apply:</b> ${info["when_to_apply"]}<br><br>
+                <b>What it does:</b> ${info["what_it_does"]}<br><br>
+                <b>Benefits:</b> ${info["benefits"]}
+                </html>
+            """.trimIndent()
         }
     }
 }
