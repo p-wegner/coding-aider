@@ -5,9 +5,7 @@ import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.AiderCommandBuilder
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.settings.AiderSettings
-import java.io.BufferedReader
 import java.io.File
-import java.io.InputStreamReader
 import java.util.concurrent.TimeUnit
 
 class CommandExecutor(private val project: Project, private val commandData: CommandData) : CommandSubject {
@@ -20,7 +18,7 @@ class CommandExecutor(private val project: Project, private val commandData: Com
     override fun removeObserver(observer: CommandObserver) = observers.remove(observer)
     override fun notifyObservers(event: (CommandObserver) -> Unit) = observers.forEach(event)
 
-    fun executeCommand() {
+    fun executeCommand(): String {
         val commandArgs = AiderCommandBuilder.buildAiderCommand(commandData, false)
         logger.info("Executing Aider command: ${commandArgs.joinToString(" ")}")
         notifyObservers { it.onCommandStart("Starting Aider command...\n${commandLogger.getCommandString(false)}") }
@@ -35,17 +33,21 @@ class CommandExecutor(private val project: Project, private val commandData: Com
 
         val output = StringBuilder()
         pollProcessAndReadOutput(process, output)
-        handleProcessCompletion(process, output)
+        return handleProcessCompletion(process, output)
     }
 
-    private fun handleProcessCompletion(process: Process, output: StringBuilder) {
+    private fun handleProcessCompletion(process: Process, output: StringBuilder): String {
         if (!process.waitFor(5, TimeUnit.MINUTES)) {
             process.destroy()
-            notifyObservers { it.onCommandError(commandLogger.prependCommandToOutput("$output\nAider command timed out after 5 minutes")) }
+            val errorMessage = commandLogger.prependCommandToOutput("$output\nAider command timed out after 5 minutes")
+            notifyObservers { it.onCommandError(errorMessage) }
+            return errorMessage
         } else {
             val exitCode = process.exitValue()
             val status = if (exitCode == 0) "executed successfully" else "failed with exit code $exitCode"
-            notifyObservers { it.onCommandComplete(commandLogger.prependCommandToOutput("$output\nAider command $status"), exitCode) }
+            val finalOutput = commandLogger.prependCommandToOutput("$output\nAider command $status")
+            notifyObservers { it.onCommandComplete(finalOutput, exitCode) }
+            return finalOutput
         }
     }
 
