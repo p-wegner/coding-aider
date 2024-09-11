@@ -125,6 +125,19 @@ class ApplyDesignPatternAction : AnAction() {
 
     private class DesignPatternDialog(project: Project, private val patterns: List<String>) : DialogWrapper(project) {
         private val patternsInfo = loadDesignPatterns()
+
+        private fun createTooltipText(pattern: String): String {
+            val info = patternsInfo[pattern] ?: return "No information available"
+            return """
+                <html>
+                <b>Description:</b> ${info["description"]}<br><br>
+                <b>When to apply:</b> ${info["when_to_apply"]}<br><br>
+                <b>What it does:</b> ${info["what_it_does"]}<br><br>
+                <b>Benefits:</b> ${info["benefits"]}
+                </html>
+            """.trimIndent()
+        }
+
         private val patternComboBox: JComboBox<String> = ComboBox(patterns.map { pattern ->
             patternsInfo[pattern]?.get("display_title") ?: pattern
         }.toTypedArray()).apply {
@@ -223,16 +236,5 @@ class ApplyDesignPatternAction : AnAction() {
             }
         }
 
-        private fun createTooltipText(pattern: String): String {
-            val info = patternsInfo[pattern] ?: return "No information available"
-            return """
-                <html>
-                <b>Description:</b> ${info["description"]}<br><br>
-                <b>When to apply:</b> ${info["when_to_apply"]}<br><br>
-                <b>What it does:</b> ${info["what_it_does"]}<br><br>
-                <b>Benefits:</b> ${info["benefits"]}
-                </html>
-            """.trimIndent()
-        }
     }
 }
