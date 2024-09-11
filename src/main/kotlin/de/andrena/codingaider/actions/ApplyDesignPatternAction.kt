@@ -117,7 +117,9 @@ class ApplyDesignPatternAction : AnAction() {
 
         private fun loadDesignPatterns(): Map<String, Map<String, String>> {
             val inputStream = ApplyDesignPatternAction::class.java.getResourceAsStream("/design_patterns.yaml")
-            return objectMapper.readValue(inputStream)
+            return inputStream?.let { stream ->
+                objectMapper.readValue(stream)
+            } ?: emptyMap()
         }
     }
 
