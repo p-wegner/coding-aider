@@ -63,7 +63,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 row("Default LLM Model:") {
                     cell(llmComboBox).component.apply {
                         renderer = LlmComboBoxRenderer()
-                        }
+                    }
                 }
                 row("Default Additional Arguments:") {
                     cell(additionalArgsField)
