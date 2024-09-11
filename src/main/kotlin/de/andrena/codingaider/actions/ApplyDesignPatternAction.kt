@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.components.JBScrollPane
@@ -120,7 +121,7 @@ class ApplyDesignPatternAction : AnAction() {
 
     private class DesignPatternDialog(project: Project, private val patterns: List<String>) : DialogWrapper(project) {
         private val patternsInfo = Companion.loadDesignPatterns()
-        private val patternComboBox: JComboBox<String> = JComboBox(patterns.mapNotNull { pattern ->
+        private val patternComboBox: JComboBox<String> = ComboBox(patterns.mapNotNull { pattern ->
             patternsInfo[pattern]?.get("display_title") ?: pattern
         }.toTypedArray()).apply {
             renderer = PatternRenderer()
