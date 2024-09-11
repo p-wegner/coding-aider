@@ -50,8 +50,9 @@ class ApplyDesignPatternAction : AnAction() {
                 val fileNames = allFiles.map { it.filePath }
 
                 val settings = AiderSettings.getInstance(project)
+                val additionalInfo = dialog.getAdditionalInfo()
                 val commandData = CommandData(
-                    message = buildInstructionMessage(selectedPattern, patternInfo, fileNames),
+                    message = buildInstructionMessage(selectedPattern, patternInfo, fileNames, additionalInfo),
                     useYesFlag = true,
                     llm = settings.llm,
                     additionalArgs = settings.additionalArgs,
@@ -68,9 +69,10 @@ class ApplyDesignPatternAction : AnAction() {
         private fun buildInstructionMessage(
             selectedPattern: String,
             patternInfo: Map<String, String>,
-            fileNames: List<String>
+            fileNames: List<String>,
+            additionalInfo: String
         ): String {
-            return """
+            val baseMessage = """
                 Apply the ${selectedPattern.capitalize()} design pattern to the following files: $fileNames.
                 Here's information about the pattern:
                 Description: ${patternInfo["description"]}
@@ -79,6 +81,19 @@ class ApplyDesignPatternAction : AnAction() {
                 Benefits: ${patternInfo["benefits"]}
                 Please refactor the code to implement this design pattern. Provide a detailed explanation of the changes made and how they implement the ${selectedPattern.capitalize()} pattern.
             """.trimIndent()
+
+            return if (additionalInfo.isNotBlank()) {
+                """
+                $baseMessage
+                
+                Additional information provided by the user:
+                $additionalInfo
+                
+                Please take this additional information into account when applying the design pattern.
+                """.trimIndent()
+            } else {
+                baseMessage
+            }
         }
 
         private fun loadDesignPatterns(): Map<String, Map<String, String>> {
@@ -89,9 +104,10 @@ class ApplyDesignPatternAction : AnAction() {
 
     private class DesignPatternDialog(project: Project, private val patterns: List<String>) : DialogWrapper(project) {
         private lateinit var patternComboBox: ComboBox<String>
+        private lateinit var additionalInfoField: com.intellij.ui.components.JBTextField
 
         init {
-            title = "Select Design Pattern"
+            title = "Apply Design Pattern"
             init()
         }
 
@@ -100,9 +116,16 @@ class ApplyDesignPatternAction : AnAction() {
                 row("Select a design pattern:") {
                     patternComboBox = comboBox(patterns).component
                 }
+                row("Additional information (optional):") {
+                    additionalInfoField = textField()
+                        .comment("Provide any specific requirements or context for applying the pattern")
+                        .focused()
+                        .component
+                }
             }
         }
 
         fun getSelectedPattern(): String = patternComboBox.selectedItem as String
+        fun getAdditionalInfo(): String = additionalInfoField.text
     }
 }
