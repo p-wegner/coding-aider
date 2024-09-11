@@ -2,11 +2,10 @@ package de.andrena.codingaider.settings
 
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
-import de.andrena.codingaider.executors.IDEBasedExecutor
-import de.andrena.codingaider.outputview.MarkdownDialog
+import de.andrena.codingaider.executors.SimpleExecutor
 
 class AiderTestCommand(private val project: Project, private val command: String) {
-    fun execute(): MarkdownDialog {
+    fun execute(): String {
         val settings = AiderSettings.getInstance(project)
         val commandData = CommandData(
             message = "",
@@ -16,9 +15,10 @@ class AiderTestCommand(private val project: Project, private val command: String
             files = emptyList(),
             isShellMode = false,
             lintCmd = "",
-            deactivateRepoMap = settings.deactivateRepoMap
+            deactivateRepoMap = settings.deactivateRepoMap,
+            editFormat = ""
         )
 
-        return IDEBasedExecutor(project, commandData).execute()
+        return SimpleExecutor(project, commandData).execute()
     }
 }
