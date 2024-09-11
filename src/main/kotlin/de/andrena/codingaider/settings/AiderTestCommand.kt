@@ -4,14 +4,14 @@ import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.executors.SimpleExecutor
 
-class AiderTestCommand(private val project: Project, private val command: String) {
+class AiderTestCommand(private val project: Project) {
     fun execute(): String {
         val settings = AiderSettings.getInstance(project)
         val commandData = CommandData(
             message = "",
             useYesFlag = false,
             llm = "",
-            additionalArgs = command,
+            additionalArgs = "--help",
             files = emptyList(),
             isShellMode = false,
             lintCmd = "",

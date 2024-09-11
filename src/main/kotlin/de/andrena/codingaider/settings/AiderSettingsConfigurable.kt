@@ -5,7 +5,8 @@ import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.*
+import com.intellij.openapi.ui.ComboBox
+import com.intellij.openapi.ui.DialogBuilder
 import com.intellij.ui.components.*
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
@@ -135,7 +136,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
             group("Installation") {
                 row {
                     button("Test Aider Installation") {
-                        val result = AiderTestCommand(project, "aider --help").execute()
+                        val result = AiderTestCommand(project).execute()
                         showTestCommandResult(result)
                     }
                 }
