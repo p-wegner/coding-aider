@@ -16,6 +16,10 @@ dependencies {
     implementation("org.yaml:snakeyaml:2.0")
     implementation("net.sourceforge.htmlunit:htmlunit:2.70.0")
     implementation("com.vladsch.flexmark:flexmark-all:0.64.8")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.25")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.7.3")
+    implementation("com.google.code.gson:gson:2.10.1")
 }
 
 // Configure Gradle IntelliJ Plugin
