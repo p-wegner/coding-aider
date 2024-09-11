@@ -5,11 +5,11 @@ import com.intellij.ui.components.JBScrollPane
 import java.awt.BorderLayout
 import java.awt.EventQueue.invokeLater
 import java.awt.event.KeyEvent
+import java.util.*
+import java.util.Timer
 import javax.swing.*
 import kotlin.concurrent.schedule
 import kotlin.concurrent.scheduleAtFixedRate
-import java.util.Timer
-import java.util.TimerTask
 
 class MarkdownDialog(private val project: Project, private val initialTitle: String, initialText: String) : JDialog() {
     private val textArea: JTextArea = JTextArea(initialText)
@@ -77,8 +77,8 @@ class MarkdownDialog(private val project: Project, private val initialTitle: Str
         title = initialTitle
     }
 
-    fun focus() {
-        Timer().schedule(100) {
+    fun focus(delay: Long = 100) {
+        Timer().schedule(delay) {
             SwingUtilities.invokeLater {
                 toFront()
                 requestFocus()

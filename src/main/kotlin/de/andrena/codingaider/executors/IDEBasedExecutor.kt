@@ -2,18 +2,13 @@ package de.andrena.codingaider.executors
 
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
-import de.andrena.codingaider.executors.CommandExecutor
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.outputview.MarkdownDialog
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.FileRefresher
 import de.andrena.codingaider.utils.GitUtils
 import java.awt.EventQueue.invokeLater
-import java.io.BufferedReader
-import java.io.File
-import java.io.InputStreamReader
 import kotlin.concurrent.thread
 
 class IDEBasedExecutor(
@@ -57,8 +52,10 @@ class IDEBasedExecutor(
     }
 
     private fun performPostExecutionTasks(markdownDialog: MarkdownDialog, currentCommitHash: String?) {
+        markdownDialog.startAutoCloseTimer()
         refreshFiles(markdownDialog)
-        openGitComparisonToolIfNeeded(currentCommitHash)
+        openGitComparisonToolIfNeeded(markdownDialog, currentCommitHash)
+        markdownDialog.focus()
     }
 
     private fun refreshFiles(markdownDialog: MarkdownDialog) {
@@ -68,12 +65,10 @@ class IDEBasedExecutor(
         FileRefresher.refreshFiles(files, markdownDialog)
     }
 
-    private fun openGitComparisonToolIfNeeded(currentCommitHash: String?) {
+    private fun openGitComparisonToolIfNeeded(markdownDialog: MarkdownDialog, currentCommitHash: String?) {
         val settings = AiderSettings.getInstance(project)
         if (settings.showGitComparisonTool) {
-            invokeLater {
-                currentCommitHash?.let { GitUtils.openGitComparisonTool(project, it) }
-            }
+            currentCommitHash?.let { GitUtils.openGitComparisonTool(project, it) { markdownDialog.focus(1000) } }
         }
     }
 
@@ -83,24 +78,4 @@ class IDEBasedExecutor(
         }
     }
 
-    private fun pollProcessAndReadOutput(
-        process: Process,
-        output: StringBuilder,
-        markdownDialog: MarkdownDialog
-    ) {
-        val reader = BufferedReader(InputStreamReader(process.inputStream))
-        val startTime = System.currentTimeMillis()
-
-        var line: String?
-        while (reader.readLine().also { line = it } != null) {
-            output.append(line).append("\n")
-            LOG.info("Aider output: $line")
-            val runningTime = (System.currentTimeMillis() - startTime) / 1000
-            updateDialogProgress(markdownDialog, output.toString(), "Aider command in progress ($runningTime seconds)")
-            if (!process.isAlive || runningTime > 300) { // 5 minutes timeout
-                break
-            }
-            Thread.sleep(10) // Small delay to prevent UI freezing
-        }
-    }
 }
