@@ -9,7 +9,7 @@ class AiderTestCommand(private val project: Project, private val command: String
     fun execute(): MarkdownDialog {
         val settings = AiderSettings.getInstance(project)
         val commandData = CommandData(
-            message = "Aider test command",
+            message = "",
             useYesFlag = false,
             llm = "",
             additionalArgs = command,

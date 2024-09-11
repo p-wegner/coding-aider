@@ -33,7 +33,7 @@ object AiderCommandBuilder {
                 add("--map-tokens")
                 add("0")
             }
-            if (!isShellMode) {
+            if (!isShellMode && commandData.message.isNotEmpty()) {
                 add("-m")
                 add("\"${commandData.message}\"")
             }
