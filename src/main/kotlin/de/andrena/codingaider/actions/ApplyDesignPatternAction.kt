@@ -108,7 +108,7 @@ class ApplyDesignPatternAction : AnAction() {
     }
 
     private class DesignPatternDialog(project: Project, private val patterns: List<String>) : DialogWrapper(project) {
-        private lateinit var patternComboBox: ComboBox<String>
+        private val patternComboBox: ComboBox<String> = ComboBox(patterns.toTypedArray())
         private val additionalInfoArea = JTextArea(5, 50)
 
         init {
@@ -137,7 +137,6 @@ class ApplyDesignPatternAction : AnAction() {
             topPanel.add(selectPatternLabel, gbc)
 
             gbc.gridy++
-            patternComboBox = ComboBox(patterns.toTypedArray())
             topPanel.add(patternComboBox, gbc)
 
             gbc.gridy++
