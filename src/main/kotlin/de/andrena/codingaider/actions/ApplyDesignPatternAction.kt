@@ -191,6 +191,7 @@ class ApplyDesignPatternAction : AnAction() {
             val messageLabel = JLabel("Additional information (optional):").apply {
                 displayedMnemonic = KeyEvent.VK_A
                 labelFor = additionalInfoArea
+                toolTipText = "Enter any specific instructions or context to guide Aider in applying the selected design pattern"
             }
             topPanel.add(messageLabel, gbc)
 
