@@ -59,14 +59,10 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         loadPersistentFiles()
         settingsComponent = panel {
             group("General Settings") {
-                row {
-                    cell(useYesFlagCheckBox)
-                }
+                row { cell(useYesFlagCheckBox) }
                 row("Default LLM Model:") {
-                    cell(llmComboBox)
-                        .component
-                        .apply {
-                            renderer = LlmComboBoxRenderer()
+                    cell(llmComboBox).component.apply {
+                        renderer = LlmComboBoxRenderer()
                         }
                 }
                 row("Default Additional Arguments:") {
@@ -101,12 +97,10 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                         .label("Web Crawl LLM:")
                 }
                 row {
-                    cell(deactivateRepoMapCheckBox)
-                        .component
-                        .apply {
-                            isSelected = true
-                            toolTipText = "This will deactivate Aider's repo map."
-                        }
+                    cell(deactivateRepoMapCheckBox).component.apply {
+                        isSelected = true
+                        toolTipText = "This will deactivate Aider's repo map"
+                    }
                 }
                 row("Edit Format:") {
                     cell(editFormatComboBox)
