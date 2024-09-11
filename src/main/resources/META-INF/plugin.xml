@@ -64,52 +64,70 @@
         <group id="de.andrena.codingaider.AiderActionGroup" text="Aider Actions" popup="true">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
             <add-to-group group-id="ToolsMenu" anchor="last"/>
-            <action id="de.andrena.codingaider.actions.AiderAction"
-                    class="de.andrena.codingaider.actions.AiderAction"
-                    text="Start Aider Action"
-                    description="This will instruct aider to do something">
-                <keyboard-shortcut keymap="$default" first-keystroke="alt A"/>
-            </action>
-            <action id="de.andrena.codingaider.actions.AiderShellAction"
-                    class="de.andrena.codingaider.actions.AiderShellAction"
-                    text="Start Aider in Shell Mode"
-                    description="This will start aider in shell mode with default settings">
-                <keyboard-shortcut keymap="$default" first-keystroke="alt shift D"/>
-            </action>
-            <action id="de.andrena.codingaider.actions.PersistentFilesAction"
-                    class="de.andrena.codingaider.actions.PersistentFilesAction"
-                    text="Add to Persistent Files"
-                    description="Add or remove files from the persistent files list">
-                <keyboard-shortcut keymap="$default" first-keystroke="alt shift A"/>
-            </action>
-            <action id="de.andrena.codingaider.actions.ShowLastCommandResultAction"
-                    class="de.andrena.codingaider.actions.ShowLastCommandResultAction"
-                    text="Show Last Aider Command Result"
-                    description="Displays the result of the last Aider command">
-            </action>
-            <action id="de.andrena.codingaider.actions.AiderWebCrawlAction"
-                    class="de.andrena.codingaider.actions.AiderWebCrawlAction"
-                    text="Aider Web Crawl"
-                    description="Start an Aider web crawl action">
-                <keyboard-shortcut keymap="$default" first-keystroke="alt W"/>
-            </action>
-            <action id="de.andrena.codingaider.CommitAction"
-                    class="de.andrena.codingaider.actions.CommitAction"
-                    text="Run Aider Commit"
-                    description="Run Aider to commit">
-                <keyboard-shortcut keymap="$default" first-keystroke="alt D"/>
-            </action>
-            <action id="de.andrena.codingaider.actions.DocumentCodeAction"
-                    class="de.andrena.codingaider.actions.DocumentCodeAction"
-                    text="Document Code with Aider"
-                    description="Use Aider to generate documentation for the selected code">
-            </action>
-            <action id="de.andrena.codingaider.actions.ApplyDesignPatternAction"
-                    class="de.andrena.codingaider.actions.ApplyDesignPatternAction"
-                    text="Apply Design Pattern with Aider"
-                    description="Use Aider to apply a design pattern to the selected code">
-                <keyboard-shortcut keymap="$default" first-keystroke="alt P"/>
-            </action>
+            
+            <!-- General Aider Actions -->
+            <group id="de.andrena.codingaider.GeneralActions" text="General Actions" popup="true">
+                <action id="de.andrena.codingaider.actions.AiderAction"
+                        class="de.andrena.codingaider.actions.AiderAction"
+                        text="Start Aider Action"
+                        description="This will instruct aider to do something">
+                    <keyboard-shortcut keymap="$default" first-keystroke="alt A"/>
+                </action>
+                <action id="de.andrena.codingaider.actions.AiderShellAction"
+                        class="de.andrena.codingaider.actions.AiderShellAction"
+                        text="Start Aider in Shell Mode"
+                        description="This will start aider in shell mode with default settings">
+                    <keyboard-shortcut keymap="$default" first-keystroke="alt shift D"/>
+                </action>
+                <action id="de.andrena.codingaider.actions.ShowLastCommandResultAction"
+                        class="de.andrena.codingaider.actions.ShowLastCommandResultAction"
+                        text="Show Last Aider Command Result"
+                        description="Displays the result of the last Aider command">
+                </action>
+            </group>
+            
+            <!-- Code Improvement Actions -->
+            <group id="de.andrena.codingaider.CodeImprovementActions" text="Code Improvement" popup="true">
+                <action id="de.andrena.codingaider.actions.DocumentCodeAction"
+                        class="de.andrena.codingaider.actions.DocumentCodeAction"
+                        text="Document Code with Aider"
+                        description="Use Aider to generate documentation for the selected code">
+                </action>
+                <action id="de.andrena.codingaider.actions.ApplyDesignPatternAction"
+                        class="de.andrena.codingaider.actions.ApplyDesignPatternAction"
+                        text="Apply Design Pattern with Aider"
+                        description="Use Aider to apply a design pattern to the selected code">
+                    <keyboard-shortcut keymap="$default" first-keystroke="alt P"/>
+                </action>
+            </group>
+            
+            <!-- Version Control Actions -->
+            <group id="de.andrena.codingaider.VersionControlActions" text="Version Control" popup="true">
+                <action id="de.andrena.codingaider.CommitAction"
+                        class="de.andrena.codingaider.actions.CommitAction"
+                        text="Run Aider Commit"
+                        description="Run Aider to commit">
+                    <keyboard-shortcut keymap="$default" first-keystroke="alt D"/>
+                </action>
+            </group>
+            
+            <!-- File Management Actions -->
+            <group id="de.andrena.codingaider.FileManagementActions" text="File Management" popup="true">
+                <action id="de.andrena.codingaider.actions.PersistentFilesAction"
+                        class="de.andrena.codingaider.actions.PersistentFilesAction"
+                        text="Add to Persistent Files"
+                        description="Add or remove files from the persistent files list">
+                    <keyboard-shortcut keymap="$default" first-keystroke="alt shift A"/>
+                </action>
+                <action id="de.andrena.codingaider.actions.AiderWebCrawlAction"
+                        class="de.andrena.codingaider.actions.AiderWebCrawlAction"
+                        text="Aider Web Crawl"
+                        description="Start an Aider web crawl action">
+                    <keyboard-shortcut keymap="$default" first-keystroke="alt W"/>
+                </action>
+            </group>
+            
+            <!-- Settings -->
             <action id="de.andrena.codingaider.SettingsAction"
                     class="de.andrena.codingaider.actions.SettingsAction"
                     text="Open Aider Settings"
@@ -117,21 +135,22 @@
                     icon="AllIcons.General.Settings">
             </action>
         </group>
-        <action id="de.andrena.codingaider.actions.FixCompileErrorAction"
-                class="de.andrena.codingaider.actions.FixCompileErrorAction"
-                text="Fix with Aider (Quick)"
-                description="Use Aider to quickly fix the compile error">
+        
+        <!-- Error Fixing Actions -->
+        <group id="de.andrena.codingaider.ErrorFixingActions" text="Fix with Aider" popup="true">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
-        </action>
-        <action id="de.andrena.codingaider.actions.FixCompileErrorInteractive"
-                class="de.andrena.codingaider.actions.FixCompileErrorInteractive"
-                text="Fix with Aider (Interactive)"
-                description="Use Aider to interactively fix the compile error">
-            <add-to-group group-id="EditorPopupMenu" anchor="after" relative-to-action="de.andrena.codingaider.actions.FixCompileErrorAction"/>
-            <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="de.andrena.codingaider.actions.FixCompileErrorAction"/>
-        </action>
-
+            <action id="de.andrena.codingaider.actions.FixCompileErrorAction"
+                    class="de.andrena.codingaider.actions.FixCompileErrorAction"
+                    text="Fix with Aider (Quick)"
+                    description="Use Aider to quickly fix the compile error">
+            </action>
+            <action id="de.andrena.codingaider.actions.FixCompileErrorInteractive"
+                    class="de.andrena.codingaider.actions.FixCompileErrorInteractive"
+                    text="Fix with Aider (Interactive)"
+                    description="Use Aider to interactively fix the compile error">
+            </action>
+        </group>
     </actions>
 
     <!-- Extension points defined by the plugin.
