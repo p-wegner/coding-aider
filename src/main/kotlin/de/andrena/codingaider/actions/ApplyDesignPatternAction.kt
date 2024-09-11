@@ -9,7 +9,6 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.Project
-import javax.swing.JComboBox
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.components.JBScrollPane
@@ -18,7 +17,10 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.executors.IDEBasedExecutor
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.FileTraversal
-import java.awt.*
+import java.awt.BorderLayout
+import java.awt.Component
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
 import java.awt.event.KeyEvent
 import javax.swing.*
 import javax.swing.plaf.basic.BasicComboBoxRenderer
@@ -100,10 +102,10 @@ class ApplyDesignPatternAction : AnAction() {
                 """
                 $baseMessage
                 
-                Additional information provided by the user:
+                Important additional information to consider:
                 $additionalInfo
                 
-                Please take this additional information into account when analyzing the applicability of the design pattern.
+                Please take this additional information into account when analyzing the applicability of the design pattern applying it.
                 """.trimIndent()
             } else {
                 baseMessage
