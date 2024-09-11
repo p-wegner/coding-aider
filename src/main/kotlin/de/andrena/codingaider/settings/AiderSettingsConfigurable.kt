@@ -5,10 +5,8 @@ import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.ComboBox
-import com.intellij.ui.components.JBCheckBox
-import com.intellij.ui.components.JBList
-import com.intellij.ui.components.JBTextField
+import com.intellij.openapi.ui.*
+import com.intellij.ui.components.*
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.command.FileData
@@ -143,9 +141,8 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
             group("Installation") {
                 row {
                     button("Test Aider Installation") {
-                        val dialog = AiderTestCommand(project, "aider --help").execute()
-                        dialog.focus(1000)
-                        dialog.toFront()
+                        val result = AiderTestCommand(project, "aider --help").execute()
+                        showTestCommandResult(result)
                     }
                 }
             }
@@ -277,6 +274,23 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 component.text = "${value.filePath} ${if (value.isReadOnly) "(Read-Only)" else ""}"
             }
             return component
+        }
+    }
+
+    private fun showTestCommandResult(result: String) {
+        val textArea = JBTextArea(result).apply {
+            isEditable = false
+            lineWrap = true
+            wrapStyleWord = true
+        }
+        val scrollPane = JBScrollPane(textArea)
+        scrollPane.preferredSize = java.awt.Dimension(600, 400)
+
+        DialogBuilder(project).apply {
+            setTitle("Aider Test Command Result")
+            setCenterPanel(scrollPane)
+            addOkAction()
+            show()
         }
     }
 }
