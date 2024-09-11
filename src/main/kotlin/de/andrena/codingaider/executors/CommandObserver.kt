@@ -8,7 +8,7 @@ interface CommandObserver {
 }
 
 interface CommandSubject {
-    fun addObserver(observer: CommandObserver)
-    fun removeObserver(observer: CommandObserver)
+    fun addObserver(observer: CommandObserver): Boolean
+    fun removeObserver(observer: CommandObserver): Boolean
     fun notifyObservers(event: (CommandObserver) -> Unit)
 }
