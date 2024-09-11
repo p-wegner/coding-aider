@@ -1,22 +1,21 @@
 package de.andrena.codingaider.settings
 
-import com.intellij.openapi.options.Configurable
-import com.intellij.openapi.project.Project
-import com.intellij.ui.components.JBCheckBox
-import com.intellij.ui.components.JBTextField
-import com.intellij.ui.components.JBList
-import com.intellij.ui.dsl.builder.Align
-import de.andrena.codingaider.inputdialog.PersistentFileManager
-import javax.swing.DefaultListCellRenderer
-import com.intellij.ui.dsl.builder.panel
-import de.andrena.codingaider.utils.ApiKeyChecker
 import com.intellij.ide.BrowserUtil
-import java.awt.Component
-import javax.swing.*
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
+import com.intellij.openapi.options.Configurable
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.ui.components.JBCheckBox
+import com.intellij.ui.components.JBList
+import com.intellij.ui.components.JBTextField
+import com.intellij.ui.dsl.builder.Align
+import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.command.FileData
+import de.andrena.codingaider.inputdialog.PersistentFileManager
+import de.andrena.codingaider.utils.ApiKeyChecker
+import java.awt.Component
+import javax.swing.*
 
 class AiderSettingsConfigurable(private val project: Project) : Configurable {
     private var settingsComponent: JPanel? = null
@@ -36,10 +35,11 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     private val isShellModeCheckBox = JBCheckBox("Use Shell Mode by default")
     private val lintCmdField = JBTextField()
     private val showGitComparisonToolCheckBox = JBCheckBox("Show Git Comparison Tool after execution")
-    private val activateIdeExecutorAfterWebcrawlCheckBox = JBCheckBox("Activate Post web crawl LLM cleanup (Experimental)")
+    private val activateIdeExecutorAfterWebcrawlCheckBox =
+        JBCheckBox("Activate Post web crawl LLM cleanup (Experimental)")
     private val webCrawlLlmComboBox = ComboBox(ApiKeyChecker.getAllLlmOptions().toTypedArray())
     private val deactivateRepoMapCheckBox = JBCheckBox("Deactivate Aider's repo map (--map-tokens 0)")
-    private val editFormatComboBox = ComboBox(arrayOf("", "whole","diff", "whole-func","diff-func"))
+    private val editFormatComboBox = ComboBox(arrayOf("", "whole", "diff", "whole-func", "diff-func"))
     private val verboseCommandLoggingCheckBox = JBCheckBox("Enable verbose Aider command logging")
 
     override fun getDisplayName(): String = "Aider"
@@ -121,7 +121,8 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                     cell(verboseCommandLoggingCheckBox)
                         .component
                         .apply {
-                            toolTipText = "If enabled, Aider command details will be logged in the dialog shown to the user"
+                            toolTipText =
+                                "If enabled, Aider command details will be logged in the dialog shown to the user"
                         }
                 }
             }
@@ -143,7 +144,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 row {
                     button("Test Aider Installation") {
                         val dialog = AiderTestCommand(project, "aider --help").execute()
-                        dialog.focus()
+                        dialog.focus(1000)
                         dialog.toFront()
                     }
                 }
@@ -214,7 +215,8 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 val apiKey = ApiKeyChecker.getApiKeyForLlm(value)
                 if (apiKey != null && !ApiKeyChecker.isApiKeyAvailableForLlm(value)) {
                     icon = UIManager.getIcon("OptionPane.errorIcon")
-                    toolTipText = "API key not found in default locations for $value. This may not be an error if you're using an alternative method to provide the key."
+                    toolTipText =
+                        "API key not found in default locations for $value. This may not be an error if you're using an alternative method to provide the key."
                 } else {
                     icon = null
                     toolTipText = null

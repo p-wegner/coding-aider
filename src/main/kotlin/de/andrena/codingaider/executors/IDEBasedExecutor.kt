@@ -41,8 +41,7 @@ class IDEBasedExecutor(
     }
 
     private fun executeAiderCommand(markdownDialog: MarkdownDialog) {
-        val commandExecutor = CommandExecutor(project, commandData, markdownDialog)
-        commandExecutor.executeCommand()
+        CommandExecutor(project, commandData, markdownDialog).executeCommand()
     }
 
     private fun handleExecutionError(e: Exception, markdownDialog: MarkdownDialog) {

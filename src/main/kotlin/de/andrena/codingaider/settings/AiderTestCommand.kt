@@ -19,8 +19,6 @@ class AiderTestCommand(private val project: Project, private val command: String
             deactivateRepoMap = settings.deactivateRepoMap
         )
 
-        val executor = IDEBasedExecutor(project, commandData)
-        val dialog = executor.execute()
-        return dialog
+        return IDEBasedExecutor(project, commandData).execute()
     }
 }
