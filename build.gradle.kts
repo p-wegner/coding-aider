@@ -13,7 +13,8 @@ repositories {
 }
 
 dependencies {
-    implementation("org.yaml:snakeyaml:2.0")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.2")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.15.2")
     implementation("net.sourceforge.htmlunit:htmlunit:2.70.0")
     implementation("com.vladsch.flexmark:flexmark-all:0.64.8")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.9.25")

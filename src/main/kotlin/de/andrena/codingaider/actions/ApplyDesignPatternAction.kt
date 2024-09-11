@@ -14,7 +14,10 @@ import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.IDEBasedExecutor
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.FileTraversal
-import org.yaml.snakeyaml.Yaml
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.readValue
 import javax.swing.JComponent
 
 class ApplyDesignPatternAction : AnAction() {
@@ -33,6 +36,8 @@ class ApplyDesignPatternAction : AnAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     companion object {
+        private val objectMapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule())
+
         private fun applyDesignPattern(project: Project, virtualFiles: Array<VirtualFile>) {
             val patterns = loadDesignPatterns()
             val dialog = DesignPatternDialog(project, patterns.keys.toList())
@@ -73,7 +78,7 @@ class ApplyDesignPatternAction : AnAction() {
 
         private fun loadDesignPatterns(): Map<String, Map<String, String>> {
             val inputStream = ApplyDesignPatternAction::class.java.getResourceAsStream("/design_patterns.yaml")
-            return Yaml().load(inputStream)
+            return objectMapper.readValue(inputStream)
         }
     }
 

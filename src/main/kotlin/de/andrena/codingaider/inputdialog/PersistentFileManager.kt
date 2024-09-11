@@ -4,22 +4,19 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.FileData
-import org.yaml.snakeyaml.DumperOptions
-import org.yaml.snakeyaml.Yaml
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.readValue
 import java.io.File
-import java.io.FileWriter
 import java.io.IOException
 
 class PersistentFileManager(basePath: String) {
     private val contextFile = File(basePath, ".aider.context.yaml")
     private val persistentFiles: MutableList<FileData> = mutableListOf()
-    private val yaml: Yaml
+    private val objectMapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule())
 
     init {
-        val options = DumperOptions()
-        options.defaultFlowStyle = DumperOptions.FlowStyle.BLOCK
-        options.isPrettyFlow = true
-        yaml = Yaml(options)
         loadPersistentFiles()
     }
 
@@ -27,8 +24,8 @@ class PersistentFileManager(basePath: String) {
         if (contextFile.exists()) {
             try {
                 persistentFiles.clear()
-                val yamlData: Map<String, Any> = yaml.load(contextFile.reader())
-                (yamlData["files"] as? List<Map<String, Any>>)?.forEach { fileMap ->
+                val yamlData: Map<String, List<Map<String, Any>>> = objectMapper.readValue(contextFile)
+                yamlData["files"]?.forEach { fileMap ->
                     val filePath = fileMap["path"] as? String
                     val isReadOnly = fileMap["readOnly"] as? Boolean ?: false
                     if (filePath != null) {
@@ -44,17 +41,15 @@ class PersistentFileManager(basePath: String) {
 
     fun savePersistentFilesToContextFile() {
         try {
-            FileWriter(contextFile).use { writer ->
-                val data = mapOf(
-                    "files" to persistentFiles.map { file ->
-                        mapOf(
-                            "path" to file.filePath,
-                            "readOnly" to file.isReadOnly
-                        )
-                    }
-                )
-                yaml.dump(data, writer)
-            }
+            val data = mapOf(
+                "files" to persistentFiles.map { file ->
+                    mapOf(
+                        "path" to file.filePath,
+                        "readOnly" to file.isReadOnly
+                    )
+                }
+            )
+            objectMapper.writeValue(contextFile, data)
             refreshContextFile()
         } catch (e: IOException) {
             e.printStackTrace()
