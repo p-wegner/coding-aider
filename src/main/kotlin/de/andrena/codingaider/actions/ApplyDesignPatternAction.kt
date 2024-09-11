@@ -120,7 +120,7 @@ class ApplyDesignPatternAction : AnAction() {
 
     private class DesignPatternDialog(project: Project, private val patterns: List<String>) : DialogWrapper(project) {
         private val patternsInfo = Companion.loadDesignPatterns()
-        private val patternComboBox: JComboBox<String> = JComboBox(patterns.toTypedArray()).apply {
+        private val patternComboBox: JComboBox<String> = JComboBox(patterns.map { patternsInfo[it]?.get("display_title") ?: it }.toTypedArray()).apply {
             renderer = PatternRenderer()
             ToolTipManager.sharedInstance().dismissDelay = Integer.MAX_VALUE
         }
@@ -187,7 +187,7 @@ class ApplyDesignPatternAction : AnAction() {
             }
         }
 
-        fun getSelectedPattern(): String = patternComboBox.selectedItem as String
+        fun getSelectedPattern(): String = patterns[patternComboBox.selectedIndex]
         fun getAdditionalInfo(): String = additionalInfoArea.text
 
         private inner class PatternRenderer : BasicComboBoxRenderer() {
@@ -201,7 +201,7 @@ class ApplyDesignPatternAction : AnAction() {
                 super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
                 if (value is String) {
                     text = value
-                    toolTipText = createTooltipText(value)
+                    toolTipText = createTooltipText(patterns[index])
                 }
                 return this
             }
