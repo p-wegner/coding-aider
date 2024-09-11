@@ -12,12 +12,17 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.ui.dsl.builder.panel
+import com.intellij.ui.components.JBScrollPane
+import com.intellij.util.ui.JBUI
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.executors.IDEBasedExecutor
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.FileTraversal
-import javax.swing.JComponent
+import java.awt.BorderLayout
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
+import java.awt.event.KeyEvent
+import javax.swing.*
 
 class ApplyDesignPatternAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
