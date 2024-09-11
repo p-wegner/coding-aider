@@ -47,6 +47,8 @@ Aider.
     - **Fix Compile Error Action**: Fix compile errors using Aider's AI capabilities.
     - **Show Last Command Result Action**: Display the result of the last executed Aider command.
     - **Settings Action**: Quickly access Aider Settings.
+    - **Apply Design Pattern Action**: Apply predefined design patterns to selected files or directories.
+    - **Persistent Files Action**: Manage the list of persistent files for Aider operations.
 
 For a detailed description of all available actions, please refer to the [Actions Documentation](docs/actions.md).
 
