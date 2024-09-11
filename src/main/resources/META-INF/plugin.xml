@@ -64,40 +64,6 @@
         </ol>
 
         <p>Coding-Aider brings these powerful terminal-based features directly into your IDE, leveraging established IDE functionalities like Git integration and keyboard shortcuts.</p>
-
-        <h3>Getting Started</h3>
-        <ol>
-            <li>Install Aider-Chat:
-                <ul>
-                    <li>Visit https://aider.chat/</li>
-                    <li>Install as a global pipx Python app</li>
-                    <li>Ensure it's accessible from your terminal (`aider --help`)</li>
-                </ul>
-            </li>
-            <li>Install the Coding-Aider plugin in a compatible JetBrains IDE.</li>
-            <li>(Recommended) Globally configure API keys for LLM Providers you plan to use (see https://aider.chat/docs/config/dotenv.html)</li>
-            <li>Configure Aider settings:
-                <ul>
-                    <li>Navigate to Tools > Aider Settings > Run Test to verify your Aider installation.</li>
-                </ul>
-            </li>
-            <li>Basic Usage:
-                <ul>
-                    <li>Select files or directories in your project</li>
-                    <li>Use Alt+A or use the entries in the right-click context menu to initiate an Aider action</li>
-                    <li>Enter your coding request in the dialog</li>
-                    <li>Review Aider's output and resulting changes in your project</li>
-                </ul>
-            </li>
-            <li>Advanced Usage:
-                <ul>
-                    <li>Use Alt+D to automatically commit changes with an LLM-generated message</li>
-                    <li>Use Alt+Shift+A to manage persistent files for context</li>
-                    <li>Utilize specialized actions like Document Code, Fix Compile Error, or Web Crawl for specific tasks</li>
-                    <li>Access the last command result using the Show Last Command Result action</li>
-                </ul>
-            </li>
-        </ol>
     ]]></description>
 
     <!-- Product and plugin compatibility requirements.
@@ -109,7 +75,7 @@
         <group id="de.andrena.codingaider.AiderActionGroup" text="Aider Actions" popup="true">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
             <add-to-group group-id="ToolsMenu" anchor="last"/>
-            
+
             <action id="de.andrena.codingaider.actions.AiderAction"
                     class="de.andrena.codingaider.actions.AiderAction"
                     text="Start Aider Action"
@@ -167,7 +133,7 @@
                     icon="AllIcons.General.Settings">
             </action>
         </group>
-        
+
         <!-- Error Fixing Actions -->
         <group id="de.andrena.codingaider.ErrorFixingActions" text="Fix with Aider" popup="true">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
