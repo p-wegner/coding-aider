@@ -7,16 +7,12 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.settings.AiderSettings
 import java.io.File
 import java.util.concurrent.TimeUnit
+import kotlin.properties.Delegates
 
-class CommandExecutor(private val project: Project, private val commandData: CommandData) : CommandSubject {
+class CommandExecutor(private val project: Project, private val commandData: CommandData) : CommandSubject by GenericCommandSubject() {
     private val logger = Logger.getInstance(CommandExecutor::class.java)
     private val settings = AiderSettings.getInstance(project)
     private val commandLogger = CommandLogger(settings, commandData)
-    private val observers = mutableListOf<CommandObserver>()
-
-    override fun addObserver(observer: CommandObserver) = observers.add(observer)
-    override fun removeObserver(observer: CommandObserver) = observers.remove(observer)
-    override fun notifyObservers(event: (CommandObserver) -> Unit) = observers.forEach(event)
 
     fun executeCommand(): String {
         val commandArgs = AiderCommandBuilder.buildAiderCommand(commandData, false)
