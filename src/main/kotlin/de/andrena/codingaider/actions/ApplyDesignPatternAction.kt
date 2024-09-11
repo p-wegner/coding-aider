@@ -18,11 +18,10 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.executors.IDEBasedExecutor
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.FileTraversal
-import java.awt.BorderLayout
-import java.awt.GridBagConstraints
-import java.awt.GridBagLayout
+import java.awt.*
 import java.awt.event.KeyEvent
 import javax.swing.*
+import javax.swing.plaf.basic.BasicComboBoxRenderer
 
 class ApplyDesignPatternAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
@@ -108,7 +107,11 @@ class ApplyDesignPatternAction : AnAction() {
     }
 
     private class DesignPatternDialog(project: Project, private val patterns: List<String>) : DialogWrapper(project) {
-        private val patternComboBox: ComboBox<String> = ComboBox(patterns.toTypedArray())
+        private val patternsInfo = loadDesignPatterns()
+        private val patternComboBox: ComboBox<String> = ComboBox(patterns.toTypedArray()).apply {
+            renderer = PatternRenderer()
+            ToolTipManager.sharedInstance().dismissDelay = Integer.MAX_VALUE
+        }
         private val additionalInfoArea = JTextArea(5, 50)
 
         init {
@@ -174,5 +177,34 @@ class ApplyDesignPatternAction : AnAction() {
 
         fun getSelectedPattern(): String = patternComboBox.selectedItem as String
         fun getAdditionalInfo(): String = additionalInfoArea.text
+
+        private inner class PatternRenderer : BasicComboBoxRenderer() {
+            override fun getListCellRendererComponent(
+                list: JList<*>?,
+                value: Any?,
+                index: Int,
+                isSelected: Boolean,
+                cellHasFocus: Boolean
+            ): Component {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
+                if (value is String) {
+                    text = value
+                    toolTipText = createTooltipText(value)
+                }
+                return this
+            }
+
+            private fun createTooltipText(pattern: String): String {
+                val info = patternsInfo[pattern] ?: return "No information available"
+                return """
+                    <html>
+                    <b>Description:</b> ${info["description"]}<br><br>
+                    <b>When to apply:</b> ${info["when_to_apply"]}<br><br>
+                    <b>What it does:</b> ${info["what_it_does"]}<br><br>
+                    <b>Benefits:</b> ${info["benefits"]}
+                    </html>
+                """.trimIndent()
+            }
+        }
     }
 }
