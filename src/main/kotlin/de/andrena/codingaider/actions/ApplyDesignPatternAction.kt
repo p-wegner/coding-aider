@@ -26,9 +26,7 @@ import java.awt.event.KeyEvent
 import javax.swing.*
 import javax.swing.plaf.basic.BasicComboBoxRenderer
 
-fun String.capitalize(): String {
-    return this.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
-}
+fun String.capitalize(): String = this.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
 
 class ApplyDesignPatternAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
