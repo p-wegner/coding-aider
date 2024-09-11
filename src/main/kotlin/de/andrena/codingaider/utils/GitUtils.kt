@@ -29,7 +29,7 @@ object GitUtils {
             if (changes.isNotEmpty()) {
                 ShowCombinedDiffAction.showDiff(
                     project,
-                    changes,
+                    changes
                 )
             }
         }
@@ -49,5 +49,4 @@ object GitUtils {
     private fun getGitRepository(project: Project): GitRepository? {
         return GitUtil.getRepositoryManager(project).repositories.firstOrNull()
     }
-
 }
