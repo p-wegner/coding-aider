@@ -1,5 +1,9 @@
 package de.andrena.codingaider.actions
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -10,14 +14,9 @@ import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.command.CommandData
-import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.IDEBasedExecutor
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.FileTraversal
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
-import com.fasterxml.jackson.module.kotlin.KotlinModule
-import com.fasterxml.jackson.module.kotlin.readValue
 import javax.swing.JComponent
 
 class ApplyDesignPatternAction : AnAction() {
@@ -36,7 +35,9 @@ class ApplyDesignPatternAction : AnAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     companion object {
-        private val objectMapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule())
+        private val objectMapper = ObjectMapper(YAMLFactory()).registerModule(
+            KotlinModule.Builder().build()
+        )
 
         private fun applyDesignPattern(project: Project, virtualFiles: Array<VirtualFile>) {
             val patterns = loadDesignPatterns()
@@ -64,7 +65,11 @@ class ApplyDesignPatternAction : AnAction() {
             }
         }
 
-        private fun buildInstructionMessage(selectedPattern: String, patternInfo: Map<String, String>, fileNames: List<String>): String {
+        private fun buildInstructionMessage(
+            selectedPattern: String,
+            patternInfo: Map<String, String>,
+            fileNames: List<String>
+        ): String {
             return """
                 Apply the ${selectedPattern.capitalize()} design pattern to the following files: $fileNames.
                 Here's information about the pattern:
@@ -82,7 +87,7 @@ class ApplyDesignPatternAction : AnAction() {
         }
     }
 
-    private class DesignPatternDialog(project: Project, patterns: List<String>) : DialogWrapper(project) {
+    private class DesignPatternDialog(project: Project, private val patterns: List<String>) : DialogWrapper(project) {
         private lateinit var patternComboBox: ComboBox<String>
 
         init {
