@@ -10,6 +10,7 @@ import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.command.CommandData
+import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.IDEBasedExecutor
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.FileTraversal
@@ -44,13 +45,7 @@ class ApplyDesignPatternAction : AnAction() {
 
                 val settings = AiderSettings.getInstance(project)
                 val commandData = CommandData(
-                    message = "Apply the ${selectedPattern.capitalize()} design pattern to the following files: $fileNames. " +
-                            "Here's information about the pattern:\n" +
-                            "Description: ${patternInfo["description"]}\n" +
-                            "When to apply: ${patternInfo["when_to_apply"]}\n" +
-                            "What it does: ${patternInfo["what_it_does"]}\n" +
-                            "Benefits: ${patternInfo["benefits"]}\n" +
-                            "Please refactor the code to implement this design pattern.",
+                    message = buildInstructionMessage(selectedPattern, patternInfo, fileNames),
                     useYesFlag = true,
                     llm = settings.llm,
                     additionalArgs = settings.additionalArgs,
@@ -62,6 +57,18 @@ class ApplyDesignPatternAction : AnAction() {
                 )
                 IDEBasedExecutor(project, commandData).execute()
             }
+        }
+
+        private fun buildInstructionMessage(selectedPattern: String, patternInfo: Map<String, String>, fileNames: List<String>): String {
+            return """
+                Apply the ${selectedPattern.capitalize()} design pattern to the following files: $fileNames.
+                Here's information about the pattern:
+                Description: ${patternInfo["description"]}
+                When to apply: ${patternInfo["when_to_apply"]}
+                What it does: ${patternInfo["what_it_does"]}
+                Benefits: ${patternInfo["benefits"]}
+                Please refactor the code to implement this design pattern. Provide a detailed explanation of the changes made and how they implement the ${selectedPattern.capitalize()} pattern.
+            """.trimIndent()
         }
 
         private fun loadDesignPatterns(): Map<String, Map<String, String>> {

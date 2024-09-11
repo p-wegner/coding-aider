@@ -108,6 +108,7 @@
                     class="de.andrena.codingaider.actions.ApplyDesignPatternAction"
                     text="Apply Design Pattern with Aider"
                     description="Use Aider to apply a design pattern to the selected code">
+                <keyboard-shortcut keymap="$default" first-keystroke="alt P"/>
             </action>
             <action id="de.andrena.codingaider.SettingsAction"
                     class="de.andrena.codingaider.actions.SettingsAction"
