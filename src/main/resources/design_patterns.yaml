@@ -1,0 +1,29 @@
+singleton:
+  description: "Ensures a class has only one instance and provides a global point of access to it."
+  when_to_apply: "When exactly one object is needed to coordinate actions across the system."
+  what_it_does: "Restricts the instantiation of a class to one object."
+  benefits: "Provides a global access point to that instance."
+
+factory_method:
+  description: "Defines an interface for creating an object, but lets subclasses decide which class to instantiate."
+  when_to_apply: "When a class can't anticipate the class of objects it must create."
+  what_it_does: "Creates objects without specifying the exact class of object that will be created."
+  benefits: "Promotes loose coupling by eliminating the need to bind application-specific classes into the code."
+
+observer:
+  description: "Defines a one-to-many dependency between objects so that when one object changes state, all its dependents are notified and updated automatically."
+  when_to_apply: "When you need many other objects to receive an update when another object changes."
+  what_it_does: "Defines a subscription mechanism to notify multiple objects about any events that happen to the object they're observing."
+  benefits: "Promotes loose coupling between objects."
+
+strategy:
+  description: "Defines a family of algorithms, encapsulates each one, and makes them interchangeable."
+  when_to_apply: "When you want to define a class that will have one behavior that is similar to other behaviors in a list."
+  what_it_does: "Lets the algorithm vary independently from clients that use it."
+  benefits: "Provides a way to configure a class with one of many behaviors."
+
+decorator:
+  description: "Attaches additional responsibilities to an object dynamically."
+  when_to_apply: "When you want to add responsibilities to individual objects, not to an entire class."
+  what_it_does: "Provides a flexible alternative to subclassing for extending functionality."
+  benefits: "Allows behavior to be added to an individual object, either statically or dynamically, without affecting the behavior of other objects from the same class."

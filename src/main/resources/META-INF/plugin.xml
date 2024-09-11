@@ -104,6 +104,11 @@
                     text="Document Code with Aider"
                     description="Use Aider to generate documentation for the selected code">
             </action>
+            <action id="de.andrena.codingaider.actions.ApplyDesignPatternAction"
+                    class="de.andrena.codingaider.actions.ApplyDesignPatternAction"
+                    text="Apply Design Pattern with Aider"
+                    description="Use Aider to apply a design pattern to the selected code">
+            </action>
             <action id="de.andrena.codingaider.SettingsAction"
                     class="de.andrena.codingaider.actions.SettingsAction"
                     text="Open Aider Settings"
