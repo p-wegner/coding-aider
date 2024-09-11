@@ -14,20 +14,20 @@ import kotlin.concurrent.thread
 class IDEBasedExecutor(
     private val project: Project,
     private val commandData: CommandData
-) {
+) : CommandObserver {
     private val LOG = Logger.getInstance(IDEBasedExecutor::class.java)
+    private lateinit var markdownDialog: MarkdownDialog
+    private var currentCommitHash: String? = null
 
     fun execute(): MarkdownDialog {
-        val markdownDialog = initializeMarkdownDialog()
-        val currentCommitHash = GitUtils.getCurrentCommitHash(project)
+        markdownDialog = initializeMarkdownDialog()
+        currentCommitHash = GitUtils.getCurrentCommitHash(project)
 
         thread {
             try {
-                executeAiderCommand(markdownDialog)
+                executeAiderCommand()
             } catch (e: Exception) {
-                handleExecutionError(e, markdownDialog)
-            } finally {
-                performPostExecutionTasks(markdownDialog, currentCommitHash)
+                handleExecutionError(e)
             }
         }
         return markdownDialog
@@ -40,41 +40,61 @@ class IDEBasedExecutor(
         }
     }
 
-    private fun executeAiderCommand(markdownDialog: MarkdownDialog) {
-        CommandExecutor(project, commandData, markdownDialog).executeCommand()
+    private fun executeAiderCommand() {
+        val commandExecutor = CommandExecutor(project, commandData)
+        commandExecutor.addObserver(this)
+        commandExecutor.executeCommand()
     }
 
-    private fun handleExecutionError(e: Exception, markdownDialog: MarkdownDialog) {
+    private fun handleExecutionError(e: Exception) {
         LOG.error("Error executing Aider command", e)
-        updateDialogProgress(markdownDialog, "Error executing Aider command: ${e.message}", "Aider Command Error")
+        updateDialogProgress("Error executing Aider command: ${e.message}", "Aider Command Error")
         markdownDialog.startAutoCloseTimer()
     }
 
-    private fun performPostExecutionTasks(markdownDialog: MarkdownDialog, currentCommitHash: String?) {
+    private fun performPostExecutionTasks() {
         markdownDialog.startAutoCloseTimer()
-        refreshFiles(markdownDialog)
-        openGitComparisonToolIfNeeded(markdownDialog, currentCommitHash)
+        refreshFiles()
+        openGitComparisonToolIfNeeded()
         markdownDialog.focus()
     }
 
-    private fun refreshFiles(markdownDialog: MarkdownDialog) {
+    private fun refreshFiles() {
         val files = commandData.files.mapNotNull {
             VirtualFileManager.getInstance().findFileByUrl(it.filePath)
         }.toTypedArray()
         FileRefresher.refreshFiles(files, markdownDialog)
     }
 
-    private fun openGitComparisonToolIfNeeded(markdownDialog: MarkdownDialog, currentCommitHash: String?) {
+    private fun openGitComparisonToolIfNeeded() {
         val settings = AiderSettings.getInstance(project)
         if (settings.showGitComparisonTool) {
             currentCommitHash?.let { GitUtils.openGitComparisonTool(project, it) { markdownDialog.focus(1000) } }
         }
     }
 
-    private fun updateDialogProgress(markdownDialog: MarkdownDialog, message: String, title: String) {
+    private fun updateDialogProgress(message: String, title: String) {
         invokeLater {
             markdownDialog.updateProgress(message, title)
         }
     }
 
+    override fun onCommandStart(command: String) {
+        updateDialogProgress(command, "Aider Command Started")
+    }
+
+    override fun onCommandProgress(output: String, runningTime: Long) {
+        updateDialogProgress(output, "Aider command in progress ($runningTime seconds)")
+    }
+
+    override fun onCommandComplete(output: String, exitCode: Int) {
+        val status = if (exitCode == 0) "Completed" else "Failed"
+        updateDialogProgress(output, "Aider Command $status")
+        performPostExecutionTasks()
+    }
+
+    override fun onCommandError(error: String) {
+        updateDialogProgress(error, "Aider Command Error")
+        markdownDialog.startAutoCloseTimer()
+    }
 }
