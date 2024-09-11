@@ -124,7 +124,7 @@ class ApplyDesignPatternAction : AnAction() {
     }
 
     private class DesignPatternDialog(project: Project, private val patterns: List<String>) : DialogWrapper(project) {
-        private val patternsInfo = Companion.loadDesignPatterns()
+        private val patternsInfo = loadDesignPatterns()
         private val patternComboBox: JComboBox<String> = ComboBox(patterns.map { pattern ->
             patternsInfo[pattern]?.get("display_title") ?: pattern
         }.toTypedArray()).apply {
