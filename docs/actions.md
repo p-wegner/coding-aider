@@ -1,6 +1,6 @@
 # Coding Aider Actions Documentation
 
-This document provides an overview of the actions implemented in the Coding Aider plugin.
+This document provides a comprehensive overview of the actions implemented in the Coding Aider plugin.
 
 ## Table of Contents
 
@@ -10,9 +10,10 @@ This document provides an overview of the actions implemented in the Coding Aide
 4. [CommitAction](#commitaction)
 5. [DocumentCodeAction](#documentcodeaction)
 6. [FixCompileErrorAction](#fixcompileerroraction)
-7. [PersistentFilesAction](#persistentfilesaction)
-8. [SettingsAction](#settingsaction)
-9. [ShowLastCommandResultAction](#showlastcommandresultaction)
+7. [OpenAiderActionGroup](#openaideractiongroup)
+8. [PersistentFilesAction](#persistentfilesaction)
+9. [SettingsAction](#settingsaction)
+10. [ShowLastCommandResultAction](#showlastcommandresultaction)
 
 ## AiderAction
 
@@ -67,7 +68,7 @@ Key features:
 
 - Allows users to specify the output filename
 - Generates documentation using Aider's AI capabilities
-- if the file already exists, it is updated instead
+- Updates existing documentation files if they already exist
 
 ## FixCompileErrorAction
 
@@ -77,6 +78,10 @@ Key features:
 
 - Supports both interactive and quick fix modes
 - Implements intention actions for IDE integration
+
+## OpenAiderActionGroup
+
+`OpenAiderActionGroup` provides a popup menu with all available Aider actions.
 
 ## PersistentFilesAction
 
@@ -95,5 +100,5 @@ Key features:
 
 `ShowLastCommandResultAction` displays the result of the last executed Aider command.
 
-This documentation provides an overview of the main actions in the Coding Aider plugin. Each action is designed to
-enhance the development experience by integrating Aider's capabilities into the IDE workflow.
+This documentation provides a comprehensive overview of the main actions in the Coding Aider plugin. Each action is
+designed to enhance the development experience by integrating Aider's capabilities into the IDE workflow. 
