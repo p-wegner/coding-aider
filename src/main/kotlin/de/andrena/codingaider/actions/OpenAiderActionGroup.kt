@@ -11,15 +11,8 @@ class OpenAiderActionGroup : AnAction(), DumbAware {
         val aiderActionGroup = actionManager.getAction("de.andrena.codingaider.AiderActionGroup") as? ActionGroup
             ?: return
 
-        val actions = aiderActionGroup.getChildren(null)
         val flatActionGroup = DefaultActionGroup()
-        for (action in actions) {
-            if (action is ActionGroup) {
-                flatActionGroup.addAll(*action.getChildren(null))
-            } else {
-                flatActionGroup.add(action)
-            }
-        }
+        addActionsRecursively(aiderActionGroup, flatActionGroup)
 
         val popup = JBPopupFactory.getInstance()
             .createActionGroupPopup(
@@ -31,5 +24,14 @@ class OpenAiderActionGroup : AnAction(), DumbAware {
             )
 
         popup.showCenteredInCurrentWindow(project)
+    }
+
+    private fun addActionsRecursively(sourceGroup: ActionGroup, targetGroup: DefaultActionGroup) {
+        for (action in sourceGroup.getChildActionsOrStubs(null)) {
+            when (action) {
+                is ActionGroup -> addActionsRecursively(action, targetGroup)
+                else -> targetGroup.add(action)
+            }
+        }
     }
 }
