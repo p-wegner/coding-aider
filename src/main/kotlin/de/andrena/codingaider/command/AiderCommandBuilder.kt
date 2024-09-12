@@ -80,9 +80,11 @@ object AiderCommandBuilder {
         add("-w")
         add("/app")
         // Add environment variables for API keys
-        ApiKeyChecker.getApiKeysForDocker().forEach { (key, value) ->
-            add("-e")
-            add("$key=$value")
+        ApiKeyChecker.getAllApiKeyNames().forEach { keyName ->
+            ApiKeyChecker.getApiKeyValue(keyName)?.let { value ->
+                add("-e")
+                add("$keyName=$value")
+            }
         }
         add("paulgauthier/aider")
     }

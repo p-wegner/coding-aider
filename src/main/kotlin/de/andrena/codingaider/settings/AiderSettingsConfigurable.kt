@@ -13,6 +13,7 @@ import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.inputdialog.PersistentFileManager
 import de.andrena.codingaider.utils.ApiKeyChecker
+import de.andrena.codingaider.utils.ApiKeyManager
 import java.awt.Component
 import javax.swing.*
 
@@ -41,6 +42,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     private val editFormatComboBox = ComboBox(arrayOf("", "whole", "diff", "whole-func", "diff-func"))
     private val verboseCommandLoggingCheckBox = JBCheckBox("Enable verbose Aider command logging")
     private val useDockerAiderCheckBox = JBCheckBox("Use Docker-based Aider")
+    private val apiKeyFields = mutableMapOf<String, JBPasswordField>()
 
     override fun getDisplayName(): String = "Aider"
 
@@ -139,6 +141,18 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 }
             }
 
+            group("API Keys") {
+                ApiKeyChecker.getAllApiKeyNames().forEach { keyName ->
+                    row(keyName) {
+                        val field = JBPasswordField()
+                        apiKeyFields[keyName] = field
+                        cell(field)
+                            .resizableColumn()
+                            .align(Align.FILL)
+                    }
+                }
+            }
+
             group("Installation") {
                 row {
                     button("Test Aider Installation") {
@@ -167,7 +181,10 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 deactivateRepoMapCheckBox.isSelected != settings.deactivateRepoMap ||
                 editFormatComboBox.selectedItem as String != settings.editFormat ||
                 verboseCommandLoggingCheckBox.isSelected != settings.verboseCommandLogging ||
-                useDockerAiderCheckBox.isSelected != settings.useDockerAider
+                useDockerAiderCheckBox.isSelected != settings.useDockerAider ||
+                apiKeyFields.any { (keyName, field) ->
+                    String(field.password) != (ApiKeyManager.getApiKey(keyName) ?: "")
+                }
     }
 
     override fun apply() {
@@ -184,6 +201,13 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         settings.editFormat = editFormatComboBox.selectedItem as String
         settings.verboseCommandLogging = verboseCommandLoggingCheckBox.isSelected
         settings.useDockerAider = useDockerAiderCheckBox.isSelected
+
+        apiKeyFields.forEach { (keyName, field) ->
+            val apiKey = String(field.password)
+            if (apiKey.isNotEmpty()) {
+                ApiKeyManager.saveApiKey(keyName, apiKey)
+            }
+        }
     }
 
     override fun reset() {
@@ -200,6 +224,10 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         editFormatComboBox.selectedItem = settings.editFormat
         verboseCommandLoggingCheckBox.isSelected = settings.verboseCommandLogging
         useDockerAiderCheckBox.isSelected = settings.useDockerAider
+
+        apiKeyFields.forEach { (keyName, field) ->
+            field.text = ApiKeyManager.getApiKey(keyName) ?: ""
+        }
     }
 
     override fun disposeUIResources() {

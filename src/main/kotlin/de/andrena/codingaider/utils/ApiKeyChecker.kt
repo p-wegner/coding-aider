@@ -24,7 +24,12 @@ object ApiKeyChecker {
 
     fun getAllLlmOptions(): List<String> = llmToApiKeyMap.keys.toList() + ""
 
+    fun getAllApiKeyNames(): List<String> = llmToApiKeyMap.values.distinct()
+
     fun getApiKeyValue(apiKeyName: String): String? {
+        // Check CredentialStore first
+        ApiKeyManager.getApiKey(apiKeyName)?.let { return it }
+
         // Check environment variable
         System.getenv(apiKeyName)?.let { return it }
 
