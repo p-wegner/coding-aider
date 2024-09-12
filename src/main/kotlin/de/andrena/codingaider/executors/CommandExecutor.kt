@@ -36,7 +36,11 @@ class CommandExecutor(private val project: Project, private val commandData: Com
             // For native Aider mode, set PYTHONPATH to include the project base path
             val currentPythonPath = processBuilder.environment()["PYTHONPATH"] ?: ""
             project.basePath?.let { basePath ->
-                processBuilder.environment()["PYTHONPATH"] = "$basePath${File.pathSeparator}$currentPythonPath"
+                processBuilder.environment()["PYTHONPATH"] = if (currentPythonPath.isNotEmpty()) {
+                    "$basePath${File.pathSeparator}$currentPythonPath"
+                } else {
+                    basePath
+                }
             }
         }
         
@@ -48,15 +52,20 @@ class CommandExecutor(private val project: Project, private val commandData: Com
     }
 
     private fun handleProcessCompletion(process: Process, output: StringBuilder): String {
+        val trimmedOutput = output.trim().toString()
         return if (!process.waitFor(5, TimeUnit.MINUTES)) {
-            process.destroy()
-            val errorMessage = commandLogger.prependCommandToOutput("${output.trim()}\nAider command timed out after 5 minutes")
+            process.destroyForcibly()
+            val errorMessage = commandLogger.prependCommandToOutput("$trimmedOutput\nAider command timed out after 5 minutes")
             notifyObservers { it.onCommandError(errorMessage) }
             errorMessage
         } else {
             val exitCode = process.exitValue()
-            val status = if (exitCode == 0) "executed successfully" else "failed with exit code $exitCode"
-            val finalOutput = commandLogger.prependCommandToOutput("${output.trim()}\nAider command $status")
+            val status = when {
+                exitCode == 0 -> "executed successfully"
+                exitCode == 143 -> "terminated"
+                else -> "failed with exit code $exitCode"
+            }
+            val finalOutput = commandLogger.prependCommandToOutput("$trimmedOutput\nAider command $status")
             notifyObservers { it.onCommandComplete(finalOutput, exitCode) }
             finalOutput
         }
