@@ -20,11 +20,14 @@ class CommandExecutor(private val project: Project, private val commandData: Com
         notifyObservers { it.onCommandStart("Starting Aider command...\n${commandLogger.getCommandString(false)}") }
         
         val processBuilder = ProcessBuilder(commandArgs)
-            .directory(File(project.basePath!!))
             .apply { 
                 environment().putIfAbsent("PYTHONIOENCODING", "utf-8")
                 redirectErrorStream(true)
             }
+        
+        project.basePath?.let { basePath ->
+            processBuilder.directory(File(basePath))
+        }
         
         if (settings.useDockerAider) {
             // Use the default Docker host, which should work across platforms
@@ -45,17 +48,17 @@ class CommandExecutor(private val project: Project, private val commandData: Com
     }
 
     private fun handleProcessCompletion(process: Process, output: StringBuilder): String {
-        if (!process.waitFor(5, TimeUnit.MINUTES)) {
+        return if (!process.waitFor(5, TimeUnit.MINUTES)) {
             process.destroy()
-            val errorMessage = commandLogger.prependCommandToOutput("$output\nAider command timed out after 5 minutes")
+            val errorMessage = commandLogger.prependCommandToOutput("${output.trim()}\nAider command timed out after 5 minutes")
             notifyObservers { it.onCommandError(errorMessage) }
-            return errorMessage
+            errorMessage
         } else {
             val exitCode = process.exitValue()
             val status = if (exitCode == 0) "executed successfully" else "failed with exit code $exitCode"
-            val finalOutput = commandLogger.prependCommandToOutput("$output\nAider command $status")
+            val finalOutput = commandLogger.prependCommandToOutput("${output.trim()}\nAider command $status")
             notifyObservers { it.onCommandComplete(finalOutput, exitCode) }
-            return finalOutput
+            finalOutput
         }
     }
 
