@@ -43,14 +43,6 @@ tasks {
         version.set(project.version.toString())
     }
 
-
-    prepareSandbox {
-        from("src/main/resources") {
-            into(intellij.pluginName.get())
-        }
-    }
-
-
     signPlugin {
         certificateChain.set(System.getenv("CERTIFICATE_CHAIN"))
         privateKey.set(System.getenv("PRIVATE_KEY"))
