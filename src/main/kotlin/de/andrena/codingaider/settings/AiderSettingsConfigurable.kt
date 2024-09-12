@@ -9,10 +9,11 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogBuilder
 import com.intellij.ui.components.*
 import com.intellij.ui.dsl.builder.Align
-import com.intellij.ui.dsl.builder.panel
+import com.intellij.ui.dsl.builder.*
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.inputdialog.PersistentFileManager
 import de.andrena.codingaider.utils.ApiKeyChecker
+import de.andrena.codingaider.utils.ApiKeyManager
 import de.andrena.codingaider.utils.ApiKeyManager
 import java.awt.Component
 import javax.swing.*
@@ -42,7 +43,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     private val editFormatComboBox = ComboBox(arrayOf("", "whole", "diff", "whole-func", "diff-func"))
     private val verboseCommandLoggingCheckBox = JBCheckBox("Enable verbose Aider command logging")
     private val useDockerAiderCheckBox = JBCheckBox("Use Docker-based Aider")
-    private val apiKeyFields = mutableMapOf<String, JBPasswordField>()
+    private val apiKeyFields = mutableMapOf<String, JPasswordField>()
 
     override fun getDisplayName(): String = "Aider"
 
@@ -144,11 +145,19 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
             group("API Keys") {
                 ApiKeyChecker.getAllApiKeyNames().forEach { keyName ->
                     row(keyName) {
-                        val field = JBPasswordField()
+                        val field = JPasswordField()
                         apiKeyFields[keyName] = field
                         cell(field)
                             .resizableColumn()
                             .align(Align.FILL)
+                        button("Save") {
+                            val apiKey = String(field.password)
+                            if (apiKey.isNotEmpty()) {
+                                ApiKeyManager.saveApiKey(keyName, apiKey)
+                                field.text = ""
+                                Messages.showInfoMessage("API key for $keyName has been saved.", "API Key Saved")
+                            }
+                        }
                     }
                 }
             }
@@ -202,12 +211,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         settings.verboseCommandLogging = verboseCommandLoggingCheckBox.isSelected
         settings.useDockerAider = useDockerAiderCheckBox.isSelected
 
-        apiKeyFields.forEach { (keyName, field) ->
-            val apiKey = String(field.password)
-            if (apiKey.isNotEmpty()) {
-                ApiKeyManager.saveApiKey(keyName, apiKey)
-            }
-        }
+        // API keys are saved immediately when the "Save" button is clicked, so we don't need to do anything here
     }
 
     override fun reset() {
