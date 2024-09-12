@@ -13,9 +13,9 @@ object AiderCommandBuilder {
                 // Mount the entire workspace
                 add("-v")
                 add("${System.getProperty("user.dir")}:/app")
-                // Mount all .aider* files and directories
+                // Mount the user's home directory
                 add("-v")
-                add("${System.getProperty("user.dir")}/.aider*:/app/.aider*")
+                add("${System.getProperty("user.home")}:/root")
                 add("-w")
                 add("/app")
                 // Add environment variables for API keys
