@@ -44,7 +44,6 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     private val verboseCommandLoggingCheckBox = JBCheckBox("Enable verbose Aider command logging")
     private val useDockerAiderCheckBox = JBCheckBox("Use Docker-based Aider")
     private val apiKeyFields = mutableMapOf<String, JPasswordField>()
-    private val selectedApiKeyComboBox = ComboBox<String>()
 
     override fun getDisplayName(): String = "Aider"
 
@@ -146,11 +145,6 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
             }
 
             group("API Keys") {
-                row("Select API Key:") {
-                    cell(selectedApiKeyComboBox)
-                        .resizableColumn()
-                        .align(Align.FILL)
-                }
                 ApiKeyChecker.getAllApiKeyNames().forEach { keyName ->
                     row(keyName) {
                         val field = JPasswordField()
@@ -162,9 +156,10 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                             val apiKey = String(field.password)
                             if (apiKey.isNotEmpty()) {
                                 ApiKeyManager.saveApiKey(keyName, apiKey)
-                                field.text = ""
                                 Messages.showInfoMessage("API key for $keyName has been saved.", "API Key Saved")
-                                updateSelectedApiKeyComboBox()
+                            } else {
+                                ApiKeyManager.removeApiKey(keyName)
+                                Messages.showInfoMessage("API key for $keyName has been removed.", "API Key Removed")
                             }
                         }
                     }
@@ -226,15 +221,6 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         }
     }
 
-    private fun updateSelectedApiKeyComboBox() {
-        selectedApiKeyComboBox.removeAllItems()
-        ApiKeyManager.getAllStoredApiKeys().keys.forEach { key ->
-            selectedApiKeyComboBox.addItem(key)
-        }
-        ApiKeyManager.getSelectedApiKey()?.let { selectedKey ->
-            selectedApiKeyComboBox.selectedItem = selectedKey
-        }
-    }
 
     override fun reset() {
         val settings = AiderSettings.getInstance(project)
