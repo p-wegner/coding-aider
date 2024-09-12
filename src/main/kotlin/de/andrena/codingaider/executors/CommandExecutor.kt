@@ -29,6 +29,10 @@ class CommandExecutor(private val project: Project, private val commandData: Com
         if (settings.useDockerAider) {
             // Use the default Docker host, which should work across platforms
             processBuilder.environment().remove("DOCKER_HOST")
+        } else {
+            // For native Aider mode, set PYTHONPATH to include the project base path
+            val currentPythonPath = processBuilder.environment()["PYTHONPATH"] ?: ""
+            processBuilder.environment()["PYTHONPATH"] = "${project.basePath}${File.pathSeparator}$currentPythonPath"
         }
         
         val process = processBuilder.start()

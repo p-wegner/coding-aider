@@ -26,7 +26,12 @@ object AiderCommandBuilder {
             commandData.files.forEach { fileData ->
                 val fileArgument = if (fileData.isReadOnly) "--read" else "--file"
                 add(fileArgument)
-                add("\"${fileData.filePath}\"")
+                val filePath = if (useDockerAider) {
+                    "/app/${fileData.filePath.removePrefix(System.getProperty("user.dir")).replace('\\', '/').removePrefix("/")}"
+                } else {
+                    fileData.filePath
+                }
+                add("\"$filePath\"")
             }
             if (commandData.useYesFlag) add("--yes")
             if (commandData.editFormat.isNotEmpty()) {
