@@ -283,10 +283,6 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         }
     }
 
-    override fun disposeUIResources() {
-        settingsComponent = null
-    }
-
     private inner class LlmComboBoxRenderer : DefaultListCellRenderer() {
         override fun getListCellRendererComponent(
             list: JList<*>?,
