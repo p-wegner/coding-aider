@@ -8,11 +8,16 @@ class OpenAiderActionGroup : AnAction(), DumbAware {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val actionManager = ActionManager.getInstance()
-        val aiderActionGroup = actionManager.getAction("de.andrena.codingaider.AiderActionGroup") as? ActionGroup
-            ?: return
-
+        
         val flatActionGroup = DefaultActionGroup()
-        addActionsRecursively(aiderActionGroup, flatActionGroup)
+        val aiderActionGroupId = "de.andrena.codingaider.AiderActionGroup"
+        
+        actionManager.getActionIds(aiderActionGroupId).forEach { actionId ->
+            val action = actionManager.getAction(actionId)
+            if (action !is Separator) {
+                flatActionGroup.add(action)
+            }
+        }
 
         val popup = JBPopupFactory.getInstance()
             .createActionGroupPopup(
@@ -24,14 +29,5 @@ class OpenAiderActionGroup : AnAction(), DumbAware {
             )
 
         popup.showCenteredInCurrentWindow(project)
-    }
-
-    private fun addActionsRecursively(sourceGroup: ActionGroup, targetGroup: DefaultActionGroup) {
-        for (action in sourceGroup.getChildren(null)) {
-            when (action) {
-                is ActionGroup -> addActionsRecursively(action, targetGroup)
-                else -> targetGroup.add(action)
-            }
-        }
     }
 }
