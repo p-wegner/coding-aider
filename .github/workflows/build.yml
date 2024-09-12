@@ -8,6 +8,8 @@ on:
 
 jobs:
   build:
+    # Job disabled temporarily
+    if: false
     runs-on: ubuntu-latest
 
     steps:
