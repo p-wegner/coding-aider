@@ -163,6 +163,10 @@ class ApplyDesignPatternAction : AnAction() {
                     }
                 }
             }
+            // Ensure the combo box has a valid selection
+            if (patternComboBox.itemCount > 0 && patternComboBox.selectedIndex == -1) {
+                patternComboBox.selectedIndex = 0
+            }
         }
 
         override fun createCenterPanel(): JComponent {
