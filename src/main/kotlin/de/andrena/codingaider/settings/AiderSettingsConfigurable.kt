@@ -65,6 +65,56 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         persistentFilesList.cellRenderer = PersistentFileRenderer()
         loadPersistentFiles()
         settingsComponent = panel {
+            group("Aider Setup") {
+                group("API Keys") {
+                    ApiKeyChecker.getAllApiKeyNames().forEach { keyName ->
+                        row(keyName) {
+                            val field = JPasswordField()
+                            apiKeyFields[keyName] = field
+                            cell(field)
+                                .resizableColumn()
+                                .align(Align.FILL)
+                            val saveButton = JButton("Save")
+                            saveButton.addActionListener {
+                                val apiKey = String(field.password)
+                                if (apiKey.isNotEmpty()) {
+                                    ApiKeyManager.saveApiKey(keyName, apiKey)
+                                    Messages.showInfoMessage("API key for $keyName has been saved.", "API Key Saved")
+                                    updateApiKeyField(keyName, field, saveButton)
+                                }
+                            }
+                            cell(saveButton)
+                            
+                            button("Clear") {
+                                ApiKeyManager.removeApiKey(keyName)
+                                field.text = ""
+                                field.isEditable = true
+                                saveButton.isEnabled = true
+                                Messages.showInfoMessage("API key for $keyName has been cleared from the credential store. You can now enter a new key.", "API Key Cleared")
+                            }
+                            updateApiKeyField(keyName, field, saveButton)
+                            
+                            field.document.addDocumentListener(object : DocumentListener {
+                                override fun insertUpdate(e: DocumentEvent) = updateSaveButton()
+                                override fun removeUpdate(e: DocumentEvent) = updateSaveButton()
+                                override fun changedUpdate(e: DocumentEvent) = updateSaveButton()
+                                
+                                fun updateSaveButton() {
+                                    saveButton.isEnabled = field.password.isNotEmpty() && 
+                                        !ApiKeyChecker.isApiKeyAvailable(keyName)
+                                }
+                            })
+                        }
+                    }
+                }
+                row {
+                    button("Test Aider Installation") {
+                        val result = AiderTestCommand(project).execute()
+                        showTestCommandResult(result)
+                    }
+                }
+            }
+
             group("General Settings") {
                 row { cell(useYesFlagCheckBox) }
                 row("Default LLM Model:") {
@@ -81,6 +131,16 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                     }
                 }
                 row { cell(isShellModeCheckBox) }
+                row {
+                    cell(useDockerAiderCheckBox)
+                        .component
+                        .apply {
+                            toolTipText = "If enabled, Aider will be run using the Docker image paulgauthier/aider"
+                        }
+                }
+            }
+
+            group("Code Modification Settings") {
                 row("Lint Command:") {
                     cell(lintCmdField)
                         .resizableColumn()
@@ -90,6 +150,23 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                         }
                 }
                 row { cell(showGitComparisonToolCheckBox) }
+                row("Edit Format:") {
+                    cell(editFormatComboBox)
+                        .component
+                        .apply {
+                            toolTipText = "Select the default edit format for Aider"
+                        }
+                }
+                row {
+                    cell(deactivateRepoMapCheckBox)
+                        .component
+                        .apply {
+                            toolTipText = "This will deactivate Aider's repo map"
+                        }
+                }
+            }
+
+            group("Advanced Settings") {
                 row {
                     cell(activateIdeExecutorAfterWebcrawlCheckBox)
                         .component
@@ -102,32 +179,11 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                         .label("Web Crawl LLM:")
                 }
                 row {
-                    cell(deactivateRepoMapCheckBox)
-                        .component
-                        .apply {
-                            toolTipText = "This will deactivate Aider's repo map"
-                        }
-                }
-                row("Edit Format:") {
-                    cell(editFormatComboBox)
-                        .component
-                        .apply {
-                            toolTipText = "Select the default edit format for Aider"
-                        }
-                }
-                row {
                     cell(verboseCommandLoggingCheckBox)
                         .component
                         .apply {
                             toolTipText =
                                 "If enabled, Aider command details will be logged in the dialog shown to the user"
-                        }
-                }
-                row {
-                    cell(useDockerAiderCheckBox)
-                        .component
-                        .apply {
-                            toolTipText = "If enabled, Aider will be run using the Docker image paulgauthier/aider"
                         }
                 }
             }
@@ -142,57 +198,6 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                     button("Add Files") { addPersistentFiles() }
                     button("Toggle Read-Only") { toggleReadOnlyMode() }
                     button("Remove Files") { removeSelectedFiles() }
-                }
-            }
-
-            group("API Keys") {
-                ApiKeyChecker.getAllApiKeyNames().forEach { keyName ->
-                    row(keyName) {
-                        val field = JPasswordField()
-                        apiKeyFields[keyName] = field
-                        cell(field)
-                            .resizableColumn()
-                            .align(Align.FILL)
-                        val saveButton = JButton("Save")
-                        saveButton.addActionListener {
-                            val apiKey = String(field.password)
-                            if (apiKey.isNotEmpty()) {
-                                ApiKeyManager.saveApiKey(keyName, apiKey)
-                                Messages.showInfoMessage("API key for $keyName has been saved.", "API Key Saved")
-                                updateApiKeyField(keyName, field, saveButton)
-                            }
-                        }
-                        cell(saveButton)
-                        
-                        button("Clear") {
-                            ApiKeyManager.removeApiKey(keyName)
-                            field.text = ""
-                            field.isEditable = true
-                            saveButton.isEnabled = true
-                            Messages.showInfoMessage("API key for $keyName has been cleared from the credential store. You can now enter a new key.", "API Key Cleared")
-                        }
-                        updateApiKeyField(keyName, field, saveButton)
-                        
-                        field.document.addDocumentListener(object : DocumentListener {
-                            override fun insertUpdate(e: DocumentEvent) = updateSaveButton()
-                            override fun removeUpdate(e: DocumentEvent) = updateSaveButton()
-                            override fun changedUpdate(e: DocumentEvent) = updateSaveButton()
-                            
-                            fun updateSaveButton() {
-                                saveButton.isEnabled = field.password.isNotEmpty() && 
-                                    !ApiKeyChecker.isApiKeyAvailable(keyName)
-                            }
-                        })
-                    }
-                }
-            }
-
-            group("Installation") {
-                row {
-                    button("Test Aider Installation") {
-                        val result = AiderTestCommand(project).execute()
-                        showTestCommandResult(result)
-                    }
                 }
             }
         }.apply {
