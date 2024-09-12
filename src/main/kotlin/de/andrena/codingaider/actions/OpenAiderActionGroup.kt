@@ -8,11 +8,11 @@ class OpenAiderActionGroup : AnAction(), DumbAware {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val actionManager = ActionManager.getInstance()
-        
+
         val flatActionGroup = DefaultActionGroup()
         val aiderActionGroupId = "de.andrena.codingaider.AiderActionGroup"
         
-        actionManager.getActionIds(aiderActionGroupId).forEach { actionId ->
+        actionManager.getActionIdList(aiderActionGroupId).forEach { actionId ->
             val action = actionManager.getAction(actionId)
             if (action !is Separator) {
                 flatActionGroup.add(action)
