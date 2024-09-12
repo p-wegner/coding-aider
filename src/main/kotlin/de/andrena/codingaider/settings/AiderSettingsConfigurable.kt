@@ -153,21 +153,24 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                         cell(field)
                             .resizableColumn()
                             .align(Align.FILL)
-                        val saveButton = button("Save") {
+                        val saveButton = JButton("Save")
+                        saveButton.addActionListener {
                             val apiKey = String(field.password)
                             if (apiKey.isNotEmpty()) {
                                 ApiKeyManager.saveApiKey(keyName, apiKey)
                                 Messages.showInfoMessage("API key for $keyName has been saved.", "API Key Saved")
-                                updateApiKeyField(keyName, field, saveButton.component)
+                                updateApiKeyField(keyName, field, saveButton)
                             }
                         }
+                        cell(saveButton)
+                        
                         button("Clear") {
                             ApiKeyManager.removeApiKey(keyName)
                             field.text = ""
                             Messages.showInfoMessage("API key for $keyName has been cleared.", "API Key Cleared")
-                            updateApiKeyField(keyName, field, saveButton.component)
+                            updateApiKeyField(keyName, field, saveButton)
                         }
-                        updateApiKeyField(keyName, field, saveButton.component)
+                        updateApiKeyField(keyName, field, saveButton)
                         
                         field.document.addDocumentListener(object : DocumentListener {
                             override fun insertUpdate(e: DocumentEvent) = updateSaveButton()
@@ -175,7 +178,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                             override fun changedUpdate(e: DocumentEvent) = updateSaveButton()
                             
                             fun updateSaveButton() {
-                                saveButton.component.isEnabled = field.password.isNotEmpty() && 
+                                saveButton.isEnabled = field.password.isNotEmpty() && 
                                     !ApiKeyChecker.isApiKeyAvailable(keyName)
                             }
                         })
@@ -382,7 +385,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
             field.text = ""
             field.isEditable = true
             field.toolTipText = null
-            saveButton.isEnabled = false
+            saveButton.isEnabled = field.password.isNotEmpty()
         }
     }
 }
