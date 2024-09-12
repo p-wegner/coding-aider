@@ -10,8 +10,10 @@ object AiderCommandBuilder {
                 add("run")
                 add("-i")
                 add("--rm")
+                // Mount the entire workspace
                 add("-v")
                 add("${System.getProperty("user.dir")}:/app")
+                // Mount .aider and .aider-docs directories separately to ensure they exist
                 add("-v")
                 add("${System.getProperty("user.dir")}/.aider:/app/.aider")
                 add("-v")
