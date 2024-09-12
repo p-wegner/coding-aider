@@ -19,7 +19,7 @@ class OpenAiderActionGroup : AnAction(), DumbAware {
         val flatActionGroup = DefaultActionGroup()
         for (action in actions) {
             if (action is ActionGroup) {
-                flatActionGroup.addAll(action.getChildren(null))
+                flatActionGroup.addAll(*action.getChildren(null))
             } else {
                 flatActionGroup.add(action)
             }
