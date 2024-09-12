@@ -19,13 +19,18 @@ class CommandExecutor(private val project: Project, private val commandData: Com
         logger.info("Executing Aider command: ${commandArgs.joinToString(" ")}")
         notifyObservers { it.onCommandStart("Starting Aider command...\n${commandLogger.getCommandString(false)}") }
         
-        val process = ProcessBuilder(commandArgs)
+        val processBuilder = ProcessBuilder(commandArgs)
             .directory(File(project.basePath!!))
             .apply { 
                 environment().putIfAbsent("PYTHONIOENCODING", "utf-8")
                 redirectErrorStream(true)
             }
-            .start()
+        
+        if (settings.useDockerAider) {
+            processBuilder.environment()["DOCKER_HOST"] = "unix:///var/run/docker.sock"
+        }
+        
+        val process = processBuilder.start()
 
         val output = StringBuilder()
         pollProcessAndReadOutput(process, output)

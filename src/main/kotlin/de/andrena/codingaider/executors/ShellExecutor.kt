@@ -13,7 +13,12 @@ class ShellExecutor(
         val terminalView = TerminalToolWindowManager.getInstance(project)
         val terminalSession = terminalView.createLocalShellWidget(project.basePath, "Aider", true)
 
-        val command = AiderCommandBuilder.buildAiderCommand(commandData, true).joinToString(" ")
+        val command = AiderCommandBuilder.buildAiderCommand(commandData, true, AiderSettings.getInstance(project).useDockerAider).joinToString(" ")
+        
+        if (AiderSettings.getInstance(project).useDockerAider) {
+            terminalSession.executeCommand("export DOCKER_HOST=unix:///var/run/docker.sock")
+        }
+        
         terminalSession.executeCommand(command)
     }
 }
