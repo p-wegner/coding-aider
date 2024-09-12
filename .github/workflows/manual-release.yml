@@ -3,8 +3,11 @@ name: Manual Release
 on:
   workflow_dispatch:
     inputs:
-      version:
-        description: 'Version to release (e.g., 1.0.9)'
+      release_version:
+        description: 'Version to release (e.g., 1.0.9). If not provided, will use the current version without -SNAPSHOT'
+        required: false
+      next_version:
+        description: 'Next development version (e.g., 1.1.0). -SNAPSHOT will be appended automatically'
         required: true
 
 jobs:
@@ -18,19 +21,28 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Update version
+      - name: Determine release version
         run: |
-          echo "${{ github.event.inputs.version }}" > version.txt
+          CURRENT_VERSION=$(cat version.txt | sed 's/-SNAPSHOT//')
+          RELEASE_VERSION="${{ github.event.inputs.release_version }}"
+          if [ -z "$RELEASE_VERSION" ]; then
+            RELEASE_VERSION="$CURRENT_VERSION"
+          fi
+          echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
+
+      - name: Update version for release
+        run: |
+          echo "${{ env.RELEASE_VERSION }}" > version.txt
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add version.txt
-          git commit -m "Bump version to ${{ github.event.inputs.version }}"
+          git commit -m "Bump version to ${{ env.RELEASE_VERSION }}"
           git push
 
       - name: Create and push tag
         run: |
-          git tag v${{ github.event.inputs.version }}
-          git push origin v${{ github.event.inputs.version }}
+          git tag v${{ env.RELEASE_VERSION }}
+          git push origin v${{ env.RELEASE_VERSION }}
 
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v2
@@ -43,8 +55,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ github.event.inputs.version }}
-          release_name: Release ${{ github.event.inputs.version }}
+          tag_name: v${{ env.RELEASE_VERSION }}
+          release_name: Release ${{ env.RELEASE_VERSION }}
           draft: true
           prerelease: false
 
@@ -54,14 +66,17 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/libs/coding-aider-${{ github.event.inputs.version }}.jar
-          asset_name: coding-aider-${{ github.event.inputs.version }}.jar
+          asset_path: ./build/libs/coding-aider-${{ env.RELEASE_VERSION }}.jar
+          asset_name: coding-aider-${{ env.RELEASE_VERSION }}.jar
           asset_content_type: application/java-archive
 
-      - name: Increment version for next development cycle
+      - name: Update version for next development cycle
         run: |
-          NEW_VERSION=$(echo "${{ github.event.inputs.version }}" | awk -F. -v OFS=. '{$NF += 1; print}')
-          echo "${NEW_VERSION}-SNAPSHOT" > version.txt
+          NEXT_VERSION="${{ github.event.inputs.next_version }}"
+          if [[ ! $NEXT_VERSION =~ -SNAPSHOT$ ]]; then
+            NEXT_VERSION="${NEXT_VERSION}-SNAPSHOT"
+          fi
+          echo "$NEXT_VERSION" > version.txt
           git add version.txt
-          git commit -m "Bump version to ${NEW_VERSION}-SNAPSHOT"
+          git commit -m "Bump version to $NEXT_VERSION"
           git push
