@@ -273,19 +273,6 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         }
     }
 
-    private fun updateApiKeyField(keyName: String, field: JPasswordField, saveButton: JButton) {
-        val isKeyAvailable = ApiKeyChecker.isApiKeyAvailable(keyName)
-        if (isKeyAvailable) {
-            field.text = "*".repeat(16)
-            field.toolTipText = "An API key for $keyName is already stored. You can enter a new one to override it."
-        } else {
-            field.text = ""
-            field.toolTipText = null
-        }
-        field.isEditable = true
-        saveButton.isEnabled = true
-    }
-
     override fun disposeUIResources() {
         settingsComponent = null
     }
