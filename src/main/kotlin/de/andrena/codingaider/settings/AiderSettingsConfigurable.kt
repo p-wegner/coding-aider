@@ -167,8 +167,9 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                         button("Clear") {
                             ApiKeyManager.removeApiKey(keyName)
                             field.text = ""
-                            Messages.showInfoMessage("API key for $keyName has been cleared.", "API Key Cleared")
-                            updateApiKeyField(keyName, field, saveButton)
+                            field.isEditable = true
+                            saveButton.isEnabled = true
+                            Messages.showInfoMessage("API key for $keyName has been cleared from the credential store. You can now enter a new key.", "API Key Cleared")
                         }
                         updateApiKeyField(keyName, field, saveButton)
                         
@@ -237,12 +238,8 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
 
         apiKeyFields.forEach { (keyName, field) ->
             val enteredValue = String(field.password)
-            if (enteredValue != "********") {
-                if (enteredValue.isNotEmpty()) {
-                    ApiKeyManager.saveApiKey(keyName, enteredValue)
-                } else {
-                    ApiKeyManager.removeApiKey(keyName)
-                }
+            if (enteredValue.isNotEmpty() && enteredValue != "*".repeat(16)) {
+                ApiKeyManager.saveApiKey(keyName, enteredValue)
             }
         }
     }
@@ -274,6 +271,19 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         } else {
             ""
         }
+    }
+
+    private fun updateApiKeyField(keyName: String, field: JPasswordField, saveButton: JButton) {
+        val isKeyAvailable = ApiKeyChecker.isApiKeyAvailable(keyName)
+        if (isKeyAvailable) {
+            field.text = "*".repeat(16)
+            field.toolTipText = "An API key for $keyName is already stored. You can enter a new one to override it."
+        } else {
+            field.text = ""
+            field.toolTipText = null
+        }
+        field.isEditable = true
+        saveButton.isEnabled = true
     }
 
     override fun disposeUIResources() {
