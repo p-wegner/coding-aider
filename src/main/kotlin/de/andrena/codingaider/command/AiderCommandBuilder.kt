@@ -32,7 +32,7 @@ object AiderCommandBuilder {
                 add(fileArgument)
                 val filePath = if (useDockerAider) {
                     "/app/${
-                        fileData.filePath.removePrefix(System.getProperty("user.dir")).replace('\\', '/')
+                        fileData.filePath.removePrefix(commandData.projectPath).replace('\\', '/')
                             .removePrefix("/")
                     }"
                 } else {
