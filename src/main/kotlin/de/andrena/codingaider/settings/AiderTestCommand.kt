@@ -16,7 +16,8 @@ class AiderTestCommand(private val project: Project) {
             isShellMode = false,
             lintCmd = "",
             deactivateRepoMap = settings.deactivateRepoMap,
-            editFormat = ""
+            editFormat = "",
+            projectPath = project.basePath ?: ""
         )
 
         return SimpleExecutor(project, commandData).execute()
