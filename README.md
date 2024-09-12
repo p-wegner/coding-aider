@@ -11,9 +11,11 @@ while allowing you complete control over the context utilized by the LLM.
 
 ## Important Note
 
-To utilize this plugin, you must have a functional Aider installation along with access to API keys for the LLM
-Providers you intend to use. Alternatively, you can run a local LLM inference server, such as Ollama, to connect to
-Aider.
+To utilize this plugin, you
+
+- must have a functional Aider installation
+- or be able to run docker containers
+  Additionally API keys for the LLM Providers you intend to use are required.
 
 ## Key Features
 
@@ -70,21 +72,23 @@ functionalities like Git integration and keyboard shortcuts.
 
 ## Getting Started
 
-1. Install Aider-Chat:
+1. Install the Coding-Aider plugin in a compatible JetBrains IDE.
+2. (**Can be skipped if aider in docker is used**) Install Aider-Chat :
     - Visit https://aider.chat/
     - Install as a global pipx Python app
     - Ensure it's accessible from your terminal (`aider --help`)
-
-2. Install the Coding-Aider plugin in a compatible JetBrains IDE.
-
-3. (Recommended) Globally configure API keys for LLM Providers you plan to use (
-   see https://aider.chat/docs/config/dotenv.html)
-
-4. Configure Aider settings:
+3. Configure Aider settings:
     - Navigate to Tools > Aider Settings
-    - Choose between native Aider installation or Docker-based Aider
-    - If using native Aider, run the Test to verify your installation
-    - If using Docker-based Aider, ensure Docker is installed and running on your system
+    - Select Docker-based Aider if aider is not installed globally
+    - Run the Test to verify your aider installation, or run the aider docker container. First time running the test
+      with docker will
+      take a while as the docker image (1GB) is downloaded.
+    - (Optional) Globally configure API keys for LLM Providers you plan to use with aider (
+      see https://aider.chat/docs/config/dotenv.html)
+4. Configure LLM Providers:
+    - Navigate to Tools > Aider Settings
+    - Add your API keys for the LLM Providers you wish to use (if not globally configured)
+    - Configure the default LLM Provider for your Aider actions
 
 5. Basic Usage:
     - Select files or directories in your project
@@ -93,7 +97,8 @@ functionalities like Git integration and keyboard shortcuts.
     - Review Aider's output and resulting changes in your project
 
 6. Advanced Usage:
-    - Use Alt+D to automatically commit changes with an LLM-generated message
+    - Use Alt+Shift+Q to quickly access all available Aider actions
+    - Use Alt+D to automatically commit changes to the selected files with an LLM-generated message
     - Use Alt+Shift+A to manage persistent files for context
     - Utilize specialized actions like Document Code, Fix Compile Error, or Web Crawl for specific tasks
     - Access the last command result using the Show Last Command Result action

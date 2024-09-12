@@ -44,8 +44,8 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     private val deactivateRepoMapCheckBox = JBCheckBox("Deactivate Aider's repo map (--map-tokens 0)")
     private val editFormatComboBox = ComboBox(arrayOf("", "whole", "diff", "whole-func", "diff-func"))
     private val verboseCommandLoggingCheckBox = JBCheckBox("Enable verbose Aider command logging")
-    private val useDockerAiderCheckBox = JBCheckBox("Use Docker-based Aider")
-    private val enableMarkdownDialogAutocloseCheckBox = JBCheckBox("Enable MarkdownDialog autoclose")
+    private val useDockerAiderCheckBox = JBCheckBox("Use Aider in Docker")
+    private val enableMarkdownDialogAutocloseCheckBox = JBCheckBox("Enable Output Dialog autoclose")
     private val apiKeyFields = mutableMapOf<String, JPasswordField>()
 
     override fun getDisplayName(): String = "Aider"
@@ -85,29 +85,41 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                                 }
                             }
                             cell(saveButton)
-                            
+
                             button("Clear") {
                                 ApiKeyManager.removeApiKey(keyName)
                                 field.text = ""
                                 field.isEditable = true
                                 saveButton.isEnabled = true
-                                Messages.showInfoMessage("API key for $keyName has been cleared from the credential store. You can now enter a new key.", "API Key Cleared")
+                                Messages.showInfoMessage(
+                                    "API key for $keyName has been cleared from the credential store. You can now enter a new key.",
+                                    "API Key Cleared"
+                                )
                             }
                             updateApiKeyField(keyName, field, saveButton)
-                            
+
                             field.document.addDocumentListener(object : DocumentListener {
                                 override fun insertUpdate(e: DocumentEvent) = updateSaveButton()
                                 override fun removeUpdate(e: DocumentEvent) = updateSaveButton()
                                 override fun changedUpdate(e: DocumentEvent) = updateSaveButton()
-                                
+
                                 fun updateSaveButton() {
-                                    saveButton.isEnabled = field.password.isNotEmpty() && 
-                                        !ApiKeyChecker.isApiKeyAvailable(keyName)
+                                    saveButton.isEnabled = field.password.isNotEmpty() &&
+                                            !ApiKeyChecker.isApiKeyAvailable(keyName)
                                 }
                             })
                         }
                     }
                 }
+                row {
+                    cell(useDockerAiderCheckBox)
+                        .component
+                        .apply {
+                            toolTipText =
+                                "If enabled, Aider will be run using the Docker image paulgauthier/aider. Currently a new container will be used for every command, which may delay the execution compared to native aider setup."
+                        }
+                }
+
                 row {
                     button("Test Aider Installation") {
                         val result = AiderTestCommand(project).execute()
@@ -132,13 +144,6 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                     }
                 }
                 row { cell(isShellModeCheckBox) }
-                row {
-                    cell(useDockerAiderCheckBox)
-                        .component
-                        .apply {
-                            toolTipText = "If enabled, Aider will be run using the Docker image paulgauthier/aider"
-                        }
-                }
             }
 
             group("Code Modification Settings") {
@@ -155,14 +160,16 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                     cell(editFormatComboBox)
                         .component
                         .apply {
-                            toolTipText = "Select the default edit format for Aider"
+                            toolTipText =
+                                "Select the default edit format for Aider. Leave empty to use the default format for the used LLM."
                         }
                 }
                 row {
                     cell(deactivateRepoMapCheckBox)
                         .component
                         .apply {
-                            toolTipText = "This will deactivate Aider's repo map"
+                            toolTipText =
+                                "This will deactivate Aider's repo map. Saves time for repo updates, but will give aider less context."
                         }
                 }
             }
@@ -192,7 +199,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                         .component
                         .apply {
                             toolTipText =
-                                "If enabled, the MarkdownDialog will automatically close after a short delay"
+                                "If enabled, the Output Dialog will automatically close after a 10-second delay."
                         }
                 }
             }
