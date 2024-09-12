@@ -75,9 +75,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                         BrowserUtil.browse("https://aider.chat/docs/config/options.html")
                     }
                 }
-                row {
-                    cell(isShellModeCheckBox)
-                }
+                row { cell(isShellModeCheckBox) }
                 row("Lint Command:") {
                     cell(lintCmdField)
                         .resizableColumn()
@@ -86,23 +84,24 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                             component.toolTipText = "The lint command will be executed after every code change by Aider"
                         }
                 }
-                row {
-                    cell(showGitComparisonToolCheckBox)
-                }
+                row { cell(showGitComparisonToolCheckBox) }
                 row {
                     cell(activateIdeExecutorAfterWebcrawlCheckBox)
                         .component
-                        .toolTipText = "This option prompts Aider to clean up the crawled markdown. " +
-                            "Note that this experimental feature may exceed the LLM's token limit and potentially leads to high costs. " +
-                            "Use it with caution."
+                        .apply {
+                            toolTipText = "This option prompts Aider to clean up the crawled markdown. " +
+                                "Note that this experimental feature may exceed the LLM's token limit and potentially leads to high costs. " +
+                                "Use it with caution."
+                        }
                     cell(webCrawlLlmComboBox)
                         .label("Web Crawl LLM:")
                 }
                 row {
-                    cell(deactivateRepoMapCheckBox).component.apply {
-                        isSelected = true
-                        toolTipText = "This will deactivate Aider's repo map"
-                    }
+                    cell(deactivateRepoMapCheckBox)
+                        .component
+                        .apply {
+                            toolTipText = "This will deactivate Aider's repo map"
+                        }
                 }
                 row("Edit Format:") {
                     cell(editFormatComboBox)
@@ -115,16 +114,14 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                     cell(verboseCommandLoggingCheckBox)
                         .component
                         .apply {
-                            toolTipText =
-                                "If enabled, Aider command details will be logged in the dialog shown to the user"
+                            toolTipText = "If enabled, Aider command details will be logged in the dialog shown to the user"
                         }
                 }
                 row {
                     cell(useDockerAiderCheckBox)
                         .component
                         .apply {
-                            toolTipText =
-                                "If enabled, Aider will be run using the Docker image paulgauthier/aider"
+                            toolTipText = "If enabled, Aider will be run using the Docker image paulgauthier/aider"
                         }
                 }
             }
@@ -150,7 +147,10 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                     }
                 }
             }
+        }.apply {
+            border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
         }
+        
         return settingsComponent!!
     }
 
