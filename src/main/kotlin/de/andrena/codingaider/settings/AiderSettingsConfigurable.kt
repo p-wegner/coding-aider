@@ -214,6 +214,16 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         settings.verboseCommandLogging = verboseCommandLoggingCheckBox.isSelected
         settings.useDockerAider = useDockerAiderCheckBox.isSelected
 
+        apiKeyFields.forEach { (keyName, field) ->
+            val enteredValue = String(field.password)
+            if (enteredValue != "********") {
+                if (enteredValue.isNotEmpty()) {
+                    ApiKeyManager.saveApiKey(keyName, enteredValue)
+                } else {
+                    ApiKeyManager.removeApiKey(keyName)
+                }
+            }
+        }
     }
 
 
@@ -233,7 +243,16 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         useDockerAiderCheckBox.isSelected = settings.useDockerAider
 
         apiKeyFields.forEach { (keyName, field) ->
-            field.text = ApiKeyManager.getApiKey(keyName) ?: ""
+            field.text = getApiKeyDisplayValue(keyName)
+        }
+    }
+
+    private fun getApiKeyDisplayValue(keyName: String): String {
+        val apiKey = ApiKeyManager.getApiKey(keyName)
+        return when {
+            apiKey != null -> apiKey
+            System.getenv(keyName) != null -> "********" // Censored placeholder for env variable
+            else -> ""
         }
     }
 
