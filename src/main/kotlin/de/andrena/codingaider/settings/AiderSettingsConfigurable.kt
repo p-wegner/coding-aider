@@ -7,13 +7,13 @@ import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogBuilder
+import com.intellij.openapi.ui.Messages
 import com.intellij.ui.components.*
 import com.intellij.ui.dsl.builder.Align
-import com.intellij.ui.dsl.builder.*
+import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.inputdialog.PersistentFileManager
 import de.andrena.codingaider.utils.ApiKeyChecker
-import de.andrena.codingaider.utils.ApiKeyManager
 import de.andrena.codingaider.utils.ApiKeyManager
 import java.awt.Component
 import javax.swing.*
@@ -44,6 +44,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     private val verboseCommandLoggingCheckBox = JBCheckBox("Enable verbose Aider command logging")
     private val useDockerAiderCheckBox = JBCheckBox("Use Docker-based Aider")
     private val apiKeyFields = mutableMapOf<String, JPasswordField>()
+    private val selectedApiKeyComboBox = ComboBox<String>()
 
     override fun getDisplayName(): String = "Aider"
 
@@ -62,6 +63,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     override fun createComponent(): JComponent {
         persistentFilesList.cellRenderer = PersistentFileRenderer()
         loadPersistentFiles()
+        updateSelectedApiKeyComboBox()
         settingsComponent = panel {
             group("General Settings") {
                 row { cell(useYesFlagCheckBox) }
@@ -93,8 +95,8 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                         .component
                         .apply {
                             toolTipText = "This option prompts Aider to clean up the crawled markdown. " +
-                                "Note that this experimental feature may exceed the LLM's token limit and potentially leads to high costs. " +
-                                "Use it with caution."
+                                    "Note that this experimental feature may exceed the LLM's token limit and potentially leads to high costs. " +
+                                    "Use it with caution."
                         }
                     cell(webCrawlLlmComboBox)
                         .label("Web Crawl LLM:")
@@ -117,7 +119,8 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                     cell(verboseCommandLoggingCheckBox)
                         .component
                         .apply {
-                            toolTipText = "If enabled, Aider command details will be logged in the dialog shown to the user"
+                            toolTipText =
+                                "If enabled, Aider command details will be logged in the dialog shown to the user"
                         }
                 }
                 row {
@@ -143,6 +146,11 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
             }
 
             group("API Keys") {
+                row("Select API Key:") {
+                    cell(selectedApiKeyComboBox)
+                        .resizableColumn()
+                        .align(Align.FILL)
+                }
                 ApiKeyChecker.getAllApiKeyNames().forEach { keyName ->
                     row(keyName) {
                         val field = JPasswordField()
@@ -156,6 +164,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                                 ApiKeyManager.saveApiKey(keyName, apiKey)
                                 field.text = ""
                                 Messages.showInfoMessage("API key for $keyName has been saved.", "API Key Saved")
+                                updateSelectedApiKeyComboBox()
                             }
                         }
                     }
@@ -173,7 +182,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         }.apply {
             border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
         }
-        
+
         return settingsComponent!!
     }
 
@@ -211,7 +220,20 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         settings.verboseCommandLogging = verboseCommandLoggingCheckBox.isSelected
         settings.useDockerAider = useDockerAiderCheckBox.isSelected
 
-        // API keys are saved immediately when the "Save" button is clicked, so we don't need to do anything here
+        // Save the selected API key
+        selectedApiKeyComboBox.selectedItem?.let { selectedKey ->
+            ApiKeyManager.setSelectedApiKey(selectedKey as String)
+        }
+    }
+
+    private fun updateSelectedApiKeyComboBox() {
+        selectedApiKeyComboBox.removeAllItems()
+        ApiKeyManager.getAllStoredApiKeys().keys.forEach { key ->
+            selectedApiKeyComboBox.addItem(key)
+        }
+        ApiKeyManager.getSelectedApiKey()?.let { selectedKey ->
+            selectedApiKeyComboBox.selectedItem = selectedKey
+        }
     }
 
     override fun reset() {

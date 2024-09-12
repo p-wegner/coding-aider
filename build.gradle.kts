@@ -17,7 +17,6 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.2")
     implementation("net.sourceforge.htmlunit:htmlunit:2.70.0")
     implementation("com.vladsch.flexmark:flexmark-all:0.64.8")
-    implementation("com.jetbrains.intellij.platform:credential-store")
 }
 
 // Configure Gradle IntelliJ Plugin
