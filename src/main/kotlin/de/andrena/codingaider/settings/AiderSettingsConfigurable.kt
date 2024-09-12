@@ -160,14 +160,14 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                                 Messages.showInfoMessage("API key for $keyName has been saved.", "API Key Saved")
                                 updateApiKeyField(keyName, field, saveButton.component)
                             }
-                        }.component
+                        }
                         button("Clear") {
                             ApiKeyManager.removeApiKey(keyName)
                             field.text = ""
                             Messages.showInfoMessage("API key for $keyName has been cleared.", "API Key Cleared")
-                            updateApiKeyField(keyName, field, saveButton)
+                            updateApiKeyField(keyName, field, saveButton.component)
                         }
-                        updateApiKeyField(keyName, field, saveButton)
+                        updateApiKeyField(keyName, field, saveButton.component)
                         
                         field.document.addDocumentListener(object : DocumentListener {
                             override fun insertUpdate(e: DocumentEvent) = updateSaveButton()
@@ -175,7 +175,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                             override fun changedUpdate(e: DocumentEvent) = updateSaveButton()
                             
                             fun updateSaveButton() {
-                                saveButton.isEnabled = field.password.isNotEmpty() && 
+                                saveButton.component.isEnabled = field.password.isNotEmpty() && 
                                     !ApiKeyChecker.isApiKeyAvailable(keyName)
                             }
                         })
