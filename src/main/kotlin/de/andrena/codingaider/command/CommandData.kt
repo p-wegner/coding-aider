@@ -22,6 +22,7 @@ data class CommandData(
     val isShellMode: Boolean,
     val lintCmd: String,
     val deactivateRepoMap: Boolean = false,
-    val editFormat: String = ""
+    val editFormat: String = "",
+    val projectPath: String
 )
 

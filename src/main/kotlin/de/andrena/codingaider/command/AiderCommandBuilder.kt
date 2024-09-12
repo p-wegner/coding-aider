@@ -10,22 +10,9 @@ object AiderCommandBuilder {
                 add("run")
                 add("-i")
                 add("--rm")
-                // Mount the entire workspace
+                // Mount the entire project workspace
                 add("-v")
-                add("${System.getProperty("user.dir")}:/app")
-                // Mount the user's home directory
-                add("-v")
-                add("${System.getProperty("user.home")}:/root")
-                // Mount specific Aider files
-                add("-v")
-                add("${System.getProperty("user.dir")}/.aider.chat.history.md:/app/.aider.chat.history.md")
-                add("-v")
-                add("${System.getProperty("user.dir")}/.aider.context.yaml:/app/.aider.context.yaml")
-                add("-v")
-                add("${System.getProperty("user.dir")}/.aider.input.history:/app/.aider.input.history")
-                // Mount the .aider-docs folder
-                add("-v")
-                add("${System.getProperty("user.dir")}/.aider-docs:/app/.aider-docs")
+                add("${commandData.projectPath}:/app")
                 add("-w")
                 add("/app")
                 // Add environment variables for API keys

@@ -20,7 +20,7 @@ class CommandExecutor(private val project: Project, private val commandData: Com
         notifyObservers { it.onCommandStart("Starting Aider command...\n${commandLogger.getCommandString(false)}") }
 
         val processBuilder = ProcessBuilder(commandArgs)
-            .directory(File(project.basePath!!))
+            .directory(File(commandData.projectPath))
             .apply {
                 environment().putIfAbsent("PYTHONIOENCODING", "utf-8")
                 redirectErrorStream(true)
