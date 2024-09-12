@@ -48,10 +48,10 @@ jobs:
           git tag v${{ env.RELEASE_VERSION }}
           git push origin v${{ env.RELEASE_VERSION }}
 
-      - name: Build with Gradle
+      - name: Build Plugin with Gradle
         uses: gradle/gradle-build-action@v2
         with:
-          arguments: build
+          arguments: buildPlugin
 
       - name: Create Release
         id: create_release
@@ -70,9 +70,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./build/libs/coding-aider-${{ env.RELEASE_VERSION }}.jar
-          asset_name: coding-aider-${{ env.RELEASE_VERSION }}.jar
-          asset_content_type: application/java-archive
+          asset_path: ./build/distributions/coding-aider-${{ env.RELEASE_VERSION }}.zip
+          asset_name: coding-aider-${{ env.RELEASE_VERSION }}.zip
+          asset_content_type: application/zip
 
       - name: Update version for next development cycle
         env:
