@@ -27,7 +27,7 @@ class OpenAiderActionGroup : AnAction(), DumbAware {
     }
 
     private fun addActionsRecursively(sourceGroup: ActionGroup, targetGroup: DefaultActionGroup) {
-        for (action in sourceGroup.getChildActionsOrStubs(null)) {
+        for (action in sourceGroup.getChildren(null)) {
             when (action) {
                 is ActionGroup -> addActionsRecursively(action, targetGroup)
                 else -> targetGroup.add(action)
