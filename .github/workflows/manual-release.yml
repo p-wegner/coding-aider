@@ -31,18 +31,22 @@ jobs:
           echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
 
       - name: Update version for release
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
           echo "${{ env.RELEASE_VERSION }}" > version.txt
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add version.txt
           git commit -m "Bump version to ${{ env.RELEASE_VERSION }}"
-          git push
+          git push https://${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD:${GITHUB_REF}
 
       - name: Create and push tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
           git tag v${{ env.RELEASE_VERSION }}
-          git push origin v${{ env.RELEASE_VERSION }}
+          git push https://${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git v${{ env.RELEASE_VERSION }}
 
       - name: Build with Gradle
         uses: gradle/gradle-build-action@v2
@@ -71,6 +75,8 @@ jobs:
           asset_content_type: application/java-archive
 
       - name: Update version for next development cycle
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
           NEXT_VERSION="${{ github.event.inputs.next_version }}"
           if [[ ! $NEXT_VERSION =~ -SNAPSHOT$ ]]; then
@@ -79,4 +85,4 @@ jobs:
           echo "$NEXT_VERSION" > version.txt
           git add version.txt
           git commit -m "Bump version to $NEXT_VERSION"
-          git push
+          git push https://${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git HEAD:${GITHUB_REF}
