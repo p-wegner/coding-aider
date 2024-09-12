@@ -12,4 +12,5 @@ object AiderDefaults {
     const val DEACTIVATE_REPO_MAP = false
     const val EDIT_FORMAT = ""
     const val VERBOSE_COMMAND_LOGGING = false
+    const val USE_DOCKER_AIDER = false
 }

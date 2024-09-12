@@ -1,9 +1,21 @@
 package de.andrena.codingaider.command
 
 object AiderCommandBuilder {
-    fun buildAiderCommand(commandData: CommandData, isShellMode: Boolean): List<String> {
+    fun buildAiderCommand(commandData: CommandData, isShellMode: Boolean, useDockerAider: Boolean): List<String> {
         return buildList {
-            add("aider")
+            if (useDockerAider) {
+                add("docker")
+                add("run")
+                add("-i")
+                add("--rm")
+                add("-v")
+                add("${System.getProperty("user.dir")}:/app")
+                add("-w")
+                add("/app")
+                add("paulgauthier/aider")
+            } else {
+                add("aider")
+            }
             if (commandData.llm.isNotEmpty()) {
                 add(commandData.llm)
             }

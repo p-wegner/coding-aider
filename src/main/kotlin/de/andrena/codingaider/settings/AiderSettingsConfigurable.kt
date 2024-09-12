@@ -40,6 +40,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     private val deactivateRepoMapCheckBox = JBCheckBox("Deactivate Aider's repo map (--map-tokens 0)")
     private val editFormatComboBox = ComboBox(arrayOf("", "whole", "diff", "whole-func", "diff-func"))
     private val verboseCommandLoggingCheckBox = JBCheckBox("Enable verbose Aider command logging")
+    private val useDockerAiderCheckBox = JBCheckBox("Use Docker-based Aider")
 
     override fun getDisplayName(): String = "Aider"
 
@@ -118,6 +119,14 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                                 "If enabled, Aider command details will be logged in the dialog shown to the user"
                         }
                 }
+                row {
+                    cell(useDockerAiderCheckBox)
+                        .component
+                        .apply {
+                            toolTipText =
+                                "If enabled, Aider will be run using the Docker image paulgauthier/aider"
+                        }
+                }
             }
 
             group("Persistent Files") {
@@ -157,7 +166,8 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 webCrawlLlmComboBox.selectedItem as String != settings.webCrawlLlm ||
                 deactivateRepoMapCheckBox.isSelected != settings.deactivateRepoMap ||
                 editFormatComboBox.selectedItem as String != settings.editFormat ||
-                verboseCommandLoggingCheckBox.isSelected != settings.verboseCommandLogging
+                verboseCommandLoggingCheckBox.isSelected != settings.verboseCommandLogging ||
+                useDockerAiderCheckBox.isSelected != settings.useDockerAider
     }
 
     override fun apply() {
@@ -173,6 +183,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         settings.deactivateRepoMap = deactivateRepoMapCheckBox.isSelected
         settings.editFormat = editFormatComboBox.selectedItem as String
         settings.verboseCommandLogging = verboseCommandLoggingCheckBox.isSelected
+        settings.useDockerAider = useDockerAiderCheckBox.isSelected
     }
 
     override fun reset() {
@@ -188,6 +199,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         deactivateRepoMapCheckBox.isSelected = settings.deactivateRepoMap
         editFormatComboBox.selectedItem = settings.editFormat
         verboseCommandLoggingCheckBox.isSelected = settings.verboseCommandLogging
+        useDockerAiderCheckBox.isSelected = settings.useDockerAider
     }
 
     override fun disposeUIResources() {

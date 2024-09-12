@@ -15,7 +15,7 @@ class CommandExecutor(private val project: Project, private val commandData: Com
     private val commandLogger = CommandLogger(settings, commandData)
 
     fun executeCommand(): String {
-        val commandArgs = AiderCommandBuilder.buildAiderCommand(commandData, false)
+        val commandArgs = AiderCommandBuilder.buildAiderCommand(commandData, false, settings.useDockerAider)
         logger.info("Executing Aider command: ${commandArgs.joinToString(" ")}")
         notifyObservers { it.onCommandStart("Starting Aider command...\n${commandLogger.getCommandString(false)}") }
         

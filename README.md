@@ -81,7 +81,10 @@ functionalities like Git integration and keyboard shortcuts.
    see https://aider.chat/docs/config/dotenv.html)
 
 4. Configure Aider settings:
-    - Navigate to Tools > Aider Settings > Run Test to verify your Aider installation.
+    - Navigate to Tools > Aider Settings
+    - Choose between native Aider installation or Docker-based Aider
+    - If using native Aider, run the Test to verify your installation
+    - If using Docker-based Aider, ensure Docker is installed and running on your system
 
 5. Basic Usage:
     - Select files or directories in your project

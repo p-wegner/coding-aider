@@ -20,7 +20,8 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var webCrawlLlm: String = AiderDefaults.WEB_CRAWL_LLM,
         var deactivateRepoMap: Boolean = AiderDefaults.DEACTIVATE_REPO_MAP,
         var editFormat: String = AiderDefaults.EDIT_FORMAT,
-        var verboseCommandLogging: Boolean = AiderDefaults.VERBOSE_COMMAND_LOGGING
+        var verboseCommandLogging: Boolean = AiderDefaults.VERBOSE_COMMAND_LOGGING,
+        var useDockerAider: Boolean = AiderDefaults.USE_DOCKER_AIDER
     )
 
     private var myState = State()
@@ -95,6 +96,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.verboseCommandLogging
         set(value) {
             myState.verboseCommandLogging = value
+        }
+
+    var useDockerAider: Boolean
+        get() = myState.useDockerAider
+        set(value) {
+            myState.useDockerAider = value
         }
 
     companion object {
