@@ -1,10 +1,6 @@
 package de.andrena.codingaider.actions
 
-import com.intellij.openapi.actionSystem.ActionGroup
-import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.ui.popup.JBPopupFactory
 
@@ -24,9 +20,6 @@ class OpenAiderActionGroup : AnAction(), DumbAware {
                 flatActionGroup.add(action)
             }
         }
-
-        // Add the new RefactorToCleanCodeAction
-        flatActionGroup.add(RefactorToCleanCodeAction())
 
         val popup = JBPopupFactory.getInstance()
             .createActionGroupPopup(
