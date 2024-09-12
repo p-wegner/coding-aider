@@ -17,23 +17,41 @@ object ApiKeyChecker {
     }
 
     private fun isApiKeyAvailable(apiKeyName: String): Boolean {
-        // Check environment variable
-        if (System.getenv(apiKeyName) != null) return true
-
-        // Check .env file in the user's home directory
-        val homeDir = System.getProperty("user.home")
-        val envFile = File(homeDir, ".env")
-        if (envFile.exists() && envFile.readText().contains("$apiKeyName=")) return true
-
-        // Check .env file in the current working directory
-        val currentDir = Paths.get("").toAbsolutePath().toString()
-        val currentEnvFile = File(currentDir, ".env")
-        if (currentEnvFile.exists() && currentEnvFile.readText().contains("$apiKeyName=")) return true
-
-        return false
+        return getApiKeyValue(apiKeyName) != null
     }
 
     fun getApiKeyForLlm(llm: String): String? = llmToApiKeyMap[llm]
 
     fun getAllLlmOptions(): List<String> = llmToApiKeyMap.keys.toList() + ""
+
+    fun getApiKeyValue(apiKeyName: String): String? {
+        // Check environment variable
+        System.getenv(apiKeyName)?.let { return it }
+
+        // Check .env file in the user's home directory
+        val homeEnvFile = File(System.getProperty("user.home"), ".env")
+        readEnvFile(homeEnvFile)[apiKeyName]?.let { return it }
+
+        // Check .env file in the current working directory
+        val currentDirEnvFile = File(System.getProperty("user.dir"), ".env")
+        readEnvFile(currentDirEnvFile)[apiKeyName]?.let { return it }
+
+        return null
+    }
+
+    private fun readEnvFile(file: File): Map<String, String> {
+        if (!file.exists()) return emptyMap()
+        return file.readLines()
+            .filter { it.contains('=') }
+            .associate { line ->
+                val (key, value) = line.split('=', limit = 2)
+                key.trim() to value.trim()
+            }
+    }
+
+    fun getApiKeysForDocker(): Map<String, String> {
+        return llmToApiKeyMap.values.distinct().mapNotNull { apiKeyName ->
+            getApiKeyValue(apiKeyName)?.let { apiKeyName to it }
+        }.toMap()
+    }
 }

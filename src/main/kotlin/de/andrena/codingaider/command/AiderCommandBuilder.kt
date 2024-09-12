@@ -1,8 +1,6 @@
 package de.andrena.codingaider.command
 
 import de.andrena.codingaider.utils.ApiKeyChecker
-import de.andrena.codingaider.utils.EnvFileReader
-import java.io.File
 
 object AiderCommandBuilder {
     fun buildAiderCommand(commandData: CommandData, isShellMode: Boolean, useDockerAider: Boolean): List<String> {
@@ -21,17 +19,7 @@ object AiderCommandBuilder {
                 add("-w")
                 add("/app")
                 // Add environment variables for API keys
-                val envVars = mutableMapOf<String, String>()
-                ApiKeyChecker.getAllLlmOptions().forEach { llm ->
-                    val apiKeyName = ApiKeyChecker.getApiKeyForLlm(llm)
-                    if (apiKeyName != null) {
-                        val apiKeyValue = getApiKeyValue(apiKeyName)
-                        if (apiKeyValue != null) {
-                            envVars[apiKeyName] = apiKeyValue
-                        }
-                    }
-                }
-                envVars.forEach { (key, value) ->
+                ApiKeyChecker.getApiKeysForDocker().forEach { (key, value) ->
                     add("-e")
                     add("$key=$value")
                 }
@@ -56,7 +44,6 @@ object AiderCommandBuilder {
             if (commandData.editFormat.isNotEmpty()) {
                 add("--edit-format")
                 add(commandData.editFormat)
-
             }
             if (!isShellMode) {
                 add("--no-suggest-shell-commands")
@@ -78,20 +65,5 @@ object AiderCommandBuilder {
                 add("\"${commandData.message}\"")
             }
         }
-    }
-
-    private fun getApiKeyValue(apiKeyName: String): String? {
-        // Check environment variable
-        System.getenv(apiKeyName)?.let { return it }
-
-        // Check .env file in the user's home directory
-        val homeEnvFile = File(System.getProperty("user.home"), ".env")
-        EnvFileReader.readEnvFile(homeEnvFile)[apiKeyName]?.let { return it }
-
-        // Check .env file in the current working directory
-        val currentDirEnvFile = File(System.getProperty("user.dir"), ".env")
-        EnvFileReader.readEnvFile(currentDirEnvFile)[apiKeyName]?.let { return it }
-
-        return null
     }
 }
