@@ -43,9 +43,6 @@ tasks {
         version.set(project.version.toString())
     }
 
-    buildPlugin {
-        archiveFileName.set("coding-aider-${project.version}.jar")
-    }
 
     prepareSandbox {
         from("src/main/resources") {
