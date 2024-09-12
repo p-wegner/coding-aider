@@ -29,12 +29,16 @@ jobs:
         release_name: Release ${{ github.ref }}
         draft: false
         prerelease: false
+    - name: Get version
+      id: get_version
+      run: echo "VERSION=$(cat version.txt)" >> $GITHUB_OUTPUT
+
     - name: Upload Release Asset
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./build/libs/coding-aider-${{ github.ref_name.replace('v', '') }}.jar
-        asset_name: coding-aider-${{ github.ref_name.replace('v', '') }}.jar
+        asset_path: ./build/libs/coding-aider-${{ steps.get_version.outputs.VERSION }}.jar
+        asset_name: coding-aider-${{ steps.get_version.outputs.VERSION }}.jar
         asset_content_type: application/java-archive

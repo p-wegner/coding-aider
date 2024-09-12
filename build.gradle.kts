@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "de.andrena"
-version = "1.0.9-SNAPSHOT"
+version = file("version.txt").readText().trim()
 
 repositories {
     mavenCentral()
