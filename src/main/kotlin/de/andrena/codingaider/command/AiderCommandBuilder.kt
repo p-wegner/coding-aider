@@ -1,6 +1,7 @@
 package de.andrena.codingaider.command
 
 import de.andrena.codingaider.utils.ApiKeyChecker
+import java.io.File
 
 object AiderCommandBuilder {
     fun buildAiderCommand(commandData: CommandData, isShellMode: Boolean, useDockerAider: Boolean): List<String> {
@@ -13,6 +14,14 @@ object AiderCommandBuilder {
                 // Mount the entire project workspace
                 add("-v")
                 add("${commandData.projectPath}:/app")
+                // Mount additional files outside the project path
+                commandData.files.forEach { fileData ->
+                    if (!fileData.filePath.startsWith(commandData.projectPath)) {
+                        val containerPath = "/extra/${File(fileData.filePath).name}"
+                        add("-v")
+                        add("${fileData.filePath}:$containerPath")
+                    }
+                }
                 add("-w")
                 add("/app")
                 // Add environment variables for API keys
@@ -31,10 +40,14 @@ object AiderCommandBuilder {
                 val fileArgument = if (fileData.isReadOnly) "--read" else "--file"
                 add(fileArgument)
                 val filePath = if (useDockerAider) {
-                    "/app/${
-                        fileData.filePath.removePrefix(commandData.projectPath).replace('\\', '/')
-                            .removePrefix("/")
-                    }"
+                    if (fileData.filePath.startsWith(commandData.projectPath)) {
+                        "/app/${
+                            fileData.filePath.removePrefix(commandData.projectPath).replace('\\', '/')
+                                .removePrefix("/")
+                        }"
+                    } else {
+                        "/extra/${File(fileData.filePath).name}"
+                    }
                 } else {
                     fileData.filePath
                 }
