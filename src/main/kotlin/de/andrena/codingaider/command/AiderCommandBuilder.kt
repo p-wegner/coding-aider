@@ -48,7 +48,7 @@ object AiderCommandBuilder {
                 } else {
                     fileData.filePath
                 }
-                add("\"$filePath\"")
+                add(filePath)
             }
             if (commandData.useYesFlag) add("--yes")
             if (commandData.editFormat.isNotEmpty()) {
