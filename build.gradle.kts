@@ -6,7 +6,7 @@ plugins {
 }
 
 group = "de.andrena"
-version = "1.0.9-SNAPSHOT"
+version = "1.0.9"
 
 repositories {
     mavenCentral()
@@ -40,6 +40,11 @@ tasks {
     patchPluginXml {
         sinceBuild.set("232")
         untilBuild.set("242.*")
+        version.set(project.version.toString())
+    }
+
+    buildPlugin {
+        archiveFileName.set("coding-aider-${project.version}.jar")
     }
 
     signPlugin {
