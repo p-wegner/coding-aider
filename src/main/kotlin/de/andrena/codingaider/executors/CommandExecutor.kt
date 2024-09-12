@@ -7,9 +7,9 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.settings.AiderSettings
 import java.io.File
 import java.util.concurrent.TimeUnit
-import kotlin.properties.Delegates
 
-class CommandExecutor(private val project: Project, private val commandData: CommandData) : CommandSubject by GenericCommandSubject() {
+class CommandExecutor(private val project: Project, private val commandData: CommandData) :
+    CommandSubject by GenericCommandSubject() {
     private val logger = Logger.getInstance(CommandExecutor::class.java)
     private val settings = AiderSettings.getInstance(project)
     private val commandLogger = CommandLogger(settings, commandData)
@@ -18,32 +18,19 @@ class CommandExecutor(private val project: Project, private val commandData: Com
         val commandArgs = AiderCommandBuilder.buildAiderCommand(commandData, false, settings.useDockerAider)
         logger.info("Executing Aider command: ${commandArgs.joinToString(" ")}")
         notifyObservers { it.onCommandStart("Starting Aider command...\n${commandLogger.getCommandString(false)}") }
-        
+
         val processBuilder = ProcessBuilder(commandArgs)
-            .apply { 
+            .directory(File(project.basePath!!))
+            .apply {
                 environment().putIfAbsent("PYTHONIOENCODING", "utf-8")
                 redirectErrorStream(true)
             }
-        
-        project.basePath?.let { basePath ->
-            processBuilder.directory(File(basePath))
-        }
-        
+
         if (settings.useDockerAider) {
             // Use the default Docker host, which should work across platforms
             processBuilder.environment().remove("DOCKER_HOST")
-        } else {
-            // For native Aider mode, set PYTHONPATH to include the project base path
-            val currentPythonPath = processBuilder.environment()["PYTHONPATH"] ?: ""
-            project.basePath?.let { basePath ->
-                processBuilder.environment()["PYTHONPATH"] = if (currentPythonPath.isNotEmpty()) {
-                    "$basePath${File.pathSeparator}$currentPythonPath"
-                } else {
-                    basePath
-                }
-            }
         }
-        
+
         val process = processBuilder.start()
 
         val output = StringBuilder()
@@ -52,22 +39,17 @@ class CommandExecutor(private val project: Project, private val commandData: Com
     }
 
     private fun handleProcessCompletion(process: Process, output: StringBuilder): String {
-        val trimmedOutput = output.trim().toString()
-        return if (!process.waitFor(5, TimeUnit.MINUTES)) {
-            process.destroyForcibly()
-            val errorMessage = commandLogger.prependCommandToOutput("$trimmedOutput\nAider command timed out after 5 minutes")
+        if (!process.waitFor(5, TimeUnit.MINUTES)) {
+            process.destroy()
+            val errorMessage = commandLogger.prependCommandToOutput("$output\nAider command timed out after 5 minutes")
             notifyObservers { it.onCommandError(errorMessage) }
-            errorMessage
+            return errorMessage
         } else {
             val exitCode = process.exitValue()
-            val status = when {
-                exitCode == 0 -> "executed successfully"
-                exitCode == 143 -> "terminated"
-                else -> "failed with exit code $exitCode"
-            }
-            val finalOutput = commandLogger.prependCommandToOutput("$trimmedOutput\nAider command $status")
+            val status = if (exitCode == 0) "executed successfully" else "failed with exit code $exitCode"
+            val finalOutput = commandLogger.prependCommandToOutput("$output\nAider command $status")
             notifyObservers { it.onCommandComplete(finalOutput, exitCode) }
-            finalOutput
+            return finalOutput
         }
     }
 
@@ -78,7 +60,12 @@ class CommandExecutor(private val project: Project, private val commandData: Com
                 val line = reader.readLine() ?: break
                 output.append(line).append("\n")
                 val runningTime = (System.currentTimeMillis() - startTime) / 1000
-                notifyObservers { it.onCommandProgress(commandLogger.prependCommandToOutput(output.toString()), runningTime) }
+                notifyObservers {
+                    it.onCommandProgress(
+                        commandLogger.prependCommandToOutput(output.toString()),
+                        runningTime
+                    )
+                }
                 if (!process.isAlive || runningTime > 300) break
                 Thread.sleep(10)
             }
