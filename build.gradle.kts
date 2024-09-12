@@ -45,11 +45,20 @@ tasks {
 
     buildPlugin {
         archiveFileName.set("coding-aider-${project.version}.jar")
+        from("src/main/resources") {
+            include("META-INF/plugin.xml")
+        }
     }
 
     prepareSandbox {
         from("src/main/resources") {
             into("${intellij.pluginName.get()}")
+        }
+    }
+
+    jar {
+        from("src/main/resources") {
+            include("META-INF/plugin.xml")
         }
     }
 
