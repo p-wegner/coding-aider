@@ -8,6 +8,7 @@ while allowing you complete control over the context utilized by the LLM.
 
 ![Aider Command Action Example](docs/AiderCommandAction.jpg)
 ![Aider Command Action Example](docs/settings.jpg)
+
 ## Important Note
 
 To utilize this plugin, you must have a functional Aider installation along with access to API keys for the LLM
@@ -23,9 +24,10 @@ Aider.
     - Quickly initiate Aider actions via the "Start Aider Action" option in the Tools menu or Project View popup menu.
     - Use the keyboard shortcut Alt+A for rapid access.
     - Navigate previous commands with Alt+UP and Alt+DOWN in the message field.
-    - Automatically commit all changes with an LLM-generated message using ALT + D 
+    - Automatically commit all changes with an LLM-generated message using ALT + D
 
-3. **Persistent File Management**: Manage frequently used files for persistent context for Aider operations with Alt+Shift+A,
+3. **Persistent File Management**: Manage frequently used files for persistent context for Aider operations with
+   Alt+Shift+A,
    within the Aider Command Window or the Aider Settings.
 
 4. **Dual Execution Modes**:
@@ -37,8 +39,8 @@ Aider.
 6. **Real-time Progress Tracking**: Monitor Aider command progress through Markdown dialog.
 
 7. **Multi-File Support**: Execute Aider actions on multiple files or directories while controlling the context provided
-   to Aider from your IDE. 
- 
+   to Aider from your IDE.
+
 8. **Webcrawl (Experimental)**: Download and convert pages to markdown stored in a .aider-docs folder to add to context.
 
 9. **Various Specialized Actions**:
@@ -49,6 +51,7 @@ Aider.
     - **Settings Action**: Quickly access Aider Settings.
     - **Apply Design Pattern Action**: Apply predefined design patterns to selected files or directories.
     - **Persistent Files Action**: Manage the list of persistent files for Aider operations.
+    - **OpenAiderActionGroup**: Access a popup menu with all available Aider actions.
 
 For a detailed description of all available actions, please refer to the [Actions Documentation](docs/actions.md).
 
