@@ -7,8 +7,8 @@ on:
         description: 'Version to release (e.g., 1.0.9). If not provided, will use the current version without -SNAPSHOT'
         required: false
       next_version:
-        description: 'Next development version (e.g., 1.1.0). -SNAPSHOT will be appended automatically'
-        required: true
+        description: 'Next development version (e.g., 1.1.0). If not provided, patch version will be incremented. -SNAPSHOT will be appended automatically'
+        required: false
 
 jobs:
   release:
@@ -79,6 +79,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           NEXT_VERSION="${{ github.event.inputs.next_version }}"
+          if [ -z "$NEXT_VERSION" ]; then
+            # Increment patch version if next_version is not provided
+            CURRENT_VERSION=$(cat version.txt | sed 's/-SNAPSHOT//')
+            IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
+            PATCH_VERSION=$((VERSION_PARTS[2] + 1))
+            NEXT_VERSION="${VERSION_PARTS[0]}.${VERSION_PARTS[1]}.$PATCH_VERSION"
+          fi
           if [[ ! $NEXT_VERSION =~ -SNAPSHOT$ ]]; then
             NEXT_VERSION="${NEXT_VERSION}-SNAPSHOT"
           fi
