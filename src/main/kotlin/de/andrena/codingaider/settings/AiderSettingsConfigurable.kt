@@ -253,11 +253,10 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     }
 
     private fun getApiKeyDisplayValue(keyName: String): String {
-        val apiKey = ApiKeyManager.getApiKey(keyName)
-        return when {
-            apiKey != null -> "********" // Censored placeholder for stored API key
-            System.getenv(keyName) != null -> "********" // Censored placeholder for env variable
-            else -> ""
+        return if (ApiKeyChecker.isApiKeyAvailable(keyName)) {
+            "********" // Censored placeholder for available API key
+        } else {
+            ""
         }
     }
 

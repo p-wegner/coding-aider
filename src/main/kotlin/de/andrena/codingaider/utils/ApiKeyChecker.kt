@@ -16,7 +16,7 @@ object ApiKeyChecker {
         return isApiKeyAvailable(apiKey)
     }
 
-    private fun isApiKeyAvailable(apiKeyName: String): Boolean {
+    fun isApiKeyAvailable(apiKeyName: String): Boolean {
         return getApiKeyValue(apiKeyName) != null
     }
 
