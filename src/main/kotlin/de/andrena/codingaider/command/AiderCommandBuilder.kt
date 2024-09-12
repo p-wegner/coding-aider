@@ -6,30 +6,9 @@ import java.io.File
 object AiderCommandBuilder {
     fun buildAiderCommand(commandData: CommandData, isShellMode: Boolean, useDockerAider: Boolean): List<String> {
         return buildList {
+            val projectPath = commandData.projectPath
             if (useDockerAider) {
-                add("docker")
-                add("run")
-                add("-i")
-                add("--rm")
-                // Mount the entire project workspace
-                add("-v")
-                add("${commandData.projectPath}:/app")
-                // Mount additional files outside the project path
-                commandData.files.forEach { fileData ->
-                    if (!fileData.filePath.startsWith(commandData.projectPath)) {
-                        val containerPath = "/extra/${File(fileData.filePath).name}"
-                        add("-v")
-                        add("${fileData.filePath}:$containerPath")
-                    }
-                }
-                add("-w")
-                add("/app")
-                // Add environment variables for API keys
-                ApiKeyChecker.getApiKeysForDocker().forEach { (key, value) ->
-                    add("-e")
-                    add("$key=$value")
-                }
-                add("paulgauthier/aider")
+                addDockerRunCommand(projectPath, commandData)
             } else {
                 add("aider")
             }
@@ -39,18 +18,7 @@ object AiderCommandBuilder {
             commandData.files.forEach { fileData ->
                 val fileArgument = if (fileData.isReadOnly) "--read" else "--file"
                 add(fileArgument)
-                val filePath = if (useDockerAider) {
-                    if (fileData.filePath.startsWith(commandData.projectPath)) {
-                        "/app/${
-                            fileData.filePath.removePrefix(commandData.projectPath).replace('\\', '/')
-                                .removePrefix("/")
-                        }"
-                    } else {
-                        "/extra/${File(fileData.filePath).name}"
-                    }
-                } else {
-                    fileData.filePath
-                }
+                val filePath = determineNeededFilePath(useDockerAider, fileData, projectPath)
                 add("\"$filePath\"")
             }
             if (commandData.useYesFlag) add("--yes")
@@ -76,6 +44,58 @@ object AiderCommandBuilder {
             if (!isShellMode) {
                 add("-m")
                 add("\"${commandData.message}\"")
+            }
+        }
+    }
+
+    private fun determineNeededFilePath(
+        useDockerAider: Boolean,
+        fileData: FileData,
+        projectPath: String
+    ) = if (useDockerAider) {
+        if (fileData.filePath.startsWith(projectPath)) {
+            "/app/${
+                fileData.filePath.removePrefix(projectPath).replace('\\', '/')
+                    .removePrefix("/")
+            }"
+        } else {
+            "/extra/${File(fileData.filePath).name}"
+        }
+    } else {
+        fileData.filePath
+    }
+
+    private fun MutableList<String>.addDockerRunCommand(
+        projectPath: String,
+        commandData: CommandData
+    ) {
+        add("docker")
+        add("run")
+        add("-i")
+        add("--rm")
+        // Mount the entire project workspace
+        add("-v")
+        add("$projectPath:/app")
+        mountFilesOutsideProject(commandData.files, projectPath)
+        add("-w")
+        add("/app")
+        // Add environment variables for API keys
+        ApiKeyChecker.getApiKeysForDocker().forEach { (key, value) ->
+            add("-e")
+            add("$key=$value")
+        }
+        add("paulgauthier/aider")
+    }
+
+    private fun MutableList<String>.mountFilesOutsideProject(
+        files: List<FileData>,
+        projectPath: String
+    ) {
+        files.forEach { fileData ->
+            if (!fileData.filePath.startsWith(projectPath)) {
+                val containerPath = "/extra/${File(fileData.filePath).name}"
+                add("-v")
+                add("${fileData.filePath}:$containerPath")
             }
         }
     }
