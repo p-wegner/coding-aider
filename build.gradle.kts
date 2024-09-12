@@ -45,9 +45,6 @@ tasks {
 
     buildPlugin {
         archiveFileName.set("coding-aider-${project.version}.jar")
-        from("src/main/resources") {
-            include("META-INF/plugin.xml")
-        }
     }
 
     prepareSandbox {
@@ -56,11 +53,6 @@ tasks {
         }
     }
 
-    jar {
-        from("src/main/resources") {
-            include("META-INF/plugin.xml")
-        }
-    }
 
     signPlugin {
         certificateChain.set(System.getenv("CERTIFICATE_CHAIN"))

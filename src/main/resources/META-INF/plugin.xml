@@ -10,12 +10,6 @@
     <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
     <vendor email="peter.wegner@andrena.de" url="https://www.andrena.de">Peter Wegner</vendor>
 
-    <!-- Plugin version -->
-    <version>1.0.9-SNAPSHOT</version>
-
-    <!-- Compatibility with IDE builds -->
-    <idea-version since-build="232" until-build="242.*"/>
-
     <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
          Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
