@@ -65,7 +65,8 @@ class AiderWebCrawlAction : AnAction() {
                     additionalArgs = "",
                     files = listOf(FileData(filePath, false)),
                     isShellMode = false,
-                    lintCmd = ""
+                    lintCmd = "",
+                    projectPath = project.basePath ?: ""
                 )
                 val settings = AiderSettings.getInstance(project)
                 if (settings.activateIdeExecutorAfterWebcrawl) {

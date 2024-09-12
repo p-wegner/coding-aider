@@ -77,7 +77,8 @@ class AiderAction : AnAction() {
                 isShellMode = dialog.isShellMode(),
                 lintCmd = settings.lintCmd,
                 deactivateRepoMap = settings.deactivateRepoMap,
-                editFormat = settings.editFormat
+                editFormat = settings.editFormat,
+                projectPath = project.basePath ?: ""
             )
         }
 
@@ -92,7 +93,8 @@ class AiderAction : AnAction() {
                 isShellMode = true, // Always true for direct shell mode
                 lintCmd = settings.lintCmd,
                 deactivateRepoMap = settings.deactivateRepoMap,
-                editFormat = settings.editFormat
+                editFormat = settings.editFormat,
+                projectPath = project.basePath ?: ""
             )
         }
     }

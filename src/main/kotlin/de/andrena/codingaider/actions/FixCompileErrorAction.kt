@@ -70,7 +70,8 @@ abstract class BaseFixCompileErrorAction : AnAction() {
                 isShellMode = isShellMode,
                 lintCmd = settings.lintCmd,
                 deactivateRepoMap = settings.deactivateRepoMap,
-                editFormat = settings.editFormat
+                editFormat = settings.editFormat,
+                projectPath = project.basePath ?: ""
             )
         }
     }
