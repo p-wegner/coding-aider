@@ -49,7 +49,7 @@ tasks {
 
     prepareSandbox {
         from("src/main/resources") {
-            into("${intellij.pluginName.get()}")
+            into(intellij.pluginName.get())
         }
     }
 
