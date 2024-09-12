@@ -217,7 +217,9 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 verboseCommandLoggingCheckBox.isSelected != settings.verboseCommandLogging ||
                 useDockerAiderCheckBox.isSelected != settings.useDockerAider ||
                 apiKeyFields.any { (keyName, field) ->
-                    String(field.password) != (ApiKeyManager.getApiKey(keyName) ?: "")
+                    val currentValue = String(field.password)
+                    currentValue.isNotEmpty() && currentValue != "*".repeat(16) &&
+                            currentValue != (ApiKeyManager.getApiKey(keyName) ?: "")
                 }
     }
 
@@ -242,9 +244,14 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 ApiKeyManager.saveApiKey(keyName, enteredValue)
             }
         }
+    }
 
-        // Save the API keys to the settings
-        settings.apiKeys = ApiKeyManager.getAllStoredApiKeys()
+    override fun disposeUIResources() {
+        settingsComponent = null
+        // Ensure that any pending changes are saved
+        if (isModified) {
+            apply()
+        }
     }
 
 

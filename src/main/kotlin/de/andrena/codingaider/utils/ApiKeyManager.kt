@@ -30,6 +30,6 @@ object ApiKeyManager {
     }
 
     private fun createCredentialAttributes(keyName: String): CredentialAttributes {
-        return CredentialAttributes(SERVICE_NAME, keyName)
+        return CredentialAttributes("$SERVICE_NAME:$keyName")
     }
 }
