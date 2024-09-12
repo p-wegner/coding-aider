@@ -15,10 +15,20 @@ class OpenAiderActionGroup : AnAction(), DumbAware {
         val aiderActionGroup = actionManager.getAction("de.andrena.codingaider.AiderActionGroup") as? ActionGroup
             ?: return
 
+        val actions = aiderActionGroup.getChildren(null)
+        val flatActionGroup = DefaultActionGroup()
+        for (action in actions) {
+            if (action is ActionGroup) {
+                flatActionGroup.addAll(action.getChildren(null))
+            } else {
+                flatActionGroup.add(action)
+            }
+        }
+
         val popup = JBPopupFactory.getInstance()
             .createActionGroupPopup(
                 "Aider Actions",
-                DefaultActionGroup(aiderActionGroup),
+                flatActionGroup,
                 e.dataContext,
                 JBPopupFactory.ActionSelectionAid.SPEEDSEARCH,
                 true
