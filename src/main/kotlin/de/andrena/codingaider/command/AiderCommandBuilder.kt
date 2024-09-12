@@ -1,5 +1,7 @@
 package de.andrena.codingaider.command
 
+import de.andrena.codingaider.utils.ApiKeyChecker
+
 object AiderCommandBuilder {
     fun buildAiderCommand(commandData: CommandData, isShellMode: Boolean, useDockerAider: Boolean): List<String> {
         return buildList {
@@ -16,6 +18,14 @@ object AiderCommandBuilder {
                 add("${System.getProperty("user.dir")}/.aider-docs:/app/.aider-docs")
                 add("-w")
                 add("/app")
+                // Add environment variables for API keys
+                ApiKeyChecker.getAllLlmOptions().forEach { llm ->
+                    val apiKeyName = ApiKeyChecker.getApiKeyForLlm(llm)
+                    if (apiKeyName != null && System.getenv(apiKeyName) != null) {
+                        add("-e")
+                        add("$apiKeyName=${System.getenv(apiKeyName)}")
+                    }
+                }
                 add("paulgauthier/aider")
             } else {
                 add("aider")
