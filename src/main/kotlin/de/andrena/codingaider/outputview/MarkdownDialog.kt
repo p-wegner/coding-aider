@@ -1,6 +1,7 @@
 package de.andrena.codingaider.outputview
 
 import com.intellij.openapi.project.Project
+import de.andrena.codingaider.settings.AiderSettings
 import com.intellij.ui.components.JBScrollPane
 import java.awt.BorderLayout
 import java.awt.EventQueue.invokeLater
@@ -57,15 +58,18 @@ class MarkdownDialog(private val project: Project, private val initialTitle: Str
     }
 
     fun startAutoCloseTimer() {
-        keepOpenButton.isVisible = true
-        var remainingSeconds = 10
-        autoCloseTimer = Timer().scheduleAtFixedRate(0, 1000) { // Update every second
-            invokeLater {
-                if (remainingSeconds > 0) {
-                    title = "$initialTitle - Closing in $remainingSeconds seconds"
-                    remainingSeconds--
-                } else {
-                    dispose()
+        val settings = AiderSettings.getInstance(project)
+        if (settings.enableMarkdownDialogAutoclose) {
+            keepOpenButton.isVisible = true
+            var remainingSeconds = 10
+            autoCloseTimer = Timer().scheduleAtFixedRate(0, 1000) { // Update every second
+                invokeLater {
+                    if (remainingSeconds > 0) {
+                        title = "$initialTitle - Closing in $remainingSeconds seconds"
+                        remainingSeconds--
+                    } else {
+                        dispose()
+                    }
                 }
             }
         }

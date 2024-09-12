@@ -45,6 +45,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     private val editFormatComboBox = ComboBox(arrayOf("", "whole", "diff", "whole-func", "diff-func"))
     private val verboseCommandLoggingCheckBox = JBCheckBox("Enable verbose Aider command logging")
     private val useDockerAiderCheckBox = JBCheckBox("Use Docker-based Aider")
+    private val enableMarkdownDialogAutocloseCheckBox = JBCheckBox("Enable MarkdownDialog autoclose")
     private val apiKeyFields = mutableMapOf<String, JPasswordField>()
 
     override fun getDisplayName(): String = "Aider"
@@ -186,6 +187,14 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                                 "If enabled, Aider command details will be logged in the dialog shown to the user"
                         }
                 }
+                row {
+                    cell(enableMarkdownDialogAutocloseCheckBox)
+                        .component
+                        .apply {
+                            toolTipText =
+                                "If enabled, the MarkdownDialog will automatically close after a short delay"
+                        }
+                }
             }
 
             group("Persistent Files") {
@@ -221,6 +230,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 editFormatComboBox.selectedItem as String != settings.editFormat ||
                 verboseCommandLoggingCheckBox.isSelected != settings.verboseCommandLogging ||
                 useDockerAiderCheckBox.isSelected != settings.useDockerAider ||
+                enableMarkdownDialogAutocloseCheckBox.isSelected != settings.enableMarkdownDialogAutoclose ||
                 apiKeyFields.any { (keyName, field) ->
                     val currentValue = String(field.password)
                     currentValue.isNotEmpty() && currentValue != "*".repeat(16) &&
@@ -242,6 +252,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         settings.editFormat = editFormatComboBox.selectedItem as String
         settings.verboseCommandLogging = verboseCommandLoggingCheckBox.isSelected
         settings.useDockerAider = useDockerAiderCheckBox.isSelected
+        settings.enableMarkdownDialogAutoclose = enableMarkdownDialogAutocloseCheckBox.isSelected
 
         apiKeyFields.forEach { (keyName, field) ->
             val enteredValue = String(field.password)
@@ -274,6 +285,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         editFormatComboBox.selectedItem = settings.editFormat
         verboseCommandLoggingCheckBox.isSelected = settings.verboseCommandLogging
         useDockerAiderCheckBox.isSelected = settings.useDockerAider
+        enableMarkdownDialogAutocloseCheckBox.isSelected = settings.enableMarkdownDialogAutoclose
 
         apiKeyFields.forEach { (keyName, field) ->
             field.text = getApiKeyDisplayValue(keyName)

@@ -13,4 +13,5 @@ object AiderDefaults {
     const val EDIT_FORMAT = ""
     const val VERBOSE_COMMAND_LOGGING = false
     const val USE_DOCKER_AIDER = false
+    const val ENABLE_MARKDOWN_DIALOG_AUTOCLOSE = true
 }

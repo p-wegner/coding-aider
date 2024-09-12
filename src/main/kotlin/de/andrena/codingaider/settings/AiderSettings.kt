@@ -21,7 +21,8 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var deactivateRepoMap: Boolean = AiderDefaults.DEACTIVATE_REPO_MAP,
         var editFormat: String = AiderDefaults.EDIT_FORMAT,
         var verboseCommandLogging: Boolean = AiderDefaults.VERBOSE_COMMAND_LOGGING,
-        var useDockerAider: Boolean = AiderDefaults.USE_DOCKER_AIDER
+        var useDockerAider: Boolean = AiderDefaults.USE_DOCKER_AIDER,
+        var enableMarkdownDialogAutoclose: Boolean = AiderDefaults.ENABLE_MARKDOWN_DIALOG_AUTOCLOSE
     )
 
     private var myState = State()
@@ -102,6 +103,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.useDockerAider
         set(value) {
             myState.useDockerAider = value
+        }
+
+    var enableMarkdownDialogAutoclose: Boolean
+        get() = myState.enableMarkdownDialogAutoclose
+        set(value) {
+            myState.enableMarkdownDialogAutoclose = value
         }
 
     companion object {
