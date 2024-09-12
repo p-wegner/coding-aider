@@ -32,7 +32,9 @@ class CommandExecutor(private val project: Project, private val commandData: Com
         } else {
             // For native Aider mode, set PYTHONPATH to include the project base path
             val currentPythonPath = processBuilder.environment()["PYTHONPATH"] ?: ""
-            processBuilder.environment()["PYTHONPATH"] = "${project.basePath}${File.pathSeparator}$currentPythonPath"
+            project.basePath?.let { basePath ->
+                processBuilder.environment()["PYTHONPATH"] = "$basePath${File.pathSeparator}$currentPythonPath"
+            }
         }
         
         val process = processBuilder.start()
