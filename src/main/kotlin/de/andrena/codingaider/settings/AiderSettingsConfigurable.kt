@@ -17,6 +17,8 @@ import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.ApiKeyManager
 import java.awt.Component
 import javax.swing.*
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
 
 class AiderSettingsConfigurable(private val project: Project) : Configurable {
     private var settingsComponent: JPanel? = null
@@ -151,21 +153,32 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                         cell(field)
                             .resizableColumn()
                             .align(Align.FILL)
-                        button("Save") {
+                        val saveButton = button("Save") {
                             val apiKey = String(field.password)
                             if (apiKey.isNotEmpty()) {
                                 ApiKeyManager.saveApiKey(keyName, apiKey)
                                 Messages.showInfoMessage("API key for $keyName has been saved.", "API Key Saved")
-                            } else {
-                                ApiKeyManager.removeApiKey(keyName)
-                                Messages.showInfoMessage("API key for $keyName has been removed.", "API Key Removed")
+                                updateApiKeyField(keyName, field, saveButton.component)
                             }
-                        }
+                        }.component
                         button("Clear") {
                             ApiKeyManager.removeApiKey(keyName)
                             field.text = ""
                             Messages.showInfoMessage("API key for $keyName has been cleared.", "API Key Cleared")
+                            updateApiKeyField(keyName, field, saveButton)
                         }
+                        updateApiKeyField(keyName, field, saveButton)
+                        
+                        field.document.addDocumentListener(object : DocumentListener {
+                            override fun insertUpdate(e: DocumentEvent) = updateSaveButton()
+                            override fun removeUpdate(e: DocumentEvent) = updateSaveButton()
+                            override fun changedUpdate(e: DocumentEvent) = updateSaveButton()
+                            
+                            fun updateSaveButton() {
+                                saveButton.isEnabled = field.password.isNotEmpty() && 
+                                    !ApiKeyChecker.isApiKeyAvailable(keyName)
+                            }
+                        })
                     }
                 }
             }
@@ -356,6 +369,20 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
             setCenterPanel(scrollPane)
             addOkAction()
             show()
+        }
+    }
+
+    private fun updateApiKeyField(keyName: String, field: JPasswordField, saveButton: JButton) {
+        if (ApiKeyChecker.isApiKeyAvailable(keyName)) {
+            field.text = "*".repeat(16)
+            field.isEditable = false
+            field.toolTipText = "An API key for $keyName is already stored. Clear it to enter a new one."
+            saveButton.isEnabled = false
+        } else {
+            field.text = ""
+            field.isEditable = true
+            field.toolTipText = null
+            saveButton.isEnabled = false
         }
     }
 }
