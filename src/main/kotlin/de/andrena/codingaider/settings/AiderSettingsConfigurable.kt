@@ -62,7 +62,6 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     override fun createComponent(): JComponent {
         persistentFilesList.cellRenderer = PersistentFileRenderer()
         loadPersistentFiles()
-        updateSelectedApiKeyComboBox()
         settingsComponent = panel {
             group("General Settings") {
                 row { cell(useYesFlagCheckBox) }
@@ -215,10 +214,6 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         settings.verboseCommandLogging = verboseCommandLoggingCheckBox.isSelected
         settings.useDockerAider = useDockerAiderCheckBox.isSelected
 
-        // Save the selected API key
-        selectedApiKeyComboBox.selectedItem?.let { selectedKey ->
-            ApiKeyManager.setSelectedApiKey(selectedKey as String)
-        }
     }
 
 
