@@ -16,7 +16,8 @@ class ShellExecutor(
         val command = AiderCommandBuilder.buildAiderCommand(commandData, true, AiderSettings.getInstance(project).useDockerAider).joinToString(" ")
         
         if (AiderSettings.getInstance(project).useDockerAider) {
-            terminalSession.executeCommand("export DOCKER_HOST=unix:///var/run/docker.sock")
+            // Remove DOCKER_HOST if it's set, allowing Docker to use its default configuration
+            terminalSession.executeCommand("set DOCKER_HOST=")
         }
         
         terminalSession.executeCommand(command)

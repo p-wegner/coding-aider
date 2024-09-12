@@ -27,7 +27,8 @@ class CommandExecutor(private val project: Project, private val commandData: Com
             }
         
         if (settings.useDockerAider) {
-            processBuilder.environment()["DOCKER_HOST"] = "unix:///var/run/docker.sock"
+            // Use the default Docker host, which should work across platforms
+            processBuilder.environment().remove("DOCKER_HOST")
         }
         
         val process = processBuilder.start()
