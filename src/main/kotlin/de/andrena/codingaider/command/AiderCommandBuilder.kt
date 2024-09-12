@@ -13,11 +13,9 @@ object AiderCommandBuilder {
                 // Mount the entire workspace
                 add("-v")
                 add("${System.getProperty("user.dir")}:/app")
-                // Mount .aider and .aider-docs directories separately to ensure they exist
+                // Mount all .aider* files and directories
                 add("-v")
-                add("${System.getProperty("user.dir")}/.aider:/app/.aider")
-                add("-v")
-                add("${System.getProperty("user.dir")}/.aider-docs:/app/.aider-docs")
+                add("${System.getProperty("user.dir")}/.aider*:/app/.aider*")
                 add("-w")
                 add("/app")
                 // Add environment variables for API keys
