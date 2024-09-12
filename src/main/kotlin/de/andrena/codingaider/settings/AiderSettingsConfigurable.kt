@@ -161,6 +161,11 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                                 Messages.showInfoMessage("API key for $keyName has been removed.", "API Key Removed")
                             }
                         }
+                        button("Clear") {
+                            ApiKeyManager.removeApiKey(keyName)
+                            field.text = ""
+                            Messages.showInfoMessage("API key for $keyName has been cleared.", "API Key Cleared")
+                        }
                     }
                 }
             }
@@ -250,7 +255,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     private fun getApiKeyDisplayValue(keyName: String): String {
         val apiKey = ApiKeyManager.getApiKey(keyName)
         return when {
-            apiKey != null -> apiKey
+            apiKey != null -> "********" // Censored placeholder for stored API key
             System.getenv(keyName) != null -> "********" // Censored placeholder for env variable
             else -> ""
         }
