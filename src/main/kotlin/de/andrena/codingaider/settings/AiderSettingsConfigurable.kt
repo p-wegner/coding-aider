@@ -254,7 +254,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
 
     private fun getApiKeyDisplayValue(keyName: String): String {
         return if (ApiKeyChecker.isApiKeyAvailable(keyName)) {
-            "********" // Censored placeholder for available API key
+            "*An api key is stored at a valid aider env location*" // Censored placeholder for available API key
         } else {
             ""
         }
