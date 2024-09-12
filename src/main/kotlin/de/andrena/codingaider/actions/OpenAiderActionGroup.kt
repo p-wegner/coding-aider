@@ -25,6 +25,9 @@ class OpenAiderActionGroup : AnAction(), DumbAware {
             }
         }
 
+        // Add the new RefactorToCleanCodeAction
+        flatActionGroup.add(RefactorToCleanCodeAction())
+
         val popup = JBPopupFactory.getInstance()
             .createActionGroupPopup(
                 "Aider Actions",
