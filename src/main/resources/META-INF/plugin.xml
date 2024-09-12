@@ -72,6 +72,14 @@
     <depends>org.jetbrains.plugins.terminal</depends>
     <depends>Git4Idea</depends>
     <actions>
+        <action id="de.andrena.codingaider.actions.OpenAiderActionGroup"
+                class="de.andrena.codingaider.actions.OpenAiderActionGroup"
+                text="Open Aider Actions Menu"
+                description="Open the Aider Actions menu from anywhere in the IDE">
+            <keyboard-shortcut keymap="$default" first-keystroke="alt shift Q"/>
+            <add-to-group group-id="MainMenu" anchor="last"/>
+        </action>
+
         <group id="de.andrena.codingaider.AiderActionGroup" text="Aider Actions" popup="true">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
             <add-to-group group-id="ToolsMenu" anchor="last"/>
