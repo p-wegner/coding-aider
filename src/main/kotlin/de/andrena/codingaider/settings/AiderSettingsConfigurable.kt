@@ -242,6 +242,9 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 ApiKeyManager.saveApiKey(keyName, enteredValue)
             }
         }
+
+        // Save the API keys to the settings
+        settings.apiKeys = ApiKeyManager.getAllStoredApiKeys()
     }
 
 

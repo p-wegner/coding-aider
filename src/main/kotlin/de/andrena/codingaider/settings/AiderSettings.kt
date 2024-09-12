@@ -2,6 +2,7 @@ package de.andrena.codingaider.settings
 
 import com.intellij.openapi.components.*
 import com.intellij.openapi.project.Project
+import de.andrena.codingaider.utils.ApiKeyManager
 
 @Service(Service.Level.PROJECT)
 @State(
@@ -21,7 +22,8 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var deactivateRepoMap: Boolean = AiderDefaults.DEACTIVATE_REPO_MAP,
         var editFormat: String = AiderDefaults.EDIT_FORMAT,
         var verboseCommandLogging: Boolean = AiderDefaults.VERBOSE_COMMAND_LOGGING,
-        var useDockerAider: Boolean = AiderDefaults.USE_DOCKER_AIDER
+        var useDockerAider: Boolean = AiderDefaults.USE_DOCKER_AIDER,
+        var apiKeys: Map<String, String> = emptyMap()
     )
 
     private var myState = State()
@@ -30,6 +32,10 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
 
     override fun loadState(state: State) {
         myState = state
+        // Restore API keys from the state
+        state.apiKeys.forEach { (keyName, apiKey) ->
+            ApiKeyManager.saveApiKey(keyName, apiKey)
+        }
     }
 
     var useYesFlag: Boolean
@@ -102,6 +108,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.useDockerAider
         set(value) {
             myState.useDockerAider = value
+        }
+
+    var apiKeys: Map<String, String>
+        get() = myState.apiKeys
+        set(value) {
+            myState.apiKeys = value
         }
 
     companion object {

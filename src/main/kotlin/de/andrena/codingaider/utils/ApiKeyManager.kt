@@ -23,6 +23,11 @@ object ApiKeyManager {
         PasswordSafe.instance.set(credentialAttributes, null)
     }
 
+    fun getAllStoredApiKeys(): Map<String, String> {
+        return ApiKeyChecker.getAllApiKeyNames().mapNotNull { keyName ->
+            getApiKey(keyName)?.let { keyName to it }
+        }.toMap()
+    }
 
     private fun createCredentialAttributes(keyName: String): CredentialAttributes {
         return CredentialAttributes(SERVICE_NAME, keyName)
