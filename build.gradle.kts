@@ -44,7 +44,7 @@ tasks {
     }
 
     buildPlugin {
-        archiveFileName.set("coding-aider-${project.version}.jar")
+        archiveFileName.set("coding-aider-${project.version.toString().replace("-SNAPSHOT", "")}.jar")
     }
 
     prepareSandbox {
