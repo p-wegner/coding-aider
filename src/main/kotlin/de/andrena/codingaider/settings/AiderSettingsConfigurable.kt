@@ -394,7 +394,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         val scrollPane = JBScrollPane(textArea)
         scrollPane.preferredSize = java.awt.Dimension(600, 400)
 
-        DialogBuilder(project).apply {
+        val dialog = DialogBuilder(project).apply {
             setTitle("Aider Test Command Result")
             setCenterPanel(scrollPane)
             addOkAction()
@@ -409,7 +409,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
 
             override fun onCommandProgress(output: String, runningTime: Long) {
                 SwingUtilities.invokeLater {
-                    textArea.append(output)
+                    textArea.text = output
                     textArea.caretPosition = textArea.document.length
                 }
             }
