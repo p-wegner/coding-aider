@@ -26,6 +26,18 @@ class CommandExecutor(private val project: Project, private val commandData: Com
         private const val API_KEY_SET_MESSAGE = "Set environment variable for %s (value hidden)"
     }
 
+    private fun setApiKeyEnvironmentVariables(processBuilder: ProcessBuilder) {
+        ApiKeyChecker.getAllApiKeyNames().forEach { keyName ->
+            val apiKey = ApiKeyManager.getApiKey(keyName)
+            if (!apiKey.isNullOrBlank()) {
+                processBuilder.environment()[keyName] = apiKey
+                logger.debug(API_KEY_SET_MESSAGE.format(keyName))
+            } else {
+                logger.warn("API key for $keyName is null or blank")
+            }
+        }
+    }
+
     fun executeCommand(): String {
         val commandArgs = if (useDockerAider) {
             AiderCommandBuilder.buildAiderCommand(
@@ -55,16 +67,7 @@ class CommandExecutor(private val project: Project, private val commandData: Com
             // Use the default Docker host, which should work across platforms
             processBuilder.environment().remove("DOCKER_HOST")
         } else {
-            // Set API key environment variables when not using Docker
-            ApiKeyChecker.getAllApiKeyNames().forEach { keyName ->
-                val apiKey = ApiKeyManager.getApiKey(keyName)
-                if (!apiKey.isNullOrBlank()) {
-                    processBuilder.environment()[keyName] = apiKey
-                    logger.debug(API_KEY_SET_MESSAGE.format(keyName))
-                } else {
-                    logger.warn("API key for $keyName is null or blank")
-                }
-            }
+            setApiKeyEnvironmentVariables(processBuilder)
         }
 
         process = processBuilder.start()
