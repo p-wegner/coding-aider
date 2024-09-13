@@ -61,8 +61,14 @@ class CommandExecutor(private val project: Project, private val commandData: Com
         }
 
         val output = StringBuilder()
-        pollProcessAndReadOutput(process!!, output)
-        return handleProcessCompletion(process!!, output)
+        try {
+            pollProcessAndReadOutput(process!!, output)
+            return handleProcessCompletion(process!!, output)
+        } finally {
+            if (useDockerAider) {
+                dockerManager.removeCidFile()
+            }
+        }
     }
 
     fun abortCommand() {

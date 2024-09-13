@@ -37,11 +37,22 @@ class DockerContainerManager {
                     stopProcess.destroyForcibly()
                     logger.warn("Docker stop command timed out")
                 }
-                // Clean up the cidfile
-                cidFile.delete()
             } catch (e: Exception) {
                 logger.error("Failed to stop Docker container", e)
+            } finally {
+                removeCidFile()
             }
+        }
+    }
+
+    fun removeCidFile() {
+        try {
+            if (cidFile.exists()) {
+                cidFile.delete()
+                logger.info("CID file removed successfully")
+            }
+        } catch (e: Exception) {
+            logger.error("Failed to remove CID file", e)
         }
     }
 }
