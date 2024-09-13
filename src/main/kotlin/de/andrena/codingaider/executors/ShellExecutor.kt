@@ -6,6 +6,7 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.ApiKeyManager
+import org.jetbrains.plugins.terminal.ShellTerminalWidget
 import org.jetbrains.plugins.terminal.TerminalToolWindowManager
 
 class ShellExecutor(
@@ -23,18 +24,21 @@ class ShellExecutor(
             // Remove DOCKER_HOST if it's set, allowing Docker to use its default configuration
             terminalSession.executeCommand("set DOCKER_HOST=")
         } else {
-            // Set API key environment variables when not using Docker
-            ApiKeyChecker.getAllApiKeyNames().forEach { keyName ->
-                val apiKey = ApiKeyManager.getApiKey(keyName)
-                if (apiKey != null) {
-                    terminalSession.executeCommand("set $keyName=$apiKey")
-                }
-            }
+            setApiKeyEnvsForIDEBasedKeys(terminalSession)
         }
 
         val command = AiderCommandBuilder.buildAiderCommand(commandData, true, useDockerAider)
             .joinToString(" ")
 
         terminalSession.executeCommand(command)
+    }
+
+    private fun setApiKeyEnvsForIDEBasedKeys(terminalSession: ShellTerminalWidget) {
+        ApiKeyChecker.getAllApiKeyNames().forEach { keyName ->
+            val apiKey = ApiKeyManager.getApiKey(keyName)
+            if (apiKey != null) {
+                terminalSession.executeCommand("set $keyName=$apiKey")
+            }
+        }
     }
 }
