@@ -3,9 +3,11 @@ package de.andrena.codingaider.command
 import de.andrena.codingaider.settings.AiderDefaults.DOCKER_IMAGE
 import de.andrena.codingaider.utils.ApiKeyChecker
 import java.io.File
-
+import java.nio.file.Path
+import kotlin.io.path.createTempFile
 
 object AiderCommandBuilder {
+    private val cidFile: Path = createTempFile(prefix = "aider_container_id_", suffix = ".tmp")
     fun buildAiderCommand(commandData: CommandData, isShellMode: Boolean, useDockerAider: Boolean): List<String> {
         return buildList {
             val projectPath = commandData.projectPath
@@ -90,7 +92,7 @@ object AiderCommandBuilder {
         }
         // Add cidfile option
         add("--cidfile")
-        add("/tmp/aider_container_id")
+        add(cidFile.toString())
         add(DOCKER_IMAGE)
     }
 

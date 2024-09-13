@@ -9,7 +9,8 @@ import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.ApiKeyManager
 import java.io.File
 import java.nio.file.Files
-import java.nio.file.Paths
+import java.nio.file.Path
+import kotlin.io.path.createTempFile
 import java.util.concurrent.TimeUnit
 
 class CommandExecutor(private val project: Project, private val commandData: CommandData) :
@@ -22,7 +23,7 @@ class CommandExecutor(private val project: Project, private val commandData: Com
     private var dockerContainerId: String? = null
     private val useDockerAider: Boolean
         get() = commandData.useDockerAider ?: settings.useDockerAider
-    private val cidFilePath = "/tmp/aider_container_id"
+    private val cidFile: Path = createTempFile(prefix = "aider_container_id_", suffix = ".tmp")
 
     fun executeCommand(): String {
         val commandArgs = AiderCommandBuilder.buildAiderCommand(
@@ -77,8 +78,8 @@ class CommandExecutor(private val project: Project, private val commandData: Com
         // Wait for the cidfile to be created
         var attempts = 0
         while (attempts < 10) {
-            if (Files.exists(Paths.get(cidFilePath))) {
-                return Files.readString(Paths.get(cidFilePath)).trim()
+            if (Files.exists(cidFile)) {
+                return Files.readString(cidFile).trim()
             }
             Thread.sleep(500)
             attempts++
@@ -97,7 +98,7 @@ class CommandExecutor(private val project: Project, private val commandData: Com
                     logger.warn("Docker stop command timed out")
                 }
                 // Clean up the cidfile
-                Files.deleteIfExists(Paths.get(cidFilePath))
+                Files.deleteIfExists(cidFile)
             } catch (e: Exception) {
                 logger.error("Failed to stop Docker container", e)
             }
