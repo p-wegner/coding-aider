@@ -12,11 +12,17 @@ import javax.swing.*
 import kotlin.concurrent.schedule
 import kotlin.concurrent.scheduleAtFixedRate
 
-class MarkdownDialog(private val project: Project, private val initialTitle: String, initialText: String) : JDialog() {
+class MarkdownDialog(
+    private val project: Project,
+    private val initialTitle: String,
+    initialText: String,
+    private val onAbort: () -> Unit
+) : JDialog() {
     private val textArea: JTextArea = JTextArea(initialText)
     private val scrollPane: JScrollPane
     private var autoCloseTimer: TimerTask? = null
     private val keepOpenButton: JButton
+    private val closeButton: JButton
 
     init {
         title = initialTitle
@@ -29,9 +35,9 @@ class MarkdownDialog(private val project: Project, private val initialTitle: Str
         add(scrollPane, BorderLayout.CENTER)
 
         val buttonPanel = JPanel()
-        val closeButton = JButton("Close").apply {
-            mnemonic = KeyEvent.VK_C
-            addActionListener { dispose() }
+        closeButton = JButton("Abort").apply {
+            mnemonic = KeyEvent.VK_A
+            addActionListener { onAbort() }
         }
         keepOpenButton = JButton("Keep Open").apply {
             mnemonic = KeyEvent.VK_K
@@ -42,7 +48,12 @@ class MarkdownDialog(private val project: Project, private val initialTitle: Str
         buttonPanel.add(keepOpenButton)
         add(buttonPanel, BorderLayout.SOUTH)
 
-        defaultCloseOperation = DISPOSE_ON_CLOSE
+        defaultCloseOperation = DO_NOTHING_ON_CLOSE
+        addWindowListener(object : java.awt.event.WindowAdapter() {
+            override fun windowClosing(windowEvent: java.awt.event.WindowEvent?) {
+                onAbort()
+            }
+        })
         isVisible = true
         setAlwaysOnTop(true)
         setAlwaysOnTop(false)

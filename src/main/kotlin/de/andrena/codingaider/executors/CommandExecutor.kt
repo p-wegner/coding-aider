@@ -15,6 +15,8 @@ class CommandExecutor(private val project: Project, private val commandData: Com
     private val logger = Logger.getInstance(CommandExecutor::class.java)
     private val settings = AiderSettings.getInstance(project)
     private val commandLogger = CommandLogger(settings, commandData)
+    private var process: Process? = null
+    private var isAborted = false
 
     fun executeCommand(): String {
         val commandArgs = AiderCommandBuilder.buildAiderCommand(commandData, false, settings.useDockerAider)
@@ -41,11 +43,16 @@ class CommandExecutor(private val project: Project, private val commandData: Com
             }
         }
 
-        val process = processBuilder.start()
+        process = processBuilder.start()
 
         val output = StringBuilder()
-        pollProcessAndReadOutput(process, output)
-        return handleProcessCompletion(process, output)
+        pollProcessAndReadOutput(process!!, output)
+        return handleProcessCompletion(process!!, output)
+    }
+
+    fun abortCommand() {
+        isAborted = true
+        process?.destroy()
     }
 
     private fun handleProcessCompletion(process: Process, output: StringBuilder): String {

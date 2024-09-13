@@ -18,21 +18,28 @@ class IDEBasedExecutor(
     private val log = Logger.getInstance(IDEBasedExecutor::class.java)
     private lateinit var markdownDialog: MarkdownDialog
     private var currentCommitHash: String? = null
+    private var commandExecutor: CommandExecutor? = null
+    private var executionThread: Thread? = null
 
     fun execute(): MarkdownDialog {
-        markdownDialog = MarkdownDialog(project, "Aider Command Output", "Initializing Aider command...").apply {
+        markdownDialog = MarkdownDialog(
+            project,
+            "Aider Command Output",
+            "Initializing Aider command...",
+            ::abortCommand
+        ).apply {
             isVisible = true
             focus()
         }
         currentCommitHash = GitUtils.getCurrentCommitHash(project)
 
-        thread { executeAiderCommand() }
+        executionThread = thread { executeAiderCommand() }
         return markdownDialog
     }
 
     private fun executeAiderCommand() {
         try {
-            CommandExecutor(project, commandData).apply {
+            commandExecutor = CommandExecutor(project, commandData).apply {
                 addObserver(this@IDEBasedExecutor)
                 executeCommand()
             }
@@ -41,6 +48,17 @@ class IDEBasedExecutor(
             updateDialogProgress("Error executing Aider command: ${e.message}", "Aider Command Error")
             markdownDialog.startAutoCloseTimer()
         }
+    }
+
+    private fun abortCommand() {
+        executionThread?.interrupt()
+        commandExecutor?.let {
+            // Assuming CommandExecutor has a method to abort the command
+            // If not, you'll need to implement one
+            it.abortCommand()
+        }
+        updateDialogProgress("Aider command aborted by user", "Aider Command Aborted")
+        markdownDialog.dispose()
     }
 
     private fun performPostExecutionTasks() {
