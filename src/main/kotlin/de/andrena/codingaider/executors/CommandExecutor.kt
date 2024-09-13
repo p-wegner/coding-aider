@@ -50,6 +50,9 @@ class CommandExecutor(private val project: Project, private val commandData: Com
                 val apiKey = ApiKeyManager.getApiKey(keyName)
                 if (!apiKey.isNullOrBlank()) {
                     processBuilder.environment()[keyName] = apiKey
+                    logger.debug("Set environment variable for $keyName")
+                } else {
+                    logger.warn("API key for $keyName is null or blank")
                 }
             }
         }
