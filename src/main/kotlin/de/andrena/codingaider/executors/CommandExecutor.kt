@@ -73,7 +73,7 @@ class CommandExecutor(private val project: Project, private val commandData: Com
     private fun pollProcessAndReadOutput(process: Process, output: StringBuilder) {
         val startTime = System.currentTimeMillis()
         process.inputStream.bufferedReader().use { reader ->
-            while (true) {
+            while (!isAborted) {
                 val line = reader.readLine() ?: break
                 output.append(line).append("\n")
                 val runningTime = (System.currentTimeMillis() - startTime) / 1000
