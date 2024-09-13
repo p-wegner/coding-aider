@@ -1,8 +1,8 @@
 package de.andrena.codingaider.outputview
 
 import com.intellij.openapi.project.Project
-import de.andrena.codingaider.settings.AiderSettings
 import com.intellij.ui.components.JBScrollPane
+import de.andrena.codingaider.settings.AiderSettings
 import java.awt.BorderLayout
 import java.awt.EventQueue.invokeLater
 import java.awt.event.KeyEvent
@@ -16,7 +16,7 @@ class MarkdownDialog(
     private val project: Project,
     private val initialTitle: String,
     initialText: String,
-    private val onAbort: () -> Unit
+    private val onAbort: (() -> Unit)? = null
 ) : JDialog() {
     private val textArea: JTextArea = JTextArea(initialText)
     private val scrollPane: JScrollPane
@@ -37,7 +37,7 @@ class MarkdownDialog(
         val buttonPanel = JPanel()
         closeButton = JButton("Abort").apply {
             mnemonic = KeyEvent.VK_A
-            addActionListener { onAbort() }
+            addActionListener { onAbort?.invoke() }
         }
         keepOpenButton = JButton("Keep Open").apply {
             mnemonic = KeyEvent.VK_K
@@ -51,7 +51,7 @@ class MarkdownDialog(
         defaultCloseOperation = DO_NOTHING_ON_CLOSE
         addWindowListener(object : java.awt.event.WindowAdapter() {
             override fun windowClosing(windowEvent: java.awt.event.WindowEvent?) {
-                onAbort()
+                onAbort?.invoke()
             }
         })
         isVisible = true
