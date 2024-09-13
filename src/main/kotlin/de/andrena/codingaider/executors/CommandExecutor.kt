@@ -37,7 +37,7 @@ class CommandExecutor(private val project: Project, private val commandData: Com
             // Set API key environment variables when not using Docker
             ApiKeyChecker.getAllApiKeyNames().forEach { keyName ->
                 val apiKey = ApiKeyManager.getApiKey(keyName)
-                if (apiKey != null) {
+                if (!apiKey.isNullOrBlank()) {
                     processBuilder.environment()[keyName] = apiKey.replace("\"", "\\\"")
                 }
             }
