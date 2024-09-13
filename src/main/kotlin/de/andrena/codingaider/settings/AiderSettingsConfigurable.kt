@@ -190,7 +190,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                         .component
                         .apply {
                             toolTipText =
-                                "If enabled, Aider command details will be logged in the dialog shown to the user"
+                                "If enabled, Aider command details will be logged in the dialog shown to the user. This may show sensitive information."
                         }
                 }
                 row {
