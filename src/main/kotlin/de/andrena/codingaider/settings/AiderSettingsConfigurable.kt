@@ -506,4 +506,23 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
             }
         })
     }
+
+    private fun updateApiKeyFieldsOnClose() {
+        apiKeyFields.forEach { (keyName, field) ->
+            val isApiKeyAvailable = ApiKeyChecker.isApiKeyAvailable(keyName)
+            field.isEditable = !isApiKeyAvailable
+            if (isApiKeyAvailable) {
+                field.text = getApiKeyDisplayValue(keyName)
+            }
+        }
+    }
+
+    override fun disposeUIResources() {
+        updateApiKeyFieldsOnClose()
+        settingsComponent = null
+        // Ensure that any pending changes are saved
+        if (isModified) {
+            apply()
+        }
+    }
 }
