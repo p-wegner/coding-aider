@@ -482,6 +482,16 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         field.text = ""
         field.isEditable = true
         field.toolTipText = "Enter a new API key for $keyName"
-        saveButton.isEnabled = true
+        saveButton.isEnabled = false
+
+        field.document.addDocumentListener(object : DocumentListener {
+            override fun insertUpdate(e: DocumentEvent) = updateSaveButton()
+            override fun removeUpdate(e: DocumentEvent) = updateSaveButton()
+            override fun changedUpdate(e: DocumentEvent) = updateSaveButton()
+
+            fun updateSaveButton() {
+                saveButton.isEnabled = field.password.isNotEmpty()
+            }
+        })
     }
 }
