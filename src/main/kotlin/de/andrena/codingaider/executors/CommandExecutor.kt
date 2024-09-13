@@ -4,13 +4,11 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.AiderCommandBuilder
 import de.andrena.codingaider.command.CommandData
+import de.andrena.codingaider.docker.DockerContainerManager
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.ApiKeyManager
 import java.io.File
-import java.nio.file.Files
-import java.nio.file.Path
-import kotlin.io.path.createTempFile
 import java.util.concurrent.TimeUnit
 
 class CommandExecutor(private val project: Project, private val commandData: CommandData) :
@@ -20,10 +18,9 @@ class CommandExecutor(private val project: Project, private val commandData: Com
     private val commandLogger = CommandLogger(settings, commandData)
     private var process: Process? = null
     private var isAborted = false
-    private var dockerContainerId: String? = null
     private val useDockerAider: Boolean
         get() = commandData.useDockerAider ?: settings.useDockerAider
-    private val cidFile: Path = createTempFile(prefix = "aider_container_id_", suffix = ".tmp")
+    private val dockerManager = DockerContainerManager()
 
     fun executeCommand(): String {
         val commandArgs = AiderCommandBuilder.buildAiderCommand(
@@ -60,7 +57,7 @@ class CommandExecutor(private val project: Project, private val commandData: Com
         process = processBuilder.start()
 
         if (useDockerAider) {
-            dockerContainerId = getDockerContainerId()
+            dockerManager.getDockerContainerId()
         }
 
         val output = StringBuilder()
@@ -71,40 +68,9 @@ class CommandExecutor(private val project: Project, private val commandData: Com
     fun abortCommand() {
         isAborted = true
         if (useDockerAider) {
-            stopDockerContainer()
+            dockerManager.stopDockerContainer()
         } else {
             process?.destroyForcibly()
-        }
-    }
-
-    private fun getDockerContainerId(): String? {
-        // Wait for the cidfile to be created
-        var attempts = 0
-        while (attempts < 10) {
-            if (Files.exists(cidFile)) {
-                return Files.readString(cidFile).trim()
-            }
-            Thread.sleep(500)
-            attempts++
-        }
-        logger.warn("Failed to read Docker container ID from cidfile")
-        return null
-    }
-
-    private fun stopDockerContainer() {
-        dockerContainerId?.let { containerId ->
-            try {
-                val processBuilder = ProcessBuilder("docker", "kill", containerId)
-                val stopProcess = processBuilder.start()
-                if (!stopProcess.waitFor(5, TimeUnit.SECONDS)) {
-                    stopProcess.destroyForcibly()
-                    logger.warn("Docker stop command timed out")
-                }
-                // Clean up the cidfile
-                Files.deleteIfExists(cidFile)
-            } catch (e: Exception) {
-                logger.error("Failed to stop Docker container", e)
-            }
         }
     }
 
