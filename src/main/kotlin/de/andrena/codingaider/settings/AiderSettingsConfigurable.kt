@@ -429,7 +429,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
             }
         }
 
-        dialog.show()
+        dialog.isVisible = true
         AiderTestCommand(project).execute(observer)
     }
 
