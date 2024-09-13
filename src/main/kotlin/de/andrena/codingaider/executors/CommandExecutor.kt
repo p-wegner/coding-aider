@@ -5,6 +5,8 @@ import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.AiderCommandBuilder
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.settings.AiderSettings
+import de.andrena.codingaider.utils.ApiKeyChecker
+import de.andrena.codingaider.utils.ApiKeyManager
 import java.io.File
 import java.util.concurrent.TimeUnit
 
@@ -29,6 +31,14 @@ class CommandExecutor(private val project: Project, private val commandData: Com
         if (settings.useDockerAider) {
             // Use the default Docker host, which should work across platforms
             processBuilder.environment().remove("DOCKER_HOST")
+        } else {
+            // Set API key environment variables when not using Docker
+            ApiKeyChecker.getAllApiKeyNames().forEach { keyName ->
+                val apiKey = ApiKeyManager.getApiKey(keyName)
+                if (apiKey != null) {
+                    processBuilder.environment()[keyName] = apiKey
+                }
+            }
         }
 
         val process = processBuilder.start()
