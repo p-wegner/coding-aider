@@ -23,6 +23,7 @@ data class CommandData(
     val lintCmd: String,
     val deactivateRepoMap: Boolean = false,
     val editFormat: String = "",
-    val projectPath: String
+    val projectPath: String,
+    val useDockerAider: Boolean
 )
 

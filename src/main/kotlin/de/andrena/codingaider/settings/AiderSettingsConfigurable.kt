@@ -409,7 +409,8 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                     }
                 }
 
-                AiderTestCommand(project).execute(observer)
+                // Pass the current state of the Docker checkbox
+                AiderTestCommand(project).execute(observer, useDockerAiderCheckBox.isSelected)
                 return "Command execution finished."
             }
 
