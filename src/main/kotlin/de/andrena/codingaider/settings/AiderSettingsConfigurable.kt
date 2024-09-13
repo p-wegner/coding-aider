@@ -123,7 +123,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
 
                 row {
                     button("Test Aider Installation") {
-                        SwingUtilities.invokeLater { showTestCommandResult() }
+                        showTestCommandResult()
                     }
                 }
             }
@@ -395,7 +395,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
             val scrollPane = JBScrollPane(textArea)
             scrollPane.preferredSize = java.awt.Dimension(600, 400)
 
-            val dialog = DialogBuilder(project).apply {
+            DialogBuilder(project).apply {
                 setTitle("Aider Test Command Result")
                 setCenterPanel(scrollPane)
                 addOkAction()

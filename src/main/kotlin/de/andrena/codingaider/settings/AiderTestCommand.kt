@@ -6,7 +6,7 @@ import de.andrena.codingaider.executors.CommandObserver
 import de.andrena.codingaider.executors.LiveUpdateExecutor
 
 class AiderTestCommand(private val project: Project) {
-    fun execute(observer: CommandObserver) {
+    fun execute(observer: CommandObserver?) {
         val settings = AiderSettings.getInstance(project)
         val commandData = CommandData(
             message = "",
@@ -21,7 +21,7 @@ class AiderTestCommand(private val project: Project) {
             projectPath = project.basePath ?: ""
         )
         LiveUpdateExecutor(project, commandData).apply {
-            addObserver(observer)
+            observer?.let { addObserver(it) }
             execute()
         }
     }
