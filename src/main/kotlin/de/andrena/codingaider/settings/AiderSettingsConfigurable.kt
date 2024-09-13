@@ -398,7 +398,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
             setTitle("Aider Test Command Result")
             setCenterPanel(scrollPane)
             addOkAction()
-        }.createDialog()
+        }.show()
 
         val observer = object : CommandObserver {
             override fun onCommandStart(message: String) {
@@ -429,7 +429,6 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
             }
         }
 
-        dialog.isVisible = true
         AiderTestCommand(project).execute(observer)
     }
 
