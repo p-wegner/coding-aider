@@ -15,6 +15,7 @@ import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.inputdialog.PersistentFileManager
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.ApiKeyManager
+import de.andrena.codingaider.executors.CommandObserver
 import java.awt.Component
 import javax.swing.*
 import javax.swing.event.DocumentEvent
