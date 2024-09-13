@@ -42,7 +42,7 @@ class AiderInputDialog(
             fileSelectionMode = JFileChooser.FILES_AND_DIRECTORIES
             isMultiSelectionEnabled = true
         }
-        
+
         if (fileChooser.showOpenDialog(contentPane) == JFileChooser.APPROVE_OPTION) {
             val selectedFiles = fileChooser.selectedFiles
             val fileDataList = selectedFiles.flatMap { file ->
@@ -56,10 +56,10 @@ class AiderInputDialog(
                 }
             }
             persistentFileManager.addAllFiles(fileDataList)
-            
+
             // Update persistent files in AiderContextView
             aiderContextView.updatePersistentFiles(persistentFileManager.getPersistentFiles())
-            
+
             // Refresh the context view
             aiderContextView.updateTree()
         }
@@ -134,7 +134,7 @@ class AiderInputDialog(
                         g.color = darkerColor
                         g.fillRect(0, 0, width, height)
                     }
-                    
+
                     override fun getDividerSize(): Int {
                         return 3
                     }
@@ -253,7 +253,7 @@ class AiderInputDialog(
             gridx = 0
             gridy = 0
             weightx = 0.0
-            insets = JBUI.insets(0, 0, 0, 10)
+            insets = JBUI.insetsRight(10)
         })
         val selectLlmLabel = JLabel("LLM:").apply {
             displayedMnemonic = KeyEvent.VK_L
@@ -264,7 +264,7 @@ class AiderInputDialog(
             gridx = 1
             gridy = 0
             weightx = 0.0
-            insets = JBUI.insets(0, 5, 0, 5)
+            insets = JBUI.insets(0, 5)
         })
         firstRowPanel.add(llmComboBox, GridBagConstraints().apply {
             gridx = 2
@@ -295,7 +295,7 @@ class AiderInputDialog(
             gridy = 0
             weightx = 0.0
             fill = GridBagConstraints.NONE
-            insets = JBUI.insets(0, 10, 0, 0)
+            insets = JBUI.insetsLeft(10)
         })
         topPanel.add(firstRowPanel, gbc)
 
@@ -319,7 +319,7 @@ class AiderInputDialog(
             gridx = 0
             gridy = 0
             weightx = 0.0
-            insets = JBUI.insets(0, 0, 0, 10)
+            insets = JBUI.insetsRight(10)
         })
         val additionalArgsLabel = JLabel("Args:").apply {
             displayedMnemonic = KeyEvent.VK_A
@@ -330,7 +330,7 @@ class AiderInputDialog(
             gridx = 1
             gridy = 0
             weightx = 0.0
-            insets = JBUI.insets(0, 5, 0, 5)
+            insets = JBUI.insets(0, 5)
         })
         flagAndArgsPanel.add(additionalArgsField, GridBagConstraints().apply {
             gridx = 2
@@ -346,13 +346,23 @@ class AiderInputDialog(
                 override fun actionPerformed(e: AnActionEvent) {
                     addAiderDocsToPersistentFiles()
                 }
-                override fun getActionUpdateThread()= ActionUpdateThread.BGT
+
+                override fun getActionUpdateThread() = ActionUpdateThread.BGT
                 override fun update(e: AnActionEvent) {
                     e.presentation.isEnabled = true
                     e.presentation.text = "Add Files (Ctrl+A)"
                 }
-            }.also { it.registerCustomShortcutSet(CustomShortcutSet(KeyStroke.getKeyStroke(KeyEvent.VK_A, InputEvent.CTRL_DOWN_MASK)), aiderContextView) })
-            
+            }.also {
+                it.registerCustomShortcutSet(
+                    CustomShortcutSet(
+                        KeyStroke.getKeyStroke(
+                            KeyEvent.VK_A,
+                            InputEvent.CTRL_DOWN_MASK
+                        )
+                    ), aiderContextView
+                )
+            })
+
             add(object : AnAction(
                 "Remove Files",
                 "Remove selected files from the context view",
@@ -361,7 +371,8 @@ class AiderInputDialog(
                 override fun actionPerformed(e: AnActionEvent) {
                     aiderContextView.removeSelectedFiles()
                 }
-                override fun getActionUpdateThread()= ActionUpdateThread.BGT
+
+                override fun getActionUpdateThread() = ActionUpdateThread.BGT
                 override fun update(e: AnActionEvent) {
                     e.presentation.isEnabled = true
                     e.presentation.text = "Remove Files (Del)"
@@ -379,13 +390,22 @@ class AiderInputDialog(
                     aiderContextView.toggleReadOnlyMode()
                 }
 
-                override fun getActionUpdateThread()= ActionUpdateThread.BGT
+                override fun getActionUpdateThread() = ActionUpdateThread.BGT
                 override fun update(e: AnActionEvent) {
                     e.presentation.isEnabled = true
                     e.presentation.text = "Toggle Read-Only (Ctrl+R)"
                 }
-            }.also { it.registerCustomShortcutSet(CustomShortcutSet(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK)), aiderContextView) })
-            
+            }.also {
+                it.registerCustomShortcutSet(
+                    CustomShortcutSet(
+                        KeyStroke.getKeyStroke(
+                            KeyEvent.VK_R,
+                            InputEvent.CTRL_DOWN_MASK
+                        )
+                    ), aiderContextView
+                )
+            })
+
             add(object : AnAction(
                 "Toggle Persistent Files",
                 "Toggle selected files' persistent status",
@@ -394,12 +414,22 @@ class AiderInputDialog(
                 override fun actionPerformed(e: AnActionEvent) {
                     aiderContextView.togglePersistentFile()
                 }
-                override fun getActionUpdateThread()= ActionUpdateThread.BGT
+
+                override fun getActionUpdateThread() = ActionUpdateThread.BGT
                 override fun update(e: AnActionEvent) {
                     e.presentation.isEnabled = true
                     e.presentation.text = "Toggle Persistent (Ctrl+P)"
                 }
-            }.also { it.registerCustomShortcutSet(CustomShortcutSet(KeyStroke.getKeyStroke(KeyEvent.VK_P, InputEvent.CTRL_DOWN_MASK)), aiderContextView) })
+            }.also {
+                it.registerCustomShortcutSet(
+                    CustomShortcutSet(
+                        KeyStroke.getKeyStroke(
+                            KeyEvent.VK_P,
+                            InputEvent.CTRL_DOWN_MASK
+                        )
+                    ), aiderContextView
+                )
+            })
         }
 
         val combinedActionGroup = DefaultActionGroup().apply {
