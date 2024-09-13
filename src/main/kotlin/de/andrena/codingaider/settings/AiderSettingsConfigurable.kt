@@ -433,6 +433,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
 
             override fun process(chunks: List<String>) {
                 ApplicationManager.getApplication().invokeLater {
+                    textArea.text = "" // Clear the text area before appending new content
                     chunks.forEach { textArea.append(it) }
                     textArea.caretPosition = textArea.document.length
                 }
