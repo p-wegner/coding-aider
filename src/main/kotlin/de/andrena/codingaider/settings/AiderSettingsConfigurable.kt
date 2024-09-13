@@ -123,7 +123,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
 
                 row {
                     button("Test Aider Installation") {
-                        showTestCommandResult()
+                        SwingUtilities.invokeLater { showTestCommandResult() }
                     }
                 }
             }
