@@ -90,8 +90,12 @@ class CommandExecutor(private val project: Project, private val commandData: Com
     private fun stopDockerContainer() {
         dockerContainerId?.let { containerId ->
             try {
-                val stopProcess = Runtime.getRuntime().exec(arrayOf("docker", "stop", "--time", "0", containerId))
-                stopProcess.waitFor(5, TimeUnit.SECONDS)
+                val processBuilder = ProcessBuilder("docker", "stop", "--time", "0", containerId)
+                val stopProcess = processBuilder.start()
+                if (!stopProcess.waitFor(5, TimeUnit.SECONDS)) {
+                    stopProcess.destroyForcibly()
+                    logger.warn("Docker stop command timed out")
+                }
                 // Clean up the cidfile
                 Files.deleteIfExists(Paths.get(cidFilePath))
             } catch (e: Exception) {
