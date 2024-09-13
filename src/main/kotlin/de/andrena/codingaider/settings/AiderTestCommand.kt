@@ -2,8 +2,8 @@ package de.andrena.codingaider.settings
 
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
-import de.andrena.codingaider.executors.LiveUpdateExecutor
 import de.andrena.codingaider.executors.CommandObserver
+import de.andrena.codingaider.executors.LiveUpdateExecutor
 
 class AiderTestCommand(private val project: Project) {
     fun execute(observer: CommandObserver): String {
@@ -20,9 +20,8 @@ class AiderTestCommand(private val project: Project) {
             editFormat = "",
             projectPath = project.basePath ?: ""
         )
-
-        val executor = LiveUpdateExecutor(project, commandData)
-        executor.addObserver(observer)
-        return executor.execute()
+        return LiveUpdateExecutor(project, commandData)
+            .apply { addObserver(observer) }
+            .execute()
     }
 }

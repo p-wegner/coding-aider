@@ -12,10 +12,10 @@ import com.intellij.ui.components.*
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.command.FileData
+import de.andrena.codingaider.executors.CommandObserver
 import de.andrena.codingaider.inputdialog.PersistentFileManager
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.ApiKeyManager
-import de.andrena.codingaider.executors.CommandObserver
 import java.awt.Component
 import javax.swing.*
 import javax.swing.event.DocumentEvent
@@ -123,8 +123,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
 
                 row {
                     button("Test Aider Installation") {
-                        val result = AiderTestCommand(project).execute()
-                        showTestCommandResult(result)
+                        showTestCommandResult()
                     }
                 }
             }
@@ -386,7 +385,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         }
     }
 
-    private fun showTestCommandResult(result: String) {
+    private fun showTestCommandResult() {
         val textArea = JBTextArea().apply {
             isEditable = false
             lineWrap = true
@@ -395,7 +394,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         val scrollPane = JBScrollPane(textArea)
         scrollPane.preferredSize = java.awt.Dimension(600, 400)
 
-        val dialog = DialogBuilder(project).apply {
+        DialogBuilder(project).apply {
             setTitle("Aider Test Command Result")
             setCenterPanel(scrollPane)
             addOkAction()
