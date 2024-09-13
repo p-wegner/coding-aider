@@ -21,7 +21,7 @@ object AiderCommandBuilder {
                 val fileArgument = if (fileData.isReadOnly) "--read" else "--file"
                 add(fileArgument)
                 val filePath = determineNeededFilePath(useDockerAider, fileData, projectPath)
-                add("\"$filePath\"")
+                add("$filePath")
             }
             if (commandData.useYesFlag) add("--yes")
             if (commandData.editFormat.isNotEmpty()) {
