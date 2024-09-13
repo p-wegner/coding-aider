@@ -88,6 +88,9 @@ object AiderCommandBuilder {
                 add("$keyName=$value")
             }
         }
+        // Add cidfile option
+        add("--cidfile")
+        add("/tmp/aider_container_id")
         add(DOCKER_IMAGE)
     }
 
