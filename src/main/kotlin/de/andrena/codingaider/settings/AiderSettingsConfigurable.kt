@@ -386,50 +386,52 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     }
 
     private fun showTestCommandResult() {
-        val textArea = JBTextArea().apply {
-            isEditable = false
-            lineWrap = true
-            wrapStyleWord = true
+        SwingUtilities.invokeLater {
+            val textArea = JBTextArea().apply {
+                isEditable = false
+                lineWrap = true
+                wrapStyleWord = true
+            }
+            val scrollPane = JBScrollPane(textArea)
+            scrollPane.preferredSize = java.awt.Dimension(600, 400)
+
+            val dialog = DialogBuilder(project).apply {
+                setTitle("Aider Test Command Result")
+                setCenterPanel(scrollPane)
+                addOkAction()
+            }.show()
+
+            val observer = object : CommandObserver {
+                override fun onCommandStart(message: String) {
+                    SwingUtilities.invokeLater {
+                        textArea.append("Starting command...\n")
+                    }
+                }
+
+                override fun onCommandProgress(output: String, runningTime: Long) {
+                    SwingUtilities.invokeLater {
+                        textArea.text = output
+                        textArea.caretPosition = textArea.document.length
+                    }
+                }
+
+                override fun onCommandComplete(output: String, exitCode: Int) {
+                    SwingUtilities.invokeLater {
+                        textArea.append("\nCommand completed with exit code: $exitCode\n")
+                        textArea.caretPosition = textArea.document.length
+                    }
+                }
+
+                override fun onCommandError(errorMessage: String) {
+                    SwingUtilities.invokeLater {
+                        textArea.append("\nError: $errorMessage\n")
+                        textArea.caretPosition = textArea.document.length
+                    }
+                }
+            }
+
+            AiderTestCommand(project).execute(observer)
         }
-        val scrollPane = JBScrollPane(textArea)
-        scrollPane.preferredSize = java.awt.Dimension(600, 400)
-
-        val dialog = DialogBuilder(project).apply {
-            setTitle("Aider Test Command Result")
-            setCenterPanel(scrollPane)
-            addOkAction()
-        }.show()
-
-        val observer = object : CommandObserver {
-            override fun onCommandStart(message: String) {
-                SwingUtilities.invokeLater {
-                    textArea.append("Starting command...\n")
-                }
-            }
-
-            override fun onCommandProgress(output: String, runningTime: Long) {
-                SwingUtilities.invokeLater {
-                    textArea.text = output
-                    textArea.caretPosition = textArea.document.length
-                }
-            }
-
-            override fun onCommandComplete(output: String, exitCode: Int) {
-                SwingUtilities.invokeLater {
-                    textArea.append("\nCommand completed with exit code: $exitCode\n")
-                    textArea.caretPosition = textArea.document.length
-                }
-            }
-
-            override fun onCommandError(errorMessage: String) {
-                SwingUtilities.invokeLater {
-                    textArea.append("\nError: $errorMessage\n")
-                    textArea.caretPosition = textArea.document.length
-                }
-            }
-        }
-
-        AiderTestCommand(project).execute(observer)
     }
 
     private fun updateApiKeyField(keyName: String, field: JPasswordField, saveButton: JButton) {
