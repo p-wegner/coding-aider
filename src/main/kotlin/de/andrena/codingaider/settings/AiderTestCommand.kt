@@ -2,10 +2,11 @@ package de.andrena.codingaider.settings
 
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
-import de.andrena.codingaider.executors.SimpleExecutor
+import de.andrena.codingaider.executors.LiveUpdateExecutor
+import de.andrena.codingaider.executors.CommandObserver
 
 class AiderTestCommand(private val project: Project) {
-    fun execute(): String {
+    fun execute(observer: CommandObserver): String {
         val settings = AiderSettings.getInstance(project)
         val commandData = CommandData(
             message = "",
@@ -20,6 +21,8 @@ class AiderTestCommand(private val project: Project) {
             projectPath = project.basePath ?: ""
         )
 
-        return SimpleExecutor(project, commandData).execute()
+        val executor = LiveUpdateExecutor(project, commandData)
+        executor.addObserver(observer)
+        return executor.execute()
     }
 }
