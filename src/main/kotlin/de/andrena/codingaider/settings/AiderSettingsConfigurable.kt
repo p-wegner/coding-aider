@@ -386,50 +386,51 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     }
 
     private fun showTestCommandResult() {
-        SwingUtilities.invokeLater {
-            val textArea = JBTextArea().apply {
-                isEditable = false
-                lineWrap = true
-                wrapStyleWord = true
-            }
-            val scrollPane = JBScrollPane(textArea)
-            scrollPane.preferredSize = java.awt.Dimension(600, 400)
+        val textArea = JBTextArea().apply {
+            isEditable = false
+            lineWrap = true
+            wrapStyleWord = true
+        }
+        val scrollPane = JBScrollPane(textArea)
+        scrollPane.preferredSize = java.awt.Dimension(600, 400)
 
-            DialogBuilder(project).apply {
-                setTitle("Aider Test Command Result")
-                setCenterPanel(scrollPane)
-                addOkAction()
-            }.show()
+        val dialog = DialogBuilder(project).apply {
+            setTitle("Aider Test Command Result")
+            setCenterPanel(scrollPane)
+            addOkAction()
+        }
 
-            val observer = object : CommandObserver {
-                override fun onCommandStart(message: String) {
-                    SwingUtilities.invokeLater {
-                        textArea.append("Starting command...\n")
-                    }
-                }
-
-                override fun onCommandProgress(output: String, runningTime: Long) {
-                    SwingUtilities.invokeLater {
-                        textArea.text = output
-                        textArea.caretPosition = textArea.document.length
-                    }
-                }
-
-                override fun onCommandComplete(output: String, exitCode: Int) {
-                    SwingUtilities.invokeLater {
-                        textArea.append("\nCommand completed with exit code: $exitCode\n")
-                        textArea.caretPosition = textArea.document.length
-                    }
-                }
-
-                override fun onCommandError(errorMessage: String) {
-                    SwingUtilities.invokeLater {
-                        textArea.append("\nError: $errorMessage\n")
-                        textArea.caretPosition = textArea.document.length
-                    }
+        val observer = object : CommandObserver {
+            override fun onCommandStart(message: String) {
+                com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
+                    textArea.append("Starting command...\n")
                 }
             }
 
+            override fun onCommandProgress(output: String, runningTime: Long) {
+                com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
+                    textArea.text = output
+                    textArea.caretPosition = textArea.document.length
+                }
+            }
+
+            override fun onCommandComplete(output: String, exitCode: Int) {
+                com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
+                    textArea.append("\nCommand completed with exit code: $exitCode\n")
+                    textArea.caretPosition = textArea.document.length
+                }
+            }
+
+            override fun onCommandError(errorMessage: String) {
+                com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
+                    textArea.append("\nError: $errorMessage\n")
+                    textArea.caretPosition = textArea.document.length
+                }
+            }
+        }
+
+        com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
+            dialog.show()
             AiderTestCommand(project).execute(observer)
         }
     }
