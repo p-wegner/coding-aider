@@ -401,6 +401,11 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
             addOkAction()
         }
 
+        // Show the dialog immediately
+        ApplicationManager.getApplication().invokeLater {
+            dialog.show()
+        }
+
         // Use SwingWorker to run the command in the background
         val worker = object : SwingWorker<String, String>() {
             override fun doInBackground(): String {
@@ -427,13 +432,14 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
             }
 
             override fun process(chunks: List<String>) {
-                textArea.text = "" // Clear previous output to avoid duplication
-                chunks.forEach { textArea.append(it) }
-                textArea.caretPosition = textArea.document.length
+                ApplicationManager.getApplication().invokeLater {
+                    chunks.forEach { textArea.append(it) }
+                    textArea.caretPosition = textArea.document.length
+                }
             }
 
             override fun done() {
-                dialog.show()
+                // The dialog is already shown, so we don't need to do anything here
             }
         }
 
