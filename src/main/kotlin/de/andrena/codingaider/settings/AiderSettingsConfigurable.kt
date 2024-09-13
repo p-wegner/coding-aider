@@ -465,8 +465,8 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
             }
             ApiKeyChecker.isApiKeyAvailable(keyName) -> {
                 field.text = "*An API key is available from another source*"
-                field.isEditable = false
-                field.toolTipText = "An API key for $keyName is available from environment or .env file. Clear it first to enter a new one."
+                field.isEditable = true
+                field.toolTipText = "An API key for $keyName is available from environment or .env file. You can enter a new one to override it."
                 saveButton.isEnabled = false
             }
             else -> {
@@ -476,6 +476,18 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 saveButton.isEnabled = false
             }
         }
+
+        field.document.addDocumentListener(object : DocumentListener {
+            override fun insertUpdate(e: DocumentEvent) = updateSaveButton()
+            override fun removeUpdate(e: DocumentEvent) = updateSaveButton()
+            override fun changedUpdate(e: DocumentEvent) = updateSaveButton()
+
+            fun updateSaveButton() {
+                saveButton.isEnabled = field.password.isNotEmpty() &&
+                        String(field.password) != "*".repeat(16) &&
+                        String(field.password) != "*An API key is available from another source*"
+            }
+        })
     }
 
     private fun clearApiKeyField(keyName: String, field: JPasswordField, saveButton: JButton) {
