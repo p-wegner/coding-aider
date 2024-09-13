@@ -36,7 +36,7 @@ class CommandExecutor(private val project: Project, private val commandData: Com
             ApiKeyChecker.getAllApiKeyNames().forEach { keyName ->
                 val apiKey = ApiKeyManager.getApiKey(keyName)
                 if (apiKey != null) {
-                    processBuilder.environment()[keyName] = apiKey
+                    processBuilder.environment()[keyName] = apiKey.replace("\"", "\\\"")
                 }
             }
         }
