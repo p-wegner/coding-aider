@@ -1,12 +1,10 @@
 package de.andrena.codingaider.command
 
-import de.andrena.codingaider.docker.DockerContainerManager
 import de.andrena.codingaider.settings.AiderDefaults.DOCKER_IMAGE
 import de.andrena.codingaider.utils.ApiKeyChecker
 import java.io.File
 
 object AiderCommandBuilder {
-    private val dockerManager = DockerContainerManager()
     fun buildAiderCommand(commandData: CommandData, isShellMode: Boolean, useDockerAider: Boolean): List<String> {
         return buildList {
             val projectPath = commandData.projectPath
@@ -70,7 +68,8 @@ object AiderCommandBuilder {
 
     private fun MutableList<String>.addDockerRunCommand(
         projectPath: String,
-        commandData: CommandData
+        commandData: CommandData,
+        dockerManager: DockerContainerManager
     ) {
         add("docker")
         add("run")

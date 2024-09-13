@@ -2,12 +2,13 @@ package de.andrena.codingaider.docker
 
 import com.intellij.openapi.diagnostic.Logger
 import java.io.File
-import java.nio.file.Files
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 class DockerContainerManager {
     private val logger = Logger.getInstance(DockerContainerManager::class.java)
-    private val cidFile = File(System.getProperty("java.io.tmpdir"), "aider_container_id.tmp")
+    private val uniqueId = UUID.randomUUID().toString()
+    private val cidFile = File(System.getProperty("java.io.tmpdir"), "aider_container_id_$uniqueId.tmp")
     private var dockerContainerId: String? = null
 
     fun getCidFilePath(): String = cidFile.absolutePath
@@ -23,7 +24,7 @@ class DockerContainerManager {
                 Thread.sleep(500)
                 attempts++
             }
-            logger.warn("Failed to read Docker container ID from cidfile")
+            logger.warn("Failed to read Docker container ID from cidfile: ${cidFile.absolutePath}")
         }
         return dockerContainerId
     }
@@ -49,10 +50,10 @@ class DockerContainerManager {
         try {
             if (cidFile.exists()) {
                 cidFile.delete()
-                logger.info("CID file removed successfully")
+                logger.info("CID file removed successfully: ${cidFile.absolutePath}")
             }
         } catch (e: Exception) {
-            logger.error("Failed to remove CID file", e)
+            logger.error("Failed to remove CID file: ${cidFile.absolutePath}", e)
         }
     }
 }
