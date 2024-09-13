@@ -92,7 +92,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                                 ApiKeyManager.removeApiKey(keyName)
                                 clearApiKeyField(keyName, field, saveButton)
                                 Messages.showInfoMessage(
-                                    "API key for $keyName has been cleared from the credential store. You can now enter a new key.",
+                                    "API key for $keyName has been cleared from the credential store (if any has been stored). You can now enter a new key. This will be used if defined, otherwise the key from environment or .env files will be used.",
                                     "API Key Cleared"
                                 )
                             }
@@ -236,12 +236,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 editFormatComboBox.selectedItem as String != settings.editFormat ||
                 verboseCommandLoggingCheckBox.isSelected != settings.verboseCommandLogging ||
                 useDockerAiderCheckBox.isSelected != settings.useDockerAider ||
-                enableMarkdownDialogAutocloseCheckBox.isSelected != settings.enableMarkdownDialogAutoclose ||
-                apiKeyFields.any { (keyName, field) ->
-                    val currentValue = String(field.password)
-                    currentValue.isNotEmpty() && currentValue != "*".repeat(16) &&
-                            currentValue != (ApiKeyManager.getApiKey(keyName) ?: "")
-                }
+                enableMarkdownDialogAutocloseCheckBox.isSelected != settings.enableMarkdownDialogAutoclose
     }
 
     override fun apply() {
@@ -259,27 +254,6 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         settings.verboseCommandLogging = verboseCommandLoggingCheckBox.isSelected
         settings.useDockerAider = useDockerAiderCheckBox.isSelected
         settings.enableMarkdownDialogAutoclose = enableMarkdownDialogAutocloseCheckBox.isSelected
-
-        apiKeyFields.forEach { (keyName, field) ->
-            val enteredValue = String(field.password)
-            when {
-                enteredValue.isNotEmpty() && enteredValue != "*".repeat(16) && 
-                enteredValue != "*An API key is available from another source*" -> {
-                    ApiKeyManager.saveApiKey(keyName, enteredValue)
-                }
-                enteredValue.isEmpty() -> {
-                    ApiKeyManager.removeApiKey(keyName)
-                }
-            }
-        }
-    }
-
-    override fun disposeUIResources() {
-        settingsComponent = null
-        // Ensure that any pending changes are saved
-        if (isModified) {
-            apply()
-        }
     }
 
 
@@ -463,12 +437,15 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 field.toolTipText = "An API key for $keyName is stored. Clear it first to enter a new one."
                 saveButton.isEnabled = false
             }
+
             ApiKeyChecker.isApiKeyAvailable(keyName) -> {
-                field.text = "*An API key is available from another source*"
-                field.isEditable = true
-                field.toolTipText = "An API key for $keyName is available from environment or .env file. You can enter a new one to override it."
+                field.text = "*".repeat(16)
+                field.isEditable = false
+                field.toolTipText =
+                    "An API key for $keyName is available from environment or .env file. You can enter a new one to use after clearing the field. Env files will not be modified."
                 saveButton.isEnabled = false
             }
+
             else -> {
                 field.text = ""
                 field.isEditable = true
