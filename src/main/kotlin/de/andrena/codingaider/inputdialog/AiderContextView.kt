@@ -152,29 +152,13 @@ class AiderContextView(
         markdownFilesNode.removeAllChildren()
 
         val allUniqueFiles = (allFiles + persistentFiles).distinctBy { it.filePath }
-        val fileSystem = mutableMapOf<String, DefaultMutableTreeNode>()
 
         allUniqueFiles.forEach { fileData ->
-            val pathParts = fileData.filePath.split(File.separator)
-            var currentPath = ""
-            var currentNode = if (fileData.filePath.endsWith(".md") && fileData.filePath.contains(".aider-docs")) {
-                markdownFilesNode
+            val node = DefaultMutableTreeNode(fileData)
+            if (fileData.filePath.endsWith(".md") && fileData.filePath.contains(".aider-docs")) {
+                markdownFilesNode.add(node)
             } else {
-                filesNode
-            }
-
-            for ((index, part) in pathParts.withIndex()) {
-                currentPath += if (currentPath.isEmpty()) part else File.separator + part
-                val node = fileSystem.getOrPut(currentPath) {
-                    val newNode = if (index == pathParts.lastIndex) {
-                        DefaultMutableTreeNode(fileData)
-                    } else {
-                        DefaultMutableTreeNode(part)
-                    }
-                    currentNode.add(newNode)
-                    newNode
-                }
-                currentNode = node
+                filesNode.add(node)
             }
         }
 
