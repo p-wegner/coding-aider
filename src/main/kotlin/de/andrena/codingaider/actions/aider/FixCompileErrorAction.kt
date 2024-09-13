@@ -28,7 +28,8 @@ abstract class BaseFixCompileErrorAction : AnAction() {
     override fun update(e: AnActionEvent) {
         val project = e.project
         val psiFile = e.getData(CommonDataKeys.PSI_FILE)
-        e.presentation.isEnabledAndVisible = project != null && psiFile != null && hasCompileErrors(project, psiFile)
+        val hasErrors = project != null && psiFile != null && hasCompileErrors(project, psiFile)
+        e.presentation.isEnabledAndVisible = hasErrors
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
@@ -102,15 +103,16 @@ class FixCompileErrorAction : BaseFixCompileErrorAction() {
         override fun getFamilyName(): String = "Fix compile error with Aider"
         override fun getText(): String = "Quick fix compile error with Aider"
 
-        override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean =
-            editor != null && hasCompileErrors(project, element.containingFile)
+        override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean {
+            val psiFile = element.containingFile
+            return editor != null && psiFile != null && hasCompileErrors(project, psiFile)
+        }
 
         override fun invoke(project: Project, editor: Editor?, element: PsiElement) {
             // workaround to prevent triggering when focussed
             if (element.containingFile.virtualFile == null) return
             fixCompileError(project, element.containingFile)
         }
-
     }
 
 }
@@ -164,7 +166,8 @@ class FixCompileErrorInteractive : BaseFixCompileErrorAction() {
         override fun getText(): String = "Fix compile error with Aider (Interactive)"
 
         override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean {
-            return editor != null && hasCompileErrors(project, element.containingFile)
+            val psiFile = element.containingFile
+            return editor != null && psiFile != null && hasCompileErrors(project, psiFile)
         }
 
         override fun invoke(project: Project, editor: Editor?, element: PsiElement) {
@@ -172,6 +175,5 @@ class FixCompileErrorInteractive : BaseFixCompileErrorAction() {
             if (element.containingFile.virtualFile == null) return
             FixCompileErrorInteractive().showDialogInBGT(project, element.containingFile)
         }
-
     }
 }
