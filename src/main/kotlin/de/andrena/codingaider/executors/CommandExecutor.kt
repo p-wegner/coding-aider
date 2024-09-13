@@ -90,7 +90,7 @@ class CommandExecutor(private val project: Project, private val commandData: Com
     private fun stopDockerContainer() {
         dockerContainerId?.let { containerId ->
             try {
-                val processBuilder = ProcessBuilder("docker", "stop", "--time", "0", containerId)
+                val processBuilder = ProcessBuilder("docker", "kill", containerId)
                 val stopProcess = processBuilder.start()
                 if (!stopProcess.waitFor(5, TimeUnit.SECONDS)) {
                     stopProcess.destroyForcibly()
