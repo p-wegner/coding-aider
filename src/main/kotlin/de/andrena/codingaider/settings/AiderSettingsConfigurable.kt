@@ -264,8 +264,14 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
 
         apiKeyFields.forEach { (keyName, field) ->
             val enteredValue = String(field.password)
-            if (enteredValue.isNotEmpty() && enteredValue != "*".repeat(16)) {
-                ApiKeyManager.saveApiKey(keyName, enteredValue)
+            when {
+                enteredValue.isNotEmpty() && enteredValue != "*".repeat(16) && 
+                enteredValue != "*An API key is available from another source*" -> {
+                    ApiKeyManager.saveApiKey(keyName, enteredValue)
+                }
+                enteredValue.isEmpty() -> {
+                    ApiKeyManager.removeApiKey(keyName)
+                }
             }
         }
     }
@@ -302,7 +308,11 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
 
     private fun getApiKeyDisplayValue(keyName: String): String {
         return if (ApiKeyChecker.isApiKeyAvailable(keyName)) {
-            "*An api key is stored at a valid aider env location*" // Censored placeholder for available API key
+            if (ApiKeyManager.getApiKey(keyName) != null) {
+                "*".repeat(16) // Censored placeholder for stored API key
+            } else {
+                "*An API key is available from another source*" // Placeholder for key from env or .env file
+            }
         } else {
             ""
         }
@@ -448,16 +458,25 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     }
 
     private fun updateApiKeyField(keyName: String, field: JPasswordField, saveButton: JButton) {
-        if (ApiKeyChecker.isApiKeyAvailable(keyName)) {
-            field.text = "*".repeat(16)
-            field.isEditable = false
-            field.toolTipText = "An API key for $keyName is already stored. Clear it to enter a new one."
-            saveButton.isEnabled = false
-        } else {
-            field.text = ""
-            field.isEditable = true
-            field.toolTipText = null
-            saveButton.isEnabled = field.password.isNotEmpty()
+        when {
+            ApiKeyManager.getApiKey(keyName) != null -> {
+                field.text = "*".repeat(16)
+                field.isEditable = true
+                field.toolTipText = "An API key for $keyName is stored. You can enter a new one to replace it."
+                saveButton.isEnabled = false
+            }
+            ApiKeyChecker.isApiKeyAvailable(keyName) -> {
+                field.text = "*An API key is available from another source*"
+                field.isEditable = true
+                field.toolTipText = "An API key for $keyName is available from environment or .env file. You can enter a new one to override it."
+                saveButton.isEnabled = false
+            }
+            else -> {
+                field.text = ""
+                field.isEditable = true
+                field.toolTipText = "Enter an API key for $keyName"
+                saveButton.isEnabled = false
+            }
         }
     }
 }
