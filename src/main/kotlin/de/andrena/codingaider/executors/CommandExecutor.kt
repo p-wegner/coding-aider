@@ -17,9 +17,11 @@ class CommandExecutor(private val project: Project, private val commandData: Com
     private val commandLogger = CommandLogger(settings, commandData)
     private var process: Process? = null
     private var isAborted = false
+    private var dockerContainerId: String? = null
+    private val useDockerAider: Boolean
+        get() = commandData.useDockerAider ?: settings.useDockerAider
 
     fun executeCommand(): String {
-        val useDockerAider = commandData.useDockerAider ?: settings.useDockerAider
         val commandArgs = AiderCommandBuilder.buildAiderCommand(
             commandData,
             false,
@@ -50,6 +52,10 @@ class CommandExecutor(private val project: Project, private val commandData: Com
 
         process = processBuilder.start()
 
+        if (useDockerAider) {
+            dockerContainerId = getDockerContainerId()
+        }
+
         val output = StringBuilder()
         pollProcessAndReadOutput(process!!, output)
         return handleProcessCompletion(process!!, output)
@@ -57,7 +63,28 @@ class CommandExecutor(private val project: Project, private val commandData: Com
 
     fun abortCommand() {
         isAborted = true
-        process?.destroyForcibly()
+        if (useDockerAider) {
+            stopDockerContainer()
+        } else {
+            process?.destroyForcibly()
+        }
+    }
+
+    private fun getDockerContainerId(): String? {
+        // Implementierung zum Abrufen der Docker-Container-ID
+        // Dies könnte durch Parsen der Ausgabe des Docker-Befehls erfolgen
+        return null // Vorläufig null zurückgeben
+    }
+
+    private fun stopDockerContainer() {
+        dockerContainerId?.let { containerId ->
+            try {
+                val stopProcess = Runtime.getRuntime().exec(arrayOf("docker", "stop", "--time", "0", containerId))
+                stopProcess.waitFor(5, TimeUnit.SECONDS)
+            } catch (e: Exception) {
+                logger.error("Failed to stop Docker container", e)
+            }
+        }
     }
 
     private fun handleProcessCompletion(process: Process, output: StringBuilder): String {
