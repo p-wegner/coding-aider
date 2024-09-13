@@ -386,7 +386,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     }
 
     private fun showTestCommandResult(result: String) {
-        val textArea = JBTextArea(result).apply {
+        val textArea = JBTextArea().apply {
             isEditable = false
             lineWrap = true
             wrapStyleWord = true
@@ -394,12 +394,43 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         val scrollPane = JBScrollPane(textArea)
         scrollPane.preferredSize = java.awt.Dimension(600, 400)
 
-        DialogBuilder(project).apply {
+        val dialog = DialogBuilder(project).apply {
             setTitle("Aider Test Command Result")
             setCenterPanel(scrollPane)
             addOkAction()
-            show()
+        }.createDialog()
+
+        val observer = object : CommandObserver {
+            override fun onCommandStart(message: String) {
+                SwingUtilities.invokeLater {
+                    textArea.append("Starting command...\n")
+                }
+            }
+
+            override fun onCommandProgress(output: String, runningTime: Long) {
+                SwingUtilities.invokeLater {
+                    textArea.append(output)
+                    textArea.caretPosition = textArea.document.length
+                }
+            }
+
+            override fun onCommandComplete(output: String, exitCode: Int) {
+                SwingUtilities.invokeLater {
+                    textArea.append("\nCommand completed with exit code: $exitCode\n")
+                    textArea.caretPosition = textArea.document.length
+                }
+            }
+
+            override fun onCommandError(errorMessage: String) {
+                SwingUtilities.invokeLater {
+                    textArea.append("\nError: $errorMessage\n")
+                    textArea.caretPosition = textArea.document.length
+                }
+            }
         }
+
+        dialog.show()
+        AiderTestCommand(project).execute(observer)
     }
 
     private fun updateApiKeyField(keyName: String, field: JPasswordField, saveButton: JButton) {
