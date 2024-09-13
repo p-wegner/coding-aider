@@ -19,9 +19,8 @@ import java.awt.event.KeyEvent
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import com.intellij.ui.OnePixelSplitter
 import javax.swing.*
-import javax.swing.plaf.basic.BasicSplitPaneDivider
-import javax.swing.plaf.basic.BasicSplitPaneUI
 
 class AiderInputDialog(
     val project: Project,
@@ -85,7 +84,7 @@ class AiderInputDialog(
     private val historyHandler = AiderHistoryHandler(project.basePath ?: "")
     private val aiderContextView: AiderContextView
     private val persistentFileManager: PersistentFileManager
-    private var splitPane: JSplitPane
+    private var splitPane: OnePixelSplitter
     private val settingsButton: ActionButton
 
     init {
@@ -94,7 +93,7 @@ class AiderInputDialog(
         aiderContextView = AiderContextView(project, files + persistentFileManager.getPersistentFiles()) { fileName ->
             insertTextAtCursor(fileName)
         }
-        splitPane = JSplitPane(JSplitPane.VERTICAL_SPLIT)
+        splitPane = OnePixelSplitter(true, 0.6f)
         settingsButton = createSettingsButton()
         init()
         loadHistory()
@@ -103,7 +102,6 @@ class AiderInputDialog(
         setupKeyBindings()
         llmComboBox.selectedItem = settings.llm
         llmComboBox.renderer = LlmComboBoxRenderer()
-        customizeSplitPane()
 
         // Set minimum size for the dialog and its components
         inputTextArea.minimumSize = Dimension(300, 100)
@@ -122,27 +120,6 @@ class AiderInputDialog(
             "AiderSettingsButton",
             ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
         )
-    }
-
-    private fun customizeSplitPane() {
-        splitPane.setUI(object : BasicSplitPaneUI() {
-            override fun createDefaultDivider(): BasicSplitPaneDivider {
-                return object : BasicSplitPaneDivider(this) {
-                    override fun paint(g: Graphics) {
-                        val color = UIManager.getColor("Panel.background")
-                        val darkerColor = color.darker()
-                        g.color = darkerColor
-                        g.fillRect(0, 0, width, height)
-                    }
-
-                    override fun getDividerSize(): Int {
-                        return 3
-                    }
-                }
-            }
-        })
-        splitPane.border = null
-        splitPane.dividerSize = 3
     }
 
     private fun setupKeyBindings() {
@@ -445,9 +422,8 @@ class AiderInputDialog(
             add(aiderContextView, BorderLayout.CENTER)
         }
 
-        splitPane.topComponent = topPanel
-        splitPane.bottomComponent = contextPanel
-        splitPane.resizeWeight = 0.6
+        splitPane.firstComponent = topPanel
+        splitPane.secondComponent = contextPanel
         panel.add(splitPane, BorderLayout.CENTER)
 
         modeToggle.addActionListener {
