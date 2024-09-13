@@ -90,9 +90,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
 
                             button("Clear") {
                                 ApiKeyManager.removeApiKey(keyName)
-                                field.text = ""
-                                field.isEditable = true
-                                saveButton.isEnabled = true
+                                clearApiKeyField(keyName, field, saveButton)
                                 Messages.showInfoMessage(
                                     "API key for $keyName has been cleared from the credential store. You can now enter a new key.",
                                     "API Key Cleared"
@@ -461,14 +459,14 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         when {
             ApiKeyManager.getApiKey(keyName) != null -> {
                 field.text = "*".repeat(16)
-                field.isEditable = true
-                field.toolTipText = "An API key for $keyName is stored. You can enter a new one to replace it."
+                field.isEditable = false
+                field.toolTipText = "An API key for $keyName is stored. Clear it first to enter a new one."
                 saveButton.isEnabled = false
             }
             ApiKeyChecker.isApiKeyAvailable(keyName) -> {
                 field.text = "*An API key is available from another source*"
-                field.isEditable = true
-                field.toolTipText = "An API key for $keyName is available from environment or .env file. You can enter a new one to override it."
+                field.isEditable = false
+                field.toolTipText = "An API key for $keyName is available from environment or .env file. Clear it first to enter a new one."
                 saveButton.isEnabled = false
             }
             else -> {
@@ -478,5 +476,12 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
                 saveButton.isEnabled = false
             }
         }
+    }
+
+    private fun clearApiKeyField(keyName: String, field: JPasswordField, saveButton: JButton) {
+        field.text = ""
+        field.isEditable = true
+        field.toolTipText = "Enter a new API key for $keyName"
+        saveButton.isEnabled = true
     }
 }
