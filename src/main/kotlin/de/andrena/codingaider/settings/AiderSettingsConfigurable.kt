@@ -1,6 +1,7 @@
 package de.andrena.codingaider.settings
 
 import com.intellij.ide.BrowserUtil
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.options.Configurable
@@ -402,34 +403,34 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
 
         val observer = object : CommandObserver {
             override fun onCommandStart(message: String) {
-                com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
+                SwingUtilities.invokeLater {
                     textArea.append("Starting command...\n")
                 }
             }
 
             override fun onCommandProgress(output: String, runningTime: Long) {
-                com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
+                SwingUtilities.invokeLater {
                     textArea.text = output
                     textArea.caretPosition = textArea.document.length
                 }
             }
 
             override fun onCommandComplete(output: String, exitCode: Int) {
-                com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
+                SwingUtilities.invokeLater {
                     textArea.append("\nCommand completed with exit code: $exitCode\n")
                     textArea.caretPosition = textArea.document.length
                 }
             }
 
             override fun onCommandError(errorMessage: String) {
-                com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
+                SwingUtilities.invokeLater {
                     textArea.append("\nError: $errorMessage\n")
                     textArea.caretPosition = textArea.document.length
                 }
             }
         }
 
-        com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
+        ApplicationManager.getApplication().invokeLater {
             dialog.show()
             AiderTestCommand(project).execute(observer)
         }
