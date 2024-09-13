@@ -427,6 +427,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
             }
 
             override fun process(chunks: List<String>) {
+                textArea.text = "" // Clear previous output to avoid duplication
                 chunks.forEach { textArea.append(it) }
                 textArea.caretPosition = textArea.document.length
             }
