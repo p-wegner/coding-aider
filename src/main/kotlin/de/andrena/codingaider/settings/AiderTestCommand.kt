@@ -7,7 +7,6 @@ import de.andrena.codingaider.executors.LiveUpdateExecutor
 
 class AiderTestCommand(private val project: Project) {
     fun execute(observer: CommandObserver?) {
-        val settings = AiderSettings.getInstance(project)
         val commandData = CommandData(
             message = "",
             useYesFlag = false,
@@ -16,7 +15,7 @@ class AiderTestCommand(private val project: Project) {
             files = emptyList(),
             isShellMode = false,
             lintCmd = "",
-            deactivateRepoMap = settings.deactivateRepoMap,
+            deactivateRepoMap = false,
             editFormat = "",
             projectPath = project.basePath ?: ""
         )

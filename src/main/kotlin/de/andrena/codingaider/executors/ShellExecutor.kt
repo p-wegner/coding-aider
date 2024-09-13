@@ -13,11 +13,11 @@ class ShellExecutor(
     private val project: Project,
     private val commandData: CommandData
 ) {
+    private val settings = AiderSettings.getInstance(project)
     fun execute() {
         val terminalView = TerminalToolWindowManager.getInstance(project)
         val terminalSession = terminalView.createLocalShellWidget(project.basePath, "Aider", true)
 
-        val settings = AiderSettings.getInstance(project)
         val useDockerAider = settings.useDockerAider
 
         if (useDockerAider) {
