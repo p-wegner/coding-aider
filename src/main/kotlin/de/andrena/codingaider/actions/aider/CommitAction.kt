@@ -1,4 +1,4 @@
-package de.andrena.codingaider.actions
+package de.andrena.codingaider.actions.aider
 
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
@@ -7,7 +7,6 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.CommandData
-import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.IDEBasedExecutor
 import de.andrena.codingaider.settings.AiderSettings
 
@@ -38,5 +37,6 @@ class CommitAction : AnAction() {
         val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
         e.presentation.isEnabledAndVisible = project != null && !files.isNullOrEmpty()
     }
+
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 }

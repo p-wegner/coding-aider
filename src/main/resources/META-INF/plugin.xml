@@ -49,8 +49,8 @@
     <depends>org.jetbrains.plugins.terminal</depends>
     <depends>Git4Idea</depends>
     <actions>
-        <action id="de.andrena.codingaider.actions.OpenAiderActionGroup"
-                class="de.andrena.codingaider.actions.OpenAiderActionGroup"
+        <action id="de.andrena.codingaider.actions.aider.OpenAiderActionGroup"
+                class="de.andrena.codingaider.actions.aider.OpenAiderActionGroup"
                 text="Open Aider Actions Menu"
                 description="Open the Aider Actions menu from anywhere in the IDE">
             <keyboard-shortcut keymap="$default" first-keystroke="alt shift Q"/>
@@ -61,64 +61,64 @@
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
             <add-to-group group-id="ToolsMenu" anchor="last"/>
 
-            <action id="de.andrena.codingaider.actions.AiderAction"
-                    class="de.andrena.codingaider.actions.AiderAction"
+            <action id="de.andrena.codingaider.actions.aider.AiderAction"
+                    class="de.andrena.codingaider.actions.aider.AiderAction"
                     text="Start Aider Action"
                     description="This will instruct aider to do something">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt A"/>
             </action>
-            <action id="de.andrena.codingaider.actions.AiderShellAction"
-                    class="de.andrena.codingaider.actions.AiderShellAction"
+            <action id="de.andrena.codingaider.actions.aider.AiderShellAction"
+                    class="de.andrena.codingaider.actions.aider.AiderShellAction"
                     text="Start Aider in Shell Mode"
                     description="This will start aider in shell mode with default settings">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt shift D"/>
             </action>
-            <action id="de.andrena.codingaider.actions.ShowLastCommandResultAction"
-                    class="de.andrena.codingaider.actions.ShowLastCommandResultAction"
+            <action id="de.andrena.codingaider.actions.ide.ShowLastCommandResultAction"
+                    class="de.andrena.codingaider.actions.ide.ShowLastCommandResultAction"
                     text="Show Last Aider Command Result"
                     description="Displays the result of the last Aider command">
             </action>
             <separator/>
-            <action id="de.andrena.codingaider.actions.DocumentCodeAction"
-                    class="de.andrena.codingaider.actions.DocumentCodeAction"
+            <action id="de.andrena.codingaider.actions.aider.DocumentCodeAction"
+                    class="de.andrena.codingaider.actions.aider.DocumentCodeAction"
                     text="Document Code with Aider"
                     description="Use Aider to generate documentation for the selected code">
             </action>
-            <action id="de.andrena.codingaider.actions.ApplyDesignPatternAction"
-                    class="de.andrena.codingaider.actions.ApplyDesignPatternAction"
+            <action id="de.andrena.codingaider.actions.aider.ApplyDesignPatternAction"
+                    class="de.andrena.codingaider.actions.aider.ApplyDesignPatternAction"
                     text="Apply Design Pattern with Aider"
                     description="Use Aider to apply a design pattern to the selected code">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt P"/>
             </action>
-            <action id="de.andrena.codingaider.actions.RefactorToCleanCodeAction"
-                    class="de.andrena.codingaider.actions.RefactorToCleanCodeAction"
+            <action id="de.andrena.codingaider.actions.aider.RefactorToCleanCodeAction"
+                    class="de.andrena.codingaider.actions.aider.RefactorToCleanCodeAction"
                     text="Refactor to Clean Code"
                     description="Use Aider to refactor selected code to clean code">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt shift R"/>
             </action>
             <separator/>
             <action id="de.andrena.codingaider.CommitAction"
-                    class="de.andrena.codingaider.actions.CommitAction"
+                    class="de.andrena.codingaider.actions.aider.CommitAction"
                     text="Run Aider Commit"
                     description="Run Aider to commit">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt D"/>
             </action>
             <separator/>
-            <action id="de.andrena.codingaider.actions.PersistentFilesAction"
-                    class="de.andrena.codingaider.actions.PersistentFilesAction"
+            <action id="de.andrena.codingaider.actions.ide.PersistentFilesAction"
+                    class="de.andrena.codingaider.actions.ide.PersistentFilesAction"
                     text="Add to Persistent Files"
                     description="Add or remove files from the persistent files list">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt shift A"/>
             </action>
-            <action id="de.andrena.codingaider.actions.AiderWebCrawlAction"
-                    class="de.andrena.codingaider.actions.AiderWebCrawlAction"
+            <action id="de.andrena.codingaider.actions.aider.AiderWebCrawlAction"
+                    class="de.andrena.codingaider.actions.aider.AiderWebCrawlAction"
                     text="Aider Web Crawl"
                     description="Start an Aider web crawl action">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt W"/>
             </action>
             <separator/>
             <action id="de.andrena.codingaider.SettingsAction"
-                    class="de.andrena.codingaider.actions.SettingsAction"
+                    class="de.andrena.codingaider.actions.ide.SettingsAction"
                     text="Open Aider Settings"
                     description="Open Aider Settings dialog"
                     icon="AllIcons.General.Settings">
@@ -129,13 +129,13 @@
         <group id="de.andrena.codingaider.ErrorFixingActions" text="Fix with Aider" popup="true">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
-            <action id="de.andrena.codingaider.actions.FixCompileErrorAction"
-                    class="de.andrena.codingaider.actions.FixCompileErrorAction"
+            <action id="de.andrena.codingaider.actions.aider.FixCompileErrorAction"
+                    class="de.andrena.codingaider.actions.aider.FixCompileErrorAction"
                     text="Fix with Aider (Quick)"
                     description="Use Aider to quickly fix the compile error">
             </action>
-            <action id="de.andrena.codingaider.actions.FixCompileErrorInteractive"
-                    class="de.andrena.codingaider.actions.FixCompileErrorInteractive"
+            <action id="de.andrena.codingaider.actions.aider.FixCompileErrorInteractive"
+                    class="de.andrena.codingaider.actions.aider.FixCompileErrorInteractive"
                     text="Fix with Aider (Interactive)"
                     description="Use Aider to interactively fix the compile error">
             </action>
@@ -154,11 +154,11 @@
         <notificationGroup id="Coding Aider Notifications" displayType="BALLOON"/>
         <notificationGroup id="Aider Web Crawl" displayType="BALLOON"/>
         <intentionAction>
-            <className>de.andrena.codingaider.actions.FixCompileErrorAction$Intention</className>
+            <className>de.andrena.codingaider.actions.aider.FixCompileErrorAction$Intention</className>
             <category>Errors</category>
         </intentionAction>
         <intentionAction>
-            <className>de.andrena.codingaider.actions.FixCompileErrorInteractive$Intention</className>
+            <className>de.andrena.codingaider.actions.aider.FixCompileErrorInteractive$Intention</className>
             <category>Errors</category>
         </intentionAction>
     </extensions>

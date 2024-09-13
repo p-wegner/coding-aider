@@ -18,7 +18,7 @@ class ShellExecutor(
         val terminalView = TerminalToolWindowManager.getInstance(project)
         val terminalSession = terminalView.createLocalShellWidget(project.basePath, "Aider", true)
 
-        val useDockerAider = settings.useDockerAider
+        val useDockerAider = commandData.useDockerAider ?: settings.useDockerAider
 
         if (useDockerAider) {
             // Remove DOCKER_HOST if it's set, allowing Docker to use its default configuration

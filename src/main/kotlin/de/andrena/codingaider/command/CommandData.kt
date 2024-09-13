@@ -24,6 +24,6 @@ data class CommandData(
     val deactivateRepoMap: Boolean = false,
     val editFormat: String = "",
     val projectPath: String,
-    val useDockerAider: Boolean
+    val useDockerAider: Boolean? = null
 )
 

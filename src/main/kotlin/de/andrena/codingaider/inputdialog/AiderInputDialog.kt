@@ -6,9 +6,10 @@ import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.ui.OnePixelSplitter
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
-import de.andrena.codingaider.actions.SettingsAction
+import de.andrena.codingaider.actions.ide.SettingsAction
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.history.AiderHistoryHandler
 import de.andrena.codingaider.settings.AiderSettings
@@ -19,7 +20,6 @@ import java.awt.event.KeyEvent
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import com.intellij.ui.OnePixelSplitter
 import javax.swing.*
 
 class AiderInputDialog(

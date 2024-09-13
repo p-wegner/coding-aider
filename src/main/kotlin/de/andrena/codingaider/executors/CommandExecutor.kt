@@ -19,7 +19,12 @@ class CommandExecutor(private val project: Project, private val commandData: Com
     private var isAborted = false
 
     fun executeCommand(): String {
-        val commandArgs = AiderCommandBuilder.buildAiderCommand(commandData, false, settings.useDockerAider)
+        val useDockerAider = commandData.useDockerAider ?: settings.useDockerAider
+        val commandArgs = AiderCommandBuilder.buildAiderCommand(
+            commandData,
+            false,
+            useDockerAider
+        )
         logger.info("Executing Aider command: ${commandArgs.joinToString(" ")}")
         notifyObservers { it.onCommandStart("Starting Aider command...\n${commandLogger.getCommandString(false)}") }
 
@@ -30,7 +35,7 @@ class CommandExecutor(private val project: Project, private val commandData: Com
                 redirectErrorStream(true)
             }
 
-        if (settings.useDockerAider) {
+        if (useDockerAider) {
             // Use the default Docker host, which should work across platforms
             processBuilder.environment().remove("DOCKER_HOST")
         } else {

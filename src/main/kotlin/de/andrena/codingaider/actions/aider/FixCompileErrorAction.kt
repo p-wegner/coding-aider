@@ -1,4 +1,4 @@
-package de.andrena.codingaider.actions
+package de.andrena.codingaider.actions.aider
 
 import com.intellij.codeInsight.daemon.impl.HighlightInfo
 import com.intellij.codeInsight.intention.IntentionAction
@@ -8,8 +8,12 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.impl.DocumentMarkupModel
+import com.intellij.openapi.progress.ProgressIndicator
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.PsiElement
@@ -19,10 +23,6 @@ import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.AiderInputDialog
 import de.andrena.codingaider.settings.AiderSettings
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.progress.ProgressIndicator
-import com.intellij.openapi.progress.ProgressManager
-import com.intellij.openapi.progress.Task
 
 abstract class BaseFixCompileErrorAction : AnAction() {
     override fun update(e: AnActionEvent) {
@@ -41,6 +41,7 @@ abstract class BaseFixCompileErrorAction : AnAction() {
                 .map { it.errorStripeTooltip as HighlightInfo }
             return result
         }
+
         fun fixErrorPrompt(errorMessage: String) = "Fix the compile error in this file:\n$errorMessage"
 
         fun hasCompileErrors(project: Project, psiFile: PsiFile): Boolean =

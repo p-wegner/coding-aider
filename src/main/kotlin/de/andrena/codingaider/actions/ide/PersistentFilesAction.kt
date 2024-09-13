@@ -1,4 +1,4 @@
-package de.andrena.codingaider.actions
+package de.andrena.codingaider.actions.ide
 
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType

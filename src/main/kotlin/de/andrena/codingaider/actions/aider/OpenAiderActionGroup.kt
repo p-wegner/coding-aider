@@ -1,4 +1,4 @@
-package de.andrena.codingaider.actions
+package de.andrena.codingaider.actions.aider
 
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.project.DumbAware
@@ -11,7 +11,7 @@ class OpenAiderActionGroup : AnAction(), DumbAware {
 
         val flatActionGroup = DefaultActionGroup()
         val aiderActionGroupId = "de.andrena.codingaider.AiderActionGroup"
-        
+
         actionManager.getActionIdList(aiderActionGroupId).forEach { actionId ->
             val action = actionManager.getAction(actionId)
             if (action !is Separator) {

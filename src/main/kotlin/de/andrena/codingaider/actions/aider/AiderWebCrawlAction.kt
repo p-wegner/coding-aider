@@ -1,12 +1,14 @@
-package de.andrena.codingaider.actions
+package de.andrena.codingaider.actions.aider
 
 import com.gargoylesoftware.htmlunit.WebClient
 import com.gargoylesoftware.htmlunit.html.HtmlPage
-import com.intellij.openapi.actionSystem.*
-import com.intellij.openapi.ui.Messages
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
+import com.intellij.openapi.actionSystem.ActionUpdateThread
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.ui.Messages
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
@@ -76,7 +78,11 @@ class AiderWebCrawlAction : AnAction() {
                 refreshAndAddFile(project, filePath)
 
                 // Notify the user about the next steps
-                showNotification(project, "Web page crawled and processed. The file has been added to persistent files.", NotificationType.INFORMATION)
+                showNotification(
+                    project,
+                    "Web page crawled and processed. The file has been added to persistent files.",
+                    NotificationType.INFORMATION
+                )
             } else {
                 // Notify the user that the file already exists
                 showNotification(project, "The file already exists. No action taken.", NotificationType.INFORMATION)
@@ -108,7 +114,11 @@ class AiderWebCrawlAction : AnAction() {
         }
     }
 
-    private fun showNotification(project: com.intellij.openapi.project.Project, content: String, type: NotificationType) {
+    private fun showNotification(
+        project: com.intellij.openapi.project.Project,
+        content: String,
+        type: NotificationType
+    ) {
         NotificationGroupManager.getInstance()
             .getNotificationGroup("Aider Web Crawl")
             .createNotification(content, type)

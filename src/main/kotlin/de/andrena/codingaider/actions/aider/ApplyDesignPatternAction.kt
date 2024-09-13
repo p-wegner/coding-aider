@@ -1,4 +1,4 @@
-package de.andrena.codingaider.actions
+package de.andrena.codingaider.actions.aider
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
@@ -196,7 +196,8 @@ class ApplyDesignPatternAction : AnAction() {
             val messageLabel = JLabel("Additional information (optional):").apply {
                 displayedMnemonic = KeyEvent.VK_A
                 labelFor = additionalInfoArea
-                toolTipText = "Enter any specific instructions or context to guide Aider in applying the selected design pattern"
+                toolTipText =
+                    "Enter any specific instructions or context to guide Aider in applying the selected design pattern"
             }
             topPanel.add(messageLabel, gbc)
 
