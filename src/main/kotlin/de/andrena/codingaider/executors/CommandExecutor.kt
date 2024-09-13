@@ -22,6 +22,10 @@ class CommandExecutor(private val project: Project, private val commandData: Com
         get() = commandData.useDockerAider ?: settings.useDockerAider
     private val dockerManager = DockerContainerManager()
 
+    companion object {
+        private const val API_KEY_SET_MESSAGE = "Set environment variable for %s (value hidden)"
+    }
+
     fun executeCommand(): String {
         val commandArgs = AiderCommandBuilder.buildAiderCommand(
             commandData,
@@ -47,7 +51,7 @@ class CommandExecutor(private val project: Project, private val commandData: Com
                 val apiKey = ApiKeyManager.getApiKey(keyName)
                 if (!apiKey.isNullOrBlank()) {
                     processBuilder.environment()[keyName] = apiKey
-                    logger.debug("Set environment variable for $keyName (value hidden)")
+                    logger.debug(API_KEY_SET_MESSAGE.format(keyName))
                 } else {
                     logger.warn("API key for $keyName is null or blank")
                 }
