@@ -401,39 +401,42 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
             addOkAction()
         }
 
-        val observer = object : CommandObserver {
-            override fun onCommandStart(message: String) {
-                SwingUtilities.invokeLater {
-                    textArea.append("Starting command...\n")
+        // Use SwingWorker to run the command in the background
+        val worker = object : SwingWorker<String, String>() {
+            override fun doInBackground(): String {
+                val observer = object : CommandObserver {
+                    override fun onCommandStart(message: String) {
+                        publish("Starting command...\n")
+                    }
+
+                    override fun onCommandProgress(output: String, runningTime: Long) {
+                        publish(output)
+                    }
+
+                    override fun onCommandComplete(output: String, exitCode: Int) {
+                        publish("\nCommand completed with exit code: $exitCode\n")
+                    }
+
+                    override fun onCommandError(errorMessage: String) {
+                        publish("\nError: $errorMessage\n")
+                    }
                 }
+
+                AiderTestCommand(project).execute(observer)
+                return "Command execution finished."
             }
 
-            override fun onCommandProgress(output: String, runningTime: Long) {
-                SwingUtilities.invokeLater {
-                    textArea.text = output
-                    textArea.caretPosition = textArea.document.length
-                }
+            override fun process(chunks: List<String>) {
+                chunks.forEach { textArea.append(it) }
+                textArea.caretPosition = textArea.document.length
             }
 
-            override fun onCommandComplete(output: String, exitCode: Int) {
-                SwingUtilities.invokeLater {
-                    textArea.append("\nCommand completed with exit code: $exitCode\n")
-                    textArea.caretPosition = textArea.document.length
-                }
-            }
-
-            override fun onCommandError(errorMessage: String) {
-                SwingUtilities.invokeLater {
-                    textArea.append("\nError: $errorMessage\n")
-                    textArea.caretPosition = textArea.document.length
-                }
+            override fun done() {
+                dialog.show()
             }
         }
 
-        ApplicationManager.getApplication().invokeLater {
-            dialog.show()
-            AiderTestCommand(project).execute(observer)
-        }
+        worker.execute()
     }
 
     private fun updateApiKeyField(keyName: String, field: JPasswordField, saveButton: JButton) {
