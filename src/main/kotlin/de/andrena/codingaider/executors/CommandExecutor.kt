@@ -57,7 +57,7 @@ class CommandExecutor(private val project: Project, private val commandData: Com
 
     fun abortCommand() {
         isAborted = true
-        process?.destroy()
+        process?.destroyForcibly()
     }
 
     private fun handleProcessCompletion(process: Process, output: StringBuilder): String {
