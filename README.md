@@ -80,9 +80,9 @@ functionalities like Git integration and keyboard shortcuts.
 3. Configure Aider settings:
     - Navigate to Tools > Aider Settings
     - Select Docker-based Aider if aider is not installed globally
-    - Run the Test to verify your aider installation, or run the aider docker container. First time running the test
-      with docker will
-      take a while as the docker image (1GB) is downloaded.
+    - Run "Test Aider installation" to verify your global aider installation (or run the aider docker container if
+      docker is used). First time running the test
+      with docker will take a while as the docker image (1GB) is downloaded.
     - (Optional) Globally configure API keys for LLM Providers you plan to use with aider (
       see https://aider.chat/docs/config/dotenv.html)
 4. Configure LLM Providers:

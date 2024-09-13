@@ -1,7 +1,9 @@
 package de.andrena.codingaider.command
 
+import de.andrena.codingaider.settings.AiderDefaults.DOCKER_IMAGE
 import de.andrena.codingaider.utils.ApiKeyChecker
 import java.io.File
+
 
 object AiderCommandBuilder {
     fun buildAiderCommand(commandData: CommandData, isShellMode: Boolean, useDockerAider: Boolean): List<String> {
@@ -86,7 +88,7 @@ object AiderCommandBuilder {
                 add("$keyName=$value")
             }
         }
-        add("paulgauthier/aider")
+        add(DOCKER_IMAGE)
     }
 
     private fun MutableList<String>.mountFilesOutsideProject(
