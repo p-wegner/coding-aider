@@ -4,10 +4,7 @@ import com.intellij.codeInsight.daemon.impl.HighlightInfo
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.lang.annotation.HighlightSeverity
-import com.intellij.openapi.actionSystem.ActionUpdateThread
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.impl.DocumentMarkupModel
@@ -23,6 +20,24 @@ import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.AiderInputDialog
 import de.andrena.codingaider.settings.AiderSettings
+
+class FixCompileErrorActionGroup : ActionGroup() {
+    override fun getChildren(e: AnActionEvent?): Array<AnAction> {
+        return arrayOf(
+            FixCompileErrorAction(),
+            FixCompileErrorInteractive()
+        )
+    }
+
+    override fun update(e: AnActionEvent) {
+        val project = e.project
+        val psiFile = e.getData(CommonDataKeys.PSI_FILE)
+        val hasErrors = project != null && psiFile != null && BaseFixCompileErrorAction.hasCompileErrors(project, psiFile)
+        e.presentation.isEnabledAndVisible = hasErrors
+    }
+
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+}
 
 abstract class BaseFixCompileErrorAction : AnAction() {
     override fun update(e: AnActionEvent) {

@@ -125,21 +125,13 @@
             </action>
         </group>
 
-        <!-- Error Fixing Actions -->
-        <group id="de.andrena.codingaider.ErrorFixingActions" text="Fix with Aider" popup="true">
+        <action id="de.andrena.codingaider.actions.aider.FixCompileErrorActionGroup"
+                class="de.andrena.codingaider.actions.aider.FixCompileErrorActionGroup"
+                text="Fix with Aider"
+                description="Group of actions to fix compile errors with Aider">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
-            <action id="de.andrena.codingaider.actions.aider.FixCompileErrorAction"
-                    class="de.andrena.codingaider.actions.aider.FixCompileErrorAction"
-                    text="Fix with Aider (Quick)"
-                    description="Use Aider to quickly fix the compile error">
-            </action>
-            <action id="de.andrena.codingaider.actions.aider.FixCompileErrorInteractive"
-                    class="de.andrena.codingaider.actions.aider.FixCompileErrorInteractive"
-                    text="Fix with Aider (Interactive)"
-                    description="Use Aider to interactively fix the compile error">
-            </action>
-        </group>
+        </action>
     </actions>
 
     <!-- Extension points defined by the plugin.
