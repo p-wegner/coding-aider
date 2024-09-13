@@ -23,6 +23,7 @@ class MarkdownDialog(
     private var autoCloseTimer: TimerTask? = null
     private val keepOpenButton: JButton
     private val closeButton: JButton
+    private var isProcessFinished = false
 
     init {
         title = initialTitle
@@ -37,7 +38,13 @@ class MarkdownDialog(
         val buttonPanel = JPanel()
         closeButton = JButton("Abort").apply {
             mnemonic = KeyEvent.VK_A
-            addActionListener { onAbort?.invoke() }
+            addActionListener { 
+                if (isProcessFinished) {
+                    dispose()
+                } else {
+                    onAbort?.invoke()
+                }
+            }
         }
         keepOpenButton = JButton("Keep Open").apply {
             mnemonic = KeyEvent.VK_K
@@ -90,6 +97,14 @@ class MarkdownDialog(
         autoCloseTimer?.cancel()
         keepOpenButton.isVisible = false
         title = initialTitle
+    }
+
+    fun setProcessFinished() {
+        isProcessFinished = true
+        invokeLater {
+            closeButton.text = "Close"
+            closeButton.mnemonic = KeyEvent.VK_C
+        }
     }
 
     fun focus(delay: Long = 100) {

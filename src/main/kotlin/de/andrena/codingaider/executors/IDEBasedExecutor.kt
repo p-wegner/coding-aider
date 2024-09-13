@@ -87,10 +87,12 @@ class IDEBasedExecutor(
     override fun onCommandProgress(output: String, runningTime: Long) = updateDialogProgress(output, "Aider command in progress ($runningTime seconds)")
     override fun onCommandComplete(output: String, exitCode: Int) {
         updateDialogProgress(output, "Aider Command ${if (exitCode == 0) "Completed" else "Failed"}")
+        markdownDialog.setProcessFinished()
         performPostExecutionTasks()
     }
     override fun onCommandError(error: String) {
         updateDialogProgress(error, "Aider Command Error")
+        markdownDialog.setProcessFinished()
         markdownDialog.startAutoCloseTimer()
     }
 }
