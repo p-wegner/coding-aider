@@ -22,14 +22,17 @@ import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
-class AiderSettingsConfigurable(private val project: Project) : Configurable {
+class AiderSettingsConfigurable(
+    private val project: Project,
+    private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker()
+) : Configurable {
     private var settingsComponent: JPanel? = null
     private val useYesFlagCheckBox = JBCheckBox("Use --yes flag by default")
-    private val llmOptions = ApiKeyChecker.getAllLlmOptions().toTypedArray()
+    private val llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
     private val llmComboBox = object : JComboBox<String>(llmOptions) {
         override fun getToolTipText(): String? {
             val selectedItem = selectedItem as? String ?: return null
-            return if (ApiKeyChecker.isApiKeyAvailableForLlm(selectedItem)) {
+            return if (apiKeyChecker.isApiKeyAvailableForLlm(selectedItem)) {
                 "API key found for $selectedItem"
             } else {
                 "API key not found for $selectedItem"
@@ -42,7 +45,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
     private val showGitComparisonToolCheckBox = JBCheckBox("Show Git Comparison Tool after execution")
     private val activateIdeExecutorAfterWebcrawlCheckBox =
         JBCheckBox("Activate Post web crawl LLM cleanup (Experimental)")
-    private val webCrawlLlmComboBox = ComboBox(ApiKeyChecker.getAllLlmOptions().toTypedArray())
+    private val webCrawlLlmComboBox = ComboBox(apiKeyChecker.getAllLlmOptions().toTypedArray())
     private val deactivateRepoMapCheckBox = JBCheckBox("Deactivate Aider's repo map (--map-tokens 0)")
     private val editFormatComboBox = ComboBox(arrayOf("", "whole", "diff", "whole-func", "diff-func"))
     private val verboseCommandLoggingCheckBox = JBCheckBox("Enable verbose Aider command logging")
@@ -70,7 +73,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         settingsComponent = panel {
             group("Aider Setup") {
                 group("API Keys") {
-                    ApiKeyChecker.getAllApiKeyNames().forEach { keyName ->
+                    apiKeyChecker.getAllApiKeyNames().forEach { keyName ->
                         row(keyName) {
                             val field = JPasswordField()
                             apiKeyFields[keyName] = field
@@ -300,8 +303,8 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
         ): Component {
             val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
             if (component is JLabel && value is String) {
-                val apiKey = ApiKeyChecker.getApiKeyForLlm(value)
-                if (apiKey != null && !ApiKeyChecker.isApiKeyAvailableForLlm(value)) {
+                val apiKey = apiKeyChecker.getApiKeyForLlm(value)
+                if (apiKey != null && !apiKeyChecker.isApiKeyAvailableForLlm(value)) {
                     icon = UIManager.getIcon("OptionPane.errorIcon")
                     toolTipText =
                         "API key not found in default locations for $value. This may not be an error if you're using an alternative method to provide the key."
@@ -487,7 +490,7 @@ class AiderSettingsConfigurable(private val project: Project) : Configurable {
 
     private fun updateApiKeyFieldsOnClose() {
         apiKeyFields.forEach { (keyName, field) ->
-            val isApiKeyAvailable = ApiKeyChecker.isApiKeyAvailable(keyName)
+            val isApiKeyAvailable = apiKeyChecker.isApiKeyAvailable(keyName)
             field.isEditable = !isApiKeyAvailable
             if (isApiKeyAvailable) {
                 field.text = getApiKeyDisplayValue(keyName)

@@ -12,7 +12,7 @@ interface ApiKeyChecker {
     fun getApiKeysForDocker(): Map<String, String>
 }
 
-public class DefaultApiKeyChecker : ApiKeyChecker {
+class DefaultApiKeyChecker : ApiKeyChecker {
     private val llmToApiKeyMap = mapOf(
         "--sonnet" to "ANTHROPIC_API_KEY",
         "--mini" to "OPENAI_API_KEY",
