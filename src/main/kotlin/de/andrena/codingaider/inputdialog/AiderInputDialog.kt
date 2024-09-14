@@ -39,7 +39,7 @@ class AiderInputDialog(
 
     private fun addAiderDocsToPersistentFiles() {
         val fileChooser = JFileChooser().apply {
-            currentDirectory = File(project.basePath)
+            currentDirectory = File(project.basePath!!)
             fileSelectionMode = JFileChooser.FILES_AND_DIRECTORIES
             isMultiSelectionEnabled = true
         }
@@ -114,7 +114,7 @@ class AiderInputDialog(
         val settingsAction = SettingsAction()
         val presentation = Presentation("Open Settings").apply {
             icon = AllIcons.General.Settings
-            description = "Open Aider Settings"
+            description = "Open aider settings"
         }
         return ActionButton(
             settingsAction,

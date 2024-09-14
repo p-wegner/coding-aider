@@ -48,13 +48,13 @@ class AiderSettingsConfigurable : Configurable {
         this.additionalArgsField = JBTextField()
         this.isShellModeCheckBox = JBCheckBox("Use Shell Mode by default")
         this.lintCmdField = JBTextField()
-        this.showGitComparisonToolCheckBox = JBCheckBox("Show Git Comparison Tool after execution")
+        this.showGitComparisonToolCheckBox = JBCheckBox("Show git comparison tool after execution")
         this.activateIdeExecutorAfterWebcrawlCheckBox = JBCheckBox("Activate Post web crawl LLM cleanup (Experimental)")
         this.webCrawlLlmComboBox = ComboBox(apiKeyChecker.getAllLlmOptions().toTypedArray())
         this.deactivateRepoMapCheckBox = JBCheckBox("Deactivate Aider's repo map (--map-tokens 0)")
         this.editFormatComboBox = ComboBox(arrayOf("", "whole", "diff", "whole-func", "diff-func"))
         this.verboseCommandLoggingCheckBox = JBCheckBox("Enable verbose Aider command logging")
-        this.useDockerAiderCheckBox = JBCheckBox("Use Aider in Docker")
+        this.useDockerAiderCheckBox = JBCheckBox("Use aider in Docker")
         this.enableMarkdownDialogAutocloseCheckBox = JBCheckBox("Automatically close Output Dialog after 10 seconds")
         this.apiKeyFields = mutableMapOf<String, JPasswordField>()
         this.persistentFileManager = PersistentFileManager(project.basePath ?: "")
@@ -168,7 +168,7 @@ class AiderSettingsConfigurable : Configurable {
                     cell(additionalArgsField)
                         .resizableColumn()
                         .align(Align.FILL)
-                    link("Aider Options Documentation") {
+                    link("Aider options documentation") {
                         BrowserUtil.browse("https://aider.chat/docs/config/options.html")
                     }
                 }
@@ -422,7 +422,7 @@ class AiderSettingsConfigurable : Configurable {
         val worker = object : SwingWorker<String, String>() {
             override fun doInBackground(): String {
                 val observer = object : CommandObserver {
-                    override fun onCommandStart(message: String) {
+                    override fun onCommandStart(command: String) {
                         publish("Starting command...\n")
                     }
 
@@ -434,8 +434,8 @@ class AiderSettingsConfigurable : Configurable {
                         publish("\nCommand completed with exit code: $exitCode\n")
                     }
 
-                    override fun onCommandError(errorMessage: String) {
-                        publish("\nError: $errorMessage\n")
+                    override fun onCommandError(error: String) {
+                        publish("\nError: $error\n")
                     }
                 }
 
