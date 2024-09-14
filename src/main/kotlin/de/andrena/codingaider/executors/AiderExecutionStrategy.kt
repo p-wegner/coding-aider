@@ -5,6 +5,7 @@ import de.andrena.codingaider.docker.DockerContainerManager
 import de.andrena.codingaider.settings.AiderDefaults
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
+import de.andrena.codingaider.utils.GitUtils.findGitRoot
 import java.io.File
 
 interface AiderExecutionStrategy {
@@ -32,28 +33,6 @@ class DockerAiderExecutionStrategy(
     private val apiKeyChecker: ApiKeyChecker,
     private val settings: AiderSettings
 ) : AiderExecutionStrategy {
-    private fun findAiderConfFile(commandData: CommandData): File? {
-        val gitRoot = findGitRoot(File(commandData.projectPath))
-        val locations = listOfNotNull(
-            gitRoot?.let { File(it, ".aider.conf.yml") },
-            File(commandData.projectPath, ".aider.conf.yml"),
-            File(System.getProperty("user.home"), ".aider.conf.yml")
-        )
-
-        return locations.firstOrNull { it.exists() }
-    }
-
-    private fun findGitRoot(directory: File): File? {
-        var current = directory
-        while (current != null) {
-            if (File(current, ".git").exists()) {
-                return current
-            }
-            current = current.parentFile ?: return null
-        }
-        return null
-    }
-
     override fun buildCommand(commandData: CommandData): List<String> {
         val dockerArgs = mutableListOf(
             "docker", "run", "-i", "--rm",
@@ -63,7 +42,7 @@ class DockerAiderExecutionStrategy(
         )
 
         if (settings.mountAiderConfInDocker) {
-            findAiderConfFile(commandData)?.let { confFile ->
+            findAiderConfFile(commandData.projectPath)?.let { confFile ->
                 dockerArgs.addAll(listOf("-v", "${confFile.absolutePath}:/app/.aider.conf.yml"))
             }
         }
@@ -102,6 +81,18 @@ class DockerAiderExecutionStrategy(
     override fun cleanupAfterExecution() {
         dockerManager.removeCidFile()
     }
+
+    fun findAiderConfFile(projectPath: String): File? {
+        val gitRoot = findGitRoot(File(projectPath))
+        val locations = listOfNotNull(
+            gitRoot?.let { File(it, ".aider.conf.yml") },
+            File(projectPath, ".aider.conf.yml"),
+            File(System.getProperty("user.home"), ".aider.conf.yml")
+        )
+
+        return locations.firstOrNull { it.exists() }
+    }
+
 }
 
 private fun buildCommonArgs(commandData: CommandData): List<String> {

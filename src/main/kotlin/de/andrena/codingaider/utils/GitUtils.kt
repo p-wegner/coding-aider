@@ -7,6 +7,8 @@ import com.intellij.openapi.vcs.changes.actions.diff.ShowCombinedDiffAction
 import git4idea.GitUtil
 import git4idea.repo.GitRepository
 
+import java.io.File
+
 object GitUtils {
     fun getCurrentCommitHash(project: Project): String? {
         return getApplication().executeOnPooledThread<String?> {
@@ -49,4 +51,16 @@ object GitUtils {
     private fun getGitRepository(project: Project): GitRepository? {
         return GitUtil.getRepositoryManager(project).repositories.firstOrNull()
     }
+
+    fun findGitRoot(directory: File): File? {
+        var current = directory
+        while (current != null) {
+            if (File(current, ".git").exists()) {
+                return current
+            }
+            current = current.parentFile ?: return null
+        }
+        return null
+    }
+
 }
