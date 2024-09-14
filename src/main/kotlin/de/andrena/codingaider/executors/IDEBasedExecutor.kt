@@ -9,6 +9,7 @@ import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.FileRefresher
 import de.andrena.codingaider.utils.GitUtils
 import java.awt.EventQueue.invokeLater
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.concurrent.thread
 
 class IDEBasedExecutor(
@@ -18,7 +19,7 @@ class IDEBasedExecutor(
     private val log = Logger.getInstance(IDEBasedExecutor::class.java)
     private lateinit var markdownDialog: MarkdownDialog
     private var currentCommitHash: String? = null
-    private var commandExecutor: CommandExecutor? = null
+    private val commandExecutor = AtomicReference<CommandExecutor?>(null)
     private var executionThread: Thread? = null
 
     fun execute(): MarkdownDialog {
@@ -40,10 +41,11 @@ class IDEBasedExecutor(
 
     private fun executeAiderCommand() {
         try {
-            commandExecutor = CommandExecutor(project, commandData).apply {
+            val executor = CommandExecutor(project, commandData).apply {
                 addObserver(this@IDEBasedExecutor)
-                executeCommand()
             }
+            commandExecutor.set(executor)
+            executor.executeCommand()
         } catch (e: Exception) {
             log.error("Error executing Aider command", e)
             updateDialogProgress("Error executing Aider command: ${e.message}", "Aider Command Error")
@@ -52,7 +54,7 @@ class IDEBasedExecutor(
     }
 
     override fun abortCommand() {
-        commandExecutor?.abortCommand()
+        commandExecutor.get()?.abortCommand()
         executionThread?.interrupt()
         updateDialogProgress("Aider command aborted by user", "Aider Command Aborted")
         markdownDialog.dispose()
