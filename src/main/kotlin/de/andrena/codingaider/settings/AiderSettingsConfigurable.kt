@@ -25,10 +25,10 @@ import javax.swing.event.DocumentListener
 
 class AiderSettingsConfigurable : Configurable {
     private val project: Project
-
-    constructor(project: Project, apiKeyChecker: ApiKeyChecker) : this(project) {
-        this.apiKeyChecker = apiKeyChecker
-    }
+// TODO pwegner - 14.09.2024:  use for testing
+//    constructor(project: Project, apiKeyChecker: ApiKeyChecker) : this(project) {
+//        this.apiKeyChecker = apiKeyChecker
+//    }
 
     constructor(project: Project) {
         this.project = project
