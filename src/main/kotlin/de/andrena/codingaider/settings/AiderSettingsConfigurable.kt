@@ -56,6 +56,7 @@ class AiderSettingsConfigurable : Configurable {
         this.verboseCommandLoggingCheckBox = JBCheckBox("Enable verbose Aider command logging")
         this.useDockerAiderCheckBox = JBCheckBox("Use aider in Docker")
         this.enableMarkdownDialogAutocloseCheckBox = JBCheckBox("Automatically close Output Dialog after 10 seconds")
+        this.mountAiderConfInDockerCheckBox = JBCheckBox("Mount Aider configuration file in Docker")
         this.apiKeyFields = mutableMapOf<String, JPasswordField>()
         this.persistentFileManager = PersistentFileManager(project.basePath ?: "")
         this.persistentFilesListModel = DefaultListModel<FileData>()
@@ -87,6 +88,7 @@ class AiderSettingsConfigurable : Configurable {
     private val verboseCommandLoggingCheckBox: JBCheckBox
     private val useDockerAiderCheckBox: JBCheckBox
     private val enableMarkdownDialogAutocloseCheckBox: JBCheckBox
+    private val mountAiderConfInDockerCheckBox: JBCheckBox
     private val apiKeyFields: MutableMap<String, JPasswordField>
     private val persistentFileManager: PersistentFileManager
     private val persistentFilesListModel: DefaultListModel<FileData>
@@ -231,6 +233,14 @@ class AiderSettingsConfigurable : Configurable {
                                 "If enabled, the Output Dialog will automatically close after a 10-second delay."
                         }
                 }
+                row {
+                    cell(mountAiderConfInDockerCheckBox)
+                        .component
+                        .apply {
+                            toolTipText =
+                                "If enabled, the Aider configuration file will be mounted in the Docker container."
+                        }
+                }
             }
 
             group("Persistent Files") {
@@ -266,7 +276,8 @@ class AiderSettingsConfigurable : Configurable {
                 editFormatComboBox.selectedItem as String != settings.editFormat ||
                 verboseCommandLoggingCheckBox.isSelected != settings.verboseCommandLogging ||
                 useDockerAiderCheckBox.isSelected != settings.useDockerAider ||
-                enableMarkdownDialogAutocloseCheckBox.isSelected != settings.enableMarkdownDialogAutoclose
+                enableMarkdownDialogAutocloseCheckBox.isSelected != settings.enableMarkdownDialogAutoclose ||
+                mountAiderConfInDockerCheckBox.isSelected != settings.mountAiderConfInDocker
     }
 
     override fun apply() {
@@ -284,6 +295,7 @@ class AiderSettingsConfigurable : Configurable {
         settings.verboseCommandLogging = verboseCommandLoggingCheckBox.isSelected
         settings.useDockerAider = useDockerAiderCheckBox.isSelected
         settings.enableMarkdownDialogAutoclose = enableMarkdownDialogAutocloseCheckBox.isSelected
+        settings.mountAiderConfInDocker = mountAiderConfInDockerCheckBox.isSelected
     }
 
 
@@ -302,6 +314,7 @@ class AiderSettingsConfigurable : Configurable {
         verboseCommandLoggingCheckBox.isSelected = settings.verboseCommandLogging
         useDockerAiderCheckBox.isSelected = settings.useDockerAider
         enableMarkdownDialogAutocloseCheckBox.isSelected = settings.enableMarkdownDialogAutoclose
+        mountAiderConfInDockerCheckBox.isSelected = settings.mountAiderConfInDocker
 
         apiKeyFields.forEach { (keyName, field) ->
             field.text = getApiKeyDisplayValue(keyName)

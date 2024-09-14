@@ -22,7 +22,8 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var editFormat: String = AiderDefaults.EDIT_FORMAT,
         var verboseCommandLogging: Boolean = AiderDefaults.VERBOSE_COMMAND_LOGGING,
         var useDockerAider: Boolean = AiderDefaults.USE_DOCKER_AIDER,
-        var enableMarkdownDialogAutoclose: Boolean = AiderDefaults.ENABLE_MARKDOWN_DIALOG_AUTOCLOSE
+        var enableMarkdownDialogAutoclose: Boolean = AiderDefaults.ENABLE_MARKDOWN_DIALOG_AUTOCLOSE,
+        var mountAiderConfInDocker: Boolean = AiderDefaults.MOUNT_AIDER_CONF_IN_DOCKER
     )
 
     private var myState = State()

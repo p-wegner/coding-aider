@@ -14,5 +14,6 @@ object AiderDefaults {
     const val VERBOSE_COMMAND_LOGGING = false
     const val USE_DOCKER_AIDER = false
     const val ENABLE_MARKDOWN_DIALOG_AUTOCLOSE = true
+    const val MOUNT_AIDER_CONF_IN_DOCKER = true
     const val DOCKER_IMAGE: String = "paulgauthier/aider:v0.56.0"
 }

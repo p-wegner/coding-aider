@@ -26,10 +26,19 @@ class NativeAiderExecutionStrategy(private val apiKeyChecker: ApiKeyChecker) : A
     }
 }
 
+import java.io.File
+
 class DockerAiderExecutionStrategy(
     private val dockerManager: DockerContainerManager,
     private val apiKeyChecker: ApiKeyChecker
 ) : AiderExecutionStrategy {
+    private fun findAiderConfFile(): File? {
+        val locations = listOf(
+            File(System.getProperty("user.dir"), ".aider.conf.yml"),
+            File(System.getProperty("user.home"), ".aider.conf.yml")
+        )
+        return locations.find { it.exists() }
+    }
     override fun buildCommand(commandData: CommandData): List<String> {
         val dockerArgs = mutableListOf(
             "docker", "run", "-i", "--rm",
@@ -37,6 +46,12 @@ class DockerAiderExecutionStrategy(
             "-w", "/app",
             "--cidfile", dockerManager.getCidFilePath()
         )
+
+        if (commandData.mountAiderConfInDocker) {
+            findAiderConfFile()?.let { confFile ->
+                dockerArgs.addAll(listOf("-v", "${confFile.absolutePath}:/root/.aider.conf.yml"))
+            }
+        }
 
         // Add API key environment variables to Docker run command
         apiKeyChecker.getApiKeysForDocker().forEach { (keyName, value) ->
