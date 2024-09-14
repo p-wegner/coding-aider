@@ -1,7 +1,6 @@
 package de.andrena.codingaider.utils
 
 import java.io.File
-import java.nio.file.Paths
 
 interface ApiKeyChecker {
     fun isApiKeyAvailableForLlm(llm: String): Boolean
@@ -13,7 +12,7 @@ interface ApiKeyChecker {
     fun getApiKeysForDocker(): Map<String, String>
 }
 
-class DefaultApiKeyChecker : ApiKeyChecker {
+public class DefaultApiKeyChecker : ApiKeyChecker {
     private val llmToApiKeyMap = mapOf(
         "--sonnet" to "ANTHROPIC_API_KEY",
         "--mini" to "OPENAI_API_KEY",
