@@ -33,13 +33,25 @@ class DockerAiderExecutionStrategy(
     private val settings: AiderSettings
 ) : AiderExecutionStrategy {
     private fun findAiderConfFile(commandData: CommandData): File? {
-        val locations = listOf(
-            // add git root directory
-
+        val gitRoot = findGitRoot(File(commandData.projectPath))
+        val locations = listOfNotNull(
+            gitRoot?.let { File(it, ".aider.conf.yml") },
             File(commandData.projectPath, ".aider.conf.yml"),
-            File(System.getProperty("user.home"), ".aider.conf.yml"),
+            File(System.getProperty("user.home"), ".aider.conf.yml")
         )
-        return locations.find { it.exists() }
+
+        return locations.firstOrNull { it.exists() }
+    }
+
+    private fun findGitRoot(directory: File): File? {
+        var current = directory
+        while (current != null) {
+            if (File(current, ".git").exists()) {
+                return current
+            }
+            current = current.parentFile ?: return null
+        }
+        return null
     }
 
     override fun buildCommand(commandData: CommandData): List<String> {
