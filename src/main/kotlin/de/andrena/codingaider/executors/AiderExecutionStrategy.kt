@@ -2,6 +2,7 @@ package de.andrena.codingaider.executors
 
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.docker.DockerContainerManager
+import de.andrena.codingaider.settings.AiderDefaults
 import java.io.File
 
 interface AiderExecutionStrategy {
@@ -31,7 +32,7 @@ class DockerAiderExecutionStrategy(private val dockerManager: DockerContainerMan
             "-v", "${commandData.projectPath}:/app",
             "-w", "/app",
             "--cidfile", dockerManager.getCidFilePath(),
-            de.andrena.codingaider.settings.AiderDefaults.DOCKER_IMAGE
+            AiderDefaults.DOCKER_IMAGE
         )
         return dockerArgs + buildCommonArgs(commandData)
     }
@@ -39,7 +40,7 @@ class DockerAiderExecutionStrategy(private val dockerManager: DockerContainerMan
     override fun prepareEnvironment(processBuilder: ProcessBuilder, commandData: CommandData) {
         // Remove DOCKER_HOST to use the default Docker host
         processBuilder.environment().remove("DOCKER_HOST")
-        
+
         // Mount files outside the project
         commandData.files.forEach { fileData ->
             if (!fileData.filePath.startsWith(commandData.projectPath)) {
