@@ -2,12 +2,9 @@ package de.andrena.codingaider.executors
 
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
-import de.andrena.codingaider.command.AiderCommandBuilder
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.docker.DockerContainerManager
 import de.andrena.codingaider.settings.AiderSettings
-import de.andrena.codingaider.utils.ApiKeyChecker
-import de.andrena.codingaider.utils.ApiKeyManager
 import java.io.File
 import java.util.concurrent.TimeUnit
 
@@ -21,45 +18,19 @@ class CommandExecutor(private val project: Project, private val commandData: Com
     private val useDockerAider: Boolean
         get() = commandData.useDockerAider ?: settings.useDockerAider
     private val dockerManager = DockerContainerManager()
-
-    companion object {
-        private const val API_KEY_SET_MESSAGE = "Set environment variable for %s (value hidden)"
-    }
-
-    private fun setApiKeyEnvironmentVariables(processBuilder: ProcessBuilder) {
-        ApiKeyChecker.getAllApiKeyNames().forEach { keyName ->
-            val apiKey = ApiKeyManager.getApiKey(keyName)
-            if (!apiKey.isNullOrBlank()) {
-                processBuilder.environment()[keyName] = apiKey
-                logger.debug(API_KEY_SET_MESSAGE.format(keyName))
-            } else {
-                logger.warn("API key for $keyName is null or blank")
-            }
-        }
+    private val executionStrategy: AiderExecutionStrategy by lazy {
+        if (useDockerAider) DockerAiderExecutionStrategy(dockerManager) else NativeAiderExecutionStrategy()
     }
 
     fun executeCommand(): String {
-        val commandArgs = if (useDockerAider) {
-            AiderCommandBuilder.buildAiderCommand(
-                commandData,
-                false,
-                useDockerAider,
-                dockerManager
-            )
-        } else {
-            AiderCommandBuilder.buildAiderCommand(
-                commandData,
-                false,
-                useDockerAider
-            )
-        }
+        val commandArgs = executionStrategy.buildCommand(commandData)
         logger.info("Executing Aider command: ${commandArgs.joinToString(" ")}")
         notifyObservers {
             it.onCommandStart(
                 "Starting Aider command...\n${
                     commandLogger.getCommandString(
                         false,
-                        dockerManager
+                        if (useDockerAider) dockerManager else null
                     )
                 }"
             )
@@ -72,27 +43,16 @@ class CommandExecutor(private val project: Project, private val commandData: Com
                 redirectErrorStream(true)
             }
 
-        if (useDockerAider) {
-            // Use the default Docker host, which should work across platforms
-            processBuilder.environment().remove("DOCKER_HOST")
-        } else {
-            setApiKeyEnvironmentVariables(processBuilder)
-        }
+        executionStrategy.prepareEnvironment(processBuilder, commandData)
 
         process = processBuilder.start()
-
-        if (useDockerAider) {
-            dockerManager.getDockerContainerId()
-        }
 
         val output = StringBuilder()
         try {
             pollProcessAndReadOutput(process!!, output)
             return handleProcessCompletion(process!!, output)
         } finally {
-            if (useDockerAider) {
-                dockerManager.removeCidFile()
-            }
+            executionStrategy.cleanupAfterExecution()
         }
     }
 
