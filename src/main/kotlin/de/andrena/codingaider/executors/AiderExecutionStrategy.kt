@@ -35,6 +35,13 @@ class DockerAiderExecutionStrategy(private val dockerManager: DockerContainerMan
             "--cidfile", dockerManager.getCidFilePath()
         )
 
+        // Add API key environment variables to Docker run command
+        ApiKeyChecker.getAllApiKeyNames().forEach { keyName ->
+            ApiKeyChecker.getApiKeyValue(keyName)?.let { value ->
+                dockerArgs.addAll(listOf("-e", "$keyName=$value"))
+            }
+        }
+
         // Mount files outside the project
         commandData.files.forEach { fileData ->
             if (!fileData.filePath.startsWith(commandData.projectPath)) {
@@ -59,9 +66,6 @@ class DockerAiderExecutionStrategy(private val dockerManager: DockerContainerMan
     override fun prepareEnvironment(processBuilder: ProcessBuilder, commandData: CommandData) {
         // Remove DOCKER_HOST to use the default Docker host
         processBuilder.environment().remove("DOCKER_HOST")
-
-        // Add environment variables for API keys
-        setApiKeyEnvironmentVariables(processBuilder)
     }
 
     override fun cleanupAfterExecution() {
