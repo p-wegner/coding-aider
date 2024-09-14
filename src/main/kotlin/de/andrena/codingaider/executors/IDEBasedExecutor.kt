@@ -14,7 +14,7 @@ import kotlin.concurrent.thread
 class IDEBasedExecutor(
     private val project: Project,
     private val commandData: CommandData
-) : CommandObserver {
+) : CommandObserver, Abortable {
     private val log = Logger.getInstance(IDEBasedExecutor::class.java)
     private lateinit var markdownDialog: MarkdownDialog
     private var currentCommitHash: String? = null
@@ -26,11 +26,12 @@ class IDEBasedExecutor(
             project,
             "Aider Command Output",
             "Initializing Aider command...",
-            ::abortCommand
-        ).apply {
-            isVisible = true
-            focus()
-        }
+            this
+        )
+            .apply {
+                isVisible = true
+                focus()
+            }
         currentCommitHash = GitUtils.getCurrentCommitHash(project)
 
         executionThread = thread { executeAiderCommand() }
@@ -50,7 +51,7 @@ class IDEBasedExecutor(
         }
     }
 
-    private fun abortCommand() {
+    override fun abortCommand() {
         commandExecutor?.abortCommand()
         executionThread?.interrupt()
         updateDialogProgress("Aider command aborted by user", "Aider Command Aborted")
