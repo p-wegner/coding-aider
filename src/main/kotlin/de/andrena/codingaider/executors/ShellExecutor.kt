@@ -5,20 +5,24 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.docker.DockerContainerManager
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
+import de.andrena.codingaider.utils.DefaultApiKeyChecker
 import org.jetbrains.plugins.terminal.ShellTerminalWidget
 import org.jetbrains.plugins.terminal.TerminalToolWindowManager
 
 class ShellExecutor(
     private val project: Project,
-    private val commandData: CommandData
+    private val commandData: CommandData,
+    private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker()
 ) {
     private val settings = AiderSettings.getInstance(project)
     private val dockerManager = DockerContainerManager()
-    private val apiKeyChecker = DefaultApiKeyChecker()
     private val useDockerAider: Boolean
         get() = commandData.useDockerAider ?: settings.useDockerAider
     private val executionStrategy: AiderExecutionStrategy by lazy {
-        if (useDockerAider) DockerAiderExecutionStrategy(dockerManager, apiKeyChecker) else NativeAiderExecutionStrategy(apiKeyChecker)
+        if (useDockerAider) DockerAiderExecutionStrategy(
+            dockerManager,
+            apiKeyChecker
+        ) else NativeAiderExecutionStrategy(apiKeyChecker)
     }
 
     fun execute() {

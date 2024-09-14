@@ -12,7 +12,7 @@ interface AiderExecutionStrategy {
     fun cleanupAfterExecution()
 }
 
-class NativeAiderExecutionStrategy(private val apiKeyChecker: DefaultApiKeyChecker) : AiderExecutionStrategy {
+class NativeAiderExecutionStrategy(private val apiKeyChecker: ApiKeyChecker) : AiderExecutionStrategy {
     override fun buildCommand(commandData: CommandData): List<String> {
         return listOf("aider") + buildCommonArgs(commandData)
     }
@@ -28,7 +28,7 @@ class NativeAiderExecutionStrategy(private val apiKeyChecker: DefaultApiKeyCheck
 
 class DockerAiderExecutionStrategy(
     private val dockerManager: DockerContainerManager,
-    private val apiKeyChecker: DefaultApiKeyChecker
+    private val apiKeyChecker: ApiKeyChecker
 ) : AiderExecutionStrategy {
     override fun buildCommand(commandData: CommandData): List<String> {
         val dockerArgs = mutableListOf(
@@ -58,7 +58,7 @@ class DockerAiderExecutionStrategy(
                 if (!fileData.filePath.startsWith(commandData.projectPath)) {
                     acc.replace(fileData.filePath, "/extra/${File(fileData.filePath).name}")
                 } else {
-                    acc.replace(fileData.filePath, "/app/${fileData.filePath.removePrefix(commandData.projectPath)}")
+                    acc.replace(fileData.filePath, "/app${fileData.filePath.removePrefix(commandData.projectPath)}")
                 }
             }
         }
@@ -109,7 +109,7 @@ private fun buildCommonArgs(commandData: CommandData): List<String> {
     }
 }
 
-private fun setApiKeyEnvironmentVariables(processBuilder: ProcessBuilder, apiKeyChecker: DefaultApiKeyChecker) {
+private fun setApiKeyEnvironmentVariables(processBuilder: ProcessBuilder, apiKeyChecker: ApiKeyChecker) {
     val environment = processBuilder.environment()
     apiKeyChecker.getAllApiKeyNames().forEach { keyName ->
         apiKeyChecker.getApiKeyValue(keyName)?.let { value ->

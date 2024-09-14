@@ -2,7 +2,7 @@ package de.andrena.codingaider.docker
 
 import com.intellij.openapi.diagnostic.Logger
 import java.io.File
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.TimeUnit
 
 class DockerContainerManager {
@@ -13,7 +13,7 @@ class DockerContainerManager {
 
     fun getCidFilePath(): String = cidFile.absolutePath
 
-    fun getDockerContainerId(): String? {
+    private fun getDockerContainerId(): String? {
         if (dockerContainerId == null) {
             var attempts = 0
             while (attempts < 10) {
@@ -30,7 +30,7 @@ class DockerContainerManager {
     }
 
     fun stopDockerContainer() {
-        dockerContainerId?.let { containerId ->
+        getDockerContainerId()?.let { containerId ->
             try {
                 val processBuilder = ProcessBuilder("docker", "kill", containerId)
                 val stopProcess = processBuilder.start()

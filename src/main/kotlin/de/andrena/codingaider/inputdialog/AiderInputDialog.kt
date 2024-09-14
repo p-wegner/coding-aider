@@ -14,6 +14,7 @@ import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.history.AiderHistoryHandler
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
+import de.andrena.codingaider.utils.DefaultApiKeyChecker
 import java.awt.*
 import java.awt.event.InputEvent
 import java.awt.event.KeyEvent
@@ -25,7 +26,8 @@ import javax.swing.*
 class AiderInputDialog(
     val project: Project,
     files: List<FileData>,
-    initialText: String = ""
+    initialText: String = "",
+    private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker()
 ) : DialogWrapper(project) {
     private val settings = AiderSettings.getInstance(project)
     private val inputTextArea = JTextArea(5, 50).apply {
@@ -64,11 +66,11 @@ class AiderInputDialog(
         }
     }
 
-    private val llmOptions = ApiKeyChecker.getAllLlmOptions().toTypedArray()
+    private val llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
     private val llmComboBox = object : ComboBox<String>(llmOptions) {
         override fun getToolTipText(): String? {
             val selectedItem = selectedItem as? String ?: return null
-            return if (ApiKeyChecker.isApiKeyAvailableForLlm(selectedItem)) {
+            return if (apiKeyChecker.isApiKeyAvailableForLlm(selectedItem)) {
                 "API key found for $selectedItem"
             } else {
                 "API key not found for $selectedItem"
@@ -461,8 +463,8 @@ class AiderInputDialog(
         ): Component {
             val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
             if (component is JLabel && value is String) {
-                val apiKey = ApiKeyChecker.getApiKeyForLlm(value)
-                if (apiKey != null && !ApiKeyChecker.isApiKeyAvailableForLlm(value)) {
+                val apiKey = apiKeyChecker.getApiKeyForLlm(value)
+                if (apiKey != null && !apiKeyChecker.isApiKeyAvailableForLlm(value)) {
                     icon = UIManager.getIcon("OptionPane.errorIcon")
                     toolTipText =
                         "API key not found in default locations for $value. This may not be an error if you're using an alternative method to provide the key."

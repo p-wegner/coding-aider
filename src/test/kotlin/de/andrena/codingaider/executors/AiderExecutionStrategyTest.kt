@@ -3,6 +3,7 @@ package de.andrena.codingaider.executors
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.docker.DockerContainerManager
+import de.andrena.codingaider.utils.ApiKeyChecker
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -27,7 +28,7 @@ class AiderExecutionStrategyTest {
             projectPath = "/project",
             files = listOf(FileData("/project/file1.txt", false)),
             message = "Test message",
-            llm = "gpt-4",
+            llm = "4o",
             useYesFlag = true,
             editFormat = "diff",
             isShellMode = false,
@@ -41,7 +42,7 @@ class AiderExecutionStrategyTest {
     fun `NativeAiderExecutionStrategy builds correct command`() {
         val command = nativeStrategy.buildCommand(commandData)
         assertThat(command).containsExactly(
-            "aider", "gpt-4", "--file", "/project/file1.txt", "--yes", "--edit-format", "diff",
+            "aider", "4o", "--file", "/project/file1.txt", "--yes", "--edit-format", "diff",
             "--no-suggest-shell-commands", "--no-pretty", "--verbose", "--lint-cmd", "lint",
             "--map-tokens", "0", "-m", "Test message"
         )
@@ -56,8 +57,8 @@ class AiderExecutionStrategyTest {
             "-v", "/project:/app",
             "-w", "/app",
             "--cidfile", "/tmp/docker.cid",
-            "ghcr.io/paul-gauthier/aider:latest",
-            "gpt-4", "--file", "/app/file1.txt", "--yes", "--edit-format", "diff",
+            "paulgauthier/aider:v0.56.0",
+            "4o", "--file", "/app/file1.txt", "--yes", "--edit-format", "diff",
             "--no-suggest-shell-commands", "--no-pretty", "--verbose", "--lint-cmd", "lint",
             "--map-tokens", "0", "-m", "Test message"
         )

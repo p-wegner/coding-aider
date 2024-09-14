@@ -5,10 +5,16 @@ import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.docker.DockerContainerManager
 import de.andrena.codingaider.settings.AiderSettings
+import de.andrena.codingaider.utils.ApiKeyChecker
+import de.andrena.codingaider.utils.DefaultApiKeyChecker
 import java.io.File
 import java.util.concurrent.TimeUnit
 
-class CommandExecutor(private val project: Project, private val commandData: CommandData) :
+class CommandExecutor(
+    private val project: Project,
+    private val commandData: CommandData,
+    private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker()
+) :
     CommandSubject by GenericCommandSubject() {
     private val logger = Logger.getInstance(CommandExecutor::class.java)
     private val settings = AiderSettings.getInstance(project)
@@ -18,9 +24,11 @@ class CommandExecutor(private val project: Project, private val commandData: Com
     private val useDockerAider: Boolean
         get() = commandData.useDockerAider ?: settings.useDockerAider
     private val dockerManager = DockerContainerManager()
-    private val apiKeyChecker = DefaultApiKeyChecker()
     private val executionStrategy: AiderExecutionStrategy by lazy {
-        if (useDockerAider) DockerAiderExecutionStrategy(dockerManager, apiKeyChecker) else NativeAiderExecutionStrategy(apiKeyChecker)
+        if (useDockerAider) DockerAiderExecutionStrategy(
+            dockerManager,
+            apiKeyChecker
+        ) else NativeAiderExecutionStrategy(apiKeyChecker)
     }
 
     fun executeCommand(): String {

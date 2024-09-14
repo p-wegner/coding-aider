@@ -17,55 +17,82 @@ import de.andrena.codingaider.executors.CommandObserver
 import de.andrena.codingaider.inputdialog.PersistentFileManager
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.ApiKeyManager
+import de.andrena.codingaider.utils.DefaultApiKeyChecker
 import java.awt.Component
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
-class AiderSettingsConfigurable(
-    private val project: Project,
-    private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker()
-) : Configurable {
-    private var settingsComponent: JPanel? = null
-    private val useYesFlagCheckBox = JBCheckBox("Use --yes flag by default")
-    private val llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
-    private val llmComboBox = object : JComboBox<String>(llmOptions) {
-        override fun getToolTipText(): String? {
-            val selectedItem = selectedItem as? String ?: return null
-            return if (apiKeyChecker.isApiKeyAvailableForLlm(selectedItem)) {
-                "API key found for $selectedItem"
-            } else {
-                "API key not found for $selectedItem"
-            }
-        }
+class AiderSettingsConfigurable : Configurable {
+    private val project: Project
+
+    constructor(project: Project, apiKeyChecker: ApiKeyChecker) : this(project) {
+        this.apiKeyChecker = apiKeyChecker
     }
-    private val additionalArgsField = JBTextField()
-    private val isShellModeCheckBox = JBCheckBox("Use Shell Mode by default")
-    private val lintCmdField = JBTextField()
-    private val showGitComparisonToolCheckBox = JBCheckBox("Show Git Comparison Tool after execution")
-    private val activateIdeExecutorAfterWebcrawlCheckBox =
-        JBCheckBox("Activate Post web crawl LLM cleanup (Experimental)")
-    private val webCrawlLlmComboBox = ComboBox(apiKeyChecker.getAllLlmOptions().toTypedArray())
-    private val deactivateRepoMapCheckBox = JBCheckBox("Deactivate Aider's repo map (--map-tokens 0)")
-    private val editFormatComboBox = ComboBox(arrayOf("", "whole", "diff", "whole-func", "diff-func"))
-    private val verboseCommandLoggingCheckBox = JBCheckBox("Enable verbose Aider command logging")
-    private val useDockerAiderCheckBox = JBCheckBox("Use Aider in Docker")
-    private val enableMarkdownDialogAutocloseCheckBox = JBCheckBox("Enable Output Dialog autoclose")
-    private val apiKeyFields = mutableMapOf<String, JPasswordField>()
 
-    override fun getDisplayName(): String = "Aider"
-
-    private val persistentFileManager = PersistentFileManager(project.basePath ?: "")
-    private val persistentFilesListModel = DefaultListModel<FileData>()
-    private val persistentFilesList = JBList(persistentFilesListModel).apply {
-        addKeyListener(object : java.awt.event.KeyAdapter() {
-            override fun keyPressed(e: java.awt.event.KeyEvent) {
-                if (e.keyCode == java.awt.event.KeyEvent.VK_DELETE) {
-                    removeSelectedFiles()
+    constructor(project: Project) {
+        this.project = project
+        this.apiKeyChecker = DefaultApiKeyChecker()
+        this.useYesFlagCheckBox = JBCheckBox("Use --yes flag by default")
+        this.llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
+        this.llmComboBox = object : JComboBox<String>(llmOptions) {
+            override fun getToolTipText(): String? {
+                val selectedItem = selectedItem as? String ?: return null
+                return if (apiKeyChecker.isApiKeyAvailableForLlm(selectedItem)) {
+                    "API key found for $selectedItem"
+                } else {
+                    "API key not found for $selectedItem"
                 }
             }
-        })
+        }
+        this.additionalArgsField = JBTextField()
+        this.isShellModeCheckBox = JBCheckBox("Use Shell Mode by default")
+        this.lintCmdField = JBTextField()
+        this.showGitComparisonToolCheckBox = JBCheckBox("Show Git Comparison Tool after execution")
+        this.activateIdeExecutorAfterWebcrawlCheckBox = JBCheckBox("Activate Post web crawl LLM cleanup (Experimental)")
+        this.webCrawlLlmComboBox = ComboBox(apiKeyChecker.getAllLlmOptions().toTypedArray())
+        this.deactivateRepoMapCheckBox = JBCheckBox("Deactivate Aider's repo map (--map-tokens 0)")
+        this.editFormatComboBox = ComboBox(arrayOf("", "whole", "diff", "whole-func", "diff-func"))
+        this.verboseCommandLoggingCheckBox = JBCheckBox("Enable verbose Aider command logging")
+        this.useDockerAiderCheckBox = JBCheckBox("Use Aider in Docker")
+        this.enableMarkdownDialogAutocloseCheckBox = JBCheckBox("Enable Output Dialog autoclose")
+        this.apiKeyFields = mutableMapOf<String, JPasswordField>()
+        this.persistentFileManager = PersistentFileManager(project.basePath ?: "")
+        this.persistentFilesListModel = DefaultListModel<FileData>()
+        this.persistentFilesList = JBList(persistentFilesListModel).apply {
+            addKeyListener(object : java.awt.event.KeyAdapter() {
+                override fun keyPressed(e: java.awt.event.KeyEvent) {
+                    if (e.keyCode == java.awt.event.KeyEvent.VK_DELETE) {
+                        removeSelectedFiles()
+                    }
+                }
+            })
+        }
     }
+
+    private var apiKeyChecker: ApiKeyChecker
+
+    private var settingsComponent: JPanel? = null
+    private val useYesFlagCheckBox: JBCheckBox
+    private val llmOptions: Array<String>
+    private val llmComboBox: JComboBox<String>
+    private val additionalArgsField: JBTextField
+    private val isShellModeCheckBox: JBCheckBox
+    private val lintCmdField: JBTextField
+    private val showGitComparisonToolCheckBox: JBCheckBox
+    private val activateIdeExecutorAfterWebcrawlCheckBox: JBCheckBox
+    private val webCrawlLlmComboBox: ComboBox<String>
+    private val deactivateRepoMapCheckBox: JBCheckBox
+    private val editFormatComboBox: ComboBox<String>
+    private val verboseCommandLoggingCheckBox: JBCheckBox
+    private val useDockerAiderCheckBox: JBCheckBox
+    private val enableMarkdownDialogAutocloseCheckBox: JBCheckBox
+    private val apiKeyFields: MutableMap<String, JPasswordField>
+    private val persistentFileManager: PersistentFileManager
+    private val persistentFilesListModel: DefaultListModel<FileData>
+    private val persistentFilesList: JBList<FileData>
+
+    override fun getDisplayName(): String = "Aider"
 
     override fun createComponent(): JComponent {
         persistentFilesList.cellRenderer = PersistentFileRenderer()
@@ -108,7 +135,7 @@ class AiderSettingsConfigurable(
 
                                 fun updateSaveButton() {
                                     saveButton.isEnabled = field.password.isNotEmpty() &&
-                                            !ApiKeyChecker.isApiKeyAvailable(keyName)
+                                            !apiKeyChecker.isApiKeyAvailable(keyName)
                                 }
                             })
                         }
@@ -282,7 +309,7 @@ class AiderSettingsConfigurable(
     }
 
     private fun getApiKeyDisplayValue(keyName: String): String {
-        return if (ApiKeyChecker.isApiKeyAvailable(keyName)) {
+        return if (apiKeyChecker.isApiKeyAvailable(keyName)) {
             if (ApiKeyManager.getApiKey(keyName) != null) {
                 "*".repeat(16) // Censored placeholder for stored API key
             } else {
@@ -442,7 +469,7 @@ class AiderSettingsConfigurable(
                 saveButton.isEnabled = false
             }
 
-            ApiKeyChecker.isApiKeyAvailable(keyName) -> {
+            apiKeyChecker.isApiKeyAvailable(keyName) -> {
                 field.text = "*".repeat(16)
                 field.isEditable = false
                 field.toolTipText =
