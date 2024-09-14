@@ -3,6 +3,7 @@ package de.andrena.codingaider.executors
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.docker.DockerContainerManager
 import de.andrena.codingaider.settings.AiderDefaults
+import de.andrena.codingaider.utils.ApiKeyChecker
 import java.io.File
 
 interface AiderExecutionStrategy {
@@ -105,8 +106,8 @@ private fun buildCommonArgs(commandData: CommandData): List<String> {
 
 private fun setApiKeyEnvironmentVariables(processBuilder: ProcessBuilder) {
     val environment = processBuilder.environment()
-    de.andrena.codingaider.utils.ApiKeyChecker.getAllApiKeyNames().forEach { keyName ->
-        de.andrena.codingaider.utils.ApiKeyChecker.getApiKeyValue(keyName)?.let { value ->
+    ApiKeyChecker.getAllApiKeyNames().forEach { keyName ->
+        ApiKeyChecker.getApiKeyValue(keyName)?.let { value ->
             environment[keyName] = value
         }
     }
