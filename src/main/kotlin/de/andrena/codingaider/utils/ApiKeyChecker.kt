@@ -4,6 +4,16 @@ import java.io.File
 import java.nio.file.Paths
 
 interface ApiKeyChecker {
+    fun isApiKeyAvailableForLlm(llm: String): Boolean
+    fun isApiKeyAvailable(apiKeyName: String): Boolean
+    fun getApiKeyForLlm(llm: String): String?
+    fun getAllLlmOptions(): List<String>
+    fun getAllApiKeyNames(): List<String>
+    fun getApiKeyValue(apiKeyName: String): String?
+    fun getApiKeysForDocker(): Map<String, String>
+}
+
+class DefaultApiKeyChecker : ApiKeyChecker {
     private val llmToApiKeyMap = mapOf(
         "--sonnet" to "ANTHROPIC_API_KEY",
         "--mini" to "OPENAI_API_KEY",
@@ -11,22 +21,22 @@ interface ApiKeyChecker {
         "--deepseek" to "DEEPSEEK_API_KEY"
     )
 
-    fun isApiKeyAvailableForLlm(llm: String): Boolean {
+    override fun isApiKeyAvailableForLlm(llm: String): Boolean {
         val apiKey = llmToApiKeyMap[llm] ?: return true // If no API key is needed, consider it available
         return isApiKeyAvailable(apiKey)
     }
 
-    fun isApiKeyAvailable(apiKeyName: String): Boolean {
+    override fun isApiKeyAvailable(apiKeyName: String): Boolean {
         return getApiKeyValue(apiKeyName) != null
     }
 
-    fun getApiKeyForLlm(llm: String): String? = llmToApiKeyMap[llm]
+    override fun getApiKeyForLlm(llm: String): String? = llmToApiKeyMap[llm]
 
-    fun getAllLlmOptions(): List<String> = llmToApiKeyMap.keys.toList() + ""
+    override fun getAllLlmOptions(): List<String> = llmToApiKeyMap.keys.toList() + ""
 
-    fun getAllApiKeyNames(): List<String> = llmToApiKeyMap.values.distinct()
+    override fun getAllApiKeyNames(): List<String> = llmToApiKeyMap.values.distinct()
 
-    fun getApiKeyValue(apiKeyName: String): String? {
+    override fun getApiKeyValue(apiKeyName: String): String? {
         // Check CredentialStore first
         ApiKeyManager.getApiKey(apiKeyName)?.let { return it }
 
@@ -54,7 +64,7 @@ interface ApiKeyChecker {
             }
     }
 
-    fun getApiKeysForDocker(): Map<String, String> {
+    override fun getApiKeysForDocker(): Map<String, String> {
         return llmToApiKeyMap.values.distinct().mapNotNull { apiKeyName ->
             getApiKeyValue(apiKeyName)?.let { apiKeyName to it }
         }.toMap()
