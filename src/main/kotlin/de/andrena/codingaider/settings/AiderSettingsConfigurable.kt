@@ -55,7 +55,7 @@ class AiderSettingsConfigurable : Configurable {
         this.editFormatComboBox = ComboBox(arrayOf("", "whole", "diff", "whole-func", "diff-func"))
         this.verboseCommandLoggingCheckBox = JBCheckBox("Enable verbose Aider command logging")
         this.useDockerAiderCheckBox = JBCheckBox("Use Aider in Docker")
-        this.enableMarkdownDialogAutocloseCheckBox = JBCheckBox("Enable Output Dialog autoclose")
+        this.enableMarkdownDialogAutocloseCheckBox = JBCheckBox("Automatically close Output Dialog after 10 seconds")
         this.apiKeyFields = mutableMapOf<String, JPasswordField>()
         this.persistentFileManager = PersistentFileManager(project.basePath ?: "")
         this.persistentFilesListModel = DefaultListModel<FileData>()

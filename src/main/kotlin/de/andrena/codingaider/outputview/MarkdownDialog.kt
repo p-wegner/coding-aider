@@ -24,7 +24,6 @@ class MarkdownDialog(
     private val keepOpenButton: JButton
     private val closeButton: JButton
     private var isProcessFinished = false
-    private var isImmediateClose = false
 
     init {
         title = initialTitle
@@ -37,13 +36,13 @@ class MarkdownDialog(
         add(scrollPane, BorderLayout.CENTER)
 
         val buttonPanel = JPanel()
-        closeButton = JButton("Close").apply {
-            mnemonic = KeyEvent.VK_C
-            addActionListener { 
-                if (isProcessFinished || isImmediateClose) {
+        closeButton = JButton(onAbort?.let { "Abort" } ?: "Close").apply {
+            mnemonic = onAbort?.let { KeyEvent.VK_A } ?: KeyEvent.VK_C
+            addActionListener {
+                if (isProcessFinished || onAbort == null) {
                     dispose()
                 } else {
-                    onAbort?.invoke()
+                    onAbort.invoke()
                 }
             }
         }
@@ -59,10 +58,10 @@ class MarkdownDialog(
         defaultCloseOperation = DO_NOTHING_ON_CLOSE
         addWindowListener(object : java.awt.event.WindowAdapter() {
             override fun windowClosing(windowEvent: java.awt.event.WindowEvent?) {
-                if (isProcessFinished || isImmediateClose) {
+                if (isProcessFinished || onAbort == null) {
                     dispose()
                 } else {
-                    onAbort?.invoke()
+                    onAbort.invoke()
                 }
             }
         })
@@ -124,9 +123,4 @@ class MarkdownDialog(
         }
     }
 
-    fun setImmediateClose() {
-        isImmediateClose = true
-        closeButton.text = "Close"
-        closeButton.mnemonic = KeyEvent.VK_C
-    }
 }

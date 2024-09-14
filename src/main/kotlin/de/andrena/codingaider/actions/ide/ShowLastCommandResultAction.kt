@@ -13,7 +13,6 @@ class ShowLastCommandResultAction : AnAction() {
         val lastCommandResult = historyHandler.getLastChatHistory()
 
         val dialog = MarkdownDialog(project, "Last Aider Command Result", lastCommandResult)
-        dialog.setImmediateClose()
         dialog.show()
     }
 

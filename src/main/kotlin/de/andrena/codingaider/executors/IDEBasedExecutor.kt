@@ -51,12 +51,8 @@ class IDEBasedExecutor(
     }
 
     private fun abortCommand() {
+        commandExecutor?.abortCommand()
         executionThread?.interrupt()
-        commandExecutor?.let {
-            // Assuming CommandExecutor has a method to abort the command
-            // If not, you'll need to implement one
-            it.abortCommand()
-        }
         updateDialogProgress("Aider command aborted by user", "Aider Command Aborted")
         markdownDialog.dispose()
     }
@@ -69,7 +65,8 @@ class IDEBasedExecutor(
     }
 
     private fun refreshFiles() {
-        val files = commandData.files.mapNotNull { VirtualFileManager.getInstance().findFileByUrl(it.filePath) }.toTypedArray()
+        val files =
+            commandData.files.mapNotNull { VirtualFileManager.getInstance().findFileByUrl(it.filePath) }.toTypedArray()
         FileRefresher.refreshFiles(files, markdownDialog)
     }
 
@@ -84,12 +81,15 @@ class IDEBasedExecutor(
     }
 
     override fun onCommandStart(command: String) = updateDialogProgress(command, "Aider Command Started")
-    override fun onCommandProgress(output: String, runningTime: Long) = updateDialogProgress(output, "Aider command in progress ($runningTime seconds)")
+    override fun onCommandProgress(output: String, runningTime: Long) =
+        updateDialogProgress(output, "Aider command in progress ($runningTime seconds)")
+
     override fun onCommandComplete(output: String, exitCode: Int) {
         updateDialogProgress(output, "Aider Command ${if (exitCode == 0) "Completed" else "Failed"}")
         markdownDialog.setProcessFinished()
         performPostExecutionTasks()
     }
+
     override fun onCommandError(error: String) {
         updateDialogProgress(error, "Aider Command Error")
         markdownDialog.setProcessFinished()
