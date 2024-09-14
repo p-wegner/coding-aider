@@ -27,27 +27,37 @@ class NativeAiderExecutionStrategy : AiderExecutionStrategy {
 
 class DockerAiderExecutionStrategy(private val dockerManager: DockerContainerManager) : AiderExecutionStrategy {
     override fun buildCommand(commandData: CommandData): List<String> {
-        val dockerArgs = listOf(
+        val dockerArgs = mutableListOf(
             "docker", "run", "-i", "--rm",
             "-v", "${commandData.projectPath}:/app",
             "-w", "/app",
-            "--cidfile", dockerManager.getCidFilePath(),
-            AiderDefaults.DOCKER_IMAGE
+            "--cidfile", dockerManager.getCidFilePath()
         )
-        return dockerArgs + buildCommonArgs(commandData)
-    }
-
-    override fun prepareEnvironment(processBuilder: ProcessBuilder, commandData: CommandData) {
-        // Remove DOCKER_HOST to use the default Docker host
-        processBuilder.environment().remove("DOCKER_HOST")
 
         // Mount files outside the project
         commandData.files.forEach { fileData ->
             if (!fileData.filePath.startsWith(commandData.projectPath)) {
                 val containerPath = "/extra/${File(fileData.filePath).name}"
-                processBuilder.command().addAll(listOf("-v", "${fileData.filePath}:$containerPath"))
+                dockerArgs.addAll(listOf("-v", "${fileData.filePath}:$containerPath"))
             }
         }
+
+        dockerArgs.add(AiderDefaults.DOCKER_IMAGE)
+
+        return dockerArgs + buildCommonArgs(commandData).map { arg ->
+            commandData.files.fold(arg) { acc, fileData ->
+                if (!fileData.filePath.startsWith(commandData.projectPath)) {
+                    acc.replace(fileData.filePath, "/extra/${File(fileData.filePath).name}")
+                } else {
+                    acc.replace(fileData.filePath, "/app/${fileData.filePath.removePrefix(commandData.projectPath)}")
+                }
+            }
+        }
+    }
+
+    override fun prepareEnvironment(processBuilder: ProcessBuilder, commandData: CommandData) {
+        // Remove DOCKER_HOST to use the default Docker host
+        processBuilder.environment().remove("DOCKER_HOST")
 
         // Add environment variables for API keys
         setApiKeyEnvironmentVariables(processBuilder)
