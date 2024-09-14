@@ -27,7 +27,8 @@ class CommandExecutor(
     private val executionStrategy: AiderExecutionStrategy by lazy {
         if (useDockerAider) DockerAiderExecutionStrategy(
             dockerManager,
-            apiKeyChecker
+            apiKeyChecker,
+            settings
         ) else NativeAiderExecutionStrategy(apiKeyChecker)
     }
 

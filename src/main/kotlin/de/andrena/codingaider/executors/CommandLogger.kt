@@ -15,7 +15,7 @@ class CommandLogger(
         if (settings.verboseCommandLogging) {
             val useDockerAider = commandData.useDockerAider ?: settings.useDockerAider
             val executionStrategy = if (useDockerAider) {
-                DockerAiderExecutionStrategy(dockerManager ?: DockerContainerManager(), apiKeyChecker)
+                DockerAiderExecutionStrategy(dockerManager ?: DockerContainerManager(), apiKeyChecker, settings)
             } else {
                 NativeAiderExecutionStrategy(apiKeyChecker)
             }

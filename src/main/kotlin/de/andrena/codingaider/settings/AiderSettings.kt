@@ -1,6 +1,9 @@
 package de.andrena.codingaider.settings
 
-import com.intellij.openapi.components.*
+import com.intellij.openapi.components.PersistentStateComponent
+import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.State
+import com.intellij.openapi.components.Storage
 import com.intellij.openapi.project.Project
 
 @Service(Service.Level.PROJECT)
@@ -110,6 +113,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.enableMarkdownDialogAutoclose
         set(value) {
             myState.enableMarkdownDialogAutoclose = value
+        }
+    
+    var mountAiderConfInDocker: Boolean
+        get() = myState.mountAiderConfInDocker
+        set(value) {
+            myState.mountAiderConfInDocker = value
         }
 
     companion object {

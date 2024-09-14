@@ -3,6 +3,7 @@ package de.andrena.codingaider.executors
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.docker.DockerContainerManager
+import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -17,13 +18,15 @@ class AiderExecutionStrategyTest {
     private lateinit var dockerManager: DockerContainerManager
     private lateinit var apiKeyChecker: ApiKeyChecker
     private lateinit var commandData: CommandData
+    private lateinit var aiderSettings: AiderSettings
 
     @BeforeEach
     fun setup() {
         apiKeyChecker = mock()
         nativeStrategy = NativeAiderExecutionStrategy(apiKeyChecker)
         dockerManager = mock()
-        dockerStrategy = DockerAiderExecutionStrategy(dockerManager, apiKeyChecker)
+        aiderSettings = AiderSettings()
+        dockerStrategy = DockerAiderExecutionStrategy(dockerManager, apiKeyChecker, aiderSettings)
         commandData = CommandData(
             projectPath = "/project",
             files = listOf(FileData("/project/file1.txt", false)),

@@ -79,6 +79,7 @@ class AiderAction : AnAction() {
                 deactivateRepoMap = settings.deactivateRepoMap,
                 editFormat = settings.editFormat,
                 projectPath = project.basePath ?: ""
+
             )
         }
 

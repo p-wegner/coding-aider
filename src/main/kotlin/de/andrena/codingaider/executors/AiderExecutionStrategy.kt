@@ -3,9 +3,8 @@ package de.andrena.codingaider.executors
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.docker.DockerContainerManager
 import de.andrena.codingaider.settings.AiderDefaults
+import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
-import java.io.File
-import java.io.File
 import java.io.File
 
 interface AiderExecutionStrategy {
@@ -30,15 +29,19 @@ class NativeAiderExecutionStrategy(private val apiKeyChecker: ApiKeyChecker) : A
 
 class DockerAiderExecutionStrategy(
     private val dockerManager: DockerContainerManager,
-    private val apiKeyChecker: ApiKeyChecker
+    private val apiKeyChecker: ApiKeyChecker,
+    private val settings: AiderSettings
 ) : AiderExecutionStrategy {
-    private fun findAiderConfFile(): File? {
+    private fun findAiderConfFile(commandData: CommandData): File? {
         val locations = listOf(
-            File(System.getProperty("user.dir"), ".aider.conf.yml"),
-            File(System.getProperty("user.home"), ".aider.conf.yml")
+            // add git root directory
+
+            File(commandData.projectPath, ".aider.conf.yml"),
+            File(System.getProperty("user.home"), ".aider.conf.yml"),
         )
         return locations.find { it.exists() }
     }
+
     override fun buildCommand(commandData: CommandData): List<String> {
         val dockerArgs = mutableListOf(
             "docker", "run", "-i", "--rm",
@@ -47,9 +50,9 @@ class DockerAiderExecutionStrategy(
             "--cidfile", dockerManager.getCidFilePath()
         )
 
-        if (commandData.mountAiderConfInDocker) {
-            findAiderConfFile()?.let { confFile ->
-                dockerArgs.addAll(listOf("-v", "${confFile.absolutePath}:/root/.aider.conf.yml"))
+        if (settings.mountAiderConfInDocker) {
+            findAiderConfFile(commandData)?.let { confFile ->
+                dockerArgs.addAll(listOf("-v", "${confFile.absolutePath}:/app/.aider.conf.yml"))
             }
         }
 
