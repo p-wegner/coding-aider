@@ -16,7 +16,7 @@ class MarkdownDialog(
     private val project: Project,
     private val initialTitle: String,
     initialText: String,
-    private val onAbort: (() -> Unit)? = null
+    private val onAbort: Abortable? = null
 ) : JDialog() {
     private val textArea: JTextArea = JTextArea(initialText)
     private val scrollPane: JScrollPane
@@ -42,7 +42,7 @@ class MarkdownDialog(
                 if (isProcessFinished || onAbort == null) {
                     dispose()
                 } else {
-                    onAbort.invoke()
+                    onAbort.abortCommand()
                 }
             }
         }
@@ -61,7 +61,7 @@ class MarkdownDialog(
                 if (isProcessFinished || onAbort == null) {
                     dispose()
                 } else {
-                    onAbort.invoke()
+                    onAbort.abortCommand()
                 }
             }
         })
