@@ -93,9 +93,10 @@ private fun buildCommonArgs(commandData: CommandData): List<String> {
 }
 
 private fun setApiKeyEnvironmentVariables(processBuilder: ProcessBuilder) {
+    val environment = processBuilder.environment()
     de.andrena.codingaider.utils.ApiKeyChecker.getAllApiKeyNames().forEach { keyName ->
         de.andrena.codingaider.utils.ApiKeyChecker.getApiKeyValue(keyName)?.let { value ->
-            processBuilder.environment()[keyName] = value
+            environment[keyName] = value
         }
     }
 }
