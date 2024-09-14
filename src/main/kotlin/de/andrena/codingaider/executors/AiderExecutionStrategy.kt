@@ -5,6 +5,7 @@ import de.andrena.codingaider.docker.DockerContainerManager
 import de.andrena.codingaider.settings.AiderDefaults
 import de.andrena.codingaider.utils.ApiKeyChecker
 import java.io.File
+import java.io.File
 
 interface AiderExecutionStrategy {
     fun buildCommand(commandData: CommandData): List<String>
