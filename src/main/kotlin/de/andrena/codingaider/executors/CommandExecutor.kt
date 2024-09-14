@@ -18,8 +18,9 @@ class CommandExecutor(private val project: Project, private val commandData: Com
     private val useDockerAider: Boolean
         get() = commandData.useDockerAider ?: settings.useDockerAider
     private val dockerManager = DockerContainerManager()
+    private val apiKeyChecker = DefaultApiKeyChecker()
     private val executionStrategy: AiderExecutionStrategy by lazy {
-        if (useDockerAider) DockerAiderExecutionStrategy(dockerManager) else NativeAiderExecutionStrategy()
+        if (useDockerAider) DockerAiderExecutionStrategy(dockerManager, apiKeyChecker) else NativeAiderExecutionStrategy(apiKeyChecker)
     }
 
     fun executeCommand(): String {

@@ -14,10 +14,11 @@ class ShellExecutor(
 ) {
     private val settings = AiderSettings.getInstance(project)
     private val dockerManager = DockerContainerManager()
+    private val apiKeyChecker = DefaultApiKeyChecker()
     private val useDockerAider: Boolean
         get() = commandData.useDockerAider ?: settings.useDockerAider
     private val executionStrategy: AiderExecutionStrategy by lazy {
-        if (useDockerAider) DockerAiderExecutionStrategy(dockerManager) else NativeAiderExecutionStrategy()
+        if (useDockerAider) DockerAiderExecutionStrategy(dockerManager, apiKeyChecker) else NativeAiderExecutionStrategy(apiKeyChecker)
     }
 
     fun execute() {
@@ -37,8 +38,8 @@ class ShellExecutor(
         }
 
         // Set API key environment variables
-        ApiKeyChecker.getAllApiKeyNames().forEach { keyName ->
-            ApiKeyChecker.getApiKeyValue(keyName)?.let { value ->
+        apiKeyChecker.getAllApiKeyNames().forEach { keyName ->
+            apiKeyChecker.getApiKeyValue(keyName)?.let { value ->
                 terminalSession.executeCommand("set $keyName=$value")
             }
         }

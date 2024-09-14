@@ -12,7 +12,7 @@ interface AiderExecutionStrategy {
     fun cleanupAfterExecution()
 }
 
-class NativeAiderExecutionStrategy(private val apiKeyChecker: ApiKeyChecker) : AiderExecutionStrategy {
+class NativeAiderExecutionStrategy(private val apiKeyChecker: DefaultApiKeyChecker) : AiderExecutionStrategy {
     override fun buildCommand(commandData: CommandData): List<String> {
         return listOf("aider") + buildCommonArgs(commandData)
     }
@@ -28,7 +28,7 @@ class NativeAiderExecutionStrategy(private val apiKeyChecker: ApiKeyChecker) : A
 
 class DockerAiderExecutionStrategy(
     private val dockerManager: DockerContainerManager,
-    private val apiKeyChecker: ApiKeyChecker
+    private val apiKeyChecker: DefaultApiKeyChecker
 ) : AiderExecutionStrategy {
     override fun buildCommand(commandData: CommandData): List<String> {
         val dockerArgs = mutableListOf(
@@ -39,10 +39,8 @@ class DockerAiderExecutionStrategy(
         )
 
         // Add API key environment variables to Docker run command
-        apiKeyChecker.getAllApiKeyNames().forEach { keyName ->
-            apiKeyChecker.getApiKeyValue(keyName)?.let { value ->
-                dockerArgs.addAll(listOf("-e", "$keyName=$value"))
-            }
+        apiKeyChecker.getApiKeysForDocker().forEach { (keyName, value) ->
+            dockerArgs.addAll(listOf("-e", "$keyName=$value"))
         }
 
         // Mount files outside the project
@@ -111,7 +109,7 @@ private fun buildCommonArgs(commandData: CommandData): List<String> {
     }
 }
 
-private fun setApiKeyEnvironmentVariables(processBuilder: ProcessBuilder, apiKeyChecker: ApiKeyChecker) {
+private fun setApiKeyEnvironmentVariables(processBuilder: ProcessBuilder, apiKeyChecker: DefaultApiKeyChecker) {
     val environment = processBuilder.environment()
     apiKeyChecker.getAllApiKeyNames().forEach { keyName ->
         apiKeyChecker.getApiKeyValue(keyName)?.let { value ->
