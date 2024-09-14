@@ -12,13 +12,13 @@ interface AiderExecutionStrategy {
     fun cleanupAfterExecution()
 }
 
-class NativeAiderExecutionStrategy : AiderExecutionStrategy {
+class NativeAiderExecutionStrategy(private val apiKeyChecker: ApiKeyChecker) : AiderExecutionStrategy {
     override fun buildCommand(commandData: CommandData): List<String> {
         return listOf("aider") + buildCommonArgs(commandData)
     }
 
     override fun prepareEnvironment(processBuilder: ProcessBuilder, commandData: CommandData) {
-        setApiKeyEnvironmentVariables(processBuilder)
+        setApiKeyEnvironmentVariables(processBuilder, apiKeyChecker)
     }
 
     override fun cleanupAfterExecution() {
@@ -26,7 +26,10 @@ class NativeAiderExecutionStrategy : AiderExecutionStrategy {
     }
 }
 
-class DockerAiderExecutionStrategy(private val dockerManager: DockerContainerManager) : AiderExecutionStrategy {
+class DockerAiderExecutionStrategy(
+    private val dockerManager: DockerContainerManager,
+    private val apiKeyChecker: ApiKeyChecker
+) : AiderExecutionStrategy {
     override fun buildCommand(commandData: CommandData): List<String> {
         val dockerArgs = mutableListOf(
             "docker", "run", "-i", "--rm",
@@ -36,8 +39,8 @@ class DockerAiderExecutionStrategy(private val dockerManager: DockerContainerMan
         )
 
         // Add API key environment variables to Docker run command
-        ApiKeyChecker.getAllApiKeyNames().forEach { keyName ->
-            ApiKeyChecker.getApiKeyValue(keyName)?.let { value ->
+        apiKeyChecker.getAllApiKeyNames().forEach { keyName ->
+            apiKeyChecker.getApiKeyValue(keyName)?.let { value ->
                 dockerArgs.addAll(listOf("-e", "$keyName=$value"))
             }
         }
@@ -108,10 +111,10 @@ private fun buildCommonArgs(commandData: CommandData): List<String> {
     }
 }
 
-private fun setApiKeyEnvironmentVariables(processBuilder: ProcessBuilder) {
+private fun setApiKeyEnvironmentVariables(processBuilder: ProcessBuilder, apiKeyChecker: ApiKeyChecker) {
     val environment = processBuilder.environment()
-    ApiKeyChecker.getAllApiKeyNames().forEach { keyName ->
-        ApiKeyChecker.getApiKeyValue(keyName)?.let { value ->
+    apiKeyChecker.getAllApiKeyNames().forEach { keyName ->
+        apiKeyChecker.getApiKeyValue(keyName)?.let { value ->
             environment[keyName] = value
         }
     }

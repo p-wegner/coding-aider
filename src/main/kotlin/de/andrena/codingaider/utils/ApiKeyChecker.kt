@@ -3,7 +3,7 @@ package de.andrena.codingaider.utils
 import java.io.File
 import java.nio.file.Paths
 
-object ApiKeyChecker {
+interface ApiKeyChecker {
     private val llmToApiKeyMap = mapOf(
         "--sonnet" to "ANTHROPIC_API_KEY",
         "--mini" to "OPENAI_API_KEY",

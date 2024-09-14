@@ -14,13 +14,15 @@ class AiderExecutionStrategyTest {
     private lateinit var nativeStrategy: NativeAiderExecutionStrategy
     private lateinit var dockerStrategy: DockerAiderExecutionStrategy
     private lateinit var dockerManager: DockerContainerManager
+    private lateinit var apiKeyChecker: ApiKeyChecker
     private lateinit var commandData: CommandData
 
     @BeforeEach
     fun setup() {
-        nativeStrategy = NativeAiderExecutionStrategy()
+        apiKeyChecker = mock()
+        nativeStrategy = NativeAiderExecutionStrategy(apiKeyChecker)
         dockerManager = mock()
-        dockerStrategy = DockerAiderExecutionStrategy(dockerManager)
+        dockerStrategy = DockerAiderExecutionStrategy(dockerManager, apiKeyChecker)
         commandData = CommandData(
             projectPath = "/project",
             files = listOf(FileData("/project/file1.txt", false)),
