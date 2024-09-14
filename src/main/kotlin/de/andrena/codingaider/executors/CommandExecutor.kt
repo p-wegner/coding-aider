@@ -54,7 +54,16 @@ class CommandExecutor(private val project: Project, private val commandData: Com
             )
         }
         logger.info("Executing Aider command: ${commandArgs.joinToString(" ")}")
-        notifyObservers { it.onCommandStart("Starting Aider command...\n${commandLogger.getCommandString(false)}") }
+        notifyObservers {
+            it.onCommandStart(
+                "Starting Aider command...\n${
+                    commandLogger.getCommandString(
+                        false,
+                        dockerManager
+                    )
+                }"
+            )
+        }
 
         val processBuilder = ProcessBuilder(commandArgs)
             .directory(File(commandData.projectPath))

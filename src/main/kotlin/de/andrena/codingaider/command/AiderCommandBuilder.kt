@@ -1,15 +1,22 @@
 package de.andrena.codingaider.command
 
+import de.andrena.codingaider.docker.DockerContainerManager
 import de.andrena.codingaider.settings.AiderDefaults.DOCKER_IMAGE
 import de.andrena.codingaider.utils.ApiKeyChecker
 import java.io.File
 
 object AiderCommandBuilder {
-    fun buildAiderCommand(commandData: CommandData, isShellMode: Boolean, useDockerAider: Boolean): List<String> {
+    fun buildAiderCommand(
+        commandData: CommandData,
+        isShellMode: Boolean,
+        useDockerAider: Boolean,
+        dockerManager: DockerContainerManager? = null
+    ): List<String> {
         return buildList {
             val projectPath = commandData.projectPath
             if (useDockerAider) {
-                addDockerRunCommand(projectPath, commandData)
+                // TODO pwegner - 13.09.2024:  properly handle null dockerManager
+                addDockerRunCommand(projectPath, commandData, dockerManager!!)
             } else {
                 add("aider")
             }
