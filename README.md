@@ -15,7 +15,8 @@ To utilize this plugin, you
 
 - must have a functional Aider installation
 - or be able to run docker containers
-  Additionally API keys for the LLM Providers you intend to use are required.
+
+Additionally API keys for the LLM Providers you intend to use are required.
 
 ## Key Features
 
