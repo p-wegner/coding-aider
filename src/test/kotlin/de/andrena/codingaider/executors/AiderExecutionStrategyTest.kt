@@ -1,6 +1,7 @@
 package de.andrena.codingaider.executors
 
 import de.andrena.codingaider.command.CommandData
+import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.docker.DockerContainerManager
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -22,7 +23,7 @@ class AiderExecutionStrategyTest {
         dockerStrategy = DockerAiderExecutionStrategy(dockerManager)
         commandData = CommandData(
             projectPath = "/project",
-            files = listOf(CommandData.FileData("/project/file1.txt", false)),
+            files = listOf(FileData("/project/file1.txt", false)),
             message = "Test message",
             llm = "gpt-4",
             useYesFlag = true,
@@ -62,7 +63,7 @@ class AiderExecutionStrategyTest {
 
     @Test
     fun `DockerAiderExecutionStrategy handles files outside project directory`() {
-        val outsideFile = CommandData.FileData("/outside/file2.txt", true)
+        val outsideFile = FileData("/outside/file2.txt", true)
         commandData = commandData.copy(files = commandData.files + outsideFile)
         whenever(dockerManager.getCidFilePath()).thenReturn("/tmp/docker.cid")
         val command = dockerStrategy.buildCommand(commandData)
