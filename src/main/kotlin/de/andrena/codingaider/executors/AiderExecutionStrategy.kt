@@ -6,6 +6,7 @@ import de.andrena.codingaider.settings.AiderDefaults
 import de.andrena.codingaider.utils.ApiKeyChecker
 import java.io.File
 import java.io.File
+import java.io.File
 
 interface AiderExecutionStrategy {
     fun buildCommand(commandData: CommandData): List<String>
@@ -26,8 +27,6 @@ class NativeAiderExecutionStrategy(private val apiKeyChecker: ApiKeyChecker) : A
         // No specific cleanup needed for native execution
     }
 }
-
-import java.io.File
 
 class DockerAiderExecutionStrategy(
     private val dockerManager: DockerContainerManager,
