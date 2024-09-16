@@ -190,7 +190,6 @@ class AiderSettingsConfigurable : Configurable {
                             component.toolTipText = "The lint command will be executed after every code change by Aider"
                         }
                 }
-                row { cell(showGitComparisonToolCheckBox) }
                 row("Edit Format:") {
                     cell(editFormatComboBox)
                         .component
@@ -199,12 +198,32 @@ class AiderSettingsConfigurable : Configurable {
                                 "Select the default edit format for Aider. Leave empty to use the default format for the used LLM."
                         }
                 }
+            }
+
+            group("Git Settings") {
+                row { cell(showGitComparisonToolCheckBox) }
                 row {
                     cell(deactivateRepoMapCheckBox)
                         .component
                         .apply {
                             toolTipText =
                                 "This will deactivate Aider's repo map. Saves time for repo updates, but will give aider less context."
+                        }
+                }
+                row("Auto-commits:") {
+                    cell(autoCommitsComboBox)
+                        .component
+                        .apply {
+                            toolTipText =
+                                "Default: Use system setting. On: Aider will automatically commit changes after each successful edit. Off: Disable auto-commits."
+                        }
+                }
+                row("Dirty-commits:") {
+                    cell(dirtyCommitsComboBox)
+                        .component
+                        .apply {
+                            toolTipText =
+                                "Default: Use system setting. On: Aider will allow commits even when there are uncommitted changes in the repo. Off: Disable dirty-commits."
                         }
                 }
             }
@@ -243,22 +262,6 @@ class AiderSettingsConfigurable : Configurable {
                         .apply {
                             toolTipText =
                                 "If enabled, the Aider configuration file will be mounted in the Docker container."
-                        }
-                }
-                row("Auto-commits:") {
-                    cell(autoCommitsComboBox)
-                        .component
-                        .apply {
-                            toolTipText =
-                                "Default: Use system setting. On: Aider will automatically commit changes after each successful edit. Off: Disable auto-commits."
-                        }
-                }
-                row("Dirty-commits:") {
-                    cell(dirtyCommitsComboBox)
-                        .component
-                        .apply {
-                            toolTipText =
-                                "Default: Use system setting. On: Aider will allow commits even when there are uncommitted changes in the repo. Off: Disable dirty-commits."
                         }
                 }
             }
