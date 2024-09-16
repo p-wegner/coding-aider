@@ -27,6 +27,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var useDockerAider: Boolean = AiderDefaults.USE_DOCKER_AIDER,
         var enableMarkdownDialogAutoclose: Boolean = AiderDefaults.ENABLE_MARKDOWN_DIALOG_AUTOCLOSE,
         var mountAiderConfInDocker: Boolean = AiderDefaults.MOUNT_AIDER_CONF_IN_DOCKER,
+        var includeChangeContext: Boolean = AiderDefaults.INCLUDE_CHANGE_CONTEXT,
         var autoCommits: AutoCommitSetting = AiderDefaults.AUTO_COMMITS,
         var dirtyCommits: DirtyCommitSetting = AiderDefaults.DIRTY_COMMITS
     )
@@ -121,6 +122,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.mountAiderConfInDocker
         set(value) {
             myState.mountAiderConfInDocker = value
+        }
+
+    var includeChangeContext: Boolean
+        get() = myState.includeChangeContext
+        set(value) {
+            myState.includeChangeContext = value
         }
 
     var autoCommits: AutoCommitSetting

@@ -57,6 +57,7 @@ class AiderSettingsConfigurable : Configurable {
         this.useDockerAiderCheckBox = JBCheckBox("Use aider in Docker")
         this.enableMarkdownDialogAutocloseCheckBox = JBCheckBox("Automatically close Output Dialog after 10 seconds")
         this.mountAiderConfInDockerCheckBox = JBCheckBox("Mount Aider configuration file in Docker")
+        this.includeChangeContextCheckBox = JBCheckBox("Include change context in commit messages")
         this.autoCommitsComboBox = ComboBox(arrayOf("Default", "On", "Off"))
         this.dirtyCommitsComboBox = ComboBox(arrayOf("Default", "On", "Off"))
         this.apiKeyFields = mutableMapOf<String, JPasswordField>()
@@ -91,6 +92,7 @@ class AiderSettingsConfigurable : Configurable {
     private val useDockerAiderCheckBox: JBCheckBox
     private val enableMarkdownDialogAutocloseCheckBox: JBCheckBox
     private val mountAiderConfInDockerCheckBox: JBCheckBox
+    private val includeChangeContextCheckBox: JBCheckBox
     private val autoCommitsComboBox: ComboBox<String>
     private val dirtyCommitsComboBox: ComboBox<String>
     private val apiKeyFields: MutableMap<String, JPasswordField>
@@ -264,6 +266,14 @@ class AiderSettingsConfigurable : Configurable {
                                 "If enabled, the Aider configuration file will be mounted in the Docker container."
                         }
                 }
+                row {
+                    cell(includeChangeContextCheckBox)
+                        .component
+                        .apply {
+                            toolTipText =
+                                "If enabled, the commit messages will include the user prompt and affected files."
+                        }
+                }
             }
 
             group("Persistent Files") {
@@ -301,6 +311,7 @@ class AiderSettingsConfigurable : Configurable {
                 useDockerAiderCheckBox.isSelected != settings.useDockerAider ||
                 enableMarkdownDialogAutocloseCheckBox.isSelected != settings.enableMarkdownDialogAutoclose ||
                 mountAiderConfInDockerCheckBox.isSelected != settings.mountAiderConfInDocker ||
+                includeChangeContextCheckBox.isSelected != settings.includeChangeContext ||
                 autoCommitsComboBox.selectedIndex != settings.autoCommits.toIndex() ||
                 dirtyCommitsComboBox.selectedIndex != settings.dirtyCommits.toIndex()
     }
@@ -321,6 +332,7 @@ class AiderSettingsConfigurable : Configurable {
         settings.useDockerAider = useDockerAiderCheckBox.isSelected
         settings.enableMarkdownDialogAutoclose = enableMarkdownDialogAutocloseCheckBox.isSelected
         settings.mountAiderConfInDocker = mountAiderConfInDockerCheckBox.isSelected
+        settings.includeChangeContext = includeChangeContextCheckBox.isSelected
         settings.autoCommits = AiderSettings.AutoCommitSetting.fromIndex(autoCommitsComboBox.selectedIndex)
         settings.dirtyCommits = AiderSettings.DirtyCommitSetting.fromIndex(dirtyCommitsComboBox.selectedIndex)
     }
@@ -342,6 +354,7 @@ class AiderSettingsConfigurable : Configurable {
         useDockerAiderCheckBox.isSelected = settings.useDockerAider
         enableMarkdownDialogAutocloseCheckBox.isSelected = settings.enableMarkdownDialogAutoclose
         mountAiderConfInDockerCheckBox.isSelected = settings.mountAiderConfInDocker
+        includeChangeContextCheckBox.isSelected = settings.includeChangeContext
         autoCommitsComboBox.selectedIndex = settings.autoCommits.toIndex()
         dirtyCommitsComboBox.selectedIndex = settings.dirtyCommits.toIndex()
 
