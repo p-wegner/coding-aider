@@ -127,6 +127,19 @@ private fun buildCommonArgs(commandData: CommandData): List<String> {
             add("-m")
             add(commandData.message)
         }
+        
+        // Add new auto-commits and dirty-commits options
+        val settings = AiderSettings.getInstance(commandData.project)
+        if (settings.autoCommits) {
+            add("--auto-commits")
+        } else {
+            add("--no-auto-commits")
+        }
+        if (settings.dirtyCommits) {
+            add("--dirty-commits")
+        } else {
+            add("--no-dirty-commits")
+        }
     }
 }
 
