@@ -298,24 +298,8 @@ class AiderSettingsConfigurable : Configurable {
                 useDockerAiderCheckBox.isSelected != settings.useDockerAider ||
                 enableMarkdownDialogAutocloseCheckBox.isSelected != settings.enableMarkdownDialogAutoclose ||
                 mountAiderConfInDockerCheckBox.isSelected != settings.mountAiderConfInDocker ||
-                autoCommitsComboBox.selectedIndex != getAutoCommitSettingIndex(settings.autoCommits) ||
-                dirtyCommitsComboBox.selectedIndex != getDirtyCommitSettingIndex(settings.dirtyCommits)
-    }
-
-    private fun getAutoCommitSettingIndex(setting: AiderSettings.AutoCommitSetting): Int {
-        return when (setting) {
-            AiderSettings.AutoCommitSetting.DEFAULT -> 0
-            AiderSettings.AutoCommitSetting.ON -> 1
-            AiderSettings.AutoCommitSetting.OFF -> 2
-        }
-    }
-
-    private fun getDirtyCommitSettingIndex(setting: AiderSettings.DirtyCommitSetting): Int {
-        return when (setting) {
-            AiderSettings.DirtyCommitSetting.DEFAULT -> 0
-            AiderSettings.DirtyCommitSetting.ON -> 1
-            AiderSettings.DirtyCommitSetting.OFF -> 2
-        }
+                autoCommitsComboBox.selectedIndex != settings.autoCommits.toIndex() ||
+                dirtyCommitsComboBox.selectedIndex != settings.dirtyCommits.toIndex()
     }
 
     override fun apply() {
@@ -334,18 +318,8 @@ class AiderSettingsConfigurable : Configurable {
         settings.useDockerAider = useDockerAiderCheckBox.isSelected
         settings.enableMarkdownDialogAutoclose = enableMarkdownDialogAutocloseCheckBox.isSelected
         settings.mountAiderConfInDocker = mountAiderConfInDockerCheckBox.isSelected
-        settings.autoCommits = when (autoCommitsComboBox.selectedIndex) {
-            0 -> AiderSettings.AutoCommitSetting.DEFAULT
-            1 -> AiderSettings.AutoCommitSetting.ON
-            2 -> AiderSettings.AutoCommitSetting.OFF
-            else -> AiderSettings.AutoCommitSetting.DEFAULT
-        }
-        settings.dirtyCommits = when (dirtyCommitsComboBox.selectedIndex) {
-            0 -> AiderSettings.DirtyCommitSetting.DEFAULT
-            1 -> AiderSettings.DirtyCommitSetting.ON
-            2 -> AiderSettings.DirtyCommitSetting.OFF
-            else -> AiderSettings.DirtyCommitSetting.DEFAULT
-        }
+        settings.autoCommits = AiderSettings.AutoCommitSetting.fromIndex(autoCommitsComboBox.selectedIndex)
+        settings.dirtyCommits = AiderSettings.DirtyCommitSetting.fromIndex(dirtyCommitsComboBox.selectedIndex)
     }
 
 
@@ -365,16 +339,8 @@ class AiderSettingsConfigurable : Configurable {
         useDockerAiderCheckBox.isSelected = settings.useDockerAider
         enableMarkdownDialogAutocloseCheckBox.isSelected = settings.enableMarkdownDialogAutoclose
         mountAiderConfInDockerCheckBox.isSelected = settings.mountAiderConfInDocker
-        autoCommitsComboBox.selectedIndex = when (settings.autoCommits) {
-            AiderSettings.AutoCommitSetting.DEFAULT -> 0
-            AiderSettings.AutoCommitSetting.ON -> 1
-            AiderSettings.AutoCommitSetting.OFF -> 2
-        }
-        dirtyCommitsComboBox.selectedIndex = when (settings.dirtyCommits) {
-            AiderSettings.DirtyCommitSetting.DEFAULT -> 0
-            AiderSettings.DirtyCommitSetting.ON -> 1
-            AiderSettings.DirtyCommitSetting.OFF -> 2
-        }
+        autoCommitsComboBox.selectedIndex = settings.autoCommits.toIndex()
+        dirtyCommitsComboBox.selectedIndex = settings.dirtyCommits.toIndex()
 
         apiKeyFields.forEach { (keyName, field) ->
             field.text = getApiKeyDisplayValue(keyName)

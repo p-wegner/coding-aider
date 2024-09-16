@@ -136,11 +136,41 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         }
 
     enum class AutoCommitSetting {
-        ON, OFF, DEFAULT
+        ON, OFF, DEFAULT;
+
+        companion object {
+            fun fromIndex(index: Int): AutoCommitSetting = when (index) {
+                0 -> DEFAULT
+                1 -> ON
+                2 -> OFF
+                else -> DEFAULT
+            }
+        }
+
+        fun toIndex(): Int = when (this) {
+            DEFAULT -> 0
+            ON -> 1
+            OFF -> 2
+        }
     }
 
     enum class DirtyCommitSetting {
-        ON, OFF, DEFAULT
+        ON, OFF, DEFAULT;
+
+        companion object {
+            fun fromIndex(index: Int): DirtyCommitSetting = when (index) {
+                0 -> DEFAULT
+                1 -> ON
+                2 -> OFF
+                else -> DEFAULT
+            }
+        }
+
+        fun toIndex(): Int = when (this) {
+            DEFAULT -> 0
+            ON -> 1
+            OFF -> 2
+        }
     }
 
     companion object {
