@@ -67,3 +67,12 @@ Aider executions, providing a consistent interface while optimizing the backend 
 ### Step 5 Update AiderAction to use the new InteractiveCommandExecutor when interactive mode is enabled.
 
 ### Step 6 Implement a mechanism to gracefully terminate the interactive session when the IDE closes or the plugin is disabled.
+
+## Open questions
+
+- When should the aider process be started? What options should be used?
+- How to change options for the interactive aider process?
+- How to handle out of workspace files?
+- How to detect and ensure changes in files in context?
+- When to clear sessions, make conscious decision for user?
+
