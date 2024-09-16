@@ -130,15 +130,15 @@ private fun buildCommonArgs(commandData: CommandData, settings: AiderSettings): 
             add("-m")
             add(commandData.message)
         }
-        if (settings.autoCommits) {
-            add("--auto-commits")
-        } else {
-            add("--no-auto-commits")
+        when (settings.autoCommits) {
+            AiderSettings.AutoCommitSetting.ON -> add("--auto-commits")
+            AiderSettings.AutoCommitSetting.OFF -> add("--no-auto-commits")
+            AiderSettings.AutoCommitSetting.DEFAULT -> {} // Do nothing, use Aider's default
         }
-        if (settings.dirtyCommits) {
-            add("--dirty-commits")
-        } else {
-            add("--no-dirty-commits")
+        when (settings.dirtyCommits) {
+            AiderSettings.DirtyCommitSetting.ON -> add("--dirty-commits")
+            AiderSettings.DirtyCommitSetting.OFF -> add("--no-dirty-commits")
+            AiderSettings.DirtyCommitSetting.DEFAULT -> {} // Do nothing, use Aider's default
         }
     }
 }
