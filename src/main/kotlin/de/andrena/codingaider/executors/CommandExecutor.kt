@@ -11,11 +11,10 @@ import java.io.File
 import java.util.concurrent.TimeUnit
 
 class CommandExecutor(
-    project: Project,
+    private val project: Project,
     private val commandData: CommandData,
     private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker()
-) :
-    CommandSubject by GenericCommandSubject() {
+) : CommandSubject by GenericCommandSubject() {
     private val logger = Logger.getInstance(CommandExecutor::class.java)
     private val settings = AiderSettings.getInstance(project)
     private val commandLogger = CommandLogger(settings, commandData)
@@ -31,8 +30,35 @@ class CommandExecutor(
             settings
         ) else NativeAiderExecutionStrategy(apiKeyChecker, settings)
     }
+    private val aiderProcessManager: AiderProcessManager by lazy {
+        AiderProcessManager(project, apiKeyChecker)
+    }
 
     fun executeCommand(): String {
+        return if (settings.useInteractiveMode) {
+            executeInteractiveCommand()
+        } else {
+            executeNonInteractiveCommand()
+        }
+    }
+
+    private fun executeInteractiveCommand(): String {
+        logger.info("Executing Aider command in interactive mode")
+        notifyObservers {
+            it.onCommandStart("Starting Aider command in interactive mode...")
+        }
+
+        aiderProcessManager.startAiderProcess(commandData)
+        val output = aiderProcessManager.sendCommand(commandData.message)
+
+        notifyObservers {
+            it.onCommandComplete(output, 0)
+        }
+
+        return output
+    }
+
+    private fun executeNonInteractiveCommand(): String {
         val commandArgs = executionStrategy.buildCommand(commandData)
         logger.info("Executing Aider command: ${commandArgs.joinToString(" ")}")
         notifyObservers {
@@ -68,7 +94,9 @@ class CommandExecutor(
 
     fun abortCommand() {
         isAborted = true
-        if (useDockerAider) {
+        if (settings.useInteractiveMode) {
+            aiderProcessManager.stopAiderProcess()
+        } else if (useDockerAider) {
             dockerManager.stopDockerContainer()
         } else {
             process?.destroyForcibly()
