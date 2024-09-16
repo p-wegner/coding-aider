@@ -9,7 +9,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.IDEBasedExecutor
-import de.andrena.codingaider.executors.ShellExecutor
+import de.andrena.codingaider.executors.IDETerminalExecutor
 import de.andrena.codingaider.inputdialog.AiderInputDialog
 import de.andrena.codingaider.inputdialog.PersistentFileManager
 import de.andrena.codingaider.settings.AiderSettings
@@ -30,7 +30,7 @@ class AiderAction : AnAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     companion object {
-        fun executeAiderAction(e: AnActionEvent, directShellMode: Boolean) {
+        fun executeAiderAction(e: AnActionEvent, directTerminalMode: Boolean) {
             val project: Project? = e.project
             val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
 
@@ -40,16 +40,16 @@ class AiderAction : AnAction() {
 
                 allFiles.addAll(persistentFileManager.getPersistentFiles())
 
-                if (directShellMode) {
+                if (directTerminalMode) {
                     val commandData = collectDefaultCommandData(allFiles, project)
-                    ShellExecutor(project, commandData).execute()
+                    IDETerminalExecutor(project, commandData).execute()
                 } else {
                     val dialog = AiderInputDialog(project, allFiles.distinctBy { it.filePath }
                     )
                     if (dialog.showAndGet()) {
                         val commandData = collectCommandData(dialog, project)
-                        if (commandData.isShellMode) {
-                            ShellExecutor(project, commandData).execute()
+                        if (commandData.isTerminalMode) {
+                            IDETerminalExecutor(project, commandData).execute()
                         } else {
                             IDEBasedExecutor(project, commandData).execute()
                         }
@@ -59,8 +59,8 @@ class AiderAction : AnAction() {
         }
 
         fun executeAiderActionWithCommandData(project: Project, commandData: CommandData) {
-            if (commandData.isShellMode) {
-                ShellExecutor(project, commandData).execute()
+            if (commandData.isTerminalMode) {
+                IDETerminalExecutor(project, commandData).execute()
             } else {
                 IDEBasedExecutor(project, commandData).execute()
             }
@@ -74,7 +74,7 @@ class AiderAction : AnAction() {
                 llm = dialog.getLlm(),
                 additionalArgs = dialog.getAdditionalArgs(),
                 files = dialog.getAllFiles(),
-                isShellMode = dialog.isShellMode(),
+                isTerminalMode = dialog.isTerminalMode(),
                 lintCmd = settings.lintCmd,
                 deactivateRepoMap = settings.deactivateRepoMap,
                 editFormat = settings.editFormat,
@@ -91,7 +91,7 @@ class AiderAction : AnAction() {
                 llm = settings.llm,
                 additionalArgs = settings.additionalArgs,
                 files = files,
-                isShellMode = true, // Always true for direct shell mode
+                isTerminalMode = true, // Always true for direct shell mode
                 lintCmd = settings.lintCmd,
                 deactivateRepoMap = settings.deactivateRepoMap,
                 editFormat = settings.editFormat,
@@ -101,7 +101,7 @@ class AiderAction : AnAction() {
     }
 }
 
-class AiderShellAction : AnAction() {
+class AiderTerminalAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         AiderAction.executeAiderAction(e, true)
     }

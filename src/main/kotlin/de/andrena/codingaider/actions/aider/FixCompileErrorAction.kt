@@ -32,7 +32,8 @@ class FixCompileErrorActionGroup : ActionGroup() {
     override fun update(e: AnActionEvent) {
         val project = e.project
         val psiFile = e.getData(CommonDataKeys.PSI_FILE)
-        val hasErrors = project != null && psiFile != null && BaseFixCompileErrorAction.hasCompileErrors(project, psiFile)
+        val hasErrors =
+            project != null && psiFile != null && BaseFixCompileErrorAction.hasCompileErrors(project, psiFile)
         e.presentation.isEnabledAndVisible = hasErrors
     }
 
@@ -84,7 +85,7 @@ abstract class BaseFixCompileErrorAction : AnAction() {
                 llm = settings.llm,
                 additionalArgs = settings.additionalArgs,
                 files = files,
-                isShellMode = isShellMode,
+                isTerminalMode = isShellMode,
                 lintCmd = settings.lintCmd,
                 deactivateRepoMap = settings.deactivateRepoMap,
                 editFormat = settings.editFormat,
@@ -164,7 +165,7 @@ class FixCompileErrorInteractive : BaseFixCompileErrorAction() {
                     psiFile,
                     dialog.getInputText(),
                     dialog.isYesFlagChecked(),
-                    dialog.isShellMode()
+                    dialog.isTerminalMode()
                 ).copy(
                     llm = dialog.getLlm(),
                     additionalArgs = dialog.getAdditionalArgs(),

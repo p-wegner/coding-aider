@@ -111,7 +111,7 @@ private fun buildCommonArgs(commandData: CommandData, settings: AiderSettings): 
             add("--edit-format")
             add(commandData.editFormat)
         }
-        if (!commandData.isShellMode) {
+        if (!commandData.isTerminalMode) {
             add("--no-suggest-shell-commands")
             add("--no-pretty")
         }
@@ -126,7 +126,7 @@ private fun buildCommonArgs(commandData: CommandData, settings: AiderSettings): 
             add("--map-tokens")
             add("0")
         }
-        if (!commandData.isShellMode) {
+        if (!commandData.isTerminalMode) {
             add("-m")
             add(commandData.message)
         }

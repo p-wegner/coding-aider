@@ -66,7 +66,7 @@ class AiderWebCrawlAction : AnAction() {
                     llm = settings.webCrawlLlm,
                     additionalArgs = "",
                     files = listOf(FileData(filePath, false)),
-                    isShellMode = false,
+                    isTerminalMode = false,
                     lintCmd = "",
                     projectPath = project.basePath ?: ""
                 )

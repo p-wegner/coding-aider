@@ -16,7 +16,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var useYesFlag: Boolean = AiderDefaults.USE_YES_FLAG,
         var llm: String = AiderDefaults.LLM,
         var additionalArgs: String = AiderDefaults.ADDITIONAL_ARGS,
-        var isShellMode: Boolean = AiderDefaults.IS_SHELL_MODE,
+        var isTerminalMode: Boolean = AiderDefaults.IS_TERMINAL_MODE,
         var lintCmd: String = AiderDefaults.LINT_CMD,
         var showGitComparisonTool: Boolean = AiderDefaults.SHOW_GIT_COMPARISON_TOOL,
         var activateIdeExecutorAfterWebcrawl: Boolean = AiderDefaults.ACTIVATE_IDE_EXECUTOR_AFTER_WEBCRAWL,
@@ -58,10 +58,10 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
             myState.additionalArgs = value
         }
 
-    var isShellMode: Boolean
-        get() = myState.isShellMode
+    var isTerminalMode: Boolean
+        get() = myState.isTerminalMode
         set(value) {
-            myState.isShellMode = value
+            myState.isTerminalMode = value
         }
 
     var lintCmd: String
@@ -117,7 +117,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         set(value) {
             myState.enableMarkdownDialogAutoclose = value
         }
-    
+
     var mountAiderConfInDocker: Boolean
         get() = myState.mountAiderConfInDocker
         set(value) {

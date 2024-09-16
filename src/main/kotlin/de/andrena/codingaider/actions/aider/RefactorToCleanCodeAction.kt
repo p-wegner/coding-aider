@@ -38,7 +38,7 @@ class RefactorToCleanCodeAction : AnAction() {
                 llm = settings.llm,
                 additionalArgs = settings.additionalArgs,
                 files = allFiles,
-                isShellMode = false,
+                isTerminalMode = false,
                 lintCmd = settings.lintCmd,
                 deactivateRepoMap = settings.deactivateRepoMap,
                 editFormat = settings.editFormat,

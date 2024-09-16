@@ -13,7 +13,7 @@ class AiderTestCommand(private val project: Project) {
             llm = "",
             additionalArgs = "--help",
             files = emptyList(),
-            isShellMode = false,
+            isTerminalMode = false,
             lintCmd = "",
             deactivateRepoMap = false,
             editFormat = "",

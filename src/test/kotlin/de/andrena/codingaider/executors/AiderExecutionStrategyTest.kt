@@ -36,7 +36,7 @@ class AiderExecutionStrategyTest {
             llm = "4o",
             useYesFlag = true,
             editFormat = "diff",
-            isShellMode = false,
+            isTerminalMode = false,
             additionalArgs = "--verbose",
             lintCmd = "lint",
             deactivateRepoMap = true

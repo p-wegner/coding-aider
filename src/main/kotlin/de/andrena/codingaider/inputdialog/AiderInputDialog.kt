@@ -78,8 +78,8 @@ class AiderInputDialog(
         }
     }
     private val additionalArgsField = JTextField(settings.additionalArgs, 20)
-    private val modeToggle = JCheckBox("Shell Mode", settings.isShellMode).apply {
-        toolTipText = "Toggle between normal mode and shell mode"
+    private val terminalModeToggle = JCheckBox("Terminal Mode", settings.isTerminalMode).apply {
+        toolTipText = "Toggle between normal mode and ide terminal mode"
     }
     private val messageLabel = JLabel("Enter your message:")
     private val historyComboBox = ComboBox<HistoryItem>()
@@ -227,8 +227,8 @@ class AiderInputDialog(
 
         // First row: Shell Mode toggle, LLM selection, and History
         val firstRowPanel = JPanel(GridBagLayout())
-        modeToggle.mnemonic = KeyEvent.VK_M
-        firstRowPanel.add(modeToggle, GridBagConstraints().apply {
+        terminalModeToggle.mnemonic = KeyEvent.VK_M
+        firstRowPanel.add(terminalModeToggle, GridBagConstraints().apply {
             gridx = 0
             gridy = 0
             weightx = 0.0
@@ -428,8 +428,8 @@ class AiderInputDialog(
         splitPane.secondComponent = contextPanel
         panel.add(splitPane, BorderLayout.CENTER)
 
-        modeToggle.addActionListener {
-            val isShellMode = modeToggle.isSelected
+        terminalModeToggle.addActionListener {
+            val isShellMode = terminalModeToggle.isSelected
             inputTextArea.isVisible = !isShellMode
             messageLabel.isVisible = !isShellMode
             messageLabel.text = if (isShellMode) "Shell mode enabled" else "Enter your message:"
@@ -446,7 +446,7 @@ class AiderInputDialog(
     fun getLlm(): String = llmComboBox.selectedItem as String
     fun getAdditionalArgs(): String = additionalArgsField.text
     fun getAllFiles(): List<FileData> = aiderContextView.getAllFiles()
-    fun isShellMode(): Boolean = modeToggle.isSelected
+    fun isTerminalMode(): Boolean = terminalModeToggle.isSelected
 
     private fun insertTextAtCursor(text: String) {
         val caretPosition = inputTextArea.caretPosition

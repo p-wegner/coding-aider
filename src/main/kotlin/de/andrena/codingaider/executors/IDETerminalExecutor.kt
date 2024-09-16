@@ -9,7 +9,7 @@ import de.andrena.codingaider.utils.DefaultApiKeyChecker
 import org.jetbrains.plugins.terminal.ShellTerminalWidget
 import org.jetbrains.plugins.terminal.TerminalToolWindowManager
 
-class ShellExecutor(
+class IDETerminalExecutor(
     private val project: Project,
     private val commandData: CommandData,
     private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker()

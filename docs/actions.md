@@ -29,7 +29,7 @@ Key features:
 
 Exceptional implementation details:
 
-- Supports a direct shell mode through the `AiderShellAction` subclass
+- Supports a direct terminal mode through the `AiderTerminalAction` subclass
 - Uses a companion object to handle the main logic, allowing for easy reuse in other contexts
 - Implements a flexible `executeAiderActionWithCommandData` method for custom command execution
 

@@ -46,7 +46,7 @@ class AiderSettingsConfigurable : Configurable {
             }
         }
         this.additionalArgsField = JBTextField()
-        this.isShellModeCheckBox = JBCheckBox("Use Shell Mode by default")
+        this.isIDETerminalModeCheckBox = JBCheckBox("Use IDE Terminal Mode by default")
         this.lintCmdField = JBTextField()
         this.showGitComparisonToolCheckBox = JBCheckBox("Show git comparison tool after execution")
         this.activateIdeExecutorAfterWebcrawlCheckBox = JBCheckBox("Activate Post web crawl LLM cleanup (Experimental)")
@@ -81,7 +81,7 @@ class AiderSettingsConfigurable : Configurable {
     private val llmOptions: Array<String>
     private val llmComboBox: JComboBox<String>
     private val additionalArgsField: JBTextField
-    private val isShellModeCheckBox: JBCheckBox
+    private val isIDETerminalModeCheckBox: JBCheckBox
     private val lintCmdField: JBTextField
     private val showGitComparisonToolCheckBox: JBCheckBox
     private val activateIdeExecutorAfterWebcrawlCheckBox: JBCheckBox
@@ -180,7 +180,7 @@ class AiderSettingsConfigurable : Configurable {
                         BrowserUtil.browse("https://aider.chat/docs/config/options.html")
                     }
                 }
-                row { cell(isShellModeCheckBox) }
+                row { cell(isIDETerminalModeCheckBox) }
             }
 
             group("Code Modification Settings") {
@@ -301,7 +301,7 @@ class AiderSettingsConfigurable : Configurable {
         return useYesFlagCheckBox.isSelected != settings.useYesFlag ||
                 llmComboBox.selectedItem as String != settings.llm ||
                 additionalArgsField.text != settings.additionalArgs ||
-                isShellModeCheckBox.isSelected != settings.isShellMode ||
+                isIDETerminalModeCheckBox.isSelected != settings.isTerminalMode ||
                 lintCmdField.text != settings.lintCmd ||
                 showGitComparisonToolCheckBox.isSelected != settings.showGitComparisonTool ||
                 activateIdeExecutorAfterWebcrawlCheckBox.isSelected != settings.activateIdeExecutorAfterWebcrawl ||
@@ -322,7 +322,7 @@ class AiderSettingsConfigurable : Configurable {
         settings.useYesFlag = useYesFlagCheckBox.isSelected
         settings.llm = llmComboBox.selectedItem as String
         settings.additionalArgs = additionalArgsField.text
-        settings.isShellMode = isShellModeCheckBox.isSelected
+        settings.isTerminalMode = isIDETerminalModeCheckBox.isSelected
         settings.lintCmd = lintCmdField.text
         settings.showGitComparisonTool = showGitComparisonToolCheckBox.isSelected
         settings.activateIdeExecutorAfterWebcrawl = activateIdeExecutorAfterWebcrawlCheckBox.isSelected
@@ -344,7 +344,7 @@ class AiderSettingsConfigurable : Configurable {
         useYesFlagCheckBox.isSelected = settings.useYesFlag
         llmComboBox.selectedItem = settings.llm
         additionalArgsField.text = settings.additionalArgs
-        isShellModeCheckBox.isSelected = settings.isShellMode
+        isIDETerminalModeCheckBox.isSelected = settings.isTerminalMode
         lintCmdField.text = settings.lintCmd
         showGitComparisonToolCheckBox.isSelected = settings.showGitComparisonTool
         activateIdeExecutorAfterWebcrawlCheckBox.isSelected = settings.activateIdeExecutorAfterWebcrawl

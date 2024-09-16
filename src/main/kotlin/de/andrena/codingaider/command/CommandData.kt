@@ -8,7 +8,7 @@ package de.andrena.codingaider.command
  * @property llm The language model to be used (e.g., "gpt-4").
  * @property additionalArgs Any additional command-line arguments for Aider.
  * @property files List of files to be included in the Aider command.
- * @property isShellMode If true, enables shell mode for Aider.
+ * @property isTerminalMode If true, opens Aider in the ide terminal.
  * @property lintCmd Command to run for linting the code.
  * @property deactivateRepoMap If true, disables the repository mapping feature.
  * @property editFormat Specifies the format for edit instructions (e.g., "diff").
@@ -19,7 +19,7 @@ data class CommandData(
     val llm: String,
     val additionalArgs: String,
     val files: List<FileData>,
-    val isShellMode: Boolean,
+    val isTerminalMode: Boolean,
     val lintCmd: String,
     val deactivateRepoMap: Boolean = false,
     val editFormat: String = "",
