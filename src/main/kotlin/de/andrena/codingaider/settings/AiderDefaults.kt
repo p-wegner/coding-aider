@@ -15,7 +15,7 @@ object AiderDefaults {
     const val USE_DOCKER_AIDER = false
     const val ENABLE_MARKDOWN_DIALOG_AUTOCLOSE = true
     const val MOUNT_AIDER_CONF_IN_DOCKER = true
-    const val AUTO_COMMITS = true
-    const val DIRTY_COMMITS = true
+    val AUTO_COMMITS = AiderSettings.AutoCommitSetting.DEFAULT
+    val DIRTY_COMMITS = AiderSettings.DirtyCommitSetting.DEFAULT
     const val DOCKER_IMAGE: String = "paulgauthier/aider:v0.56.0"
 }
