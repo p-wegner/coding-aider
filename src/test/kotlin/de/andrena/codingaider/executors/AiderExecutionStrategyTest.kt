@@ -8,6 +8,8 @@ import de.andrena.codingaider.utils.ApiKeyChecker
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
@@ -75,5 +77,39 @@ class AiderExecutionStrategyTest {
         val command = dockerStrategy.buildCommand(commandData)
         assertThat(command).contains("-v", "/outside/file2.txt:/extra/file2.txt")
         assertThat(command).contains("--read", "/extra/file2.txt")
+    }
+
+    @ParameterizedTest
+    @EnumSource(AiderSettings.AutoCommitSetting::class)
+    fun `NativeAiderExecutionStrategy handles auto-commits setting`(autoCommitSetting: AiderSettings.AutoCommitSetting) {
+        aiderSettings.autoCommits = autoCommitSetting
+        val command = nativeStrategy.buildCommand(commandData)
+        when (autoCommitSetting) {
+            AiderSettings.AutoCommitSetting.ON -> assertThat(command).contains("--auto-commits")
+            AiderSettings.AutoCommitSetting.OFF -> assertThat(command).contains("--no-auto-commits")
+            AiderSettings.AutoCommitSetting.DEFAULT -> assertThat(command).doesNotContain("--auto-commits", "--no-auto-commits")
+        }
+    }
+
+    @ParameterizedTest
+    @EnumSource(AiderSettings.DirtyCommitSetting::class)
+    fun `NativeAiderExecutionStrategy handles dirty-commits setting`(dirtyCommitSetting: AiderSettings.DirtyCommitSetting) {
+        aiderSettings.dirtyCommits = dirtyCommitSetting
+        val command = nativeStrategy.buildCommand(commandData)
+        when (dirtyCommitSetting) {
+            AiderSettings.DirtyCommitSetting.ON -> assertThat(command).contains("--dirty-commits")
+            AiderSettings.DirtyCommitSetting.OFF -> assertThat(command).contains("--no-dirty-commits")
+            AiderSettings.DirtyCommitSetting.DEFAULT -> assertThat(command).doesNotContain("--dirty-commits", "--no-dirty-commits")
+        }
+    }
+
+    @Test
+    fun `DockerAiderExecutionStrategy handles auto-commits and dirty-commits settings`() {
+        aiderSettings.autoCommits = AiderSettings.AutoCommitSetting.ON
+        aiderSettings.dirtyCommits = AiderSettings.DirtyCommitSetting.OFF
+        whenever(dockerManager.getCidFilePath()).thenReturn("/tmp/docker.cid")
+        val command = dockerStrategy.buildCommand(commandData)
+        assertThat(command).contains("--auto-commits")
+        assertThat(command).contains("--no-dirty-commits")
     }
 }
