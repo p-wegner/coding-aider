@@ -38,7 +38,7 @@ class DockerAiderExecutionStrategy(
 ) : AiderExecutionStrategy {
     override fun buildCommand(commandData: CommandData): List<String> {
         val dockerArgs = mutableListOf(
-            "docker", "run", "-i", "--rm",
+            "docker", "run", "-i", "--rm", "-t",
             "-v", "${commandData.projectPath}:/app",
             "-w", "/app",
             "--cidfile", dockerManager.getCidFilePath()
