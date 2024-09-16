@@ -101,17 +101,3 @@ class AiderAction : AnAction() {
     }
 }
 
-class AiderTerminalAction : AnAction() {
-    override fun actionPerformed(e: AnActionEvent) {
-        AiderAction.executeAiderAction(e, true)
-    }
-
-    override fun update(e: AnActionEvent) {
-        val project: Project? = e.project
-        val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
-        e.presentation.isEnabledAndVisible = project != null && !files.isNullOrEmpty()
-    }
-
-    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
-}
-
