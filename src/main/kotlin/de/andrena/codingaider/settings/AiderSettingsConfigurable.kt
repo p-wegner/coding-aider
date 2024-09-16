@@ -202,14 +202,6 @@ class AiderSettingsConfigurable : Configurable {
 
             group("Git Settings") {
                 row { cell(showGitComparisonToolCheckBox) }
-                row {
-                    cell(deactivateRepoMapCheckBox)
-                        .component
-                        .apply {
-                            toolTipText =
-                                "This will deactivate Aider's repo map. Saves time for repo updates, but will give aider less context."
-                        }
-                }
                 row("Auto-commits:") {
                     cell(autoCommitsComboBox)
                         .component
@@ -239,6 +231,14 @@ class AiderSettingsConfigurable : Configurable {
                         }
                     cell(webCrawlLlmComboBox)
                         .label("Web Crawl LLM:")
+                }
+                row {
+                    cell(deactivateRepoMapCheckBox)
+                        .component
+                        .apply {
+                            toolTipText =
+                                "This will deactivate Aider's repo map. Saves time for repo updates, but will give aider less context."
+                        }
                 }
                 row {
                     cell(verboseCommandLoggingCheckBox)
