@@ -170,9 +170,10 @@ private fun getCommitPrompt(): String {
     """.trimIndent()
 
     val extendedPrompt = """
-        Additional to this commit message, the next lines of it should include the prompt of the USER that led to the change 
-        and the files (without content) that were given as context. Example:
+        Additional to this commit message, the next lines after the message should include the prompt of the USER that led to the change 
+        and the files (without content) that were given as context. Make sure the compact commit message is clearly separated from the additional information. Example:
         feat: Add a button to the login page
+        
         USER: Create a button to allow users to login
         FILES: login.html, login.css
     """.trimIndent()
