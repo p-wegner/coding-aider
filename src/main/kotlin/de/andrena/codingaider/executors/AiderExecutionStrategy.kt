@@ -142,7 +142,7 @@ private fun buildCommonArgs(commandData: CommandData, settings: AiderSettings): 
         }
         if (settings.includeChangeContext) {
             add("--commit-prompt")
-            add(getCommitPrompt(settings.includeChangeContext))
+            add(getCommitPrompt())
         }
     }
 }
@@ -156,7 +156,8 @@ private fun setApiKeyEnvironmentVariables(processBuilder: ProcessBuilder, apiKey
     }
 }
 
-private fun getCommitPrompt(includeChangeContext: Boolean): String {
+private fun getCommitPrompt(): String {
+    // the prompt in the Aider CLI https://github.com/paul-gauthier/aider/blob/main/aider/prompts.py extended with prompt context
     val basePrompt = """
         You are an expert software engineer.
         Review the provided context and diffs which are about to be committed to a git repo.
@@ -169,11 +170,12 @@ private fun getCommitPrompt(includeChangeContext: Boolean): String {
     """.trimIndent()
 
     val extendedPrompt = """
-        Additional to this commit message, the next lines of it should include the prompt of the USER that led to the change and the files (without content) that were given as context. Example:
+        Additional to this commit message, the next lines of it should include the prompt of the USER that led to the change 
+        and the files (without content) that were given as context. Example:
         feat: Add a button to the login page
         USER: Create a button to allow users to login
         FILES: login.html, login.css
     """.trimIndent()
 
-    return if (includeChangeContext) "$basePrompt\n$extendedPrompt" else basePrompt
+    return "$basePrompt\n$extendedPrompt"
 }

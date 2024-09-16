@@ -3,6 +3,7 @@
   <component name="de.andrena.codingaider.settings.AiderSettings">
     <option name="activateIdeExecutorAfterWebcrawl" value="true" />
     <option name="deactivateRepoMap" value="true" />
+    <option name="includeChangeContext" value="true" />
     <option name="llm" value="--sonnet" />
   </component>
 </project>

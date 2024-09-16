@@ -220,6 +220,15 @@ class AiderSettingsConfigurable : Configurable {
                                 "Default: Use system setting. On: Aider will allow commits even when there are uncommitted changes in the repo. Off: Disable dirty-commits."
                         }
                 }
+                row {
+                    cell(includeChangeContextCheckBox)
+                        .component
+                        .apply {
+                            toolTipText =
+                                "If enabled, the commit messages will include the user prompt and affected files."
+                        }
+                }
+
             }
 
             group("Advanced Settings") {
@@ -264,14 +273,6 @@ class AiderSettingsConfigurable : Configurable {
                         .apply {
                             toolTipText =
                                 "If enabled, the Aider configuration file will be mounted in the Docker container."
-                        }
-                }
-                row {
-                    cell(includeChangeContextCheckBox)
-                        .component
-                        .apply {
-                            toolTipText =
-                                "If enabled, the commit messages will include the user prompt and affected files."
                         }
                 }
             }
