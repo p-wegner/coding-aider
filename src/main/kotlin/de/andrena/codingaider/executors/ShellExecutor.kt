@@ -23,7 +23,7 @@ class ShellExecutor(
             dockerManager,
             apiKeyChecker,
             settings
-        ) else NativeAiderExecutionStrategy(apiKeyChecker)
+        ) else NativeAiderExecutionStrategy(apiKeyChecker, settings)
     }
 
     fun execute() {

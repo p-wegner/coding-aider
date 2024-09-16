@@ -29,7 +29,7 @@ class CommandExecutor(
             dockerManager,
             apiKeyChecker,
             settings
-        ) else NativeAiderExecutionStrategy(apiKeyChecker)
+        ) else NativeAiderExecutionStrategy(apiKeyChecker, settings)
     }
 
     fun executeCommand(): String {

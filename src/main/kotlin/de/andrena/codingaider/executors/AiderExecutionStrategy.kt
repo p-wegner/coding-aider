@@ -14,9 +14,12 @@ interface AiderExecutionStrategy {
     fun cleanupAfterExecution()
 }
 
-class NativeAiderExecutionStrategy(private val apiKeyChecker: ApiKeyChecker) : AiderExecutionStrategy {
+class NativeAiderExecutionStrategy(
+    private val apiKeyChecker: ApiKeyChecker,
+    private val settings: AiderSettings
+) : AiderExecutionStrategy {
     override fun buildCommand(commandData: CommandData): List<String> {
-        return listOf("aider") + buildCommonArgs(commandData)
+        return listOf("aider") + buildCommonArgs(commandData, settings)
     }
 
     override fun prepareEnvironment(processBuilder: ProcessBuilder, commandData: CommandData) {
@@ -62,7 +65,7 @@ class DockerAiderExecutionStrategy(
 
         dockerArgs.add(AiderDefaults.DOCKER_IMAGE)
 
-        return dockerArgs + buildCommonArgs(commandData).map { arg ->
+        return dockerArgs + buildCommonArgs(commandData, settings).map { arg ->
             commandData.files.fold(arg) { acc, fileData ->
                 if (!fileData.filePath.startsWith(commandData.projectPath)) {
                     acc.replace(fileData.filePath, "/extra/${File(fileData.filePath).name}")
@@ -95,7 +98,7 @@ class DockerAiderExecutionStrategy(
 
 }
 
-private fun buildCommonArgs(commandData: CommandData): List<String> {
+private fun buildCommonArgs(commandData: CommandData, settings: AiderSettings): List<String> {
     return buildList {
         if (commandData.llm.isNotEmpty()) add(commandData.llm)
         commandData.files.forEach { fileData ->
@@ -127,9 +130,6 @@ private fun buildCommonArgs(commandData: CommandData): List<String> {
             add("-m")
             add(commandData.message)
         }
-        
-        // Add new auto-commits and dirty-commits options
-        val settings = AiderSettings.getInstance(commandData.project)
         if (settings.autoCommits) {
             add("--auto-commits")
         } else {

@@ -17,7 +17,7 @@ class CommandLogger(
             val executionStrategy = if (useDockerAider) {
                 DockerAiderExecutionStrategy(dockerManager ?: DockerContainerManager(), apiKeyChecker, settings)
             } else {
-                NativeAiderExecutionStrategy(apiKeyChecker)
+                NativeAiderExecutionStrategy(apiKeyChecker, settings)
             }
             val commandArgs = executionStrategy.buildCommand(commandData)
             val commandString = "Command: ${commandArgs.joinToString(" ")}"
