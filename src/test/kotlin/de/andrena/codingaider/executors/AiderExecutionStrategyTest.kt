@@ -10,8 +10,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
@@ -89,7 +87,10 @@ class AiderExecutionStrategyTest {
         when (autoCommitSetting) {
             AiderSettings.AutoCommitSetting.ON -> assertThat(command).contains("--auto-commits")
             AiderSettings.AutoCommitSetting.OFF -> assertThat(command).contains("--no-auto-commits")
-            AiderSettings.AutoCommitSetting.DEFAULT -> assertThat(command).doesNotContain("--auto-commits", "--no-auto-commits")
+            AiderSettings.AutoCommitSetting.DEFAULT -> assertThat(command).doesNotContain(
+                "--auto-commits",
+                "--no-auto-commits"
+            )
         }
     }
 
@@ -101,7 +102,10 @@ class AiderExecutionStrategyTest {
         when (dirtyCommitSetting) {
             AiderSettings.DirtyCommitSetting.ON -> assertThat(command).contains("--dirty-commits")
             AiderSettings.DirtyCommitSetting.OFF -> assertThat(command).contains("--no-dirty-commits")
-            AiderSettings.DirtyCommitSetting.DEFAULT -> assertThat(command).doesNotContain("--dirty-commits", "--no-dirty-commits")
+            AiderSettings.DirtyCommitSetting.DEFAULT -> assertThat(command).doesNotContain(
+                "--dirty-commits",
+                "--no-dirty-commits"
+            )
         }
     }
 
