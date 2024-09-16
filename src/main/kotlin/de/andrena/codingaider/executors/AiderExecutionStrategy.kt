@@ -140,26 +140,10 @@ private fun buildCommonArgs(commandData: CommandData, settings: AiderSettings): 
             AiderSettings.DirtyCommitSetting.OFF -> add("--no-dirty-commits")
             AiderSettings.DirtyCommitSetting.DEFAULT -> {} // Do nothing, use Aider's default
         }
-        add("--commit-prompt")
-        val commitPrompt = """
-            You are an expert software engineer.
-            Review the provided context and diffs which are about to be committed to a git repo.
-            Review the diffs carefully.
-            Generate a commit message for those changes.
-            The commit message MUST use the imperative tense.
-            The commit message should be structured as follows: <type>: <description>
-            Use these for <type>: fix, feat, build, chore, ci, docs, style, refactor, perf, test
-            Reply with JUST the commit message, without quotes, comments, questions, etc!
-        """.trimIndent()
-        
-        val extendedPrompt = """
-            Additional to this commit message, the next lines of it should include the prompt of the USER that led to the change and the files (without content) that were given as context. Example:
-            feat: Add a button to the login page
-            USER: Create a button to allow users to login
-            FILES: login.html, login.css
-        """.trimIndent()
-        
-        add(if (settings.includeChangeContext) "$commitPrompt\n$extendedPrompt" else commitPrompt)
+        if (settings.includeChangeContext) {
+            add("--commit-prompt")
+            add(getCommitPrompt(settings.includeChangeContext))
+        }
     }
 }
 
@@ -170,4 +154,26 @@ private fun setApiKeyEnvironmentVariables(processBuilder: ProcessBuilder, apiKey
             environment[keyName] = value
         }
     }
+}
+
+private fun getCommitPrompt(includeChangeContext: Boolean): String {
+    val basePrompt = """
+        You are an expert software engineer.
+        Review the provided context and diffs which are about to be committed to a git repo.
+        Review the diffs carefully.
+        Generate a commit message for those changes.
+        The commit message MUST use the imperative tense.
+        The commit message should be structured as follows: <type>: <description>
+        Use these for <type>: fix, feat, build, chore, ci, docs, style, refactor, perf, test
+        Reply with JUST the commit message, without quotes, comments, questions, etc!
+    """.trimIndent()
+
+    val extendedPrompt = """
+        Additional to this commit message, the next lines of it should include the prompt of the USER that led to the change and the files (without content) that were given as context. Example:
+        feat: Add a button to the login page
+        USER: Create a button to allow users to login
+        FILES: login.html, login.css
+    """.trimIndent()
+
+    return if (includeChangeContext) "$basePrompt\n$extendedPrompt" else basePrompt
 }
