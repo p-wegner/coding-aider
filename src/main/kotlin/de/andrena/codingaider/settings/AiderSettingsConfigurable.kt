@@ -60,6 +60,7 @@ class AiderSettingsConfigurable : Configurable {
         this.includeChangeContextCheckBox = JBCheckBox("Include change context in commit messages")
         this.autoCommitsComboBox = ComboBox(arrayOf("Default", "On", "Off"))
         this.dirtyCommitsComboBox = ComboBox(arrayOf("Default", "On", "Off"))
+        this.useInteractiveModeCheckBox = JBCheckBox("Use Interactive Aider Mode")
         this.apiKeyFields = mutableMapOf<String, JPasswordField>()
         this.persistentFileManager = PersistentFileManager(project.basePath ?: "")
         this.persistentFilesListModel = DefaultListModel<FileData>()
@@ -95,6 +96,7 @@ class AiderSettingsConfigurable : Configurable {
     private val includeChangeContextCheckBox: JBCheckBox
     private val autoCommitsComboBox: ComboBox<String>
     private val dirtyCommitsComboBox: ComboBox<String>
+    private val useInteractiveModeCheckBox: JBCheckBox
     private val apiKeyFields: MutableMap<String, JPasswordField>
     private val persistentFileManager: PersistentFileManager
     private val persistentFilesListModel: DefaultListModel<FileData>
@@ -203,6 +205,7 @@ class AiderSettingsConfigurable : Configurable {
             }
 
             group("Git Settings") {
+                row { cell(useInteractiveModeCheckBox) }
                 row { cell(showGitComparisonToolCheckBox) }
                 row("Auto-commits:") {
                     cell(autoCommitsComboBox)
@@ -314,7 +317,8 @@ class AiderSettingsConfigurable : Configurable {
                 mountAiderConfInDockerCheckBox.isSelected != settings.mountAiderConfInDocker ||
                 includeChangeContextCheckBox.isSelected != settings.includeChangeContext ||
                 autoCommitsComboBox.selectedIndex != settings.autoCommits.toIndex() ||
-                dirtyCommitsComboBox.selectedIndex != settings.dirtyCommits.toIndex()
+                dirtyCommitsComboBox.selectedIndex != settings.dirtyCommits.toIndex() ||
+                useInteractiveModeCheckBox.isSelected != settings.useInteractiveMode
     }
 
     override fun apply() {
@@ -336,6 +340,7 @@ class AiderSettingsConfigurable : Configurable {
         settings.includeChangeContext = includeChangeContextCheckBox.isSelected
         settings.autoCommits = AiderSettings.AutoCommitSetting.fromIndex(autoCommitsComboBox.selectedIndex)
         settings.dirtyCommits = AiderSettings.DirtyCommitSetting.fromIndex(dirtyCommitsComboBox.selectedIndex)
+        settings.useInteractiveMode = useInteractiveModeCheckBox.isSelected
     }
 
 
@@ -358,6 +363,7 @@ class AiderSettingsConfigurable : Configurable {
         includeChangeContextCheckBox.isSelected = settings.includeChangeContext
         autoCommitsComboBox.selectedIndex = settings.autoCommits.toIndex()
         dirtyCommitsComboBox.selectedIndex = settings.dirtyCommits.toIndex()
+        useInteractiveModeCheckBox.isSelected = settings.useInteractiveMode
 
         apiKeyFields.forEach { (keyName, field) ->
             field.text = getApiKeyDisplayValue(keyName)

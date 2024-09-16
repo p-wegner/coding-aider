@@ -29,7 +29,8 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var mountAiderConfInDocker: Boolean = AiderDefaults.MOUNT_AIDER_CONF_IN_DOCKER,
         var includeChangeContext: Boolean = AiderDefaults.INCLUDE_CHANGE_CONTEXT,
         var autoCommits: AutoCommitSetting = AiderDefaults.AUTO_COMMITS,
-        var dirtyCommits: DirtyCommitSetting = AiderDefaults.DIRTY_COMMITS
+        var dirtyCommits: DirtyCommitSetting = AiderDefaults.DIRTY_COMMITS,
+        var useInteractiveMode: Boolean = AiderDefaults.USE_INTERACTIVE_MODE
     )
 
     private var myState = State()
@@ -140,6 +141,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.dirtyCommits
         set(value) {
             myState.dirtyCommits = value
+        }
+
+    var useInteractiveMode: Boolean
+        get() = myState.useInteractiveMode
+        set(value) {
+            myState.useInteractiveMode = value
         }
 
     enum class AutoCommitSetting {
