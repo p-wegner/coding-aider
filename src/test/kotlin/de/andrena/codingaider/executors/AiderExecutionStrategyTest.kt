@@ -23,9 +23,9 @@ class AiderExecutionStrategyTest {
     @BeforeEach
     fun setup() {
         apiKeyChecker = mock()
-        nativeStrategy = NativeAiderExecutionStrategy(apiKeyChecker)
         dockerManager = mock()
         aiderSettings = AiderSettings()
+        nativeStrategy = NativeAiderExecutionStrategy(apiKeyChecker, aiderSettings)
         dockerStrategy = DockerAiderExecutionStrategy(dockerManager, apiKeyChecker, aiderSettings)
         commandData = CommandData(
             projectPath = "/project",
