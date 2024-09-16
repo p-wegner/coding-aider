@@ -54,4 +54,13 @@ Aider executions, providing a consistent interface while optimizing the backend 
 - Implement a mechanism to gracefully terminate the interactive session when the IDE closes or the plugin is disabled.
 - Handle potential differences in session management between native and Docker-based executions.
 
+## Steps to implement the Interactive Aider Execution Strategy without breaking existing functionality:
 
+1. Extend settings to include an option for interactive Aider execution (default is false).
+2. Implement a class AiderProcessManager that manages the interactive Aider, starts an aider process in the background,
+   and handles communication with it. (ShellLikeProcessHandler outlines how this can be done)
+3. Extend CommandObserver to support user input and confirmation prompts, adjust existing code with noops.
+4. Add a new command executor (InteractiveCommandExecutor) that is able to handle interactive commands and delegate
+   messages and user input/confirmation prompts to components implementing the CommandObserver interface.
+5. Update AiderAction to use the new InteractiveCommandExecutor when interactive mode is enabled.
+6. Implement a mechanism to gracefully terminate the interactive session when the IDE closes or the plugin is disabled.
