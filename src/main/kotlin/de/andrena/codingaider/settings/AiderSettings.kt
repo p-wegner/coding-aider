@@ -149,6 +149,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
             myState.useInteractiveMode = value
         }
 
+
     enum class AutoCommitSetting {
         ON, OFF, DEFAULT;
 
