@@ -318,8 +318,18 @@ class AiderSettingsConfigurable : Configurable {
         settings.useDockerAider = useDockerAiderCheckBox.isSelected
         settings.enableMarkdownDialogAutoclose = enableMarkdownDialogAutocloseCheckBox.isSelected
         settings.mountAiderConfInDocker = mountAiderConfInDockerCheckBox.isSelected
-        settings.autoCommits = AiderSettings.AutoCommitSetting.values()[autoCommitsComboBox.selectedIndex]
-        settings.dirtyCommits = AiderSettings.DirtyCommitSetting.values()[dirtyCommitsComboBox.selectedIndex]
+        settings.autoCommits = when (autoCommitsComboBox.selectedIndex) {
+            0 -> AiderSettings.AutoCommitSetting.DEFAULT
+            1 -> AiderSettings.AutoCommitSetting.ON
+            2 -> AiderSettings.AutoCommitSetting.OFF
+            else -> AiderSettings.AutoCommitSetting.DEFAULT
+        }
+        settings.dirtyCommits = when (dirtyCommitsComboBox.selectedIndex) {
+            0 -> AiderSettings.DirtyCommitSetting.DEFAULT
+            1 -> AiderSettings.DirtyCommitSetting.ON
+            2 -> AiderSettings.DirtyCommitSetting.OFF
+            else -> AiderSettings.DirtyCommitSetting.DEFAULT
+        }
     }
 
 
@@ -339,8 +349,16 @@ class AiderSettingsConfigurable : Configurable {
         useDockerAiderCheckBox.isSelected = settings.useDockerAider
         enableMarkdownDialogAutocloseCheckBox.isSelected = settings.enableMarkdownDialogAutoclose
         mountAiderConfInDockerCheckBox.isSelected = settings.mountAiderConfInDocker
-        autoCommitsComboBox.selectedIndex = settings.autoCommits.ordinal
-        dirtyCommitsComboBox.selectedIndex = settings.dirtyCommits.ordinal
+        autoCommitsComboBox.selectedIndex = when (settings.autoCommits) {
+            AiderSettings.AutoCommitSetting.DEFAULT -> 0
+            AiderSettings.AutoCommitSetting.ON -> 1
+            AiderSettings.AutoCommitSetting.OFF -> 2
+        }
+        dirtyCommitsComboBox.selectedIndex = when (settings.dirtyCommits) {
+            AiderSettings.DirtyCommitSetting.DEFAULT -> 0
+            AiderSettings.DirtyCommitSetting.ON -> 1
+            AiderSettings.DirtyCommitSetting.OFF -> 2
+        }
 
         apiKeyFields.forEach { (keyName, field) ->
             field.text = getApiKeyDisplayValue(keyName)
