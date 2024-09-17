@@ -63,11 +63,24 @@ class AiderProcessManager(
 
         val output = StringBuilder()
         var line: String? = null
+        val startTime = System.currentTimeMillis()
         while (isRunning && outputReader?.readLine().also { line = it } != null) {
             if (line == "> ") break
             output.append(line).append("\n")
-            notifyObservers { it.onCommandProgress(output.toString(), 0) }
+            val runningTime = (System.currentTimeMillis() - startTime) / 1000
+            notifyObservers { it.onCommandProgress(output.toString(), runningTime) }
         }
+        
+        // Continue listening for additional output
+        scope.launch {
+            while (isRunning && outputReader?.readLine().also { line = it } != null) {
+                if (line == "> ") break
+                output.append(line).append("\n")
+                val runningTime = (System.currentTimeMillis() - startTime) / 1000
+                notifyObservers { it.onCommandProgress(output.toString(), runningTime) }
+            }
+        }
+
         return output.toString().trim()
     }
 
