@@ -12,6 +12,10 @@ import kotlinx.coroutines.selects.select
 import java.io.*
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import java.nio.charset.StandardCharsets
 
 class AiderProcessManager(
     private val project: Project,
@@ -25,9 +29,9 @@ class AiderProcessManager(
     private val dockerManager = DockerContainerManager()
     private var isRunning = false
     private val scope = CoroutineScope(Dispatchers.Default)
+    private val outputChannel = Channel<String>(Channel.UNLIMITED)
 
     suspend fun startAiderProcess(commandData: CommandData) {
-
         val executionStrategy = getExecutionStrategy()
 
         val commandArgs = executionStrategy.buildCommand(commandData)
@@ -40,13 +44,18 @@ class AiderProcessManager(
             .apply {
                 environment().putIfAbsent("PYTHONIOENCODING", "utf-8")
                 redirectErrorStream(true)
+                if (settings.useInteractiveMode) {
+                    environment()["TERM"] = "xterm-256color"
+                    environment()["COLUMNS"] = "120"
+                    environment()["LINES"] = "30"
+                }
             }
 
         executionStrategy.prepareEnvironment(processBuilder, commandData)
 
         process = processBuilder.start()
-        inputWriter = BufferedWriter(OutputStreamWriter(process!!.outputStream))
-        outputReader = BufferedReader(InputStreamReader(process!!.inputStream))
+        inputWriter = BufferedWriter(OutputStreamWriter(process!!.outputStream, StandardCharsets.UTF_8))
+        outputReader = BufferedReader(InputStreamReader(process!!.inputStream, StandardCharsets.UTF_8))
 
         isRunning = true
         startOutputReading()
@@ -59,37 +68,57 @@ class AiderProcessManager(
             else -> NativeAiderExecutionStrategy(apiKeyChecker, settings)
         }
 
-    fun sendCommand(command: String): Unit {
+    suspend fun sendCommand(command: String) {
         inputWriter?.write(command)
         inputWriter?.newLine()
         inputWriter?.flush()
 
-        startOutputReading()
+        // Wait for the command to be processed
+        var output = ""
+        while (true) {
+            val line = outputChannel.receiveCatching().getOrNull() ?: break
+            output += line
+            if (line.trim().endsWith("> ")) {
+                break
+            }
+        }
+
+        notifyObservers { it.onCommandProgress(output, 0) }
     }
 
     private fun startOutputReading() {
         scope.launch {
             val output = StringBuilder()
-            var line: String? = null
             val startTime = System.currentTimeMillis()
             val confirmationPattern =
                 Pattern.compile("^Create new file\\? \\(Y\\)es/\\(N\\)o(?: \\[(Yes|No)\\])?:\\s*$")
-            while (isRunning && outputReader?.readLine().also { line = it } != null) {
+            
+            while (isRunning) {
+                val char = outputReader?.read() ?: break
+                if (char == -1) break
+
+                output.append(char.toChar())
                 val runningTime = (System.currentTimeMillis() - startTime) / 1000
-                if (line == "> ") {
-                    val userResponse = notifyObserversForUserResponse(output.toString(), false)
-                    sendUserResponse(userResponse)
-                    output.clear()
-                    continue
+
+                when {
+                    output.endsWith("> ") -> {
+                        val userResponse = notifyObserversForUserResponse(output.toString().trim(), false)
+                        sendUserResponse(userResponse)
+                        output.clear()
+                    }
+                    confirmationPattern.matcher(output).matches() -> {
+                        val userResponse = notifyObserversForUserResponse("Create new file?", true)
+                        sendUserResponse(userResponse)
+                        output.clear()
+                    }
+                    char.toChar() == '\n' -> {
+                        runBlocking { notifyObservers { it.onCommandProgress(output.toString(), runningTime) } }
+                        outputChannel.send(output.toString())
+                        output.clear()
+                    }
                 }
-                if (confirmationPattern.matcher(line ?: "").matches()) {
-                    val userResponse = notifyObserversForUserResponse("Create new file?", true)
-                    sendUserResponse(userResponse)
-                    continue
-                }
-                output.append(line).append("\n")
-                runBlocking { notifyObservers { it.onCommandProgress(output.toString(), runningTime) } }
             }
+            outputChannel.close()
         }
     }
 
@@ -143,6 +172,7 @@ class AiderProcessManager(
         isRunning = false
         inputWriter?.close()
         outputReader?.close()
+        outputChannel.close()
         process?.let {
             if (it.isAlive) {
                 it.destroy()
