@@ -19,6 +19,8 @@ interface CommandSubject {
     suspend fun notifyObservers(event: suspend (CommandObserver) -> Unit)
 }
 
+class TimeoutException(message: String) : Exception(message)
+
 sealed class UserResponse {
     data class Input(val value: String) : UserResponse()
     data class Confirmation(val value: Boolean) : UserResponse()

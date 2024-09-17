@@ -9,6 +9,7 @@ import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
 import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.selects.select
 import java.io.*
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
@@ -83,7 +84,7 @@ class AiderProcessManager(
                     continue
                 }
                 output.append(line).append("\n")
-                notifyObservers { it.onCommandProgress(output.toString(), runningTime) }
+                runBlocking { notifyObservers { it.onCommandProgress(output.toString(), runningTime) } }
             }
         }
     }
@@ -105,19 +106,20 @@ class AiderProcessManager(
                 deferreds.add(deferred)
             }
 
-            val response = select<UserResponse> {
-                deferreds.forEach { deferred ->
-                    deferred.onAwait { it }
+            try {
+                withTimeout(5000) {
+                    select<UserResponse> {
+                        deferreds.forEach { deferred ->
+                            deferred.onAwait { it }
+                        }
+                    }
                 }
-                onTimeout(5000) {
-                    if (isConfirmation) UserResponse.Confirmation(false) else throw TimeoutException("User input timed out")
-                }
+            } catch (e: TimeoutCancellationException) {
+                if (isConfirmation) UserResponse.Confirmation(false) else throw TimeoutException("User input timed out")
+            } finally {
+                // Cancel all other deferreds
+                deferreds.forEach { it.cancel() }
             }
-
-            // Cancel all other deferreds
-            deferreds.forEach { it.cancel() }
-
-            response
         }
     }
 
