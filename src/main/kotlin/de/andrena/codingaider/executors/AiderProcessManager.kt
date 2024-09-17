@@ -56,41 +56,27 @@ class AiderProcessManager(
         startOutputReading()
     }
 
-    fun sendCommand(command: String): String {
+    fun sendCommand(command: String): Unit {
         inputWriter?.write(command)
         inputWriter?.newLine()
         inputWriter?.flush()
 
-        val output = StringBuilder()
-        var line: String? = null
-        val startTime = System.currentTimeMillis()
-        while (isRunning && outputReader?.readLine().also { line = it } != null) {
-            if (line == "> ") break
-            output.append(line).append("\n")
-            val runningTime = (System.currentTimeMillis() - startTime) / 1000
-            notifyObservers { it.onCommandProgress(output.toString(), runningTime) }
-        }
-        
-        // Continue listening for additional output
-        scope.launch {
-            while (isRunning && outputReader?.readLine().also { line = it } != null) {
-                if (line == "> ") break
-                output.append(line).append("\n")
-                val runningTime = (System.currentTimeMillis() - startTime) / 1000
-                notifyObservers { it.onCommandProgress(output.toString(), runningTime) }
-            }
-        }
-
-        return output.toString().trim()
+        startOutputReading()
     }
 
     private fun startOutputReading() {
         scope.launch {
+            val output = StringBuilder()
+            var line: String? = null
             val startTime = System.currentTimeMillis()
-            while (isRunning) {
-                val line = outputReader?.readLine() ?: break
+            while (isRunning && outputReader?.readLine().also { line = it } != null) {
                 val runningTime = (System.currentTimeMillis() - startTime) / 1000
-                notifyObservers { it.onCommandProgress(line, runningTime) }
+                if (line == "> ") {
+                    notifyObservers { it.onUserInputRequired(output.toString()) }
+                    break
+                }
+                output.append(line).append("\n")
+                notifyObservers { it.onCommandProgress(output.toString(), runningTime) }
             }
         }
     }
