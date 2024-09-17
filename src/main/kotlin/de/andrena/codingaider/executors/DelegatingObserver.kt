@@ -1,22 +1,23 @@
 package de.andrena.codingaider.executors
 
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.runBlocking
 
 class DelegatingObserver(private val subject: CommandSubject) : CommandObserver {
     override fun onCommandStart(command: String) {
-        subject.notifyObservers { it.onCommandStart(command) }
+        runBlocking { subject.notifyObservers { it.onCommandStart(command) } }
     }
 
     override fun onCommandProgress(output: String, runningTime: Long) {
-        subject.notifyObservers { it.onCommandProgress(output, runningTime) }
+        runBlocking { subject.notifyObservers { it.onCommandProgress(output, runningTime) } }
     }
 
     override fun onCommandComplete(output: String, exitCode: Int) {
-        subject.notifyObservers { it.onCommandComplete(output, exitCode) }
+        runBlocking { subject.notifyObservers { it.onCommandComplete(output, exitCode) } }
     }
 
     override fun onCommandError(error: String) {
-        subject.notifyObservers { it.onCommandError(error) }
+        runBlocking { subject.notifyObservers { it.onCommandError(error) } }
     }
 
     override suspend fun onUserInputRequired(prompt: String): CompletableDeferred<String?> {

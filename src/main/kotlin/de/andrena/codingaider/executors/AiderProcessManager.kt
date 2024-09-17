@@ -27,11 +27,8 @@ class AiderProcessManager(
     private val scope = CoroutineScope(Dispatchers.Default)
 
     suspend fun startAiderProcess(commandData: CommandData) {
-        val executionStrategy = if (settings.useDockerAider) {
-            DockerAiderExecutionStrategy(dockerManager, apiKeyChecker, settings)
-        } else {
-            NativeAiderExecutionStrategy(apiKeyChecker, settings)
-        }
+
+        val executionStrategy = getExecutionStrategy()
 
         val commandArgs = executionStrategy.buildCommand(commandData)
         logger.info("Starting Aider process: ${commandArgs.joinToString(" ")}")
@@ -54,6 +51,13 @@ class AiderProcessManager(
         isRunning = true
         startOutputReading()
     }
+
+    private fun getExecutionStrategy() =
+        when (settings.useInteractiveMode to settings.useDockerAider) {
+            (true to false) -> NativeInteractiveAiderExecutionStrategy(apiKeyChecker, settings)
+            (false to true) -> DockerAiderExecutionStrategy(dockerManager, apiKeyChecker, settings)
+            else -> NativeAiderExecutionStrategy(apiKeyChecker, settings)
+        }
 
     fun sendCommand(command: String): Unit {
         inputWriter?.write(command)

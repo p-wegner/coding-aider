@@ -31,6 +31,23 @@ class NativeAiderExecutionStrategy(
     }
 }
 
+class NativeInteractiveAiderExecutionStrategy(
+    private val apiKeyChecker: ApiKeyChecker,
+    private val settings: AiderSettings
+) : AiderExecutionStrategy {
+    override fun buildCommand(commandData: CommandData): List<String> {
+        return listOf("aider") + buildCommonArgs(commandData.copy(isTerminalMode = true), settings)
+    }
+
+    override fun prepareEnvironment(processBuilder: ProcessBuilder, commandData: CommandData) {
+        setApiKeyEnvironmentVariables(processBuilder, apiKeyChecker)
+    }
+
+    override fun cleanupAfterExecution() {
+        // No specific cleanup needed for native execution
+    }
+}
+
 class DockerAiderExecutionStrategy(
     private val dockerManager: DockerContainerManager,
     private val apiKeyChecker: ApiKeyChecker,

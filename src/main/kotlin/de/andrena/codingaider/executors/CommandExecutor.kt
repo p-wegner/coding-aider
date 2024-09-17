@@ -15,8 +15,10 @@ import java.util.concurrent.TimeUnit
 class CommandExecutor(
     private val project: Project,
     private val commandData: CommandData,
-    private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker()
-) : CommandSubject by GenericCommandSubject() {
+    private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker(),
+    private val commandSubject: CommandSubject = GenericCommandSubject()
+) : CommandSubject by commandSubject,
+    CommandObserver by DelegatingObserver(commandSubject) {
     private val logger = Logger.getInstance(CommandExecutor::class.java)
     private val settings = AiderSettings.getInstance(project)
     private val commandLogger = CommandLogger(settings, commandData)
@@ -33,7 +35,9 @@ class CommandExecutor(
         ) else NativeAiderExecutionStrategy(apiKeyChecker, settings)
     }
     private val aiderProcessManager: AiderProcessManager by lazy {
-        AiderProcessManager(project, apiKeyChecker)
+        AiderProcessManager(project, apiKeyChecker).also {
+            it.addObserver(this)
+        }
     }
 
     suspend fun executeCommand(): String {
@@ -54,15 +58,7 @@ class CommandExecutor(
 
         aiderProcessManager.startAiderProcess(commandData)
         aiderProcessManager.sendCommand(commandData.message)
-
-        val output = "Interactive command executed" // Placeholder output
-        runBlocking {
-            notifyObservers {
-                it.onCommandComplete(output, 0)
-            }
-        }
-
-        return output
+        return ""
     }
 
     private suspend fun executeNonInteractiveCommand(): String {
@@ -149,4 +145,5 @@ class CommandExecutor(
             }
         }
     }
+
 }
