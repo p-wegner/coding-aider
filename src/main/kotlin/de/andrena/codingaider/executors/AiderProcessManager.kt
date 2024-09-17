@@ -7,12 +7,9 @@ import de.andrena.codingaider.docker.DockerContainerManager
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.*
 import java.io.*
 import java.util.concurrent.TimeUnit
-import java.util.regex.Pattern
 import java.util.regex.Pattern
 
 class AiderProcessManager(
@@ -70,7 +67,7 @@ class AiderProcessManager(
             val output = StringBuilder()
             var line: String? = null
             val startTime = System.currentTimeMillis()
-            val confirmationPattern = Pattern.compile("^Do you want to (.*?)\\? \\[y/n\\]:\\s*$")
+            val confirmationPattern = Pattern.compile("^Create new file[?] (.*?)\\? \\[y/n\\]:\\s*$")
             while (isRunning && outputReader?.readLine().also { line = it } != null) {
                 val runningTime = (System.currentTimeMillis() - startTime) / 1000
                 if (line == "> ") {
