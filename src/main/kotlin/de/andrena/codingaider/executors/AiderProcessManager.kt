@@ -13,6 +13,7 @@ import kotlinx.coroutines.*
 import java.io.*
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
+import java.util.regex.Pattern
 
 class AiderProcessManager(
     private val project: Project,
