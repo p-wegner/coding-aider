@@ -42,7 +42,7 @@ class AiderProcessManager(
             .apply {
                 environment().putIfAbsent("PYTHONIOENCODING", "utf-8")
                 redirectErrorStream(true)
-                if (settings.useInteractiveMode) {
+                if (settings.useInteractiveMode && !System.getProperty("os.name").lowercase().contains("win")) {
                     environment()["TERM"] = "xterm-256color"
                     environment()["COLUMNS"] = "120"
                     environment()["LINES"] = "30"
