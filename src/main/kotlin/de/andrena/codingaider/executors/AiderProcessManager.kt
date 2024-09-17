@@ -9,17 +9,20 @@ import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
 import java.io.*
 import java.util.concurrent.TimeUnit
+import kotlinx.coroutines.*
 
 class AiderProcessManager(
     private val project: Project,
     private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker()
-) {
+) : CommandSubject by GenericCommandSubject() {
     private val logger = Logger.getInstance(AiderProcessManager::class.java)
     private val settings = AiderSettings.getInstance(project)
     private var process: Process? = null
     private var inputWriter: BufferedWriter? = null
     private var outputReader: BufferedReader? = null
     private val dockerManager = DockerContainerManager()
+    private var isRunning = false
+    private val scope = CoroutineScope(Dispatchers.Default)
 
     fun startAiderProcess(commandData: CommandData) {
         val executionStrategy = if (settings.useDockerAider) {
@@ -30,6 +33,8 @@ class AiderProcessManager(
 
         val commandArgs = executionStrategy.buildCommand(commandData)
         logger.info("Starting Aider process: ${commandArgs.joinToString(" ")}")
+
+        notifyObservers { it.onCommandStart("Starting Aider process...") }
 
         val processBuilder = ProcessBuilder(commandArgs)
             .directory(File(commandData.projectPath))
@@ -43,6 +48,9 @@ class AiderProcessManager(
         process = processBuilder.start()
         inputWriter = BufferedWriter(OutputStreamWriter(process!!.outputStream))
         outputReader = BufferedReader(InputStreamReader(process!!.inputStream))
+
+        isRunning = true
+        startOutputReading()
     }
 
     fun sendCommand(command: String): String {
@@ -50,20 +58,29 @@ class AiderProcessManager(
         inputWriter?.newLine()
         inputWriter?.flush()
 
-        return readOutput()
-    }
-
-    private fun readOutput(): String {
         val output = StringBuilder()
         var line: String?
-        while (outputReader?.readLine().also { line = it } != null) {
+        while (isRunning && outputReader?.readLine().also { line = it } != null) {
             if (line == "> ") break
             output.append(line).append("\n")
+            notifyObservers { it.onCommandProgress(output.toString(), 0) }
         }
         return output.toString().trim()
     }
 
+    private fun startOutputReading() {
+        scope.launch {
+            val startTime = System.currentTimeMillis()
+            while (isRunning) {
+                val line = outputReader?.readLine() ?: break
+                val runningTime = (System.currentTimeMillis() - startTime) / 1000
+                notifyObservers { it.onCommandProgress(line, runningTime) }
+            }
+        }
+    }
+
     fun stopAiderProcess() {
+        isRunning = false
         inputWriter?.close()
         outputReader?.close()
         process?.let {
@@ -77,5 +94,7 @@ class AiderProcessManager(
         if (settings.useDockerAider) {
             dockerManager.stopDockerContainer()
         }
+        notifyObservers { it.onCommandComplete("Aider process stopped", 0) }
+        scope.cancel()
     }
 }
