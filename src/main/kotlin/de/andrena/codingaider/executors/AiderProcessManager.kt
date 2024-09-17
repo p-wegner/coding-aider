@@ -8,14 +8,12 @@ import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.selects.select
 import java.io.*
+import java.nio.charset.StandardCharsets
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import java.nio.charset.StandardCharsets
 
 class AiderProcessManager(
     private val project: Project,
@@ -39,13 +37,13 @@ class AiderProcessManager(
 
         notifyObservers { it.onCommandStart("Starting Aider process...") }
 
-        val processBuilder = ProcessBuilder(commandArgs)
+        val processBuilder = ProcessBuilder(listOf("cmd", "/c") + commandArgs)
             .directory(File(commandData.projectPath))
             .apply {
                 environment().putIfAbsent("PYTHONIOENCODING", "utf-8")
                 redirectErrorStream(true)
                 if (settings.useInteractiveMode) {
-                    environment()["TERM"] = "xterm-256color"
+//                    environment()["TERM"] = "xterm-256color"
                     environment()["COLUMNS"] = "120"
                     environment()["LINES"] = "30"
                 }
@@ -68,22 +66,10 @@ class AiderProcessManager(
             else -> NativeAiderExecutionStrategy(apiKeyChecker, settings)
         }
 
-    suspend fun sendCommand(command: String) {
+    fun sendCommand(command: String) {
         inputWriter?.write(command)
         inputWriter?.newLine()
         inputWriter?.flush()
-
-        // Wait for the command to be processed
-        var output = ""
-        while (true) {
-            val line = outputChannel.receiveCatching().getOrNull() ?: break
-            output += line
-            if (line.trim().endsWith("> ")) {
-                break
-            }
-        }
-
-        notifyObservers { it.onCommandProgress(output, 0) }
     }
 
     private fun startOutputReading() {
@@ -92,7 +78,7 @@ class AiderProcessManager(
             val startTime = System.currentTimeMillis()
             val confirmationPattern =
                 Pattern.compile("^Create new file\\? \\(Y\\)es/\\(N\\)o(?: \\[(Yes|No)\\])?:\\s*$")
-            
+
             while (isRunning) {
                 val char = outputReader?.read() ?: break
                 if (char == -1) break
@@ -106,11 +92,13 @@ class AiderProcessManager(
                         sendUserResponse(userResponse)
                         output.clear()
                     }
+
                     confirmationPattern.matcher(output).matches() -> {
                         val userResponse = notifyObserversForUserResponse("Create new file?", true)
                         sendUserResponse(userResponse)
                         output.clear()
                     }
+
                     char.toChar() == '\n' -> {
                         runBlocking { notifyObservers { it.onCommandProgress(output.toString(), runningTime) } }
                         outputChannel.send(output.toString())

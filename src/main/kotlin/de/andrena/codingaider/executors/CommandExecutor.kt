@@ -57,7 +57,7 @@ class CommandExecutor(
         }
 
         aiderProcessManager.startAiderProcess(commandData)
-        aiderProcessManager.sendCommand(commandData.message)
+        aiderProcessManager.addObserver(ExecuteCommandFixedTimes(commandData.message, 1))
         return ""
     }
 

@@ -4,6 +4,5 @@
     <option name="activateIdeExecutorAfterWebcrawl" value="true" />
     <option name="deactivateRepoMap" value="true" />
     <option name="llm" value="--sonnet" />
-    <option name="useYesFlag" value="false" />
   </component>
 </project>
