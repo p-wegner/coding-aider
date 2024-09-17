@@ -8,6 +8,7 @@ import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
 import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
 import java.io.*
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
@@ -71,12 +72,14 @@ class AiderProcessManager(
             while (isRunning && outputReader?.readLine().also { line = it } != null) {
                 val runningTime = (System.currentTimeMillis() - startTime) / 1000
                 if (line == "> ") {
-                    notifyObservers { it.onUserInputRequired(output.toString()) }
-                    break
+                    val userResponse = notifyObserversForUserResponse(output.toString(), false)
+                    sendUserResponse(userResponse)
+                    output.clear()
+                    continue
                 }
                 if (confirmationPattern.matcher(line ?: "").matches()) {
-                    val userConfirmation = notifyObserversForConfirmation("Create new file?")
-                    sendConfirmation(userConfirmation)
+                    val userResponse = notifyObserversForUserResponse("Create new file?", true)
+                    sendUserResponse(userResponse)
                     continue
                 }
                 output.append(line).append("\n")
@@ -85,19 +88,37 @@ class AiderProcessManager(
         }
     }
 
-    private suspend fun notifyObserversForConfirmation(prompt: String): Boolean = withContext(Dispatchers.Main) {
-        var confirmation = false
+    private suspend fun notifyObserversForUserResponse(prompt: String, isConfirmation: Boolean): UserResponse {
+        val responseChannel = Channel<UserResponse>()
+        
         notifyObservers { observer ->
-            confirmation = observer.onUserConfirmationRequired(prompt)
+            launch {
+                val response = if (isConfirmation) {
+                    UserResponse(confirmation = observer.onUserConfirmationRequired(prompt).await())
+                } else {
+                    UserResponse(input = observer.onUserInputRequired(prompt).await())
+                }
+                responseChannel.send(response)
+            }
         }
-        confirmation
+
+        return select {
+            responseChannel.onReceive { it }
+            onTimeout(5000) { UserResponse() }
+        }
     }
 
-    private fun sendConfirmation(confirmed: Boolean) {
-        val response = if (confirmed) "y" else "n"
-        inputWriter?.write(response)
-        inputWriter?.newLine()
-        inputWriter?.flush()
+    private suspend fun sendUserResponse(response: UserResponse) {
+        val responseText = when {
+            response.confirmation != null -> if (response.confirmation) "y" else "n"
+            response.input != null -> response.input
+            else -> "n"  // Default to "no" if no response is received
+        }
+        withContext(Dispatchers.IO) {
+            inputWriter?.write(responseText)
+            inputWriter?.newLine()
+            inputWriter?.flush()
+        }
     }
 
     fun stopAiderProcess() {
