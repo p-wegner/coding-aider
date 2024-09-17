@@ -30,13 +30,13 @@ class DelegatingObserver(private val subject: CommandSubject) : CommandObserver 
         }
     }
 
-    override suspend fun onUserConfirmationRequired(prompt: String): CompletableDeferred<Boolean> {
-        val responses = mutableListOf<CompletableDeferred<Boolean>>()
+    override suspend fun onUserConfirmationRequired(prompt: String): CompletableDeferred<Boolean?> {
+        val responses = mutableListOf<CompletableDeferred<Boolean?>>()
         subject.notifyObservers { observer ->
             responses.add(observer.onUserConfirmationRequired(prompt))
         }
-        return CompletableDeferred<Boolean>().apply {
-            responses.firstOrNull { it.await() }?.await()?.let { complete(it) } ?: complete(false)
+        return CompletableDeferred<Boolean?>().apply {
+            responses.firstOrNull { it.await() != null }?.await()?.let { complete(it) } ?: complete(null)
         }
     }
 }
