@@ -112,33 +112,26 @@ class AiderProcessManager(
 
     private suspend fun notifyObserversForUserResponse(prompt: String, isConfirmation: Boolean): UserResponse {
         return withContext(Dispatchers.Default) {
-            val deferreds = mutableListOf<Deferred<UserResponse>>()
+            val responses = mutableListOf<UserResponse>()
             notifyObservers { observer ->
-                val deferred = async {
-                    if (isConfirmation) {
-                        val result = observer.onUserConfirmationRequired(prompt).await()
-                        result?.let { UserResponse.Confirmation(it) } ?: UserResponse.NoResponse
-                    } else {
-                        val result = observer.onUserInputRequired(prompt).await()
-                        result?.let { UserResponse.Input(it) } ?: UserResponse.NoResponse
-                    }
+                val response = if (isConfirmation) {
+                    observer.onUserConfirmationRequired(prompt).await()?.let { UserResponse.Confirmation(it) }
+                } else {
+                    observer.onUserInputRequired(prompt).await()?.let { UserResponse.Input(it) }
                 }
-                deferreds.add(deferred)
+                response?.let { responses.add(it) }
             }
 
             try {
                 withTimeout(5000) {
-                    select<UserResponse> {
-                        deferreds.forEach { deferred ->
-                            deferred.onAwait { it }
-                        }
+                    responses.firstOrNull() ?: if (isConfirmation) {
+                        UserResponse.Confirmation(false)
+                    } else {
+                        throw TimeoutException("No valid user input received")
                     }
                 }
             } catch (e: TimeoutCancellationException) {
                 if (isConfirmation) UserResponse.Confirmation(false) else throw TimeoutException("User input timed out")
-            } finally {
-                // Cancel all other deferreds
-                deferreds.forEach { it.cancel() }
             }
         }
     }
