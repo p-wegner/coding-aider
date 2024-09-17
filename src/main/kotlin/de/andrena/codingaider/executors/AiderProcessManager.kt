@@ -117,7 +117,7 @@ class AiderProcessManager(
                 val deferred = async {
                     if (isConfirmation) {
                         val result = observer.onUserConfirmationRequired(prompt).await()
-                        UserResponse.Confirmation(result)
+                        result?.let { UserResponse.Confirmation(it) } ?: UserResponse.NoResponse
                     } else {
                         val result = observer.onUserInputRequired(prompt).await()
                         result?.let { UserResponse.Input(it) } ?: UserResponse.NoResponse
