@@ -67,17 +67,15 @@ class AiderProcessManager(
             val output = StringBuilder()
             var line: String? = null
             val startTime = System.currentTimeMillis()
-            val confirmationPattern = Pattern.compile("^Create new file[?] (.*?)\\? \\[y/n\\]:\\s*$")
+            val confirmationPattern = Pattern.compile("^Create new file\\? \\(Y\\)es/\\(N\\)o \\[Yes\\]:\\s*$")
             while (isRunning && outputReader?.readLine().also { line = it } != null) {
                 val runningTime = (System.currentTimeMillis() - startTime) / 1000
                 if (line == "> ") {
                     notifyObservers { it.onUserInputRequired(output.toString()) }
                     break
                 }
-                val matcher = confirmationPattern.matcher(line ?: "")
-                if (matcher.find()) {
-                    val confirmationPrompt = matcher.group(1)
-                    val userConfirmation = notifyObserversForConfirmation(confirmationPrompt)
+                if (confirmationPattern.matcher(line ?: "").matches()) {
+                    val userConfirmation = notifyObserversForConfirmation("Create new file?")
                     sendConfirmation(userConfirmation)
                     continue
                 }
