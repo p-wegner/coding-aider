@@ -9,10 +9,10 @@ import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import java.io.*
 import java.util.concurrent.TimeUnit
+import java.util.regex.Pattern
 
 class AiderProcessManager(
     private val project: Project,
@@ -69,16 +69,39 @@ class AiderProcessManager(
             val output = StringBuilder()
             var line: String? = null
             val startTime = System.currentTimeMillis()
+            val confirmationPattern = Pattern.compile("^Do you want to (.*?)\\? \\[y/n\\]:\\s*$")
             while (isRunning && outputReader?.readLine().also { line = it } != null) {
                 val runningTime = (System.currentTimeMillis() - startTime) / 1000
                 if (line == "> ") {
                     notifyObservers { it.onUserInputRequired(output.toString()) }
                     break
                 }
+                val matcher = confirmationPattern.matcher(line ?: "")
+                if (matcher.find()) {
+                    val confirmationPrompt = matcher.group(1)
+                    val userConfirmation = notifyObserversForConfirmation(confirmationPrompt)
+                    sendConfirmation(userConfirmation)
+                    continue
+                }
                 output.append(line).append("\n")
                 notifyObservers { it.onCommandProgress(output.toString(), runningTime) }
             }
         }
+    }
+
+    private suspend fun notifyObserversForConfirmation(prompt: String): Boolean = withContext(Dispatchers.Main) {
+        var confirmation = false
+        notifyObservers { observer ->
+            confirmation = observer.onUserConfirmationRequired(prompt)
+        }
+        confirmation
+    }
+
+    private fun sendConfirmation(confirmed: Boolean) {
+        val response = if (confirmed) "y" else "n"
+        inputWriter?.write(response)
+        inputWriter?.newLine()
+        inputWriter?.flush()
     }
 
     fun stopAiderProcess() {
