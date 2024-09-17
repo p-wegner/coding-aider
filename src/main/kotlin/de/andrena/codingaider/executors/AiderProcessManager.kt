@@ -89,30 +89,42 @@ class AiderProcessManager(
     }
 
     private suspend fun notifyObserversForUserResponse(prompt: String, isConfirmation: Boolean): UserResponse {
-        val responseChannel = Channel<UserResponse>()
-        
-        notifyObservers { observer ->
-            launch {
-                val response = if (isConfirmation) {
-                    UserResponse(confirmation = observer.onUserConfirmationRequired(prompt).await())
-                } else {
-                    UserResponse(input = observer.onUserInputRequired(prompt).await())
+        return withContext(Dispatchers.Default) {
+            val deferreds = mutableListOf<Deferred<UserResponse>>()
+            
+            notifyObservers { observer ->
+                val deferred = async {
+                    if (isConfirmation) {
+                        val result = observer.onUserConfirmationRequired(prompt).await()
+                        UserResponse.Confirmation(result)
+                    } else {
+                        val result = observer.onUserInputRequired(prompt).await()
+                        result?.let { UserResponse.Input(it) } ?: throw CancellationException("No input provided")
+                    }
                 }
-                responseChannel.send(response)
+                deferreds.add(deferred)
             }
-        }
 
-        return select {
-            responseChannel.onReceive { it }
-            onTimeout(5000) { UserResponse() }
+            val response = select<UserResponse> {
+                deferreds.forEach { deferred ->
+                    deferred.onAwait { it }
+                }
+                onTimeout(5000) {
+                    if (isConfirmation) UserResponse.Confirmation(false) else throw TimeoutException("User input timed out")
+                }
+            }
+
+            // Cancel all other deferreds
+            deferreds.forEach { it.cancel() }
+
+            response
         }
     }
 
     private suspend fun sendUserResponse(response: UserResponse) {
-        val responseText = when {
-            response.confirmation != null -> if (response.confirmation) "y" else "n"
-            response.input != null -> response.input
-            else -> "n"  // Default to "no" if no response is received
+        val responseText = when (response) {
+            is UserResponse.Confirmation -> if (response.value) "y" else "n"
+            is UserResponse.Input -> response.value
         }
         withContext(Dispatchers.IO) {
             inputWriter?.write(responseText)

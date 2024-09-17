@@ -2,13 +2,15 @@ package de.andrena.codingaider.executors
 
 import kotlinx.coroutines.CompletableDeferred
 
+import kotlinx.coroutines.CompletableDeferred
+
 interface CommandObserver {
     fun onCommandStart(command: String) {}
     fun onCommandProgress(output: String, runningTime: Long) {}
     fun onCommandComplete(output: String, exitCode: Int) {}
     fun onCommandError(error: String) {}
-    suspend fun onUserInputRequired(prompt: String): CompletableDeferred<String?> = CompletableDeferred(null)
-    suspend fun onUserConfirmationRequired(prompt: String): CompletableDeferred<Boolean> = CompletableDeferred(false)
+    suspend fun onUserInputRequired(prompt: String): CompletableDeferred<String?>
+    suspend fun onUserConfirmationRequired(prompt: String): CompletableDeferred<Boolean>
 }
 
 interface CommandSubject {
@@ -17,7 +19,7 @@ interface CommandSubject {
     suspend fun notifyObservers(event: suspend (CommandObserver) -> Unit)
 }
 
-data class UserResponse(
-    val input: String? = null,
-    val confirmation: Boolean? = null
-)
+sealed class UserResponse {
+    data class Input(val value: String) : UserResponse()
+    data class Confirmation(val value: Boolean) : UserResponse()
+}
