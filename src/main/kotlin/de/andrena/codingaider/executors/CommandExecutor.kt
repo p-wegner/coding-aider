@@ -7,6 +7,8 @@ import de.andrena.codingaider.docker.DockerContainerManager
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
 import java.io.File
 import java.util.concurrent.TimeUnit
 
@@ -99,10 +101,12 @@ class CommandExecutor(
         }
     }
 
-    suspend fun abortCommand() {
+    fun abortCommand() {
         isAborted = true
         if (settings.useInteractiveMode) {
-            aiderProcessManager.stopAiderProcess()
+            runBlocking {
+                aiderProcessManager.stopAiderProcess()
+            }
         } else if (useDockerAider) {
             dockerManager.stopDockerContainer()
         } else {

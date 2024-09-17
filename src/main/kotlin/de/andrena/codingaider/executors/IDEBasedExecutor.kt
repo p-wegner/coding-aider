@@ -9,6 +9,7 @@ import de.andrena.codingaider.outputview.MarkdownDialog
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.FileRefresher
 import de.andrena.codingaider.utils.GitUtils
+import kotlinx.coroutines.runBlocking
 import java.awt.EventQueue.invokeLater
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.concurrent.thread
@@ -46,7 +47,9 @@ class IDEBasedExecutor(
                 addObserver(this@IDEBasedExecutor)
             }
             commandExecutor.set(executor)
-            executor.executeCommand()
+            runBlocking {
+                executor.executeCommand()
+            }
         } catch (e: Exception) {
             log.error("Error executing Aider command", e)
             updateDialogProgress("Error executing Aider command: ${e.message}", "Aider Command Error")
@@ -99,4 +102,5 @@ class IDEBasedExecutor(
         markdownDialog.setProcessFinished()
         markdownDialog.startAutoCloseTimer()
     }
+
 }

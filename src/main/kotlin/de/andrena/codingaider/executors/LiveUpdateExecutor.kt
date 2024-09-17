@@ -2,6 +2,7 @@ package de.andrena.codingaider.executors
 
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
+import kotlinx.coroutines.runBlocking
 
 class LiveUpdateExecutor(private val project: Project, private val commandData: CommandData) :
     CommandSubject by GenericCommandSubject() {
@@ -9,21 +10,25 @@ class LiveUpdateExecutor(private val project: Project, private val commandData: 
         val executor = CommandExecutor(project, commandData)
         executor.addObserver(object : CommandObserver {
             override fun onCommandStart(message: String) {
-                notifyObservers { it.onCommandStart(message) }
+                runBlocking {
+                    notifyObservers { it.onCommandStart(message) }
+                }
             }
 
             override fun onCommandProgress(output: String, runningTime: Long) {
-                notifyObservers { it.onCommandProgress(output, runningTime) }
+                runBlocking {
+                    notifyObservers { it.onCommandProgress(output, runningTime) }
+                }
             }
 
             override fun onCommandComplete(output: String, exitCode: Int) {
-                notifyObservers { it.onCommandComplete(output, exitCode) }
+                runBlocking { notifyObservers { it.onCommandComplete(output, exitCode) } }
             }
 
             override fun onCommandError(errorMessage: String) {
-                notifyObservers { it.onCommandError(errorMessage) }
+                runBlocking { notifyObservers { it.onCommandError(errorMessage) } }
             }
         })
-        return executor.executeCommand()
+        return runBlocking { executor.executeCommand() }
     }
 }

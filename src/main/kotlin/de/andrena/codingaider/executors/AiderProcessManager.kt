@@ -8,7 +8,6 @@ import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.selects.select
 import java.io.*
 import java.util.concurrent.TimeUnit
@@ -27,7 +26,7 @@ class AiderProcessManager(
     private var isRunning = false
     private val scope = CoroutineScope(Dispatchers.Default)
 
-    fun startAiderProcess(commandData: CommandData) {
+    suspend fun startAiderProcess(commandData: CommandData) {
         val executionStrategy = if (settings.useDockerAider) {
             DockerAiderExecutionStrategy(dockerManager, apiKeyChecker, settings)
         } else {
@@ -69,7 +68,8 @@ class AiderProcessManager(
             val output = StringBuilder()
             var line: String? = null
             val startTime = System.currentTimeMillis()
-            val confirmationPattern = Pattern.compile("^Create new file\\? \\(Y\\)es/\\(N\\)o(?: \\[(Yes|No)\\])?:\\s*$")
+            val confirmationPattern =
+                Pattern.compile("^Create new file\\? \\(Y\\)es/\\(N\\)o(?: \\[(Yes|No)\\])?:\\s*$")
             while (isRunning && outputReader?.readLine().also { line = it } != null) {
                 val runningTime = (System.currentTimeMillis() - startTime) / 1000
                 if (line == "> ") {
@@ -92,7 +92,7 @@ class AiderProcessManager(
     private suspend fun notifyObserversForUserResponse(prompt: String, isConfirmation: Boolean): UserResponse {
         return withContext(Dispatchers.Default) {
             val deferreds = mutableListOf<Deferred<UserResponse>>()
-            
+
             notifyObservers { observer ->
                 val deferred = async {
                     if (isConfirmation) {
@@ -135,7 +135,7 @@ class AiderProcessManager(
         }
     }
 
-    fun stopAiderProcess() {
+    suspend fun stopAiderProcess() {
         isRunning = false
         inputWriter?.close()
         outputReader?.close()
