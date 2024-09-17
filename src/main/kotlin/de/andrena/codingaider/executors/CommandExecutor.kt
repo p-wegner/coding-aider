@@ -99,7 +99,7 @@ class CommandExecutor(
         }
     }
 
-    fun abortCommand() {
+    suspend fun abortCommand() {
         isAborted = true
         if (settings.useInteractiveMode) {
             aiderProcessManager.stopAiderProcess()
