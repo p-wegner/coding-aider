@@ -67,7 +67,7 @@ class AiderProcessManager(
             val output = StringBuilder()
             var line: String? = null
             val startTime = System.currentTimeMillis()
-            val confirmationPattern = Pattern.compile("^Create new file\\? \\(Y\\)es/\\(N\\)o \\[Yes\\]:\\s*$")
+            val confirmationPattern = Pattern.compile("^Create new file\\? \\(Y\\)es/\\(N\\)o(?: \\[(Yes|No)\\])?:\\s*$")
             while (isRunning && outputReader?.readLine().also { line = it } != null) {
                 val runningTime = (System.currentTimeMillis() - startTime) / 1000
                 if (line == "> ") {
