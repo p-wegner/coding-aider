@@ -43,7 +43,7 @@ class AiderProcessManager(
                 environment().putIfAbsent("PYTHONIOENCODING", "utf-8")
                 redirectErrorStream(true)
                 if (settings.useInteractiveMode) {
-//                    environment()["TERM"] = "xterm-256color"
+                    environment()["TERM"] = "xterm-256color"
                     environment()["COLUMNS"] = "120"
                     environment()["LINES"] = "30"
                 }
@@ -113,7 +113,6 @@ class AiderProcessManager(
     private suspend fun notifyObserversForUserResponse(prompt: String, isConfirmation: Boolean): UserResponse {
         return withContext(Dispatchers.Default) {
             val deferreds = mutableListOf<Deferred<UserResponse>>()
-
             notifyObservers { observer ->
                 val deferred = async {
                     if (isConfirmation) {
@@ -121,7 +120,7 @@ class AiderProcessManager(
                         UserResponse.Confirmation(result)
                     } else {
                         val result = observer.onUserInputRequired(prompt).await()
-                        result?.let { UserResponse.Input(it) } ?: throw CancellationException("No input provided")
+                        result?.let { UserResponse.Input(it) } ?: UserResponse.NoResponse
                     }
                 }
                 deferreds.add(deferred)
@@ -148,6 +147,7 @@ class AiderProcessManager(
         val responseText = when (response) {
             is UserResponse.Confirmation -> if (response.value) "y" else "n"
             is UserResponse.Input -> response.value
+            is UserResponse.NoResponse -> return
         }
         withContext(Dispatchers.IO) {
             inputWriter?.write(responseText)
