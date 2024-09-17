@@ -34,7 +34,7 @@ class CommandExecutor(
         AiderProcessManager(project, apiKeyChecker)
     }
 
-    fun executeCommand(): String {
+    suspend fun executeCommand(): String {
         return if (settings.useInteractiveMode) {
             executeInteractiveCommand()
         } else {
@@ -42,34 +42,41 @@ class CommandExecutor(
         }
     }
 
-    private fun executeInteractiveCommand(): String {
+    private suspend fun executeInteractiveCommand(): String {
         logger.info("Executing Aider command in interactive mode")
-        notifyObservers {
-            it.onCommandStart("Starting Aider command in interactive mode...")
+        runBlocking {
+            notifyObservers {
+                it.onCommandStart("Starting Aider command in interactive mode...")
+            }
         }
 
         aiderProcessManager.startAiderProcess(commandData)
-        val output = aiderProcessManager.sendCommand(commandData.message)
+        aiderProcessManager.sendCommand(commandData.message)
 
-        notifyObservers {
-            it.onCommandComplete(output, 0)
+        val output = "Interactive command executed" // Placeholder output
+        runBlocking {
+            notifyObservers {
+                it.onCommandComplete(output, 0)
+            }
         }
 
         return output
     }
 
-    private fun executeNonInteractiveCommand(): String {
+    private suspend fun executeNonInteractiveCommand(): String {
         val commandArgs = executionStrategy.buildCommand(commandData)
         logger.info("Executing Aider command: ${commandArgs.joinToString(" ")}")
-        notifyObservers {
-            it.onCommandStart(
-                "Starting Aider command...\n${
-                    commandLogger.getCommandString(
-                        false,
-                        if (useDockerAider) dockerManager else null
-                    )
-                }"
-            )
+        runBlocking {
+            notifyObservers {
+                it.onCommandStart(
+                    "Starting Aider command...\n${
+                        commandLogger.getCommandString(
+                            false,
+                            if (useDockerAider) dockerManager else null
+                        )
+                    }"
+                )
+            }
         }
 
         val processBuilder = ProcessBuilder(commandArgs)
@@ -103,36 +110,38 @@ class CommandExecutor(
         }
     }
 
-    private fun handleProcessCompletion(process: Process, output: StringBuilder): String {
+    private suspend fun handleProcessCompletion(process: Process, output: StringBuilder): String {
         if (!process.waitFor(5, TimeUnit.MINUTES)) {
             process.destroy()
             val errorMessage = commandLogger.prependCommandToOutput("$output\nAider command timed out after 5 minutes")
-            notifyObservers { it.onCommandError(errorMessage) }
+            runBlocking { notifyObservers { it.onCommandError(errorMessage) } }
             return errorMessage
         } else {
             val exitCode = process.exitValue()
             val status = if (exitCode == 0) "executed successfully" else "failed with exit code $exitCode"
             val finalOutput = commandLogger.prependCommandToOutput("$output\nAider command $status")
-            notifyObservers { it.onCommandComplete(finalOutput, exitCode) }
+            runBlocking { notifyObservers { it.onCommandComplete(finalOutput, exitCode) } }
             return finalOutput
         }
     }
 
-    private fun pollProcessAndReadOutput(process: Process, output: StringBuilder) {
+    private suspend fun pollProcessAndReadOutput(process: Process, output: StringBuilder) {
         val startTime = System.currentTimeMillis()
         process.inputStream.bufferedReader().use { reader ->
             while (!isAborted) {
                 val line = reader.readLine() ?: break
                 output.append(line).append("\n")
                 val runningTime = (System.currentTimeMillis() - startTime) / 1000
-                notifyObservers {
-                    it.onCommandProgress(
-                        commandLogger.prependCommandToOutput(output.toString()),
-                        runningTime
-                    )
+                runBlocking {
+                    notifyObservers {
+                        it.onCommandProgress(
+                            commandLogger.prependCommandToOutput(output.toString()),
+                            runningTime
+                        )
+                    }
                 }
                 if (!process.isAlive || runningTime > 300) break
-                Thread.sleep(10)
+                delay(10)
             }
         }
     }
