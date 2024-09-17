@@ -7,9 +7,12 @@ import de.andrena.codingaider.docker.DockerContainerManager
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import java.io.*
 import java.util.concurrent.TimeUnit
-import kotlinx.coroutines.*
 
 class AiderProcessManager(
     private val project: Project,
@@ -59,7 +62,7 @@ class AiderProcessManager(
         inputWriter?.flush()
 
         val output = StringBuilder()
-        var line: String?
+        var line: String? = null
         while (isRunning && outputReader?.readLine().also { line = it } != null) {
             if (line == "> ") break
             output.append(line).append("\n")
