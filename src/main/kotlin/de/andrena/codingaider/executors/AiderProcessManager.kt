@@ -8,15 +8,13 @@ import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
 import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.selects.select
 import java.io.*
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
 class AiderProcessManager(
-    private val project: Project,
+    project: Project,
     private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker()
 ) : CommandSubject by GenericCommandSubject() {
     private val logger = Logger.getInstance(AiderProcessManager::class.java)
@@ -27,17 +25,17 @@ class AiderProcessManager(
     private val dockerManager = DockerContainerManager()
     private var isRunning = false
     private val scope = CoroutineScope(Dispatchers.Default)
-    private val outputChannel = Channel<String>(Channel.UNLIMITED)
 
     suspend fun startAiderProcess(commandData: CommandData) {
         val executionStrategy = getExecutionStrategy()
 
-        val commandArgs = executionStrategy.buildCommand(commandData)
+        val commandArgs = executionStrategy.buildCommand(commandData) + listOf("--no-pretty")
         logger.info("Starting Aider process: ${commandArgs.joinToString(" ")}")
 
         notifyObservers { it.onCommandStart("Starting Aider process...") }
 
-        val processBuilder = ProcessBuilder(listOf("cmd", "/c") + commandArgs)
+//        val argsToUse = listOf("cmd", "/c") + commandArgs
+        val processBuilder = ProcessBuilder(commandArgs)
             .directory(File(commandData.projectPath))
             .apply {
                 environment().putIfAbsent("PYTHONIOENCODING", "utf-8")
@@ -75,6 +73,7 @@ class AiderProcessManager(
     private fun startOutputReading() {
         scope.launch {
             val output = StringBuilder()
+            val fullOutput = StringBuilder()
             val startTime = System.currentTimeMillis()
             val confirmationPattern =
                 Pattern.compile("^Create new file\\? \\(Y\\)es/\\(N\\)o(?: \\[(Yes|No)\\])?:\\s*$")
@@ -87,26 +86,29 @@ class AiderProcessManager(
                 val runningTime = (System.currentTimeMillis() - startTime) / 1000
 
                 when {
-                    output.endsWith("> ") -> {
+                    output.equals("> ") -> {
+                        runBlocking { notifyObservers { it.onCommandProgress(output.toString(), runningTime) } }
                         val userResponse = notifyObserversForUserResponse(output.toString().trim(), false)
                         sendUserResponse(userResponse)
                         output.clear()
+                        fullOutput.clear()
                     }
 
                     confirmationPattern.matcher(output).matches() -> {
+                        runBlocking { notifyObservers { it.onCommandProgress(output.toString(), runningTime) } }
                         val userResponse = notifyObserversForUserResponse("Create new file?", true)
                         sendUserResponse(userResponse)
                         output.clear()
+                        fullOutput.clear()
                     }
 
                     char.toChar() == '\n' -> {
-                        runBlocking { notifyObservers { it.onCommandProgress(output.toString(), runningTime) } }
-                        outputChannel.send(output.toString())
+                        runBlocking { notifyObservers { it.onCommandProgress(fullOutput.toString(), runningTime) } }
+                        fullOutput.append(output)
                         output.clear()
                     }
                 }
             }
-            outputChannel.close()
         }
     }
 
@@ -153,7 +155,6 @@ class AiderProcessManager(
         isRunning = false
         inputWriter?.close()
         outputReader?.close()
-        outputChannel.close()
         process?.let {
             if (it.isAlive) {
                 it.destroy()

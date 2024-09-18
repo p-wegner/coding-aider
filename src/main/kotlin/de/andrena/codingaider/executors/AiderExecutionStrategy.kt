@@ -121,7 +121,7 @@ private fun buildCommonArgs(commandData: CommandData, settings: AiderSettings): 
         commandData.files.forEach { fileData ->
             val fileArgument = if (fileData.isReadOnly) "--read" else "--file"
             add(fileArgument)
-            add(fileData.filePath)
+            add(fileData.filePath.quoted())
         }
         if (commandData.useYesFlag) add("--yes")
         if (commandData.editFormat.isNotEmpty()) {
@@ -137,7 +137,7 @@ private fun buildCommonArgs(commandData: CommandData, settings: AiderSettings): 
         }
         if (commandData.lintCmd.isNotEmpty()) {
             add("--lint-cmd")
-            add(commandData.lintCmd)
+            add(commandData.lintCmd.quoted())
         }
         if (commandData.deactivateRepoMap) {
             add("--map-tokens")
@@ -145,7 +145,7 @@ private fun buildCommonArgs(commandData: CommandData, settings: AiderSettings): 
         }
         if (!commandData.isTerminalMode) {
             add("-m")
-            add(commandData.message)
+            add(commandData.message.quoted())
         }
         when (settings.autoCommits) {
             AiderSettings.AutoCommitSetting.ON -> add("--auto-commits")
@@ -159,9 +159,13 @@ private fun buildCommonArgs(commandData: CommandData, settings: AiderSettings): 
         }
         if (settings.includeChangeContext) {
             add("--commit-prompt")
-            add(getCommitPrompt())
+            add(getCommitPrompt().quoted())
         }
     }
+}
+
+private fun String.quoted(): String {
+    return "\"$this\""
 }
 
 private fun setApiKeyEnvironmentVariables(processBuilder: ProcessBuilder, apiKeyChecker: ApiKeyChecker) {
