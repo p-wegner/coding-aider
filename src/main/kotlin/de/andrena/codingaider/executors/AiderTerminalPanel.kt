@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import com.jediterm.terminal.ProcessTtyConnector
 import com.jediterm.terminal.TtyConnector
 import com.jediterm.terminal.ui.JediTermWidget
+import com.jediterm.terminal.ui.settings.DefaultSettingsProvider
 import com.pty4j.PtyProcessBuilder
 import java.io.IOException
 import java.nio.charset.StandardCharsets
@@ -14,7 +15,7 @@ class AiderTerminalPanel(project: Project?) : JPanel() {
     private val terminal: JediTermWidget
 
     init {
-        terminal = JediTermWidget(80, 24)
+        terminal = JediTermWidget(80, 24, DefaultSettingsProvider())
         add(terminal)
 
         SwingUtilities.invokeLater {
