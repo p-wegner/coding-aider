@@ -5,5 +5,8 @@ import de.andrena.codingaider.command.CommandData
 import kotlinx.coroutines.runBlocking
 
 class SimpleExecutor(private val project: Project, private val commandData: CommandData) {
-    fun execute(): String = runBlocking { CommandExecutor(project, commandData).executeCommand() }
+    fun execute(): String = runBlocking { 
+        val aiderProcessManager = AiderToolWindowFactory.getAiderProcessManager(project) ?: AiderProcessManager(project)
+        CommandExecutor(project, commandData, aiderProcessManager = aiderProcessManager).executeCommand() 
+    }
 }

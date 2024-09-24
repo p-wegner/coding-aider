@@ -17,7 +17,7 @@ class CommandExecutor(
     private val commandData: CommandData,
     private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker(),
     private val commandSubject: CommandSubject = GenericCommandSubject(),
-    private val aiderProcessManager: AiderProcessManager
+    private val aiderProcessManager: AiderProcessManager = AiderToolWindowFactory.getAiderProcessManager(project) ?: AiderProcessManager(project)
 ) : CommandSubject by commandSubject,
     CommandObserver by DelegatingObserver(commandSubject) {
     private val logger = Logger.getInstance(CommandExecutor::class.java)
