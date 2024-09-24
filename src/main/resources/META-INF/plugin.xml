@@ -137,6 +137,8 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
+        <toolWindow id="Aider" secondary="true" icon="AllIcons.General.Modified" anchor="right"
+                    factoryClass="de.andrena.codingaider.executors.AiderToolWindowFactory"/>
         <projectConfigurable
                 instance="de.andrena.codingaider.settings.AiderSettingsConfigurable"
                 displayName="Aider Settings"
