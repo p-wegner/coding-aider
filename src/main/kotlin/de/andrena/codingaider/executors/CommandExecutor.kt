@@ -17,7 +17,8 @@ class CommandExecutor(
     private val commandData: CommandData,
     private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker(),
     private val commandSubject: CommandSubject = GenericCommandSubject(),
-    private val aiderProcessManager: AiderProcessManager = AiderToolWindowFactory.getAiderProcessManager(project) ?: AiderProcessManager(project)
+    private val aiderProcessManager: AiderProcessManager = AiderToolWindowFactory.getAiderProcessManager(project)
+        ?: AiderProcessManager(project)
 ) : CommandSubject by commandSubject,
     CommandObserver by DelegatingObserver(commandSubject) {
     private val logger = Logger.getInstance(CommandExecutor::class.java)
@@ -57,7 +58,18 @@ class CommandExecutor(
         }
 
         aiderProcessManager.startAiderProcess(commandData)
-        aiderProcessManager.addObserver(ExecuteCommandFixedTimes(commandData.message, 1))
+        aiderProcessManager.sendCommand("/drop")
+
+        commandData.files.forEach { fileData ->
+            if (fileData.isReadOnly) {
+                aiderProcessManager.sendCommand("/read-only ${fileData.filePath}")
+            } else {
+                aiderProcessManager.sendCommand("/add ${fileData.filePath}")
+            }
+        }
+        aiderProcessManager.sendCommand(commandData.message)
+
+//        aiderProcessManager.addObserver(ExecuteCommandFixedTimes(commandData.message, 1))
         return ""
     }
 
