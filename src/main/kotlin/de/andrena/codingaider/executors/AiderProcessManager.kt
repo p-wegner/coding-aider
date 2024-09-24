@@ -8,9 +8,8 @@ import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
 import kotlinx.coroutines.*
-import java.io.*
+import java.io.File
 import java.nio.charset.StandardCharsets
-import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
 class AiderProcessManager(
@@ -19,7 +18,7 @@ class AiderProcessManager(
 ) : CommandSubject by GenericCommandSubject() {
     private val logger = Logger.getInstance(AiderProcessManager::class.java)
     private val settings = AiderSettings.getInstance(project)
-    private var ttyConnector: ReactiveProcessTtyConnector? = null
+    var ttyConnector: ReactiveProcessTtyConnector? = null
     private val dockerManager = DockerContainerManager()
     private var isRunning = false
     private val scope = CoroutineScope(Dispatchers.Default)
@@ -42,9 +41,9 @@ class AiderProcessManager(
                 environment().putIfAbsent("PYTHONIOENCODING", "utf-8")
                 redirectErrorStream(true)
                 if (settings.useInteractiveMode && !System.getProperty("os.name").lowercase().contains("win")) {
-                    environment()["TERM"] = settings.terminalType
-                    environment()["COLUMNS"] = settings.terminalColumns.toString()
-                    environment()["LINES"] = settings.terminalLines.toString()
+                    environment()["TERM"] = "xterm-256color"
+                    environment()["COLUMNS"] = "120"
+                    environment()["LINES"] = "30"
                 }
             }
 

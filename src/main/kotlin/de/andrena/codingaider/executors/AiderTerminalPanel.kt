@@ -46,5 +46,4 @@ class AiderTerminalPanel(
         terminal.start()
     }
 
-    fun getAiderProcessManager(): AiderProcessManager = aiderProcessManager
 }
