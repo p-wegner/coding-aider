@@ -1,20 +1,21 @@
 package de.andrena.codingaider.executors
 
 import com.jediterm.terminal.TtyConnector
-import com.pty4j.PtyProcess
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
 import java.nio.charset.Charset
+import java.util.concurrent.atomic.AtomicBoolean
 
-class ReactiveProcessTtyConnector(private val process: PtyProcess, private val charset: Charset) : TtyConnector {
+class ReactiveProcessTtyConnector(private val process: Process, private val charset: Charset) : TtyConnector {
     private val input: InputStream = process.inputStream
     private val output: OutputStream = process.outputStream
+    private val isConnected = AtomicBoolean(true)
 
     override fun close() {
+        isConnected.set(false)
         process.destroy()
     }
-
 
     override fun getName(): String {
         return "Aider"
@@ -39,7 +40,7 @@ class ReactiveProcessTtyConnector(private val process: PtyProcess, private val c
     }
 
     override fun isConnected(): Boolean {
-        return process.isAlive
+        return isConnected.get() && process.isAlive
     }
 
     @Throws(IOException::class)
@@ -55,5 +56,9 @@ class ReactiveProcessTtyConnector(private val process: PtyProcess, private val c
     @Throws(IOException::class)
     override fun ready(): Boolean {
         return input.available() > 0
+    }
+
+    fun read(): Int {
+        return input.read()
     }
 }

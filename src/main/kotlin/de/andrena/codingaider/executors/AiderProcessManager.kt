@@ -14,27 +14,28 @@ import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
 class AiderProcessManager(
-    project: Project,
+    private val project: Project,
     private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker()
 ) : CommandSubject by GenericCommandSubject() {
     private val logger = Logger.getInstance(AiderProcessManager::class.java)
     private val settings = AiderSettings.getInstance(project)
-    private var process: Process? = null
-    private var inputWriter: BufferedWriter? = null
-    private var outputReader: BufferedReader? = null
+    private var ttyConnector: ReactiveProcessTtyConnector? = null
     private val dockerManager = DockerContainerManager()
     private var isRunning = false
     private val scope = CoroutineScope(Dispatchers.Default)
 
     suspend fun startAiderProcess(commandData: CommandData) {
-        val executionStrategy = getExecutionStrategy()
+        if (isRunning) {
+            logger.info("Aider process is already running")
+            return
+        }
 
+        val executionStrategy = getExecutionStrategy()
         val commandArgs = executionStrategy.buildCommand(commandData) + listOf("--no-pretty")
         logger.info("Starting Aider process: ${commandArgs.joinToString(" ")}")
 
         notifyObservers { it.onCommandStart("Starting Aider process...") }
 
-//        val argsToUse = listOf("cmd", "/c") + commandArgs
         val processBuilder = ProcessBuilder(commandArgs)
             .directory(File(commandData.projectPath))
             .apply {
@@ -49,9 +50,8 @@ class AiderProcessManager(
 
         executionStrategy.prepareEnvironment(processBuilder, commandData)
 
-        process = processBuilder.start()
-        inputWriter = BufferedWriter(OutputStreamWriter(process!!.outputStream, StandardCharsets.UTF_8))
-        outputReader = BufferedReader(InputStreamReader(process!!.inputStream, StandardCharsets.UTF_8))
+        val process = processBuilder.start()
+        ttyConnector = ReactiveProcessTtyConnector(process, StandardCharsets.UTF_8)
 
         isRunning = true
         startOutputReading()
@@ -65,9 +65,7 @@ class AiderProcessManager(
         }
 
     fun sendCommand(command: String) {
-        inputWriter?.write(command)
-        inputWriter?.newLine()
-        inputWriter?.flush()
+        ttyConnector?.write("$command\n")
     }
 
     private fun startOutputReading() {
@@ -79,14 +77,14 @@ class AiderProcessManager(
                 Pattern.compile("^Create new file\\? \\(Y\\)es/\\(N\\)o(?: \\[(Yes|No)\\])?:\\s*$")
 
             while (isRunning) {
-                val char = outputReader?.read() ?: break
+                val char = ttyConnector?.read() ?: break
                 if (char == -1) break
 
                 output.append(char.toChar())
                 val runningTime = (System.currentTimeMillis() - startTime) / 1000
 
                 when {
-                    output.equals("> ") -> {
+                    output.toString().endsWith("> ") -> {
                         runBlocking { notifyObservers { it.onCommandProgress(output.toString(), runningTime) } }
                         val userResponse = notifyObserversForUserResponse(output.toString().trim(), false)
                         sendUserResponse(userResponse)
@@ -145,28 +143,20 @@ class AiderProcessManager(
             is UserResponse.NoResponse -> return
         }
         withContext(Dispatchers.IO) {
-            inputWriter?.write(responseText)
-            inputWriter?.newLine()
-            inputWriter?.flush()
+            ttyConnector?.write("$responseText\n")
         }
     }
 
     suspend fun stopAiderProcess() {
         isRunning = false
-        inputWriter?.close()
-        outputReader?.close()
-        process?.let {
-            if (it.isAlive) {
-                it.destroy()
-                if (!it.waitFor(5, TimeUnit.SECONDS)) {
-                    it.destroyForcibly()
-                }
-            }
-        }
+        ttyConnector?.close()
+        ttyConnector = null
         if (settings.useDockerAider) {
             dockerManager.stopDockerContainer()
         }
         notifyObservers { it.onCommandComplete("Aider process stopped", 0) }
         scope.cancel()
     }
+
+    fun isProcessRunning(): Boolean = isRunning
 }

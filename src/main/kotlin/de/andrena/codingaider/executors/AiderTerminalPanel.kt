@@ -1,43 +1,37 @@
 package de.andrena.codingaider.executors
 
 import com.intellij.openapi.project.Project
-import com.jediterm.terminal.TtyConnector
 import com.jediterm.terminal.ui.JediTermWidget
 import com.jediterm.terminal.ui.settings.DefaultSettingsProvider
-import com.pty4j.PtyProcessBuilder
-import java.io.IOException
-import java.nio.charset.StandardCharsets
+import de.andrena.codingaider.command.CommandData
+import kotlinx.coroutines.runBlocking
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
 
 class AiderTerminalPanel(
-    val project: Project,
+    private val project: Project,
 ) : JPanel() {
     private val terminal: JediTermWidget
+    private val aiderProcessManager: AiderProcessManager = AiderProcessManager(project)
 
     init {
         val defaultSettingsProvider = DefaultSettingsProvider()
         terminal = JediTermWidget(80, 24, defaultSettingsProvider)
         add(terminal)
         SwingUtilities.invokeLater {
-            try {
-                startAider()
-            } catch (e: IOException) {
-                e.printStackTrace()
-            }
+            startAider()
         }
     }
 
-    @Throws(IOException::class)
     private fun startAider() {
-        val envs: MutableMap<String, String> = HashMap(System.getenv())
-        envs["TERM"] = "xterm-256color"
-
-        val command = arrayOf("aider")
-        val process = PtyProcessBuilder().setCommand(command).setEnvironment(envs).start()
-
-        val connector: TtyConnector = ReactiveProcessTtyConnector(process, StandardCharsets.UTF_8)
-        terminal.ttyConnector = connector
+        runBlocking {
+            val commandData = CommandData(project.basePath ?: "", emptyList(), emptyList())
+            aiderProcessManager.startAiderProcess(commandData)
+        }
+        
+        terminal.ttyConnector = aiderProcessManager.ttyConnector
         terminal.start()
     }
+
+    fun getAiderProcessManager(): AiderProcessManager = aiderProcessManager
 }
