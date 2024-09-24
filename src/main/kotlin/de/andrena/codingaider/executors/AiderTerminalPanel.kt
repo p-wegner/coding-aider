@@ -13,7 +13,7 @@ class AiderTerminalPanel(
     private val project: Project,
 ) : JPanel() {
     private val terminal: JediTermWidget
-    private val aiderProcessManager: AiderProcessManager = AiderProcessManager(project)
+    val aiderProcessManager: AiderProcessManager = AiderProcessManager(project)
 
     init {
         val defaultSettingsProvider = DefaultSettingsProvider()

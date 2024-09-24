@@ -16,7 +16,8 @@ class CommandExecutor(
     private val project: Project,
     private val commandData: CommandData,
     private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker(),
-    private val commandSubject: CommandSubject = GenericCommandSubject()
+    private val commandSubject: CommandSubject = GenericCommandSubject(),
+    private val aiderProcessManager: AiderProcessManager
 ) : CommandSubject by commandSubject,
     CommandObserver by DelegatingObserver(commandSubject) {
     private val logger = Logger.getInstance(CommandExecutor::class.java)
@@ -34,10 +35,9 @@ class CommandExecutor(
             settings
         ) else NativeAiderExecutionStrategy(apiKeyChecker, settings)
     }
-    private val aiderProcessManager: AiderProcessManager by lazy {
-        AiderProcessManager(project, apiKeyChecker).also {
-            it.addObserver(this)
-        }
+
+    init {
+        aiderProcessManager.addObserver(this)
     }
 
     suspend fun executeCommand(): String {

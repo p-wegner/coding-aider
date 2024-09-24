@@ -6,8 +6,16 @@ import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
 
 class AiderToolWindowFactory : ToolWindowFactory {
+    companion object {
+        private var aiderTerminalPanel: AiderTerminalPanel? = null
+
+        fun getAiderProcessManager(project: Project): AiderProcessManager? {
+            return aiderTerminalPanel?.aiderProcessManager
+        }
+    }
+
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-        val aiderTerminalPanel = AiderTerminalPanel(project)
+        aiderTerminalPanel = AiderTerminalPanel(project)
         val content = ContentFactory.getInstance().createContent(aiderTerminalPanel, "", false)
         toolWindow.contentManager.addContent(content)
     }
