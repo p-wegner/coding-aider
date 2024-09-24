@@ -10,10 +10,14 @@ import java.nio.charset.StandardCharsets
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
 
-class AiderTerminalPanel(project: Project?) : JPanel() {
-    private val terminal: JediTermWidget = JediTermWidget(80, 24, DefaultSettingsProvider())
+class AiderTerminalPanel(
+    val project: Project,
+) : JPanel() {
+    private val terminal: JediTermWidget
 
     init {
+        val defaultSettingsProvider = DefaultSettingsProvider()
+        terminal = JediTermWidget(80, 24, defaultSettingsProvider)
         add(terminal)
         SwingUtilities.invokeLater {
             try {
