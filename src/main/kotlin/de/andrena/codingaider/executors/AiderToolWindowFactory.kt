@@ -18,5 +18,6 @@ class AiderToolWindowFactory : ToolWindowFactory {
         aiderTerminalPanel = AiderTerminalPanel(project)
         val content = ContentFactory.getInstance().createContent(aiderTerminalPanel, "", false)
         toolWindow.contentManager.addContent(content)
+        toolWindow.hide()
     }
 }
