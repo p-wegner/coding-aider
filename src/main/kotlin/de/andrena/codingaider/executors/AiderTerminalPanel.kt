@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import com.jediterm.terminal.ui.JediTermWidget
 import com.jediterm.terminal.ui.settings.DefaultSettingsProvider
 import de.andrena.codingaider.command.CommandData
+import de.andrena.codingaider.settings.AiderSettings
 import kotlinx.coroutines.runBlocking
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
