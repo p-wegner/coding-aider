@@ -74,12 +74,13 @@ class AiderProcessManager(
             val startTime = System.currentTimeMillis()
             val confirmationPattern =
                 Pattern.compile("^Create new file\\? \\(Y\\)es/\\(N\\)o(?: \\[(Yes|No)\\])?:\\s*$")
+            val buffer = CharArray(1024)
 
             while (isRunning) {
-                val char = ttyConnector?.read() ?: break
-                if (char == -1) break
-                // TODO use proper encoding
-                output.append(char.toChar())
+                val readCount = ttyConnector?.read(buffer, 0, buffer.size) ?: break
+                if (readCount == -1) break
+
+                output.append(buffer, 0, readCount)
                 val runningTime = (System.currentTimeMillis() - startTime) / 1000
 
                 when {
@@ -99,10 +100,14 @@ class AiderProcessManager(
                         fullOutput.clear()
                     }
 
-                    char.toChar() == '\n' -> {
-                        runBlocking { notifyObservers { it.onCommandProgress(fullOutput.toString(), runningTime) } }
-                        fullOutput.append(output)
+                    output.toString().contains('\n') -> {
+                        val lines = output.toString().split('\n')
+                        for (i in 0 until lines.size - 1) {
+                            fullOutput.append(lines[i]).append('\n')
+                            runBlocking { notifyObservers { it.onCommandProgress(fullOutput.toString(), runningTime) } }
+                        }
                         output.clear()
+                        output.append(lines.last())
                     }
                 }
             }
