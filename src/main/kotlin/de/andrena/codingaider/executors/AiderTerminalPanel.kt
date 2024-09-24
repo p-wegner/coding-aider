@@ -25,10 +25,22 @@ class AiderTerminalPanel(
 
     private fun startAider() {
         runBlocking {
-            val commandData = CommandData(project.basePath ?: "", emptyList(), emptyList())
+            val settings = AiderSettings.getInstance(project)
+            val commandData = CommandData(
+                message = "",
+                useYesFlag = settings.useYesFlag,
+                llm = settings.llm,
+                additionalArgs = settings.additionalArgs,
+                files = emptyList(),
+                isTerminalMode = settings.isTerminalMode,
+                lintCmd = settings.lintCmd,
+                deactivateRepoMap = settings.deactivateRepoMap,
+                editFormat = settings.editFormat,
+                projectPath = project.basePath ?: "",
+                useDockerAider = settings.useDockerAider
+            )
             aiderProcessManager.startAiderProcess(commandData)
         }
-        
         terminal.ttyConnector = aiderProcessManager.ttyConnector
         terminal.start()
     }
