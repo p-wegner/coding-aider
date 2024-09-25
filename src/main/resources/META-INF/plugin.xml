@@ -142,6 +142,11 @@
                 displayName="Aider Settings"
                 id="de.andrena.codingaider.settings.AiderSettingsConfigurable"
                 parentId="tools"/>
+        <projectConfigurable
+                instance="de.andrena.codingaider.settings.AiderProjectSettingsConfigurable"
+                displayName="Aider Project Settings"
+                id="de.andrena.codingaider.settings.AiderProjectSettingsConfigurable"
+                parentId="tools"/>
         <notificationGroup id="Coding Aider Notifications" displayType="BALLOON"/>
         <notificationGroup id="Aider Web Crawl" displayType="BALLOON"/>
         <intentionAction>

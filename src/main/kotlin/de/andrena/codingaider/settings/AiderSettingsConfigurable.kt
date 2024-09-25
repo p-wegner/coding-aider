@@ -90,15 +90,9 @@ class AiderSettingsConfigurable : Configurable {
     private val autoCommitsComboBox: ComboBox<String>
     private val dirtyCommitsComboBox: ComboBox<String>
     private val apiKeyFields: MutableMap<String, JPasswordField>
-    private val persistentFileManager: PersistentFileManager
-    private val persistentFilesListModel: DefaultListModel<FileData>
-    private val persistentFilesList: JBList<FileData>
-
     override fun getDisplayName(): String = "Aider"
 
     override fun createComponent(): JComponent {
-        persistentFilesList.cellRenderer = PersistentFileRenderer()
-        loadPersistentFiles()
         settingsComponent = panel {
             group("Aider Setup") {
                 group("API Keys") {
@@ -280,18 +274,6 @@ class AiderSettingsConfigurable : Configurable {
                 }
             }
 
-            group("Persistent Files") {
-                row {
-                    scrollCell(persistentFilesList)
-                        .align(Align.FILL)
-                        .resizableColumn()
-                }
-                row {
-                    button("Add Files") { addPersistentFiles() }
-                    button("Toggle Read-Only") { toggleReadOnlyMode() }
-                    button("Remove Files") { removeSelectedFiles() }
-                }
-            }
         }.apply {
             border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
         }
