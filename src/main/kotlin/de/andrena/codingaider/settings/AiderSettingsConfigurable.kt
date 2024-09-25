@@ -55,7 +55,8 @@ class AiderSettingsConfigurable : Configurable {
         this.editFormatComboBox = ComboBox(arrayOf("", "whole", "diff", "whole-func", "diff-func"))
         this.verboseCommandLoggingCheckBox = JBCheckBox("Enable verbose Aider command logging")
         this.useDockerAiderCheckBox = JBCheckBox("Use aider in Docker")
-        this.enableMarkdownDialogAutocloseCheckBox = JBCheckBox("Automatically close Output Dialog after 10 seconds")
+        this.enableMarkdownDialogAutocloseCheckBox = JBCheckBox("Automatically close Output Dialog")
+        this.markdownDialogAutocloseDelayField = JBTextField()
         this.mountAiderConfInDockerCheckBox = JBCheckBox("Mount Aider configuration file in Docker")
         this.includeChangeContextCheckBox = JBCheckBox("Include change context in commit messages")
         this.autoCommitsComboBox = ComboBox(arrayOf("Default", "On", "Off"))
@@ -91,6 +92,7 @@ class AiderSettingsConfigurable : Configurable {
     private val verboseCommandLoggingCheckBox: JBCheckBox
     private val useDockerAiderCheckBox: JBCheckBox
     private val enableMarkdownDialogAutocloseCheckBox: JBCheckBox
+    private val markdownDialogAutocloseDelayField: JBTextField
     private val mountAiderConfInDockerCheckBox: JBCheckBox
     private val includeChangeContextCheckBox: JBCheckBox
     private val autoCommitsComboBox: ComboBox<String>
@@ -263,8 +265,14 @@ class AiderSettingsConfigurable : Configurable {
                     cell(enableMarkdownDialogAutocloseCheckBox)
                         .component
                         .apply {
-                            toolTipText =
-                                "If enabled, the Output Dialog will automatically close after a 10-second delay."
+                            toolTipText = "If enabled, the Output Dialog will automatically close after the specified delay."
+                        }
+                }
+                row("Autoclose delay (seconds):") {
+                    cell(markdownDialogAutocloseDelayField)
+                        .component
+                        .apply {
+                            toolTipText = "Specify the delay in seconds before the Output Dialog closes automatically. Set to 0 for immediate closing."
                         }
                 }
                 row {
@@ -311,6 +319,7 @@ class AiderSettingsConfigurable : Configurable {
                 verboseCommandLoggingCheckBox.isSelected != settings.verboseCommandLogging ||
                 useDockerAiderCheckBox.isSelected != settings.useDockerAider ||
                 enableMarkdownDialogAutocloseCheckBox.isSelected != settings.enableMarkdownDialogAutoclose ||
+                markdownDialogAutocloseDelayField.text.toIntOrNull() != settings.markdownDialogAutocloseDelay ||
                 mountAiderConfInDockerCheckBox.isSelected != settings.mountAiderConfInDocker ||
                 includeChangeContextCheckBox.isSelected != settings.includeChangeContext ||
                 autoCommitsComboBox.selectedIndex != settings.autoCommits.toIndex() ||
@@ -332,6 +341,7 @@ class AiderSettingsConfigurable : Configurable {
         settings.verboseCommandLogging = verboseCommandLoggingCheckBox.isSelected
         settings.useDockerAider = useDockerAiderCheckBox.isSelected
         settings.enableMarkdownDialogAutoclose = enableMarkdownDialogAutocloseCheckBox.isSelected
+        settings.markdownDialogAutocloseDelay = markdownDialogAutocloseDelayField.text.toIntOrNull() ?: AiderDefaults.MARKDOWN_DIALOG_AUTOCLOSE_DELAY
         settings.mountAiderConfInDocker = mountAiderConfInDockerCheckBox.isSelected
         settings.includeChangeContext = includeChangeContextCheckBox.isSelected
         settings.autoCommits = AiderSettings.AutoCommitSetting.fromIndex(autoCommitsComboBox.selectedIndex)
@@ -354,6 +364,7 @@ class AiderSettingsConfigurable : Configurable {
         verboseCommandLoggingCheckBox.isSelected = settings.verboseCommandLogging
         useDockerAiderCheckBox.isSelected = settings.useDockerAider
         enableMarkdownDialogAutocloseCheckBox.isSelected = settings.enableMarkdownDialogAutoclose
+        markdownDialogAutocloseDelayField.text = settings.markdownDialogAutocloseDelay.toString()
         mountAiderConfInDockerCheckBox.isSelected = settings.mountAiderConfInDocker
         includeChangeContextCheckBox.isSelected = settings.includeChangeContext
         autoCommitsComboBox.selectedIndex = settings.autoCommits.toIndex()

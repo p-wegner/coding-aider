@@ -82,17 +82,23 @@ class MarkdownDialog(
     fun startAutoCloseTimer() {
         val settings = AiderSettings.getInstance(project)
         if (settings.enableMarkdownDialogAutoclose) {
-            keepOpenButton.isVisible = true
-            var remainingSeconds = 10
-            autoCloseTimer = Timer().scheduleAtFixedRate(0, 1000) { // Update every second
-                invokeLater {
-                    if (remainingSeconds > 0) {
-                        title = "$initialTitle - Closing in $remainingSeconds seconds"
-                        remainingSeconds--
-                    } else {
-                        dispose()
+            val delay = settings.markdownDialogAutocloseDelay
+            if (delay > 0) {
+                keepOpenButton.isVisible = true
+                var remainingSeconds = delay
+                autoCloseTimer = Timer().scheduleAtFixedRate(0, 1000) { // Update every second
+                    invokeLater {
+                        if (remainingSeconds > 0) {
+                            title = "$initialTitle - Closing in $remainingSeconds seconds"
+                            remainingSeconds--
+                        } else {
+                            dispose()
+                        }
                     }
                 }
+            } else {
+                // Close immediately if delay is 0
+                dispose()
             }
         }
     }
