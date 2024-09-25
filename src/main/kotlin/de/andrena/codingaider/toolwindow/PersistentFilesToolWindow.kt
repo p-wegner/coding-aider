@@ -10,6 +10,7 @@ import com.intellij.ui.content.ContentFactory
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.inputdialog.PersistentFileManager
+import de.andrena.codingaider.messages.PersistentFilesChangedTopic
 import javax.swing.DefaultListCellRenderer
 import javax.swing.DefaultListModel
 import javax.swing.JComponent
@@ -41,6 +42,18 @@ class PersistentFilesComponent(private val project: Project) {
 
     init {
         loadPersistentFiles()
+        subscribeToChanges()
+    }
+
+    private fun subscribeToChanges() {
+        project.messageBus.connect().subscribe(
+            PersistentFilesChangedTopic.PERSISTENT_FILES_CHANGED_TOPIC,
+            object : PersistentFilesChangedTopic {
+                override fun onPersistentFilesChanged() {
+                    loadPersistentFiles()
+                }
+            }
+        )
     }
 
     fun getContent(): JComponent {

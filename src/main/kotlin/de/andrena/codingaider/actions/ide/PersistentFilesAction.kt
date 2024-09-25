@@ -9,6 +9,7 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.inputdialog.PersistentFileManager
+import de.andrena.codingaider.messages.PersistentFilesChangedTopic
 import de.andrena.codingaider.utils.FileRefresher
 import de.andrena.codingaider.utils.FileTraversal
 
@@ -49,6 +50,9 @@ class PersistentFilesAction : AnAction() {
                 .getNotificationGroup("Coding Aider Notifications")
                 .createNotification(fullMessage, NotificationType.IDE_UPDATE)
             notification.notify(project)
+
+            // Publish message to update PersistentFilesToolWindow
+            project.messageBus.syncPublisher(PersistentFilesChangedTopic.PERSISTENT_FILES_CHANGED_TOPIC).onPersistentFilesChanged()
         }
     }
 
