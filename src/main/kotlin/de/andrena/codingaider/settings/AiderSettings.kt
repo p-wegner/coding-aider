@@ -1,15 +1,12 @@
 package de.andrena.codingaider.settings
 
-import com.intellij.openapi.components.PersistentStateComponent
-import com.intellij.openapi.components.Service
-import com.intellij.openapi.components.State
-import com.intellij.openapi.components.Storage
-import com.intellij.openapi.project.Project
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.components.*
 
-@Service(Service.Level.PROJECT)
+@Service(Service.Level.APP)
 @State(
     name = "de.andrena.codingaider.settings.AiderSettings",
-    storages = [Storage("AiderSettings.xml")]
+    storages = [Storage("AiderSettings.xml", roamingType = RoamingType.DISABLED)]
 )
 class AiderSettings : PersistentStateComponent<AiderSettings.State> {
     data class State(
@@ -190,7 +187,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
     }
 
     companion object {
-        fun getInstance(project: Project): AiderSettings =
-            project.getService(AiderSettings::class.java)
+        fun getInstance(): AiderSettings =
+            ApplicationManager.getApplication().getService(AiderSettings::class.java)
     }
 }

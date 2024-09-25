@@ -24,14 +24,7 @@ import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
 class AiderSettingsConfigurable : Configurable {
-    private val project: Project
-// TODO pwegner - 14.09.2024:  use for testing
-//    constructor(project: Project, apiKeyChecker: ApiKeyChecker) : this(project) {
-//        this.apiKeyChecker = apiKeyChecker
-//    }
-
-    constructor(project: Project) {
-        this.project = project
+    constructor() {
         this.apiKeyChecker = DefaultApiKeyChecker()
         this.useYesFlagCheckBox = JBCheckBox("Use --yes flag by default")
         this.llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
@@ -308,7 +301,7 @@ class AiderSettingsConfigurable : Configurable {
     }
 
     override fun isModified(): Boolean {
-        val settings = AiderSettings.getInstance(project)
+        val settings = AiderSettings.getInstance()
         return useYesFlagCheckBox.isSelected != settings.useYesFlag ||
                 llmComboBox.selectedItem as String != settings.llm ||
                 additionalArgsField.text != settings.additionalArgs ||
@@ -330,7 +323,7 @@ class AiderSettingsConfigurable : Configurable {
     }
 
     override fun apply() {
-        val settings = AiderSettings.getInstance(project)
+        val settings = AiderSettings.getInstance()
         settings.useYesFlag = useYesFlagCheckBox.isSelected
         settings.llm = llmComboBox.selectedItem as String
         settings.additionalArgs = additionalArgsField.text
@@ -353,7 +346,7 @@ class AiderSettingsConfigurable : Configurable {
 
 
     override fun reset() {
-        val settings = AiderSettings.getInstance(project)
+        val settings = AiderSettings.getInstance()
         useYesFlagCheckBox.isSelected = settings.useYesFlag
         llmComboBox.selectedItem = settings.llm
         additionalArgsField.text = settings.additionalArgs

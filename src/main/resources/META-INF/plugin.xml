@@ -137,12 +137,11 @@
     <!-- Extension points defined by the plugin.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-        <projectConfigurable
+        <applicationConfigurable
                 instance="de.andrena.codingaider.settings.AiderSettingsConfigurable"
                 displayName="Aider Settings"
                 id="de.andrena.codingaider.settings.AiderSettingsConfigurable"
-                parentId="tools"
-                nonDefaultProject="true"/>
+                parentId="tools"/>
         <notificationGroup id="Coding Aider Notifications" displayType="BALLOON"/>
         <notificationGroup id="Aider Web Crawl" displayType="BALLOON"/>
         <intentionAction>
