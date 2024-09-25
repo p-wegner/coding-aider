@@ -266,13 +266,16 @@ class AiderSettingsConfigurable : Configurable {
                         .component
                         .apply {
                             toolTipText = "If enabled, the Output Dialog will automatically close after the specified delay."
+                            addItemListener { e ->
+                                markdownDialogAutocloseDelayField.isEnabled = e.stateChange == java.awt.event.ItemEvent.SELECTED
+                            }
                         }
-                }
-                row("Autoclose delay (seconds):") {
+                    label("Autoclose delay (seconds):")
                     cell(markdownDialogAutocloseDelayField)
                         .component
                         .apply {
                             toolTipText = "Specify the delay in seconds before the Output Dialog closes automatically. Set to 0 for immediate closing."
+                            isEnabled = enableMarkdownDialogAutocloseCheckBox.isSelected
                         }
                 }
                 row {
