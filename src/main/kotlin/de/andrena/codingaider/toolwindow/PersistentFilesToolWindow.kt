@@ -56,6 +56,10 @@ class PersistentFilesComponent(private val project: Project) {
         )
     }
 
+    fun updatePersistentFiles() {
+        loadPersistentFiles()
+    }
+
     fun getContent(): JComponent {
         return panel {
             group("Persistent Files") {
