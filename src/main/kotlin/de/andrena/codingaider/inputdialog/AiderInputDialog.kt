@@ -12,7 +12,7 @@ import com.intellij.util.ui.JBUI
 import de.andrena.codingaider.actions.ide.SettingsAction
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.history.AiderHistoryHandler
-import de.andrena.codingaider.settings.AiderSettings
+import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
 import java.awt.*
@@ -29,7 +29,7 @@ class AiderInputDialog(
     initialText: String = "",
     private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker()
 ) : DialogWrapper(project) {
-    private val settings = AiderSettings.getInstance(project)
+    private val settings = getInstance()
     private val inputTextArea = JTextArea(5, 50).apply {
         text = initialText
     }

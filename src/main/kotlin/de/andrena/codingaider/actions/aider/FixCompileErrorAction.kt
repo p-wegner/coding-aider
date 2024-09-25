@@ -19,7 +19,7 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.AiderInputDialog
-import de.andrena.codingaider.settings.AiderSettings
+import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 
 class FixCompileErrorActionGroup : ActionGroup() {
     override fun getChildren(e: AnActionEvent?): Array<AnAction> {
@@ -75,7 +75,7 @@ abstract class BaseFixCompileErrorAction : AnAction() {
             useYesFlag: Boolean,
             isShellMode: Boolean
         ): CommandData {
-            val settings = AiderSettings.getInstance(project)
+            val settings = getInstance()
             val filePath = psiFile.virtualFile?.path
             val files = filePath?.let { listOf(FileData(it, false)) } ?: emptyList()
             return CommandData(

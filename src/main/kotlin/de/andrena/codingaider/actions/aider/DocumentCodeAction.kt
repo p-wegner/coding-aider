@@ -9,7 +9,7 @@ import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.executors.IDEBasedExecutor
-import de.andrena.codingaider.settings.AiderSettings
+import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileTraversal
 import java.io.File
 
@@ -40,7 +40,7 @@ class DocumentCodeAction : AnAction() {
             val allFiles = FileTraversal.traverseFilesOrDirectories(virtualFiles)
             val fileNames = allFiles.map { File(it.filePath).name }
 
-            val settings = AiderSettings.getInstance(project)
+            val settings = getInstance()
             val commandData = CommandData(
                 message = """Generate a markdown documentation for the code in the provided files and directories: $fileNames. 
                     |If there are exceptional implementation details, mention them. Store the results in $filename. 

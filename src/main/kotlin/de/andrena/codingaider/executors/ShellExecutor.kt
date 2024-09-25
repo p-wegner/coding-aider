@@ -3,7 +3,7 @@ package de.andrena.codingaider.executors
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.docker.DockerContainerManager
-import de.andrena.codingaider.settings.AiderSettings
+import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
 import org.jetbrains.plugins.terminal.ShellTerminalWidget
@@ -14,7 +14,7 @@ class ShellExecutor(
     private val commandData: CommandData,
     private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker()
 ) {
-    private val settings = AiderSettings.getInstance(project)
+    private val settings = getInstance()
     private val dockerManager = DockerContainerManager()
     private val useDockerAider: Boolean
         get() = commandData.useDockerAider ?: settings.useDockerAider

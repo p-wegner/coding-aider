@@ -1,11 +1,10 @@
 package de.andrena.codingaider.settings
 
-import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.executors.CommandObserver
 import de.andrena.codingaider.executors.LiveUpdateExecutor
 
-class AiderTestCommand(private val project: Project) {
+class AiderTestCommand() {
     fun execute(observer: CommandObserver?, useDockerAider: Boolean) {
         val commandData = CommandData(
             message = "",
@@ -17,10 +16,10 @@ class AiderTestCommand(private val project: Project) {
             lintCmd = "",
             deactivateRepoMap = false,
             editFormat = "",
-            projectPath = project.basePath ?: "",
+            projectPath = "",
             useDockerAider = useDockerAider  // Add this line
         )
-        LiveUpdateExecutor(project, commandData).apply {
+        LiveUpdateExecutor(commandData).apply {
             observer?.let { addObserver(it) }
             execute()
         }

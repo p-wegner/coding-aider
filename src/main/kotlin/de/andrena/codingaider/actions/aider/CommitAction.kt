@@ -8,7 +8,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.executors.IDEBasedExecutor
-import de.andrena.codingaider.settings.AiderSettings
+import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 
 class CommitAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
@@ -16,7 +16,7 @@ class CommitAction : AnAction() {
         val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
 
         if (project != null && !files.isNullOrEmpty()) {
-            val settings = AiderSettings.getInstance(project)
+            val settings = getInstance()
             val commandData = CommandData(
                 message = "/commit",
                 useYesFlag = true,

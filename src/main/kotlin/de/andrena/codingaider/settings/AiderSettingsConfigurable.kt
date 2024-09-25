@@ -5,7 +5,6 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.options.Configurable
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogBuilder
 import com.intellij.openapi.ui.Messages
@@ -470,7 +469,7 @@ class AiderSettingsConfigurable : Configurable {
         val scrollPane = JBScrollPane(textArea)
         scrollPane.preferredSize = java.awt.Dimension(600, 400)
 
-        val dialog = DialogBuilder(project).apply {
+        val dialog = DialogBuilder().apply {
             setTitle("Aider Test Command Result")
             setCenterPanel(scrollPane)
             addOkAction()
@@ -503,7 +502,7 @@ class AiderSettingsConfigurable : Configurable {
                 }
 
                 // Pass the current state of the Docker checkbox
-                AiderTestCommand(project).execute(observer, useDockerAiderCheckBox.isSelected)
+                AiderTestCommand().execute(observer, useDockerAiderCheckBox.isSelected)
                 return "Command execution finished."
             }
 

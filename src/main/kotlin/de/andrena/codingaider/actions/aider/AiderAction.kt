@@ -12,7 +12,7 @@ import de.andrena.codingaider.executors.IDEBasedExecutor
 import de.andrena.codingaider.executors.ShellExecutor
 import de.andrena.codingaider.inputdialog.AiderInputDialog
 import de.andrena.codingaider.inputdialog.PersistentFileManager
-import de.andrena.codingaider.settings.AiderSettings
+import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileTraversal
 
 
@@ -67,7 +67,7 @@ class AiderAction : AnAction() {
         }
 
         private fun collectCommandData(dialog: AiderInputDialog, project: Project): CommandData {
-            val settings = AiderSettings.getInstance(dialog.project)
+            val settings = getInstance()
             return CommandData(
                 message = dialog.getInputText(),
                 useYesFlag = dialog.isYesFlagChecked(),
@@ -84,7 +84,7 @@ class AiderAction : AnAction() {
         }
 
         private fun collectDefaultCommandData(files: List<FileData>, project: Project): CommandData {
-            val settings = AiderSettings.getInstance(project)
+            val settings = getInstance()
             return CommandData(
                 message = "",
                 useYesFlag = settings.useYesFlag,

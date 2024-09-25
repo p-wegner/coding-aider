@@ -8,7 +8,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.executors.IDEBasedExecutor
-import de.andrena.codingaider.settings.AiderSettings
+import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileTraversal
 
 class RefactorToCleanCodeAction : AnAction() {
@@ -31,7 +31,7 @@ class RefactorToCleanCodeAction : AnAction() {
             val allFiles = FileTraversal.traverseFilesOrDirectories(virtualFiles)
             val fileNames = allFiles.map { it.filePath }
 
-            val settings = AiderSettings.getInstance(project)
+            val settings = getInstance()
             val commandData = CommandData(
                 message = buildRefactorInstructions(fileNames),
                 useYesFlag = true,

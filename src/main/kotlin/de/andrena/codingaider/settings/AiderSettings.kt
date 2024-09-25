@@ -2,6 +2,7 @@ package de.andrena.codingaider.settings
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.*
+import com.intellij.openapi.project.Project
 
 @Service(Service.Level.APP)
 @State(
@@ -189,5 +190,6 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
     companion object {
         fun getInstance(): AiderSettings =
             ApplicationManager.getApplication().getService(AiderSettings::class.java)
+
     }
 }

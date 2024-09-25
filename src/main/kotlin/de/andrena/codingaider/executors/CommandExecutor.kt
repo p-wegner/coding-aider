@@ -1,23 +1,21 @@
 package de.andrena.codingaider.executors
 
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.docker.DockerContainerManager
-import de.andrena.codingaider.settings.AiderSettings
+import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
 import java.io.File
 import java.util.concurrent.TimeUnit
 
 class CommandExecutor(
-    project: Project,
     private val commandData: CommandData,
     private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker()
 ) :
     CommandSubject by GenericCommandSubject() {
     private val logger = Logger.getInstance(CommandExecutor::class.java)
-    private val settings = AiderSettings.getInstance(project)
+    private val settings = getInstance()
     private val commandLogger = CommandLogger(settings, commandData)
     private var process: Process? = null
     private var isAborted = false

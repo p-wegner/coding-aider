@@ -6,7 +6,7 @@ import com.intellij.openapi.vfs.VirtualFileManager
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.outputview.Abortable
 import de.andrena.codingaider.outputview.MarkdownDialog
-import de.andrena.codingaider.settings.AiderSettings
+import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileRefresher
 import de.andrena.codingaider.utils.GitUtils
 import java.awt.EventQueue.invokeLater
@@ -42,7 +42,7 @@ class IDEBasedExecutor(
 
     private fun executeAiderCommand() {
         try {
-            val executor = CommandExecutor(project, commandData).apply {
+            val executor = CommandExecutor(commandData).apply {
                 addObserver(this@IDEBasedExecutor)
             }
             commandExecutor.set(executor)
@@ -67,7 +67,7 @@ class IDEBasedExecutor(
     }
 
     private fun openGitComparisonToolIfNeeded() {
-        if (AiderSettings.getInstance(project).showGitComparisonTool) {
+        if (getInstance().showGitComparisonTool) {
             currentCommitHash?.let { GitUtils.openGitComparisonTool(project, it) { markdownDialog.focus(1000) } }
         }
     }
@@ -87,7 +87,7 @@ class IDEBasedExecutor(
         markdownDialog.startAutoCloseTimer()
         refreshFiles()
         openGitComparisonToolIfNeeded()
-        if (!AiderSettings.getInstance(project).closeOutputDialogImmediately) {
+        if (!getInstance().closeOutputDialogImmediately) {
             markdownDialog.setProcessFinished()
             markdownDialog.focus()
         }

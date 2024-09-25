@@ -16,7 +16,7 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.executors.IDEBasedExecutor
-import de.andrena.codingaider.settings.AiderSettings
+import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileTraversal
 import java.awt.BorderLayout
 import java.awt.Component
@@ -59,7 +59,7 @@ class ApplyDesignPatternAction : AnAction() {
                 val allFiles = FileTraversal.traverseFilesOrDirectories(virtualFiles)
                 val fileNames = allFiles.map { it.filePath }
 
-                val settings = AiderSettings.getInstance(project)
+                val settings = getInstance()
                 val additionalInfo = dialog.getAdditionalInfo()
                 val commandData = CommandData(
                     message = buildInstructionMessage(selectedPattern, patternInfo, fileNames, additionalInfo),

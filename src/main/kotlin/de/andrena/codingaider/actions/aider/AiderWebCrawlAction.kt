@@ -14,7 +14,7 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.PersistentFileManager
-import de.andrena.codingaider.settings.AiderSettings
+import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileRefresher
 import java.io.File
 import java.math.BigInteger
@@ -25,7 +25,7 @@ import java.security.MessageDigest
 class AiderWebCrawlAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        val settings = AiderSettings.getInstance(project)
+        val settings = getInstance()
         val url =
             Messages.showInputDialog(project, "Enter URL to crawl:", "Aider Web Crawl", Messages.getQuestionIcon())
         if (!url.isNullOrEmpty()) {
@@ -70,7 +70,7 @@ class AiderWebCrawlAction : AnAction() {
                     lintCmd = "",
                     projectPath = project.basePath ?: ""
                 )
-                val settings = AiderSettings.getInstance(project)
+                val settings = getInstance()
                 if (settings.activateIdeExecutorAfterWebcrawl) {
                     IDEBasedExecutor(project, commandData).execute()
                 }
