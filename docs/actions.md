@@ -14,6 +14,7 @@ This document provides a comprehensive overview of the actions implemented in th
 8. [PersistentFilesAction](#persistentfilesaction)
 9. [SettingsAction](#settingsaction)
 10. [ShowLastCommandResultAction](#showlastcommandresultaction)
+11. [AiderClipboardImageAction](#aiderclipboardimageaction)
 
 ## AiderAction
 
@@ -141,6 +142,23 @@ Key features:
 
 - Retrieves the last command result from the AiderHistoryHandler
 - Displays the result in a markdown dialog for easy reading
+
+## AiderClipboardImageAction
+
+`AiderClipboardImageAction` allows users to save images from the clipboard and add them to persistent files.
+
+Key features:
+
+- Detects images in the clipboard
+- Saves the image to a unique file in the `.aider-docs/images` directory
+- Automatically adds the saved image to persistent files
+- Provides user feedback through IDE notifications
+
+Exceptional implementation details:
+
+- Generates unique filenames using UUID
+- Converts various image types to BufferedImage for consistent saving
+- Refreshes the IDE's file system to ensure immediate visibility of the new file
 
 This documentation provides a comprehensive overview of the main actions in the Coding Aider plugin. Each action is
 designed to enhance the development experience by integrating Aider's capabilities into the IDE workflow.
