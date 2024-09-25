@@ -5,17 +5,31 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBList
-import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.command.FileData
+import de.andrena.codingaider.inputdialog.PersistentFileManager
+import java.awt.Component
 import javax.swing.*
 
 class AiderProjectSettingsConfigurable(private val project: Project) : Configurable {
     private var settingsComponent: JPanel? = null
-    private val persistentFilesListModel = DefaultListModel<FileData>()
-    private val persistentFilesList = JBList(persistentFilesListModel)
-
+    private val persistentFilesListModel: DefaultListModel<FileData>
+    private val persistentFilesList: JBList<FileData>
+    private val persistentFileManager: PersistentFileManager
+init {
+    this.persistentFileManager = PersistentFileManager(project.basePath ?: "")
+    this.persistentFilesListModel = DefaultListModel<FileData>()
+    this.persistentFilesList = JBList(persistentFilesListModel).apply {
+        addKeyListener(object : java.awt.event.KeyAdapter() {
+            override fun keyPressed(e: java.awt.event.KeyEvent) {
+                if (e.keyCode == java.awt.event.KeyEvent.VK_DELETE) {
+                    removeSelectedFiles()
+                }
+            }
+        })
+    }
+}
     override fun getDisplayName(): String = "Aider Project Settings"
 
     override fun createComponent(): JComponent {
@@ -42,19 +56,15 @@ class AiderProjectSettingsConfigurable(private val project: Project) : Configura
     }
 
     override fun isModified(): Boolean {
-        val settings = AiderProjectSettings.getInstance(project)
-        return persistentFilesListModel.elements().toList() != settings.persistentFiles
+       return false
     }
 
     override fun apply() {
-        val settings = AiderProjectSettings.getInstance(project)
-        settings.persistentFiles = persistentFilesListModel.elements().toList()
     }
 
     override fun reset() {
         loadPersistentFiles()
     }
-
     private fun addPersistentFiles() {
         val descriptor = FileChooserDescriptor(true, true, false, false, false, true)
         val files = FileChooser.chooseFiles(descriptor, project, null)
@@ -65,29 +75,34 @@ class AiderProjectSettingsConfigurable(private val project: Project) : Configura
                 listOf(FileData(file.path, false))
             }
         }
-        persistentFilesListModel.addAll(fileDataList)
+        persistentFileManager.addAllFiles(fileDataList)
+        loadPersistentFiles()
     }
 
     private fun toggleReadOnlyMode() {
         val selectedFiles = persistentFilesList.selectedValuesList
         selectedFiles.forEach { fileData ->
-            val index = persistentFilesListModel.indexOf(fileData)
-            persistentFilesListModel.set(index, fileData.copy(isReadOnly = !fileData.isReadOnly))
+            val updatedFileData = fileData.copy(isReadOnly = !fileData.isReadOnly)
+            persistentFileManager.updateFile(updatedFileData)
         }
+        loadPersistentFiles()
     }
 
     private fun removeSelectedFiles() {
         val selectedFiles = persistentFilesList.selectedValuesList
-        selectedFiles.forEach { persistentFilesListModel.removeElement(it) }
+        persistentFileManager.removePersistentFiles(selectedFiles.map { it.filePath })
+        loadPersistentFiles()
     }
 
     private fun loadPersistentFiles() {
         persistentFilesListModel.clear()
-        val settings = AiderProjectSettings.getInstance(project)
-        settings.persistentFiles.forEach { file ->
+        persistentFileManager.getPersistentFiles().forEach { file ->
             persistentFilesListModel.addElement(file)
         }
     }
+
+
+
 
     private inner class PersistentFileRenderer : DefaultListCellRenderer() {
         override fun getListCellRendererComponent(
