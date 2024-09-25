@@ -116,6 +116,12 @@
                     description="Start an Aider web crawl action">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt W"/>
             </action>
+            <action id="de.andrena.codingaider.actions.aider.AiderClipboardImageAction"
+                    class="de.andrena.codingaider.actions.aider.AiderClipboardImageAction"
+                    text="Aider Clipboard Image"
+                    description="Save clipboard image and add to persistent files">
+                <keyboard-shortcut keymap="$default" first-keystroke="alt I"/>
+            </action>
             <separator/>
             <action id="de.andrena.codingaider.SettingsAction"
                     class="de.andrena.codingaider.actions.ide.SettingsAction"
