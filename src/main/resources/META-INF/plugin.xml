@@ -159,7 +159,7 @@
         </intentionAction>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
-        <toolWindow id="Persistent Files"
+        <toolWindow id="Coding Aider"
                     secondary="true"
                     icon="AllIcons.General.Modified"
                     anchor="right"

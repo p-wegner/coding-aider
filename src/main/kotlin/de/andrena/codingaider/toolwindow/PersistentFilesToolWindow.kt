@@ -56,7 +56,7 @@ class PersistentFilesComponent(private val project: Project) {
                     button("Toggle Read-Only") { toggleReadOnlyMode() }
                     button("Remove Files") { removeSelectedFiles() }
                 }
-            }
+            }.resizableRow()
         }
     }
 
