@@ -5,7 +5,8 @@ package de.andrena.codingaider.command
  *
  * @property message The main message or instruction for Aider.
  * @property useYesFlag If true, automatically confirms all prompts.
- * @property llm The language model to be used (e.g., "gpt-4").
+ * @property llm The language model to be used (e.g., "gpt-4"). Models prefixed with -- can directly
+ * be passed as options to aider, others have to be passed with --model {llm}
  * @property additionalArgs Any additional command-line arguments for Aider.
  * @property files List of files to be included in the Aider command.
  * @property isShellMode If true, enables shell mode for Aider.

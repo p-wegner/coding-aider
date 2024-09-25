@@ -17,6 +17,8 @@ class DefaultApiKeyChecker : ApiKeyChecker {
         "--sonnet" to "ANTHROPIC_API_KEY",
         "--mini" to "OPENAI_API_KEY",
         "--4o" to "OPENAI_API_KEY",
+        "o1-mini" to "OPENAI_API_KEY",
+        "o1-preview" to "OPENAI_API_KEY",
         "--deepseek" to "DEEPSEEK_API_KEY"
     )
 
