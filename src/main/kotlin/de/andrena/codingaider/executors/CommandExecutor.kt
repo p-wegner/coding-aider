@@ -45,8 +45,8 @@ class CommandExecutor(
         }
 
         val processBuilder = ProcessBuilder(commandArgs)
-            .directory(File(commandData.projectPath))
             .apply {
+                if (commandData.projectPath.isNotEmpty()) directory(File(commandData.projectPath))
                 environment().putIfAbsent("PYTHONIOENCODING", "utf-8")
                 redirectErrorStream(true)
             }
