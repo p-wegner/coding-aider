@@ -16,7 +16,7 @@ class AiderSettingsConfigurableTest : BasePlatformTestCase() {
         `when`(mockApiKeyChecker.isApiKeyAvailableForLlm("option1")).thenReturn(true)
         `when`(mockApiKeyChecker.isApiKeyAvailableForLlm("option2")).thenReturn(false)
 
-        val configurable = AiderSettingsConfigurable(project)
+        val configurable = AiderSettingsConfigurable()
 
         // Add your assertions here
         // For example:

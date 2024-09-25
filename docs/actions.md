@@ -152,13 +152,6 @@ Key features:
 - Detects images in the clipboard
 - Saves the image to a unique file in the `.aider-docs/images` directory
 - Automatically adds the saved image to persistent files
-- Provides user feedback through IDE notifications
-
-Exceptional implementation details:
-
-- Generates unique filenames using UUID
-- Converts various image types to BufferedImage for consistent saving
-- Refreshes the IDE's file system to ensure immediate visibility of the new file
 
 This documentation provides a comprehensive overview of the main actions in the Coding Aider plugin. Each action is
 designed to enhance the development experience by integrating Aider's capabilities into the IDE workflow.

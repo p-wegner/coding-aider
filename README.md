@@ -46,7 +46,9 @@ Additionally API keys for the LLM Providers you intend to use are required.
 
 8. **Webcrawl (Experimental)**: Download and convert pages to markdown stored in a .aider-docs folder to add to context.
 
-9. **Various Specialized Actions**:
+9. **Clipboard Image Support**: Save clipboard images directly to the project and add them to persistent files.
+
+10. **Various Specialized Actions**:
     - **Commit Action**: Quickly commit changes using Aider.
     - **Document Code Action**: Generate markdown documentation for selected files and directories.
     - **Fix Compile Error Action**: Fix compile errors using Aider's AI capabilities.
