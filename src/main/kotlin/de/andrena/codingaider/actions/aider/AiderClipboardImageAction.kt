@@ -8,11 +8,11 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.util.ui.ImageUtil
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.inputdialog.PersistentFileManager
 import de.andrena.codingaider.utils.FileRefresher
 import java.awt.Image
-import java.awt.Toolkit
 import java.awt.datatransfer.DataFlavor
 import java.awt.image.BufferedImage
 import java.io.File
@@ -25,7 +25,7 @@ class AiderClipboardImageAction : AnAction() {
         val clipboard = CopyPasteManager.getInstance()
 
         if (clipboard.areDataFlavorsAvailable(DataFlavor.imageFlavor)) {
-            val image = clipboard.getContents(null)?.getTransferData(DataFlavor.imageFlavor) as? Image
+            val image: Image? = clipboard.contents?.getTransferData(DataFlavor.imageFlavor) as Image?
             if (image != null) {
                 saveImageToFile(project, image)
             } else {
@@ -64,7 +64,7 @@ class AiderClipboardImageAction : AnAction() {
         }
 
         // Create a buffered image with transparency
-        val bufferedImage = BufferedImage(
+        val bufferedImage = ImageUtil.createImage(
             image.getWidth(null), image.getHeight(null),
             BufferedImage.TYPE_INT_ARGB
         )

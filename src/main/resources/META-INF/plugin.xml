@@ -155,6 +155,7 @@
                 parentId="tools"/>
         <notificationGroup id="Coding Aider Notifications" displayType="BALLOON"/>
         <notificationGroup id="Aider Web Crawl" displayType="BALLOON"/>
+        <notificationGroup id="Aider Clipboard Image" displayType="BALLOON"/>
         <intentionAction>
             <className>de.andrena.codingaider.actions.aider.FixCompileErrorAction$Intention</className>
             <category>Errors</category>
