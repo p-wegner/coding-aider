@@ -100,7 +100,14 @@ class DockerAiderExecutionStrategy(
 
 private fun buildCommonArgs(commandData: CommandData, settings: AiderSettings): List<String> {
     return buildList {
-        if (commandData.llm.isNotEmpty()) add(commandData.llm)
+        if (commandData.llm.isNotEmpty()) {
+            if (commandData.llm.startsWith("--")) {
+                add(commandData.llm)
+            } else {
+                add("--model")
+                add(commandData.llm)
+            }
+        }
         commandData.files.forEach { fileData ->
             val fileArgument = if (fileData.isReadOnly) "--read" else "--file"
             add(fileArgument)
