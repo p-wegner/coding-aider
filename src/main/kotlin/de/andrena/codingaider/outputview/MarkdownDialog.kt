@@ -11,6 +11,7 @@ import java.util.Timer
 import javax.swing.*
 import kotlin.concurrent.schedule
 import kotlin.concurrent.scheduleAtFixedRate
+import kotlin.math.max
 
 class MarkdownDialog(
     private val project: Project,
@@ -81,26 +82,20 @@ class MarkdownDialog(
 
     fun startAutoCloseTimer() {
         val settings = AiderSettings.getInstance(project)
-        if (settings.enableMarkdownDialogAutoclose) {
-            val delay = settings.markdownDialogAutocloseDelay
-            if (delay > 0) {
-                keepOpenButton.isVisible = true
-                var remainingSeconds = delay
-                autoCloseTimer = Timer().scheduleAtFixedRate(0, 1000) { // Update every second
-                    invokeLater {
-                        if (remainingSeconds > 0) {
-                            title = "$initialTitle - Closing in $remainingSeconds seconds"
-                            remainingSeconds--
-                        } else {
-                            dispose()
-                        }
+        if (!settings.enableMarkdownDialogAutoclose) return
+        val delay = settings.markdownDialogAutocloseDelay
+            keepOpenButton.isVisible = true
+            var remainingSeconds = max(1,delay)
+            autoCloseTimer = Timer().scheduleAtFixedRate(0, 1000) { // Update every second
+                invokeLater {
+                    if (remainingSeconds > 0) {
+                        title = "$initialTitle - Closing in $remainingSeconds seconds"
+                        remainingSeconds--
+                    } else {
+                        dispose()
                     }
                 }
-            } else {
-                // Close immediately if delay is 0
-                dispose()
             }
-        }
     }
 
     private fun cancelAutoClose() {

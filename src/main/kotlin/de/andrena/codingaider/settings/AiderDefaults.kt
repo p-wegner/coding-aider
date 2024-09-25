@@ -1,6 +1,7 @@
 package de.andrena.codingaider.settings
 
 object AiderDefaults {
+    const val MARKDOWN_DIALOG_AUTOCLOSE_DELAY_IN_S: Int =10
     const val USE_YES_FLAG = true
     const val LLM = ""
     const val ADDITIONAL_ARGS = ""

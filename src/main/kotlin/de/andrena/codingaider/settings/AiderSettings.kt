@@ -26,7 +26,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var verboseCommandLogging: Boolean = AiderDefaults.VERBOSE_COMMAND_LOGGING,
         var useDockerAider: Boolean = AiderDefaults.USE_DOCKER_AIDER,
         var enableMarkdownDialogAutoclose: Boolean = AiderDefaults.ENABLE_MARKDOWN_DIALOG_AUTOCLOSE,
-        var markdownDialogAutocloseDelay: Int = AiderDefaults.MARKDOWN_DIALOG_AUTOCLOSE_DELAY,
+        var markdownDialogAutocloseDelay: Int = AiderDefaults.MARKDOWN_DIALOG_AUTOCLOSE_DELAY_IN_S,
         var mountAiderConfInDocker: Boolean = AiderDefaults.MOUNT_AIDER_CONF_IN_DOCKER,
         var includeChangeContext: Boolean = AiderDefaults.INCLUDE_CHANGE_CONTEXT,
         var autoCommits: AutoCommitSetting = AiderDefaults.AUTO_COMMITS,
@@ -124,6 +124,8 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         set(value) {
             myState.markdownDialogAutocloseDelay = value
         }
+    val closeOutputDialogImmediately: Boolean
+        get() = markdownDialogAutocloseDelay<1 && enableMarkdownDialogAutoclose
     
     var mountAiderConfInDocker: Boolean
         get() = myState.mountAiderConfInDocker

@@ -50,7 +50,6 @@ class IDEBasedExecutor(
         } catch (e: Exception) {
             log.error("Error executing Aider command", e)
             updateDialogProgress("Error executing Aider command: ${e.message}", "Aider Command Error")
-            markdownDialog.startAutoCloseTimer()
         }
     }
 
@@ -59,13 +58,6 @@ class IDEBasedExecutor(
         executionThread?.interrupt()
         updateDialogProgress("Aider command aborted by user", "Aider Command Aborted")
         markdownDialog.dispose()
-    }
-
-    private fun performPostExecutionTasks() {
-        markdownDialog.startAutoCloseTimer()
-        refreshFiles()
-        openGitComparisonToolIfNeeded()
-        markdownDialog.focus()
     }
 
     private fun refreshFiles() {
@@ -84,14 +76,21 @@ class IDEBasedExecutor(
         invokeLater { markdownDialog.updateProgress(message, title) }
     }
 
-    override fun onCommandStart(command: String) = updateDialogProgress(command, "Aider Command Started")
+    override fun onCommandStart(command: String) =
+        updateDialogProgress(command, "Aider Command Started")
+
     override fun onCommandProgress(output: String, runningTime: Long) =
         updateDialogProgress(output, "Aider command in progress ($runningTime seconds)")
 
     override fun onCommandComplete(output: String, exitCode: Int) {
         updateDialogProgress(output, "Aider Command ${if (exitCode == 0) "Completed" else "Failed"}")
-        markdownDialog.setProcessFinished()
-        performPostExecutionTasks()
+        markdownDialog.startAutoCloseTimer()
+        refreshFiles()
+        openGitComparisonToolIfNeeded()
+        if (!AiderSettings.getInstance(project).closeOutputDialogImmediately) {
+            markdownDialog.setProcessFinished()
+            markdownDialog.focus()
+        }
     }
 
     override fun onCommandError(error: String) {

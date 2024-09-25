@@ -341,7 +341,7 @@ class AiderSettingsConfigurable : Configurable {
         settings.verboseCommandLogging = verboseCommandLoggingCheckBox.isSelected
         settings.useDockerAider = useDockerAiderCheckBox.isSelected
         settings.enableMarkdownDialogAutoclose = enableMarkdownDialogAutocloseCheckBox.isSelected
-        settings.markdownDialogAutocloseDelay = markdownDialogAutocloseDelayField.text.toIntOrNull() ?: AiderDefaults.MARKDOWN_DIALOG_AUTOCLOSE_DELAY
+        settings.markdownDialogAutocloseDelay = markdownDialogAutocloseDelayField.text.toIntOrNull() ?: AiderDefaults.MARKDOWN_DIALOG_AUTOCLOSE_DELAY_IN_S
         settings.mountAiderConfInDocker = mountAiderConfInDockerCheckBox.isSelected
         settings.includeChangeContext = includeChangeContextCheckBox.isSelected
         settings.autoCommits = AiderSettings.AutoCommitSetting.fromIndex(autoCommitsComboBox.selectedIndex)
