@@ -33,7 +33,7 @@ class AiderExecutionStrategyTest {
             projectPath = "/project",
             files = listOf(FileData("/project/file1.txt", false)),
             message = "Test message",
-            llm = "4o",
+            llm = "--4o",
             useYesFlag = true,
             editFormat = "diff",
             isShellMode = false,
@@ -47,23 +47,34 @@ class AiderExecutionStrategyTest {
     fun `NativeAiderExecutionStrategy builds correct command`() {
         val command = nativeStrategy.buildCommand(commandData)
         assertThat(command).containsExactly(
-            "aider", "4o", "--file", "/project/file1.txt", "--yes", "--edit-format", "diff",
+            "aider", "--4o", "--file", "/project/file1.txt", "--yes", "--edit-format", "diff",
             "--no-suggest-shell-commands", "--no-pretty", "--verbose", "--lint-cmd", "lint",
             "--map-tokens", "0", "-m", "Test message"
         )
     }
 
     @Test
+    fun `NativeAiderExecutionStrategy properly uses custom models`() {
+        val command = nativeStrategy.buildCommand(commandData.copy(llm = "o1-preview"))
+        assertThat(command).containsExactly(
+            "aider", "--model", "o1-preview", "--file", "/project/file1.txt", "--yes", "--edit-format", "diff",
+            "--no-suggest-shell-commands", "--no-pretty", "--verbose", "--lint-cmd", "lint",
+            "--map-tokens", "0", "-m", "Test message"
+        )
+    }
+
+
+    @Test
     fun `DockerAiderExecutionStrategy builds correct command`() {
         whenever(dockerManager.getCidFilePath()).thenReturn("/tmp/docker.cid")
         val command = dockerStrategy.buildCommand(commandData)
         assertThat(command).containsExactly(
-            "docker", "run", "-i", "--rm",
+            "docker", "run", "-i", "--rm", "-t",
             "-v", "/project:/app",
             "-w", "/app",
             "--cidfile", "/tmp/docker.cid",
-            "paulgauthier/aider:v0.56.0",
-            "4o", "--file", "/app/file1.txt", "--yes", "--edit-format", "diff",
+            "paulgauthier/aider:v0.57.1",
+            "--4o", "--file", "/app/file1.txt", "--yes", "--edit-format", "diff",
             "--no-suggest-shell-commands", "--no-pretty", "--verbose", "--lint-cmd", "lint",
             "--map-tokens", "0", "-m", "Test message"
         )
