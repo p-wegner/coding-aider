@@ -2,7 +2,9 @@ package de.andrena.codingaider.toolwindow
 
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
+import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.components.JBList
@@ -16,6 +18,8 @@ import javax.swing.DefaultListModel
 import javax.swing.JComponent
 import javax.swing.JLabel
 import java.awt.Component
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import javax.swing.JList
 
 class PersistentFilesToolWindow : ToolWindowFactory {
@@ -40,9 +44,12 @@ class PersistentFilesComponent(private val project: Project) {
         })
     }
 
+    private var doubleClickListener: (() -> Unit)? = null
+
     init {
         loadPersistentFiles()
         subscribeToChanges()
+        setupDoubleClickListener()
     }
 
     private fun subscribeToChanges() {
@@ -54,6 +61,27 @@ class PersistentFilesComponent(private val project: Project) {
         )
     }
 
+    private fun setupDoubleClickListener() {
+        persistentFilesList.addMouseListener(object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent) {
+                if (e.clickCount == 2) {
+                    val index = persistentFilesList.locationToIndex(e.point)
+                    if (index != -1) {
+                        val fileData = persistentFilesListModel.getElementAt(index)
+                        val virtualFile = LocalFileSystem.getInstance().findFileByPath(fileData.filePath)
+                        virtualFile?.let {
+                            FileEditorManager.getInstance(project).openFile(it, true)
+                            doubleClickListener?.invoke()
+                        }
+                    }
+                }
+            }
+        })
+    }
+
+    fun addDoubleClickListener(listener: () -> Unit) {
+        doubleClickListener = listener
+    }
 
     fun getContent(): JComponent {
         return panel {
@@ -124,3 +152,4 @@ class PersistentFilesComponent(private val project: Project) {
         }
     }
 }
+
