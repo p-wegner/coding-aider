@@ -18,7 +18,7 @@ class AiderProjectSettingsConfigurable(private val project: Project) : Configura
     private val persistentFilesList: JBList<FileData>
     private val persistentFileManager: PersistentFileManager
 init {
-    this.persistentFileManager = PersistentFileManager(project)
+    this.persistentFileManager = project.getService(PersistentFileManager::class.java)
     this.persistentFilesListModel = DefaultListModel<FileData>()
     this.persistentFilesList = JBList(persistentFilesListModel).apply {
         addKeyListener(object : java.awt.event.KeyAdapter() {

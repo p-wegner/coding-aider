@@ -36,7 +36,7 @@ class AiderContextView(
     private val filesNode = DefaultMutableTreeNode("Files")
     private val markdownFilesNode = DefaultMutableTreeNode("Docs")
     private val tree: Tree = Tree(rootNode)
-    private val persistentFileManager = PersistentFileManager(project)
+    private val persistentFileManager = project.getService(PersistentFileManager::class.java)
     private var persistentFiles: List<FileData> = persistentFileManager.loadPersistentFiles()
 
     init {

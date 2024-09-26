@@ -106,7 +106,7 @@ class AiderWebCrawlAction : AnAction() {
 
     private fun refreshAndAddFile(project: com.intellij.openapi.project.Project, filePath: String) {
         val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(File(filePath))
-        val persistentFileManager = PersistentFileManager(project)
+        val persistentFileManager = project.getService(PersistentFileManager::class.java)
         persistentFileManager.addFile(FileData(filePath, true))
         if (virtualFile != null) {
             FileRefresher.refreshFiles(arrayOf(virtualFile))

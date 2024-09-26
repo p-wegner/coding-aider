@@ -91,7 +91,7 @@ class AiderInputDialog(
 
     init {
         title = "Aider Command"
-        persistentFileManager = PersistentFileManager(project)
+        persistentFileManager = project.getService(PersistentFileManager::class.java)
         aiderContextView = AiderContextView(project, files + persistentFileManager.getPersistentFiles()) { fileName ->
             insertTextAtCursor(fileName)
         }

@@ -11,16 +11,16 @@ class LiveUpdateExecutor(private val commandData: CommandData) :
                 notifyObservers { it.onCommandStart(message) }
             }
 
-            override fun onCommandProgress(output: String, runningTime: Long) {
-                notifyObservers { it.onCommandProgress(output, runningTime) }
+            override fun onCommandProgress(message: String, runningTime: Long) {
+                notifyObservers { it.onCommandProgress(message, runningTime) }
             }
 
-            override fun onCommandComplete(output: String, exitCode: Int) {
-                notifyObservers { it.onCommandComplete(output, exitCode) }
+            override fun onCommandComplete(message: String, exitCode: Int) {
+                notifyObservers { it.onCommandComplete(message, exitCode) }
             }
 
-            override fun onCommandError(errorMessage: String) {
-                notifyObservers { it.onCommandError(errorMessage) }
+            override fun onCommandError(message: String) {
+                notifyObservers { it.onCommandError(message) }
             }
         })
         return executor.executeCommand()

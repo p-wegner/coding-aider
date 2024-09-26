@@ -18,7 +18,7 @@ class PersistentFilesAction : AnAction() {
         val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
 
         if (project != null && !files.isNullOrEmpty()) {
-            val persistentFileManager = PersistentFileManager(project)
+            val persistentFileManager = project.getService(PersistentFileManager::class.java)
             val persistentFiles = persistentFileManager.getPersistentFiles()
 
             val allFiles = FileTraversal.traverseFilesOrDirectories(files, true)

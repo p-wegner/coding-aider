@@ -27,7 +27,7 @@ class PersistentFilesToolWindow : ToolWindowFactory {
 }
 
 class PersistentFilesComponent(private val project: Project) {
-    private val persistentFileManager = PersistentFileManager(project)
+    private val persistentFileManager = project.getService(PersistentFileManager::class.java)
     private val persistentFilesListModel = DefaultListModel<FileData>()
     private val persistentFilesList = JBList(persistentFilesListModel).apply {
         cellRenderer = PersistentFileRenderer()
@@ -49,9 +49,7 @@ class PersistentFilesComponent(private val project: Project) {
         project.messageBus.connect().subscribe(
             PersistentFilesChangedTopic.PERSISTENT_FILES_CHANGED_TOPIC,
             object : PersistentFilesChangedTopic {
-                override fun onPersistentFilesChanged() {
-                    loadPersistentFiles()
-                }
+                override fun onPersistentFilesChanged() = loadPersistentFiles()
             }
         )
     }

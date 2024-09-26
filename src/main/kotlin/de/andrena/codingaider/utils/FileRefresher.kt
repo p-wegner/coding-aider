@@ -16,7 +16,7 @@ object FileRefresher {
                     VirtualFileManager.getInstance().refreshWithoutFileWatcher(false)
                     RefreshQueue.getInstance().refresh(true, true, null, *files)
                 }
-                markdownDialog?.show()
+                markdownDialog?.isVisible = true
             }
         }
     }
