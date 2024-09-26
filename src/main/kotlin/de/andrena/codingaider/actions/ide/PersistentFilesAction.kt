@@ -9,7 +9,6 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.inputdialog.PersistentFileManager
-import de.andrena.codingaider.messages.PersistentFilesChangedTopic
 import de.andrena.codingaider.utils.FileRefresher
 import de.andrena.codingaider.utils.FileTraversal
 
@@ -19,7 +18,7 @@ class PersistentFilesAction : AnAction() {
         val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
 
         if (project != null && !files.isNullOrEmpty()) {
-            val persistentFileManager = PersistentFileManager(project.basePath ?: "")
+            val persistentFileManager = PersistentFileManager(project)
             val persistentFiles = persistentFileManager.getPersistentFiles()
 
             val allFiles = FileTraversal.traverseFilesOrDirectories(files, true)
@@ -51,15 +50,13 @@ class PersistentFilesAction : AnAction() {
                 .createNotification(fullMessage, NotificationType.IDE_UPDATE)
             notification.notify(project)
 
-            // Publish message to update PersistentFilesToolWindow
-            project.messageBus.syncPublisher(PersistentFilesChangedTopic.PERSISTENT_FILES_CHANGED_TOPIC).onPersistentFilesChanged()
         }
     }
 
     override fun update(e: AnActionEvent) {
         val project: Project? = e.project
         val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
-        val persistentFileManager = project?.basePath?.let { PersistentFileManager(it) }
+        val persistentFileManager = project?.basePath?.let { PersistentFileManager(project) }
         val persistentFiles = persistentFileManager?.getPersistentFiles() ?: emptyList()
 
         val allFiles = files?.let { FileTraversal.traverseFilesOrDirectories(it) } ?: emptyList()

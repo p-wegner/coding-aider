@@ -70,7 +70,6 @@ class AiderWebCrawlAction : AnAction() {
                     lintCmd = "",
                     projectPath = project.basePath ?: ""
                 )
-                val settings = getInstance()
                 if (settings.activateIdeExecutorAfterWebcrawl) {
                     IDEBasedExecutor(project, commandData).execute()
                 }
@@ -107,7 +106,7 @@ class AiderWebCrawlAction : AnAction() {
 
     private fun refreshAndAddFile(project: com.intellij.openapi.project.Project, filePath: String) {
         val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(File(filePath))
-        val persistentFileManager = PersistentFileManager(project.basePath ?: "")
+        val persistentFileManager = PersistentFileManager(project)
         persistentFileManager.addFile(FileData(filePath, true))
         if (virtualFile != null) {
             FileRefresher.refreshFiles(arrayOf(virtualFile))

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.FileData
@@ -12,8 +13,8 @@ import de.andrena.codingaider.messages.PersistentFilesChangedTopic
 import java.io.File
 import java.io.IOException
 
-class PersistentFileManager(private val basePath: String) {
-    private val contextFile = File(basePath, ".aider.context.yaml")
+class PersistentFileManager(private val project: Project) {
+    private val contextFile = File(project.basePath ?:"", ".aider.context.yaml")
     private val persistentFiles: MutableList<FileData> = mutableListOf()
     private val objectMapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
 
@@ -23,8 +24,7 @@ class PersistentFileManager(private val basePath: String) {
 
     private fun notifyPersistentFilesChanged() {
         ApplicationManager.getApplication().invokeLater {
-            val project = ProjectManager.getInstance().openProjects.find { it.basePath == basePath }
-            project?.messageBus?.syncPublisher(PersistentFilesChangedTopic.PERSISTENT_FILES_CHANGED_TOPIC)?.onPersistentFilesChanged()
+            project.messageBus.syncPublisher(PersistentFilesChangedTopic.PERSISTENT_FILES_CHANGED_TOPIC).onPersistentFilesChanged()
         }
     }
 

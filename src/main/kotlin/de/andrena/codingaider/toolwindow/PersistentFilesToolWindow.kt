@@ -27,7 +27,7 @@ class PersistentFilesToolWindow : ToolWindowFactory {
 }
 
 class PersistentFilesComponent(private val project: Project) {
-    private val persistentFileManager = PersistentFileManager(project.basePath ?: "")
+    private val persistentFileManager = PersistentFileManager(project)
     private val persistentFilesListModel = DefaultListModel<FileData>()
     private val persistentFilesList = JBList(persistentFilesListModel).apply {
         cellRenderer = PersistentFileRenderer()
@@ -56,9 +56,6 @@ class PersistentFilesComponent(private val project: Project) {
         )
     }
 
-    fun updatePersistentFiles() {
-        loadPersistentFiles()
-    }
 
     fun getContent(): JComponent {
         return panel {
