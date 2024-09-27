@@ -135,7 +135,19 @@ private fun buildCommonArgs(commandData: CommandData, settings: AiderSettings): 
         }
         if (!commandData.isShellMode) {
             add("-m")
-            add(commandData.message)
+            if (commandData.structuredMode) {
+                add(
+                    """
+                    SYSTEM Instead of making changes to the code, write a detailed description of the requested feature and the needed changes and save this description in a file with a suitable name.
+                    SYSTEM If appropriate, add checklists to the description to help you track the progress.
+                    SYSTEM The file should be saved in the .coding-aider-plans directory in the project.
+                    SYSTEM If a lot of changes are needed, you can also save them in a separate file for each change.
+                    ${commandData.message}
+                """.trimIndent()
+                )
+            } else {
+                add(commandData.message)
+            }
         }
         when (settings.autoCommits) {
             AiderSettings.AutoCommitSetting.ON -> add("--auto-commits")
