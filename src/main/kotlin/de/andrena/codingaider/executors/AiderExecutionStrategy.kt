@@ -138,10 +138,13 @@ private fun buildCommonArgs(commandData: CommandData, settings: AiderSettings): 
             if (commandData.structuredMode) {
                 add(
                     """
-                    SYSTEM Instead of making changes to the code, write a detailed description of the requested feature and the needed changes and save this description in a file with a suitable name.
+                    SYSTEM Instead of making changes to the code a markdown file should be used to track progress on the feature. 
+                    SYSTEM Write a detailed description of the requested feature and the needed changes and save this description in a file with a suitable name.
+                    SYSTEM If a plan is already available, use the existing file and update it with the new changes.
                     SYSTEM If appropriate, add checklists to the description to help you track the progress.
                     SYSTEM The file should be saved in the .coding-aider-plans directory in the project.
                     SYSTEM If a lot of changes are needed, you can also save them in a separate file for each change.
+                    SYSTEM Once the plan properly describes the changes, start implementing them step by step. Commit each change as you go.
                     ${commandData.message}
                 """.trimIndent()
                 )
