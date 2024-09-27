@@ -26,7 +26,7 @@ data class CommandData(
     val editFormat: String = "",
     val projectPath: String,
     val useDockerAider: Boolean? = null,
-    val structuredMode: Boolean = true
+    val structuredMode: Boolean
 
 )
 

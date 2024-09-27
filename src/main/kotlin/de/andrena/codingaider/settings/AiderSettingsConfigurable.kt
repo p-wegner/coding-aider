@@ -53,6 +53,7 @@ class AiderSettingsConfigurable : Configurable {
         this.includeChangeContextCheckBox = JBCheckBox("Include change context in commit messages")
         this.autoCommitsComboBox = ComboBox(arrayOf("Default", "On", "Off"))
         this.dirtyCommitsComboBox = ComboBox(arrayOf("Default", "On", "Off"))
+        this.useStructuredModeCheckBox = JBCheckBox("Use Structured Mode")
         this.apiKeyFields = mutableMapOf<String, JPasswordField>()
 
     }
@@ -79,6 +80,7 @@ class AiderSettingsConfigurable : Configurable {
     private val includeChangeContextCheckBox: JBCheckBox
     private val autoCommitsComboBox: ComboBox<String>
     private val dirtyCommitsComboBox: ComboBox<String>
+    private val useStructuredModeCheckBox: JBCheckBox
     private val apiKeyFields: MutableMap<String, JPasswordField>
     override fun getDisplayName(): String = "Aider"
 
@@ -211,6 +213,13 @@ class AiderSettingsConfigurable : Configurable {
 
             group("Advanced Settings") {
                 row {
+                    cell(useStructuredModeCheckBox)
+                        .component
+                        .apply {
+                            toolTipText = "If enabled, Aider will create detailed descriptions of changes instead of directly modifying code."
+                        }
+                }
+                row {
                     cell(activateIdeExecutorAfterWebcrawlCheckBox)
                         .component
                         .apply {
@@ -290,7 +299,8 @@ class AiderSettingsConfigurable : Configurable {
                 mountAiderConfInDockerCheckBox.isSelected != settings.mountAiderConfInDocker ||
                 includeChangeContextCheckBox.isSelected != settings.includeChangeContext ||
                 autoCommitsComboBox.selectedIndex != settings.autoCommits.toIndex() ||
-                dirtyCommitsComboBox.selectedIndex != settings.dirtyCommits.toIndex()
+                dirtyCommitsComboBox.selectedIndex != settings.dirtyCommits.toIndex() ||
+                useStructuredModeCheckBox.isSelected != settings.useStructuredMode
     }
 
     override fun apply() {
@@ -313,6 +323,7 @@ class AiderSettingsConfigurable : Configurable {
         settings.includeChangeContext = includeChangeContextCheckBox.isSelected
         settings.autoCommits = AiderSettings.AutoCommitSetting.fromIndex(autoCommitsComboBox.selectedIndex)
         settings.dirtyCommits = AiderSettings.DirtyCommitSetting.fromIndex(dirtyCommitsComboBox.selectedIndex)
+        settings.useStructuredMode = useStructuredModeCheckBox.isSelected
     }
 
 
@@ -336,6 +347,7 @@ class AiderSettingsConfigurable : Configurable {
         includeChangeContextCheckBox.isSelected = settings.includeChangeContext
         autoCommitsComboBox.selectedIndex = settings.autoCommits.toIndex()
         dirtyCommitsComboBox.selectedIndex = settings.dirtyCommits.toIndex()
+        useStructuredModeCheckBox.isSelected = settings.useStructuredMode
 
         apiKeyFields.forEach { (keyName, field) ->
             field.text = getApiKeyDisplayValue(keyName)
