@@ -2,18 +2,17 @@ package de.andrena.codingaider.settings
 
 import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.fileChooser.FileChooser
-import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogBuilder
 import com.intellij.openapi.ui.Messages
-import com.intellij.ui.components.*
+import com.intellij.ui.components.JBCheckBox
+import com.intellij.ui.components.JBScrollPane
+import com.intellij.ui.components.JBTextArea
+import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
-import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.CommandObserver
-import de.andrena.codingaider.inputdialog.PersistentFileManager
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.ApiKeyManager
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
@@ -214,10 +213,6 @@ class AiderSettingsConfigurable : Configurable {
             group("Advanced Settings") {
                 row {
                     cell(useStructuredModeCheckBox)
-                        .component
-                        .apply {
-                            toolTipText = "If enabled, Aider will create detailed descriptions of changes instead of directly modifying code."
-                        }
                 }
                 row {
                     cell(activateIdeExecutorAfterWebcrawlCheckBox)
@@ -250,16 +245,19 @@ class AiderSettingsConfigurable : Configurable {
                     cell(enableMarkdownDialogAutocloseCheckBox)
                         .component
                         .apply {
-                            toolTipText = "If enabled, the Output Dialog will automatically close after the specified delay."
+                            toolTipText =
+                                "If enabled, the Output Dialog will automatically close after the specified delay."
                             addItemListener { e ->
-                                markdownDialogAutocloseDelayField.isEnabled = e.stateChange == java.awt.event.ItemEvent.SELECTED
+                                markdownDialogAutocloseDelayField.isEnabled =
+                                    e.stateChange == java.awt.event.ItemEvent.SELECTED
                             }
                         }
                     label("Autoclose delay (seconds):")
                     cell(markdownDialogAutocloseDelayField)
                         .component
                         .apply {
-                            toolTipText = "Specify the delay in seconds before the Output Dialog closes automatically. Set to 0 for immediate closing."
+                            toolTipText =
+                                "Specify the delay in seconds before the Output Dialog closes automatically. Set to 0 for immediate closing."
                             isEnabled = enableMarkdownDialogAutocloseCheckBox.isSelected
                         }
                 }
@@ -318,7 +316,8 @@ class AiderSettingsConfigurable : Configurable {
         settings.verboseCommandLogging = verboseCommandLoggingCheckBox.isSelected
         settings.useDockerAider = useDockerAiderCheckBox.isSelected
         settings.enableMarkdownDialogAutoclose = enableMarkdownDialogAutocloseCheckBox.isSelected
-        settings.markdownDialogAutocloseDelay = markdownDialogAutocloseDelayField.text.toIntOrNull() ?: AiderDefaults.MARKDOWN_DIALOG_AUTOCLOSE_DELAY_IN_S
+        settings.markdownDialogAutocloseDelay =
+            markdownDialogAutocloseDelayField.text.toIntOrNull() ?: AiderDefaults.MARKDOWN_DIALOG_AUTOCLOSE_DELAY_IN_S
         settings.mountAiderConfInDocker = mountAiderConfInDockerCheckBox.isSelected
         settings.includeChangeContext = includeChangeContextCheckBox.isSelected
         settings.autoCommits = AiderSettings.AutoCommitSetting.fromIndex(autoCommitsComboBox.selectedIndex)
@@ -391,7 +390,6 @@ class AiderSettingsConfigurable : Configurable {
 
 
     }
-
 
 
     private fun showTestCommandResult() {

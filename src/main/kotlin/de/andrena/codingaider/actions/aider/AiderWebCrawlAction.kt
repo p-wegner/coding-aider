@@ -69,7 +69,7 @@ class AiderWebCrawlAction : AnAction() {
                     isShellMode = false,
                     lintCmd = "",
                     projectPath = project.basePath ?: "",
-                    structuredMode = settings.useStructuredMode
+                    structuredMode = false
                 )
                 if (settings.activateIdeExecutorAfterWebcrawl) {
                     IDEBasedExecutor(project, commandData).execute()

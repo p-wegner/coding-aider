@@ -55,7 +55,7 @@ class DocumentCodeAction : AnAction() {
                 deactivateRepoMap = settings.deactivateRepoMap,
                 editFormat = settings.editFormat,
                 projectPath = project.basePath ?: "",
-                structuredMode = settings.useStructuredMode
+                structuredMode = false
             )
             IDEBasedExecutor(project, commandData).execute()
         }

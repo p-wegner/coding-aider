@@ -2,7 +2,6 @@ package de.andrena.codingaider.settings
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.*
-import com.intellij.openapi.project.Project
 
 @Service(Service.Level.APP)
 @State(
@@ -29,7 +28,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var includeChangeContext: Boolean = AiderDefaults.INCLUDE_CHANGE_CONTEXT,
         var autoCommits: AutoCommitSetting = AiderDefaults.AUTO_COMMITS,
         var dirtyCommits: DirtyCommitSetting = AiderDefaults.DIRTY_COMMITS,
-        var useStructuredMode: Boolean = AiderDefaults.USE_STRUCTURED_MODE
+        var useStructuredMode: Boolean = AiderDefaults.USE_STRUCTURED_MODE,
     )
 
     private var myState = State()
@@ -124,8 +123,8 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
             myState.markdownDialogAutocloseDelay = value
         }
     val closeOutputDialogImmediately: Boolean
-        get() = markdownDialogAutocloseDelay<1 && enableMarkdownDialogAutoclose
-    
+        get() = markdownDialogAutocloseDelay < 1 && enableMarkdownDialogAutoclose
+
     var mountAiderConfInDocker: Boolean
         get() = myState.mountAiderConfInDocker
         set(value) {
