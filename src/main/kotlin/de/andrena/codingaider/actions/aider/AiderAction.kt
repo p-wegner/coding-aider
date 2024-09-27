@@ -78,8 +78,8 @@ class AiderAction : AnAction() {
                 lintCmd = settings.lintCmd,
                 deactivateRepoMap = settings.deactivateRepoMap,
                 editFormat = settings.editFormat,
-                projectPath = project.basePath ?: ""
-
+                projectPath = project.basePath ?: "",
+                structuredMode = dialog.isStructuredMode()
             )
         }
 

@@ -81,6 +81,9 @@ class AiderInputDialog(
     private val modeToggle = JCheckBox("Shell Mode", settings.isShellMode).apply {
         toolTipText = "Toggle between normal mode and shell mode"
     }
+    private val structuredModeCheckBox = JCheckBox("Structured Mode", settings.useStructuredMode).apply {
+        toolTipText = "Enable structured mode for detailed change descriptions"
+    }
     private val messageLabel = JLabel("Enter your message:")
     private val historyComboBox = ComboBox<HistoryItem>()
     private val historyHandler = AiderHistoryHandler(project.basePath ?: "")
@@ -225,11 +228,18 @@ class AiderInputDialog(
             gridy = 0
         }
 
-        // First row: Shell Mode toggle, LLM selection, and History
+        // First row: Shell Mode toggle, Structured Mode toggle, LLM selection, and History
         val firstRowPanel = JPanel(GridBagLayout())
         modeToggle.mnemonic = KeyEvent.VK_M
         firstRowPanel.add(modeToggle, GridBagConstraints().apply {
             gridx = 0
+            gridy = 0
+            weightx = 0.0
+            insets = JBUI.insetsRight(10)
+        })
+        structuredModeCheckBox.mnemonic = KeyEvent.VK_S
+        firstRowPanel.add(structuredModeCheckBox, GridBagConstraints().apply {
+            gridx = 1
             gridy = 0
             weightx = 0.0
             insets = JBUI.insetsRight(10)
@@ -240,13 +250,13 @@ class AiderInputDialog(
             toolTipText = "Select the Language Model to use"
         }
         firstRowPanel.add(selectLlmLabel, GridBagConstraints().apply {
-            gridx = 1
+            gridx = 2
             gridy = 0
             weightx = 0.0
             insets = JBUI.insets(0, 5)
         })
         firstRowPanel.add(llmComboBox, GridBagConstraints().apply {
-            gridx = 2
+            gridx = 3
             gridy = 0
             weightx = 0.2
             fill = GridBagConstraints.HORIZONTAL
@@ -257,20 +267,20 @@ class AiderInputDialog(
             toolTipText = "Select from previous commands"
         }
         firstRowPanel.add(historyLabel, GridBagConstraints().apply {
-            gridx = 3
+            gridx = 4
             gridy = 0
             weightx = 0.0
             insets = JBUI.insets(0, 15, 0, 5)
         })
         historyComboBox.preferredSize = Dimension(200, historyComboBox.preferredSize.height)
         firstRowPanel.add(historyComboBox, GridBagConstraints().apply {
-            gridx = 4
+            gridx = 5
             gridy = 0
             weightx = 0.7
             fill = GridBagConstraints.HORIZONTAL
         })
         firstRowPanel.add(settingsButton, GridBagConstraints().apply {
-            gridx = 5
+            gridx = 6
             gridy = 0
             weightx = 0.0
             fill = GridBagConstraints.NONE
@@ -441,12 +451,16 @@ class AiderInputDialog(
         return panel
     }
 
-    fun getInputText(): String = inputTextArea.text
+    fun getInputText(): String {
+        val structuredModePrefix = if (structuredModeCheckBox.isSelected) "[STRUCTURED MODE] " else ""
+        return structuredModePrefix + inputTextArea.text
+    }
     fun isYesFlagChecked(): Boolean = yesCheckBox.isSelected
     fun getLlm(): String = llmComboBox.selectedItem as String
     fun getAdditionalArgs(): String = additionalArgsField.text
     fun getAllFiles(): List<FileData> = aiderContextView.getAllFiles()
     fun isShellMode(): Boolean = modeToggle.isSelected
+    fun isStructuredMode(): Boolean = structuredModeCheckBox.isSelected
 
     private fun insertTextAtCursor(text: String) {
         val caretPosition = inputTextArea.caretPosition
