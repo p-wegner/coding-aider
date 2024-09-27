@@ -42,7 +42,8 @@ class RefactorToCleanCodeAction : AnAction() {
                 lintCmd = settings.lintCmd,
                 deactivateRepoMap = settings.deactivateRepoMap,
                 editFormat = settings.editFormat,
-                projectPath = project.basePath ?: ""
+                projectPath = project.basePath ?: "",
+                structuredMode = settings.useStructuredMode
             )
             IDEBasedExecutor(project, commandData).execute()
         }

@@ -68,7 +68,8 @@ class AiderWebCrawlAction : AnAction() {
                     files = listOf(FileData(filePath, false)),
                     isShellMode = false,
                     lintCmd = "",
-                    projectPath = project.basePath ?: ""
+                    projectPath = project.basePath ?: "",
+                    structuredMode = settings.useStructuredMode
                 )
                 if (settings.activateIdeExecutorAfterWebcrawl) {
                     IDEBasedExecutor(project, commandData).execute()
