@@ -79,10 +79,6 @@ class PersistentFilesComponent(private val project: Project) {
         })
     }
 
-    fun addDoubleClickListener(listener: () -> Unit) {
-        doubleClickListener = listener
-    }
-
     fun getContent(): JComponent {
         return panel {
             group("Persistent Files") {

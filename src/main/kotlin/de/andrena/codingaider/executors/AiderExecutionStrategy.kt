@@ -140,9 +140,13 @@ private fun buildCommonArgs(commandData: CommandData, settings: AiderSettings): 
                     """
                     SYSTEM Instead of making changes to the code a markdown file should be used to track progress on the feature. 
                     SYSTEM Write a detailed description of the requested feature and the needed changes and save this description in a file with a suitable name.
-                    SYSTEM If a plan is already available, use the existing file and update it with the new changes.
+                    SYSTEM Only proceed with changes if a plan exists in the context, else create a plan and finish. 
+                    SYSTEM Never proceed with changes if the plan is not committed yet.
+                    SYSTEM If a plan is provided, use the existing file and update it with the new changes.
                     SYSTEM If appropriate, add checklists to the description to help you track the progress.
                     SYSTEM The file should be saved in the .coding-aider-plans directory in the project.
+                    SYSTEM Always start plans with the line [Coding Aider Plan] at the beginning of the file.
+                    SYSTEM If no instruction but only a plan is provided, start implementing the plan step by step. Commit each change as you go.
                     SYSTEM If a lot of changes are needed, you can also save them in a separate file for each change.
                     SYSTEM Once the plan properly describes the changes, start implementing them step by step. Commit each change as you go.
                     ${commandData.message}
