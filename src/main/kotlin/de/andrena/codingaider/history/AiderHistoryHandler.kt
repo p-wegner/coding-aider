@@ -1,5 +1,6 @@
 package de.andrena.codingaider.history
 
+import de.andrena.codingaider.executors.STRUCTURED_MODE_MARKER
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -18,7 +19,13 @@ class AiderHistoryHandler(private val projectPath: String) {
             .map { entry ->
                 val lines = entry.lines()
                 val dateTime = LocalDateTime.parse(lines[0], dateTimeFormatter)
-                val command = lines.drop(1).joinToString("\n") { it.trim().removePrefix("+").trim() }
+                val command = lines.drop(1).dropWhile { !it.startsWith("+$STRUCTURED_MODE_MARKER") }
+                    .joinToString("\n") {
+                        it.trim()
+                            .removePrefix("+")
+                            .removePrefix(STRUCTURED_MODE_MARKER)
+                            .trim()
+                    }
                 dateTime to command.split("\n").filter { it.isNotEmpty() }
             }
             .reversed()

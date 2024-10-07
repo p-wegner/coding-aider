@@ -451,10 +451,7 @@ class AiderInputDialog(
         return panel
     }
 
-    fun getInputText(): String {
-        val structuredModePrefix = if (structuredModeCheckBox.isSelected) "[STRUCTURED MODE] " else ""
-        return structuredModePrefix + inputTextArea.text
-    }
+    fun getInputText(): String = inputTextArea.text
     fun isYesFlagChecked(): Boolean = yesCheckBox.isSelected
     fun getLlm(): String = llmComboBox.selectedItem as String
     fun getAdditionalArgs(): String = additionalArgsField.text
