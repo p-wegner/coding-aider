@@ -148,7 +148,7 @@ private fun buildCommonArgs(commandData: CommandData, settings: AiderSettings): 
                     SYSTEM Only proceed with changes if a plan exists in the context, else create a plan and finish. 
                     SYSTEM Never proceed with changes if the plan is not committed yet.
                     SYSTEM The file should be saved in the .coding-aider-plans directory in the project.
-                    SYSTEM Always start plans with the line $aiderPlanMarker at the beginning of the file.
+                    SYSTEM Always start plans with the line $aiderPlanMarker at the beginning of the file and use this marker in existing files to identify plans, i.e. if a file starting with $aiderPlanMarker, no additional plan is needed.
                     SYSTEM If no instruction but only a plan and a checklist is provided, start implementing the plan step by step. Commit each change as you go.
                     SYSTEM Once the plan properly describes the changes, start implementing them step by step. Commit each change as you go.
                     $STRUCTURED_MODE_MARKER ${commandData.message}
