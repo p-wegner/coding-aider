@@ -43,7 +43,7 @@ class IDEBasedExecutor(
 
     private fun executeAiderCommand() {
         try {
-            val executor = CommandExecutor(commandData).apply {
+            val executor = CommandExecutor(commandData,project).apply {
                 addObserver(this@IDEBasedExecutor)
             }
             commandExecutor.set(executor)

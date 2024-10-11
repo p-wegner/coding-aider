@@ -1,6 +1,7 @@
 package de.andrena.codingaider.executors
 
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.docker.DockerContainerManager
 import de.andrena.codingaider.executors.api.CommandSubject
@@ -12,6 +13,7 @@ import java.util.concurrent.TimeUnit
 
 class CommandExecutor(
     private val commandData: CommandData,
+    private val project: Project,
     private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker()
 ) :
     CommandSubject by GenericCommandSubject() {

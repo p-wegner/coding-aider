@@ -1,5 +1,6 @@
 package de.andrena.codingaider.settings
 
+import com.intellij.openapi.project.ProjectManager
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.executors.api.CommandObserver
 import de.andrena.codingaider.executors.api.LiveUpdateExecutor
@@ -19,7 +20,7 @@ class AiderTestCommand() {
             projectPath = "",
             useDockerAider = useDockerAider  // Add this line
         )
-        LiveUpdateExecutor(commandData).apply {
+        LiveUpdateExecutor(commandData,ProjectManager.getInstance().defaultProject).apply {
             observer?.let { addObserver(it) }
             execute()
         }

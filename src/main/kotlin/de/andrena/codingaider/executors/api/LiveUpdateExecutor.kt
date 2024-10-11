@@ -1,13 +1,14 @@
 package de.andrena.codingaider.executors.api
 
+import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.executors.CommandExecutor
 import de.andrena.codingaider.executors.GenericCommandSubject
 
-class LiveUpdateExecutor(private val commandData: CommandData) :
+class LiveUpdateExecutor(private val commandData: CommandData,private val project: Project) :
     CommandSubject by GenericCommandSubject() {
     fun execute(): String {
-        val executor = CommandExecutor(commandData)
+        val executor = CommandExecutor(commandData,project)
         executor.addObserver(object : CommandObserver {
             override fun onCommandStart(message: String) {
                 notifyObservers { it.onCommandStart(message) }
