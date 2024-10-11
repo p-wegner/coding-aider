@@ -1,5 +1,8 @@
 package de.andrena.codingaider.executors
 
+import de.andrena.codingaider.executors.api.CommandObserver
+import de.andrena.codingaider.executors.api.CommandSubject
+
 class GenericCommandSubject : CommandSubject {
     private val observers = mutableListOf<CommandObserver>()
 

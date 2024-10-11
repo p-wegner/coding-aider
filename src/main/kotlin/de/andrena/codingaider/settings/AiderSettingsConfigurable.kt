@@ -12,7 +12,7 @@ import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
-import de.andrena.codingaider.executors.CommandObserver
+import de.andrena.codingaider.executors.api.CommandObserver
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.ApiKeyManager
 import de.andrena.codingaider.utils.DefaultApiKeyChecker

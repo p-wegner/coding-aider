@@ -8,8 +8,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
-import de.andrena.codingaider.executors.IDEBasedExecutor
-import de.andrena.codingaider.executors.ShellExecutor
+import de.andrena.codingaider.executors.api.IDEBasedExecutor
+import de.andrena.codingaider.executors.api.ShellExecutor
 import de.andrena.codingaider.inputdialog.AiderInputDialog
 import de.andrena.codingaider.inputdialog.PersistentFileManager
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance

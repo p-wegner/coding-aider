@@ -1,6 +1,8 @@
-package de.andrena.codingaider.executors
+package de.andrena.codingaider.executors.api
 
 import de.andrena.codingaider.command.CommandData
+import de.andrena.codingaider.executors.CommandExecutor
+import de.andrena.codingaider.executors.GenericCommandSubject
 
 class LiveUpdateExecutor(private val commandData: CommandData) :
     CommandSubject by GenericCommandSubject() {

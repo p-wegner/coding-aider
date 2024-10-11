@@ -15,7 +15,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
 import de.andrena.codingaider.command.CommandData
-import de.andrena.codingaider.executors.IDEBasedExecutor
+import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileTraversal
 import java.awt.BorderLayout

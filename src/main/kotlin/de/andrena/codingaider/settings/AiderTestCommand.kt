@@ -1,8 +1,8 @@
 package de.andrena.codingaider.settings
 
 import de.andrena.codingaider.command.CommandData
-import de.andrena.codingaider.executors.CommandObserver
-import de.andrena.codingaider.executors.LiveUpdateExecutor
+import de.andrena.codingaider.executors.api.CommandObserver
+import de.andrena.codingaider.executors.api.LiveUpdateExecutor
 
 class AiderTestCommand() {
     fun execute(observer: CommandObserver?, useDockerAider: Boolean) {

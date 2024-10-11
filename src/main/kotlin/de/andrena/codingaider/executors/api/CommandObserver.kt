@@ -1,4 +1,4 @@
-package de.andrena.codingaider.executors
+package de.andrena.codingaider.executors.api
 
 interface CommandObserver {
     fun onCommandStart(message: String) {}

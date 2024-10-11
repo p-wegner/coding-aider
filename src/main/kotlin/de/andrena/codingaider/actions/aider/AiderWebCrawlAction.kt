@@ -12,7 +12,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
-import de.andrena.codingaider.executors.IDEBasedExecutor
+import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.PersistentFileManager
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileRefresher

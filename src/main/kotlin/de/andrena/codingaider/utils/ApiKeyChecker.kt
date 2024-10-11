@@ -1,5 +1,6 @@
 package de.andrena.codingaider.utils
 
+import com.intellij.openapi.components.Service
 import java.io.File
 
 interface ApiKeyChecker {
@@ -11,7 +12,7 @@ interface ApiKeyChecker {
     fun getApiKeyValue(apiKeyName: String): String?
     fun getApiKeysForDocker(): Map<String, String>
 }
-
+@Service(Service.Level.PROJECT)
 class DefaultApiKeyChecker : ApiKeyChecker {
     private val llmToApiKeyMap = mapOf(
         "--sonnet" to "ANTHROPIC_API_KEY",

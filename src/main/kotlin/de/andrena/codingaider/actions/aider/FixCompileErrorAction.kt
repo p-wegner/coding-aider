@@ -17,7 +17,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
-import de.andrena.codingaider.executors.IDEBasedExecutor
+import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.AiderInputDialog
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 
