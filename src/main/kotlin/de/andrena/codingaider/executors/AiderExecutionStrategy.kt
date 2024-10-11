@@ -139,20 +139,9 @@ private fun buildCommonArgs(commandData: CommandData, settings: AiderSettings): 
             add("-m")
             if (commandData.structuredMode) {
                 val aiderPlanMarker = "[Coding Aider Plan]"
+                val aiderPlansFolder = ".coding-aider-plans"
                 add(
-                    """
-                    SYSTEM Instead of making changes to the code,  markdown files should be used to track progress on the feature.
-                    SYSTEM A plan consists of a detailed description of the requested feature and a separate file with a checklist for tracking the progress.
-                    SYSTEM If a plan is provided, use the existing files and update them as needed.
-                    SYSTEM If no plan exists, write a detailed description of the requested feature and the needed changes and save these in files with suitable names.
-                    SYSTEM Only proceed with changes if a plan exists in the context, else create a plan and finish. 
-                    SYSTEM Never proceed with changes if the plan is not committed yet.
-                    SYSTEM The file should be saved in the .coding-aider-plans directory in the project.
-                    SYSTEM Always start plans with the line $aiderPlanMarker at the beginning of the file and use this marker in existing files to identify plans, i.e. if a file starting with $aiderPlanMarker, no additional plan is needed.
-                    SYSTEM If no instruction but only a plan and a checklist is provided, start implementing the plan step by step. Commit each change as you go.
-                    SYSTEM Once the plan properly describes the changes, start implementing them step by step. Commit each change as you go.
-                    $STRUCTURED_MODE_MARKER ${commandData.message}
-                """.trimIndent()
+                    createAiderPlanSystemPrompt(aiderPlansFolder, aiderPlanMarker, commandData)
                 )
             } else {
                 add(commandData.message)
@@ -174,6 +163,24 @@ private fun buildCommonArgs(commandData: CommandData, settings: AiderSettings): 
         }
     }
 }
+
+private fun createAiderPlanSystemPrompt(
+    aiderPlansFolder: String,
+    aiderPlanMarker: String,
+    commandData: CommandData
+) = """
+                    SYSTEM Instead of making changes to the code,  markdown files should be used to track progress on the feature.
+                    SYSTEM A plan consists of a detailed description of the requested feature and a separate file with a checklist for tracking the progress.
+                    SYSTEM If a plan is provided, use the existing files and update them as needed.
+                    SYSTEM If no plan exists, write a detailed description of the requested feature and the needed changes and save these in files with suitable names.
+                    SYSTEM Only proceed with changes if a plan exists in the context, else create a plan and finish. 
+                    SYSTEM Never proceed with changes if the plan is not committed yet.
+                    SYSTEM The file should be saved in the $aiderPlansFolder directory in the project.
+                    SYSTEM Always start plans with the line $aiderPlanMarker at the beginning of the file and use this marker in existing files to identify plans, i.e. if a file starting with $aiderPlanMarker, no additional plan is needed.
+                    SYSTEM If no instruction but only a plan and a checklist is provided, start implementing the plan step by step. Commit each change as you go.
+                    SYSTEM Once the plan properly describes the changes, start implementing them step by step. Commit each change as you go.
+                    $STRUCTURED_MODE_MARKER ${commandData.message}
+                """.trimIndent()
 
 private fun setApiKeyEnvironmentVariables(processBuilder: ProcessBuilder, apiKeyChecker: ApiKeyChecker) {
     val environment = processBuilder.environment()
