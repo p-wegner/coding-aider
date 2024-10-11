@@ -1,23 +1,88 @@
 package de.andrena.codingaider.executors
 
+import com.intellij.openapi.components.service
+import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.docker.DockerContainerManager
+import de.andrena.codingaider.services.AiderPlanService
 import de.andrena.codingaider.settings.AiderDefaults
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.GitUtils.findGitRoot
 import java.io.File
 
-interface AiderExecutionStrategy {
-    fun buildCommand(commandData: CommandData): List<String>
-    fun prepareEnvironment(processBuilder: ProcessBuilder, commandData: CommandData)
-    fun cleanupAfterExecution()
+abstract class AiderExecutionStrategy(protected val project: Project) {
+    abstract fun buildCommand(commandData: CommandData): List<String>
+    abstract fun prepareEnvironment(processBuilder: ProcessBuilder, commandData: CommandData)
+    abstract fun cleanupAfterExecution()
+    fun buildCommonArgs(commandData: CommandData, settings: AiderSettings): List<String> {
+        return buildList {
+            if (commandData.llm.isNotEmpty()) {
+                if (commandData.llm.startsWith("--")) {
+                    add(commandData.llm)
+                } else {
+                    add("--model")
+                    add(commandData.llm)
+                }
+            }
+            commandData.files.forEach { fileData ->
+                val fileArgument = if (fileData.isReadOnly) "--read" else "--file"
+                add(fileArgument)
+                add(fileData.filePath)
+            }
+            if (commandData.useYesFlag) add("--yes")
+            if (commandData.editFormat.isNotEmpty()) {
+                add("--edit-format")
+                add(commandData.editFormat)
+            }
+            if (!commandData.isShellMode) {
+                add("--no-suggest-shell-commands")
+                add("--no-pretty")
+            }
+            if (commandData.additionalArgs.isNotEmpty()) {
+                addAll(commandData.additionalArgs.split(" "))
+            }
+            if (commandData.lintCmd.isNotEmpty()) {
+                add("--lint-cmd")
+                add(commandData.lintCmd)
+            }
+            if (commandData.deactivateRepoMap) {
+                add("--map-tokens")
+                add("0")
+            }
+            if (!commandData.isShellMode) {
+                add("-m")
+                if (commandData.structuredMode) {
+                    add(project.service<AiderPlanService>().createAiderPlanSystemPrompt(commandData))
+                } else {
+                    add(commandData.message)
+                }
+            }
+            when (settings.autoCommits) {
+                AiderSettings.AutoCommitSetting.ON -> add("--auto-commits")
+                AiderSettings.AutoCommitSetting.OFF -> add("--no-auto-commits")
+                AiderSettings.AutoCommitSetting.DEFAULT -> {} // Do nothing, use Aider's default
+            }
+            when (settings.dirtyCommits) {
+                AiderSettings.DirtyCommitSetting.ON -> add("--dirty-commits")
+                AiderSettings.DirtyCommitSetting.OFF -> add("--no-dirty-commits")
+                AiderSettings.DirtyCommitSetting.DEFAULT -> {} // Do nothing, use Aider's default
+            }
+            if (settings.includeChangeContext) {
+                add("--commit-prompt")
+                add(getCommitPrompt())
+            }
+        }
+    }
+
 }
 
 class NativeAiderExecutionStrategy(
+    project: Project,
     private val apiKeyChecker: ApiKeyChecker,
     private val settings: AiderSettings
-) : AiderExecutionStrategy {
+) : AiderExecutionStrategy(project) {
+
     override fun buildCommand(commandData: CommandData): List<String> {
         return listOf("aider") + buildCommonArgs(commandData, settings)
     }
@@ -32,10 +97,12 @@ class NativeAiderExecutionStrategy(
 }
 
 class DockerAiderExecutionStrategy(
+    project: Project,
     private val dockerManager: DockerContainerManager,
     private val apiKeyChecker: ApiKeyChecker,
     private val settings: AiderSettings
-) : AiderExecutionStrategy {
+) : AiderExecutionStrategy(project) {
+
     override fun buildCommand(commandData: CommandData): List<String> {
         val dockerArgs = mutableListOf(
             "docker", "run", "-i", "--rm", "-t",
@@ -95,92 +162,10 @@ class DockerAiderExecutionStrategy(
 
         return locations.firstOrNull { it.exists() }
     }
-
 }
 
-const val STRUCTURED_MODE_MARKER = "[STRUCTURED MODE]"
 
-private fun buildCommonArgs(commandData: CommandData, settings: AiderSettings): List<String> {
-    return buildList {
-        if (commandData.llm.isNotEmpty()) {
-            if (commandData.llm.startsWith("--")) {
-                add(commandData.llm)
-            } else {
-                add("--model")
-                add(commandData.llm)
-            }
-        }
-        commandData.files.forEach { fileData ->
-            val fileArgument = if (fileData.isReadOnly) "--read" else "--file"
-            add(fileArgument)
-            add(fileData.filePath)
-        }
-        if (commandData.useYesFlag) add("--yes")
-        if (commandData.editFormat.isNotEmpty()) {
-            add("--edit-format")
-            add(commandData.editFormat)
-        }
-        if (!commandData.isShellMode) {
-            add("--no-suggest-shell-commands")
-            add("--no-pretty")
-        }
-        if (commandData.additionalArgs.isNotEmpty()) {
-            addAll(commandData.additionalArgs.split(" "))
-        }
-        if (commandData.lintCmd.isNotEmpty()) {
-            add("--lint-cmd")
-            add(commandData.lintCmd)
-        }
-        if (commandData.deactivateRepoMap) {
-            add("--map-tokens")
-            add("0")
-        }
-        if (!commandData.isShellMode) {
-            add("-m")
-            if (commandData.structuredMode) {
-                val aiderPlanMarker = "[Coding Aider Plan]"
-                val aiderPlansFolder = ".coding-aider-plans"
-                add(
-                    createAiderPlanSystemPrompt(aiderPlansFolder, aiderPlanMarker, commandData)
-                )
-            } else {
-                add(commandData.message)
-            }
-        }
-        when (settings.autoCommits) {
-            AiderSettings.AutoCommitSetting.ON -> add("--auto-commits")
-            AiderSettings.AutoCommitSetting.OFF -> add("--no-auto-commits")
-            AiderSettings.AutoCommitSetting.DEFAULT -> {} // Do nothing, use Aider's default
-        }
-        when (settings.dirtyCommits) {
-            AiderSettings.DirtyCommitSetting.ON -> add("--dirty-commits")
-            AiderSettings.DirtyCommitSetting.OFF -> add("--no-dirty-commits")
-            AiderSettings.DirtyCommitSetting.DEFAULT -> {} // Do nothing, use Aider's default
-        }
-        if (settings.includeChangeContext) {
-            add("--commit-prompt")
-            add(getCommitPrompt())
-        }
-    }
-}
 
-private fun createAiderPlanSystemPrompt(
-    aiderPlansFolder: String,
-    aiderPlanMarker: String,
-    commandData: CommandData
-) = """
-                    SYSTEM Instead of making changes to the code,  markdown files should be used to track progress on the feature.
-                    SYSTEM A plan consists of a detailed description of the requested feature and a separate file with a checklist for tracking the progress.
-                    SYSTEM If a plan is provided, use the existing files and update them as needed.
-                    SYSTEM If no plan exists, write a detailed description of the requested feature and the needed changes and save these in files with suitable names.
-                    SYSTEM Only proceed with changes if a plan exists in the context, else create a plan and finish. 
-                    SYSTEM Never proceed with changes if the plan is not committed yet.
-                    SYSTEM The file should be saved in the $aiderPlansFolder directory in the project.
-                    SYSTEM Always start plans with the line $aiderPlanMarker at the beginning of the file and use this marker in existing files to identify plans, i.e. if a file starting with $aiderPlanMarker, no additional plan is needed.
-                    SYSTEM If no instruction but only a plan and a checklist is provided, start implementing the plan step by step. Commit each change as you go.
-                    SYSTEM Once the plan properly describes the changes, start implementing them step by step. Commit each change as you go.
-                    $STRUCTURED_MODE_MARKER ${commandData.message}
-                """.trimIndent()
 
 private fun setApiKeyEnvironmentVariables(processBuilder: ProcessBuilder, apiKeyChecker: ApiKeyChecker) {
     val environment = processBuilder.environment()
