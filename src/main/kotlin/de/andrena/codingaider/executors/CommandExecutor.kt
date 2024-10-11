@@ -3,6 +3,7 @@ package de.andrena.codingaider.executors
 import com.intellij.openapi.diagnostic.Logger
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.docker.DockerContainerManager
+import de.andrena.codingaider.executors.api.CommandSubject
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
