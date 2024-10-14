@@ -1,7 +1,6 @@
 package de.andrena.codingaider.services
 
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.components.ServiceManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.services.AiderPlanService.Companion.STRUCTURED_MODE_MARKER
@@ -24,7 +23,15 @@ class AiderHistoryService(private val project: Project) {
             .map { entry ->
                 val lines = entry.lines()
                 val dateTime = LocalDateTime.parse(lines[0], dateTimeFormatter)
-                val command = lines.drop(1).dropWhile { !it.startsWith("+$STRUCTURED_MODE_MARKER") }
+                val command = lines.drop(1)
+                    .run {
+                        if (lines.any {
+                                it.contains(
+                                    "+$STRUCTURED_MODE_MARKER",
+                                    false
+                                )
+                            }) dropWhile { !it.startsWith("+$STRUCTURED_MODE_MARKER") } else this
+                    }
                     .joinToString("\n") {
                         it.trim()
                             .removePrefix("+")
