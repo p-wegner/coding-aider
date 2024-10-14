@@ -9,6 +9,7 @@ import de.andrena.codingaider.command.CommandData
 class AiderPlanService(private val project: Project) {
     companion object {
         const val AIDER_PLAN_MARKER = "[Coding Aider Plan]"
+        const val AIDER_PLAN_CHECKLIST_MARKER = "[Coding Aider Plan - Checklist]"
         const val AIDER_PLANS_FOLDER = ".coding-aider-plans"
         const val STRUCTURED_MODE_MARKER = "[STRUCTURED MODE]"
 
@@ -20,15 +21,17 @@ class AiderPlanService(private val project: Project) {
         val existingPlan =
             commandData.files.firstOrNull { it.filePath.contains(AIDER_PLANS_FOLDER) && it.filePath.endsWith(".md") }
 
-        val basePrompt = """
+        val s = """
             SYSTEM Instead of making changes to the code, markdown files should be used to track progress on the feature.
             SYSTEM A plan consists of a detailed description of the requested feature and a separate file with a checklist for tracking the progress.
             SYSTEM The file should be saved in the $AIDER_PLANS_FOLDER directory in the project.
-            SYSTEM Always start plans with the line $AIDER_PLAN_MARKER at the beginning of the file and use this marker in existing files to identify plans.
+            SYSTEM Always start plans with the line $AIDER_PLAN_MARKER and checklists with $AIDER_PLAN_CHECKLIST_MARKER at the beginning of the file and use this marker in existing files to identify plans and checklists.
             SYSTEM If a separate checklist exists, it is referenced in the plan using markdown file references.
+            SYSTEM Likewise the plan is referenced in the checklist using markdown file references. Be sure to use correct relative path (same folder) references between the files.
             SYSTEM Never proceed with changes if the plan is not committed yet.
             SYSTEM Once the plan properly describes the changes, start implementing them step by step. Commit each change as you go.
-        """.trimIndent()
+        """
+        val basePrompt = s.trimStartingWhiteSpaces()
 
         val planSpecificPrompt = existingPlan?.let {
             """
@@ -49,9 +52,11 @@ class AiderPlanService(private val project: Project) {
             """
 
         return """
-            $basePrompt
-            $planSpecificPrompt
-            $STRUCTURED_MODE_MARKER ${commandData.message}
-        """.trimIndent()
+${basePrompt.trimStartingWhiteSpaces()}
+${planSpecificPrompt.trimStartingWhiteSpaces()}
+$STRUCTURED_MODE_MARKER ${commandData.message}
+            """.trimStartingWhiteSpaces()
     }
+
+    private fun String.trimStartingWhiteSpaces() = trimIndent().trimStart { it.isWhitespace() }
 }

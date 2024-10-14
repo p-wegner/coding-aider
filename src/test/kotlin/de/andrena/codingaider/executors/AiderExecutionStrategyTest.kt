@@ -1,5 +1,6 @@
 package de.andrena.codingaider.executors
 
+import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.docker.DockerContainerManager
@@ -18,6 +19,7 @@ class AiderExecutionStrategyTest {
     private lateinit var nativeStrategy: NativeAiderExecutionStrategy
     private lateinit var dockerStrategy: DockerAiderExecutionStrategy
     private lateinit var dockerManager: DockerContainerManager
+    private lateinit var project: Project
     private lateinit var apiKeyChecker: ApiKeyChecker
     private lateinit var commandData: CommandData
     private lateinit var aiderSettings: AiderSettings
@@ -26,9 +28,10 @@ class AiderExecutionStrategyTest {
     fun setup() {
         apiKeyChecker = mock()
         dockerManager = mock()
+        project = mock()
         aiderSettings = AiderSettings()
-        nativeStrategy = NativeAiderExecutionStrategy(apiKeyChecker, aiderSettings)
-        dockerStrategy = DockerAiderExecutionStrategy(dockerManager, apiKeyChecker, aiderSettings)
+        nativeStrategy = NativeAiderExecutionStrategy(project,apiKeyChecker, aiderSettings)
+        dockerStrategy = DockerAiderExecutionStrategy(project,dockerManager, apiKeyChecker, aiderSettings)
         commandData = CommandData(
             projectPath = "/project",
             files = listOf(FileData("/project/file1.txt", false)),
