@@ -13,7 +13,7 @@ import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
-import de.andrena.codingaider.inputdialog.PersistentFileManager
+import de.andrena.codingaider.inputdialog.PersistentFileService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileRefresher
 import java.io.File
@@ -107,8 +107,8 @@ class AiderWebCrawlAction : AnAction() {
 
     private fun refreshAndAddFile(project: com.intellij.openapi.project.Project, filePath: String) {
         val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(File(filePath))
-        val persistentFileManager = project.getService(PersistentFileManager::class.java)
-        persistentFileManager.addFile(FileData(filePath, true))
+        val persistentFileService = project.getService(PersistentFileService::class.java)
+        persistentFileService.addFile(FileData(filePath, true))
         if (virtualFile != null) {
             FileRefresher.refreshFiles(arrayOf(virtualFile))
         }

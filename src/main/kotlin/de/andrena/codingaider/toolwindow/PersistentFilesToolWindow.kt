@@ -11,7 +11,7 @@ import com.intellij.ui.components.JBList
 import com.intellij.ui.content.ContentFactory
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.command.FileData
-import de.andrena.codingaider.inputdialog.PersistentFileManager
+import de.andrena.codingaider.inputdialog.PersistentFileService
 import de.andrena.codingaider.messages.PersistentFilesChangedTopic
 import javax.swing.DefaultListCellRenderer
 import javax.swing.DefaultListModel
@@ -31,7 +31,7 @@ class PersistentFilesToolWindow : ToolWindowFactory {
 }
 
 class PersistentFilesComponent(private val project: Project) {
-    private val persistentFileManager = project.getService(PersistentFileManager::class.java)
+    private val persistentFileService = project.getService(PersistentFileService::class.java)
     private val persistentFilesListModel = DefaultListModel<FileData>()
     private val persistentFilesList = JBList(persistentFilesListModel).apply {
         cellRenderer = PersistentFileRenderer()
@@ -106,7 +106,7 @@ class PersistentFilesComponent(private val project: Project) {
                 listOf(FileData(file.path, false))
             }
         }
-        persistentFileManager.addAllFiles(fileDataList)
+        persistentFileService.addAllFiles(fileDataList)
         loadPersistentFiles()
     }
 
@@ -114,20 +114,20 @@ class PersistentFilesComponent(private val project: Project) {
         val selectedFiles = persistentFilesList.selectedValuesList
         selectedFiles.forEach { fileData ->
             val updatedFileData = fileData.copy(isReadOnly = !fileData.isReadOnly)
-            persistentFileManager.updateFile(updatedFileData)
+            persistentFileService.updateFile(updatedFileData)
         }
         loadPersistentFiles()
     }
 
     private fun removeSelectedFiles() {
         val selectedFiles = persistentFilesList.selectedValuesList
-        persistentFileManager.removePersistentFiles(selectedFiles.map { it.filePath })
+        persistentFileService.removePersistentFiles(selectedFiles.map { it.filePath })
         loadPersistentFiles()
     }
 
     private fun loadPersistentFiles() {
         persistentFilesListModel.clear()
-        persistentFileManager.getPersistentFiles().forEach { file ->
+        persistentFileService.getPersistentFiles().forEach { file ->
             persistentFilesListModel.addElement(file)
         }
     }

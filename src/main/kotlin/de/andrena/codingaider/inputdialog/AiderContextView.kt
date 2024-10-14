@@ -36,8 +36,8 @@ class AiderContextView(
     private val filesNode = DefaultMutableTreeNode("Files")
     private val markdownFilesNode = DefaultMutableTreeNode("Docs")
     private val tree: Tree = Tree(rootNode)
-    private val persistentFileManager = project.getService(PersistentFileManager::class.java)
-    private var persistentFiles: List<FileData> = persistentFileManager.loadPersistentFiles()
+    private val persistentFileService = project.getService(PersistentFileService::class.java)
+    private var persistentFiles: List<FileData> = persistentFileService.loadPersistentFiles()
 
     init {
         rootNode.add(filesNode)
@@ -206,7 +206,7 @@ class AiderContextView(
 
                 // Update the file in persistentFileManager
                 if (isPersistent(updatedFileData)) {
-                    persistentFileManager.updateFile(updatedFileData)
+                    persistentFileService.updateFile(updatedFileData)
                 }
             }
         }
@@ -222,7 +222,7 @@ class AiderContextView(
         }
 
         // Save updated persistent files
-        persistentFileManager.savePersistentFilesToContextFile()
+        persistentFileService.savePersistentFilesToContextFile()
     }
 
     private fun findUpdatedPath(oldPath: javax.swing.tree.TreePath): javax.swing.tree.TreePath {
@@ -266,12 +266,12 @@ class AiderContextView(
 
         selectedFiles.forEach { fileData ->
             if (isPersistent(fileData)) {
-                persistentFileManager.removeFile(fileData.filePath)
+                persistentFileService.removeFile(fileData.filePath)
             } else {
-                persistentFileManager.addFile(fileData)
+                persistentFileService.addFile(fileData)
             }
         }
-        persistentFiles = persistentFileManager.getPersistentFiles()
+        persistentFiles = persistentFileService.getPersistentFiles()
         addFilesToTree(persistentFiles)
 
         // Restore selection
@@ -305,7 +305,7 @@ class AiderContextView(
         val selectedFiles = getSelectedFiles()
         allFiles = allFiles.filterNot { it in selectedFiles }
         persistentFiles = persistentFiles.filterNot { it in selectedFiles }
-        persistentFileManager.removePersistentFiles(selectedFiles.map { it.filePath })
+        persistentFileService.removePersistentFiles(selectedFiles.map { it.filePath })
         updateTree()
     }
 

@@ -56,10 +56,10 @@ class AiderInputDialog(
                     listOf(FileData(file.absolutePath, false))
                 }
             }
-            persistentFileManager.addAllFiles(fileDataList)
+            persistentFileService.addAllFiles(fileDataList)
 
             // Update persistent files in AiderContextView
-            aiderContextView.updatePersistentFiles(persistentFileManager.getPersistentFiles())
+            aiderContextView.updatePersistentFiles(persistentFileService.getPersistentFiles())
 
             // Refresh the context view
             aiderContextView.updateTree()
@@ -88,14 +88,14 @@ class AiderInputDialog(
     private val historyComboBox = ComboBox<HistoryItem>()
     private val historyHandler = AiderHistoryHandler(project.basePath ?: "")
     private val aiderContextView: AiderContextView
-    private val persistentFileManager: PersistentFileManager
+    private val persistentFileService: PersistentFileService
     private var splitPane: OnePixelSplitter
     private val settingsButton: ActionButton
 
     init {
         title = "Aider Command"
-        persistentFileManager = project.getService(PersistentFileManager::class.java)
-        aiderContextView = AiderContextView(project, files + persistentFileManager.getPersistentFiles()) { fileName ->
+        persistentFileService = project.getService(PersistentFileService::class.java)
+        aiderContextView = AiderContextView(project, files + persistentFileService.getPersistentFiles()) { fileName ->
             insertTextAtCursor(fileName)
         }
         splitPane = OnePixelSplitter(true, 0.6f)

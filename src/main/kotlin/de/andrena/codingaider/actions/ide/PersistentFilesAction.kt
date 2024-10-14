@@ -8,7 +8,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import de.andrena.codingaider.inputdialog.PersistentFileManager
+import de.andrena.codingaider.inputdialog.PersistentFileService
 import de.andrena.codingaider.utils.FileRefresher
 import de.andrena.codingaider.utils.FileTraversal
 
@@ -18,8 +18,8 @@ class PersistentFilesAction : AnAction() {
         val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
 
         if (project != null && !files.isNullOrEmpty()) {
-            val persistentFileManager = project.getService(PersistentFileManager::class.java)
-            val persistentFiles = persistentFileManager.getPersistentFiles()
+            val persistentFileService = project.getService(PersistentFileService::class.java)
+            val persistentFiles = persistentFileService.getPersistentFiles()
 
             val allFiles = FileTraversal.traverseFilesOrDirectories(files, true)
 
@@ -29,18 +29,18 @@ class PersistentFilesAction : AnAction() {
 
             val (message, affectedFiles) = if (allFilesContained) {
                 allFiles.forEach { file ->
-                    persistentFileManager.removeFile(file.filePath)
+                    persistentFileService.removeFile(file.filePath)
                 }
                 Pair("Removed from persistent files:", allFiles)
             } else {
                 val filesToAdd = allFiles.filter { file ->
                     !persistentFiles.any { it.filePath == file.filePath }
                 }
-                persistentFileManager.addAllFiles(filesToAdd)
+                persistentFileService.addAllFiles(filesToAdd)
                 Pair("Added to persistent files:", filesToAdd)
             }
 
-            FileRefresher.refreshFiles(arrayOf(persistentFileManager.getContextFile()))
+            FileRefresher.refreshFiles(arrayOf(persistentFileService.getContextFile()))
 
             // Show notification with file names
             val fileNames = affectedFiles.joinToString("\n") { it.filePath }
@@ -56,8 +56,8 @@ class PersistentFilesAction : AnAction() {
     override fun update(e: AnActionEvent) {
         val project: Project? = e.project
         val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
-        val persistentFileManager = project?.basePath?.let { PersistentFileManager(project) }
-        val persistentFiles = persistentFileManager?.getPersistentFiles() ?: emptyList()
+        val persistentFileService = project?.basePath?.let { PersistentFileService(project) }
+        val persistentFiles = persistentFileService?.getPersistentFiles() ?: emptyList()
 
         val allFiles = files?.let { FileTraversal.traverseFilesOrDirectories(it) } ?: emptyList()
         val allFilesContained = allFiles.isNotEmpty() && allFiles.all { file ->

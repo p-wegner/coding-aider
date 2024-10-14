@@ -11,7 +11,7 @@ import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.executors.api.ShellExecutor
 import de.andrena.codingaider.inputdialog.AiderInputDialog
-import de.andrena.codingaider.inputdialog.PersistentFileManager
+import de.andrena.codingaider.inputdialog.PersistentFileService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileTraversal
 
@@ -35,10 +35,10 @@ class AiderAction : AnAction() {
             val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
 
             if (project != null && !files.isNullOrEmpty()) {
-                val persistentFileManager = project.getService(PersistentFileManager::class.java)
+                val persistentFileService = project.getService(PersistentFileService::class.java)
                 val allFiles = FileTraversal.traverseFilesOrDirectories(files).toMutableList()
 
-                allFiles.addAll(persistentFileManager.getPersistentFiles())
+                allFiles.addAll(persistentFileService.getPersistentFiles())
 
                 if (directShellMode) {
                     val commandData = collectDefaultCommandData(allFiles, project)

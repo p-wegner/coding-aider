@@ -10,7 +10,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.util.ui.ImageUtil
 import de.andrena.codingaider.command.FileData
-import de.andrena.codingaider.inputdialog.PersistentFileManager
+import de.andrena.codingaider.inputdialog.PersistentFileService
 import de.andrena.codingaider.utils.FileRefresher
 import java.awt.Image
 import java.awt.datatransfer.DataFlavor
@@ -79,8 +79,8 @@ class AiderClipboardImageAction : AnAction() {
 
     private fun refreshAndAddFile(project: Project, filePath: String) {
         val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(File(filePath))
-        val persistentFileManager = project.getService(PersistentFileManager::class.java)
-        persistentFileManager.addFile(FileData(filePath, true))
+        val persistentFileService = project.getService(PersistentFileService::class.java)
+        persistentFileService.addFile(FileData(filePath, true))
         if (virtualFile != null) {
             FileRefresher.refreshFiles(arrayOf(virtualFile))
         }

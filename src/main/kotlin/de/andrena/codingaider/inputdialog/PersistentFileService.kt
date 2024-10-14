@@ -16,7 +16,7 @@ import java.io.File
 import java.io.IOException
 
 @Service(Service.Level.PROJECT)
-class PersistentFileManager(private val project: Project) {
+class PersistentFileService(private val project: Project) {
     private val contextFile = File(project.basePath ?: "", ".aider.context.yaml")
     private val persistentFiles: MutableList<FileData> = mutableListOf()
     private val objectMapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
@@ -26,7 +26,7 @@ class PersistentFileManager(private val project: Project) {
 
     companion object {
         @JvmStatic
-        fun getInstance(project: Project): PersistentFileManager = project.service()
+        fun getInstance(project: Project): PersistentFileService = project.service()
     }
 
     init {
