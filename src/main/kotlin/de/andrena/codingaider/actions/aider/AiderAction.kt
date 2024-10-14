@@ -11,7 +11,7 @@ import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.executors.api.ShellExecutor
 import de.andrena.codingaider.inputdialog.AiderInputDialog
-import de.andrena.codingaider.inputdialog.PersistentFileService
+import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileTraversal
 

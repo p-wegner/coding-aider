@@ -1,4 +1,4 @@
-package de.andrena.codingaider.inputdialog
+package de.andrena.codingaider.services
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory

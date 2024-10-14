@@ -8,7 +8,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
-import de.andrena.codingaider.inputdialog.PersistentFileService
+import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.utils.FileRefresher
 import de.andrena.codingaider.utils.FileTraversal
 

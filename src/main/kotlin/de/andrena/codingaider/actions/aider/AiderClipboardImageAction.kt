@@ -10,7 +10,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.util.ui.ImageUtil
 import de.andrena.codingaider.command.FileData
-import de.andrena.codingaider.inputdialog.PersistentFileService
+import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.utils.FileRefresher
 import java.awt.Image
 import java.awt.datatransfer.DataFlavor

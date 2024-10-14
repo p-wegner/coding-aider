@@ -11,7 +11,7 @@ import com.intellij.ui.components.JBList
 import com.intellij.ui.content.ContentFactory
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.command.FileData
-import de.andrena.codingaider.inputdialog.PersistentFileService
+import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.messages.PersistentFilesChangedTopic
 import javax.swing.DefaultListCellRenderer
 import javax.swing.DefaultListModel
