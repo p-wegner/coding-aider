@@ -11,7 +11,7 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
 import de.andrena.codingaider.actions.ide.SettingsAction
 import de.andrena.codingaider.command.FileData
-import de.andrena.codingaider.history.AiderHistoryHandler
+import de.andrena.codingaider.services.AiderHistoryService
 import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.ApiKeyChecker
@@ -87,7 +87,7 @@ class AiderInputDialog(
     }
     private val messageLabel = JLabel("Enter your message:")
     private val historyComboBox = ComboBox<HistoryItem>()
-    private val historyHandler = AiderHistoryHandler(project.basePath ?: "")
+    private val historyService = AiderHistoryService.getInstance(project)
     private val aiderContextView: AiderContextView
     private val persistentFileService: PersistentFileService
     private var splitPane: OnePixelSplitter
@@ -175,7 +175,7 @@ class AiderInputDialog(
 
     private fun loadHistory() {
         historyComboBox.addItem(HistoryItem(emptyList(), null))  // Empty entry
-        historyHandler.getInputHistory().forEach { (dateTime, command) ->
+        historyService.getInputHistory().forEach { (dateTime, command) ->
             historyComboBox.addItem(HistoryItem(command, dateTime))
         }
         historyComboBox.renderer = HistoryItemRenderer()
