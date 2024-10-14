@@ -58,6 +58,40 @@ class AiderExecutionStrategyTest {
         whenever(project.getService(AiderPlanService::class.java)).thenReturn(aiderPlanService)
     }
 
+
+    @Test
+    fun `NativeAiderExecutionStrategy handles structured mode with existing plan`() {
+        val existingPlanFile = FileData("/project/.coding-aider-plans/existing_plan.md", false)
+        commandData = commandData.copy(
+            structuredMode = true,
+            message = "Continue with the plan",
+            files = commandData.files + existingPlanFile
+        )
+
+        val command = nativeStrategy.buildCommand(commandData)
+
+        assertThat(command).contains("-m")
+        assertThat(command.last()).contains("SYSTEM A plan already exists. Continue implementing the existing plan")
+        assertThat(command.last()).contains("[STRUCTURED MODE] Continue with the plan")
+    }
+
+    @Test
+    fun `DockerAiderExecutionStrategy handles structured mode with existing plan`() {
+        val existingPlanFile = FileData("/project/.coding-aider-plans/existing_plan.md", false)
+        commandData = commandData.copy(
+            structuredMode = true,
+            message = "Update the plan",
+            files = commandData.files + existingPlanFile
+        )
+        whenever(dockerManager.getCidFilePath()).thenReturn("/tmp/docker.cid")
+
+        val command = dockerStrategy.buildCommand(commandData)
+
+        assertThat(command).contains("-m")
+        assertThat(command.last()).contains("SYSTEM A plan already exists. Continue implementing the existing plan")
+        assertThat(command.last()).contains("[STRUCTURED MODE] Update the plan")
+    }
+
     @Test
     fun `NativeAiderExecutionStrategy builds correct command`() {
         val command = nativeStrategy.buildCommand(commandData)
