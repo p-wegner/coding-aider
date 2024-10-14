@@ -22,11 +22,11 @@ class ShellExecutor(
     private val useDockerAider: Boolean
         get() = commandData.useDockerAider ?: settings.useDockerAider
     private val executionStrategy: AiderExecutionStrategy by lazy {
-        if (useDockerAider) DockerAiderExecutionStrategy(
+        if (useDockerAider) DockerAiderExecutionStrategy(project,
             dockerManager,
             apiKeyChecker,
             settings
-        ) else NativeAiderExecutionStrategy(apiKeyChecker, settings)
+        ) else NativeAiderExecutionStrategy(project,apiKeyChecker, settings)
     }
 
     fun execute() {

@@ -1,6 +1,6 @@
 package de.andrena.codingaider.history
 
-import de.andrena.codingaider.executors.STRUCTURED_MODE_MARKER
+import de.andrena.codingaider.services.AiderPlanService.Companion.STRUCTURED_MODE_MARKER
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
