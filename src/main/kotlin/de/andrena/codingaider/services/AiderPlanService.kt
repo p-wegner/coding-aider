@@ -25,7 +25,6 @@ class AiderPlanService(private val project: Project) {
             SYSTEM A plan consists of a detailed description of the requested feature and a separate file with a checklist for tracking the progress.
             SYSTEM The file should be saved in the $AIDER_PLANS_FOLDER directory in the project.
             SYSTEM Always start plans with the line $AIDER_PLAN_MARKER at the beginning of the file and use this marker in existing files to identify plans.
-            SYSTEM If a separate checklist exists, it is referenced in the plan using markdown file references.
             SYSTEM Never proceed with changes if the plan is not committed yet.
             SYSTEM Once the plan properly describes the changes, start implementing them step by step. Commit each change as you go.
         """.trimIndent()
