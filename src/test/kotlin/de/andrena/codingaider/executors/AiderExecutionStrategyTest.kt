@@ -15,6 +15,7 @@ import org.junit.jupiter.params.provider.EnumSource
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import de.andrena.codingaider.services.AiderPlanService
+import java.io.File
 
 class AiderExecutionStrategyTest {
 
@@ -26,9 +27,14 @@ class AiderExecutionStrategyTest {
     private lateinit var commandData: CommandData
     private lateinit var aiderSettings: AiderSettings
     private lateinit var aiderPlanService: AiderPlanService
+    private lateinit var structuredModeSystemMessage: String
+    private lateinit var multiLineMessage: String
 
     @BeforeEach
     fun setup() {
+        val resourcesPath = "src/test/resources"
+        structuredModeSystemMessage = File("$resourcesPath/structured_mode_system_message.txt").readText().trimIndent()
+        multiLineMessage = File("$resourcesPath/multi_line_message.txt").readText().trimIndent()
         apiKeyChecker = mock()
         dockerManager = mock()
         project = mock()
@@ -151,62 +157,22 @@ class AiderExecutionStrategyTest {
 
     @Test
     fun `NativeAiderExecutionStrategy handles structured mode with multi-line message`() {
-        val multilineMessage = """
-            First line
-            Second line
-            Third line
-        """.trimIndent()
-        commandData = commandData.copy(structuredMode = true, message = multilineMessage)
+        commandData = commandData.copy(structuredMode = true, message = multiLineMessage)
 
         val command = nativeStrategy.buildCommand(commandData)
         
         assertThat(command).contains("-m")
-        assertThat(command.last()).isEqualTo("""
-            SYSTEM Instead of making changes to the code, markdown files should be used to track progress on the feature.
-            SYSTEM A plan consists of a detailed description of the requested feature and a separate file with a checklist for tracking the progress.
-            SYSTEM The file should be saved in the .coding-aider-plans directory in the project.
-            SYSTEM Always start plans with the line [Coding Aider Plan] and checklists with [Coding Aider Plan - Checklist] at the beginning of the file and use this marker in existing files to identify plans and checklists.
-            SYSTEM If a separate checklist exists, it is referenced in the plan using markdown file references.
-            SYSTEM Likewise the plan is referenced in the checklist using markdown file references. Be sure to use correct relative path (same folder) references between the files.
-            SYSTEM Never proceed with changes if the plan is not committed yet.
-            SYSTEM Once the plan properly describes the changes, start implementing them step by step. Commit each change as you go.
-            SYSTEM No plan exists yet. Write a detailed description of the requested feature and the needed changes.
-            SYSTEM Save the plan in a new markdown file with a suitable name in the .coding-aider-plans directory.
-            SYSTEM Create a separate checklist file to track the progress of implementing the plan.
-            SYSTEM Only proceed with changes after creating and committing the plan.
-            [STRUCTURED MODE] First line
-            Second line
-            Third line""".trimIndent())
+        assertThat(command.last()).isEqualTo("$structuredModeSystemMessage\n[STRUCTURED MODE] $multiLineMessage")
     }
 
     @Test
     fun `DockerAiderExecutionStrategy handles structured mode with multi-line message`() {
-        val multilineMessage = """
-            First line
-            Second line
-            Third line
-        """.trimIndent()
-        commandData = commandData.copy(structuredMode = true, message = multilineMessage)
+        commandData = commandData.copy(structuredMode = true, message = multiLineMessage)
         whenever(dockerManager.getCidFilePath()).thenReturn("/tmp/docker.cid")
         
         val command = dockerStrategy.buildCommand(commandData)
         
         assertThat(command).contains("-m")
-        assertThat(command.last()).isEqualTo("""
-            SYSTEM Instead of making changes to the code, markdown files should be used to track progress on the feature.
-            SYSTEM A plan consists of a detailed description of the requested feature and a separate file with a checklist for tracking the progress.
-            SYSTEM The file should be saved in the .coding-aider-plans directory in the project.
-            SYSTEM Always start plans with the line [Coding Aider Plan] and checklists with [Coding Aider Plan - Checklist] at the beginning of the file and use this marker in existing files to identify plans and checklists.
-            SYSTEM If a separate checklist exists, it is referenced in the plan using markdown file references.
-            SYSTEM Likewise the plan is referenced in the checklist using markdown file references. Be sure to use correct relative path (same folder) references between the files.
-            SYSTEM Never proceed with changes if the plan is not committed yet.
-            SYSTEM Once the plan properly describes the changes, start implementing them step by step. Commit each change as you go.
-            SYSTEM No plan exists yet. Write a detailed description of the requested feature and the needed changes.
-            SYSTEM Save the plan in a new markdown file with a suitable name in the .coding-aider-plans directory.
-            SYSTEM Create a separate checklist file to track the progress of implementing the plan.
-            SYSTEM Only proceed with changes after creating and committing the plan.
-            [STRUCTURED MODE] First line
-            Second line
-            Third line""".trimIndent())
+        assertThat(command.last()).isEqualTo("$structuredModeSystemMessage\n[STRUCTURED MODE] $multiLineMessage")
     }
 }
