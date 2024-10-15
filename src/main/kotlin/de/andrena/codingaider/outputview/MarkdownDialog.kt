@@ -19,7 +19,7 @@ class MarkdownDialog(
     initialText: String,
     private val onAbort: Abortable? = null
 ) : JDialog() {
-    private val textArea: JTextArea = JTextArea(initialText)
+    private val markdownPane: MarkdownPane = MarkdownPane()
     private val scrollPane: JScrollPane
     private var autoCloseTimer: TimerTask? = null
     private val keepOpenButton: JButton
@@ -32,8 +32,7 @@ class MarkdownDialog(
         setLocationRelativeTo(null)
         layout = BorderLayout()
 
-        textArea.isEditable = false
-        scrollPane = JBScrollPane(textArea)
+        scrollPane = JBScrollPane(markdownPane)
         add(scrollPane, BorderLayout.CENTER)
 
         val buttonPanel = JPanel()
@@ -69,13 +68,14 @@ class MarkdownDialog(
         isVisible = true
         setAlwaysOnTop(true)
         setAlwaysOnTop(false)
+
+        markdownPane.setMarkdownText(initialText)
     }
 
     fun updateProgress(output: String, message: String) {
         invokeLater {
-            textArea.text = output
+            markdownPane.setMarkdownText(output)
             title = message
-            textArea.caretPosition = textArea.document.length
             scrollPane.verticalScrollBar.value = scrollPane.verticalScrollBar.maximum
         }
     }
@@ -119,9 +119,8 @@ class MarkdownDialog(
                 requestFocus()
                 isAlwaysOnTop = true
                 isAlwaysOnTop = false
-                textArea.requestFocusInWindow()
+                markdownPane.requestFocusInWindow()
             }
         }
     }
-
 }
