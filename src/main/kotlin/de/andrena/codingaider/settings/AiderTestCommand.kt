@@ -18,7 +18,7 @@ class AiderTestCommand() {
             deactivateRepoMap = false,
             editFormat = "",
             projectPath = "",
-            useDockerAider = useDockerAider  // Add this line
+            useDockerAider = useDockerAider
         )
         LiveUpdateExecutor(commandData,ProjectManager.getInstance().defaultProject).apply {
             observer?.let { addObserver(it) }
