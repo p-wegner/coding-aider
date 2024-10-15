@@ -4,6 +4,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.ui.popup.JBPopupFactory
+import com.intellij.openapi.util.text.TextWithMnemonic
 import com.intellij.ui.awt.RelativePoint
 import java.awt.event.MouseEvent
 import javax.swing.Icon
@@ -15,17 +16,17 @@ class OpenAiderActionGroup : AnAction(), DumbAware {
         val popupActionGroup = DefaultActionGroup()
         
         // Add quick access actions
-        addQuickAccessAction(popupActionGroup, "de.andrena.codingaider.actions.aider.AiderAction", "Start Aider", AllIcons.Actions.Execute)
-        addQuickAccessAction(popupActionGroup, "de.andrena.codingaider.actions.aider.AiderShellAction", "Start Aider in Shell Mode", AllIcons.Actions.StartDebugger)
-        addQuickAccessAction(popupActionGroup, "de.andrena.codingaider.actions.aider.DocumentCodeAction", "Document", AllIcons.Actions.AddMulticaret)
-        addQuickAccessAction(popupActionGroup, "de.andrena.codingaider.actions.aider.RefactorToCleanCodeAction", "Refactor", AllIcons.Actions.GroupBy)
-        addQuickAccessAction(popupActionGroup, "de.andrena.codingaider.actions.aider.ApplyDesignPatternAction", "Apply Design Pattern", AllIcons.Actions.Edit)
-        addQuickAccessAction(popupActionGroup, "de.andrena.codingaider.CommitAction", "Commit", AllIcons.Actions.Commit)
-        addQuickAccessAction(popupActionGroup, "de.andrena.codingaider.actions.ide.PersistentFilesAction", "Persistent Files", AllIcons.Actions.ListFiles)
-        addQuickAccessAction(popupActionGroup, "de.andrena.codingaider.actions.aider.AiderWebCrawlAction", "Web Crawl", AllIcons.Actions.Download)
-        addQuickAccessAction(popupActionGroup, "de.andrena.codingaider.actions.aider.AiderClipboardImageAction", "Clipboard Image", AllIcons.Actions.Copy)
-        addQuickAccessAction(popupActionGroup, "de.andrena.codingaider.actions.ide.ShowLastCommandResultAction", "Show Last Command Result", AllIcons.Actions.Preview)
-        addQuickAccessAction(popupActionGroup, "de.andrena.codingaider.SettingsAction", "Open Aider Settings", AllIcons.General.Settings)
+        addQuickAccessAction(popupActionGroup, "de.andrena.codingaider.actions.aider.AiderAction", "Start Aider", AllIcons.Actions.Execute, 'S')
+        addQuickAccessAction(popupActionGroup, "de.andrena.codingaider.actions.aider.AiderShellAction", "Start Aider in Shell Mode", AllIcons.Actions.StartDebugger, 'H')
+        addQuickAccessAction(popupActionGroup, "de.andrena.codingaider.actions.aider.DocumentCodeAction", "Document", AllIcons.Actions.AddMulticaret, 'D')
+        addQuickAccessAction(popupActionGroup, "de.andrena.codingaider.actions.aider.RefactorToCleanCodeAction", "Refactor", AllIcons.Actions.GroupBy, 'R')
+        addQuickAccessAction(popupActionGroup, "de.andrena.codingaider.actions.aider.ApplyDesignPatternAction", "Apply Design Pattern", AllIcons.Actions.Edit, 'A')
+        addQuickAccessAction(popupActionGroup, "de.andrena.codingaider.CommitAction", "Commit", AllIcons.Actions.Commit, 'C')
+        addQuickAccessAction(popupActionGroup, "de.andrena.codingaider.actions.ide.PersistentFilesAction", "Persistent Files", AllIcons.Actions.ListFiles, 'P')
+        addQuickAccessAction(popupActionGroup, "de.andrena.codingaider.actions.aider.AiderWebCrawlAction", "Web Crawl", AllIcons.Actions.Download, 'W')
+        addQuickAccessAction(popupActionGroup, "de.andrena.codingaider.actions.aider.AiderClipboardImageAction", "Clipboard Image", AllIcons.Actions.Copy, 'L')
+        addQuickAccessAction(popupActionGroup, "de.andrena.codingaider.actions.ide.ShowLastCommandResultAction", "Show Last Command Result", AllIcons.Actions.Preview, 'L')
+        addQuickAccessAction(popupActionGroup, "de.andrena.codingaider.SettingsAction", "Open Aider Settings", AllIcons.General.Settings, 'S')
 
         val popup = JBPopupFactory.getInstance()
             .createActionGroupPopup(
@@ -45,13 +46,16 @@ class OpenAiderActionGroup : AnAction(), DumbAware {
         }
     }
 
-    private fun addQuickAccessAction(group: DefaultActionGroup, actionId: String, text: String, icon: Icon) {
+    private fun addQuickAccessAction(group: DefaultActionGroup, actionId: String, text: String, icon: Icon, mnemonic: Char) {
         val action = ActionManager.getInstance().getAction(actionId)
         action?.let {
             val wrapper = object : AnAction(text, it.templatePresentation.description, icon) {
                 override fun actionPerformed(e: AnActionEvent) {
                     it.actionPerformed(e)
                 }
+            }
+            wrapper.templatePresentation.setTextWithMnemonic{
+                TextWithMnemonic.fromPlainText(text,mnemonic)
             }
             group.add(wrapper)
         }
