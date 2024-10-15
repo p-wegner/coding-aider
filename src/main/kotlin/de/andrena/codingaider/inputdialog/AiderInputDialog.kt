@@ -83,7 +83,13 @@ class AiderInputDialog(
         toolTipText = "Toggle between normal mode and shell mode"
     }
     private val structuredModeCheckBox = JCheckBox("Structured Mode", settings.useStructuredMode).apply {
-        toolTipText = "Enable structured mode for detailed change descriptions"
+        toolTipText = "<html>Enable structured mode for organized feature development:<br>" +
+                "1. Describe a feature to generate a plan and checklist<br>" +
+                "2. Plans are stored in .coding-aider-plans directory<br>" +
+                "3. Aider updates plans based on progress and new requirements<br>" +
+                "4. Implements plan step-by-step when in context<br>" +
+                "5. Message can be left empty to continue with an existing plan<br>" +
+                "Use for better tracking and systematic development</html>"
     }
     private val messageLabel = JLabel("Enter your message:")
     private val historyComboBox = ComboBox<HistoryItem>()

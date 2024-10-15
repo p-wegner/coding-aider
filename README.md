@@ -58,6 +58,14 @@ Additionally API keys for the LLM Providers you intend to use are required.
     - **Persistent Files Action**: Manage the list of persistent files for Aider operations.
     - **OpenAiderActionGroup**: Access a popup menu with all available Aider actions.
 
+11. **Structured Mode**:
+    - Facilitates a more organized approach to developing features and implementing code changes.
+    - Simply describe a feature briefly, and the plugin will generate a detailed plan and checklist for you.
+    - These plans and checklists are saved in the .coding-aider-plans directory and can be manually adjusted as needed.
+    - Once a plan is created, Aider will automatically update it to reflect current progress and any new requirements.
+    - This mode aids in tracking the implementation progress of features.
+    - If a plan is active (i.e. its files in the context), you can leave the message field empty, and Aider will continue working on the existing plan.
+
 For a detailed description of all available actions, please refer to the [Actions Documentation](docs/actions.md).
 
 ## Advantages Over Other Coding Assistant Plugins
