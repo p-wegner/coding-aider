@@ -168,8 +168,9 @@
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="Coding Aider"
                     secondary="false"
-                    icon="/META-INF/pluginIcon.svg"
+                    icon="META-INF/pluginIcon_13.svg"
                     anchor="right"
                     factoryClass="de.andrena.codingaider.toolwindow.PersistentFilesToolWindow"/>
     </extensions>
+    
 </idea-plugin>
