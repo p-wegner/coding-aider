@@ -1,38 +1,45 @@
 package de.andrena.codingaider.outputview
 
-import com.vladsch.flexmark.html.HtmlRenderer
-import com.vladsch.flexmark.parser.Parser
-import com.vladsch.flexmark.util.data.MutableDataSet
-import javax.swing.JEditorPane
-import javax.swing.text.html.HTMLEditorKit
-import javax.swing.text.html.StyleSheet
+import com.intellij.openapi.editor.colors.EditorColorsManager
+import com.intellij.ui.JBColor
+import com.intellij.ui.components.JBScrollPane
+import org.intellij.plugins.markdown.ui.preview.MarkdownHtmlPanel
+import org.intellij.plugins.markdown.ui.preview.MarkdownHtmlPanelProvider
+import javax.swing.JPanel
+import java.awt.BorderLayout
 
-class MarkdownPane : JEditorPane() {
-    private val parser: Parser
-    private val renderer: HtmlRenderer
+class MarkdownPane : JPanel(BorderLayout()) {
+    private val htmlPanel: MarkdownHtmlPanel
 
     init {
-        contentType = "text/html"
-        isEditable = false
-        
-        val options = MutableDataSet()
-        parser = Parser.builder(options).build()
-        renderer = HtmlRenderer.builder(options).build()
-
-        val kit = HTMLEditorKit()
-        setEditorKit(kit)
-
-        val styleSheet = StyleSheet()
-        styleSheet.addRule("body { font-family: Arial, sans-serif; font-size: 14pt; }")
-        styleSheet.addRule("pre { background-color: #f0f0f0; padding: 10px; }")
-        styleSheet.addRule("code { font-family: monospace; }")
-        kit.styleSheet = styleSheet
+        val provider = MarkdownHtmlPanelProvider.createFromInfo(
+            MarkdownHtmlPanelProvider.getAvailableProviders().first().providerInfo
+        )
+        htmlPanel = provider.createHtmlPanel()
+        add(JBScrollPane(htmlPanel.component), BorderLayout.CENTER)
     }
 
-    fun setMarkdownText(markdown: String) {
-        val document = parser.parse(markdown)
-        val html = renderer.render(document)
-        text = html
-        caretPosition = 0
+    fun setMarkdownText(text: String) {
+        val isDarkTheme = EditorColorsManager.getInstance().isDarkEditor
+        val backgroundColor = if (isDarkTheme) JBColor.background() else JBColor.WHITE
+        htmlPanel.setHtml(
+            """
+            <html>
+            <head>
+                <style>
+                    body { 
+                        background-color: ${String.format("#%02x%02x%02x", backgroundColor.red, backgroundColor.green, backgroundColor.blue)};
+                        color: ${if (isDarkTheme) "#FFFFFF" else "#000000"};
+                    }
+                </style>
+            </head>
+            <body>
+            $text
+            </body>
+            </html>
+            """.trimIndent(),
+            0
+        )
     }
+
 }

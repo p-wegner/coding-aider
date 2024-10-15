@@ -20,7 +20,6 @@ class MarkdownDialog(
     private val onAbort: Abortable? = null
 ) : JDialog() {
     private val markdownPane: MarkdownPane = MarkdownPane()
-    private val scrollPane: JScrollPane
     private var autoCloseTimer: TimerTask? = null
     private val keepOpenButton: JButton
     private val closeButton: JButton
@@ -32,8 +31,7 @@ class MarkdownDialog(
         setLocationRelativeTo(null)
         layout = BorderLayout()
 
-        scrollPane = JBScrollPane(markdownPane)
-        add(scrollPane, BorderLayout.CENTER)
+        add(markdownPane, BorderLayout.CENTER)
 
         val buttonPanel = JPanel()
         closeButton = JButton(onAbort?.let { "Abort" } ?: "Close").apply {
@@ -76,7 +74,6 @@ class MarkdownDialog(
         invokeLater {
             markdownPane.setMarkdownText(output)
             title = message
-            scrollPane.verticalScrollBar.value = scrollPane.verticalScrollBar.maximum
         }
     }
 
