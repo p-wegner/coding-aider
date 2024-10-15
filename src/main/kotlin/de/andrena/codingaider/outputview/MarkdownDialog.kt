@@ -24,6 +24,7 @@ class MarkdownDialog(
     private val keepOpenButton: JButton
     private val closeButton: JButton
     private var isProcessFinished = false
+    private var currentContent: StringBuilder = StringBuilder()
 
     init {
         title = initialTitle
@@ -31,7 +32,10 @@ class MarkdownDialog(
         setLocationRelativeTo(null)
         layout = BorderLayout()
 
+        markdownPane.initialize(project)  // Initialize with project context
         add(markdownPane, BorderLayout.CENTER)
+
+        currentContent.append(initialText)
 
         val buttonPanel = JPanel()
         closeButton = JButton(onAbort?.let { "Abort" } ?: "Close").apply {
@@ -70,9 +74,12 @@ class MarkdownDialog(
         markdownPane.setMarkdownText(initialText)
     }
 
+
     fun updateProgress(output: String, message: String) {
         invokeLater {
-            markdownPane.setMarkdownText(output)
+            val formattedOutput = output.replace("\n", "  \n") // Add two spaces before each newline for Markdown line breaks
+            currentContent.append(formattedOutput).append("  \n") // Append new content with line break
+            markdownPane.setMarkdownText(currentContent.toString()) // Set the entire content
             title = message
         }
     }

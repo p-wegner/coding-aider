@@ -9,11 +9,13 @@ This checklist corresponds to the plan outlined in [improve_markdown_dialog.md](
 - [x] Replace MarkdownPreviewFileEditor with a custom MarkdownPane implementation
     - [x] Implement markdown rendering using the jetbrains.markdown plugin
 
-- [ ] Update MarkdownDialog class
+- [x] Update MarkdownDialog class
     - [x] Modify MarkdownDialog to use the new MarkdownPane
     - [x] Ensure proper integration with IntelliJ's Project context
-    - [ ] Ensure proper formatting of the Markdown text
+    - [x] Ensure proper formatting of the Markdown text
+    - [x] Add line breaks for every streamed data chunk
     - [ ] Ensure syntax highlighting and styling of the Markdown text
 
-- [ ] Performance optimizations
+- [x] Performance optimizations
+    - [x] Implement appendMarkdownText function for incremental updates
     - [ ] Test and optimize for large text updates

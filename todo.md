@@ -1,2 +1,3 @@
 # Todos:
-[ ] Fix input history 
+- [x] Fix input history
+- [ ] improve outputdialog
