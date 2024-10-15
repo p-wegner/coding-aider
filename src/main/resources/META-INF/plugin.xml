@@ -86,7 +86,7 @@
                     class="de.andrena.codingaider.actions.aider.DocumentCodeAction"
                     text="Document Code with Aider"
                     description="Use Aider to generate documentation for the selected code">
-                <keyboard-shortcut keymap="$default" first-keystroke="alt shift D"/>
+                <keyboard-shortcut keymap="$default" first-keystroke="alt D"/>
             </action>
             <action id="de.andrena.codingaider.actions.aider.ApplyDesignPatternAction"
                     class="de.andrena.codingaider.actions.aider.ApplyDesignPatternAction"
