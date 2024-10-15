@@ -51,13 +51,15 @@
     <actions>
         <action id="de.andrena.codingaider.actions.aider.OpenAiderActionGroup"
                 class="de.andrena.codingaider.actions.aider.OpenAiderActionGroup"
-                text="Open Aider Actions Menu"
-                description="Open the Aider Actions menu from anywhere in the IDE">
+                text="Aider Quick Actions"
+                description="Open the Aider Quick Actions popup"
+                icon="AllIcons.Actions.Run_anything">
             <keyboard-shortcut keymap="$default" first-keystroke="alt shift Q"/>
             <add-to-group group-id="MainMenu" anchor="last"/>
+            <add-to-group group-id="MainToolBar" anchor="last"/>
         </action>
 
-        <group id="de.andrena.codingaider.AiderActionGroup" text="Aider Actions" popup="true">
+        <group id="de.andrena.codingaider.AiderActionGroup" text="Aider Actions" popup="true" icon="AllIcons.Actions.ListFiles">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
             <add-to-group group-id="ToolsMenu" anchor="last"/>
 
@@ -77,12 +79,14 @@
                     class="de.andrena.codingaider.actions.ide.ShowLastCommandResultAction"
                     text="Show Last Aider Command Result"
                     description="Displays the result of the last Aider command">
+                <keyboard-shortcut keymap="$default" first-keystroke="alt L"/>
             </action>
             <separator/>
             <action id="de.andrena.codingaider.actions.aider.DocumentCodeAction"
                     class="de.andrena.codingaider.actions.aider.DocumentCodeAction"
                     text="Document Code with Aider"
                     description="Use Aider to generate documentation for the selected code">
+                <keyboard-shortcut keymap="$default" first-keystroke="alt shift D"/>
             </action>
             <action id="de.andrena.codingaider.actions.aider.ApplyDesignPatternAction"
                     class="de.andrena.codingaider.actions.aider.ApplyDesignPatternAction"
