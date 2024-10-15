@@ -54,12 +54,6 @@ This checklist corresponds to the plan outlined in [improve_markdown_dialog.md](
 
 ## Implementation Steps
 
-- [ ] Research and choose a markdown rendering library
-  - [ ] Evaluate Flexmark
-  - [ ] Evaluate CommonMark
-  - [ ] Consider custom solution using JEditorPane
-  - [ ] Make final decision and document reasoning
-
 - [ ] Create new MarkdownPane component
   - [ ] Implement basic markdown rendering
   - [ ] Add support for code syntax highlighting
@@ -87,12 +81,3 @@ This checklist corresponds to the plan outlined in [improve_markdown_dialog.md](
   - [ ] Update class and method documentation
   - [ ] Update user-facing documentation if necessary
 
-## Final Steps
-
-- [ ] Code review
-- [ ] Final testing
-- [ ] Merge changes
-- [ ] Update plugin version
-
-[Plan Reference]
-See [improve_markdown_dialog.md](improve_markdown_dialog.md) for the detailed plan.
