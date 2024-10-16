@@ -19,7 +19,7 @@ Reference: [Improve AiderInputDialog Message Input Plan](improve_aiderinputdialo
 - [x] Register the CompletionContributor
 - [x] Use CompletionContributor to provide filename suggestions in the AiderInputDialog
 - [x] Set up completion to trigger on Ctrl + Space
-- [ ] Ensure code completion for the editor is enabled, if necessary implement the completion popup manually
+  - [x] programmatically trigger completion popup
 - [ ] Test basic filename completion functionality
 
 ## 3. Syntax Highlighting

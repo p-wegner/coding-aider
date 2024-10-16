@@ -1,18 +1,15 @@
 package de.andrena.codingaider.inputdialog
 
-import com.intellij.codeInsight.completion.*
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.EditorFactory
-import com.intellij.openapi.fileTypes.PlainTextFileType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
-import com.intellij.psi.PsiFileFactory
-import com.intellij.ui.EditorTextField
 import com.intellij.ui.OnePixelSplitter
+import com.intellij.ui.TextFieldWithAutoCompletion
 import com.intellij.util.textCompletion.TextCompletionUtil
 import com.intellij.util.ui.JBUI
 import de.andrena.codingaider.actions.ide.SettingsAction
@@ -37,60 +34,31 @@ class AiderInputDialog(
     private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker()
 ) : DialogWrapper(project) {
     private val settings = getInstance()
-    private val filenameCompletionContributor = AiderFileCompletionContributor()
+    private val aiderCompletionProvider = AiderCompletionProvider(project, files)
 
-    private val inputTextField = EditorTextField(
-        EditorFactory.getInstance().createDocument(initialText),
-        project,
-        PlainTextFileType.INSTANCE,
-        false,
-        false
-    ).apply {
-        setOneLineMode(false)
-        addSettingsProvider { editor ->
-            editor?.apply {
-                setHorizontalScrollbarVisible(true)
-                setVerticalScrollbarVisible(true)
-                settings.apply {
-                    isShowIntentionBulb = true
-                    isLineNumbersShown = true
-                    isAutoCodeFoldingEnabled = true
-                }
+
+    private val inputTextField: TextFieldWithAutoCompletion<String> =
+        EditorFactory.getInstance().createDocument(initialText)
+            .let { _ ->
+                TextFieldWithAutoCompletion(project, aiderCompletionProvider, false, initialText)
             }
-            // Set up completion to trigger on Ctrl + Space
-            val inputMap = editor.contentComponent.getInputMap(JComponent.WHEN_FOCUSED)
-            val actionMap = editor.contentComponent.actionMap
-
-            inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_DOWN_MASK), "triggerCompletion")
-            actionMap.put("triggerCompletion", object : AbstractAction() {
-                override fun actionPerformed(e: java.awt.event.ActionEvent) {
-                    editor?.contentComponent?.let { component ->
-                        (editor.document.text ?: "asdf").let { text ->
-                            val psiFile = PsiFileFactory.getInstance(project)
-                                .createFileFromText("dummy.txt", PlainTextFileType.INSTANCE, text)
-
-                            val offset = editor.caretModel.offset
-                            val completionParameters = CompletionParameters(
-                                psiFile.findElementAt(offset) ?: psiFile,
-                                psiFile,
-                                CompletionType.BASIC,
-                                offset,
-                                1,
-                                editor,
-                                CompletionProcess { true }
-                            )
-                            CompletionService.getCompletionService()
-                                .performCompletion(completionParameters, { println(it) })
+            .apply {
+                setOneLineMode(false)
+                addSettingsProvider { editor ->
+                    editor?.apply {
+                        setHorizontalScrollbarVisible(true)
+                        setVerticalScrollbarVisible(true)
+                        settings.apply {
+                            isShowIntentionBulb = true
+                            isLineNumbersShown = true
+                            isAutoCodeFoldingEnabled = true
                         }
                     }
                 }
-            })
-        }
-        this.getEditor(true)?.let { editor ->
-            TextCompletionUtil.installCompletionHint(editor)
-            CompletionContributor.forLanguage(PlainTextFileType.INSTANCE.language).add(filenameCompletionContributor)
-        }
-    }
+                this.getEditor(true)?.let { editor ->
+                    TextCompletionUtil.installCompletionHint(editor)
+                }
+            }
     private val yesCheckBox = JCheckBox("Add --yes flag", settings.useYesFlag).apply {
         toolTipText = "Automatically answer 'yes' to prompts"
     }
@@ -554,3 +522,4 @@ class AiderInputDialog(
     }
 
 }
+
