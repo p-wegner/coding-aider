@@ -4,12 +4,16 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFileManager
 import de.andrena.codingaider.command.CommandData
+import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.CommandExecutor
 import de.andrena.codingaider.outputview.Abortable
 import de.andrena.codingaider.outputview.MarkdownDialog
+import de.andrena.codingaider.services.AiderPlanService
+import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileRefresher
 import de.andrena.codingaider.utils.GitUtils
+import java.io.File
 import java.awt.EventQueue.invokeLater
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.concurrent.thread
@@ -77,6 +81,21 @@ class IDEBasedExecutor(
         invokeLater { markdownDialog.updateProgress(message, title) }
     }
 
+    private fun addNewPlanFilesToPersistentFiles() {
+        if (commandData.structuredMode) {
+            val plansFolder = File(project.basePath, AiderPlanService.AIDER_PLANS_FOLDER)
+            if (plansFolder.exists() && plansFolder.isDirectory) {
+                val newPlanFiles = plansFolder.listFiles { file ->
+                    file.isFile && file.extension == "md" &&
+                            !commandData.files.any { it.filePath == file.absolutePath }
+                }
+                newPlanFiles?.forEach { file ->
+                    PersistentFileService.getInstance(project).addFile(FileData(file.absolutePath, false))
+                }
+            }
+        }
+    }
+
     override fun onCommandStart(command: String) =
         updateDialogProgress(command, "Aider Command Started")
 
@@ -87,6 +106,7 @@ class IDEBasedExecutor(
         updateDialogProgress(output, "Aider Command ${if (exitCode == 0) "Completed" else "Failed"}")
         markdownDialog.startAutoCloseTimer()
         refreshFiles()
+        addNewPlanFilesToPersistentFiles()
         openGitComparisonToolIfNeeded()
         if (!getInstance().closeOutputDialogImmediately) {
             markdownDialog.setProcessFinished()
