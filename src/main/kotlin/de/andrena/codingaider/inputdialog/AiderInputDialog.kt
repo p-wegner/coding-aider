@@ -3,20 +3,14 @@ package de.andrena.codingaider.inputdialog
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.impl.ActionButton
-import com.intellij.codeInsight.completion.CompletionType
-import com.intellij.codeInsight.completion.CompletionParameters
-import com.intellij.codeInsight.completion.CompletionResultSet
-import com.intellij.codeInsight.lookup.LookupElementBuilder
 import com.intellij.openapi.editor.EditorFactory
-import com.intellij.openapi.editor.ex.EditorEx
 import com.intellij.openapi.fileTypes.PlainTextFileType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.EditorTextField
-import com.intellij.util.textCompletion.TextCompletionUtil
 import com.intellij.ui.OnePixelSplitter
-import com.intellij.ui.components.JBScrollPane
+import com.intellij.util.textCompletion.TextCompletionUtil
 import com.intellij.util.ui.JBUI
 import de.andrena.codingaider.actions.ide.SettingsAction
 import de.andrena.codingaider.command.FileData
@@ -40,9 +34,15 @@ class AiderInputDialog(
     private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker()
 ) : DialogWrapper(project) {
     private val settings = getInstance()
-    private val inputTextField = EditorTextField(EditorFactory.getInstance().createDocument(initialText), project, PlainTextFileType.INSTANCE, false, false).apply {
+    private val inputTextField = EditorTextField(
+        EditorFactory.getInstance().createDocument(initialText),
+        project,
+        PlainTextFileType.INSTANCE,
+        false,
+        false
+    ).apply {
         addSettingsProvider { editor ->
-            (editor as? EditorEx)?.apply {
+            editor?.apply {
                 setHorizontalScrollbarVisible(true)
                 setVerticalScrollbarVisible(true)
                 settings.apply {
