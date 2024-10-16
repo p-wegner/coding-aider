@@ -4,32 +4,29 @@
 
 Reference: [Improve AiderInputDialog Message Input Plan](improve_aiderinputdialog_message_input.md)
 
-## 1. Basic Code Completion for Filenames
-- [ ] Add RSyntaxTextArea dependency to the project
-- [ ] Replace JTextArea with RSyntaxTextArea in AiderInputDialog
-- [ ] Create a custom CompletionProvider for filenames
+## 1. Replace JTextArea with EditorTextField
+- [ ] Import necessary IntelliJ Platform SDK classes
+- [ ] Create EditorTextField in AiderInputDialog
+- [ ] Configure EditorTextField with appropriate settings
+- [ ] Set up EditorTextField to use PlainTextFileType
+- [ ] Update layout to accommodate EditorTextField
+
+## 2. Basic Code Completion for Filenames
+- [ ] Create a custom CompletionContributor for filenames
 - [ ] Implement a method to get filenames from the context view
-- [ ] Set up KeyStroke (Ctrl + Space) to trigger completion popup
+- [ ] Set up completion to trigger on Ctrl + Space
+- [ ] Register the CompletionContributor
 - [ ] Test basic filename completion functionality
 
-## 2. Syntax Highlighting
-- [ ] Configure RSyntaxTextArea with appropriate syntax style
-- [ ] Implement custom TokenMakerFactory for Aider-specific syntax (if needed)
-- [ ] Implement custom TokenMaker for Aider-specific syntax (if needed)
+## 3. Syntax Highlighting
+- [ ] Configure EditorTextField to use PlainTextLanguage
 - [ ] Test syntax highlighting with various input types
 
-## 3. Enhanced Code Completion
-- [ ] Extend CompletionProvider to include Aider commands
+## 4. Enhanced Code Completion
+- [ ] Extend CompletionContributor to include Aider commands
 - [ ] Implement context-aware suggestion filtering
 - [ ] Add common coding patterns to completion suggestions
 - [ ] Test enhanced code completion functionality
-
-## 4. Advanced Text Editor Features
-- [ ] Implement code folding
-- [ ] Add line numbering
-- [ ] Implement bracket matching
-- [ ] Add support for multiple language syntax highlighting
-- [ ] Test all advanced features
 
 ## 5. Final Testing and Refinement
 - [ ] Perform thorough testing of all new features

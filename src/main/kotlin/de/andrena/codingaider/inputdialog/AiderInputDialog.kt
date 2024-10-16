@@ -3,9 +3,13 @@ package de.andrena.codingaider.inputdialog
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.impl.ActionButton
+import com.intellij.openapi.editor.EditorFactory
+import com.intellij.openapi.editor.ex.EditorEx
+import com.intellij.openapi.fileTypes.PlainTextFileType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.ui.EditorTextField
 import com.intellij.ui.OnePixelSplitter
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
@@ -31,8 +35,17 @@ class AiderInputDialog(
     private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker()
 ) : DialogWrapper(project) {
     private val settings = getInstance()
-    private val inputTextArea = JTextArea(5, 50).apply {
-        text = initialText
+    private val inputTextField = EditorTextField(EditorFactory.getInstance().createDocument(initialText), project, PlainTextFileType.INSTANCE, false, false).apply {
+        addSettingsProvider { editor ->
+            (editor as EditorEx).apply {
+                setHorizontalScrollbarVisible(true)
+                setVerticalScrollbarVisible(true)
+                settings.apply {
+                    isLineNumbersShown = true
+                    isAutoCodeFoldingEnabled = true
+                }
+            }
+        }
     }
     private val yesCheckBox = JCheckBox("Add --yes flag", settings.useYesFlag).apply {
         toolTipText = "Automatically answer 'yes' to prompts"
@@ -135,8 +148,8 @@ class AiderInputDialog(
     }
 
     private fun setupKeyBindings() {
-        val inputMap = inputTextArea.getInputMap(JComponent.WHEN_FOCUSED)
-        val actionMap = inputTextArea.actionMap
+        val inputMap = inputTextField.editor?.contentComponent?.getInputMap(JComponent.WHEN_FOCUSED)
+        val actionMap = inputTextField.editor?.contentComponent?.actionMap
 
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, KeyEvent.ALT_DOWN_MASK), "previousHistory")
         inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, KeyEvent.ALT_DOWN_MASK), "nextHistory")
@@ -174,8 +187,8 @@ class AiderInputDialog(
     override fun show() {
         super.show()
         SwingUtilities.invokeLater {
-            inputTextArea.requestFocusInWindow()
-            inputTextArea.caretPosition = inputTextArea.document.length
+            inputTextField.requestFocus()
+            inputTextField.caretPosition = inputTextField.text.length
         }
     }
 
@@ -447,18 +460,18 @@ class AiderInputDialog(
 
         modeToggle.addActionListener {
             val isShellMode = modeToggle.isSelected
-            inputTextArea.isVisible = !isShellMode
+            inputTextField.isVisible = !isShellMode
             messageLabel.isVisible = !isShellMode
             messageLabel.text = if (isShellMode) "Shell mode enabled" else "Enter your message:"
         }
 
         // Set focus on the input text area when the dialog is opened
-        inputTextArea.requestFocusInWindow()
+        inputTextField.requestFocus()
 
         return panel
     }
 
-    fun getInputText(): String = inputTextArea.text
+    fun getInputText(): String = inputTextField.text
     fun isYesFlagChecked(): Boolean = yesCheckBox.isSelected
     fun getLlm(): String = llmComboBox.selectedItem as String
     fun getAdditionalArgs(): String = additionalArgsField.text
@@ -467,8 +480,7 @@ class AiderInputDialog(
     fun isStructuredMode(): Boolean = structuredModeCheckBox.isSelected
 
     private fun insertTextAtCursor(text: String) {
-        val caretPosition = inputTextArea.caretPosition
-        inputTextArea.insert(text, caretPosition)
+        inputTextField.editor?.document?.insertString(inputTextField.caretPosition, text)
     }
 
     private inner class LlmComboBoxRenderer : DefaultListCellRenderer() {
