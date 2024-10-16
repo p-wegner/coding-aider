@@ -151,16 +151,16 @@ class AiderInputDialog(
         val inputMap = inputTextField.editor?.contentComponent?.getInputMap(JComponent.WHEN_FOCUSED)
         val actionMap = inputTextField.editor?.contentComponent?.actionMap
 
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, KeyEvent.ALT_DOWN_MASK), "previousHistory")
-        inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, KeyEvent.ALT_DOWN_MASK), "nextHistory")
+        inputMap?.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, KeyEvent.ALT_DOWN_MASK), "previousHistory")
+        inputMap?.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, KeyEvent.ALT_DOWN_MASK), "nextHistory")
 
-        actionMap.put("previousHistory", object : AbstractAction() {
+        actionMap?.put("previousHistory", object : AbstractAction() {
             override fun actionPerformed(e: java.awt.event.ActionEvent) {
                 navigateHistory(-1)
             }
         })
 
-        actionMap.put("nextHistory", object : AbstractAction() {
+        actionMap?.put("nextHistory", object : AbstractAction() {
             override fun actionPerformed(e: java.awt.event.ActionEvent) {
                 navigateHistory(1)
             }
@@ -173,7 +173,7 @@ class AiderInputDialog(
         if (newIndex != currentIndex) {
             historyComboBox.selectedIndex = newIndex
             val selectedItem = historyComboBox.selectedItem as? HistoryItem
-            inputTextArea.text = selectedItem?.command?.joinToString("\n") ?: ""
+            inputTextField.text = selectedItem?.command?.joinToString("\n") ?: ""
         }
     }
 
@@ -188,7 +188,7 @@ class AiderInputDialog(
         super.show()
         SwingUtilities.invokeLater {
             inputTextField.requestFocus()
-            inputTextField.caretPosition = inputTextField.text.length
+            inputTextField.editor?.caretModel?.moveToOffset(inputTextField.text.length)
         }
     }
 
@@ -202,9 +202,9 @@ class AiderInputDialog(
         historyComboBox.addActionListener {
             if (historyComboBox.selectedIndex > 0 && historyComboBox.selectedItem is HistoryItem) {
                 val selectedItem = historyComboBox.selectedItem as HistoryItem
-                inputTextArea.text = selectedItem.command.joinToString("\n")
+                inputTextField.text = selectedItem.command.joinToString("\n")
             } else {
-                inputTextArea.text = ""  // Clear the input area when empty entry is selected
+                inputTextField.text = ""  // Clear the input area when empty entry is selected
             }
         }
     }
