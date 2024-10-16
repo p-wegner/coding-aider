@@ -54,13 +54,13 @@ class AiderInputDialog(
                 }
             }
             // Set up completion to trigger on Ctrl + Space
-            val inputMap = contentComponent.getInputMap(JComponent.WHEN_FOCUSED)
-            val actionMap = contentComponent.actionMap
+            val inputMap = editor.contentComponent.getInputMap(JComponent.WHEN_FOCUSED)
+            val actionMap = editor.contentComponent.actionMap
 
             inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_DOWN_MASK), "triggerCompletion")
             actionMap.put("triggerCompletion", object : AbstractAction() {
                 override fun actionPerformed(e: java.awt.event.ActionEvent) {
-                    editor?.contentComponent?.let { TextCompletionUtil.showCompletionPopup(it) }
+                    editor?.contentComponent?.let { TextCompletionUtil.showCompletionPopup(project, it) }
                 }
             })
         }
