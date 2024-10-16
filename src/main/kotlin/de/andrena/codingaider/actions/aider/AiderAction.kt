@@ -35,7 +35,7 @@ class AiderAction : AnAction() {
             val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
 
             if (project != null && !files.isNullOrEmpty()) {
-                val persistentFileService = project.getService(PersistentFileService::class.java)
+                val persistentFileService = PersistentFileService.getInstance(project)
                 val persistentFiles = persistentFileService.getPersistentFiles()
                 val allFiles = FileTraversal.traverseFilesOrDirectories(files)
                     .filterNot { file -> persistentFiles.any { it.filePath == file.filePath } }
