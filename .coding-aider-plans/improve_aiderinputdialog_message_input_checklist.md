@@ -16,9 +16,9 @@ Reference: [Improve AiderInputDialog Message Input Plan](improve_aiderinputdialo
 
 - [x] Create a custom CompletionContributor for filenames
 - [x] Implement a method to get filenames from the context view
-- [x] Set up completion to trigger on Ctrl + Space
 - [x] Register the CompletionContributor
 - [x] Use CompletionContributor to provide filename suggestions in the AiderInputDialog
+- [ ] Set up completion to trigger on Ctrl + Space
 - [ ] Test basic filename completion functionality
 
 ## 3. Syntax Highlighting

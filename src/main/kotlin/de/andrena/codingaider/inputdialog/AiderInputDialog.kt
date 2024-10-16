@@ -1,5 +1,6 @@
 package de.andrena.codingaider.inputdialog
 
+import com.intellij.codeInsight.completion.CompletionContributor
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.impl.ActionButton
@@ -10,8 +11,7 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.OnePixelSplitter
-import com.intellij.codeInsight.completion.CompletionContributor
-import de.andrena.codingaider.completion.FilenameCompletionContributor
+import com.intellij.util.textCompletion.TextCompletionUtil
 import com.intellij.util.ui.JBUI
 import de.andrena.codingaider.actions.ide.SettingsAction
 import de.andrena.codingaider.command.FileData
@@ -35,8 +35,8 @@ class AiderInputDialog(
     private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker()
 ) : DialogWrapper(project) {
     private val settings = getInstance()
-    private val filenameCompletionContributor = FilenameCompletionContributor(aiderContextView)
-    
+    private val filenameCompletionContributor = AiderFileCompletionContributor()
+
     private val inputTextField = EditorTextField(
         EditorFactory.getInstance().createDocument(initialText),
         project,
