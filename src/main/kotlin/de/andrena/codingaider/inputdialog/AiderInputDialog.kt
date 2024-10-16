@@ -42,7 +42,7 @@ class AiderInputDialog(
     private val settings = getInstance()
     private val inputTextField = EditorTextField(EditorFactory.getInstance().createDocument(initialText), project, PlainTextFileType.INSTANCE, false, false).apply {
         addSettingsProvider { editor ->
-            (editor as EditorEx).apply {
+            (editor as? EditorEx)?.apply {
                 setHorizontalScrollbarVisible(true)
                 setVerticalScrollbarVisible(true)
                 settings.apply {
