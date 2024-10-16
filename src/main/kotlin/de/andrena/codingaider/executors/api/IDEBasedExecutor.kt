@@ -27,6 +27,7 @@ class IDEBasedExecutor(
     private var currentCommitHash: String? = null
     private val commandExecutor = AtomicReference<CommandExecutor?>(null)
     private var executionThread: Thread? = null
+    private var initialPlanFiles: Set<File> = emptySet()
 
     fun execute(): MarkdownDialog {
         markdownDialog = MarkdownDialog(
@@ -40,6 +41,12 @@ class IDEBasedExecutor(
                 focus()
             }
         currentCommitHash = GitUtils.getCurrentCommitHash(project)
+
+        val plansFolder = File(project.basePath, AiderPlanService.AIDER_PLANS_FOLDER)
+        if (plansFolder.exists() && plansFolder.isDirectory) {
+            initialPlanFiles = plansFolder.listFiles { file -> file.isFile && file.extension == "md" }
+                ?.toSet() ?: emptySet()
+        }
 
         executionThread = thread { executeAiderCommand() }
         return markdownDialog
@@ -85,11 +92,11 @@ class IDEBasedExecutor(
         if (commandData.structuredMode) {
             val plansFolder = File(project.basePath, AiderPlanService.AIDER_PLANS_FOLDER)
             if (plansFolder.exists() && plansFolder.isDirectory) {
-                val newPlanFiles = plansFolder.listFiles { file ->
-                    file.isFile && file.extension == "md" &&
-                            !commandData.files.any { it.filePath == file.absolutePath }
-                }
-                newPlanFiles?.forEach { file ->
+                val currentPlanFiles = plansFolder.listFiles { file -> file.isFile && file.extension == "md" }
+                    ?.toSet() ?: emptySet()
+
+                val newPlanFiles = currentPlanFiles.subtract(initialPlanFiles)
+                newPlanFiles.forEach { file ->
                     PersistentFileService.getInstance(project).addFile(FileData(file.absolutePath, false))
                 }
             }
