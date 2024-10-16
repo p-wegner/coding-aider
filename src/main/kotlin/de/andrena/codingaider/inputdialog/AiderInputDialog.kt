@@ -64,7 +64,7 @@ class AiderInputDialog(
                         val dataContext = DataManager.getInstance().getDataContext(it)
                         val actionManager = ActionManager.getInstance()
                         val action = actionManager.getAction(IdeActions.ACTION_CODE_COMPLETION)
-                        actionManager.tryToExecute(action, ActionCommand.getInputEvent(it), it, null, true)
+                        actionManager.tryToExecute(action, InputEvent(it), it, null, true)
                     }
                 }
             })
