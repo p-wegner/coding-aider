@@ -18,7 +18,7 @@ class AiderFileCompletionContributor : CompletionContributor() {
                 ) {
                     val project = parameters.editor.project ?: return
                     val fileNames = getFileNamesFromContext(project)
-                    
+
                     fileNames.forEach { fileName ->
                         result.addElement(LookupElementBuilder.create(fileName))
                     }
@@ -28,7 +28,7 @@ class AiderFileCompletionContributor : CompletionContributor() {
     }
 
     private fun getFileNamesFromContext(project: Project): List<String> {
-        val persistentFileService = project.getService(PersistentFileService::class.java)
+        val persistentFileService = PersistentFileService.getInstance(project)
         return persistentFileService.getPersistentFiles().map { it.filePath.substringAfterLast('/') }
     }
 }

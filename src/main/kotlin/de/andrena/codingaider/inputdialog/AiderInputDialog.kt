@@ -51,7 +51,7 @@ class AiderInputDialog(
                 }
             }
         }
-        TextCompletionUtil.installCompletionHint(this.editor as com.intellij.openapi.editor.ex.EditorEx)
+        this.getEditor(true)?.let { TextCompletionUtil.installCompletionHint(it) }
     }
     private val yesCheckBox = JCheckBox("Add --yes flag", settings.useYesFlag).apply {
         toolTipText = "Automatically answer 'yes' to prompts"
