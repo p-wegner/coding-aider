@@ -59,7 +59,8 @@
             <add-to-group group-id="MainToolBar" anchor="last"/>
         </action>
 
-        <group id="de.andrena.codingaider.AiderActionGroup" text="Aider Actions" popup="true" icon="AllIcons.Actions.ListFiles">
+        <group id="de.andrena.codingaider.AiderActionGroup" text="Aider Actions" popup="true"
+               icon="AllIcons.Actions.ListFiles">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
             <add-to-group group-id="ToolsMenu" anchor="last"/>
 
@@ -175,7 +176,8 @@
                     icon="META-INF/pluginIcon_13.svg"
                     anchor="right"
                     factoryClass="de.andrena.codingaider.toolwindow.PersistentFilesToolWindow"/>
-        <completion.contributor language="TEXT" implementationClass="de.andrena.codingaider.inputdialog.AiderFileCompletionContributor"/>
+        <completion.contributor language="TEXT"
+                                implementationClass="de.andrena.codingaider.inputdialog.AiderFileCompletionContributor"/>
     </extensions>
-    
+
 </idea-plugin>

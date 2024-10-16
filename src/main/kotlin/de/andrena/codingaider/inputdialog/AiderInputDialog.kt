@@ -1,6 +1,6 @@
 package de.andrena.codingaider.inputdialog
 
-import com.intellij.codeInsight.completion.CompletionContributor
+import com.intellij.codeInsight.completion.*
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.impl.ActionButton
@@ -10,6 +10,7 @@ import com.intellij.openapi.fileTypes.PlainTextFileType
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.psi.PsiFileFactory
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.OnePixelSplitter
 import com.intellij.util.textCompletion.TextCompletionUtil
@@ -63,18 +64,24 @@ class AiderInputDialog(
             inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_DOWN_MASK), "triggerCompletion")
             actionMap.put("triggerCompletion", object : AbstractAction() {
                 override fun actionPerformed(e: java.awt.event.ActionEvent) {
-                    editor?.contentComponent?.let {
-                        val actionManager = ActionManager.getInstance()
-                        val action = actionManager.getAction(IdeActions.ACTION_CODE_COMPLETION)
-                        val inputEvent = KeyEvent(
-                            it,
-                            KeyEvent.KEY_PRESSED,
-                            System.currentTimeMillis(),
-                            0,
-                            KeyEvent.VK_UNDEFINED,
-                            KeyEvent.CHAR_UNDEFINED
-                        )
-                        actionManager.tryToExecute(action, inputEvent, it, null, true)
+                    editor?.contentComponent?.let { component ->
+                        (editor.document.text ?: "asdf").let { text ->
+                            val psiFile = PsiFileFactory.getInstance(project)
+                                .createFileFromText("dummy.txt", PlainTextFileType.INSTANCE, text)
+
+                            val offset = editor.caretModel.offset
+                            val completionParameters = CompletionParameters(
+                                psiFile.findElementAt(offset) ?: psiFile,
+                                psiFile,
+                                CompletionType.BASIC,
+                                offset,
+                                1,
+                                editor,
+                                CompletionProcess { true }
+                            )
+                            CompletionService.getCompletionService()
+                                .performCompletion(completionParameters, { println(it) })
+                        }
                     }
                 }
             })
