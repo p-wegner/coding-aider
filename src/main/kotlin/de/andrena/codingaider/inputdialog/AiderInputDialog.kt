@@ -10,7 +10,8 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.OnePixelSplitter
-import com.intellij.util.textCompletion.TextCompletionUtil
+import com.intellij.codeInsight.completion.CompletionContributor
+import de.andrena.codingaider.completion.FilenameCompletionContributor
 import com.intellij.util.ui.JBUI
 import de.andrena.codingaider.actions.ide.SettingsAction
 import de.andrena.codingaider.command.FileData
@@ -34,6 +35,8 @@ class AiderInputDialog(
     private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker()
 ) : DialogWrapper(project) {
     private val settings = getInstance()
+    private val filenameCompletionContributor = FilenameCompletionContributor(aiderContextView)
+    
     private val inputTextField = EditorTextField(
         EditorFactory.getInstance().createDocument(initialText),
         project,
@@ -51,7 +54,10 @@ class AiderInputDialog(
                 }
             }
         }
-        this.getEditor(true)?.let { TextCompletionUtil.installCompletionHint(it) }
+        this.getEditor(true)?.let { editor ->
+            TextCompletionUtil.installCompletionHint(editor)
+            CompletionContributor.forLanguage(PlainTextFileType.INSTANCE.language).add(filenameCompletionContributor)
+        }
     }
     private val yesCheckBox = JCheckBox("Add --yes flag", settings.useYesFlag).apply {
         toolTipText = "Automatically answer 'yes' to prompts"
