@@ -49,6 +49,8 @@ class AiderInputDialog(
                 setHorizontalScrollbarVisible(true)
                 setVerticalScrollbarVisible(true)
                 settings.apply {
+                    isShowIntentionBulb = true
+                    // TODO ensure code completion is enabled
                     isLineNumbersShown = true
                     isAutoCodeFoldingEnabled = true
                 }
@@ -60,11 +62,17 @@ class AiderInputDialog(
             inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_DOWN_MASK), "triggerCompletion")
             actionMap.put("triggerCompletion", object : AbstractAction() {
                 override fun actionPerformed(e: java.awt.event.ActionEvent) {
-                    editor?.contentComponent?.let { 
-                        val dataContext = DataManager.getInstance().getDataContext(it)
+                    editor?.contentComponent?.let {
                         val actionManager = ActionManager.getInstance()
                         val action = actionManager.getAction(IdeActions.ACTION_CODE_COMPLETION)
-                        val inputEvent = KeyEvent(it, KeyEvent.KEY_PRESSED, System.currentTimeMillis(), 0, KeyEvent.VK_UNDEFINED, KeyEvent.CHAR_UNDEFINED)
+                        val inputEvent = KeyEvent(
+                            it,
+                            KeyEvent.KEY_PRESSED,
+                            System.currentTimeMillis(),
+                            0,
+                            KeyEvent.VK_UNDEFINED,
+                            KeyEvent.CHAR_UNDEFINED
+                        )
                         actionManager.tryToExecute(action, inputEvent, it, null, true)
                     }
                 }
