@@ -36,9 +36,12 @@ class AiderAction : AnAction() {
 
             if (project != null && !files.isNullOrEmpty()) {
                 val persistentFileService = project.getService(PersistentFileService::class.java)
-                val allFiles = FileTraversal.traverseFilesOrDirectories(files).toMutableList()
+                val persistentFiles = persistentFileService.getPersistentFiles()
+                val allFiles = FileTraversal.traverseFilesOrDirectories(files)
+                    .filterNot { file -> persistentFiles.any { it.filePath == file.filePath } }
+                    .toMutableList()
 
-                allFiles.addAll(persistentFileService.getPersistentFiles())
+                allFiles.addAll(persistentFiles)
 
                 if (directShellMode) {
                     val commandData = collectDefaultCommandData(allFiles, project)
