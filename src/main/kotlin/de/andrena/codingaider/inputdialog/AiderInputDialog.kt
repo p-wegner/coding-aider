@@ -50,7 +50,6 @@ class AiderInputDialog(
                 setVerticalScrollbarVisible(true)
                 settings.apply {
                     isShowIntentionBulb = true
-                    isCodeCompletionEnabled = true
                     isLineNumbersShown = true
                     isAutoCodeFoldingEnabled = true
                 }
