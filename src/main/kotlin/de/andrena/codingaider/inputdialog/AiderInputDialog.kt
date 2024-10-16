@@ -81,6 +81,8 @@ class AiderInputDialog(
         this.getEditor(true)?.let { editor ->
             TextCompletionUtil.installCompletionHint(editor)
             CompletionContributor.forLanguage(PlainTextFileType.INSTANCE.language).add(filenameCompletionContributor)
+            // Ensure code completion is enabled
+            editor.settings.isCompletionEnabled = true
         }
     }
     private val yesCheckBox = JCheckBox("Add --yes flag", settings.useYesFlag).apply {
