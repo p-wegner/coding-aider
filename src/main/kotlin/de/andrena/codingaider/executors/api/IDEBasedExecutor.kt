@@ -13,8 +13,8 @@ import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileRefresher
 import de.andrena.codingaider.utils.GitUtils
-import java.io.File
 import java.awt.EventQueue.invokeLater
+import java.io.File
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.concurrent.thread
 
@@ -47,7 +47,7 @@ class IDEBasedExecutor(
 
     private fun executeAiderCommand() {
         try {
-            val executor = CommandExecutor(commandData,project).apply {
+            val executor = CommandExecutor(commandData, project).apply {
                 addObserver(this@IDEBasedExecutor)
             }
             commandExecutor.set(executor)
@@ -96,14 +96,14 @@ class IDEBasedExecutor(
         }
     }
 
-    override fun onCommandStart(command: String) =
-        updateDialogProgress(command, "Aider Command Started")
+    override fun onCommandStart(message: String) =
+        updateDialogProgress(message, "Aider Command Started")
 
-    override fun onCommandProgress(output: String, runningTime: Long) =
-        updateDialogProgress(output, "Aider command in progress ($runningTime seconds)")
+    override fun onCommandProgress(message: String, runningTime: Long) =
+        updateDialogProgress(message, "Aider command in progress ($runningTime seconds)")
 
-    override fun onCommandComplete(output: String, exitCode: Int) {
-        updateDialogProgress(output, "Aider Command ${if (exitCode == 0) "Completed" else "Failed"}")
+    override fun onCommandComplete(message: String, exitCode: Int) {
+        updateDialogProgress(message, "Aider Command ${if (exitCode == 0) "Completed" else "Failed"}")
         markdownDialog.startAutoCloseTimer()
         refreshFiles()
         addNewPlanFilesToPersistentFiles()
@@ -114,8 +114,8 @@ class IDEBasedExecutor(
         }
     }
 
-    override fun onCommandError(error: String) {
-        updateDialogProgress(error, "Aider Command Error")
+    override fun onCommandError(message: String) {
+        updateDialogProgress(message, "Aider Command Error")
         markdownDialog.setProcessFinished()
         markdownDialog.startAutoCloseTimer()
     }

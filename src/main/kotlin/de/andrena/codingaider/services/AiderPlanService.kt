@@ -26,8 +26,10 @@ class AiderPlanService(private val project: Project) {
             SYSTEM A plan consists of a detailed description of the requested feature and a separate file with a checklist for tracking the progress.
             SYSTEM The file should be saved in the $AIDER_PLANS_FOLDER directory in the project.
             SYSTEM Always start plans with the line $AIDER_PLAN_MARKER and checklists with $AIDER_PLAN_CHECKLIST_MARKER at the beginning of the file and use this marker in existing files to identify plans and checklists.
+            SYSTEM The plan should focus on high level descriptions of the requested features and major implementation details.
+            SYSTEM The checklist should focus on the required implementation steps on a more fine grained level.
             SYSTEM If a separate checklist exists, it is referenced in the plan using markdown file references.
-            SYSTEM Likewise the plan is referenced in the checklist using markdown file references. Be sure to use correct relative path (same folder) references between the files.
+            SYSTEM Likewise the plan is referenced in the checklist using markdown file references. Be sure to use correct relative path (same folder) references between the files, so assume the checklist is in the same folder as the plan.
             SYSTEM Never proceed with changes if the plan is not committed yet.
             SYSTEM Once the plan properly describes the changes, start implementing them step by step. Commit each change as you go.
         """
@@ -35,8 +37,8 @@ class AiderPlanService(private val project: Project) {
 
         val planSpecificPrompt = existingPlan?.let {
             """
-            SYSTEM A plan already exists. Continue implementing the existing plan ${existingPlan.filePath} step by step.
-            SYSTEM Start implementing before updating the checklist. If no changes are done don't update the checklist.
+            SYSTEM A plan already exists. Continue implementing the existing plan ${existingPlan.filePath} and its checklist step by step.
+            SYSTEM Start implementing before updating the checklist. If no changes are done, don't update the checklist.
             SYSTEM In that case inform the user why no changes were made.
             SYSTEM New files that are not the plan and are not part of the checklist should be created in a suitable location.
             SYSTEM If no further information is given, use ${commandData.projectPath} as the location.
