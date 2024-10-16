@@ -311,12 +311,12 @@ class AiderInputDialog(
         // Second row: Message label and input area
         gbc.gridy++
         messageLabel.displayedMnemonic = KeyEvent.VK_E
-        messageLabel.labelFor = inputTextArea
+        messageLabel.labelFor = inputTextField
         topPanel.add(messageLabel, gbc)
         gbc.gridy++
         gbc.weighty = 1.0
         gbc.fill = GridBagConstraints.BOTH
-        topPanel.add(JBScrollPane(inputTextArea), gbc)
+        topPanel.add(inputTextField, gbc)
 
         // Third row: Yes flag and additional arguments
         gbc.gridy++
