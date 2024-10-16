@@ -60,7 +60,12 @@ class AiderInputDialog(
             inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, InputEvent.CTRL_DOWN_MASK), "triggerCompletion")
             actionMap.put("triggerCompletion", object : AbstractAction() {
                 override fun actionPerformed(e: java.awt.event.ActionEvent) {
-                    editor?.contentComponent?.let { TextCompletionUtil.showCompletionPopup(project, it) }
+                    editor?.contentComponent?.let { 
+                        val dataContext = DataManager.getInstance().getDataContext(it)
+                        val actionManager = ActionManager.getInstance()
+                        val action = actionManager.getAction(IdeActions.ACTION_CODE_COMPLETION)
+                        actionManager.tryToExecute(action, ActionCommand.getInputEvent(it), it, null, true)
+                    }
                 }
             })
         }
