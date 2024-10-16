@@ -129,7 +129,7 @@ class AiderInputDialog(
         llmComboBox.renderer = LlmComboBoxRenderer()
 
         // Set minimum size for the dialog and its components
-        inputTextArea.minimumSize = Dimension(300, 100)
+        inputTextField.minimumSize = Dimension(300, 100)
         aiderContextView.minimumSize = Dimension(300, 200)
     }
 
@@ -480,7 +480,7 @@ class AiderInputDialog(
     fun isStructuredMode(): Boolean = structuredModeCheckBox.isSelected
 
     private fun insertTextAtCursor(text: String) {
-        inputTextField.editor?.document?.insertString(inputTextField.caretPosition, text)
+        inputTextField.editor?.document?.insertString(inputTextField.editor?.caretModel?.offset ?: 0, text)
     }
 
     private inner class LlmComboBoxRenderer : DefaultListCellRenderer() {
