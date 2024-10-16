@@ -24,8 +24,7 @@ Reference: [Improve AiderInputDialog Message Input Plan](improve_aiderinputdialo
 
 ## 3. Syntax Highlighting
 
-- [ ] Configure EditorTextField to use PlainTextLanguage
-- [ ] Test syntax highlighting with various input types
+- [ ] Support syntax highlighting with various input types
 
 ## 4. Enhanced Code Completion
 

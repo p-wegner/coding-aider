@@ -4,6 +4,7 @@ import com.intellij.codeInsight.completion.CompletionContributor
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.impl.ActionButton
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.fileTypes.PlainTextFileType
 import com.intellij.openapi.project.Project
@@ -44,6 +45,7 @@ class AiderInputDialog(
         false,
         false
     ).apply {
+        setOneLineMode(false)
         addSettingsProvider { editor ->
             editor?.apply {
                 setHorizontalScrollbarVisible(true)
@@ -515,7 +517,9 @@ class AiderInputDialog(
     fun isStructuredMode(): Boolean = structuredModeCheckBox.isSelected
 
     private fun insertTextAtCursor(text: String) {
-        inputTextField.editor?.document?.insertString(inputTextField.editor?.caretModel?.offset ?: 0, text)
+        WriteCommandAction.runWriteCommandAction(project) {
+            inputTextField.editor?.document?.insertString(inputTextField.editor?.caretModel?.offset ?: 0, text)
+        }
     }
 
     private inner class LlmComboBoxRenderer : DefaultListCellRenderer() {

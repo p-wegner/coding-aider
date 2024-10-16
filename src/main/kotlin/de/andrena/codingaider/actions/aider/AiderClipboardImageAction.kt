@@ -79,7 +79,7 @@ class AiderClipboardImageAction : AnAction() {
 
     private fun refreshAndAddFile(project: Project, filePath: String) {
         val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(File(filePath))
-        val persistentFileService = project.getService(PersistentFileService::class.java)
+        val persistentFileService = PersistentFileService.getInstance(project)
         persistentFileService.addFile(FileData(filePath, true))
         if (virtualFile != null) {
             FileRefresher.refreshFiles(arrayOf(virtualFile))
