@@ -175,6 +175,7 @@
                     icon="META-INF/pluginIcon_13.svg"
                     anchor="right"
                     factoryClass="de.andrena.codingaider.toolwindow.PersistentFilesToolWindow"/>
+        <completion.contributor language="TEXT" implementationClass="de.andrena.codingaider.inputdialog.AiderFileCompletionContributor"/>
     </extensions>
     
 </idea-plugin>

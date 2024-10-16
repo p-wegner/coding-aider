@@ -2,8 +2,10 @@ package de.andrena.codingaider.inputdialog
 
 import com.intellij.codeInsight.completion.*
 import com.intellij.codeInsight.lookup.LookupElementBuilder
+import com.intellij.openapi.project.Project
 import com.intellij.patterns.PlatformPatterns
 import com.intellij.util.ProcessingContext
+import de.andrena.codingaider.services.PersistentFileService
 
 class AiderFileCompletionContributor : CompletionContributor() {
     init {
@@ -14,9 +16,19 @@ class AiderFileCompletionContributor : CompletionContributor() {
                     context: ProcessingContext,
                     result: CompletionResultSet
                 ) {
-                    // TODO: Implement file name completion logic
+                    val project = parameters.editor.project ?: return
+                    val fileNames = getFileNamesFromContext(project)
+                    
+                    fileNames.forEach { fileName ->
+                        result.addElement(LookupElementBuilder.create(fileName))
+                    }
                 }
             }
         )
+    }
+
+    private fun getFileNamesFromContext(project: Project): List<String> {
+        val persistentFileService = project.getService(PersistentFileService::class.java)
+        return persistentFileService.getPersistentFiles().map { it.filePath.substringAfterLast('/') }
     }
 }
