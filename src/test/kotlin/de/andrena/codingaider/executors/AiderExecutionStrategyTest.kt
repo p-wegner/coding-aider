@@ -122,7 +122,7 @@ class AiderExecutionStrategyTest {
             "-v", "/project:/app",
             "-w", "/app",
             "--cidfile", "/tmp/docker.cid",
-            "paulgauthier/aider:v0.57.1",
+            "paulgauthier/aider:v0.59.1",
             "--4o", "--file", "/app/file1.txt", "--yes", "--edit-format", "diff",
             "--no-suggest-shell-commands", "--no-pretty", "--verbose", "--lint-cmd", "lint",
             "--map-tokens", "0", "-m", "Test message"
