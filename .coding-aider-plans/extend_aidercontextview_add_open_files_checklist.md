@@ -16,13 +16,13 @@ in [extend_aidercontextview_add_open_files.md](./extend_aidercontextview_add_ope
       listener) and "Add Open Files" to the dialog
     - [x] Implement action listener for the new option
 
-3. [ ] Implement logic to add open files to AiderContextView
-    - [ ] Filter out duplicate files
-    - [ ] Add new files to allFiles list
+3. [x] Implement logic to add open files to AiderContextView
+    - [x] Filter out duplicate files
+    - [x] Add new files to allFiles list
 
-4. [ ] Update UI components
-    - [ ] Modify the "Add Files" action in AiderInputDialog
-    - [ ] Update the file action group to include the new option
+4. [x] Update UI components
+    - [x] Modify the "Add Files" action in AiderInputDialog
+    - [x] Update the file action group to include the new option
 
 5. [ ] Update the tree view
     - [ ] Modify updateTree() method to handle new files

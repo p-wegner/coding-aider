@@ -195,6 +195,15 @@ class AiderContextView(
         }
     }
 
+    fun addOpenFilesToContext() {
+        val openFiles = getOpenFiles()
+        val newFiles = openFiles.filter { openFile ->
+            allFiles.none { it.filePath == openFile.filePath }
+        }
+        allFiles += newFiles
+        updateTree()
+    }
+
     fun toggleReadOnlyMode() {
         val selectedPaths = tree.selectionPaths ?: return
         val selectedNodes = selectedPaths.mapNotNull { it.lastPathComponent as? DefaultMutableTreeNode }

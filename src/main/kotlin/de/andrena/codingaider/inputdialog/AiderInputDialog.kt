@@ -94,14 +94,12 @@ class AiderInputDialog(
     }
 
     private fun addOpenFilesToPersistentFiles() {
-        val openFiles = aiderContextView.getOpenFiles()
-        persistentFileService.addAllFiles(openFiles)
+        aiderContextView.addOpenFilesToContext()
+        val allFiles = aiderContextView.getAllFiles()
+        persistentFileService.addAllFiles(allFiles)
 
         // Update persistent files in AiderContextView
         aiderContextView.updatePersistentFiles(persistentFileService.getPersistentFiles())
-
-        // Refresh the context view
-        aiderContextView.updateTree()
     }
 
     private val llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
