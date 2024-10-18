@@ -8,6 +8,7 @@ import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.ui.LayeredIcon
 import com.intellij.ui.OnePixelSplitter
 import com.intellij.ui.TextFieldWithAutoCompletion
 import com.intellij.util.textCompletion.TextCompletionUtil
@@ -374,7 +375,7 @@ class AiderInputDialog(
 
         // Context view
         val fileActionGroup = DefaultActionGroup().apply {
-            add(object : AnAction("Add Files", "Add files to persistent files", AllIcons.Actions.MenuOpen) {
+            add(object : AnAction("Add Files", "Add files to persistent files", LayeredIcon.ADD_WITH_DROPDOWN) {
                 override fun actionPerformed(e: AnActionEvent) {
                     val popup = JPopupMenu()
                     popup.add(JMenuItem("From Project").apply {
@@ -387,21 +388,21 @@ class AiderInputDialog(
                             addOpenFilesToPersistentFiles()
                         }
                     })
-                    val component = e.inputEvent.component
-                    popup.show(component, 0, component.height)
+                    val component = e.inputEvent?.component
+                    popup.show(component, 0, component?.height ?: 0)
                 }
 
                 override fun getActionUpdateThread() = ActionUpdateThread.BGT
                 override fun update(e: AnActionEvent) {
                     e.presentation.isEnabled = true
-                    e.presentation.text = "Add Files (Ctrl+A)"
+                    e.presentation.text = "Add Files"
                 }
             }.also {
                 it.registerCustomShortcutSet(
                     CustomShortcutSet(
                         KeyStroke.getKeyStroke(
-                            KeyEvent.VK_A,
-                            InputEvent.CTRL_DOWN_MASK
+                            KeyEvent.VK_F,
+                            InputEvent.ALT_DOWN_MASK
                         )
                     ), aiderContextView
                 )
@@ -437,7 +438,7 @@ class AiderInputDialog(
                 override fun getActionUpdateThread() = ActionUpdateThread.BGT
                 override fun update(e: AnActionEvent) {
                     e.presentation.isEnabled = true
-                    e.presentation.text = "Toggle Read-Only (Ctrl+R)"
+                    e.presentation.text = "Toggle Read-Only"
                 }
             }.also {
                 it.registerCustomShortcutSet(
@@ -462,7 +463,7 @@ class AiderInputDialog(
                 override fun getActionUpdateThread() = ActionUpdateThread.BGT
                 override fun update(e: AnActionEvent) {
                     e.presentation.isEnabled = true
-                    e.presentation.text = "Toggle Persistent (Ctrl+P)"
+                    e.presentation.text = "Toggle Persistent"
                 }
             }.also {
                 it.registerCustomShortcutSet(
