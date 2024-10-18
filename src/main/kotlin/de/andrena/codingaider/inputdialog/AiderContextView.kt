@@ -188,6 +188,13 @@ class AiderContextView(
         return paths
     }
 
+    fun getOpenFiles(): List<FileData> {
+        val openFiles = FileEditorManager.getInstance(project).openFiles
+        return openFiles.map { virtualFile ->
+            FileData(virtualFile.path, false)
+        }
+    }
+
     fun toggleReadOnlyMode() {
         val selectedPaths = tree.selectionPaths ?: return
         val selectedNodes = selectedPaths.mapNotNull { it.lastPathComponent as? DefaultMutableTreeNode }
