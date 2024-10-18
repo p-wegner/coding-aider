@@ -92,6 +92,17 @@ class AiderInputDialog(
         }
     }
 
+    private fun addOpenFilesToPersistentFiles() {
+        val openFiles = aiderContextView.getOpenFiles()
+        persistentFileService.addAllFiles(openFiles)
+
+        // Update persistent files in AiderContextView
+        aiderContextView.updatePersistentFiles(persistentFileService.getPersistentFiles())
+
+        // Refresh the context view
+        aiderContextView.updateTree()
+    }
+
     private val llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
     private val llmComboBox = object : ComboBox<String>(llmOptions) {
         override fun getToolTipText(): String? {
@@ -365,7 +376,19 @@ class AiderInputDialog(
         val fileActionGroup = DefaultActionGroup().apply {
             add(object : AnAction("Add Files", "Add files to persistent files", AllIcons.Actions.MenuOpen) {
                 override fun actionPerformed(e: AnActionEvent) {
-                    addAiderDocsToPersistentFiles()
+                    val popup = JPopupMenu()
+                    popup.add(JMenuItem("From Project").apply {
+                        addActionListener {
+                            addAiderDocsToPersistentFiles()
+                        }
+                    })
+                    popup.add(JMenuItem("Add Open Files").apply {
+                        addActionListener {
+                            addOpenFilesToPersistentFiles()
+                        }
+                    })
+                    val component = e.inputEvent.component
+                    popup.show(component, 0, component.height)
                 }
 
                 override fun getActionUpdateThread() = ActionUpdateThread.BGT

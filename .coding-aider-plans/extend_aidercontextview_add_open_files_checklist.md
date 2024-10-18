@@ -11,10 +11,10 @@ in [extend_aidercontextview_add_open_files.md](./extend_aidercontextview_add_ope
     - [x] Use FileEditorManager to get open files
     - [x] Convert open files to FileData objects
 
-2. [ ] Update the file selection dialog
-    - [ ] Extend the existing add files option to open a popup with entries "From Project" (previous button action
+2. [x] Update the file selection dialog
+    - [x] Extend the existing add files option to open a popup with entries "From Project" (previous button action
       listener) and "Add Open Files" to the dialog
-    - [ ] Implement action listener for the new option
+    - [x] Implement action listener for the new option
 
 3. [ ] Implement logic to add open files to AiderContextView
     - [ ] Filter out duplicate files
