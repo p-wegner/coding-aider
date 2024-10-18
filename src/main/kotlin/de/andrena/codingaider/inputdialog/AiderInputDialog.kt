@@ -387,7 +387,7 @@ class AiderInputDialog(
                         }
                     })
                     val component = e.inputEvent?.component
-                    // TODO place the popup next to the Add Files button even if shortcut is used
+                    // TODO place the popup next to the Action Toolbar if shortcut is used
                     popup.show(component, 0, component?.height ?: 0)
                 }
 
