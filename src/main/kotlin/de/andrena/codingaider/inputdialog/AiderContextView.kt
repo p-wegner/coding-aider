@@ -144,6 +144,12 @@ class AiderContextView(
         })
 
         TreeUtil.expandAll(tree)
+    
+    fun getOpenFiles(): List<FileData> {
+        val openFiles = FileEditorManager.getInstance(project).openFiles
+        return openFiles.map { virtualFile ->
+            FileData(virtualFile.path, false)
+        }
     }
 
     fun updateTree() {
