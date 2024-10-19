@@ -21,46 +21,9 @@ import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
-class AiderSettingsConfigurable : Configurable {
-    constructor() {
-        this.apiKeyChecker = DefaultApiKeyChecker()
-        this.useYesFlagCheckBox = JBCheckBox("Use --yes flag by default")
-        this.llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
-        this.llmComboBox = object : JComboBox<String>(llmOptions) {
-            override fun getToolTipText(): String? {
-                val selectedItem = selectedItem as? String ?: return null
-                return if (apiKeyChecker.isApiKeyAvailableForLlm(selectedItem)) {
-                    "API key found for $selectedItem"
-                } else {
-                    "API key not found for $selectedItem"
-                }
-            }
-        }
-        this.additionalArgsField = JBTextField()
-        this.isShellModeCheckBox = JBCheckBox("Use Shell Mode by default")
-        this.lintCmdField = JBTextField()
-        this.showGitComparisonToolCheckBox = JBCheckBox("Show git comparison tool after execution")
-        this.activateIdeExecutorAfterWebcrawlCheckBox = JBCheckBox("Activate Post web crawl LLM cleanup (Experimental)")
-        this.webCrawlLlmComboBox = ComboBox(apiKeyChecker.getAllLlmOptions().toTypedArray())
-        this.deactivateRepoMapCheckBox = JBCheckBox("Deactivate Aider's repo map (--map-tokens 0)")
-        this.editFormatComboBox = ComboBox(arrayOf("", "whole", "diff", "whole-func", "diff-func"))
-        this.verboseCommandLoggingCheckBox = JBCheckBox("Enable verbose Aider command logging")
-        this.useDockerAiderCheckBox = JBCheckBox("Use aider in Docker")
-        this.enableMarkdownDialogAutocloseCheckBox = JBCheckBox("Automatically close Output Dialog")
-        this.markdownDialogAutocloseDelayField = JBTextField()
-        this.mountAiderConfInDockerCheckBox = JBCheckBox("Mount Aider configuration file in Docker")
-        this.includeChangeContextCheckBox = JBCheckBox("Include change context in commit messages")
-        this.autoCommitsComboBox = ComboBox(arrayOf("Default", "On", "Off"))
-        this.dirtyCommitsComboBox = ComboBox(arrayOf("Default", "On", "Off"))
-        this.useStructuredModeCheckBox = JBCheckBox("Use Structured Mode")
-        this.alwaysIncludeOpenFilesCheckBox = JBCheckBox("Always include open files in context")
-        this.apiKeyFields = mutableMapOf<String, JPasswordField>()
-
-
-    }
+class AiderSettingsConfigurable() : Configurable {
 
     private var apiKeyChecker: ApiKeyChecker
-
     private var settingsComponent: JPanel? = null
     private val useYesFlagCheckBox: JBCheckBox
     private val llmOptions: Array<String>
@@ -534,5 +497,40 @@ class AiderSettingsConfigurable : Configurable {
         if (isModified) {
             apply()
         }
+    }
+
+    init {
+        this.apiKeyChecker = DefaultApiKeyChecker()
+        this.useYesFlagCheckBox = JBCheckBox("Use --yes flag by default")
+        this.llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
+        this.llmComboBox = object : JComboBox<String>(llmOptions) {
+            override fun getToolTipText(): String? {
+                val selectedItem = selectedItem as? String ?: return null
+                return if (apiKeyChecker.isApiKeyAvailableForLlm(selectedItem)) {
+                    "API key found for $selectedItem"
+                } else {
+                    "API key not found for $selectedItem"
+                }
+            }
+        }
+        this.additionalArgsField = JBTextField()
+        this.isShellModeCheckBox = JBCheckBox("Use Shell Mode by default")
+        this.lintCmdField = JBTextField()
+        this.showGitComparisonToolCheckBox = JBCheckBox("Show git comparison tool after execution")
+        this.activateIdeExecutorAfterWebcrawlCheckBox = JBCheckBox("Activate Post web crawl LLM cleanup (Experimental)")
+        this.webCrawlLlmComboBox = ComboBox(apiKeyChecker.getAllLlmOptions().toTypedArray())
+        this.deactivateRepoMapCheckBox = JBCheckBox("Deactivate Aider's repo map (--map-tokens 0)")
+        this.editFormatComboBox = ComboBox(arrayOf("", "whole", "diff", "whole-func", "diff-func"))
+        this.verboseCommandLoggingCheckBox = JBCheckBox("Enable verbose Aider command logging")
+        this.useDockerAiderCheckBox = JBCheckBox("Use aider in Docker")
+        this.enableMarkdownDialogAutocloseCheckBox = JBCheckBox("Automatically close Output Dialog")
+        this.markdownDialogAutocloseDelayField = JBTextField()
+        this.mountAiderConfInDockerCheckBox = JBCheckBox("Mount Aider configuration file in Docker")
+        this.includeChangeContextCheckBox = JBCheckBox("Include change context in commit messages")
+        this.autoCommitsComboBox = ComboBox(arrayOf("Default", "On", "Off"))
+        this.dirtyCommitsComboBox = ComboBox(arrayOf("Default", "On", "Off"))
+        this.useStructuredModeCheckBox = JBCheckBox("Use Structured Mode")
+        this.alwaysIncludeOpenFilesCheckBox = JBCheckBox("Always include open files in context")
+        this.apiKeyFields = mutableMapOf<String, JPasswordField>()
     }
 }

@@ -105,12 +105,16 @@ class DockerAiderExecutionStrategy(
 
     override fun buildCommand(commandData: CommandData): List<String> {
         val dockerArgs = mutableListOf(
-            "docker", "run", "-i", "--rm", "-t",
-            "-v", "${commandData.projectPath}:/app",
-            "-w", "/app",
-            "--cidfile", dockerManager.getCidFilePath()
-        )
-
+            "docker", "run", "-i", "--rm", "-w", "/app", "--cidfile", dockerManager.getCidFilePath()
+        ).apply {
+            if (commandData.projectPath.isNotEmpty()) {
+                add("-v")
+                add("${commandData.projectPath}:/app")
+            }
+            if (commandData.isShellMode) {
+                add("-t")
+            }
+        }
         if (settings.mountAiderConfInDocker) {
             findAiderConfFile(commandData.projectPath)?.let { confFile ->
                 dockerArgs.addAll(listOf("-v", "${confFile.absolutePath}:/app/.aider.conf.yml"))
@@ -163,8 +167,6 @@ class DockerAiderExecutionStrategy(
         return locations.firstOrNull { it.exists() }
     }
 }
-
-
 
 
 private fun setApiKeyEnvironmentVariables(processBuilder: ProcessBuilder, apiKeyChecker: ApiKeyChecker) {
