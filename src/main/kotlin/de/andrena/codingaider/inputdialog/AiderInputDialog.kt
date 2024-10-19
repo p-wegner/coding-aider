@@ -186,15 +186,7 @@ class AiderInputDialog(
         }
     }
 
-    private fun insertHistoryEntry(direction: Int) {
-        val currentIndex = historyComboBox.selectedIndex
-        val newIndex = (currentIndex + direction).coerceIn(0, historyComboBox.itemCount - 1)
-        if (newIndex != currentIndex) {
-            historyComboBox.selectedIndex = newIndex
-            val selectedItem = historyComboBox.selectedItem as? HistoryItem
-            inputTextField.text = selectedItem?.command?.joinToString("\n") ?: ""
-        }
-    }
+    override fun createActions(): Array<Action> {
         val actions = super.createActions()
         (actions[0] as? DialogWrapperAction)?.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_O)
         (actions[1] as? DialogWrapperAction)?.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_C)
