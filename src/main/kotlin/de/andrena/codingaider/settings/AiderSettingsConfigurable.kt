@@ -56,6 +56,7 @@ class AiderSettingsConfigurable : Configurable {
         this.alwaysIncludeOpenFilesCheckBox = JBCheckBox("Always include open files in context")
         this.apiKeyFields = mutableMapOf<String, JPasswordField>()
 
+
     }
 
     private var apiKeyChecker: ApiKeyChecker
@@ -327,6 +328,7 @@ class AiderSettingsConfigurable : Configurable {
         settings.autoCommits = AiderSettings.AutoCommitSetting.fromIndex(autoCommitsComboBox.selectedIndex)
         settings.dirtyCommits = AiderSettings.DirtyCommitSetting.fromIndex(dirtyCommitsComboBox.selectedIndex)
         settings.useStructuredMode = useStructuredModeCheckBox.isSelected
+        settings.alwaysIncludeOpenFiles = alwaysIncludeOpenFilesCheckBox.isSelected
     }
 
 
@@ -422,20 +424,20 @@ class AiderSettingsConfigurable : Configurable {
         val worker = object : SwingWorker<String, String>() {
             override fun doInBackground(): String {
                 val observer = object : CommandObserver {
-                    override fun onCommandStart(command: String) {
+                    override fun onCommandStart(message: String) {
                         publish("Starting command...\n")
                     }
 
-                    override fun onCommandProgress(output: String, runningTime: Long) {
-                        publish(output)
+                    override fun onCommandProgress(message: String, runningTime: Long) {
+                        publish(message)
                     }
 
-                    override fun onCommandComplete(output: String, exitCode: Int) {
+                    override fun onCommandComplete(message: String, exitCode: Int) {
                         publish("\nCommand completed with exit code: $exitCode\n")
                     }
 
-                    override fun onCommandError(error: String) {
-                        publish("\nError: $error\n")
+                    override fun onCommandError(message: String) {
+                        publish("\nError: $message\n")
                     }
                 }
 
