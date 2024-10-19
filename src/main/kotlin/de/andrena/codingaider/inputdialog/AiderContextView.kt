@@ -316,10 +316,6 @@ class AiderContextView(
         updateTree()
     }
 
-    fun updatePersistentFiles(newPersistentFiles: List<FileData>) {
-        persistentFiles = newPersistentFiles
-        allFiles = (allFiles + persistentFiles).distinctBy { it.filePath }
-    }
 
     fun removeSelectedFiles() {
         val selectedFiles = getSelectedFiles()
@@ -328,5 +324,7 @@ class AiderContextView(
         persistentFileService.removePersistentFiles(selectedFiles.map { it.filePath })
         updateTree()
     }
+
+    fun addFilesToContext(fileDataList: List<FileData>) = addFilesToTree(fileDataList)
 
 }

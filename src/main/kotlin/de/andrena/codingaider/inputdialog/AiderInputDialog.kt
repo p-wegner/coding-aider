@@ -64,7 +64,7 @@ class AiderInputDialog(
         toolTipText = "Automatically answer 'yes' to prompts"
     }
 
-    private fun addAiderDocsToPersistentFiles() {
+    private fun addFilesToContext() {
         val fileChooser = JFileChooser().apply {
             currentDirectory = File(project.basePath!!)
             fileSelectionMode = JFileChooser.FILES_AND_DIRECTORIES
@@ -83,24 +83,11 @@ class AiderInputDialog(
                     listOf(FileData(file.absolutePath, false))
                 }
             }
-            persistentFileService.addAllFiles(fileDataList)
-
-            // Update persistent files in AiderContextView
-            aiderContextView.updatePersistentFiles(persistentFileService.getPersistentFiles())
-
-            // Refresh the context view
-            aiderContextView.updateTree()
+            aiderContextView.addFilesToContext(fileDataList)
         }
     }
 
-    private fun addOpenFilesToPersistentFiles() {
-        aiderContextView.addOpenFilesToContext()
-        val allFiles = aiderContextView.getAllFiles()
-        persistentFileService.addAllFiles(allFiles)
-
-        // Update persistent files in AiderContextView
-        aiderContextView.updatePersistentFiles(persistentFileService.getPersistentFiles())
-    }
+    private fun addOpenFilesToContext() = aiderContextView.addOpenFilesToContext()
 
     private val llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
     private val llmComboBox = object : ComboBox<String>(llmOptions) {
@@ -136,7 +123,7 @@ class AiderInputDialog(
 
     init {
         title = "Aider Command"
-        persistentFileService = project.getService(PersistentFileService::class.java)
+        persistentFileService = PersistentFileService.getInstance(project)
         aiderContextView = AiderContextView(project, files + persistentFileService.getPersistentFiles()) { fileName ->
             insertTextAtCursor(fileName)
         }
@@ -378,12 +365,12 @@ class AiderInputDialog(
                     val popup = JPopupMenu()
                     popup.add(JMenuItem("From Project").apply {
                         addActionListener {
-                            addAiderDocsToPersistentFiles()
+                            addFilesToContext()
                         }
                     })
                     popup.add(JMenuItem("Add Open Files").apply {
                         addActionListener {
-                            addOpenFilesToPersistentFiles()
+                            addOpenFilesToContext()
                         }
                     })
                     val component = e.inputEvent?.component
