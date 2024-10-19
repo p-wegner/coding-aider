@@ -34,7 +34,6 @@ class AiderSettingsConfigurable : Configurable {
                 } else {
                     "API key not found for $selectedItem"
                 }
-                row { cell(alwaysIncludeOpenFilesCheckBox) }
             }
         }
         this.additionalArgsField = JBTextField()
@@ -57,7 +56,6 @@ class AiderSettingsConfigurable : Configurable {
         this.alwaysIncludeOpenFilesCheckBox = JBCheckBox("Always include open files in context")
         this.apiKeyFields = mutableMapOf<String, JPasswordField>()
 
-        settings.alwaysIncludeOpenFiles = alwaysIncludeOpenFilesCheckBox.isSelected
     }
 
     private var apiKeyChecker: ApiKeyChecker
@@ -164,6 +162,7 @@ class AiderSettingsConfigurable : Configurable {
                     }
                 }
                 row { cell(isShellModeCheckBox) }
+                row { cell(alwaysIncludeOpenFilesCheckBox) }
             }
 
             group("Code Modification Settings") {
