@@ -160,18 +160,18 @@ class AiderInputDialog(
         val inputMap = inputTextField.editor?.contentComponent?.getInputMap(JComponent.WHEN_FOCUSED)
         val actionMap = inputTextField.editor?.contentComponent?.actionMap
 
-        inputMap?.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, KeyEvent.ALT_DOWN_MASK), "previousHistory")
-        inputMap?.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, KeyEvent.ALT_DOWN_MASK), "nextHistory")
+        inputMap?.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, KeyEvent.ALT_DOWN_MASK), "insertPreviousHistory")
+        inputMap?.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, KeyEvent.ALT_DOWN_MASK), "insertNextHistory")
 
-        actionMap?.put("previousHistory", object : AbstractAction() {
+        actionMap?.put("insertPreviousHistory", object : AbstractAction() {
             override fun actionPerformed(e: java.awt.event.ActionEvent) {
-                navigateHistory(-1)
+                insertHistoryEntry(-1)
             }
         })
 
-        actionMap?.put("nextHistory", object : AbstractAction() {
+        actionMap?.put("insertNextHistory", object : AbstractAction() {
             override fun actionPerformed(e: java.awt.event.ActionEvent) {
-                navigateHistory(1)
+                insertHistoryEntry(1)
             }
         })
     }
@@ -186,7 +186,15 @@ class AiderInputDialog(
         }
     }
 
-    override fun createActions(): Array<Action> {
+    private fun insertHistoryEntry(direction: Int) {
+        val currentIndex = historyComboBox.selectedIndex
+        val newIndex = (currentIndex + direction).coerceIn(0, historyComboBox.itemCount - 1)
+        if (newIndex != currentIndex) {
+            historyComboBox.selectedIndex = newIndex
+            val selectedItem = historyComboBox.selectedItem as? HistoryItem
+            inputTextField.text = selectedItem?.command?.joinToString("\n") ?: ""
+        }
+    }
         val actions = super.createActions()
         (actions[0] as? DialogWrapperAction)?.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_O)
         (actions[1] as? DialogWrapperAction)?.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_C)
