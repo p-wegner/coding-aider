@@ -97,7 +97,7 @@ class AiderContextView(
             add(scrollPane, BorderLayout.CENTER)
             border = TitledBorder(
                 JBUI.Borders.customLine(JBColor.border(), 1),
-                "Context View",
+                "Context",
                 TitledBorder.DEFAULT_JUSTIFICATION,
                 TitledBorder.DEFAULT_POSITION,
                 null,
