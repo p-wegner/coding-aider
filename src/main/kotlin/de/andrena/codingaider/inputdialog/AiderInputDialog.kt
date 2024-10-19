@@ -8,6 +8,7 @@ import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.openapi.ui.addKeyboardAction
 import com.intellij.ui.LayeredIcon
 import com.intellij.ui.OnePixelSplitter
 import com.intellij.ui.TextFieldWithAutoCompletion
@@ -157,23 +158,12 @@ class AiderInputDialog(
     }
 
     private fun setupKeyBindings() {
-        val inputMap = inputTextField.editor?.contentComponent?.getInputMap(JComponent.WHEN_FOCUSED)
-        val actionMap = inputTextField.editor?.contentComponent?.actionMap
-
-        inputMap?.put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, KeyEvent.ALT_DOWN_MASK), "insertPreviousHistory")
-        inputMap?.put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, KeyEvent.ALT_DOWN_MASK), "insertNextHistory")
-
-        actionMap?.put("insertPreviousHistory", object : AbstractAction() {
-            override fun actionPerformed(e: java.awt.event.ActionEvent) {
-                insertHistoryEntry(-1)
-            }
-        })
-
-        actionMap?.put("insertNextHistory", object : AbstractAction() {
-            override fun actionPerformed(e: java.awt.event.ActionEvent) {
-                insertHistoryEntry(1)
-            }
-        })
+        inputTextField.addKeyboardAction(
+            listOf(KeyStroke.getKeyStroke(KeyEvent.VK_UP, KeyEvent.ALT_DOWN_MASK))
+        ) { navigateHistory(-1) }
+        inputTextField.addKeyboardAction(
+            listOf(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, KeyEvent.ALT_DOWN_MASK))
+        ) { navigateHistory(1) }
     }
 
     private fun navigateHistory(direction: Int) {
