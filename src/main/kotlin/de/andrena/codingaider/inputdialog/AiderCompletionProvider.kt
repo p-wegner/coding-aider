@@ -1,11 +1,9 @@
 package de.andrena.codingaider.inputdialog
 
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiManager
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
-import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.psi.PsiClass
-import com.intellij.psi.PsiMethod
+import com.intellij.psi.PsiManager
 import com.intellij.ui.TextFieldWithAutoCompletionListProvider
 import de.andrena.codingaider.command.FileData
 
@@ -20,23 +18,32 @@ class AiderCompletionProvider(project: Project, files: List<FileData>) :
             val completions = mutableListOf<String>()
             val psiManager = PsiManager.getInstance(project)
 
-            for (fileData in files) {
-                val psiFile: PsiFile? = psiManager.findFile(fileData.filePath)
+            for (fileData in getVirtualFiles(project, files)) {
+                val psiFile: PsiFile? = psiManager.findFile(fileData)
                 if (psiFile != null) {
-                    val classes = PsiTreeUtil.findChildrenOfType(psiFile, PsiClass::class.java)
+                    val classes = getClasses(psiFile)
                     for (psiClass in classes) {
-                        val className = psiClass.name
-                        val methods = psiClass.methods
-                        for (method in methods) {
-                            val methodName = method.name
-                            if (className != null) {
-                                completions.add("$className.$methodName")
-                            }
-                        }
+//                        val className = psiClass.name
+//                        val methods = psiClass.methods
+//                        for (method in methods) {
+//                            val methodName = method.name
+//                            if (className != null) {
+//                                completions.add("$className.$methodName")
+//                            }
+//                        }
                     }
                 }
             }
             return completions.distinct()
+        }
+
+        private fun getClasses(psiFile: PsiFile): List<Any> {
+            // TODO: implement this method
+            return listOf()
+        }
+
+        private fun getVirtualFiles(project: Project, files: List<FileData>): List<VirtualFile> {
+            // TODO: implement this
         }
     }
 }
