@@ -12,6 +12,7 @@ import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.tree.TreeUtil
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.services.PersistentFileService
+import de.andrena.codingaider.settings.AiderSettings
 import java.awt.BorderLayout
 import java.awt.event.KeyEvent
 import java.awt.event.MouseAdapter
@@ -146,6 +147,9 @@ class AiderContextView(
             return openFiles.map { virtualFile ->
                 FileData(virtualFile.path, false)
             }
+        }
+        if (AiderSettings.getInstance().alwaysIncludeOpenFiles) {
+            addOpenFilesToContext()
         }
     }
 

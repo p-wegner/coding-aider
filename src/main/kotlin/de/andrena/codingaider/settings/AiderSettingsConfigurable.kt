@@ -34,6 +34,7 @@ class AiderSettingsConfigurable : Configurable {
                 } else {
                     "API key not found for $selectedItem"
                 }
+                row { cell(alwaysIncludeOpenFilesCheckBox) }
             }
         }
         this.additionalArgsField = JBTextField()
@@ -53,8 +54,10 @@ class AiderSettingsConfigurable : Configurable {
         this.autoCommitsComboBox = ComboBox(arrayOf("Default", "On", "Off"))
         this.dirtyCommitsComboBox = ComboBox(arrayOf("Default", "On", "Off"))
         this.useStructuredModeCheckBox = JBCheckBox("Use Structured Mode")
+        this.alwaysIncludeOpenFilesCheckBox = JBCheckBox("Always include open files in context")
         this.apiKeyFields = mutableMapOf<String, JPasswordField>()
 
+        settings.alwaysIncludeOpenFiles = alwaysIncludeOpenFilesCheckBox.isSelected
     }
 
     private var apiKeyChecker: ApiKeyChecker
@@ -80,6 +83,7 @@ class AiderSettingsConfigurable : Configurable {
     private val autoCommitsComboBox: ComboBox<String>
     private val dirtyCommitsComboBox: ComboBox<String>
     private val useStructuredModeCheckBox: JBCheckBox
+    private val alwaysIncludeOpenFilesCheckBox: JBCheckBox
     private val apiKeyFields: MutableMap<String, JPasswordField>
     override fun getDisplayName(): String = "Aider"
 
@@ -298,7 +302,8 @@ class AiderSettingsConfigurable : Configurable {
                 includeChangeContextCheckBox.isSelected != settings.includeChangeContext ||
                 autoCommitsComboBox.selectedIndex != settings.autoCommits.toIndex() ||
                 dirtyCommitsComboBox.selectedIndex != settings.dirtyCommits.toIndex() ||
-                useStructuredModeCheckBox.isSelected != settings.useStructuredMode
+                useStructuredModeCheckBox.isSelected != settings.useStructuredMode ||
+                alwaysIncludeOpenFilesCheckBox.isSelected != settings.alwaysIncludeOpenFiles
     }
 
     override fun apply() {
@@ -347,6 +352,8 @@ class AiderSettingsConfigurable : Configurable {
         autoCommitsComboBox.selectedIndex = settings.autoCommits.toIndex()
         dirtyCommitsComboBox.selectedIndex = settings.dirtyCommits.toIndex()
         useStructuredModeCheckBox.isSelected = settings.useStructuredMode
+
+        alwaysIncludeOpenFilesCheckBox.isSelected = settings.alwaysIncludeOpenFiles
 
         apiKeyFields.forEach { (keyName, field) ->
             field.text = getApiKeyDisplayValue(keyName)

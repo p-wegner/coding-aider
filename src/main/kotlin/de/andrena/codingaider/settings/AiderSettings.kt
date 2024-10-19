@@ -29,6 +29,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var autoCommits: AutoCommitSetting = AiderDefaults.AUTO_COMMITS,
         var dirtyCommits: DirtyCommitSetting = AiderDefaults.DIRTY_COMMITS,
         var useStructuredMode: Boolean = AiderDefaults.USE_STRUCTURED_MODE,
+        var alwaysIncludeOpenFiles: Boolean = AiderDefaults.ALWAYS_INCLUDE_OPEN_FILES,
     )
 
     private var myState = State()
@@ -147,6 +148,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.dirtyCommits
         set(value) {
             myState.dirtyCommits = value
+        }
+
+    var alwaysIncludeOpenFiles: Boolean
+        get() = myState.alwaysIncludeOpenFiles
+        set(value) {
+            myState.alwaysIncludeOpenFiles = value
         }
 
     var useStructuredMode: Boolean
