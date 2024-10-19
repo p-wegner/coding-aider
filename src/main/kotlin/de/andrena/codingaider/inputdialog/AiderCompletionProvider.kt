@@ -7,6 +7,7 @@ import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
 import com.intellij.psi.PsiManager
 import com.intellij.psi.PsiNamedElement
+import com.intellij.psi.util.elementType
 import com.intellij.ui.TextFieldWithAutoCompletionListProvider
 import de.andrena.codingaider.command.FileData
 
@@ -52,34 +53,61 @@ class AiderCompletionProvider(
     }
 
     private fun extractFromPsiFile(psiFile: PsiFile): List<Pair<String, List<String>>> {
-        val classLikeElements = findClassLikeElements(psiFile)
+        val topLevelElements = psiFile.children.filterIsInstance<PsiNamedElement>()
 
-        return if (classLikeElements.isNotEmpty()) {
-            classLikeElements.mapNotNull { classElement ->
-                val className = (classElement as? PsiNamedElement)?.name ?: return@mapNotNull null
-                val methods = findMethodLikeElements(classElement).mapNotNull { (it as? PsiNamedElement)?.name }
-                className to methods
+        return if (topLevelElements.isNotEmpty()) {
+            topLevelElements.mapNotNull { element ->
+                when {
+                    isClassLike(element) -> extractClassInfo(element)
+                    isFunctionLike(element) -> {
+                        val fileName = psiFile.name.substringBeforeLast('.')
+                        fileName to listOf(element.name ?: return@mapNotNull null)
+                    }
+
+                    else -> null
+                }
             }
         } else {
             // Fallback: treat the file as a single class
             val fileName = psiFile.name.substringBeforeLast('.')
-            val methods = findMethodLikeElements(psiFile).mapNotNull { (it as? PsiNamedElement)?.name }
+            val methods = psiFile.findMethodLikeElements().mapNotNull { (it as? PsiNamedElement)?.name }
             listOf(fileName to methods)
         }
     }
 
-    private fun findClassLikeElements(element: PsiElement): List<PsiElement> {
-        return element.children.filter {
-            it is PsiNamedElement && it.node.elementType.toString().contains("CLASS")
-        }
+    private fun isClassLike(element: PsiElement): Boolean {
+        val type = element.node.elementType.toString().uppercase()
+        return type.contains("CLASS") || type.contains("OBJECT") || type.contains("INTERFACE")
     }
 
-    private fun findMethodLikeElements(element: PsiElement): List<PsiElement> {
-        return element.children.filter {
-            it is PsiNamedElement && (
-                    it.node.elementType.toString().contains("METHOD") ||
-                            it.node.elementType.toString().contains("FUNCTION")
-                    )
+    private fun isFunctionLike(element: PsiElement): Boolean {
+        val type = element.node.elementType.toString().uppercase()
+        return type.contains("METHOD") || type.contains("FUNCTION") || type.contains("FUN") || type.contains("SCRIPT")
+    }
+
+    private fun isFieldLike(element: PsiElement): Boolean {
+        val type = element.node.elementType.toString().uppercase()
+        return type.contains("FIELD") || type.contains("PROPERTY")
+    }
+
+    private fun extractClassInfo(classElement: PsiElement): Pair<String, List<String>>? {
+        val className = (classElement as? PsiNamedElement)?.name ?: return null
+        val methods = classElement.findMethodLikeElements().union(classElement.findFieldLikeElements())
+            .mapNotNull { (it as? PsiNamedElement)?.name }
+        return className to methods
+    }
+
+    private fun PsiElement.findMethodLikeElements(): List<PsiElement> =
+        classChildren(this).filter { isFunctionLike(it) }
+
+    private fun PsiElement.findFieldLikeElements(): List<PsiElement> =
+        classChildren(this).filter { isFieldLike(it) }
+
+    private fun classChildren(element: PsiElement) = element.children.flatMap {
+        if (it.elementType.toString().uppercase().contains("CLASS_BODY")) {
+            it.children.toList()
+        } else {
+            listOf(it)
         }
     }
 }
