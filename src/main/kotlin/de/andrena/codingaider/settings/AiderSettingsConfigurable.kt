@@ -114,6 +114,28 @@ class AiderSettingsConfigurable() : Configurable {
                             setHistory(listOf(AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION, "latest"))
                         }
                 }
+                row {
+                    val warningLabel = JLabel().apply {
+                        foreground = UIManager.getColor("Label.errorForeground")
+                        isVisible = false
+                    }
+                    cell(warningLabel)
+                    dockerImageTagField.addDocumentListener(object : DocumentListener {
+                        override fun insertUpdate(e: DocumentEvent) = checkTag()
+                        override fun removeUpdate(e: DocumentEvent) = checkTag()
+                        override fun changedUpdate(e: DocumentEvent) = checkTag()
+
+                        private fun checkTag() {
+                            if (dockerImageTagField.text != AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION) {
+                                warningLabel.text = "Warning: Using a different version than ${AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION} " +
+                                        "might not be fully compatibility with the plugin."
+                                warningLabel.isVisible = true
+                            } else {
+                                warningLabel.isVisible = false
+                            }
+                        }
+                    })
+                }
 
                 row {
                     button("Test Aider Installation") {
