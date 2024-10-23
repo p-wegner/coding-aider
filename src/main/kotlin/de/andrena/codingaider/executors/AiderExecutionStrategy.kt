@@ -134,7 +134,8 @@ class DockerAiderExecutionStrategy(
             }
         }
 
-        dockerArgs.add(AiderDefaults.DOCKER_IMAGE)
+        val dockerImageTag = if (settings.useLatestDockerTag) "latest" else AiderDefaults.DOCKER_IMAGE_TAG
+        dockerArgs.add("${AiderDefaults.DOCKER_IMAGE}:$dockerImageTag")
 
         return dockerArgs + buildCommonArgs(commandData, settings).map { arg ->
             commandData.files.fold(arg) { acc, fileData ->

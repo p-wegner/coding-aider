@@ -38,6 +38,7 @@ class AiderSettingsConfigurable() : Configurable {
     private val editFormatComboBox: ComboBox<String>
     private val verboseCommandLoggingCheckBox: JBCheckBox
     private val useDockerAiderCheckBox: JBCheckBox
+    private val useLatestDockerTagCheckBox: JBCheckBox
     private val enableMarkdownDialogAutocloseCheckBox: JBCheckBox
     private val markdownDialogAutocloseDelayField: JBTextField
     private val mountAiderConfInDockerCheckBox: JBCheckBox
@@ -100,6 +101,14 @@ class AiderSettingsConfigurable() : Configurable {
                         .apply {
                             toolTipText =
                                 "If enabled, Aider will be run using the Docker image paulgauthier/aider. Currently a new container will be used for every command, which may delay the execution compared to native aider setup."
+                        }
+                }
+                row {
+                    cell(useLatestDockerTagCheckBox)
+                        .component
+                        .apply {
+                            toolTipText =
+                                "If enabled, the latest Docker tag will be used instead of the fixed version."
                         }
                 }
 
@@ -266,7 +275,8 @@ class AiderSettingsConfigurable() : Configurable {
                 autoCommitsComboBox.selectedIndex != settings.autoCommits.toIndex() ||
                 dirtyCommitsComboBox.selectedIndex != settings.dirtyCommits.toIndex() ||
                 useStructuredModeCheckBox.isSelected != settings.useStructuredMode ||
-                alwaysIncludeOpenFilesCheckBox.isSelected != settings.alwaysIncludeOpenFiles
+                alwaysIncludeOpenFilesCheckBox.isSelected != settings.alwaysIncludeOpenFiles ||
+                useLatestDockerTagCheckBox.isSelected != settings.useLatestDockerTag
     }
 
     override fun apply() {
@@ -292,6 +302,7 @@ class AiderSettingsConfigurable() : Configurable {
         settings.dirtyCommits = AiderSettings.DirtyCommitSetting.fromIndex(dirtyCommitsComboBox.selectedIndex)
         settings.useStructuredMode = useStructuredModeCheckBox.isSelected
         settings.alwaysIncludeOpenFiles = alwaysIncludeOpenFilesCheckBox.isSelected
+        settings.useLatestDockerTag = useLatestDockerTagCheckBox.isSelected
     }
 
 
@@ -318,6 +329,7 @@ class AiderSettingsConfigurable() : Configurable {
         useStructuredModeCheckBox.isSelected = settings.useStructuredMode
 
         alwaysIncludeOpenFilesCheckBox.isSelected = settings.alwaysIncludeOpenFiles
+        useLatestDockerTagCheckBox.isSelected = settings.useLatestDockerTag
 
         apiKeyFields.forEach { (keyName, field) ->
             field.text = getApiKeyDisplayValue(keyName)
@@ -523,6 +535,7 @@ class AiderSettingsConfigurable() : Configurable {
         this.editFormatComboBox = ComboBox(arrayOf("", "whole", "diff", "whole-func", "diff-func"))
         this.verboseCommandLoggingCheckBox = JBCheckBox("Enable verbose Aider command logging")
         this.useDockerAiderCheckBox = JBCheckBox("Use aider in Docker")
+        this.useLatestDockerTagCheckBox = JBCheckBox("Use latest Docker tag")
         this.enableMarkdownDialogAutocloseCheckBox = JBCheckBox("Automatically close Output Dialog")
         this.markdownDialogAutocloseDelayField = JBTextField()
         this.mountAiderConfInDockerCheckBox = JBCheckBox("Mount Aider configuration file in Docker")
