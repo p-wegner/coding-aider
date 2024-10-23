@@ -9,7 +9,7 @@ import com.intellij.openapi.ui.Messages
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
-import com.intellij.ui.components.JBTextField
+import com.intellij.ui.TextFieldWithHistory
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.executors.api.CommandObserver
@@ -38,7 +38,7 @@ class AiderSettingsConfigurable() : Configurable {
     private val editFormatComboBox: ComboBox<String>
     private val verboseCommandLoggingCheckBox: JBCheckBox
     private val useDockerAiderCheckBox: JBCheckBox
-    private val dockerImageTagField: JBTextField
+    private val dockerImageTagField: TextFieldWithHistory
     private val enableMarkdownDialogAutocloseCheckBox: JBCheckBox
     private val markdownDialogAutocloseDelayField: JBTextField
     private val mountAiderConfInDockerCheckBox: JBCheckBox
@@ -109,13 +109,8 @@ class AiderSettingsConfigurable() : Configurable {
                         .align(Align.FILL)
                         .component
                         .apply {
-                            toolTipText = "Enter the Docker image tag. Suggestions: ${AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION} or 'latest'"
-                        }
-                    comboBox(listOf(AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION, "latest"))
-                        .applyToComponent {
-                            addActionListener {
-                                dockerImageTagField.text = selectedItem as String
-                            }
+                            toolTipText = "Enter the Docker image tag. Suggestions are provided in the dropdown."
+                            setHistory(listOf(AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION, "latest"))
                         }
                 }
 
@@ -542,7 +537,7 @@ class AiderSettingsConfigurable() : Configurable {
         this.editFormatComboBox = ComboBox(arrayOf("", "whole", "diff", "whole-func", "diff-func"))
         this.verboseCommandLoggingCheckBox = JBCheckBox("Enable verbose Aider command logging")
         this.useDockerAiderCheckBox = JBCheckBox("Use aider in Docker")
-        this.dockerImageTagField = JBTextField()
+        this.dockerImageTagField = TextFieldWithHistory()
         this.enableMarkdownDialogAutocloseCheckBox = JBCheckBox("Automatically close Output Dialog")
         this.markdownDialogAutocloseDelayField = JBTextField()
         this.mountAiderConfInDockerCheckBox = JBCheckBox("Mount Aider configuration file in Docker")
