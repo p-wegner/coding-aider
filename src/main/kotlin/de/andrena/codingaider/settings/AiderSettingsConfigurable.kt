@@ -38,7 +38,7 @@ class AiderSettingsConfigurable() : Configurable {
     private val editFormatComboBox: ComboBox<String>
     private val verboseCommandLoggingCheckBox: JBCheckBox
     private val useDockerAiderCheckBox: JBCheckBox
-    private val useLatestDockerTagCheckBox: JBCheckBox
+    private val dockerImageTagField: JBTextField
     private val enableMarkdownDialogAutocloseCheckBox: JBCheckBox
     private val markdownDialogAutocloseDelayField: JBTextField
     private val mountAiderConfInDockerCheckBox: JBCheckBox
@@ -103,12 +103,19 @@ class AiderSettingsConfigurable() : Configurable {
                                 "If enabled, Aider will be run using the Docker image paulgauthier/aider. Currently a new container will be used for every command, which may delay the execution compared to native aider setup."
                         }
                 }
-                row {
-                    cell(useLatestDockerTagCheckBox)
+                row("Docker Image Tag:") {
+                    cell(dockerImageTagField)
+                        .resizableColumn()
+                        .align(Align.FILL)
                         .component
                         .apply {
-                            toolTipText =
-                                "If enabled, the latest Docker tag will be used instead of the fixed version."
+                            toolTipText = "Enter the Docker image tag. Suggestions: ${AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION} or 'latest'"
+                        }
+                    comboBox(listOf(AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION, "latest"))
+                        .applyToComponent {
+                            addActionListener {
+                                dockerImageTagField.text = selectedItem as String
+                            }
                         }
                 }
 
@@ -276,7 +283,7 @@ class AiderSettingsConfigurable() : Configurable {
                 dirtyCommitsComboBox.selectedIndex != settings.dirtyCommits.toIndex() ||
                 useStructuredModeCheckBox.isSelected != settings.useStructuredMode ||
                 alwaysIncludeOpenFilesCheckBox.isSelected != settings.alwaysIncludeOpenFiles ||
-                useLatestDockerTagCheckBox.isSelected != settings.useLatestDockerTag
+                dockerImageTagField.text != settings.dockerImageTag
     }
 
     override fun apply() {
@@ -302,7 +309,7 @@ class AiderSettingsConfigurable() : Configurable {
         settings.dirtyCommits = AiderSettings.DirtyCommitSetting.fromIndex(dirtyCommitsComboBox.selectedIndex)
         settings.useStructuredMode = useStructuredModeCheckBox.isSelected
         settings.alwaysIncludeOpenFiles = alwaysIncludeOpenFilesCheckBox.isSelected
-        settings.useLatestDockerTag = useLatestDockerTagCheckBox.isSelected
+        settings.dockerImageTag = dockerImageTagField.text
     }
 
 
@@ -329,7 +336,7 @@ class AiderSettingsConfigurable() : Configurable {
         useStructuredModeCheckBox.isSelected = settings.useStructuredMode
 
         alwaysIncludeOpenFilesCheckBox.isSelected = settings.alwaysIncludeOpenFiles
-        useLatestDockerTagCheckBox.isSelected = settings.useLatestDockerTag
+        dockerImageTagField.text = settings.dockerImageTag
 
         apiKeyFields.forEach { (keyName, field) ->
             field.text = getApiKeyDisplayValue(keyName)
@@ -535,7 +542,7 @@ class AiderSettingsConfigurable() : Configurable {
         this.editFormatComboBox = ComboBox(arrayOf("", "whole", "diff", "whole-func", "diff-func"))
         this.verboseCommandLoggingCheckBox = JBCheckBox("Enable verbose Aider command logging")
         this.useDockerAiderCheckBox = JBCheckBox("Use aider in Docker")
-        this.useLatestDockerTagCheckBox = JBCheckBox("Use latest Docker tag")
+        this.dockerImageTagField = JBTextField()
         this.enableMarkdownDialogAutocloseCheckBox = JBCheckBox("Automatically close Output Dialog")
         this.markdownDialogAutocloseDelayField = JBTextField()
         this.mountAiderConfInDockerCheckBox = JBCheckBox("Mount Aider configuration file in Docker")

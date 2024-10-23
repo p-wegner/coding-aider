@@ -23,5 +23,5 @@ object AiderDefaults {
     val DIRTY_COMMITS = AiderSettings.DirtyCommitSetting.DEFAULT
     const val DOCKER_IMAGE: String = "paulgauthier/aider"
     const val DOCKER_IMAGE_TAG: String = "v0.59.1"
-    const val USE_LATEST_DOCKER_TAG: Boolean = false
+    const val DOCKER_IMAGE_TAG_SUGGESTION: String = "v0.59.1"
 }

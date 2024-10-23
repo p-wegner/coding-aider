@@ -30,7 +30,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var dirtyCommits: DirtyCommitSetting = AiderDefaults.DIRTY_COMMITS,
         var useStructuredMode: Boolean = AiderDefaults.USE_STRUCTURED_MODE,
         var alwaysIncludeOpenFiles: Boolean = AiderDefaults.ALWAYS_INCLUDE_OPEN_FILES,
-        var useLatestDockerTag: Boolean = AiderDefaults.USE_LATEST_DOCKER_TAG,
+        var dockerImageTag: String = AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION,
     )
 
     private var myState = State()
@@ -182,10 +182,10 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         }
     }
 
-    var useLatestDockerTag: Boolean
-        get() = myState.useLatestDockerTag
+    var dockerImageTag: String
+        get() = myState.dockerImageTag
         set(value) {
-            myState.useLatestDockerTag = value
+            myState.dockerImageTag = value
         }
 
     enum class DirtyCommitSetting {
