@@ -84,7 +84,7 @@ class NativeAiderExecutionStrategy(
 ) : AiderExecutionStrategy(project) {
 
     override fun buildCommand(commandData: CommandData): List<String> {
-        return listOf("aider") + buildCommonArgs(commandData, settings)
+        return listOf(settings.aiderExecutablePath) + buildCommonArgs(commandData, settings)
     }
 
     override fun prepareEnvironment(processBuilder: ProcessBuilder, commandData: CommandData) {

@@ -40,6 +40,7 @@ class AiderSettingsConfigurable() : Configurable {
     private val verboseCommandLoggingCheckBox: JBCheckBox
     private val useDockerAiderCheckBox: JBCheckBox
     private val dockerImageTagField: TextFieldWithHistory
+    private val aiderExecutablePathField: TextFieldWithHistory
     private val enableMarkdownDialogAutocloseCheckBox: JBCheckBox
     private val markdownDialogAutocloseDelayField: JBTextField
     private val mountAiderConfInDockerCheckBox: JBCheckBox
@@ -211,6 +212,21 @@ class AiderSettingsConfigurable() : Configurable {
 
             }
 
+            group("Aider Executable") {
+                row("Aider Executable Path:") {
+                    cell(aiderExecutablePathField)
+                        .resizableColumn()
+                        .align(Align.FILL)
+                        .component
+                        .apply {
+                            toolTipText = "Only change this if you have a custom aider installation or if aider is not found on your system PATH. Default 'aider' works in most cases."
+                            setHistory(listOf(AiderDefaults.AIDER_EXECUTABLE_PATH))
+                        }
+                    button("Reset to Default") {
+                        aiderExecutablePathField.text = AiderDefaults.AIDER_EXECUTABLE_PATH
+                    }
+                }
+            }
             group("Advanced Settings") {
                 row {
                     cell(useStructuredModeCheckBox)
@@ -301,7 +317,8 @@ class AiderSettingsConfigurable() : Configurable {
                 dirtyCommitsComboBox.selectedIndex != settings.dirtyCommits.toIndex() ||
                 useStructuredModeCheckBox.isSelected != settings.useStructuredMode ||
                 alwaysIncludeOpenFilesCheckBox.isSelected != settings.alwaysIncludeOpenFiles ||
-                dockerImageTagField.text != settings.dockerImageTag
+                dockerImageTagField.text != settings.dockerImageTag ||
+                aiderExecutablePathField.text != settings.aiderExecutablePath
     }
 
     override fun apply() {
@@ -328,6 +345,7 @@ class AiderSettingsConfigurable() : Configurable {
         settings.useStructuredMode = useStructuredModeCheckBox.isSelected
         settings.alwaysIncludeOpenFiles = alwaysIncludeOpenFilesCheckBox.isSelected
         settings.dockerImageTag = dockerImageTagField.text
+        settings.aiderExecutablePath = aiderExecutablePathField.text
     }
 
 
@@ -355,6 +373,7 @@ class AiderSettingsConfigurable() : Configurable {
 
         alwaysIncludeOpenFilesCheckBox.isSelected = settings.alwaysIncludeOpenFiles
         dockerImageTagField.text = settings.dockerImageTag
+        aiderExecutablePathField.text = settings.aiderExecutablePath
 
         apiKeyFields.forEach { (keyName, field) ->
             field.text = getApiKeyDisplayValue(keyName)
@@ -561,6 +580,7 @@ class AiderSettingsConfigurable() : Configurable {
         this.verboseCommandLoggingCheckBox = JBCheckBox("Enable verbose Aider command logging")
         this.useDockerAiderCheckBox = JBCheckBox("Use aider in Docker")
         this.dockerImageTagField = TextFieldWithHistory()
+        this.aiderExecutablePathField = TextFieldWithHistory()
         this.enableMarkdownDialogAutocloseCheckBox = JBCheckBox("Automatically close Output Dialog")
         this.markdownDialogAutocloseDelayField = JBTextField()
         this.mountAiderConfInDockerCheckBox = JBCheckBox("Mount Aider configuration file in Docker")

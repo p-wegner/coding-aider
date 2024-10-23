@@ -31,6 +31,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var useStructuredMode: Boolean = AiderDefaults.USE_STRUCTURED_MODE,
         var alwaysIncludeOpenFiles: Boolean = AiderDefaults.ALWAYS_INCLUDE_OPEN_FILES,
         var dockerImageTag: String = AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION,
+        var aiderExecutablePath: String = AiderDefaults.AIDER_EXECUTABLE_PATH,
     )
 
     private var myState = State()
@@ -186,6 +187,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.dockerImageTag
         set(value) {
             myState.dockerImageTag = value
+        }
+
+    var aiderExecutablePath: String
+        get() = myState.aiderExecutablePath
+        set(value) {
+            myState.aiderExecutablePath = value
         }
 
     enum class DirtyCommitSetting {
