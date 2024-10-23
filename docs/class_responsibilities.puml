@@ -1,0 +1,311 @@
+@startuml
+skinparam backgroundColor transparent
+skinparam handwritten false
+skinparam monochrome true
+
+package "Actions" {
+  class AiderAction {
+    + actionPerformed()
+    + executeAiderAction()
+    + executeAiderActionWithCommandData()
+  }
+
+  class AiderShellAction {
+    + actionPerformed()
+  }
+
+  class DocumentCodeAction {
+    + documentCode()
+  }
+
+  class RefactorToCleanCodeAction {
+    + refactorToCleanCode()
+  }
+
+  class FixCompileErrorAction {
+    + fixCompileError()
+  }
+
+  class FixCompileErrorInteractive {
+    + showDialog()
+  }
+
+  class AiderWebCrawlAction {
+    + crawlAndProcessWebPage()
+  }
+
+  class AiderClipboardImageAction {
+    + saveImageToFile()
+  }
+
+  class CommitAction {
+    + actionPerformed()
+  }
+
+  class ShowLastCommandResultAction {
+    + actionPerformed()
+  }
+}
+
+package "Dialog & UI" {
+  class AiderInputDialog {
+    - inputTextField: TextFieldWithAutoCompletion
+    - aiderContextView: AiderContextView
+    + getInputText(): String
+    + isYesFlagChecked(): Boolean
+    + getLlm(): String
+    + getAdditionalArgs(): String
+    + getAllFiles(): List<FileData>
+  }
+
+  class AiderSettingsConfigurable {
+    - settingsComponent: JPanel
+    - apiKeyChecker: ApiKeyChecker
+    + createComponent(): JComponent
+    + isModified(): Boolean
+    + apply()
+    + reset()
+  }
+
+  class AiderProjectSettingsConfigurable {
+    - persistentFilesListModel: DefaultListModel<FileData>
+    - persistentFilesList: JBList<FileData>
+    + createComponent(): JComponent
+    + addPersistentFiles()
+    + toggleReadOnlyMode()
+    + removeSelectedFiles()
+  }
+
+  class AiderContextView {
+    - tree: Tree
+    - allFiles: List<FileData>
+    + updateTree()
+    + toggleReadOnlyMode()
+    + togglePersistentFile()
+    + addFilesToContext()
+  }
+
+  class MarkdownDialog {
+    - textArea: JTextArea
+    + updateProgress()
+    + startAutoCloseTimer()
+    + setProcessFinished()
+  }
+}
+
+package "Command & Execution" {
+  class CommandData {
+    + message: String
+    + useYesFlag: Boolean
+    + llm: String
+    + additionalArgs: String
+    + files: List<FileData>
+    + isShellMode: Boolean
+    + useDockerAider: Boolean
+  }
+
+  class FileData {
+    + filePath: String
+    + isReadOnly: Boolean
+  }
+
+  class CommandExecutor {
+    - process: Process
+    + executeCommand(): String
+    + abortCommand()
+  }
+
+  abstract class AiderExecutionStrategy {
+    + buildCommand(): List<String>
+    + prepareEnvironment()
+    + cleanupAfterExecution()
+  }
+
+  class DockerAiderExecutionStrategy {
+    - dockerManager: DockerContainerManager
+    + buildCommand(): List<String>
+  }
+
+  class NativeAiderExecutionStrategy {
+    + buildCommand(): List<String>
+  }
+
+  interface CommandObserver {
+    + onCommandStart()
+    + onCommandProgress()
+    + onCommandComplete()
+    + onCommandError()
+  }
+
+  class DockerContainerManager {
+    + getCidFilePath(): String
+    + stopDockerContainer()
+    + removeCidFile()
+  }
+}
+
+package "Services" {
+  class PersistentFileService {
+    - persistentFiles: List<FileData>
+    + loadPersistentFiles()
+    + savePersistentFilesToContextFile()
+    + addFile()
+    + removeFile()
+  }
+
+  class AiderHistoryService {
+    + getInputHistory()
+    + getLastChatHistory()
+  }
+
+  class AiderPlanService {
+    + createAiderPlanSystemPrompt()
+  }
+
+  class AiderDialogStateService {
+    - lastState: DialogState
+    + saveState()
+    + getLastState()
+  }
+
+  class AiderSettings {
+    - myState: State
+    + useYesFlag: Boolean
+    + llm: String
+    + additionalArgs: String
+    + isShellMode: Boolean
+    + lintCmd: String
+    + showGitComparisonTool: Boolean
+    + useDockerAider: Boolean
+    + dockerImageTag: String
+    + aiderExecutablePath: String
+  }
+
+  class AiderProjectSettings {
+    - myState: State
+    + persistentFiles: List<FileData>
+  }
+
+  class AiderDefaults {
+    + {static} USE_YES_FLAG: Boolean
+    + {static} LLM: String
+    + {static} ADDITIONAL_ARGS: String
+    + {static} IS_SHELL_MODE: Boolean
+    + {static} DOCKER_IMAGE_TAG_SUGGESTION: String
+    + {static} AIDER_EXECUTABLE_PATH: String
+  }
+}
+
+package "Completion" {
+  class AiderCompletionProvider {
+    - classMethodMap: Map<String, List<String>>
+    + getItems()
+    + getLookupString()
+  }
+}
+
+package "API Key Management" {
+  interface ApiKeyChecker {
+    + isApiKeyAvailableForLlm(llm: String): Boolean
+    + isApiKeyAvailable(apiKeyName: String): Boolean
+    + getAllLlmOptions(): List<String>
+    + getAllApiKeyNames(): List<String>
+  }
+
+  class DefaultApiKeyChecker {
+    - llmToApiKeyMap: Map<String, String>
+    + getApiKeyValue(apiKeyName: String): String?
+    + getApiKeysForDocker(): Map<String, String>
+  }
+
+  object ApiKeyManager {
+    + saveApiKey(keyName: String, apiKey: String)
+    + getApiKey(keyName: String): String?
+    + removeApiKey(keyName: String)
+  }
+}
+
+interface Abortable {
+  + abortCommand()
+}
+
+interface PersistentFilesChangedTopic {
+  + onPersistentFilesChanged()
+}
+
+class CommandData {
+  + message: String
+  + useYesFlag: Boolean
+  + llm: String
+  + additionalArgs: String
+  + files: List<FileData>
+  + isShellMode: Boolean
+  + lintCmd: String
+  + deactivateRepoMap: Boolean
+  + editFormat: String
+  + projectPath: String
+  + useDockerAider: Boolean
+  + structuredMode: Boolean
+}
+
+class DockerContainerManager {
+  - uniqueId: String
+  - cidFile: File
+  - dockerContainerId: String
+  + getCidFilePath(): String
+  - getDockerContainerId(): String
+  + stopDockerContainer()
+  + removeCidFile()
+}
+
+' Relationships
+AiderInputDialog --> AiderContextView
+AiderInputDialog --> AiderCompletionProvider
+AiderInputDialog --> AiderDialogStateService
+AiderInputDialog --> AiderHistoryService
+AiderInputDialog --> PersistentFileService
+AiderInputDialog --> AiderSettings
+
+AiderSettingsConfigurable --> AiderSettings
+AiderSettingsConfigurable --> ApiKeyChecker
+AiderSettingsConfigurable --> ApiKeyManager
+
+AiderProjectSettingsConfigurable --> AiderProjectSettings
+AiderProjectSettingsConfigurable --> PersistentFileService
+
+DefaultApiKeyChecker ..|> ApiKeyChecker
+DefaultApiKeyChecker --> ApiKeyManager
+
+AiderContextView --> PersistentFileService
+AiderContextView ..> PersistentFilesChangedTopic
+
+MarkdownDialog ..|> Abortable
+MarkdownDialog --> CommandData
+CommandExecutor ..|> CommandObserver
+
+AiderExecutionStrategy <|-- DockerAiderExecutionStrategy
+AiderExecutionStrategy <|-- NativeAiderExecutionStrategy
+DockerAiderExecutionStrategy --> DockerContainerManager
+
+CommandExecutor --> AiderExecutionStrategy
+CommandData --> FileData
+
+PersistentFileService ..> PersistentFilesChangedTopic
+
+' Action relationships
+AiderAction --> AiderInputDialog
+AiderAction --> IDEBasedExecutor
+AiderAction --> ShellExecutor
+AiderAction --> PersistentFileService
+
+DocumentCodeAction --> IDEBasedExecutor
+RefactorToCleanCodeAction --> IDEBasedExecutor
+FixCompileErrorAction --> IDEBasedExecutor
+FixCompileErrorInteractive --> AiderInputDialog
+AiderWebCrawlAction --> IDEBasedExecutor
+AiderClipboardImageAction --> PersistentFileService
+CommitAction --> IDEBasedExecutor
+ShowLastCommandResultAction --> MarkdownDialog
+ShowLastCommandResultAction --> AiderHistoryService
+
+@enduml
