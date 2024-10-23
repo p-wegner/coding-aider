@@ -52,15 +52,8 @@ object GitUtils {
         return GitUtil.getRepositoryManager(project).repositories.firstOrNull()
     }
 
-    fun findGitRoot(directory: File): File? {
-        var current = directory
-        while (current != null) {
-            if (File(current, ".git").exists()) {
-                return current
-            }
-            current = current.parentFile ?: return null
-        }
-        return null
-    }
+    fun findGitRoot(directory: File): File? =
+        generateSequence(directory) { it.parentFile }
+            .find { File(it, ".git").exists() }
 
 }

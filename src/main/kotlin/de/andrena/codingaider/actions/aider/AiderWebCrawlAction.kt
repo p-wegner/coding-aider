@@ -38,7 +38,7 @@ class AiderWebCrawlAction : AnAction() {
                 BigInteger(1, it).toString(16).padStart(32, '0')
             }
 
-            val pageName = URL(url).path.split("/").lastOrNull() ?: "index"
+            val pageName = URI(url).toURL().path.split("/").lastOrNull() ?: "index"
             val fileName = "$pageName-$combinedHash.md"
             val filePath = "$docsPath/$fileName"
             val file = File(filePath)
