@@ -19,18 +19,19 @@ class CommandExecutor(
     CommandSubject by GenericCommandSubject() {
     private val logger = Logger.getInstance(CommandExecutor::class.java)
     private val settings = getInstance()
-    private val commandLogger = CommandLogger(project,settings, commandData)
+    private val commandLogger = CommandLogger(project, settings, commandData)
     private var process: Process? = null
     private var isAborted = false
     private val useDockerAider: Boolean
         get() = commandData.useDockerAider ?: settings.useDockerAider
     private val dockerManager = DockerContainerManager()
     private val executionStrategy: AiderExecutionStrategy by lazy {
-        if (useDockerAider) DockerAiderExecutionStrategy(project,
+        if (useDockerAider) DockerAiderExecutionStrategy(
+            project,
             dockerManager,
             apiKeyChecker,
             settings
-        ) else NativeAiderExecutionStrategy(project,apiKeyChecker, settings)
+        ) else NativeAiderExecutionStrategy(project, apiKeyChecker, settings)
     }
 
     fun executeCommand(): String {
@@ -51,6 +52,7 @@ class CommandExecutor(
             .apply {
                 if (commandData.projectPath.isNotEmpty()) directory(File(commandData.projectPath))
                 environment().putIfAbsent("PYTHONIOENCODING", "utf-8")
+                environment().putIfAbsent("PATH", System.getenv("PATH"))
                 redirectErrorStream(true)
             }
 
