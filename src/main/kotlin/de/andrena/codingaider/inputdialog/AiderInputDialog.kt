@@ -16,6 +16,7 @@ import com.intellij.util.textCompletion.TextCompletionUtil
 import com.intellij.util.ui.JBUI
 import de.andrena.codingaider.actions.ide.SettingsAction
 import de.andrena.codingaider.command.FileData
+import de.andrena.codingaider.services.AiderDialogStateService
 import de.andrena.codingaider.services.AiderHistoryService
 import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
@@ -298,8 +299,30 @@ class AiderInputDialog(
             weightx = 0.7
             fill = GridBagConstraints.HORIZONTAL
         })
-        firstRowPanel.add(settingsButton, GridBagConstraints().apply {
+        val restoreButton = ActionButton(
+            object : AnAction() {
+                override fun actionPerformed(e: AnActionEvent) {
+                    restoreLastState()
+                }
+            },
+            Presentation("Restore Last State").apply {
+                icon = AllIcons.Actions.Rollback
+                description = "Restore dialog to last used state"
+            },
+            "AiderRestoreButton",
+            ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
+        )
+
+        firstRowPanel.add(restoreButton, GridBagConstraints().apply {
             gridx = 6
+            gridy = 0
+            weightx = 0.0
+            fill = GridBagConstraints.NONE
+            insets = JBUI.insetsLeft(10)
+        })
+
+        firstRowPanel.add(settingsButton, GridBagConstraints().apply {
+            gridx = 7
             gridy = 0
             weightx = 0.0
             fill = GridBagConstraints.NONE
@@ -490,6 +513,18 @@ class AiderInputDialog(
     fun getAllFiles(): List<FileData> = aiderContextView.getAllFiles()
     fun isShellMode(): Boolean = modeToggle.isSelected
     fun isStructuredMode(): Boolean = structuredModeCheckBox.isSelected
+
+    private fun restoreLastState() {
+        AiderDialogStateService.getInstance(project).getLastState()?.let { state ->
+            inputTextField.text = state.message
+            yesCheckBox.isSelected = state.useYesFlag
+            llmComboBox.selectedItem = state.llm
+            additionalArgsField.text = state.additionalArgs
+            modeToggle.isSelected = state.isShellMode
+            structuredModeCheckBox.isSelected = state.isStructuredMode
+            aiderContextView.setFiles(state.files)
+        }
+    }
 
     private fun insertTextAtCursor(text: String) {
         WriteCommandAction.runWriteCommandAction(project) {

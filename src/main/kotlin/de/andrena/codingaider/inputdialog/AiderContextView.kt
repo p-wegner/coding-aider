@@ -330,5 +330,9 @@ class AiderContextView(
     }
 
     fun addFilesToContext(fileDataList: List<FileData>) = addFilesToTree(fileDataList)
+    fun setFiles(files: List<FileData>) {
+        allFiles = files
+        updateTree()
+    }
 
 }

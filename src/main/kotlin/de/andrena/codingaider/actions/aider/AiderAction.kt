@@ -11,6 +11,7 @@ import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.executors.api.ShellExecutor
 import de.andrena.codingaider.inputdialog.AiderInputDialog
+import de.andrena.codingaider.services.AiderDialogStateService
 import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileTraversal
@@ -51,6 +52,15 @@ class AiderAction : AnAction() {
                     )
                     if (dialog.showAndGet()) {
                         val commandData = collectCommandData(dialog, project)
+                        AiderDialogStateService.getInstance(project).saveState(
+                            dialog.getInputText(),
+                            dialog.isYesFlagChecked(),
+                            dialog.getLlm(),
+                            dialog.getAdditionalArgs(),
+                            dialog.getAllFiles(),
+                            dialog.isShellMode(),
+                            dialog.isStructuredMode()
+                        )
                         if (commandData.isShellMode) {
                             ShellExecutor(project, commandData).execute()
                         } else {
