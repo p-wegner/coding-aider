@@ -180,17 +180,17 @@
             <category>Errors</category>
         </intentionAction>
         <intentionAction>
+            <language>ConsoleViewLanguage</language>
             <className>de.andrena.codingaider.actions.aider.FixGradleErrorAction$Intention</className>
             <category>Errors</category>
             <bundleName>messages.IntentionActionsBundle</bundleName>
-            <implementationClass>de.andrena.codingaider.actions.aider.FixGradleErrorAction$Intention</implementationClass>
             <descriptionDirectoryName>intentionDescriptions/FixGradleError</descriptionDirectoryName>
         </intentionAction>
         <intentionAction>
+            <language>ConsoleViewLanguage</language>
             <className>de.andrena.codingaider.actions.aider.FixGradleErrorInteractive$Intention</className>
             <category>Errors</category>
             <bundleName>messages.IntentionActionsBundle</bundleName>
-            <implementationClass>de.andrena.codingaider.actions.aider.FixGradleErrorInteractive$Intention</implementationClass>
             <descriptionDirectoryName>intentionDescriptions/FixGradleErrorInteractive</descriptionDirectoryName>
         </intentionAction>
     </extensions>
