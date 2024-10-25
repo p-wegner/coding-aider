@@ -201,7 +201,16 @@ class FixGradleErrorAction : BaseFixGradleErrorAction() {
         override fun getText(): String = "Quick fix Gradle error with Aider"
 
         override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean {
-            return project != null && hasGradleErrors(project)
+            if (project == null) return false
+            
+            // Check if we're in a console view
+            val consoleView = element.containingFile?.virtualFile?.let {
+                RunContentManager.getInstance(project).allDescriptors
+                    .find { descriptor -> descriptor.executionConsole?.component?.toString() == it.path }
+                    ?.executionConsole
+            }
+            
+            return consoleView != null && hasGradleErrors(project)
         }
 
         override fun invoke(project: Project, editor: Editor?, element: PsiElement) {
