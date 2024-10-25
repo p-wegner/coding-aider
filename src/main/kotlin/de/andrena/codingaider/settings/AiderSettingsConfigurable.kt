@@ -111,7 +111,7 @@ class AiderSettingsConfigurable() : Configurable {
                         .align(Align.FILL)
                         .component
                         .apply {
-                            toolTipText = "Enter the Docker image tag. Suggestions are provided in the dropdown."
+                            toolTipText = "Enter the Docker image tag for ${AiderDefaults.DOCKER_IMAGE}. Suggestions are provided in the dropdown."
                             setHistory(listOf(AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION, "latest"))
                         }
                 }
