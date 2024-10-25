@@ -305,7 +305,7 @@ class AiderInputDialog(
                     restoreLastState()
                 }
             },
-            Presentation("Restore Last State").apply {
+            Presentation("Restore To Last Executed Command").apply {
                 icon = AllIcons.Actions.Rollback
                 description = "Restore dialog to last used state"
             },
