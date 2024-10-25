@@ -18,11 +18,11 @@ Related plan: [fix_gradle_errors_plan.md](fix_gradle_errors_plan.md)
 - [x] Implement error location detection
 
 ## UI Integration
-- [ ] Add action group to plugin.xml
-- [ ] Configure context menu entry
+- [x] Add action group to plugin.xml
+- [x] Configure context menu entry
 - [ ] Add icons and descriptions
-- [ ] Set up keyboard shortcuts
-- [ ] Add intention actions to plugin.xml
+- [x] Set up keyboard shortcuts
+- [x] Add intention actions to plugin.xml
 
 ## Testing
 - [ ] Write unit tests for error extraction
