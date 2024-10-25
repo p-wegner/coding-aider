@@ -41,11 +41,12 @@ class FixGradleErrorActionGroup : ActionGroup() {
 }
 
 abstract class BaseFixGradleErrorAction : AnAction() {
-    protected abstract fun getTemplateText(): String
-    
+    abstract override fun getTemplateText(): String
+
     init {
         templatePresentation.text = getTemplateText()
     }
+
     override fun update(e: AnActionEvent) {
         val project = e.project
         val hasErrors = project != null && hasGradleErrors(project)
@@ -208,14 +209,14 @@ class FixGradleErrorAction : BaseFixGradleErrorAction() {
 
         override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean {
             if (project == null) return false
-            
+
             // Check if we're in a console view
             val consoleView = element.containingFile?.virtualFile?.let {
                 RunContentManager.getInstance(project).allDescriptors
                     .find { descriptor -> descriptor.executionConsole?.component?.toString() == it.path }
                     ?.executionConsole
             }
-            
+
             return consoleView != null && hasGradleErrors(project)
         }
 
