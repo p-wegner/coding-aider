@@ -6,10 +6,10 @@ import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogBuilder
 import com.intellij.openapi.ui.Messages
+import com.intellij.ui.TextFieldWithHistory
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
-import com.intellij.ui.TextFieldWithHistory
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
@@ -111,8 +111,10 @@ class AiderSettingsConfigurable() : Configurable {
                         .align(Align.FILL)
                         .component
                         .apply {
-                            toolTipText = "Enter the Docker image tag for ${AiderDefaults.DOCKER_IMAGE}. Suggestions are provided in the dropdown."
+                            toolTipText =
+                                "Enter the Docker image tag for ${AiderDefaults.DOCKER_IMAGE}. Suggestions are provided in the dropdown."
                             setHistory(listOf(AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION, "latest"))
+                            isEnabled = useDockerAiderCheckBox.isSelected
                         }
                 }
                 row {
@@ -128,8 +130,9 @@ class AiderSettingsConfigurable() : Configurable {
 
                         private fun checkTag() {
                             if (dockerImageTagField.text != AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION) {
-                                warningLabel.text = "Warning: Using a different version than ${AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION} " +
-                                        "might not be fully compatibility with the plugin."
+                                warningLabel.text =
+                                    "Warning: Using a different version than ${AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION} " +
+                                            "might not be fully compatibility with the plugin."
                                 warningLabel.isVisible = true
                             } else {
                                 warningLabel.isVisible = false
@@ -219,7 +222,8 @@ class AiderSettingsConfigurable() : Configurable {
                         .align(Align.FILL)
                         .component
                         .apply {
-                            toolTipText = "Only change this if you have a custom aider installation or if aider is not found on your system PATH. Default 'aider' works in most cases."
+                            toolTipText =
+                                "Only change this if you have a custom aider installation or if aider is not found on your system PATH. Default 'aider' works in most cases."
                             setHistory(listOf(AiderDefaults.AIDER_EXECUTABLE_PATH))
                         }
                     button("Reset to Default") {
@@ -590,5 +594,8 @@ class AiderSettingsConfigurable() : Configurable {
         this.useStructuredModeCheckBox = JBCheckBox("Use Structured Mode")
         this.alwaysIncludeOpenFilesCheckBox = JBCheckBox("Always include open files in context")
         this.apiKeyFields = mutableMapOf<String, JPasswordField>()
+        this.useDockerAiderCheckBox.addItemListener { e ->
+            dockerImageTagField.isEnabled = e.stateChange == java.awt.event.ItemEvent.SELECTED
+        }
     }
 }
