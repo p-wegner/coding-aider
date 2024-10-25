@@ -9,13 +9,13 @@ Related plan: [fix_gradle_errors_plan.md](fix_gradle_errors_plan.md)
 - [x] Create BaseFixGradleErrorAction abstract class
 - [x] Implement FixGradleErrorAction class
 - [x] Implement FixGradleErrorInteractive class
-- [ ] Add intention action implementations
+- [x] Add intention action implementations
 
 ## Error Handling
-- [ ] Implement error message extraction from Gradle output
-- [ ] Create utility methods for error processing
-- [ ] Add error severity checking
-- [ ] Implement error location detection
+- [x] Implement error message extraction from Gradle output
+- [x] Create utility methods for error processing
+- [x] Add error severity checking
+- [x] Implement error location detection
 
 ## UI Integration
 - [ ] Add action group to plugin.xml
