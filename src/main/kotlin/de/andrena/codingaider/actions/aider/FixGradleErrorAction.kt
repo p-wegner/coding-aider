@@ -1,5 +1,6 @@
 package de.andrena.codingaider.actions.aider
 
+import com.intellij.build.BuildView
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.execution.ui.RunContentDescriptor
@@ -64,7 +65,29 @@ abstract class BaseFixGradleErrorAction : AnAction() {
         }
 
         private fun getErrorFromDescriptor(descriptor: RunContentDescriptor): String? {
-            val content = descriptor.executionConsole?.component?.toString() ?: return null
+            val console = descriptor.executionConsole
+            if (console == null || descriptor.processHandler?.exitCode == 0) {
+                return null
+            }
+
+            // Get the console text content
+            val content: String? = when (console) {
+                is com.intellij.execution.impl.ConsoleViewImpl -> {
+                    console.text
+                }
+
+                is BuildView -> {
+//                    (console.component as BuildView).getView<BuildTreeConsoleView>(BuildTreeConsoleView::class.java!!.getName(),BuildTreeConsoleView::class.java!!)
+                    (console.consoleView as? com.intellij.execution.impl.ConsoleViewImpl)?.text
+                }
+
+                else -> console.component?.toString()
+            } ?: return null
+
+            if (content == null) {
+                return null
+            }
+
             return GradleErrorProcessor.extractError(content)
         }
 
