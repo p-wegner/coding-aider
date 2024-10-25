@@ -41,6 +41,11 @@ class FixGradleErrorActionGroup : ActionGroup() {
 }
 
 abstract class BaseFixGradleErrorAction : AnAction() {
+    protected abstract fun getTemplateText(): String
+    
+    init {
+        templatePresentation.text = getTemplateText()
+    }
     override fun update(e: AnActionEvent) {
         val project = e.project
         val hasErrors = project != null && hasGradleErrors(project)
@@ -183,6 +188,7 @@ abstract class BaseFixGradleErrorAction : AnAction() {
 }
 
 class FixGradleErrorAction : BaseFixGradleErrorAction() {
+    override fun getTemplateText(): String = "Quick Fix Gradle Error"
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         fixGradleError(project)
@@ -220,6 +226,7 @@ class FixGradleErrorAction : BaseFixGradleErrorAction() {
 }
 
 class FixGradleErrorInteractive : BaseFixGradleErrorAction() {
+    override fun getTemplateText(): String = "Fix Gradle Error (Interactive)"
     class Intention : PsiElementBaseIntentionAction(), IntentionAction {
         override fun getFamilyName(): String = "Fix Gradle error with Aider"
         override fun getText(): String = "Fix Gradle error with Aider (Interactive)"
