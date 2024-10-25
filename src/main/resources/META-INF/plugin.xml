@@ -143,6 +143,14 @@
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
         </action>
+        
+        <action id="de.andrena.codingaider.actions.aider.FixGradleErrorActionGroup"
+                class="de.andrena.codingaider.actions.aider.FixGradleErrorActionGroup"
+                text="Fix Gradle Error with Aider"
+                description="Group of actions to fix Gradle errors with Aider">
+            <add-to-group group-id="RunToolbarPopupActions" anchor="first"/>
+            <add-to-group group-id="RunContextPopupGroup" anchor="first"/>
+        </action>
     </actions>
 
     <!-- Extension points defined by the plugin.

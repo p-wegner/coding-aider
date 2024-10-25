@@ -5,10 +5,10 @@ Related plan: [fix_gradle_errors_plan.md](fix_gradle_errors_plan.md)
 # Implementation Checklist for Gradle Error Fixing Feature
 
 ## Action Classes
-- [ ] Create FixGradleErrorActionGroup class
-- [ ] Create BaseFixGradleErrorAction abstract class
-- [ ] Implement FixGradleErrorAction class
-- [ ] Implement FixGradleErrorInteractive class
+- [x] Create FixGradleErrorActionGroup class
+- [x] Create BaseFixGradleErrorAction abstract class
+- [x] Implement FixGradleErrorAction class
+- [x] Implement FixGradleErrorInteractive class
 - [ ] Add intention action implementations
 
 ## Error Handling
