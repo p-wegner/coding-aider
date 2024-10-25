@@ -179,6 +179,16 @@
             <className>de.andrena.codingaider.actions.aider.FixCompileErrorInteractive$Intention</className>
             <category>Errors</category>
         </intentionAction>
+        <intentionAction>
+            <language></language>
+            <className>de.andrena.codingaider.actions.aider.FixGradleErrorAction$Intention</className>
+            <category>Errors</category>
+        </intentionAction>
+        <intentionAction>
+            <language></language>
+            <className>de.andrena.codingaider.actions.aider.FixGradleErrorInteractive$Intention</className>
+            <category>Errors</category>
+        </intentionAction>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="Coding Aider"
