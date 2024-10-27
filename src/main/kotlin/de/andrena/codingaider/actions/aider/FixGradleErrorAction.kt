@@ -1,5 +1,6 @@
 package de.andrena.codingaider.actions.aider
 
+import com.intellij.build.BuildTreeConsoleView
 import com.intellij.build.BuildView
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
@@ -77,8 +78,13 @@ abstract class BaseFixGradleErrorAction : AnAction() {
                 }
 
                 is BuildView -> {
-//                    (console.component as BuildView).getView<BuildTreeConsoleView>(BuildTreeConsoleView::class.java!!.getName(),BuildTreeConsoleView::class.java!!)
-                    (console.consoleView as? com.intellij.execution.impl.ConsoleViewImpl)?.text
+                    val view = (console.component as BuildView).getView(
+                        BuildTreeConsoleView::class.java.getName(),
+                        BuildTreeConsoleView::class.java
+                    )
+                    val entries = getNodesMapFromConsoleView(view as BuildTreeConsoleView)?.entries
+                    entries?.joinToString("\n") { it.value.toString() }
+//                    (console.consoleView as? com.intellij.execution.impl.ConsoleViewImpl)?.text
                 }
 
                 else -> console.component?.toString()
@@ -92,98 +98,8 @@ abstract class BaseFixGradleErrorAction : AnAction() {
         }
 
         private object GradleErrorProcessor {
-            data class GradleError(
-                val message: String,
-                val severity: ErrorSeverity,
-                val location: ErrorLocation?
-            )
 
-            enum class ErrorSeverity {
-                CRITICAL, // Build failures, compilation errors
-                ERROR,    // Runtime errors
-                WARNING   // Deprecation warnings, etc
-            }
-
-            data class ErrorLocation(
-                val file: String,
-                val line: Int?,
-                val column: Int?
-            )
-
-            fun extractError(content: String): String {
-                val error = processError(content)
-                return formatError(error)
-            }
-
-            private fun processError(content: String): GradleError {
-                val lines = content.lines()
-
-                // Try to find build failure message first
-                val errorSection = lines
-                    .dropWhile { !it.contains("FAILURE:") }
-                    .takeWhile { !it.contains("* Try:") && it.isNotBlank() }
-                    .filter { it.isNotBlank() }
-
-                if (errorSection.isNotEmpty()) {
-                    return GradleError(
-                        message = errorSection.joinToString("\n"),
-                        severity = ErrorSeverity.CRITICAL,
-                        location = extractErrorLocation(errorSection)
-                    )
-                }
-
-                // Look for other error patterns
-                val errorLine = lines.firstOrNull { line ->
-                    line.contains("error:", ignoreCase = true) ||
-                            line.contains("failed", ignoreCase = true)
-                }
-
-                return if (errorLine != null) {
-                    GradleError(
-                        message = errorLine,
-                        severity = determineSeverity(errorLine),
-                        location = extractErrorLocation(listOf(errorLine))
-                    )
-                } else {
-                    GradleError(
-                        message = "Unknown Gradle error",
-                        severity = ErrorSeverity.ERROR,
-                        location = null
-                    )
-                }
-            }
-
-            private fun determineSeverity(errorLine: String): ErrorSeverity = when {
-                errorLine.contains("FAILURE:", ignoreCase = true) -> ErrorSeverity.CRITICAL
-                errorLine.contains("error:", ignoreCase = true) -> ErrorSeverity.ERROR
-                else -> ErrorSeverity.WARNING
-            }
-
-            private fun extractErrorLocation(errorLines: List<String>): ErrorLocation? {
-                // Match patterns like: /path/to/file.kt:line:column
-                val locationPattern = Regex("""([\w/.-]+\.\w+):(\d+)(?::(\d+))?""")
-
-                for (line in errorLines) {
-                    locationPattern.find(line)?.let { match ->
-                        return ErrorLocation(
-                            file = match.groupValues[1],
-                            line = match.groupValues[2].toIntOrNull(),
-                            column = match.groupValues[3].toIntOrNull()
-                        )
-                    }
-                }
-                return null
-            }
-
-            private fun formatError(error: GradleError): String {
-                val locationStr = error.location?.let { loc ->
-                    "\nLocation: ${loc.file}" +
-                            (loc.line?.let { ":$it" } ?: "") +
-                            (loc.column?.let { ":$it" } ?: "")
-                } ?: ""
-
-                return "${error.severity}: ${error.message}$locationStr"
-            }
+            fun extractError(content: String): String = content
         }
 
         fun fixErrorPrompt(errorMessage: String) = "Fix the Gradle build error:\n$errorMessage"
@@ -291,5 +207,19 @@ class FixGradleErrorInteractive : BaseFixGradleErrorAction() {
 
             AiderAction.executeAiderActionWithCommandData(project, commandData)
         }
+    }
+}
+fun getNodesMapFromConsoleView(consoleView: BuildTreeConsoleView): Map<*, *>? {
+    try {
+        // Use reflection to access the private nodesMap field
+        val nodesMapField = BuildTreeConsoleView::class.java.getDeclaredField("nodesMap")
+        nodesMapField.isAccessible = true
+
+        // Get the map value
+        @Suppress("UNCHECKED_CAST")
+        return nodesMapField.get(consoleView) as? Map<*, *>
+    } catch (e: Exception) {
+        e.printStackTrace()
+        return null
     }
 }
