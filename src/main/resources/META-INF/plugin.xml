@@ -151,6 +151,12 @@
             <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
             <add-to-group group-id="RunContextPopupGroup" anchor="first"/>
         </action>
+        <action id="de.andrena.codingaider.actions.aider.FixGradleErrorActionGroup2"
+                class="de.andrena.codingaider.actions.aider.FixGradleErrorActionGroup"
+                text="Fix Test with Aider"
+                description="Group of actions to fix errors with Aider">
+            <add-to-group group-id="TestTreePopupMenu" anchor="first"/>
+        </action>
     </actions>
 
     <!-- Extension points defined by the plugin.

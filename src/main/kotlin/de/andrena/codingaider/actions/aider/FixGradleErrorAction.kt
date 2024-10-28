@@ -4,6 +4,8 @@ import com.intellij.build.BuildTreeConsoleView
 import com.intellij.build.BuildView
 import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
+import com.intellij.execution.testframework.sm.runner.SMTestProxy
+import com.intellij.execution.testframework.sm.runner.ui.SMTRunnerConsoleView
 import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.execution.ui.RunContentManager
 import com.intellij.openapi.actionSystem.ActionGroup
@@ -71,18 +73,29 @@ abstract class BaseFixGradleErrorAction : AnAction() {
                 return null
             }
 
-            // Get the console text content
+            // TODO: Clean up
             val content: String? = when (console) {
                 is com.intellij.execution.impl.ConsoleViewImpl -> {
                     console.text
                 }
-
                 is BuildView -> {
                     val view = (console.component as BuildView).getView(
                         BuildTreeConsoleView::class.java.getName(),
                         BuildTreeConsoleView::class.java
                     )
-                    val entries = getNodesMapFromConsoleView(view as BuildTreeConsoleView)?.entries
+                    if (view == null) {
+                        val view2 = console.getView("consoleView") as? SMTRunnerConsoleView
+
+                        val testsMapFromConsoleView = view2?.getTestsMapFromConsoleView()
+                        val stackTraceAndLocations =
+                            (testsMapFromConsoleView?.entries?.map({(it.value as?  SMTestProxy)?.getStackTraceAndLocation()}))
+                                ?.filter{it?.first != null && it.second != null}
+                        if (stackTraceAndLocations != null) {
+                            val (locationUrl, stacktrace) = stackTraceAndLocations.firstOrNull() ?: return null
+                            return "Location: $locationUrl\nStacktrace: ${stacktrace?.normalizeLineSeparators()}"
+                        }
+                    }
+                    val entries = (view as? BuildTreeConsoleView)?.getNodesMapFromConsoleView()?.entries
                     entries?.joinToString("\n") { it.value.toString() }
 //                    (console.consoleView as? com.intellij.execution.impl.ConsoleViewImpl)?.text
                 }
@@ -102,7 +115,7 @@ abstract class BaseFixGradleErrorAction : AnAction() {
             fun extractError(content: String): String = content
         }
 
-        fun fixErrorPrompt(errorMessage: String) = "Fix the Gradle build error:\n$errorMessage"
+        fun fixErrorPrompt(errorMessage: String) = "Fix this error:\n$errorMessage"
 
         fun createCommandData(
             project: Project,
@@ -124,6 +137,16 @@ abstract class BaseFixGradleErrorAction : AnAction() {
                 projectPath = project.basePath ?: ""
             )
         }
+    }
+}
+
+private fun String.normalizeLineSeparators(): String = this.replace("\r\n", "\n")
+
+private fun SMTestProxy.getStackTraceAndLocation(): Pair<String?, String?> {
+    return this.let {
+        val locationUrl = it.getLocationUrl()
+        val stacktrace = it.getStacktrace()
+        return locationUrl to stacktrace
     }
 }
 
@@ -209,15 +232,23 @@ class FixGradleErrorInteractive : BaseFixGradleErrorAction() {
         }
     }
 }
-fun getNodesMapFromConsoleView(consoleView: BuildTreeConsoleView): Map<*, *>? {
+fun BuildTreeConsoleView.getNodesMapFromConsoleView(): Map<*, *>? {
     try {
-        // Use reflection to access the private nodesMap field
         val nodesMapField = BuildTreeConsoleView::class.java.getDeclaredField("nodesMap")
         nodesMapField.isAccessible = true
-
-        // Get the map value
         @Suppress("UNCHECKED_CAST")
-        return nodesMapField.get(consoleView) as? Map<*, *>
+        return nodesMapField.get(this) as? Map<*, *>
+    } catch (e: Exception) {
+        e.printStackTrace()
+        return null
+    }
+}
+fun SMTRunnerConsoleView.getTestsMapFromConsoleView(): Map<*, *>? {
+    try {
+        val nodesMapField = this::class.java.getDeclaredField("testsMap")
+        nodesMapField.isAccessible = true
+        @Suppress("UNCHECKED_CAST")
+        return nodesMapField.get(this) as? Map<*, *>
     } catch (e: Exception) {
         e.printStackTrace()
         return null
