@@ -144,15 +144,15 @@
             <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
         </action>
 
-        <action id="de.andrena.codingaider.actions.aider.FixGradleErrorActionGroup"
-                class="de.andrena.codingaider.actions.aider.FixGradleErrorActionGroup"
+        <action id="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorActionGroup"
+                class="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorActionGroup"
                 text="Fix Error with Aider"
                 description="Group of actions to fix errors with Aider">
             <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
             <add-to-group group-id="RunContextPopupGroup" anchor="first"/>
         </action>
-        <action id="de.andrena.codingaider.actions.aider.FixGradleErrorActionGroup2"
-                class="de.andrena.codingaider.actions.aider.FixGradleErrorActionGroup"
+        <action id="de.andrena.codingaider.actions.aider.FixTestErrorsActionGroup"
+                class="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorActionGroup"
                 text="Fix Test with Aider"
                 description="Group of actions to fix errors with Aider">
             <add-to-group group-id="TestTreePopupMenu" anchor="first"/>
@@ -187,14 +187,14 @@
         </intentionAction>
         <intentionAction>
             <language>ConsoleViewLanguage</language>
-            <className>de.andrena.codingaider.actions.aider.FixGradleErrorAction$Intention</className>
+            <className>de.andrena.codingaider.actions.aider.FixBuildAndTestErrorAction$Intention</className>
             <category>Errors</category>
             <bundleName>messages.IntentionActionsBundle</bundleName>
             <descriptionDirectoryName>intentionDescriptions/FixGradleError</descriptionDirectoryName>
         </intentionAction>
         <intentionAction>
             <language>ConsoleViewLanguage</language>
-            <className>de.andrena.codingaider.actions.aider.FixGradleErrorInteractive$Intention</className>
+            <className>de.andrena.codingaider.actions.aider.FixBuildAndTestErrorInteractive$Intention</className>
             <category>Errors</category>
             <bundleName>messages.IntentionActionsBundle</bundleName>
             <descriptionDirectoryName>intentionDescriptions/FixGradleErrorInteractive</descriptionDirectoryName>
