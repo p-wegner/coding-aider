@@ -2,21 +2,15 @@ package de.andrena.codingaider.actions.aider
 
 import com.intellij.build.BuildTreeConsoleView
 import com.intellij.build.BuildView
-import com.intellij.codeInsight.intention.IntentionAction
-import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.execution.testframework.sm.runner.SMTestProxy
 import com.intellij.execution.testframework.sm.runner.ui.SMTRunnerConsoleView
 import com.intellij.execution.ui.RunContentDescriptor
 import com.intellij.execution.ui.RunContentManager
-import com.intellij.openapi.actionSystem.ActionGroup
-import com.intellij.openapi.actionSystem.ActionUpdateThread
-import com.intellij.openapi.actionSystem.AnAction
-import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.editor.Editor
+import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.project.Project
-import com.intellij.psi.PsiElement
 import de.andrena.codingaider.actions.aider.FixBuildAndTestErrorActionGroup.Companion.hasGradleErrors
 import de.andrena.codingaider.command.CommandData
+import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.inputdialog.AiderInputDialog
 import de.andrena.codingaider.utils.ReflectionUtils
 
@@ -35,6 +29,11 @@ class FixBuildAndTestErrorActionGroup : ActionGroup() {
     companion object {
         fun hasGradleErrors(project: Project): Boolean =
             RunContentManager.getInstance(project).allDescriptors.any { it.processHandler != null && it.processHandler?.exitCode?.let { it != 0 } ?: false }
+
+        fun getSelectedFiles( e: AnActionEvent): List<FileData> {
+            val selectedFiles = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY) ?: return emptyList()
+            return selectedFiles.map { FileData(it.path, false) }
+        }
     }
 }
 
@@ -116,7 +115,8 @@ abstract class BaseFixBuildAndTestErrorAction : AnAction() {
             project: Project,
             message: String,
             useYesFlag: Boolean,
-            isShellMode: Boolean
+            isShellMode: Boolean,
+            files: List<FileData> = emptyList()
         ): CommandData {
             val settings = de.andrena.codingaider.settings.AiderSettings.getInstance()
             return CommandData(
@@ -124,7 +124,7 @@ abstract class BaseFixBuildAndTestErrorAction : AnAction() {
                 useYesFlag = useYesFlag,
                 llm = settings.llm,
                 additionalArgs = settings.additionalArgs,
-                files = listOf(),
+                files = files,
                 isShellMode = isShellMode,
                 lintCmd = settings.lintCmd,
                 deactivateRepoMap = settings.deactivateRepoMap,
@@ -147,65 +147,34 @@ class FixBuildAndTestErrorAction : BaseFixBuildAndTestErrorAction() {
     override fun getTemplateText(): String = "Quick Fix Error"
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        fixGradleError(project)
+        fixGradleError(project,e)
     }
 
     companion object {
-        fun fixGradleError(project: Project) {
+        fun fixGradleError(project: Project, e: AnActionEvent) {
             val errorMessage = getErrors(project)
-            val commandData = createCommandData(project, fixErrorPrompt(errorMessage), true, false)
+            val selectedFiles = FixBuildAndTestErrorActionGroup.getSelectedFiles(e)
+            val commandData = createCommandData(project, fixErrorPrompt(errorMessage), true, false, selectedFiles)
             de.andrena.codingaider.executors.api.IDEBasedExecutor(project, commandData).execute()
         }
     }
 
-    class Intention : PsiElementBaseIntentionAction(), IntentionAction {
-        override fun getFamilyName(): String = "Fix error with Aider"
-        override fun getText(): String = "Quick fix error with Aider"
-
-        override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean {
-            if (project == null) return false
-
-            // Check if we're in a console view
-            val consoleView = element.containingFile?.virtualFile?.let {
-                RunContentManager.getInstance(project).allDescriptors
-                    .find { descriptor -> descriptor.executionConsole?.component?.toString() == it.path }
-                    ?.executionConsole
-            }
-
-            return consoleView != null && hasGradleErrors(project)
-        }
-
-        override fun invoke(project: Project, editor: Editor?, element: PsiElement) {
-            fixGradleError(project)
-        }
-    }
 }
 
 class FixBuildAndTestErrorInteractive : BaseFixBuildAndTestErrorAction() {
     override fun getTemplateText(): String = "Fix Error (Interactive)"
-    class Intention : PsiElementBaseIntentionAction(), IntentionAction {
-        override fun getFamilyName(): String = "Fix error with Aider"
-        override fun getText(): String = "Fix error with Aider (Interactive)"
-
-        override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean {
-            return project != null && hasGradleErrors(project)
-        }
-
-        override fun invoke(project: Project, editor: Editor?, element: PsiElement) {
-            FixBuildAndTestErrorInteractive().showDialog(project)
-        }
-    }
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        showDialog(project)
+        showDialog(project,e)
     }
 
-    private fun showDialog(project: Project) {
+    private fun showDialog(project: Project, e: AnActionEvent) {
         val errorMessage = getErrors(project)
+        val selectedFiles = FixBuildAndTestErrorActionGroup.getSelectedFiles(e)
         val dialog = AiderInputDialog(
             project,
-            listOf(),
+            selectedFiles,
             fixErrorPrompt(errorMessage)
         )
 
