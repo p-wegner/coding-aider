@@ -34,7 +34,7 @@ class FixBuildAndTestErrorActionGroup : ActionGroup() {
 
     companion object {
         fun hasGradleErrors(project: Project): Boolean =
-            RunContentManager.getInstance(project).allDescriptors.all { it.processHandler?.exitCode != 0 }
+            RunContentManager.getInstance(project).allDescriptors.any { it.processHandler != null && it.processHandler?.exitCode?.let { it != 0 } ?: false }
     }
 }
 
@@ -137,12 +137,10 @@ abstract class BaseFixBuildAndTestErrorAction : AnAction() {
 
 private fun String.normalizeLineSeparators(): String = this.replace("\r\n", "\n")
 
-private fun SMTestProxy.getStackTraceAndLocation(): Pair<String?, String?> {
-    return this.let {
-        val locationUrl = it.getLocationUrl()
-        val stacktrace = it.getStacktrace()
-        return locationUrl to stacktrace
-    }
+private fun SMTestProxy.getStackTraceAndLocation(): Pair<String?, String?> = this.let {
+    val locationUrl = it.locationUrl
+    val stacktrace = it.stacktrace
+    return locationUrl to stacktrace
 }
 
 class FixBuildAndTestErrorAction : BaseFixBuildAndTestErrorAction() {
