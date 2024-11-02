@@ -38,7 +38,8 @@ class DocumentEachFolderAction : AnAction() {
 
                 val commandData = CommandData(
                     message = """Generate a markdown documentation for the code in the provided files and directories: $fileNames. 
-                        |If there are exceptional implementation details, mention them. Store the results in $filename. 
+                        |Store the results in $folder/$filename.
+                        |If there are exceptional implementation details, mention them. 
                         |If the file already exists, update it instead.
                         |""".trimMargin(),
                     useYesFlag = true,
