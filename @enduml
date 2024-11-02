@@ -1,6 +1,0 @@
-
-## Exceptional Implementation Details
-- The module utilizes a custom list renderer to enhance the user experience by clearly indicating the read-only status of files.
-- The use of a double-click listener allows for quick access to files, improving usability.
-
-This documentation provides a comprehensive overview of the `PersistentFilesToolWindow` module, its purpose, functionality, and integration within the Coding Aider project.
