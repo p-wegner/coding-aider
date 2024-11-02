@@ -1,3 +1,0 @@
-
-## Integration Points
-The Output View module interacts with other modules through the `Abortable` interface, allowing for flexible command management. It is designed to be integrated into larger workflows where output needs to be displayed and managed effectively.
