@@ -86,4 +86,11 @@ The executors module is designed to handle the execution of commands in a flexib
 - **IntelliJ IDEA**: The module integrates with IntelliJ to provide command execution within the IDE.
 - **Docker**: Supports execution of commands within Docker containers for isolated environments.
 
+## Exceptional Implementation Details
+
+- **CommandExecutor**: Uses a lazy initialization strategy for `AiderExecutionStrategy` to determine whether to use Docker or native execution based on settings and command data.
+- **ShellExecutor**: Integrates with IntelliJ's terminal tool window, allowing commands to be executed in a shell environment directly within the IDE.
+- **IDEBasedExecutor**: Manages UI components to display command output and progress, and integrates with Git to provide comparison tools if needed.
+- **LiveUpdateExecutor**: Provides real-time updates to observers during command execution, enhancing user feedback and interaction.
+
 This documentation provides a high-level overview of the executors module, detailing its purpose, key components, and integration within the larger system. It serves as a guide for developers and maintainers to understand the module's functionality and architecture.
