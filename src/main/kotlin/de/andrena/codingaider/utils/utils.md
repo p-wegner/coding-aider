@@ -21,7 +21,12 @@ This document provides an overview of the utility classes and functions availabl
 
 ### Key Methods
 - `isApiKeyAvailableForLlm(llm: String): Boolean`: Checks if an API key is available for a given LLM.
+- `isApiKeyAvailable(apiKeyName: String): Boolean`: Checks if a specific API key is available.
+- `getApiKeyForLlm(llm: String): String?`: Retrieves the API key associated with a given LLM.
+- `getAllLlmOptions(): List<String>`: Returns all available LLM options.
+- `getAllApiKeyNames(): List<String>`: Returns all distinct API key names.
 - `getApiKeyValue(apiKeyName: String): String?`: Retrieves the value of a specified API key.
+- `getApiKeysForDocker(): Map<String, String>`: Retrieves API keys formatted for Docker usage.
 
 ### Implementation Details
 - Supports multiple sources for API keys: CredentialStore, environment variables, and `.env` files.
