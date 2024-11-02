@@ -19,6 +19,14 @@ The module consists of the following key components:
   - Allows adding files to the context and toggling file properties.
   - Integrates with `AiderContextView` for file management.
   - Utilizes `AiderCompletionProvider` for auto-completion.
+- **Public Interfaces**:
+  - `getInputText()`: Returns the text input by the user.
+  - `isYesFlagChecked()`: Checks if the "yes" flag is selected.
+  - `getLlm()`: Retrieves the selected language model.
+  - `getAdditionalArgs()`: Gets additional command arguments.
+  - `getAllFiles()`: Returns all files in the current context.
+  - `isShellMode()`: Checks if shell mode is enabled.
+  - `isStructuredMode()`: Checks if structured mode is enabled.
 
 ### AiderContextView
 
@@ -27,6 +35,14 @@ The module consists of the following key components:
   - Displays files in a tree structure, categorized into regular files and markdown documents.
   - Allows users to add open files, toggle read-only and persistent states, and remove files.
   - Integrates with `PersistentFileService` to manage persistent file states.
+- **Public Interfaces**:
+  - `getOpenFiles()`: Retrieves currently open files.
+  - `addOpenFilesToContext()`: Adds open files to the context.
+  - `toggleReadOnlyMode()`: Toggles the read-only state of selected files.
+  - `togglePersistentFile()`: Toggles the persistent state of selected files.
+  - `removeSelectedFiles()`: Removes selected files from the context.
+  - `addFilesToContext(fileDataList: List<FileData>)`: Adds specified files to the context.
+  - `setFiles(files: List<FileData>)`: Sets the files in the context.
 
 ### AiderCompletionProvider
 
@@ -35,6 +51,9 @@ The module consists of the following key components:
   - Extracts class and method names from project files.
   - Suggests completions based on user input prefix.
   - Utilizes IntelliJ's `TextFieldWithAutoCompletionListProvider` for integration.
+- **Public Interfaces**:
+  - `getItems(prefix: String, cached: Boolean, parameters: CompletionParameters?)`: Provides completion items based on the prefix.
+  - `getLookupString(item: String)`: Returns the lookup string for a completion item.
 
 ## Dependencies
 
