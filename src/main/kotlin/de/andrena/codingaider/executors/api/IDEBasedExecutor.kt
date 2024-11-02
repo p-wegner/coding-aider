@@ -15,6 +15,7 @@ import de.andrena.codingaider.utils.FileRefresher
 import de.andrena.codingaider.utils.GitUtils
 import java.awt.EventQueue.invokeLater
 import java.io.File
+import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.concurrent.thread
 
@@ -27,6 +28,7 @@ class IDEBasedExecutor(
     private var currentCommitHash: String? = null
     private val commandExecutor = AtomicReference<CommandExecutor?>(null)
     private var executionThread: Thread? = null
+    private var isFinished: CountDownLatch = CountDownLatch(1)
     private var initialPlanFiles: Set<File> = emptySet()
 
     fun execute(): MarkdownDialog {
@@ -48,10 +50,13 @@ class IDEBasedExecutor(
                 ?.toSet() ?: emptySet()
         }
 
-        executionThread = thread { executeAiderCommand() }
+        executionThread = thread {
+            executeAiderCommand()
+            isFinished.countDown()
+        }
         return markdownDialog
     }
-
+    fun isFinished(): CountDownLatch = isFinished
     private fun executeAiderCommand() {
         try {
             val executor = CommandExecutor(commandData, project).apply {

@@ -12,6 +12,7 @@ import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileTraversal
 import java.io.File
+import kotlin.concurrent.thread
 
 class DocumentEachFolderAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
@@ -32,51 +33,29 @@ class DocumentEachFolderAction : AnAction() {
         fun documentEachFolder(project: Project, virtualFiles: Array<VirtualFile>) {
             val settings = getInstance()
 
-            val documentationThreads = virtualFiles.filter { it.isDirectory }.map { folder ->
-                thread {
-                    val allFiles = FileTraversal.traverseFilesOrDirectories(arrayOf(folder))
-                    val fileNames = allFiles.map { File(it.filePath).name }
-                    val fileDataList = allFiles.map { FileData(it.filePath, it.isReadOnly) }
-                    val filename = "${folder.name}.md"
+            val documentationActions = virtualFiles.filter { it.isDirectory }.map { folder ->
+                val allFiles = FileTraversal.traverseFilesOrDirectories(arrayOf(folder))
+                val fileNames = allFiles.map { File(it.filePath).name }
+                val fileDataList = allFiles.map { FileData(it.filePath, it.isReadOnly) }
+                val filename = "${folder.name}.md"
 
-                    val commandData = CommandData(
-                        message = """Generate a markdown documentation for the code in the provided files and directories: $fileNames. 
+                val commandData = CommandData(
+                    message = """Generate a markdown documentation for the code in the provided files and directories: $fileNames. 
                             |Store the results in $folder/$filename.
                             |If there are exceptional implementation details, mention them.
                             |
                             |Good code documentation should provide a high-level overview of the module's purpose and functionality.
-                            |It should clearly describe the module's role within the larger system and how it interacts with other modules.
+                            |Important files should be clearly described and linked in the documentation file.
                             |Include details on the module's public interfaces, key classes, and methods, as well as any design patterns used.
-                            |Document the dependencies and data flow between this module and others, highlighting any critical integration points.
-                            |This helps maintainers and developers understand the module's context and its impact on the overall system architecture.
+                            |Document the dependencies and data flow between this module and others of the project. 
+                            |This should be done using PlantUML and stored as a separate file that is linked in the documentation file.
+                            |Make sure files are linked using relative paths.
                             |If the file already exists, update it instead.
                             |""".trimMargin(),
-                        useYesFlag = true,
-                        llm = settings.llm,
-                        additionalArgs = settings.additionalArgs,
-                        files = fileDataList,
-                        isShellMode = false,
-                        lintCmd = settings.lintCmd,
-                        deactivateRepoMap = settings.deactivateRepoMap,
-                        editFormat = settings.editFormat,
-                        projectPath = project.basePath ?: "",
-                        structuredMode = false
-                    )
-                    IDEBasedExecutor(project, commandData).execute()
-                    FileData(File(folder.path, filename).path, true)
-                }
-            }
-
-            val documentationFiles = documentationThreads.map { it.join() }
-            if (documentationFiles.isNotEmpty()) {
-                val summaryCommandData = CommandData(
-                    message = """Summarize the following documentation files: ${documentationFiles.joinToString(", ") { it.filePath }}.
-                        |Provide a concise overview of the key points and any notable details.
-                        |""".trimMargin(),
                     useYesFlag = true,
-                    llm = settings.llm,
+                    llm = settings.webCrawlLlm,
                     additionalArgs = settings.additionalArgs,
-                    files = documentationFiles,
+                    files = fileDataList,
                     isShellMode = false,
                     lintCmd = settings.lintCmd,
                     deactivateRepoMap = settings.deactivateRepoMap,
@@ -84,7 +63,36 @@ class DocumentEachFolderAction : AnAction() {
                     projectPath = project.basePath ?: "",
                     structuredMode = false
                 )
-                IDEBasedExecutor(project, summaryCommandData).execute()
+                val ideBasedExecutor = IDEBasedExecutor(project, commandData)
+                ideBasedExecutor.execute()
+                ideBasedExecutor.isFinished() to FileData(File(folder.path, filename).path, true)
+            }
+
+            thread {
+                documentationActions.forEach { it.first.await() }
+                if (documentationActions.isNotEmpty()) {
+                    val documentationFiles = documentationActions.map { it.second }
+                    val summaryCommandData = CommandData(
+                        message = """Summarize the following documentation files: ${documentationFiles.joinToString(", ") { it.filePath }}.
+                        |Provide a concise overview of the key points and any notable details.
+                        |Include relevant links to the documentation files.
+                        |IMPORTANT: The dependencies between the individual modules in the project should be described using PlantUML and stored as a separate file.
+                        |Make sure files are linked using relative paths.
+                        |Store the results in the root folder of the project and name it "overview.md".
+                        |""".trimMargin(),
+                        useYesFlag = true,
+                        llm = settings.webCrawlLlm,
+                        additionalArgs = settings.additionalArgs,
+                        files = documentationFiles,
+                        isShellMode = false,
+                        lintCmd = settings.lintCmd,
+                        deactivateRepoMap = settings.deactivateRepoMap,
+                        editFormat = settings.editFormat,
+                        projectPath = project.basePath ?: "",
+                        structuredMode = false
+                    )
+                    IDEBasedExecutor(project, summaryCommandData).execute()
+                }
             }
         }
     }
