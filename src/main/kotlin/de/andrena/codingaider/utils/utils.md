@@ -81,3 +81,5 @@ This document provides an overview of the utility classes and functions availabl
 ## General Notes
 - These utilities are tightly integrated with IntelliJ's API and are intended for use within the Coding Aider plugin.
 - Proper error handling and logging are implemented to ensure robustness.
+- The module's design leverages the Singleton pattern for utility classes, ensuring a single instance is used throughout the application.
+- The utilities facilitate seamless integration with IntelliJ's ecosystem, enhancing the plugin's functionality and user experience.
