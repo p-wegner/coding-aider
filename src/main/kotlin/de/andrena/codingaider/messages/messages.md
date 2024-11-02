@@ -1,33 +1,31 @@
-# Messages Module Documentation
+# Module Documentation: PersistentFilesChangedTopic
 
 ## Overview
+The `PersistentFilesChangedTopic` module is part of the `de.andrena.codingaider.messages` package. It provides a mechanism for notifying subscribers about changes to persistent files within the system. This module plays a crucial role in ensuring that various components of the application can react to file changes, thereby maintaining synchronization and consistency across the application.
 
-The `messages` module in the `de.andrena.codingaider` package is responsible for handling event-driven communication related to persistent file changes. It plays a crucial role in the application's architecture by allowing different components to react to changes in persistent files through a well-defined interface and messaging system.
+## Key Classes and Interfaces
 
-## Key Files and Interfaces
-
-### PersistentFilesChangedTopic.kt
-
-- **Purpose**: Defines the contract for handling events when persistent files change.
+### PersistentFilesChangedTopic
 - **Interface**: `PersistentFilesChangedTopic`
-  - **Method**: `onPersistentFilesChanged()`
-    - This method should be implemented by any class that needs to respond to changes in persistent files.
-  - **Companion Object**: `PERSISTENT_FILES_CHANGED_TOPIC`
-    - A `Topic` instance used for broadcasting file change events. It leverages IntelliJ's messaging infrastructure to notify subscribers about changes.
+  - **Method**: `fun onPersistentFilesChanged()`
+    - This method is called to notify subscribers that persistent files have changed. Implementing classes should define the behavior that should occur when this event is triggered.
+
+### Companion Object
+- **Companion Object**: `companion object`
+  - **Property**: `val PERSISTENT_FILES_CHANGED_TOPIC`
+    - A static reference to the topic, which can be used to subscribe to or publish events related to persistent file changes.
 
 ## Design Patterns
+This module utilizes the **Observer Pattern**. The `PersistentFilesChangedTopic` interface allows multiple subscribers to listen for changes, promoting a decoupled architecture where components can react to events without being tightly integrated.
 
-The module employs the Observer design pattern, utilizing IntelliJ's `Topic` class to implement a publish-subscribe mechanism. This allows for a decoupled architecture where components can subscribe to events without direct dependencies on each other.
+## Dependencies
+This module may depend on the IntelliJ Platform's messaging system, specifically the `com.intellij.util.messages.Topic` class, which facilitates the topic-based event system.
 
-## Integration and Dependencies
+## Data Flow
+1. When a persistent file changes, the relevant component will invoke the `onPersistentFilesChanged()` method.
+2. All subscribers that have registered for the `PERSISTENT_FILES_CHANGED_TOPIC` will receive the notification and can execute their respective logic in response to the change.
 
-- **IntelliJ Platform SDK**: The module relies on the `Topic` class from the IntelliJ Platform SDK to create communication channels for event broadcasting.
-- **Integration Points**: The module integrates with IntelliJ's messaging system, ensuring that changes in persistent files are communicated efficiently across the IDE.
+## Integration Points
+This module interacts with other components that need to be informed about file changes, such as file editors, version control systems, or any other modules that manage persistent data.
 
-## Exceptional Implementation Details
-
-The use of IntelliJ's messaging infrastructure provides a robust and efficient way to handle inter-component communication. The `PersistentFilesChangedTopic` interface, through its `Topic` instance, allows for a modular and scalable architecture, enhancing the application's ability to manage file change events without tight coupling between components.
-
-## Conclusion
-
-The `messages` module is a critical component of the application's infrastructure, facilitating event-driven communication related to persistent file changes. By defining clear interfaces and leveraging IntelliJ's messaging system, it ensures efficient and scalable communication across the system.
+## PlantUML Diagram
