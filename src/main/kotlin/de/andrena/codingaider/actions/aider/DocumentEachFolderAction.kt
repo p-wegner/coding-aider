@@ -39,6 +39,20 @@ class DocumentEachFolderAction : AnAction() {
                 val fileDataList = allFiles.map { FileData(it.filePath, it.isReadOnly) }
                 val filename = "${folder.name}.md"
 
+                // Create markdown and PlantUML files
+                val markdownFile = File(folder.path, filename)
+                val pumlFilename = "${folder.name}.puml"
+                val pumlFile = File(folder.path, pumlFilename)
+
+                // Ensure files exist and are writable
+                markdownFile.createNewFile()
+                pumlFile.createNewFile()
+
+                val writableFileDataList = fileDataList + listOf(
+                    FileData(markdownFile.path, false),
+                    FileData(pumlFile.path, false)
+                )
+
                 val commandData = CommandData(
                     message = """Generate a markdown documentation for the code in the provided files and directories: $fileNames. 
                             |Store the results in $folder/$filename.
@@ -48,14 +62,14 @@ class DocumentEachFolderAction : AnAction() {
                             |Important files should be clearly described and linked in the documentation file.
                             |Include details on the module's public interfaces, key classes, and methods, as well as any design patterns used.
                             |Document the dependencies and data flow between this module and others of the project. 
-                            |This should be done using PlantUML and stored as a separate file that is linked in the documentation file.
+                            |This should be done using PlantUML and stored as $folder/$pumlFilename.
                             |Make sure files are linked using relative paths.
                             |If the file already exists, update it instead.
                             |""".trimMargin(),
                     useYesFlag = true,
                     llm = settings.webCrawlLlm,
                     additionalArgs = settings.additionalArgs,
-                    files = fileDataList,
+                    files = writableFileDataList,
                     isShellMode = false,
                     lintCmd = settings.lintCmd,
                     deactivateRepoMap = settings.deactivateRepoMap,
