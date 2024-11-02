@@ -16,6 +16,7 @@ dependencies {
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.2")
     implementation("net.sourceforge.htmlunit:htmlunit:2.70.0")
     implementation("com.vladsch.flexmark:flexmark-all:0.64.8")
+    implementation ("com.knuddels:jtokkit:1.1.0")
 
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
@@ -23,6 +24,7 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.25.3")
     testImplementation("org.mockito:mockito-core:5.11.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
+
 }
 
 tasks.test {

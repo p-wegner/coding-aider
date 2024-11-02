@@ -5,6 +5,8 @@ import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.EditorFactory
+import com.intellij.openapi.editor.event.DocumentEvent
+import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
@@ -20,6 +22,7 @@ import de.andrena.codingaider.services.AiderDialogStateService
 import de.andrena.codingaider.services.AiderHistoryService
 import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
+import de.andrena.codingaider.services.TokenCountService
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
 import java.awt.*
@@ -36,6 +39,7 @@ class AiderInputDialog(
     initialText: String = "",
     private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker()
 ) : DialogWrapper(project) {
+    private val tokenCountService = project.getService(TokenCountService::class.java)
     private val settings = getInstance()
     private val aiderCompletionProvider = AiderCompletionProvider(project, files)
 
@@ -61,9 +65,19 @@ class AiderInputDialog(
                 this.getEditor(true)?.let { editor ->
                     TextCompletionUtil.installCompletionHint(editor)
                 }
+                val value : DocumentListener = object : DocumentListener {
+                    override fun documentChanged(e: DocumentEvent) = updateTokenCount()
+                }
+                document.addDocumentListener(value)
             }
     private val yesCheckBox = JCheckBox("Add --yes flag", settings.useYesFlag).apply {
         toolTipText = "Automatically answer 'yes' to prompts"
+    }
+
+    private fun updateTokenCount() {
+        val messageTokens = tokenCountService.countTokensInText(getInputText())
+        val fileTokens = tokenCountService.countTokensInFiles(getAllFiles())
+        tokenCountLabel.text = "Tokens: ${messageTokens + fileTokens}"
     }
 
     private fun addFilesToContext() {
@@ -116,6 +130,7 @@ class AiderInputDialog(
                 "Use for better tracking and systematic development</html>"
     }
     private val messageLabel = JLabel("Enter your message:")
+    private val tokenCountLabel = JLabel("Tokens: 0")
     private val historyComboBox = ComboBox<HistoryItem>()
     private val historyService = AiderHistoryService.getInstance(project)
     private val aiderContextView: AiderContextView
@@ -126,9 +141,12 @@ class AiderInputDialog(
     init {
         title = "Aider Command"
         persistentFileService = PersistentFileService.getInstance(project)
-        aiderContextView = AiderContextView(project, files + persistentFileService.getPersistentFiles()) { fileName ->
-            insertTextAtCursor(fileName)
-        }
+        aiderContextView = AiderContextView(
+            project,
+            files + persistentFileService.getPersistentFiles(),
+            { fileName -> insertTextAtCursor(fileName) },
+            { updateTokenCount() }
+        )
         splitPane = OnePixelSplitter(true, 0.6f)
         settingsButton = createSettingsButton()
         init()
@@ -248,7 +266,7 @@ class AiderInputDialog(
             gridy = 0
         }
 
-        // First row: Shell Mode toggle, Structured Mode toggle, LLM selection, and History
+        // First row: Shell Mode toggle, Structured Mode toggle, LLM selection, History, and Token Count
         val firstRowPanel = JPanel(GridBagLayout())
         modeToggle.mnemonic = KeyEvent.VK_M
         firstRowPanel.add(modeToggle, GridBagConstraints().apply {
@@ -328,7 +346,16 @@ class AiderInputDialog(
             fill = GridBagConstraints.NONE
             insets = JBUI.insetsLeft(10)
         })
+        firstRowPanel.add(tokenCountLabel, GridBagConstraints().apply {
+            gridx = 8
+            gridy = 0
+            weightx = 0.0
+            insets = JBUI.insetsLeft(10)
+        })
         topPanel.add(firstRowPanel, gbc)
+
+        // Update token count initially
+        updateTokenCount()
 
         // Second row: Message label and input area
         gbc.gridy++
@@ -510,7 +537,7 @@ class AiderInputDialog(
     fun isYesFlagChecked(): Boolean = yesCheckBox.isSelected
     fun getLlm(): String = llmComboBox.selectedItem as String
     fun getAdditionalArgs(): String = additionalArgsField.text
-    fun getAllFiles(): List<FileData> = aiderContextView.getAllFiles()
+    fun getAllFiles(): List<FileData> = aiderContextView?.getAllFiles() ?: emptyList()
     fun isShellMode(): Boolean = modeToggle.isSelected
     fun isStructuredMode(): Boolean = structuredModeCheckBox.isSelected
 

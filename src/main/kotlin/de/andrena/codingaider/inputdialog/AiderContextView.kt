@@ -28,7 +28,8 @@ import javax.swing.tree.TreeSelectionModel
 class AiderContextView(
     private val project: Project,
     private var allFiles: List<FileData>,
-    private val onFileNameSelected: (String) -> Unit
+    private val onFileNameSelected: (String) -> Unit,
+    private val onFilesChanged: () -> Unit
 ) : JPanel(BorderLayout()) {
     private val rootNode = DefaultMutableTreeNode("Context")
     private val filesNode = DefaultMutableTreeNode("Files")
@@ -40,14 +41,14 @@ class AiderContextView(
     init {
         rootNode.add(filesNode)
         rootNode.add(markdownFilesNode)
-        updateTree()
+        selectedFilesChanged()
         tree.apply {
             isRootVisible = true
             showsRootHandles = true
             selectionModel.selectionMode = TreeSelectionModel.DISCONTIGUOUS_TREE_SELECTION
             cellRenderer = object : DefaultTreeCellRenderer() {
                 override fun getTreeCellRendererComponent(
-                    tree: javax.swing.JTree,
+                    tree: JTree,
                     value: Any?,
                     sel: Boolean,
                     expanded: Boolean,
@@ -142,18 +143,13 @@ class AiderContextView(
 
         TreeUtil.expandAll(tree)
 
-        fun getOpenFiles(): List<FileData> {
-            val openFiles = FileEditorManager.getInstance(project).openFiles
-            return openFiles.map { virtualFile ->
-                FileData(virtualFile.path, false)
-            }
-        }
         if (AiderSettings.getInstance().alwaysIncludeOpenFiles) {
             addOpenFilesToContext()
         }
+        onFilesChanged()
     }
 
-    fun updateTree() {
+    fun selectedFilesChanged() {
         val expandedPaths = getExpandedPaths()
         filesNode.removeAllChildren()
         markdownFilesNode.removeAllChildren()
@@ -176,6 +172,7 @@ class AiderContextView(
         }
 
         TreeUtil.expandAll(tree)
+        onFilesChanged()
     }
 
     private fun getExpandedPaths(): List<javax.swing.tree.TreePath> {
@@ -205,7 +202,7 @@ class AiderContextView(
             allFiles.none { it.filePath == openFile.filePath }
         }
         allFiles += newFiles
-        updateTree()
+        selectedFilesChanged()
     }
 
     fun toggleReadOnlyMode() {
@@ -235,7 +232,7 @@ class AiderContextView(
             }
         }
 
-        updateTree()
+        selectedFilesChanged()
 
         // Restore selection
         val selectionModel = tree.selectionModel
@@ -317,7 +314,7 @@ class AiderContextView(
                 allFiles += file
             }
         }
-        updateTree()
+        selectedFilesChanged()
     }
 
 
@@ -326,13 +323,13 @@ class AiderContextView(
         allFiles = allFiles.filterNot { it in selectedFiles }
         persistentFiles = persistentFiles.filterNot { it in selectedFiles }
         persistentFileService.removePersistentFiles(selectedFiles.map { it.filePath })
-        updateTree()
+        selectedFilesChanged()
     }
 
     fun addFilesToContext(fileDataList: List<FileData>) = addFilesToTree(fileDataList)
     fun setFiles(files: List<FileData>) {
         allFiles = files
-        updateTree()
+        selectedFilesChanged()
     }
 
 }
