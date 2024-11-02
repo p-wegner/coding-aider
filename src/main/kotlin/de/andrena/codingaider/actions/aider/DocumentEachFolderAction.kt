@@ -64,7 +64,7 @@ class DocumentEachFolderAction : AnAction() {
                 IDEBasedExecutor(project, commandData).execute()
                 FileData(File(folder.path, filename).path, true)
             }
-
+            // wait for all threads to finish
             if (documentationFiles.isNotEmpty()) {
                 val summaryCommandData = CommandData(
                     message = """Summarize the following documentation files: ${documentationFiles.joinToString(", ") { it.filePath }}.
