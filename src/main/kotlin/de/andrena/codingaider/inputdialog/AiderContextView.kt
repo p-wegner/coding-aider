@@ -12,6 +12,7 @@ import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.tree.TreeUtil
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.services.PersistentFileService
+import de.andrena.codingaider.services.TokenCountService
 import de.andrena.codingaider.settings.AiderSettings
 import java.awt.BorderLayout
 import java.awt.event.KeyEvent
@@ -36,6 +37,7 @@ class AiderContextView(
     private val markdownFilesNode = DefaultMutableTreeNode("Docs")
     private val tree: Tree = Tree(rootNode)
     private val persistentFileService = project.getService(PersistentFileService::class.java)
+    private val tokenCountService = project.getService(TokenCountService::class.java)
     private var persistentFiles: List<FileData> = persistentFileService.loadPersistentFiles()
 
     init {
@@ -72,12 +74,15 @@ class AiderContextView(
 
                                     else -> AllIcons.Actions.Edit
                                 }
-                                val tooltipText = buildString {
+                                val fileContent = File(userObject.filePath).readText()
+                                val tokenCount = tokenCountService.countTokensInText(fileContent)
+                                text = "${File(userObject.filePath).name} (Tokens: $tokenCount)"
+                                toolTipText = buildString {
                                     append(userObject.filePath)
+                                    append(" (Tokens: $tokenCount)")
                                     if (userObject.isReadOnly) append(" (readonly)")
                                     if (isPersistent(userObject)) append(" (persistent)")
                                 }
-                                toolTipText = tooltipText
                             }
 
                             "Context" -> icon = AllIcons.Nodes.Module
