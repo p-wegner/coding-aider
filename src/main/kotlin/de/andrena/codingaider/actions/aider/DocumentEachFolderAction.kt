@@ -40,6 +40,7 @@ class DocumentEachFolderAction : AnAction() {
         fun documentEachFolder(project: Project, virtualFiles: Array<VirtualFile>) {
             val settings = getInstance()
 
+            val documentationLlm = if (settings.documentationLlm == "Default") settings.llm else settings.documentationLlm
             val documentationActions = virtualFiles.filter { it.isDirectory }.map { folder ->
                 val allFiles = FileTraversal.traverseFilesOrDirectories(arrayOf(folder))
                 val fileNames = allFiles.map { File(it.filePath).name }
@@ -74,7 +75,7 @@ class DocumentEachFolderAction : AnAction() {
                             |If the file already exists, update it instead.
                             |""".trimMargin(),
                     useYesFlag = true,
-                    llm = settings.webCrawlLlm,
+                    llm = documentationLlm,
                     additionalArgs = settings.additionalArgs,
                     files = writableFileDataList,
                     isShellMode = false,
@@ -117,7 +118,7 @@ class DocumentEachFolderAction : AnAction() {
                         |To calculate the dependencies, use the the ".
                         |""".trimMargin(),
                         useYesFlag = true,
-                        llm = settings.webCrawlLlm,
+                        llm = documentationLlm,
                         additionalArgs = settings.additionalArgs,
                         files = writableSummaryFiles,
                         isShellMode = false,

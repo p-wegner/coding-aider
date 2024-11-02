@@ -191,20 +191,6 @@
             <className>de.andrena.codingaider.actions.aider.FixCompileErrorInteractive$Intention</className>
             <category>Errors</category>
         </intentionAction>
-        <intentionAction>
-            <language>ConsoleViewLanguage</language>
-            <className>de.andrena.codingaider.actions.aider.FixBuildAndTestErrorAction$Intention</className>
-            <category>Errors</category>
-            <bundleName>messages.IntentionActionsBundle</bundleName>
-            <descriptionDirectoryName>intentionDescriptions/FixGradleError</descriptionDirectoryName>
-        </intentionAction>
-        <intentionAction>
-            <language>ConsoleViewLanguage</language>
-            <className>de.andrena.codingaider.actions.aider.FixBuildAndTestErrorInteractive$Intention</className>
-            <category>Errors</category>
-            <bundleName>messages.IntentionActionsBundle</bundleName>
-            <descriptionDirectoryName>intentionDescriptions/FixGradleErrorInteractive</descriptionDirectoryName>
-        </intentionAction>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="Coding Aider"

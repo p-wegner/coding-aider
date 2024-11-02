@@ -12,6 +12,7 @@ object AiderDefaults {
     const val SHOW_GIT_COMPARISON_TOOL = true
     const val ACTIVATE_IDE_EXECUTOR_AFTER_WEBCRAWL = false
     const val WEB_CRAWL_LLM = "--mini"
+    const val DOCUMENTATION_LLM = "Default"
     const val DEACTIVATE_REPO_MAP = false
     const val EDIT_FORMAT = ""
     const val VERBOSE_COMMAND_LOGGING = false

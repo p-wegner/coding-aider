@@ -32,7 +32,14 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var alwaysIncludeOpenFiles: Boolean = AiderDefaults.ALWAYS_INCLUDE_OPEN_FILES,
         var dockerImageTag: String = AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION,
         var aiderExecutablePath: String = AiderDefaults.AIDER_EXECUTABLE_PATH,
+        var documentationLlm: String = AiderDefaults.DOCUMENTATION_LLM,
     )
+    
+    var documentationLlm: String
+        get() = myState.documentationLlm
+        set(value) {
+            myState.documentationLlm = value
+        }
 
     private var myState = State()
 

@@ -50,6 +50,7 @@ class AiderSettingsConfigurable() : Configurable {
     private val useStructuredModeCheckBox: JBCheckBox
     private val alwaysIncludeOpenFilesCheckBox: JBCheckBox
     private val apiKeyFields: MutableMap<String, JPasswordField>
+    private val documentationLlmComboBox: ComboBox<String>
     override fun getDisplayName(): String = "Aider"
 
     override fun createComponent(): JComponent {
@@ -144,6 +145,11 @@ class AiderSettingsConfigurable() : Configurable {
                 row {
                     button("Test Aider Installation") {
                         showTestCommandResult()
+                    }
+                }
+                row("Documentation LLM Model:") {
+                    cell(documentationLlmComboBox).component.apply {
+                        renderer = LlmComboBoxRenderer()
                     }
                 }
             }
@@ -321,6 +327,7 @@ class AiderSettingsConfigurable() : Configurable {
                 dirtyCommitsComboBox.selectedIndex != settings.dirtyCommits.toIndex() ||
                 useStructuredModeCheckBox.isSelected != settings.useStructuredMode ||
                 alwaysIncludeOpenFilesCheckBox.isSelected != settings.alwaysIncludeOpenFiles ||
+                documentationLlmComboBox.selectedItem as String != settings.documentationLlm ||
                 dockerImageTagField.text != settings.dockerImageTag ||
                 aiderExecutablePathField.text != settings.aiderExecutablePath
     }
@@ -348,6 +355,7 @@ class AiderSettingsConfigurable() : Configurable {
         settings.dirtyCommits = AiderSettings.DirtyCommitSetting.fromIndex(dirtyCommitsComboBox.selectedIndex)
         settings.useStructuredMode = useStructuredModeCheckBox.isSelected
         settings.alwaysIncludeOpenFiles = alwaysIncludeOpenFilesCheckBox.isSelected
+        settings.documentationLlm = documentationLlmComboBox.selectedItem as String
         settings.dockerImageTag = dockerImageTagField.text
         settings.aiderExecutablePath = aiderExecutablePathField.text
     }
@@ -376,6 +384,7 @@ class AiderSettingsConfigurable() : Configurable {
         useStructuredModeCheckBox.isSelected = settings.useStructuredMode
 
         alwaysIncludeOpenFilesCheckBox.isSelected = settings.alwaysIncludeOpenFiles
+        documentationLlmComboBox.selectedItem = settings.documentationLlm
         dockerImageTagField.text = settings.dockerImageTag
         aiderExecutablePathField.text = settings.aiderExecutablePath
 
@@ -594,6 +603,7 @@ class AiderSettingsConfigurable() : Configurable {
         this.useStructuredModeCheckBox = JBCheckBox("Use Structured Mode")
         this.alwaysIncludeOpenFilesCheckBox = JBCheckBox("Always include open files in context")
         this.apiKeyFields = mutableMapOf<String, JPasswordField>()
+        this.documentationLlmComboBox = ComboBox(arrayOf("Default") + apiKeyChecker.getAllLlmOptions().toTypedArray())
         this.useDockerAiderCheckBox.addItemListener { e ->
             dockerImageTagField.isEnabled = e.stateChange == java.awt.event.ItemEvent.SELECTED
         }
