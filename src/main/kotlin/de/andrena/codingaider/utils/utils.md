@@ -1,85 +1,47 @@
-# Utils Module Documentation
+# Coding Aider Utilities Module
 
-This document provides an overview of the utility classes and functions available in the `de.andrena.codingaider.utils` package. These utilities are designed to support various functionalities across the Coding Aider project.
+## Overview
+The Coding Aider Utilities module provides a set of utility classes and functions that facilitate interactions with Git repositories, manage API keys, refresh files in the IDE, and traverse file structures. This module is designed to support the overall functionality of the Coding Aider application by providing essential services that other modules can leverage.
 
-## GitUtils
+## Key Classes and Their Responsibilities
 
-### Overview
-`GitUtils` provides utility functions for interacting with Git repositories within an IntelliJ project. It includes methods to retrieve the current commit hash and open a Git comparison tool.
+### GitUtils
+- **Purpose**: Provides utility functions for interacting with Git repositories.
+- **Key Methods**:
+  - `getCurrentCommitHash(project: Project): String?`: Retrieves the current commit hash of the Git repository associated with the given project.
+  - `openGitComparisonTool(project: Project, commitHash: String, afterAction: () -> Unit)`: Opens a Git comparison tool to show changes related to a specific commit.
+  - `findGitRoot(directory: File): File?`: Finds the root directory of a Git repository.
 
-### Key Methods
-- `getCurrentCommitHash(project: Project): String?`: Retrieves the current commit hash of the given project.
-- `openGitComparisonTool(project: Project, commitHash: String, afterAction: () -> Unit)`: Opens a comparison tool to show differences for a specific commit.
+### ApiKeyManager
+- **Purpose**: Manages API keys securely using the IDE's credential store.
+- **Key Methods**:
+  - `saveApiKey(keyName: String, apiKey: String)`: Saves an API key associated with a given name.
+  - `getApiKey(keyName: String): String?`: Retrieves the API key for a given name.
+  - `removeApiKey(keyName: String)`: Removes the API key associated with a given name.
 
-### Dependencies
-- Relies on IntelliJ's Git integration and VCS (Version Control System) APIs.
+### FileRefresher
+- **Purpose**: Refreshes files in the IDE and optionally shows a markdown dialog.
+- **Key Methods**:
+  - `refreshFiles(files: Array<VirtualFile>, markdownDialog: MarkdownDialog? = null)`: Refreshes the specified files and makes the markdown dialog visible if provided.
 
-## ApiKeyChecker
+### ReflectionUtils
+- **Purpose**: Provides reflection utilities to access private fields in specific console views.
+- **Key Methods**:
+  - `getNodesMapFromBuildView(view: BuildTreeConsoleView): Map<*, *>?`: Retrieves the nodes map from a build view.
+  - `getTestsMapFromConsoleView(view: SMTRunnerConsoleView): Map<*, *>?`: Retrieves the tests map from a test runner console view.
 
-### Overview
-`ApiKeyChecker` is an interface for checking the availability of API keys required for different LLM (Language Model) options. The `DefaultApiKeyChecker` class implements this interface.
+### ApiKeyChecker
+- **Purpose**: Checks the availability of API keys for various LLMs (Large Language Models).
+- **Key Methods**:
+  - `isApiKeyAvailableForLlm(llm: String): Boolean`: Checks if an API key is available for a specific LLM.
+  - `getApiKeyForLlm(llm: String): String?`: Retrieves the API key associated with a specific LLM.
+  - `getApiKeysForDocker(): Map<String, String>`: Retrieves a map of API keys suitable for Docker usage.
 
-### Key Methods
-- `isApiKeyAvailableForLlm(llm: String): Boolean`: Checks if an API key is available for a given LLM.
-- `isApiKeyAvailable(apiKeyName: String): Boolean`: Checks if a specific API key is available.
-- `getApiKeyForLlm(llm: String): String?`: Retrieves the API key associated with a given LLM.
-- `getAllLlmOptions(): List<String>`: Returns all available LLM options.
-- `getAllApiKeyNames(): List<String>`: Returns all distinct API key names.
-- `getApiKeyValue(apiKeyName: String): String?`: Retrieves the value of a specified API key.
-- `getApiKeysForDocker(): Map<String, String>`: Retrieves API keys formatted for Docker usage.
+### FileTraversal
+- **Purpose**: Traverses files and directories to gather file data.
+- **Key Methods**:
+  - `traverseFilesOrDirectories(files: Array<VirtualFile>, isReadOnly: Boolean = false): List<FileData>`: Traverses the provided files or directories and returns a list of file data.
 
-### Implementation Details
-- Supports multiple sources for API keys: CredentialStore, environment variables, and `.env` files.
+## Dependencies and Data Flow
+The Coding Aider Utilities module interacts with various components of the IDE and other modules within the Coding Aider application. The following PlantUML diagram illustrates the dependencies between this module and others:
 
-## ApiKeyManager
-
-### Overview
-`ApiKeyManager` handles the storage and retrieval of API keys using IntelliJ's PasswordSafe.
-
-### Key Methods
-- `saveApiKey(keyName: String, apiKey: String)`: Saves an API key.
-- `getApiKey(keyName: String): String?`: Retrieves an API key.
-- `removeApiKey(keyName: String)`: Removes an API key.
-
-### Dependencies
-- Utilizes IntelliJ's PasswordSafe for secure storage.
-
-## FileRefresher
-
-### Overview
-`FileRefresher` provides functionality to refresh virtual files in the IntelliJ environment, ensuring that file changes are recognized by the IDE.
-
-### Key Methods
-- `refreshFiles(files: Array<VirtualFile>, markdownDialog: MarkdownDialog? = null)`: Refreshes the specified files and optionally displays a markdown dialog.
-
-### Dependencies
-- Integrates with IntelliJ's VirtualFileManager and RefreshQueue.
-
-## FileTraversal
-
-### Overview
-`FileTraversal` offers methods to traverse directories and files, returning metadata about each file.
-
-### Key Methods
-- `traverseFilesOrDirectories(files: Array<VirtualFile>, isReadOnly: Boolean = false): List<FileData>`: Traverses the given files or directories and returns a list of `FileData`.
-
-### Dependencies
-- Works with IntelliJ's VirtualFile system.
-
-## ReflectionUtils
-
-### Overview
-`ReflectionUtils` provides utility methods for accessing private fields in classes using reflection, specifically for IntelliJ's console views.
-
-### Key Methods
-- `getNodesMapFromBuildView(view: BuildTreeConsoleView): Map<*, *>?`: Retrieves the nodes map from a build view.
-- `getTestsMapFromConsoleView(view: SMTRunnerConsoleView): Map<*, *>?`: Retrieves the tests map from a console view.
-
-### Implementation Details
-- Uses Java reflection to access private fields, which may be subject to change in future IntelliJ versions.
-
-## General Notes
-- These utilities are tightly integrated with IntelliJ's API and are intended for use within the Coding Aider plugin.
-- Proper error handling and logging are implemented to ensure robustness.
-- The module's design leverages the Singleton pattern for utility classes, ensuring a single instance is used throughout the application.
-- The utilities facilitate seamless integration with IntelliJ's ecosystem, enhancing the plugin's functionality and user experience.
