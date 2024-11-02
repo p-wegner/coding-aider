@@ -87,3 +87,11 @@ This document provides an overview of the various actions available in the Codin
 - **Integration**: Works with IntelliJ's build and test frameworks to detect and fix issues.
 
 This documentation provides a high-level overview of each action's purpose, functionality, and integration within the Coding Aider plugin. It serves as a guide for developers and maintainers to understand the capabilities and interactions of the plugin's components.
+
+### Exceptional Implementation Details
+
+- **AiderWebCrawlAction**: Utilizes the `WebClient` from the HtmlUnit library to fetch and process web pages, converting them to markdown format. This action includes a detailed cleanup process to ensure the resulting markdown is concise and relevant.
+- **ApplyDesignPatternAction**: Integrates a YAML-based configuration to load design pattern details, providing a user-friendly dialog for selecting and applying design patterns to the codebase.
+- **FixCompileErrorAction**: Leverages IntelliJ's error highlighting to detect compile errors and provides both quick-fix and interactive modes for resolving issues.
+- **DocumentEachFolderAction**: Automates the generation of documentation for each folder, summarizing the results into a comprehensive overview file.
+- **AiderClipboardImageAction**: Captures images from the clipboard and saves them to a designated project directory, integrating with the `PersistentFileService` for file management.
