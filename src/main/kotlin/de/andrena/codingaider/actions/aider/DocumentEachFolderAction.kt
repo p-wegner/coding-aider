@@ -34,6 +34,7 @@ class DocumentEachFolderAction : AnAction() {
             val documentationFiles = virtualFiles.filter { it.isDirectory }.map { folder ->
                 val allFiles = FileTraversal.traverseFilesOrDirectories(arrayOf(folder))
                 val fileNames = allFiles.map { File(it.filePath).name }
+                val fileDataList = allFiles.map { FileData(it.filePath, it.isReadOnly) }
                 val filename = "${folder.name}.md"
 
                 val commandData = CommandData(
@@ -51,7 +52,7 @@ class DocumentEachFolderAction : AnAction() {
                     useYesFlag = true,
                     llm = settings.llm,
                     additionalArgs = settings.additionalArgs,
-                    files = allFiles,
+                    files = fileDataList,
                     isShellMode = false,
                     lintCmd = settings.lintCmd,
                     deactivateRepoMap = settings.deactivateRepoMap,
