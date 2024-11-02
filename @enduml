@@ -1,6 +1,6 @@
 
 ## Exceptional Implementation Details
-- The `ApiKeyManager` uses the IDE's credential store to securely manage API keys, ensuring that sensitive information is not exposed in the codebase.
-- The `ReflectionUtils` class employs reflection to access private fields, which may be subject to change in future versions of the IDE, potentially leading to compatibility issues.
+- The module utilizes a custom list renderer to enhance the user experience by clearly indicating the read-only status of files.
+- The use of a double-click listener allows for quick access to files, improving usability.
 
-This documentation serves as a guide for developers and maintainers to understand the purpose and functionality of the Coding Aider Utilities module, as well as its integration points with other components of the system.
+This documentation provides a comprehensive overview of the `PersistentFilesToolWindow` module, its purpose, functionality, and integration within the Coding Aider project.

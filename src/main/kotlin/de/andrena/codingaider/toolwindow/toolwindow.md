@@ -1,52 +1,43 @@
 # PersistentFilesToolWindow Module Documentation
 
 ## Overview
-
-The `PersistentFilesToolWindow` module is part of the `de.andrena.codingaider.toolwindow` package. It provides a tool window in the IntelliJ IDEA platform that allows users to manage a list of persistent files. This tool window is integrated into the IDE and offers functionalities such as adding, removing, and toggling the read-only status of files.
+The `PersistentFilesToolWindow` module is part of the Coding Aider project, designed to manage persistent files within the IntelliJ IDE. This module provides a user interface for users to add, remove, and toggle the read-only status of files that they wish to persist across sessions.
 
 ## Key Classes and Interfaces
 
 ### PersistentFilesToolWindow
-
-- **Role**: Implements the `ToolWindowFactory` interface to create and manage the tool window content.
-- **Key Method**: 
-  - `createToolWindowContent(project: Project, toolWindow: ToolWindow)`: Initializes the tool window with the `PersistentFilesComponent`.
+- **Purpose**: Implements the `ToolWindowFactory` interface to create the content of the persistent files tool window.
+- **Methods**:
+  - `createToolWindowContent(project: Project, toolWindow: ToolWindow)`: Initializes the tool window with the persistent files component.
 
 ### PersistentFilesComponent
-
-- **Role**: Manages the UI components and interactions within the tool window.
-- **Key Methods**:
+- **Purpose**: Manages the list of persistent files and handles user interactions.
+- **Methods**:
   - `getContent()`: Returns the main UI component for the tool window.
   - `addPersistentFiles()`: Opens a file chooser to add files to the persistent list.
   - `toggleReadOnlyMode()`: Toggles the read-only status of selected files.
   - `removeSelectedFiles()`: Removes selected files from the persistent list.
-  - `loadPersistentFiles()`: Loads the list of persistent files from the service.
+  - `loadPersistentFiles()`: Loads the current list of persistent files from the service.
 
 ### PersistentFileRenderer
-
-- **Role**: Custom renderer for displaying file data in the list.
-- **Key Method**:
-  - `getListCellRendererComponent(...)`: Customizes the display of each file in the list, indicating if a file is read-only.
+- **Purpose**: Custom renderer for displaying file data in the list.
+- **Methods**:
+  - `getListCellRendererComponent(...)`: Customizes the display of each file in the list, indicating if it is read-only.
 
 ## Design Patterns
-
-- **Observer Pattern**: Utilized through the `PersistentFilesChangedTopic` to listen for changes in the persistent files and update the UI accordingly.
+- **Observer Pattern**: The module subscribes to changes in persistent files using the message bus, allowing it to react to updates in real-time.
 
 ## Dependencies
-
-- **IntelliJ Platform SDK**: Utilizes various components such as `ToolWindow`, `FileEditorManager`, and `LocalFileSystem`.
-- **PersistentFileService**: A service for managing the persistent files data.
-- **JBList and UI DSL**: Used for creating and managing the UI components.
+- **PersistentFileService**: This service is responsible for managing the persistent files' data, including adding, updating, and removing files.
+- **FileData**: A data class representing the file's path and its read-only status.
 
 ## Data Flow
+1. The user interacts with the `PersistentFilesComponent` to add, remove, or toggle files.
+2. The component communicates with the `PersistentFileService` to perform these actions.
+3. The service updates the underlying data and notifies the component of any changes, which then refreshes the displayed list.
 
-1. **File Selection**: Users can select files using the `FileChooser`, which are then added to the persistent list.
-2. **File Management**: The list of files is managed through the `PersistentFileService`, which handles adding, updating, and removing files.
-3. **UI Updates**: The UI is updated in response to changes in the file list, either through user actions or external changes notified via the `PersistentFilesChangedTopic`.
+## Integration Points
+- The module integrates with the IntelliJ platform through the `ToolWindowFactory` interface, allowing it to be part of the IDE's UI.
+- It also interacts with the message bus for real-time updates on persistent files.
 
-## Exceptional Implementation Details
-
-- The module uses a custom list cell renderer to display additional information about each file, such as its read-only status.
-- Double-clicking a file in the list opens it in the editor, leveraging the `FileEditorManager`.
-
-This documentation provides a comprehensive overview of the `PersistentFilesToolWindow` module, detailing its purpose, key components, and interactions within the larger system.
+## PlantUML Diagram
