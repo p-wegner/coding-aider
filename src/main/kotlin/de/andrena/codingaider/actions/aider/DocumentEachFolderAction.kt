@@ -86,6 +86,19 @@ class DocumentEachFolderAction : AnAction() {
                 documentationActions.forEach { it.first.await() }
                 if (documentationActions.isNotEmpty()) {
                     val documentationFiles = documentationActions.map { it.second }
+                    // Create overview markdown and PlantUML files
+                    val overviewMarkdownFile = File(project.basePath, "overview.md")
+                    val overviewPumlFile = File(project.basePath, "overview.puml")
+
+                    // Ensure files exist and are writable
+                    overviewMarkdownFile.createNewFile()
+                    overviewPumlFile.createNewFile()
+
+                    val writableSummaryFiles = documentationFiles + listOf(
+                        FileData(overviewMarkdownFile.path, false),
+                        FileData(overviewPumlFile.path, false)
+                    )
+
                     val summaryCommandData = CommandData(
                         message = """Summarize the following documentation files: ${documentationFiles.joinToString(", ") { it.filePath }}.
                         |Provide a concise overview of the key points and any notable details.
@@ -93,11 +106,13 @@ class DocumentEachFolderAction : AnAction() {
                         |IMPORTANT: The dependencies between the individual modules in the project should be described using PlantUML and stored as a separate file.
                         |Make sure files are linked using relative paths.
                         |Store the results in the root folder of the project and name it "overview.md".
+                        |Store the results in the root folder of the project and name it "overview.md".
+                        |The dependencies should be described using PlantUML and stored as "overview.puml".
                         |""".trimMargin(),
                         useYesFlag = true,
                         llm = settings.webCrawlLlm,
                         additionalArgs = settings.additionalArgs,
-                        files = documentationFiles,
+                        files = writableSummaryFiles,
                         isShellMode = false,
                         lintCmd = settings.lintCmd,
                         deactivateRepoMap = settings.deactivateRepoMap,
