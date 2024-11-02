@@ -1,74 +1,33 @@
-# Input Dialog Module Documentation
-
-This module is part of the `coding-aider` project and is responsible for providing user input dialog functionalities. It includes classes that handle user interactions, file context management, and auto-completion features within the dialog interface.
+# Aider Input Dialog Module Documentation
 
 ## Overview
+The Aider Input Dialog module is a part of the Coding Aider application, which provides a user interface for executing commands and managing files within a project. This module facilitates user interactions by allowing them to input commands, select files, and view contextual information about the files in the project.
 
-The module consists of the following key components:
+## Key Classes
 
-1. **AiderInputDialog**: A dialog wrapper that provides a user interface for entering commands and managing file contexts.
-2. **AiderContextView**: A panel that displays and manages the context of files, allowing users to add, remove, and toggle file properties.
-3. **AiderCompletionProvider**: Provides auto-completion suggestions for class and method names based on the project's files.
+### 1. AiderContextView
+- **Purpose**: Manages the display of files and their context within a tree structure. It allows users to select files and view their properties.
+- **Key Methods**:
+  - `selectedFilesChanged()`: Updates the view when the selected files change.
+  - `toggleReadOnlyMode()`: Toggles the read-only status of selected files.
+  - `addOpenFilesToContext()`: Adds currently open files to the context view.
 
-### AiderInputDialog
+### 2. AiderInputDialog
+- **Purpose**: Represents the dialog where users can input commands and manage file selections.
+- **Key Methods**:
+  - `createCenterPanel()`: Constructs the main panel of the dialog, including input fields and context view.
+  - `getInputText()`: Retrieves the text input by the user.
+  - `restoreLastState()`: Restores the dialog to its last used state.
 
-- **Purpose**: To create a dialog interface for user input, allowing users to enter commands, select files, and configure settings.
-- **Key Features**:
-  - Supports structured and shell modes.
-  - Provides a history of previous commands.
-  - Allows adding files to the context and toggling file properties.
-  - Integrates with `AiderContextView` for file management.
-  - Utilizes `AiderCompletionProvider` for auto-completion.
-- **Public Interfaces**:
-  - `getInputText()`: Returns the text input by the user.
-  - `isYesFlagChecked()`: Checks if the "yes" flag is selected.
-  - `getLlm()`: Retrieves the selected language model.
-  - `getAdditionalArgs()`: Gets additional command arguments.
-  - `getAllFiles()`: Returns all files in the current context.
-  - `isShellMode()`: Checks if shell mode is enabled.
-  - `isStructuredMode()`: Checks if structured mode is enabled.
-
-### AiderContextView
-
-- **Purpose**: To manage and display the context of files within the dialog.
-- **Key Features**:
-  - Displays files in a tree structure, categorized into regular files and markdown documents.
-  - Allows users to add open files, toggle read-only and persistent states, and remove files.
-  - Integrates with `PersistentFileService` to manage persistent file states.
-- **Public Interfaces**:
-  - `getOpenFiles()`: Retrieves currently open files.
-  - `addOpenFilesToContext()`: Adds open files to the context.
-  - `toggleReadOnlyMode()`: Toggles the read-only state of selected files.
-  - `togglePersistentFile()`: Toggles the persistent state of selected files.
-  - `removeSelectedFiles()`: Removes selected files from the context.
-  - `addFilesToContext(fileDataList: List<FileData>)`: Adds specified files to the context.
-  - `setFiles(files: List<FileData>)`: Sets the files in the context.
-
-### AiderCompletionProvider
-
-- **Purpose**: To provide auto-completion suggestions for class and method names.
-- **Key Features**:
-  - Extracts class and method names from project files.
-  - Suggests completions based on user input prefix.
-  - Utilizes IntelliJ's `TextFieldWithAutoCompletionListProvider` for integration.
-- **Public Interfaces**:
-  - `getItems(prefix: String, cached: Boolean, parameters: CompletionParameters?)`: Provides completion items based on the prefix.
-  - `getLookupString(item: String)`: Returns the lookup string for a completion item.
-
-## Dependencies
-
-- **IntelliJ Platform**: The module relies on IntelliJ's APIs for UI components, file management, and project integration.
-- **PersistentFileService**: Manages the persistence of file states across sessions.
-- **TokenCountService**: Provides token counting functionality for files and text inputs.
+### 3. AiderCompletionProvider
+- **Purpose**: Provides autocompletion suggestions for user input based on the context of the files in the project.
+- **Key Methods**:
+  - `getItems(prefix: String, cached: Boolean, parameters: CompletionParameters?)`: Returns a collection of completion items based on the provided prefix.
+  - `extractCompletions(project: Project, files: List<FileData>)`: Extracts completion items from the specified files.
 
 ## Design Patterns
+- **MVC (Model-View-Controller)**: The module follows the MVC pattern by separating the user interface (AiderInputDialog and AiderContextView) from the data handling (AiderCompletionProvider).
 
-- **Observer Pattern**: Used in `AiderContextView` to notify changes in file selection and context.
-- **Factory Pattern**: Utilized in `AiderCompletionProvider` to create completion items based on project files.
+## Dependencies
+The Aider Input Dialog module interacts with several other modules within the Coding Aider application. Below is a PlantUML diagram illustrating the dependencies:
 
-## Integration Points
-
-- The module interacts with other parts of the `coding-aider` system through services like `PersistentFileService` and `TokenCountService`.
-- It provides a user interface for command input and file management, which is central to the `coding-aider` functionality.
-
-This documentation provides a high-level overview of the input dialog module, detailing its components, features, and integration within the larger system.
