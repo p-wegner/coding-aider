@@ -12,6 +12,7 @@ import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileTraversal
 import java.io.File
+import java.util.concurrent.CountDownLatch
 import kotlin.concurrent.thread
 
 class DocumentEachFolderAction : AnAction() {
@@ -28,6 +29,12 @@ class DocumentEachFolderAction : AnAction() {
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+
+    data class DocumentationAction(
+        val isFinished: CountDownLatch,
+        val documentationFileData: FileData,
+        val dependenciesFileData: FileData
+    )
 
     companion object {
         fun documentEachFolder(project: Project, virtualFiles: Array<VirtualFile>) {
@@ -79,13 +86,13 @@ class DocumentEachFolderAction : AnAction() {
                 )
                 val ideBasedExecutor = IDEBasedExecutor(project, commandData)
                 ideBasedExecutor.execute()
-                ideBasedExecutor.isFinished() to FileData(File(folder.path, filename).path, true)
+                DocumentationAction(ideBasedExecutor.isFinished(), FileData(File(folder.path, filename).path, true), FileData(File(folder.path, pumlFilename).path, true))
             }
-
             thread {
-                documentationActions.forEach { it.first.await() }
+                documentationActions.forEach { it.isFinished.await() }
                 if (documentationActions.isNotEmpty()) {
-                    val documentationFiles = documentationActions.map { it.second }
+                    val documentationFiles = documentationActions.map { it.documentationFileData }
+                    val dependenciesFiles = documentationActions.map { it.dependenciesFileData }
                     // Create overview markdown and PlantUML files
                     val overviewMarkdownFile = File(project.basePath, "overview.md")
                     val overviewPumlFile = File(project.basePath, "overview.puml")
@@ -105,9 +112,9 @@ class DocumentEachFolderAction : AnAction() {
                         |Include relevant links to the documentation files.
                         |IMPORTANT: The dependencies between the individual modules in the project should be described using PlantUML and stored as a separate file.
                         |Make sure files are linked using relative paths.
-                        |Store the results in the root folder of the project and name it "overview.md".
-                        |Store the results in the root folder of the project and name it "overview.md".
-                        |The dependencies should be described using PlantUML and stored as "overview.puml".
+                        |Store the results in the root folder of the project in the file "overview.md".
+                        |The dependencies should be described using PlantUML and stored in the file "overview.puml".
+                        |To calculate the dependencies, use the the ".
                         |""".trimMargin(),
                         useYesFlag = true,
                         llm = settings.webCrawlLlm,
