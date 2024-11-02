@@ -39,7 +39,13 @@ class DocumentEachFolderAction : AnAction() {
                 val commandData = CommandData(
                     message = """Generate a markdown documentation for the code in the provided files and directories: $fileNames. 
                         |Store the results in $folder/$filename.
-                        |If there are exceptional implementation details, mention them. 
+                        |If there are exceptional implementation details, mention them.
+                        |
+                        |Good code documentation should provide a high-level overview of the module's purpose and functionality.
+                        |It should clearly describe the module's role within the larger system and how it interacts with other modules.
+                        |Include details on the module's public interfaces, key classes, and methods, as well as any design patterns used.
+                        |Document the dependencies and data flow between this module and others, highlighting any critical integration points.
+                        |This helps maintainers and developers understand the module's context and its impact on the overall system architecture.
                         |If the file already exists, update it instead.
                         |""".trimMargin(),
                     useYesFlag = true,
