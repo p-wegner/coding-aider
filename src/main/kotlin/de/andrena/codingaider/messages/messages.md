@@ -34,3 +34,7 @@ This module integrates with IntelliJ's messaging system, allowing it to broadcas
 ## Conclusion
 
 The `PersistentFilesChangedTopic` is a vital part of the application's infrastructure for handling file change events. By defining a clear interface and leveraging IntelliJ's messaging system, it ensures that changes in persistent files are efficiently communicated across the system.
+
+## Exceptional Implementation Details
+
+The `PersistentFilesChangedTopic` interface is implemented using IntelliJ's messaging infrastructure, which is a robust and efficient way to handle inter-component communication within the IDE. The use of the `Topic` class allows for a decoupled architecture, where components can subscribe to events without needing direct references to each other. This design choice enhances the modularity and scalability of the application.
