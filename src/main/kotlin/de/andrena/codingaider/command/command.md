@@ -42,4 +42,9 @@ The module consists of two primary data classes:
 
 - Utilizes the data class pattern to encapsulate and manage data efficiently.
 
+## Exceptional Implementation Details
+
+- The `CommandData` class includes an optional `useDockerAider` attribute, which allows for flexibility in execution environments by optionally using Docker.
+- The `deactivateRepoMap` attribute in `CommandData` provides a mechanism to disable repository mapping, which can be crucial for certain command executions.
+
 This documentation provides a high-level overview of the module's purpose, functionality, and integration within the larger system. It is intended to assist developers and maintainers in understanding the module's role and usage.
