@@ -15,17 +15,18 @@ class FileExtractorService {
         fun getInstance(): FileExtractorService = service()
     }
 
+    val tempDir = Files.createTempDirectory("codingaider-files")
+
     fun extractFilesIfNeeded(files: List<FileData>): List<FileData> {
-        val tempDir = Files.createTempDirectory("codingaider-files")
-        return files.mapNotNull { fileData ->
-            if (fileData.filePath.contains(".jar!")) {
-                val jarPath = fileData.filePath.substringBefore("!")
-                val jarFilePath = fileData.filePath.substringAfter("!/")
-                extractFromJar(jarPath, jarFilePath, tempDir)
-            } else {
-                fileData
-            }
-        }
+        return files.mapNotNull(::extractFileIfNeeded)
+    }
+
+    fun extractFileIfNeeded(fileData: FileData): FileData? = if (fileData.filePath.contains(".jar!")) {
+        val jarPath = fileData.filePath.substringBefore("!/")
+        val jarFilePath = fileData.filePath.substringAfter("!/")
+        extractFromJar(jarPath, jarFilePath, tempDir)
+    } else {
+        fileData
     }
 
     private fun extractFromJar(jarPath: String, jarFilePath: String, tempDir: Path): FileData? {
@@ -40,7 +41,7 @@ class FileExtractorService {
                 Files.copy(input, entryPath, StandardCopyOption.REPLACE_EXISTING)
             }
             jarFile.close()
-            return FileData(entryPath.toString(), false)
+            return FileData(entryPath.toString(), true)
         }
         return null
     }

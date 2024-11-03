@@ -4,7 +4,6 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.IconManager
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBScrollPane
@@ -12,6 +11,7 @@ import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.tree.TreeUtil
 import de.andrena.codingaider.command.FileData
+import de.andrena.codingaider.services.FileExtractorService
 import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.services.TokenCountService
 import de.andrena.codingaider.settings.AiderSettings
@@ -62,8 +62,9 @@ class AiderContextView(
                     if (value is DefaultMutableTreeNode) {
                         when (val userObject = value.userObject) {
                             is FileData -> {
-                                val virtualFile: VirtualFile? = LocalFileSystem.getInstance().findFileByPath(userObject.filePath)
-                                text = virtualFile?.presentableName ?: ""
+                                val file =
+                                    FileExtractorService.getInstance().extractFileIfNeeded(userObject)
+                                val name = file?.let { File(it.filePath).nameWithoutExtension } ?: ""
                                 icon = when {
                                     userObject.isReadOnly && isPersistent(userObject) -> IconManager.getInstance()
                                         .createRowIcon(AllIcons.Nodes.DataSchema, AllIcons.Nodes.DataTables)
@@ -76,9 +77,9 @@ class AiderContextView(
 
                                     else -> AllIcons.Actions.Edit
                                 }
-                                val fileContent = virtualFile?.contentsToByteArray()?.toString(Charsets.UTF_8) ?: ""
+                                val fileContent = file?.let { File(it.filePath).readText() } ?: ""
                                 val tokenCount = tokenCountService.countTokensInText(fileContent)
-                                text = "${virtualFile?.presentableName ?: ""} (Tokens: $tokenCount)"
+                                text = "$name (Tokens: $tokenCount)"
                                 toolTipText = buildString {
                                     append(userObject.filePath)
                                     append(" (Tokens: $tokenCount)")
@@ -285,7 +286,7 @@ class AiderContextView(
                 filesFromTree.add(fileData)
             }
         }
-        return filesFromTree.distinctBy { it.filePath }
+        return FileExtractorService.getInstance().extractFilesIfNeeded(filesFromTree).distinctBy { it.filePath }
     }
 
     fun togglePersistentFile() {
