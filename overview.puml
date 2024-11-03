@@ -1,0 +1,68 @@
+@startuml
+
+package "Actions Module" {
+    class SettingsAction
+    class PersistentFilesAction
+    class ShowLastCommandResultAction
+    class CommitAction
+}
+
+package "Command Module" {
+    class FileData
+    class CommandData
+}
+
+package "Docker Module" {
+    class DockerContainerManager
+}
+
+package "Executors Module" {
+    class CommandExecutor
+    class ShellExecutor
+}
+
+package "Input Dialog Module" {
+    class AiderInputDialog
+    class AiderContextView
+}
+
+package "Messages Module" {
+    interface PersistentFilesChangedTopic
+}
+
+package "Output View Module" {
+    class MarkdownDialog
+}
+
+package "Services Module" {
+    class AiderHistoryService
+    class TokenCountService
+}
+
+package "Settings Module" {
+    class AiderDefaults
+    class AiderSettings
+}
+
+package "Tool Window Module" {
+    class PersistentFilesToolWindow
+}
+
+package "Utils Module" {
+    class FileTraversal
+    class GitUtils
+    interface ApiKeyChecker
+}
+
+' Define dependencies
+SettingsAction --> AiderSettings
+PersistentFilesAction --> PersistentFilesToolWindow
+CommandExecutor --> CommandData
+CommandExecutor --> AiderExecutionStrategy
+AiderInputDialog --> AiderContextView
+AiderInputDialog --> AiderCompletionProvider
+MarkdownDialog --> Abortable
+AiderHistoryService --> PersistentFileService
+TokenCountService --> PersistentFileService
+
+@enduml
