@@ -22,11 +22,10 @@ import kotlin.concurrent.thread
 class IDEBasedExecutor(
     private val project: Project,
     private val commandData: CommandData,
-    commitHashToCompareWith: String? = null
 ) : CommandObserver, Abortable {
     private val log = Logger.getInstance(IDEBasedExecutor::class.java)
     private lateinit var markdownDialog: MarkdownDialog
-    private var currentCommitHash: String? = commitHashToCompareWith
+    private var currentCommitHash: String? = commandData.options.commitHashToCompareWith
     private val commandExecutor = AtomicReference<CommandExecutor?>(null)
     private var executionThread: Thread? = null
     private var isFinished: CountDownLatch = CountDownLatch(1)
@@ -61,6 +60,7 @@ class IDEBasedExecutor(
     }
 
     fun isFinished(): CountDownLatch = isFinished
+
     private fun executeAiderCommand() {
         try {
             val executor = CommandExecutor(commandData, project).apply {
@@ -120,7 +120,8 @@ class IDEBasedExecutor(
 
     override fun onCommandComplete(message: String, exitCode: Int) {
         updateDialogProgress(message, "Aider Command ${if (exitCode == 0) "Completed" else "Failed"}")
-        markdownDialog.startAutoCloseTimer(getInstance().markdownDialogAutocloseDelay)
+        markdownDialog.startAutoCloseTimer(
+            commandData.options.autoCloseDelay ?: getInstance().markdownDialogAutocloseDelay)
         refreshFiles()
         addNewPlanFilesToPersistentFiles()
         if (!commandData.options.disablePresentation) {

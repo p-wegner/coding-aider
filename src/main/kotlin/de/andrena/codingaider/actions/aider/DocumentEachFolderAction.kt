@@ -42,7 +42,8 @@ class DocumentEachFolderAction : AnAction() {
         fun documentEachFolder(project: Project, virtualFiles: Array<VirtualFile>) {
             val settings = getInstance()
             val currentCommitHash = GitUtils.getCurrentCommitHash(project)
-            val documentationLlm = if (settings.documentationLlm == "Default") settings.llm else settings.documentationLlm
+            val documentationLlm =
+                if (settings.documentationLlm == "Default") settings.llm else settings.documentationLlm
             val documentationActions = virtualFiles.filter { it.isDirectory }.map { folder ->
                 val allFiles = FileTraversal.traverseFilesOrDirectories(arrayOf(folder))
                 val fileNames = allFiles.map { File(it.filePath).name }
@@ -86,11 +87,15 @@ class DocumentEachFolderAction : AnAction() {
                     editFormat = settings.editFormat,
                     projectPath = project.basePath ?: "",
                     structuredMode = false,
-                    options = CommandOptions(disablePresentation = true)
+                    options = CommandOptions(disablePresentation = true, autoCloseDelay = 1)
                 )
                 val ideBasedExecutor = IDEBasedExecutor(project, commandData)
                 ideBasedExecutor.execute()
-                DocumentationAction(ideBasedExecutor.isFinished(), FileData(File(folder.path, filename).path, true), FileData(File(folder.path, pumlFilename).path, true))
+                DocumentationAction(
+                    ideBasedExecutor.isFinished(),
+                    FileData(File(folder.path, filename).path, true),
+                    FileData(File(folder.path, pumlFilename).path, true)
+                )
             }
             thread {
                 documentationActions.forEach { it.isFinished.await() }
@@ -130,9 +135,15 @@ class DocumentEachFolderAction : AnAction() {
                         editFormat = settings.editFormat,
                         projectPath = project.basePath ?: "",
                         structuredMode = false,
-                        options = CommandOptions(disablePresentation = false)
+                        options = CommandOptions(
+                            disablePresentation = false,
+                            commitHashToCompareWith = currentCommitHash,
+                        )
                     )
-                    IDEBasedExecutor(project, summaryCommandData, commitHashToCompareWith = currentCommitHash).execute()
+                    IDEBasedExecutor(
+                        project,
+                        summaryCommandData,
+                    ).execute()
                 }
             }
         }

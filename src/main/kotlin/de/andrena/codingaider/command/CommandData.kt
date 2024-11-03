@@ -36,11 +36,16 @@ data class CommandData(
  *
  * @property useDockerAider If true, uses the Docker Aider image ignoring the settings.
  * @property disablePresentation If true, disables the presentation of changes after command execution.
+ * @property commitHashToCompareWith If not null, compares the changes with the specified commit hash.
+ * @property autoCloseDelay If not null, sets the auto close delay for the markdown dialog.
  */
 data class CommandOptions(
     val disablePresentation: Boolean = false,
-    val useDockerAider: Boolean? = null
+    val useDockerAider: Boolean? = null,
+    val commitHashToCompareWith: String? = null,
+    val autoCloseDelay: Int? = null
 ) {
+
     companion object {
         val DEFAULT = CommandOptions()
     }
