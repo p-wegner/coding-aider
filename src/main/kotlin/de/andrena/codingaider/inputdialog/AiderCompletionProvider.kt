@@ -10,6 +10,7 @@ import com.intellij.psi.PsiNamedElement
 import com.intellij.psi.util.elementType
 import com.intellij.ui.TextFieldWithAutoCompletionListProvider
 import de.andrena.codingaider.command.FileData
+import de.andrena.codingaider.services.FileExtractorService
 
 class AiderCompletionProvider(
     project: Project,
@@ -19,7 +20,9 @@ class AiderCompletionProvider(
     private val classMethodMap: Map<String, List<String>>
 
     init {
-        classMethodMap = extractCompletions(project, files)
+        val fileExtractorService = FileExtractorService.getInstance()
+        val extractedFiles = fileExtractorService.extractFilesIfNeeded(files)
+        classMethodMap = extractCompletions(project, extractedFiles)
         setItems(classMethodMap.keys + classMethodMap.values.flatten())
     }
 

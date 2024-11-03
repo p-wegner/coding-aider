@@ -65,7 +65,7 @@ class AiderInputDialog(
                 this.getEditor(true)?.let { editor ->
                     TextCompletionUtil.installCompletionHint(editor)
                 }
-                val value : DocumentListener = object : DocumentListener {
+                val value: DocumentListener = object : DocumentListener {
                     override fun documentChanged(e: DocumentEvent) = updateTokenCount()
                 }
                 document.addDocumentListener(value)
@@ -76,9 +76,11 @@ class AiderInputDialog(
 
     private fun updateTokenCount() {
         val messageTokens = tokenCountService.countTokensInText(getInputText())
-        val fileTokens = tokenCountService.countTokensInFiles(getAllFiles())
-        tokenCountLabel.text = "Tokens: ${messageTokens + fileTokens}"
+        tokenCountLabel.text = "Tokens: ${messageTokens + allFileTokens}"
     }
+
+    val lazyCacheDelegate = LazyCacheDelegate { tokenCountService.countTokensInFiles(getAllFiles()) }
+    val allFileTokens by lazyCacheDelegate
 
     private fun addFilesToContext() {
         val fileChooser = JFileChooser().apply {
@@ -106,14 +108,17 @@ class AiderInputDialog(
     private fun addOpenFilesToContext() = aiderContextView.addOpenFilesToContext()
 
     private val llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
+
     private val llmComboBox = object : ComboBox<String>(llmOptions) {
         override fun getToolTipText(): String? {
-            val selectedItem = selectedItem as? String ?: return null
-            return if (apiKeyChecker.isApiKeyAvailableForLlm(selectedItem)) {
-                "API key found for $selectedItem"
-            } else {
-                "API key not found for $selectedItem"
-            }
+            return null
+            // TODO: Enable this tooltip when slow thread error is fixed
+//            val selectedItem = selectedItem as? String ?: return null
+//            return if (apiKeyChecker.isApiKeyAvailableForLlm(selectedItem)) {
+//                "API key found for $selectedItem"
+//            } else {
+//                "API key not found for $selectedItem"
+//            }
         }
     }
     private val additionalArgsField = JTextField(settings.additionalArgs, 20)
@@ -131,7 +136,8 @@ class AiderInputDialog(
     }
     private val messageLabel = JLabel("Enter your message:")
     private val tokenCountLabel = JLabel("Tokens: 0").apply {
-        toolTipText = "The actual token count may vary depending on the model. The displayed number uses GPT-4O encoding as a heuristic."
+        toolTipText =
+            "The actual token count may vary depending on the model. The displayed number uses GPT-4O encoding as a heuristic."
     }
     private val historyComboBox = ComboBox<HistoryItem>()
     private val historyService = AiderHistoryService.getInstance(project)
@@ -147,10 +153,15 @@ class AiderInputDialog(
             project,
             files + persistentFileService.getPersistentFiles(),
             { fileName -> insertTextAtCursor(fileName) },
-            { updateTokenCount() }
+            {
+                lazyCacheDelegate.evict()
+                updateTokenCount()
+            }
+
         )
         splitPane = OnePixelSplitter(true, 0.6f)
         settingsButton = createSettingsButton()
+        lazyCacheDelegate.evict()
         init()
         loadHistory()
         setOKButtonText("OK")
@@ -532,13 +543,13 @@ class AiderInputDialog(
     }
 
     fun getInputText(): String = inputTextField.text
+
     fun isYesFlagChecked(): Boolean = yesCheckBox.isSelected
     fun getLlm(): String = llmComboBox.selectedItem as String
     fun getAdditionalArgs(): String = additionalArgsField.text
     fun getAllFiles(): List<FileData> = aiderContextView?.getAllFiles() ?: emptyList()
     fun isShellMode(): Boolean = modeToggle.isSelected
     fun isStructuredMode(): Boolean = structuredModeCheckBox.isSelected
-
     private fun restoreLastState() {
         AiderDialogStateService.getInstance(project).getLastState()?.let { state ->
             inputTextField.text = state.message
@@ -581,5 +592,24 @@ class AiderInputDialog(
         }
     }
 
+}
+
+
+class LazyCacheDelegate<T>(private val initializer: () -> T) {
+    private var cachedValue: T? = null
+    private var isInitialized = false
+
+    operator fun getValue(thisRef: Any?, property: kotlin.reflect.KProperty<*>): T {
+        if (!isInitialized) {
+            cachedValue = initializer()
+            isInitialized = true
+        }
+        return cachedValue!!
+    }
+
+    fun evict() {
+        cachedValue = null
+        isInitialized = false
+    }
 }
 

@@ -156,20 +156,26 @@
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
         </action>
+        <group
+                id="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorActionGroup"
+                text="Aider Actions"
+                class="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorActionGroup"
+        >
+            <action id="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorAction"
+                    class="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorAction"
+                    text="Fix Error with Aider"
+                    description="Group of actions to fix errors with Aider">
+                <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
+                <add-to-group group-id="RunContextPopupGroup" anchor="first"/>
+            </action>
+            <action id="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorInteractive"
+                    class="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorInteractive"
+                    text="Fix Test with Aider"
+                    description="Group of actions to fix errors with Aider">
+                <add-to-group group-id="TestTreePopupMenu" anchor="first"/>
+            </action>
+        </group>
 
-        <action id="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorActionGroup"
-                class="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorActionGroup"
-                text="Fix Error with Aider"
-                description="Group of actions to fix errors with Aider">
-            <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
-            <add-to-group group-id="RunContextPopupGroup" anchor="first"/>
-        </action>
-        <action id="de.andrena.codingaider.actions.aider.FixTestErrorsActionGroup"
-                class="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorActionGroup"
-                text="Fix Test with Aider"
-                description="Group of actions to fix errors with Aider">
-            <add-to-group group-id="TestTreePopupMenu" anchor="first"/>
-        </action>
     </actions>
 
     <!-- Extension points defined by the plugin.

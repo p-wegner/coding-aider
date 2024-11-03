@@ -3,7 +3,6 @@ package de.andrena.codingaider.services
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import de.andrena.codingaider.command.FileData
-import java.io.File
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.StandardCopyOption
@@ -18,31 +17,32 @@ class FileExtractorService {
 
     fun extractFilesIfNeeded(files: List<FileData>): List<FileData> {
         val tempDir = Files.createTempDirectory("codingaider-files")
-        return files.map { fileData ->
-            if (fileData.filePath.endsWith(".jar")) {
-                extractFromJar(fileData.filePath, tempDir)
+        return files.mapNotNull { fileData ->
+            if (fileData.filePath.contains(".jar!")) {
+                val jarPath = fileData.filePath.substringBefore("!")
+                val jarFilePath = fileData.filePath.substringAfter("!/")
+                extractFromJar(jarPath, jarFilePath, tempDir)
             } else {
                 fileData
             }
         }
     }
 
-    private fun extractFromJar(jarPath: String, tempDir: Path): FileData {
+    private fun extractFromJar(jarPath: String, jarFilePath: String, tempDir: Path): FileData? {
         val jarFile = JarFile(jarPath)
-        val entries = jarFile.entries()
-        while (entries.hasMoreElements()) {
-            val entry = entries.nextElement()
+        // only extract the file with jarFilePath
+        jarFile.getJarEntry(jarFilePath)?.let { entry ->
+
             val entryPath = tempDir.resolve(entry.name)
-            if (entry.isDirectory) {
-                Files.createDirectories(entryPath)
-            } else {
-                jarFile.getInputStream(entry).use { input ->
-                    Files.copy(input, entryPath, StandardCopyOption.REPLACE_EXISTING)
-                }
+            jarFile.getInputStream(entry).use { input ->
+                // create directories if needed
+                Files.createDirectories(entryPath.parent)
+                Files.copy(input, entryPath, StandardCopyOption.REPLACE_EXISTING)
             }
+            jarFile.close()
+            return FileData(entryPath.toString(), false)
         }
-        jarFile.close()
-        return FileData(tempDir.toString(), false)
+        return null
     }
 }
 

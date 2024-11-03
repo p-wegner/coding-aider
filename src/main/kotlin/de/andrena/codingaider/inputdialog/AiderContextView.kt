@@ -4,6 +4,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.IconManager
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBScrollPane
@@ -61,7 +62,8 @@ class AiderContextView(
                     if (value is DefaultMutableTreeNode) {
                         when (val userObject = value.userObject) {
                             is FileData -> {
-                                text = File(userObject.filePath).name
+                                val virtualFile: VirtualFile? = LocalFileSystem.getInstance().findFileByPath(userObject.filePath)
+                                text = virtualFile?.presentableName ?: ""
                                 icon = when {
                                     userObject.isReadOnly && isPersistent(userObject) -> IconManager.getInstance()
                                         .createRowIcon(AllIcons.Nodes.DataSchema, AllIcons.Nodes.DataTables)
@@ -74,9 +76,9 @@ class AiderContextView(
 
                                     else -> AllIcons.Actions.Edit
                                 }
-                                val fileContent = File(userObject.filePath).readText()
+                                val fileContent = virtualFile?.contentsToByteArray()?.toString(Charsets.UTF_8) ?: ""
                                 val tokenCount = tokenCountService.countTokensInText(fileContent)
-                                text = "${File(userObject.filePath).name} (Tokens: $tokenCount)"
+                                text = "${virtualFile?.presentableName ?: ""} (Tokens: $tokenCount)"
                                 toolTipText = buildString {
                                     append(userObject.filePath)
                                     append(" (Tokens: $tokenCount)")

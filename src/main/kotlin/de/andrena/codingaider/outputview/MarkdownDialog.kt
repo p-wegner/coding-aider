@@ -3,9 +3,6 @@ package de.andrena.codingaider.outputview
 import com.intellij.openapi.project.Project
 import org.intellij.plugins.markdown.lang.MarkdownLanguage
 import com.intellij.openapi.editor.ex.EditorEx
-import com.intellij.openapi.editor.impl.EditorFactoryImpl
-import com.intellij.openapi.fileTypes.LanguageFileType
-import com.intellij.openapi.fileTypes.PlainTextFileType
 import com.intellij.ui.LanguageTextField
 import com.intellij.ui.components.JBScrollPane
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
@@ -25,7 +22,8 @@ class MarkdownDialog(
     initialText: String,
     private val onAbort: Abortable? = null
 ) : JDialog() {
-    // use markdown language for syntax highlighting
+    // use MarkdownEditorWithPreview instead of LanguageTextField to enable preview
+
     private val textArea: LanguageTextField = LanguageTextField(MarkdownLanguage.INSTANCE, project, initialText.replace("\r\n", "\n")).apply {
         (editor as? EditorEx)?.apply {
             isViewer = true

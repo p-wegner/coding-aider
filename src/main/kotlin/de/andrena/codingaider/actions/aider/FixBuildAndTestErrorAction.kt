@@ -14,7 +14,7 @@ import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.inputdialog.AiderInputDialog
 import de.andrena.codingaider.utils.ReflectionUtils
 
-class FixBuildAndTestErrorActionGroup : ActionGroup() {
+class FixBuildAndTestErrorActionGroup : DefaultActionGroup() {
     override fun getChildren(e: AnActionEvent?): Array<AnAction> =
         arrayOf(FixBuildAndTestErrorAction(), FixBuildAndTestErrorInteractive())
 
