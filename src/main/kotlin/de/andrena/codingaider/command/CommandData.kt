@@ -14,7 +14,7 @@ package de.andrena.codingaider.command
  * @property lintCmd Command to run for linting the code.
  * @property deactivateRepoMap If true, disables the repository mapping feature.
  * @property editFormat Specifies the format for edit instructions (e.g., "diff").
- * @property options Contains optional parameters for the command.
+ * @property options Contains optional parameters for the command, including whether to disable presentation of changes.
  */
 data class CommandData(
     val message: String,
@@ -35,8 +35,10 @@ data class CommandData(
  * Represents the optional parameters for the Aider command.
  *
  * @property useDockerAider If true, uses the Docker Aider image ignoring the settings.
+ * @property disablePresentation If true, disables the presentation of changes after command execution.
  */
 data class CommandOptions(
+    val disablePresentation: Boolean = false,
     val useDockerAider: Boolean = false
 ) {
     companion object {

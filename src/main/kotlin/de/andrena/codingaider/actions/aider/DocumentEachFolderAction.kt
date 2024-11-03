@@ -7,10 +7,12 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.CommandData
+import de.andrena.codingaider.command.CommandOptions
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileTraversal
+import de.andrena.codingaider.utils.GitUtils
 import java.io.File
 import java.util.concurrent.CountDownLatch
 import kotlin.concurrent.thread
@@ -39,7 +41,7 @@ class DocumentEachFolderAction : AnAction() {
     companion object {
         fun documentEachFolder(project: Project, virtualFiles: Array<VirtualFile>) {
             val settings = getInstance()
-
+            val currentCommitHash = GitUtils.getCurrentCommitHash(project)
             val documentationLlm = if (settings.documentationLlm == "Default") settings.llm else settings.documentationLlm
             val documentationActions = virtualFiles.filter { it.isDirectory }.map { folder ->
                 val allFiles = FileTraversal.traverseFilesOrDirectories(arrayOf(folder))
@@ -83,7 +85,8 @@ class DocumentEachFolderAction : AnAction() {
                     deactivateRepoMap = settings.deactivateRepoMap,
                     editFormat = settings.editFormat,
                     projectPath = project.basePath ?: "",
-                    structuredMode = false
+                    structuredMode = false,
+                    options = CommandOptions(disablePresentation = true)
                 )
                 val ideBasedExecutor = IDEBasedExecutor(project, commandData)
                 ideBasedExecutor.execute()
@@ -102,7 +105,7 @@ class DocumentEachFolderAction : AnAction() {
                     overviewMarkdownFile.createNewFile()
                     overviewPumlFile.createNewFile()
 
-                    val writableSummaryFiles = documentationFiles + listOf(
+                    val writableSummaryFiles = documentationFiles + dependenciesFiles + listOf(
                         FileData(overviewMarkdownFile.path, false),
                         FileData(overviewPumlFile.path, false)
                     )
@@ -126,9 +129,10 @@ class DocumentEachFolderAction : AnAction() {
                         deactivateRepoMap = settings.deactivateRepoMap,
                         editFormat = settings.editFormat,
                         projectPath = project.basePath ?: "",
-                        structuredMode = false
+                        structuredMode = false,
+                        options = CommandOptions(disablePresentation = false)
                     )
-                    IDEBasedExecutor(project, summaryCommandData).execute()
+                    IDEBasedExecutor(project, summaryCommandData, commitHashToCompareWith = currentCommitHash).execute()
                 }
             }
         }

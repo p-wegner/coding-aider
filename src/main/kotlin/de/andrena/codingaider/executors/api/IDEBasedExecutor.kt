@@ -21,11 +21,12 @@ import kotlin.concurrent.thread
 
 class IDEBasedExecutor(
     private val project: Project,
-    private val commandData: CommandData
+    private val commandData: CommandData,
+    commitHashToCompareWith: String? = null
 ) : CommandObserver, Abortable {
     private val log = Logger.getInstance(IDEBasedExecutor::class.java)
     private lateinit var markdownDialog: MarkdownDialog
-    private var currentCommitHash: String? = null
+    private var currentCommitHash: String? = commitHashToCompareWith
     private val commandExecutor = AtomicReference<CommandExecutor?>(null)
     private var executionThread: Thread? = null
     private var isFinished: CountDownLatch = CountDownLatch(1)
@@ -42,7 +43,9 @@ class IDEBasedExecutor(
                 isVisible = true
                 focus()
             }
-        currentCommitHash = GitUtils.getCurrentCommitHash(project)
+        if (currentCommitHash == null) {
+            currentCommitHash = GitUtils.getCurrentCommitHash(project)
+        }
 
         val plansFolder = File(project.basePath, AiderPlanService.AIDER_PLANS_FOLDER)
         if (plansFolder.exists() && plansFolder.isDirectory) {
@@ -56,6 +59,7 @@ class IDEBasedExecutor(
         }
         return markdownDialog
     }
+
     fun isFinished(): CountDownLatch = isFinished
     private fun executeAiderCommand() {
         try {
@@ -119,6 +123,12 @@ class IDEBasedExecutor(
         markdownDialog.startAutoCloseTimer()
         refreshFiles()
         addNewPlanFilesToPersistentFiles()
+        if (!commandData.options.disablePresentation) {
+            presentChanges()
+        }
+    }
+
+    private fun presentChanges() {
         openGitComparisonToolIfNeeded()
         if (!getInstance().closeOutputDialogImmediately) {
             markdownDialog.setProcessFinished()
