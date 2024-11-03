@@ -1,6 +1,12 @@
 package de.andrena.codingaider.outputview
 
 import com.intellij.openapi.project.Project
+import org.intellij.plugins.markdown.lang.MarkdownLanguage
+import com.intellij.openapi.editor.ex.EditorEx
+import com.intellij.openapi.editor.impl.EditorFactoryImpl
+import com.intellij.openapi.fileTypes.LanguageFileType
+import com.intellij.openapi.fileTypes.PlainTextFileType
+import com.intellij.ui.LanguageTextField
 import com.intellij.ui.components.JBScrollPane
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import java.awt.BorderLayout
@@ -19,7 +25,13 @@ class MarkdownDialog(
     initialText: String,
     private val onAbort: Abortable? = null
 ) : JDialog() {
-    private val textArea: JTextArea = JTextArea(initialText)
+    // use markdown language for syntax highlighting
+    private val textArea: LanguageTextField = LanguageTextField(MarkdownLanguage.INSTANCE, project, initialText.replace("\r\n", "\n")).apply {
+        (editor as? EditorEx)?.apply {
+            isViewer = true
+            setCaretEnabled(false)
+        }
+    }
     private val scrollPane: JScrollPane
     private var autoCloseTimer: TimerTask? = null
     private val keepOpenButton: JButton
@@ -32,7 +44,6 @@ class MarkdownDialog(
         setLocationRelativeTo(null)
         layout = BorderLayout()
 
-        textArea.isEditable = false
         scrollPane = JBScrollPane(textArea)
         add(scrollPane, BorderLayout.CENTER)
 
@@ -75,7 +86,7 @@ class MarkdownDialog(
         invokeLater {
             textArea.text = output
             title = message
-            textArea.caretPosition = textArea.document.length
+//            textArea.caretPosition = textArea.document.length
             scrollPane.verticalScrollBar.value = scrollPane.verticalScrollBar.maximum
         }
     }

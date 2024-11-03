@@ -45,7 +45,7 @@ intellij {
     version.set("2023.2.6")
     type.set("IC") // Target IDE Platform
 
-    plugins.set(listOf("org.jetbrains.plugins.terminal", "Git4Idea"))
+    plugins.set(listOf("org.jetbrains.plugins.terminal", "Git4Idea", "org.intellij.plugins.markdown"))
 }
 
 tasks {
