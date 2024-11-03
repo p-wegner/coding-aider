@@ -130,7 +130,9 @@ class AiderInputDialog(
                 "Use for better tracking and systematic development</html>"
     }
     private val messageLabel = JLabel("Enter your message:")
-    private val tokenCountLabel = JLabel("Tokens: 0")
+    private val tokenCountLabel = JLabel("Tokens: 0").apply {
+        toolTipText = "The actual token count may vary depending on the model. The displayed number uses GPT-4O encoding as a heuristic."
+    }
     private val historyComboBox = ComboBox<HistoryItem>()
     private val historyService = AiderHistoryService.getInstance(project)
     private val aiderContextView: AiderContextView
