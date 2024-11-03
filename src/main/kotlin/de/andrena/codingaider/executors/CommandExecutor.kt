@@ -52,7 +52,6 @@ class CommandExecutor(
             .apply {
                 if (commandData.projectPath.isNotEmpty()) directory(File(commandData.projectPath))
                 environment().putIfAbsent("PYTHONIOENCODING", "utf-8")
-                environment().putIfAbsent("PATH", System.getenv("PATH"))
                 redirectErrorStream(true)
             }
 
