@@ -35,6 +35,9 @@
             <li><strong>Various Specialized Actions:</strong> Including commit, documentation generation, error fixing, and design pattern application.</li>
         </ul>
 
+        <h3>Feedback and Support</h3>
+        <p>We value your feedback and encourage you to open issues or provide suggestions on our <a href="https://github.com/p-wegner/coding-aider">GitHub page</a>. Your input helps us improve the plugin and provide better support for your development needs.</p>
+
         <h3>Advantages Over Other Coding Assistant Plugins</h3>
         <ul>
             <li>Optimized token usage for improved speed (featuring replace edit mode, repo-map, and context control).</li>
