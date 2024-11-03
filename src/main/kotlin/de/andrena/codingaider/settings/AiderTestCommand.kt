@@ -2,6 +2,7 @@ package de.andrena.codingaider.settings
 
 import com.intellij.openapi.project.ProjectManager
 import de.andrena.codingaider.command.CommandData
+import de.andrena.codingaider.command.CommandOptions
 import de.andrena.codingaider.executors.api.CommandObserver
 import de.andrena.codingaider.executors.api.LiveUpdateExecutor
 
@@ -18,7 +19,7 @@ class AiderTestCommand() {
             deactivateRepoMap = false,
             editFormat = "",
             projectPath = "",
-            useDockerAider = useDockerAider
+            options = CommandOptions(useDockerAider = useDockerAider)
         )
         LiveUpdateExecutor(commandData,ProjectManager.getInstance().defaultProject).apply {
             observer?.let { addObserver(it) }

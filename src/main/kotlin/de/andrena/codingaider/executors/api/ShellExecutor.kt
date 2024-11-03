@@ -20,7 +20,7 @@ class ShellExecutor(
     private val settings = getInstance()
     private val dockerManager = DockerContainerManager()
     private val useDockerAider: Boolean
-        get() = commandData.useDockerAider ?: settings.useDockerAider
+        get() = commandData.options.useDockerAider ?: settings.useDockerAider
     private val executionStrategy: AiderExecutionStrategy by lazy {
         if (useDockerAider) DockerAiderExecutionStrategy(project,
             dockerManager,

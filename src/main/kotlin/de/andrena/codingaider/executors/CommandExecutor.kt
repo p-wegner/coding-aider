@@ -23,7 +23,7 @@ class CommandExecutor(
     private var process: Process? = null
     private var isAborted = false
     private val useDockerAider: Boolean
-        get() = commandData.useDockerAider ?: settings.useDockerAider
+        get() = commandData.options.useDockerAider ?: settings.useDockerAider
     private val dockerManager = DockerContainerManager()
     private val executionStrategy: AiderExecutionStrategy by lazy {
         if (useDockerAider) DockerAiderExecutionStrategy(
