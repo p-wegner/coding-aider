@@ -207,7 +207,6 @@ class AiderInputDialog(
     override fun show() {
         super.show()
         SwingUtilities.invokeLater {
-            inputTextField.requestFocus()
             inputTextField.editor?.caretModel?.moveToOffset(inputTextField.text.length)
         }
     }
@@ -528,9 +527,6 @@ class AiderInputDialog(
             messageLabel.isVisible = !isShellMode
             messageLabel.text = if (isShellMode) "Shell mode enabled" else "Enter your message:"
         }
-
-        // Set focus on the input text area when the dialog is opened
-        inputTextField.requestFocus()
 
         return panel
     }
