@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.docker.DockerContainerManager
 import de.andrena.codingaider.executors.api.CommandSubject
+import de.andrena.codingaider.services.FileExtractorService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
@@ -35,7 +36,11 @@ class CommandExecutor(
     }
 
     fun executeCommand(): String {
-        val commandArgs = executionStrategy.buildCommand(commandData)
+        val fileExtractorService = FileExtractorService.getInstance()
+        val extractedFiles = fileExtractorService.extractFilesIfNeeded(commandData.files)
+        val updatedCommandData = commandData.copy(files = extractedFiles)
+
+        val commandArgs = executionStrategy.buildCommand(updatedCommandData)
         logger.info("Executing Aider command: ${commandArgs.joinToString(" ")}")
         notifyObservers {
             it.onCommandStart(
