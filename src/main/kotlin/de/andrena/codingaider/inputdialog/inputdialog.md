@@ -6,7 +6,7 @@ The Aider module provides a user interface for interacting with various coding a
 ## Key Classes
 
 ### AiderInputDialog
-- **Purpose**: This class represents the main dialog for user input. It allows users to enter commands and manage settings.
+- **Purpose**: Represents the main dialog for user input, allowing users to enter commands and manage settings.
 - **Constructor**: 
   - `AiderInputDialog(Project project, List<FileData> files, String initialText, ApiKeyChecker apiKeyChecker)`
 - **Key Methods**:
@@ -17,7 +17,7 @@ The Aider module provides a user interface for interacting with various coding a
   - `getAdditionalArgs()`: Retrieves additional arguments entered by the user.
 
 ### AiderContextView
-- **Purpose**: This class manages the context view of files, allowing users to see and interact with files in the project.
+- **Purpose**: Manages the context view of files, allowing users to see and interact with files in the project.
 - **Constructor**: 
   - `AiderContextView(Project project, List<FileData> allFiles, (String) -> Unit onFileNameSelected, () -> Unit onFilesChanged)`
 - **Key Methods**:
@@ -26,7 +26,7 @@ The Aider module provides a user interface for interacting with various coding a
   - `removeSelectedFiles()`: Removes selected files from the context view.
 
 ### AiderCompletionProvider
-- **Purpose**: This class provides code completion suggestions based on the context of the user's input.
+- **Purpose**: Provides code completion suggestions based on the context of the user's input.
 - **Constructor**: 
   - `AiderCompletionProvider(Project project, List<FileData> files)`
 - **Key Methods**:
@@ -49,3 +49,10 @@ The Aider module provides a user interface for interacting with various coding a
 - [AiderInputDialog.kt](./AiderInputDialog.kt)
 - [AiderContextView.kt](./AiderContextView.kt)
 - [AiderCompletionProvider.kt](./AiderCompletionProvider.kt)
+
+## Exceptional Implementation Details
+- The `AiderContextView` uses a tree structure to manage and display files, allowing for easy navigation and manipulation.
+- The `AiderCompletionProvider` dynamically extracts completion suggestions from the project's files, enhancing the user experience by providing relevant suggestions.
+
+## UML Diagram
+For a visual representation of the module's structure and interactions, refer to the [inputdialog.puml](./inputdialog.puml) file.

@@ -38,3 +38,6 @@ The `PersistentFilesToolWindow` module provides a user interface component for m
 
 ## Important Links
 - [PersistentFilesToolWindow.kt](./PersistentFilesToolWindow.kt)
+
+## UML Diagram
+![UML Diagram](./toolwindow.puml)

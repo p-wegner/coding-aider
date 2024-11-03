@@ -20,7 +20,7 @@ The Output View module is responsible for displaying output in a user-friendly m
   - `onAbort: Abortable?`: An optional Abortable instance to handle abort actions.
 - **Key Methods**:
   - `fun updateProgress(output: String, message: String)`: Updates the displayed output and title of the dialog.
-  - `fun startAutoCloseTimer()`: Starts a timer to automatically close the dialog after a specified delay.
+  - `fun startAutoCloseTimer(autocloseDelay: Int)`: Starts a timer to automatically close the dialog after a specified delay.
   - `fun setProcessFinished()`: Marks the process as finished and updates the close button text.
   - `fun focus(delay: Long = 100)`: Brings the dialog to the front and requests focus.
 
@@ -35,4 +35,8 @@ The Output View module is responsible for displaying output in a user-friendly m
 
 ## Exceptional Implementation Details
 - The `MarkdownDialog` class includes a timer for auto-closing the dialog, which can be configured through user settings.
+
+- The `MarkdownDialog` uses `invokeLater` to ensure UI updates are performed on the Event Dispatch Thread, which is crucial for thread safety in Swing applications.
+
+- The `MarkdownDialog` provides a `Keep Open` button that allows users to cancel the auto-close timer, offering flexibility in user interaction.
 

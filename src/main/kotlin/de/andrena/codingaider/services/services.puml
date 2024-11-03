@@ -1,0 +1,41 @@
+@startuml
+
+package "de.andrena.codingaider.services" {
+    class AiderHistoryService {
+        - inputHistoryFile: File
+        - chatHistoryFile: File
+        + getInputHistory(): List<Pair<LocalDateTime, List<String>>>
+        + getLastChatHistory(): String
+    }
+
+    class TokenCountService {
+        - registry: EncodingRegistry
+        - encoding: Encoding
+        + countTokensInText(text: String, encoding: Encoding): Int
+        + countTokensInFiles(files: List<FileData>, encoding: Encoding): Int
+    }
+
+    class PersistentFileService {
+        - contextFile: File
+        - persistentFiles: MutableList<FileData>
+        + loadPersistentFiles(): List<FileData>
+        + savePersistentFilesToContextFile()
+        + addFile(file: FileData)
+    }
+
+    class AiderDialogStateService {
+        - lastState: DialogState?
+        + saveState(...)
+        + getLastState(): DialogState?
+    }
+
+    class AiderPlanService {
+        + createAiderPlanSystemPrompt(commandData: CommandData): String
+    }
+}
+
+AiderHistoryService --> PersistentFileService : uses
+TokenCountService --> PersistentFileService : uses
+AiderDialogStateService --> AiderPlanService : interacts
+
+@enduml

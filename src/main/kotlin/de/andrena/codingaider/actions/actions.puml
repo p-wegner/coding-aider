@@ -1,0 +1,29 @@
+@startuml
+
+package "de.andrena.codingaider.actions.aider" {
+    class AiderAction
+    class AiderClipboardImageAction
+    class AiderWebCrawlAction
+    class ApplyDesignPatternAction
+    class CommitAction
+    class DocumentCodeAction
+    class DocumentEachFolderAction
+    class FixBuildAndTestErrorAction
+    class FixCompileErrorAction
+    class OpenAiderActionGroup
+    class RefactorToCleanCodeAction
+}
+
+package "de.andrena.codingaider.actions.ide" {
+    class PersistentFilesAction
+    class SettingsAction
+    class ShowLastCommandResultAction
+}
+
+AiderAction --> IDEBasedExecutor
+AiderAction --> ShellExecutor
+PersistentFilesAction --> PersistentFileService
+AiderClipboardImageAction --> PersistentFileService
+AiderWebCrawlAction --> PersistentFileService
+
+@enduml

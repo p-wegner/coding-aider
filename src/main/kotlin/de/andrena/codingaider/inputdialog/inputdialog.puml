@@ -1,0 +1,37 @@
+@startuml
+
+package de.andrena.codingaider.inputdialog {
+    class AiderInputDialog {
+        - project: Project
+        - files: List<FileData>
+        - initialText: String
+        - apiKeyChecker: ApiKeyChecker
+        + createCenterPanel(): JComponent
+        + getInputText(): String
+        + isYesFlagChecked(): Boolean
+        + getLlm(): String
+        + getAdditionalArgs(): String
+    }
+
+    class AiderContextView {
+        - project: Project
+        - allFiles: List<FileData>
+        - onFileNameSelected: (String) -> Unit
+        - onFilesChanged: () -> Unit
+        + selectedFilesChanged()
+        + addOpenFilesToContext()
+        + removeSelectedFiles()
+    }
+
+    class AiderCompletionProvider {
+        - project: Project
+        - files: List<FileData>
+        + getItems(prefix: String, cached: Boolean, parameters: CompletionParameters?): Collection<String>
+        + extractCompletions(project: Project, files: List<FileData>): Map<String, List<String>>
+    }
+}
+
+AiderInputDialog --> AiderContextView
+AiderInputDialog --> AiderCompletionProvider
+
+@enduml

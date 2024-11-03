@@ -67,6 +67,7 @@ The Aider Executors module is responsible for executing commands related to the 
 - [ShellExecutor.kt](./api/ShellExecutor.kt)
 - [IDEBasedExecutor.kt](./api/IDEBasedExecutor.kt)
 - [LiveUpdateExecutor.kt](./api/LiveUpdateExecutor.kt)
+- [SimpleExecutor.kt](./api/SimpleExecutor.kt)
 - [CommandLogger.kt](./CommandLogger.kt)
 - [GenericCommandSubject.kt](./GenericCommandSubject.kt)
 - [AiderExecutionStrategy.kt](./AiderExecutionStrategy.kt)

@@ -1,7 +1,7 @@
 # Docker Container Manager
 
 ## Overview
-The `DockerContainerManager` class is responsible for managing Docker containers within the application. It provides functionality to retrieve the container ID from a temporary file, stop the running Docker container, and remove the temporary file after use.
+The `DockerContainerManager` module is designed to manage Docker containers within the application. It provides functionality to retrieve the container ID from a temporary file, stop the running Docker container, and remove the temporary file after use.
 
 ## Key Classes and Methods
 
@@ -40,4 +40,7 @@ To use the `DockerContainerManager`, create an instance and call the appropriate
 
 ## Exception Handling
 The class includes exception handling to log errors when stopping the Docker container or removing the CID file.
+
+## UML Diagram
+For a visual representation of the data flow and dependencies, refer to the [docker.puml](docker.puml) file.
 

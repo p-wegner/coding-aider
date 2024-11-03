@@ -1,7 +1,7 @@
 # Aider Actions Module Documentation
 
 ## Overview
-The Aider Actions module provides a set of actions that enhance the functionality of the Aider tool within the IDE. These actions allow users to perform various tasks such as committing code, applying design patterns, documenting code, and managing persistent files.
+The Aider Actions module provides a comprehensive set of actions that enhance the functionality of the Aider tool within the IDE. These actions enable users to perform tasks such as committing code, applying design patterns, documenting code, managing persistent files, and more.
 
 ## Key Classes and Methods
 

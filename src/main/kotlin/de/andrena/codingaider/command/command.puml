@@ -1,0 +1,35 @@
+@startuml
+
+package "de.andrena.codingaider.command" {
+    class FileData {
+        - filePath: String
+        - isReadOnly: Boolean
+    }
+
+    class CommandData {
+        - message: String
+        - useYesFlag: Boolean
+        - llm: String
+        - additionalArgs: String
+        - files: List<FileData>
+        - isShellMode: Boolean
+        - lintCmd: String
+        - deactivateRepoMap: Boolean
+        - editFormat: String
+        - projectPath: String
+        - options: CommandOptions
+        - structuredMode: Boolean
+    }
+
+    class CommandOptions {
+        - disablePresentation: Boolean
+        - useDockerAider: Boolean?
+        - commitHashToCompareWith: String?
+        - autoCloseDelay: Int?
+    }
+}
+
+CommandData "1" *-- "many" FileData
+CommandData "1" *-- "1" CommandOptions
+
+@enduml

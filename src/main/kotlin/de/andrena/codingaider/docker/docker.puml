@@ -1,0 +1,23 @@
+@startuml
+
+package "de.andrena.codingaider.docker" {
+    class DockerContainerManager {
+        - logger: Logger
+        - uniqueId: String
+        - cidFile: File
+        - dockerContainerId: String?
+        --
+        + getCidFilePath(): String
+        + stopDockerContainer()
+        + removeCidFile()
+        --
+        - getDockerContainerId(): String?
+    }
+}
+
+DockerContainerManager --> "1" Logger : uses
+DockerContainerManager --> "1" File : uses
+DockerContainerManager --> "1" UUID : uses
+DockerContainerManager --> "1" TimeUnit : uses
+
+@enduml

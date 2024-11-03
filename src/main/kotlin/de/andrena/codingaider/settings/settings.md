@@ -1,7 +1,7 @@
 # Aider Module Documentation
 
 ## Overview
-The Aider module provides a set of functionalities for managing project settings and configurations related to the Aider tool. It includes default settings, project-specific settings, and user interface components for configuring these settings within an IDE.
+The Aider module provides functionalities for managing project settings and configurations related to the Aider tool. It includes default settings, project-specific settings, and user interface components for configuring these settings within an IDE.
 
 ## Key Classes and Interfaces
 
@@ -55,4 +55,6 @@ The Aider module provides a set of functionalities for managing project settings
 
 ## PlantUML Diagram
 Refer to the PlantUML diagram for a visual representation of the dependencies and data flow within the Aider module.
+
+![PlantUML Diagram](settings.puml)
 

@@ -15,6 +15,9 @@ This document provides a comprehensive overview of the actions implemented in th
 9. [SettingsAction](#settingsaction)
 10. [ShowLastCommandResultAction](#showlastcommandresultaction)
 11. [AiderClipboardImageAction](#aiderclipboardimageaction)
+12. [RefactorToCleanCodeAction](#refactortocleancodeaction)
+13. [DocumentEachFolderAction](#documenteachfolderaction)
+14. [FixBuildAndTestErrorAction](#fixbuildandtesterroraction)
 
 ## AiderAction
 
@@ -152,6 +155,36 @@ Key features:
 - Detects images in the clipboard
 - Saves the image to a unique file in the `.aider-docs/images` directory
 - Automatically adds the saved image to persistent files
+
+## RefactorToCleanCodeAction
+
+`RefactorToCleanCodeAction` refactors code to adhere to clean code principles and SOLID principles.
+
+Key features:
+
+- Analyzes and refactors code for clean code and SOLID principles
+- Provides detailed instructions for refactoring
+- Ensures refactored code maintains original functionality
+
+## DocumentEachFolderAction
+
+`DocumentEachFolderAction` generates documentation for each folder in the selected files.
+
+Key features:
+
+- Processes each folder and generates markdown documentation
+- Uses PlantUML to document dependencies and data flow
+- Updates existing documentation files if they already exist
+
+## FixBuildAndTestErrorAction
+
+`FixBuildAndTestErrorAction` fixes build and test errors in the project.
+
+Key features:
+
+- Supports both interactive and quick fix modes
+- Detects build and test errors
+- Provides a background task for the interactive mode to prevent UI freezing
 
 This documentation provides a comprehensive overview of the main actions in the Coding Aider plugin. Each action is
 designed to enhance the development experience by integrating Aider's capabilities into the IDE workflow.
