@@ -48,7 +48,11 @@ Additionally API keys for the LLM Providers you intend to use are required.
 
 9. **Clipboard Image Support**: Save clipboard images directly to the project and add them to persistent files.
 
-10. **Various Specialized Actions**:
+10. **Refactor to Clean Code Action**: Refactor code to adhere to clean code principles.
+
+11. **Fix Build and Test Error Action**: Fix build and test errors in the project.
+
+12. **Various Specialized Actions**:
     - **Commit Action**: Quickly commit changes using Aider.
     - **Document Code Action**: Generate markdown documentation for selected files and directories.
     - **Fix Compile Error Action**: Fix compile errors using Aider's AI capabilities.
@@ -58,7 +62,7 @@ Additionally API keys for the LLM Providers you intend to use are required.
     - **Persistent Files Action**: Manage the list of persistent files for Aider operations.
     - **OpenAiderActionGroup**: Access a popup menu with all available Aider actions.
 
-11. **Structured Mode**:
+13. **Structured Mode**:
     - Facilitates a more organized approach to developing features and implementing code changes.
     - Simply describe a feature briefly, and the plugin will generate a detailed plan and checklist for you.
     - These plans and checklists are saved in the .coding-aider-plans directory and can be manually adjusted as needed.
