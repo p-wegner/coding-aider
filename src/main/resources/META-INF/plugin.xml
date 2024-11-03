@@ -17,30 +17,33 @@
         <p>Seamlessly integrate Aider's AI-powered coding assistance directly into your IDE. This integration boosts your productivity by offering rapid access for precision code generation and refactoring, all while allowing you complete control over the context utilized by the LLM.</p>
 
         <h3>Important Note</h3>
-        <p>To utilize this plugin, you must have a functional Aider installation along with access to API keys for the LLM Providers you intend to use. Alternatively, you can run a local LLM inference server, such as Ollama, to connect to Aider.</p>
+        <p>To utilize this plugin, you must have a functional Aider installation or be able to run docker containers. Additionally, API keys for the LLM Providers you intend to use are required.</p>
 
         <h3>Key Features</h3>
         <ul>
             <li><strong>AI-Powered Coding Assistance:</strong> Harness the power of Aider to receive intelligent coding assistance within your IDE.</li>
-            <li><strong>Intuitive Access:</strong> Quick access via keyboard shortcuts (Alt+A) and menu options.</li>
-            <li><strong>Persistent File Management:</strong> Manage frequently used files for consistent context in Aider operations.</li>
-            <li><strong>Dual Execution Modes:</strong> Choose between IDE-based or shell-based execution.</li>
-            <li><strong>Git Integration:</strong> Automatic Git comparison for easy change review.</li>
+            <li><strong>Intuitive Access:</strong> Quickly initiate Aider actions via the "Start Aider Action" option in the Tools menu or Project View popup menu. Use the keyboard shortcut Alt+A for rapid access.</li>
+            <li><strong>Persistent File Management:</strong> Manage frequently used files for persistent context for Aider operations with Alt+Shift+A, within the Aider Command Window or the Aider Settings.</li>
+            <li><strong>Dual Execution Modes:</strong> IDE-based execution for seamless integration. Shell-based execution for users who prefer Aider's rich terminal interaction.</li>
+            <li><strong>Git Integration:</strong> Automatically launch a Git comparison tool post-Aider operations for easy change review.</li>
             <li><strong>Real-time Progress Tracking:</strong> Monitor Aider command progress through Markdown dialog.</li>
-            <li><strong>Multi-File Support:</strong> Work on multiple files or directories simultaneously.</li>
-            <li><strong>Webcrawl (Experimental):</strong> Add web content to your context.</li>
-            <li><strong>Specialized Actions:</strong> Including commit, documentation generation, error fixing, and design pattern application.</li>
+            <li><strong>Multi-File Support:</strong> Execute Aider actions on multiple files or directories while controlling the context provided to Aider from your IDE.</li>
+            <li><strong>Webcrawl (Experimental):</strong> Download and convert pages to markdown stored in a .aider-docs folder to add to context.</li>
+            <li><strong>Clipboard Image Support:</strong> Save clipboard images directly to the project and add them to persistent files.</li>
+            <li><strong>Refactor to Clean Code Action:</strong> Refactor code to adhere to clean code principles.</li>
+            <li><strong>Fix Build and Test Error Action:</strong> Fix build and test errors in the project.</li>
+            <li><strong>Various Specialized Actions:</strong> Including commit, documentation generation, error fixing, and design pattern application.</li>
         </ul>
 
         <h3>Advantages Over Other Coding Assistant Plugins</h3>
         <ul>
-            <li>Optimized token usage for improved speed.</li>
+            <li>Optimized token usage for improved speed (featuring replace edit mode, repo-map, and context control).</li>
             <li>Feature-rich terminal interface for command-line enthusiasts.</li>
             <li>Extensive range of commands to automate common development tasks.</li>
             <li>Robust recovery mechanisms with seamless Git integration.</li>
         </ul>
 
-        <p>Coding-Aider brings powerful terminal-based features directly into your IDE, leveraging established IDE functionalities like Git integration and keyboard shortcuts.</p>
+        <p>Coding-Aider brings these powerful terminal-based features directly into your IDE, leveraging established IDE functionalities like Git integration and keyboard shortcuts.</p>
     ]]></description>
 
     <!-- Product and plugin compatibility requirements.
