@@ -38,6 +38,13 @@ class OpenAiderActionGroup : AnAction(), DumbAware {
         )
         addQuickAccessAction(
             popupActionGroup,
+            "de.andrena.codingaider.actions.aider.DocumentEachFolderAction",
+            "Document Each Folder",
+            AllIcons.Actions.Dump,
+            'E'
+        )
+        addQuickAccessAction(
+            popupActionGroup,
             "de.andrena.codingaider.actions.aider.RefactorToCleanCodeAction",
             "Refactor",
             AllIcons.Actions.GroupBy,
