@@ -80,12 +80,11 @@ class MarkdownDialog(
         }
     }
 
-    fun startAutoCloseTimer() {
+    fun startAutoCloseTimer(autocloseDelay: Int) {
         val settings = getInstance()
         if (!settings.enableMarkdownDialogAutoclose) return
-        val delay = settings.markdownDialogAutocloseDelay
         keepOpenButton.isVisible = true
-        var remainingSeconds = max(1, delay)
+        var remainingSeconds = max(1, autocloseDelay)
         autoCloseTimer = Timer().scheduleAtFixedRate(0, 1000) { // Update every second
             invokeLater {
                 if (remainingSeconds > 0) {

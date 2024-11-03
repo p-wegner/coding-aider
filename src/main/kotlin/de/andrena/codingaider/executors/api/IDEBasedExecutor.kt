@@ -120,7 +120,7 @@ class IDEBasedExecutor(
 
     override fun onCommandComplete(message: String, exitCode: Int) {
         updateDialogProgress(message, "Aider Command ${if (exitCode == 0) "Completed" else "Failed"}")
-        markdownDialog.startAutoCloseTimer()
+        markdownDialog.startAutoCloseTimer(getInstance().markdownDialogAutocloseDelay)
         refreshFiles()
         addNewPlanFilesToPersistentFiles()
         if (!commandData.options.disablePresentation) {
@@ -139,6 +139,6 @@ class IDEBasedExecutor(
     override fun onCommandError(message: String) {
         updateDialogProgress(message, "Aider Command Error")
         markdownDialog.setProcessFinished()
-        markdownDialog.startAutoCloseTimer()
+        markdownDialog.startAutoCloseTimer(getInstance().markdownDialogAutocloseDelay)
     }
 }
