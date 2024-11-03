@@ -39,7 +39,7 @@ data class CommandData(
  */
 data class CommandOptions(
     val disablePresentation: Boolean = false,
-    val useDockerAider: Boolean = false
+    val useDockerAider: Boolean? = null
 ) {
     companion object {
         val DEFAULT = CommandOptions()
