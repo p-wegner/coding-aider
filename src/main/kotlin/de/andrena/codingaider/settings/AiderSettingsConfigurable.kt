@@ -147,11 +147,6 @@ class AiderSettingsConfigurable() : Configurable {
                         showTestCommandResult()
                     }
                 }
-                row("Documentation LLM Model:") {
-                    cell(documentationLlmComboBox).component.apply {
-                        renderer = LlmComboBoxRenderer()
-                    }
-                }
             }
 
             group("General Settings") {
@@ -295,6 +290,13 @@ class AiderSettingsConfigurable() : Configurable {
                             toolTipText =
                                 "If enabled, the Aider configuration file will be mounted in the Docker container."
                         }
+                }
+
+                row("Documentation LLM Model:") {
+                    cell(documentationLlmComboBox).component.apply {
+                        renderer = LlmComboBoxRenderer()
+                        toolTipText = "Select the LLM model to use for generating documentation. The default is the LLM model specified in the settings."
+                    }
                 }
             }
 
