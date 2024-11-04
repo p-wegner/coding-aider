@@ -41,15 +41,13 @@ class MarkdownDialog(
             }
         }
     }
-    private var scrollPane: JScrollPane
+    private var scrollPane: JBScrollPane
     private var autoCloseTimer: TimerTask? = null
-    private var keepOpenButton: JButton
-    private var closeButton: JButton
+    private var keepOpenButton: JButton = JButton("Keep Open")
+    private var closeButton: JButton = JButton(onAbort?.let { "Abort" } ?: "Close")
     private var isProcessFinished = false
 
     init {
-        keepOpenButton = JButton("Keep Open")
-        closeButton = JButton(onAbort?.let { "Abort" } ?: "Close")
         title = initialTitle
         setSize(800, 800)
         setLocationRelativeTo(null)
@@ -63,7 +61,7 @@ class MarkdownDialog(
         add(scrollPane, BorderLayout.CENTER)
 
         val buttonPanel = JPanel()
-        closeButton = JButton(onAbort?.let { "Abort" } ?: "Close").apply {
+        closeButton.apply {
             mnemonic = onAbort?.let { KeyEvent.VK_A } ?: KeyEvent.VK_C
             addActionListener {
                 if (isProcessFinished || onAbort == null) {
