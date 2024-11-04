@@ -32,7 +32,8 @@ class FixCompileErrorActionGroup : DefaultActionGroup() {
     override fun update(e: AnActionEvent) {
         val project = e.project
         val psiFile = e.getData(CommonDataKeys.PSI_FILE)
-        val hasErrors = project != null && psiFile != null && BaseFixCompileErrorAction.hasCompileErrors(project, psiFile)
+        val hasErrors =
+            project != null && psiFile != null && BaseFixCompileErrorAction.hasCompileErrors(project, psiFile)
         e.presentation.isEnabledAndVisible = hasErrors
     }
 
@@ -101,6 +102,10 @@ class FixCompileErrorAction : BaseFixCompileErrorAction() {
         fixCompileError(project, psiFile)
     }
 
+    init {
+        templatePresentation.text = "Quick Fix Compile Error"
+    }
+
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     companion object {
@@ -136,6 +141,7 @@ class FixCompileErrorInteractive : BaseFixCompileErrorAction() {
     init {
         templatePresentation.text = "Fix Compile Error (Interactive)"
     }
+
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val psiFile = e.getData(CommonDataKeys.PSI_FILE) ?: return
