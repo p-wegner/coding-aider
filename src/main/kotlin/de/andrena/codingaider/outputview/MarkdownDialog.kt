@@ -27,7 +27,7 @@ class MarkdownDialog(
 
     private val textArea: MarkdownEditorWithPreview = run {
         val virtualFile = LightVirtualFile("preview.md", MarkdownFileType.INSTANCE, initialText.replace("\r\n", "\n"))
-        MarkdownEditorWithPreview(project, virtualFile).apply {
+        MarkdownEditorWithPreview.createEditor(project, virtualFile).apply {
             editor.settings.apply {
                 isUseSoftWraps = true
                 isAdditionalPageAtBottom = true
