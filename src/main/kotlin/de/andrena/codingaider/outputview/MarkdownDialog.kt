@@ -1,20 +1,14 @@
 package de.andrena.codingaider.outputview
 
+import com.intellij.openapi.editor.EditorFactory
+import com.intellij.openapi.editor.EditorKind
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
-import java.awt.Frame
-import java.awt.BorderLayout
-import javax.swing.JDialog
-import javax.swing.JPanel
-import javax.swing.JButton
-import javax.swing.JViewport
-import javax.swing.JScrollPane
-import javax.swing.ScrollPaneConstants
-import javax.swing.SwingUtilities
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.components.JBScrollPane
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import org.intellij.plugins.markdown.lang.MarkdownFileType
-import org.intellij.plugins.markdown.ui.preview.MarkdownEditorWithPreview
+import org.intellij.plugins.markdown.ui.preview.MarkdownPreviewFileEditor
 import java.awt.BorderLayout
 import java.awt.EventQueue.invokeLater
 import java.awt.Frame
@@ -26,9 +20,6 @@ import kotlin.concurrent.schedule
 import kotlin.concurrent.scheduleAtFixedRate
 import kotlin.math.max
 
-interface Abortable {
-    fun abortCommand()
-}
 
 class MarkdownDialog(
     private val project: Project,
@@ -38,13 +29,17 @@ class MarkdownDialog(
 ) : JDialog(null as Frame?, true) {
     // use MarkdownEditorWithPreview instead of LanguageTextField to enable preview
 
-    private val textArea: MarkdownEditorWithPreview = run {
-        val virtualFile = LightVirtualFile("preview.md", MarkdownFileType.INSTANCE, initialText.replace("\r\n", "\n"))
-        MarkdownEditorWithPreview(project, virtualFile).apply {
-            getEditor()?.settings?.apply {
-                isUseSoftWraps = true
-                additionalLinesCount = 1
-            }
+    private val virtualFile =
+        LightVirtualFile("preview.md", MarkdownFileType.INSTANCE, initialText.replace("\r\n", "\n"))
+    private val textArea: MarkdownPreviewFileEditor = run {
+        MarkdownPreviewFileEditor(project, virtualFile).apply {
+            setMainEditor(
+                EditorFactory.getInstance().createEditor(
+                    FileDocumentManager.getInstance().getDocument(virtualFile)!!,
+                    project,
+                    EditorKind.PREVIEW
+                )
+            )
         }
     }
     private lateinit var scrollPane: JBScrollPane
@@ -56,7 +51,7 @@ class MarkdownDialog(
     init {
         keepOpenButton = JButton("Keep Open")
         closeButton = JButton(onAbort?.let { "Abort" } ?: "Close")
-        
+
         title = initialTitle
         setSize(800, 800)
         setLocationRelativeTo(null)
@@ -99,14 +94,16 @@ class MarkdownDialog(
                 }
             }
         })
-        isVisible = true
+
         setAlwaysOnTop(true)
         setAlwaysOnTop(false)
     }
 
     fun updateProgress(output: String, message: String) {
         invokeLater {
-            textArea.getEditor()?.document?.setText(output)
+            virtualFile.setContent(null, output.replace("\r\n", "\n"), false)
+            
+//            textArea.updatePreview()
             title = message
 //            textArea.caretPosition = textArea.document.length
             scrollPane.verticalScrollBar.value = scrollPane.verticalScrollBar.maximum

@@ -24,7 +24,7 @@ class IDEBasedExecutor(
     private val commandData: CommandData,
 ) : CommandObserver, Abortable {
     private val log = Logger.getInstance(IDEBasedExecutor::class.java)
-    private lateinit var markdownDialog: MarkdownDialog
+    private var markdownDialog: MarkdownDialog? = null
     private var currentCommitHash: String? = commandData.options.commitHashToCompareWith
     private val commandExecutor = AtomicReference<CommandExecutor?>(null)
     private var executionThread: Thread? = null
@@ -56,7 +56,7 @@ class IDEBasedExecutor(
             executeAiderCommand()
             isFinished.countDown()
         }
-        return markdownDialog
+        return markdownDialog!!
     }
 
     fun isFinished(): CountDownLatch = isFinished
@@ -78,7 +78,7 @@ class IDEBasedExecutor(
         commandExecutor.get()?.abortCommand()
         executionThread?.interrupt()
         updateDialogProgress("Aider command aborted by user", "Aider Command Aborted")
-        markdownDialog.dispose()
+        markdownDialog?.dispose()
     }
 
     private fun refreshFiles() {
@@ -89,12 +89,15 @@ class IDEBasedExecutor(
 
     private fun openGitComparisonToolIfNeeded() {
         if (getInstance().showGitComparisonTool) {
-            currentCommitHash?.let { GitUtils.openGitComparisonTool(project, it) { markdownDialog.focus(1000) } }
+            currentCommitHash?.let { GitUtils.openGitComparisonTool(project, it) { markdownDialog?.focus(1000) } }
         }
     }
 
     private fun updateDialogProgress(message: String, title: String) {
-        invokeLater { markdownDialog.updateProgress(message, title) }
+        invokeLater {
+            if (markdownDialog == null) return@invokeLater;
+            markdownDialog?.updateProgress(message, title)
+        }
     }
 
     private fun addNewPlanFilesToPersistentFiles() {
@@ -120,8 +123,9 @@ class IDEBasedExecutor(
 
     override fun onCommandComplete(message: String, exitCode: Int) {
         updateDialogProgress(message, "Aider Command ${if (exitCode == 0) "Completed" else "Failed"}")
-        markdownDialog.startAutoCloseTimer(
-            commandData.options.autoCloseDelay ?: getInstance().markdownDialogAutocloseDelay)
+        markdownDialog?.startAutoCloseTimer(
+            commandData.options.autoCloseDelay ?: getInstance().markdownDialogAutocloseDelay
+        )
         refreshFiles()
         addNewPlanFilesToPersistentFiles()
         if (!commandData.options.disablePresentation) {
@@ -132,14 +136,14 @@ class IDEBasedExecutor(
     private fun presentChanges() {
         openGitComparisonToolIfNeeded()
         if (!getInstance().closeOutputDialogImmediately) {
-            markdownDialog.setProcessFinished()
-            markdownDialog.focus()
+            markdownDialog?.setProcessFinished()
+            markdownDialog?.focus()
         }
     }
 
     override fun onCommandError(message: String) {
         updateDialogProgress(message, "Aider Command Error")
-        markdownDialog.setProcessFinished()
-        markdownDialog.startAutoCloseTimer(getInstance().markdownDialogAutocloseDelay)
+        markdownDialog?.setProcessFinished()
+        markdownDialog?.startAutoCloseTimer(getInstance().markdownDialogAutocloseDelay)
     }
 }
