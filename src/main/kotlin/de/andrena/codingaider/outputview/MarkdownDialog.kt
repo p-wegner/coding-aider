@@ -1,9 +1,10 @@
 package de.andrena.codingaider.outputview
 
 import com.intellij.openapi.project.Project
-import org.intellij.plugins.markdown.lang.MarkdownLanguage
-import com.intellij.openapi.editor.ex.EditorEx
-import com.intellij.ui.LanguageTextField
+import org.intellij.plugins.markdown.ui.preview.MarkdownEditorWithPreview
+import com.intellij.openapi.fileTypes.FileTypeManager
+import com.intellij.testFramework.LightVirtualFile
+import org.intellij.plugins.markdown.fileType.MarkdownFileType
 import com.intellij.ui.components.JBScrollPane
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import java.awt.BorderLayout
@@ -24,12 +25,13 @@ class MarkdownDialog(
 ) : JDialog() {
     // use MarkdownEditorWithPreview instead of LanguageTextField to enable preview
 
-    private val textArea: LanguageTextField = LanguageTextField(MarkdownLanguage.INSTANCE, project, initialText.replace("\r\n", "\n")).apply {
-        (editor as? EditorEx)?.apply {
-            isViewer = true
-            setCaretEnabled(false)
-            settings.isUseSoftWraps = true
-            settings.isAdditionalPageAtBottom = true
+    private val textArea: MarkdownEditorWithPreview = run {
+        val virtualFile = LightVirtualFile("preview.md", MarkdownFileType.INSTANCE, initialText.replace("\r\n", "\n"))
+        MarkdownEditorWithPreview(project, virtualFile).apply {
+            editor.settings.apply {
+                isUseSoftWraps = true
+                isAdditionalPageAtBottom = true
+            }
         }
     }
     private val scrollPane: JScrollPane
@@ -89,7 +91,7 @@ class MarkdownDialog(
 
     fun updateProgress(output: String, message: String) {
         invokeLater {
-            textArea.text = output
+            textArea.editor.document.setText(output)
             title = message
 //            textArea.caretPosition = textArea.document.length
             scrollPane.verticalScrollBar.value = scrollPane.verticalScrollBar.maximum
