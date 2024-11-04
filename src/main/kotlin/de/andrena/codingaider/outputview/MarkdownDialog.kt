@@ -1,6 +1,9 @@
 package de.andrena.codingaider.outputview
 
 import com.intellij.openapi.project.Project
+import javax.swing.JDialog
+import javax.swing.JPanel
+import javax.swing.JButton
 import org.intellij.plugins.markdown.ui.preview.MarkdownEditorWithPreview
 import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.testFramework.LightVirtualFile
@@ -25,7 +28,7 @@ class MarkdownDialog(
     private val initialTitle: String,
     initialText: String,
     private val onAbort: Abortable? = null
-) : JDialog() {
+) : JDialog(null, true) {
     // use MarkdownEditorWithPreview instead of LanguageTextField to enable preview
 
     private val textArea: MarkdownEditorWithPreview = run {
