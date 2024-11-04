@@ -60,8 +60,7 @@ class MarkdownDialog(
     init {
         keepOpenButton = JButton("Keep Open")
         closeButton = JButton(onAbort?.let { "Abort" } ?: "Close")
-
-    init {
+        
         title = initialTitle
         setSize(800, 800)
         setLocationRelativeTo(null)
