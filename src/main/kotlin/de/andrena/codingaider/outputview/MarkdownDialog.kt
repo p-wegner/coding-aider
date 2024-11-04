@@ -28,6 +28,8 @@ class MarkdownDialog(
         (editor as? EditorEx)?.apply {
             isViewer = true
             setCaretEnabled(false)
+            settings.isUseSoftWraps = true
+            settings.isAdditionalPageAtBottom = true
         }
     }
     private val scrollPane: JScrollPane
@@ -42,7 +44,12 @@ class MarkdownDialog(
         setLocationRelativeTo(null)
         layout = BorderLayout()
 
-        scrollPane = JBScrollPane(textArea)
+        scrollPane = JBScrollPane(textArea).apply {
+            horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
+            verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
+            viewport.scrollMode = JViewport.BACKINGSTORE_SCROLL_MODE
+            setWheelScrollingEnabled(true)
+        }
         add(scrollPane, BorderLayout.CENTER)
 
         val buttonPanel = JPanel()
