@@ -16,6 +16,7 @@ interface ApiKeyChecker {
 class DefaultApiKeyChecker : ApiKeyChecker {
     private val llmToApiKeyMap = mapOf(
         "--sonnet" to "ANTHROPIC_API_KEY",
+        "--haiku" to "ANTHROPIC_API_KEY",
         "--mini" to "OPENAI_API_KEY",
         "--4o" to "OPENAI_API_KEY",
         "o1-mini" to "OPENAI_API_KEY",
