@@ -38,11 +38,6 @@ class FixBuildAndTestErrorActionGroup : DefaultActionGroup() {
 }
 
 abstract class BaseFixBuildAndTestErrorAction : AnAction() {
-    abstract override fun getTemplateText(): String
-
-    init {
-        templatePresentation.text = getTemplateText()
-    }
 
     override fun update(e: AnActionEvent) {
         val project = e.project
@@ -144,7 +139,9 @@ private fun SMTestProxy.getStackTraceAndLocation(): Pair<String?, String?> = thi
 }
 
 class FixBuildAndTestErrorAction : BaseFixBuildAndTestErrorAction() {
-    override fun getTemplateText(): String = "Quick Fix Error"
+    init {
+        templatePresentation.text = "Quick Fix Error"
+    }
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         fixGradleError(project,e)
@@ -162,7 +159,9 @@ class FixBuildAndTestErrorAction : BaseFixBuildAndTestErrorAction() {
 }
 
 class FixBuildAndTestErrorInteractive : BaseFixBuildAndTestErrorAction() {
-    override fun getTemplateText(): String = "Fix Error (Interactive)"
+    init {
+        templatePresentation.text = "Fix Error (Interactive)"
+    }
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return

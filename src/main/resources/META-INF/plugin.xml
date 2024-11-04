@@ -149,14 +149,23 @@
             </action>
         </group>
 
-        <action id="de.andrena.codingaider.actions.aider.FixCompileErrorActionGroup"
+        <group id="de.andrena.codingaider.actions.aider.FixCompileErrorActionGroup"
                 class="de.andrena.codingaider.actions.aider.FixCompileErrorActionGroup"
                 text="Fix with Aider"
                 icon="META-INF/pluginIcon_13.svg"
-                description="Group of actions to fix compile errors with Aider">
+                description="Group of actions to fix compile errors with Aider"
+                popup="true">
+            <action id="de.andrena.codingaider.actions.aider.FixCompileErrorAction"
+                    class="de.andrena.codingaider.actions.aider.FixCompileErrorAction"
+                    text="Quick Fix Compile Error"
+                    description="Fix compile error with Aider"/>
+            <action id="de.andrena.codingaider.actions.aider.FixCompileErrorInteractive"
+                    class="de.andrena.codingaider.actions.aider.FixCompileErrorInteractive" 
+                    text="Fix Compile Error (Interactive)"
+                    description="Fix compile error with Aider interactively"/>
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
-        </action>
+        </group>
         <group
                 id="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorActionGroup"
                 text="Aider Actions"

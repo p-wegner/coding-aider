@@ -133,6 +133,9 @@ class FixCompileErrorAction : BaseFixCompileErrorAction() {
 }
 
 class FixCompileErrorInteractive : BaseFixCompileErrorAction() {
+    init {
+        templatePresentation.text = "Fix Compile Error (Interactive)"
+    }
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val psiFile = e.getData(CommonDataKeys.PSI_FILE) ?: return
