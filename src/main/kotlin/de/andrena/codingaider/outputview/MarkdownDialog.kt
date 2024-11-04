@@ -1,7 +1,6 @@
 package de.andrena.codingaider.outputview
 
 import com.intellij.openapi.editor.EditorFactory
-import com.intellij.openapi.editor.EditorKind
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.LightVirtualFile
@@ -29,41 +28,50 @@ class MarkdownDialog(
 ) : JDialog(null as Frame?, true) {
     // use MarkdownEditorWithPreview instead of LanguageTextField to enable preview
 
-    private val virtualFile =
-        LightVirtualFile("preview.md", MarkdownFileType.INSTANCE, initialText.replace("\r\n", "\n"))
-    private val textArea: MarkdownPreviewFileEditor = run {
-        MarkdownPreviewFileEditor(project, virtualFile).apply {
-            setMainEditor(
-                EditorFactory.getInstance().createEditor(
-                    FileDocumentManager.getInstance().getDocument(virtualFile)!!,
-                    project,
-                    EditorKind.PREVIEW
-                )
-            )
+    private val virtualFile = LightVirtualFile("preview.md", MarkdownFileType.INSTANCE, initialText.replace("\r\n", "\n"))
+    private val document = FileDocumentManager.getInstance().getDocument(virtualFile)!!
+    private val textArea: MarkdownPreviewFileEditor = MarkdownPreviewFileEditor(project, virtualFile).apply {
+        setMainEditor(
+            EditorFactory.getInstance().createEditor(document, project, virtualFile, true)
+        )
+    }
+    private val scrollPane by lazy {
+        JBScrollPane(textArea.component).apply {
+            setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED)
+            setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS)
+            viewport.scrollMode = JViewport.BACKINGSTORE_SCROLL_MODE
         }
     }
-    private lateinit var scrollPane: JBScrollPane
     private var autoCloseTimer: TimerTask? = null
-    private var keepOpenButton: JButton
-    private var closeButton: JButton
+    private var keepOpenButton = JButton("Keep Open").apply {
+        mnemonic = KeyEvent.VK_K
+        isVisible = false
+    }
+    private var closeButton = JButton(onAbort?.let { "Abort" } ?: "Close").apply {
+        mnemonic = onAbort?.let { KeyEvent.VK_A } ?: KeyEvent.VK_C
+    }
     private var isProcessFinished = false
 
     init {
-        keepOpenButton = JButton("Keep Open")
-        closeButton = JButton(onAbort?.let { "Abort" } ?: "Close")
-
         title = initialTitle
         setSize(800, 800)
         setLocationRelativeTo(null)
         layout = BorderLayout()
-
-        scrollPane = JBScrollPane(textArea.component).apply {
-            setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED)
-            setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS)
-            (getViewport() as JViewport).scrollMode = JViewport.BACKINGSTORE_SCROLL_MODE
-        }
         add(scrollPane, BorderLayout.CENTER)
 
+        defaultCloseOperation = DO_NOTHING_ON_CLOSE
+        addWindowListener(object : java.awt.event.WindowAdapter() {
+            override fun windowClosing(windowEvent: java.awt.event.WindowEvent?) {
+                if (isProcessFinished || onAbort == null) {
+                    dispose()
+                } else {
+                    onAbort.abortCommand()
+                }
+            }
+        })
+
+        setAlwaysOnTop(true)
+        setAlwaysOnTop(false)
         val buttonPanel = JPanel()
         closeButton.apply {
             mnemonic = onAbort?.let { KeyEvent.VK_A } ?: KeyEvent.VK_C
@@ -102,11 +110,13 @@ class MarkdownDialog(
     fun updateProgress(output: String, message: String) {
         invokeLater {
             virtualFile.setContent(null, output.replace("\r\n", "\n"), false)
-            
-//            textArea.updatePreview()
+            FileDocumentManager.getInstance().reloadFiles(virtualFile)
             title = message
-//            textArea.caretPosition = textArea.document.length
-            scrollPane.verticalScrollBar.value = scrollPane.verticalScrollBar.maximum
+            
+            // Ensure scroll to bottom happens after content is updated
+            SwingUtilities.invokeLater {
+                scrollPane.verticalScrollBar.value = scrollPane.verticalScrollBar.maximum
+            }
         }
     }
 
