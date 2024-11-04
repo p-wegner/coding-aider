@@ -75,10 +75,24 @@ class IDEBasedExecutor(
     }
 
     override fun abortCommand() {
-        commandExecutor.get()?.abortCommand()
-        executionThread?.interrupt()
-        updateDialogProgress("Aider command aborted by user", "Aider Command Aborted")
-        markdownDialog?.dispose()
+        try {
+            commandExecutor.get()?.abortCommand()
+            executionThread?.interrupt()
+            updateDialogProgress("Aider command aborted by user", "Aider Command Aborted")
+            markdownDialog?.setProcessFinished()
+            // Give a small delay to ensure the message is shown before closing
+            Thread.sleep(500)
+            invokeLater {
+                markdownDialog?.dispose()
+            }
+            isFinished.countDown()
+        } catch (e: Exception) {
+            log.error("Error during abort", e)
+            // Ensure dialog is closed even if there's an error
+            invokeLater {
+                markdownDialog?.dispose()
+            }
+        }
     }
 
     private fun refreshFiles() {

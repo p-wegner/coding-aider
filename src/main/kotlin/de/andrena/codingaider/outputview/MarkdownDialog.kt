@@ -65,6 +65,7 @@ class MarkdownDialog(
                 if (isProcessFinished || onAbort == null) {
                     dispose()
                 } else {
+                    isProcessFinished = true  // Prevent multiple abort calls
                     onAbort.abortCommand()
                 }
             }
@@ -109,8 +110,14 @@ class MarkdownDialog(
 
     fun updateProgress(output: String, message: String) {
         invokeLater {
-            virtualFile.setContent(null, output.replace("\r\n", "\n"), false)
-            FileDocumentManager.getInstance().reloadFiles(virtualFile)
+            // Update document content within write action
+            com.intellij.openapi.application.WriteAction.run<Throwable> {
+                document.setText(output.replace("\r\n", "\n"))
+                
+                // Force editor refresh
+                textArea.selectNotify()
+            }
+            
             title = message
             
             // Ensure scroll to bottom happens after content is updated
