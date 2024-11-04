@@ -41,7 +41,7 @@ class MarkdownDialog(
             }
         }
     }
-    private var scrollPane: JBScrollPane
+    private lateinit var scrollPane: JBScrollPane
     private var autoCloseTimer: TimerTask? = null
     private var keepOpenButton: JButton = JButton("Keep Open")
     private var closeButton: JButton = JButton(onAbort?.let { "Abort" } ?: "Close")
