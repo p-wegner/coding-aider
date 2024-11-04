@@ -6,6 +6,9 @@ import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.testFramework.LightVirtualFile
 import org.intellij.plugins.markdown.fileType.MarkdownFileType
 import com.intellij.ui.components.JBScrollPane
+import javax.swing.ScrollPaneConstants
+import java.awt.Component
+import javax.swing.JViewport
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import java.awt.BorderLayout
 import java.awt.EventQueue.invokeLater
@@ -26,7 +29,7 @@ class MarkdownDialog(
     // use MarkdownEditorWithPreview instead of LanguageTextField to enable preview
 
     private val textArea: MarkdownEditorWithPreview = run {
-        val virtualFile = LightVirtualFile("preview.md", MarkdownFileType.INSTANCE, initialText.replace("\r\n", "\n"))
+        val virtualFile = LightVirtualFile("preview.md", FileTypeManager.getInstance().findFileTypeByName("Markdown")!!, initialText.replace("\r\n", "\n"))
         MarkdownEditorWithPreview(project, virtualFile).apply {
             editor.settings.apply {
                 isUseSoftWraps = true
@@ -46,11 +49,11 @@ class MarkdownDialog(
         setLocationRelativeTo(null)
         layout = BorderLayout()
 
-        scrollPane = JBScrollPane(textArea).apply {
-            horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
-            verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
-            viewport.scrollMode = JViewport.BACKINGSTORE_SCROLL_MODE
-            setWheelScrollingEnabled(true)
+        scrollPane = JBScrollPane(textArea.component).apply {
+            setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED)
+            setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS)
+            (getViewport() as JViewport).scrollMode = JViewport.BACKINGSTORE_SCROLL_MODE
+            setWheelScrolling(true)
         }
         add(scrollPane, BorderLayout.CENTER)
 
@@ -136,7 +139,7 @@ class MarkdownDialog(
                 requestFocus()
                 isAlwaysOnTop = true
                 isAlwaysOnTop = false
-                textArea.requestFocusInWindow()
+                textArea.component.requestFocusInWindow()
             }
         }
     }
