@@ -34,10 +34,10 @@ class MarkdownDialog(
 
     private val textArea: MarkdownEditorWithPreview = run {
         val virtualFile = LightVirtualFile("preview.md", MarkdownFileType.INSTANCE, initialText.replace("\r\n", "\n"))
-        MarkdownEditorWithPreview.createEditor(project, virtualFile).apply {
-            editor.settings.apply {
+        MarkdownEditorWithPreview(project, virtualFile).apply {
+            getEditor()?.settings?.apply {
                 isUseSoftWraps = true
-                isAdditionalPageAtBottom = true
+                additionalLinesCount = 1
             }
         }
     }
@@ -97,7 +97,7 @@ class MarkdownDialog(
 
     fun updateProgress(output: String, message: String) {
         invokeLater {
-            textArea.editor.document.setText(output)
+            textArea.getEditor()?.document?.setText(output)
             title = message
 //            textArea.caretPosition = textArea.document.length
             scrollPane.verticalScrollBar.value = scrollPane.verticalScrollBar.maximum
