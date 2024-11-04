@@ -28,11 +28,11 @@ class MarkdownDialog(
     private val initialTitle: String,
     initialText: String,
     private val onAbort: Abortable? = null
-) : JDialog(null, true) {
+) : JDialog(null as Frame?, true) {
     // use MarkdownEditorWithPreview instead of LanguageTextField to enable preview
 
     private val textArea: MarkdownEditorWithPreview = run {
-        val virtualFile = LightVirtualFile("preview.md", FileTypeManager.getInstance().findFileTypeByName("Markdown")!!, initialText.replace("\r\n", "\n"))
+        val virtualFile = LightVirtualFile("preview.md", MarkdownFileType.INSTANCE, initialText.replace("\r\n", "\n"))
         MarkdownEditorWithPreview(project, virtualFile).apply {
             editor.settings.apply {
                 isUseSoftWraps = true
@@ -56,7 +56,6 @@ class MarkdownDialog(
             setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED)
             setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS)
             (getViewport() as JViewport).scrollMode = JViewport.BACKINGSTORE_SCROLL_MODE
-            setWheelScrolling(true)
         }
         add(scrollPane, BorderLayout.CENTER)
 
