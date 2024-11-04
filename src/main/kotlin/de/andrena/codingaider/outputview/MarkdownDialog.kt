@@ -1,22 +1,14 @@
 package de.andrena.codingaider.outputview
 
 import com.intellij.openapi.project.Project
-import java.awt.Frame
-import javax.swing.JScrollPane
-import javax.swing.JDialog
-import javax.swing.JPanel
-import javax.swing.JButton
-import org.intellij.plugins.markdown.ui.preview.MarkdownEditorWithPreview
-import com.intellij.openapi.fileTypes.FileTypeManager
 import com.intellij.testFramework.LightVirtualFile
-import org.intellij.plugins.markdown.fileType.MarkdownFileType
 import com.intellij.ui.components.JBScrollPane
-import javax.swing.ScrollPaneConstants
-import java.awt.Component
-import javax.swing.JViewport
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
+import org.intellij.plugins.markdown.lang.MarkdownFileType
+import org.intellij.plugins.markdown.ui.preview.MarkdownEditorWithPreview
 import java.awt.BorderLayout
 import java.awt.EventQueue.invokeLater
+import java.awt.Frame
 import java.awt.event.KeyEvent
 import java.util.*
 import java.util.Timer
