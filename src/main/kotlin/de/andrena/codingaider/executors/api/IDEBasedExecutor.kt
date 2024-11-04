@@ -37,11 +37,11 @@ class IDEBasedExecutor(
             "Aider Command Output",
             "Initializing Aider command...",
             this
-        )
-            .apply {
-                isVisible = true
-                focus()
-            }
+        ).apply {
+            isVisible = true
+            focus()
+            updateProgress("Initializing Aider command...", "Aider Command Starting")
+        }
         if (currentCommitHash == null) {
             currentCommitHash = GitUtils.getCurrentCommitHash(project)
         }

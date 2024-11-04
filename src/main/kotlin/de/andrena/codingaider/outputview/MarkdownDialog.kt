@@ -25,9 +25,7 @@ class MarkdownDialog(
     private val initialTitle: String,
     initialText: String,
     private val onAbort: Abortable? = null
-) : JDialog(null as Frame?, true) {
-    // use MarkdownEditorWithPreview instead of LanguageTextField to enable preview
-
+) : JDialog(null as Frame?, false) {
     private val virtualFile = LightVirtualFile("preview.md", MarkdownFileType.INSTANCE, initialText.replace("\r\n", "\n"))
     private val document = FileDocumentManager.getInstance().getDocument(virtualFile)!!
     private val textArea: MarkdownPreviewFileEditor = MarkdownPreviewFileEditor(project, virtualFile).apply {
@@ -43,6 +41,7 @@ class MarkdownDialog(
         }
     }
     private var autoCloseTimer: TimerTask? = null
+    private var refreshTimer: Timer? = null
     private var keepOpenButton = JButton("Keep Open").apply {
         mnemonic = KeyEvent.VK_K
         isVisible = false
@@ -54,6 +53,17 @@ class MarkdownDialog(
 
     init {
         title = initialTitle
+        
+        // Start refresh timer
+        refreshTimer = Timer().apply {
+            scheduleAtFixedRate(0, 1000) {
+                invokeLater {
+                    textArea.selectNotify()
+                    textArea.component.revalidate()
+                    textArea.component.repaint()
+                }
+            }
+        }
         setSize(800, 800)
         setLocationRelativeTo(null)
         layout = BorderLayout()
@@ -71,8 +81,6 @@ class MarkdownDialog(
             }
         })
 
-        setAlwaysOnTop(true)
-        setAlwaysOnTop(false)
         val buttonPanel = JPanel()
         closeButton.apply {
             mnemonic = onAbort?.let { KeyEvent.VK_A } ?: KeyEvent.VK_C
@@ -96,6 +104,7 @@ class MarkdownDialog(
         defaultCloseOperation = DO_NOTHING_ON_CLOSE
         addWindowListener(object : java.awt.event.WindowAdapter() {
             override fun windowClosing(windowEvent: java.awt.event.WindowEvent?) {
+                refreshTimer?.cancel()
                 if (isProcessFinished || onAbort == null) {
                     dispose()
                 } else {
@@ -104,25 +113,37 @@ class MarkdownDialog(
             }
         })
 
-        setAlwaysOnTop(true)
-        setAlwaysOnTop(false)
     }
 
     fun updateProgress(output: String, message: String) {
-        invokeLater {
-            // Update document content within write action
-            com.intellij.openapi.application.WriteAction.run<Throwable> {
-                document.setText(output.replace("\r\n", "\n"))
+        com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
+            try {
+                com.intellij.openapi.application.WriteAction.runAndWait<Throwable> {
+                    document.setText(output.replace("\r\n", "\n"))
+                }
                 
-                // Force editor refresh
+                title = message
+                
+                // Force preview refresh
                 textArea.selectNotify()
-            }
-            
-            title = message
-            
-            // Ensure scroll to bottom happens after content is updated
-            SwingUtilities.invokeLater {
-                scrollPane.verticalScrollBar.value = scrollPane.verticalScrollBar.maximum
+                
+                // Ensure UI updates happen on EDT
+                SwingUtilities.invokeLater {
+                    // Update preview
+                    textArea.component.revalidate()
+                    textArea.component.repaint()
+                    
+                    // Scroll to bottom
+                    val scrollBar = scrollPane.verticalScrollBar
+                    scrollBar.value = scrollBar.maximum
+                    
+                    // Final refresh
+                    scrollPane.revalidate()
+                    scrollPane.repaint()
+                }
+            } catch (e: Exception) {
+                println("Error updating markdown dialog: ${e.message}")
+                e.printStackTrace()
             }
         }
     }
@@ -163,8 +184,6 @@ class MarkdownDialog(
             SwingUtilities.invokeLater {
                 toFront()
                 requestFocus()
-                isAlwaysOnTop = true
-                isAlwaysOnTop = false
                 textArea.component.requestFocusInWindow()
             }
         }
