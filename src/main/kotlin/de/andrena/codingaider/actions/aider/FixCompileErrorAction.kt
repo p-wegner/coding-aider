@@ -21,7 +21,7 @@ import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.AiderInputDialog
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 
-class FixCompileErrorActionGroup : ActionGroup() {
+class FixCompileErrorActionGroup : DefaultActionGroup() {
     override fun getChildren(e: AnActionEvent?): Array<AnAction> {
         return arrayOf(
             FixCompileErrorAction(),
