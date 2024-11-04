@@ -1,6 +1,8 @@
 package de.andrena.codingaider.outputview
 
 import com.intellij.openapi.project.Project
+import java.awt.Frame
+import javax.swing.JScrollPane
 import javax.swing.JDialog
 import javax.swing.JPanel
 import javax.swing.JButton
@@ -40,10 +42,10 @@ class MarkdownDialog(
             }
         }
     }
-    private val scrollPane: JScrollPane
+    private lateinit var scrollPane: JScrollPane
     private var autoCloseTimer: TimerTask? = null
-    private val keepOpenButton: JButton
-    private val closeButton: JButton
+    private lateinit var keepOpenButton: JButton
+    private lateinit var closeButton: JButton
     private var isProcessFinished = false
 
     init {
