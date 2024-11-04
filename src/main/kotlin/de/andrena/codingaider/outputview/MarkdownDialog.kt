@@ -1,6 +1,12 @@
 package de.andrena.codingaider.outputview
 
 import com.intellij.openapi.project.Project
+import java.awt.Frame
+import java.awt.BorderLayout
+import javax.swing.JDialog
+import javax.swing.JPanel
+import javax.swing.JButton
+import javax.swing.JViewport
 import javax.swing.JDialog
 import javax.swing.JPanel
 import javax.swing.JButton
@@ -24,6 +30,10 @@ import kotlin.concurrent.schedule
 import kotlin.concurrent.scheduleAtFixedRate
 import kotlin.math.max
 
+interface Abortable {
+    fun abortCommand()
+}
+
 class MarkdownDialog(
     private val project: Project,
     private val initialTitle: String,
@@ -43,9 +53,13 @@ class MarkdownDialog(
     }
     private lateinit var scrollPane: JBScrollPane
     private var autoCloseTimer: TimerTask? = null
-    private var keepOpenButton: JButton = JButton("Keep Open")
-    private var closeButton: JButton = JButton(onAbort?.let { "Abort" } ?: "Close")
+    private var keepOpenButton: JButton
+    private var closeButton: JButton
     private var isProcessFinished = false
+
+    init {
+        keepOpenButton = JButton("Keep Open")
+        closeButton = JButton(onAbort?.let { "Abort" } ?: "Close")
 
     init {
         title = initialTitle
