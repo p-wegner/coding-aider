@@ -7,11 +7,7 @@ import javax.swing.JDialog
 import javax.swing.JPanel
 import javax.swing.JButton
 import javax.swing.JViewport
-import javax.swing.JDialog
-import javax.swing.JPanel
-import javax.swing.JButton
 import javax.swing.JScrollPane
-import javax.swing.JViewport
 import javax.swing.ScrollPaneConstants
 import javax.swing.SwingUtilities
 import com.intellij.testFramework.LightVirtualFile
