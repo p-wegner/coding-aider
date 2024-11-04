@@ -152,6 +152,7 @@
         <action id="de.andrena.codingaider.actions.aider.FixCompileErrorActionGroup"
                 class="de.andrena.codingaider.actions.aider.FixCompileErrorActionGroup"
                 text="Fix with Aider"
+                icon="META-INF/pluginIcon_13.svg"
                 description="Group of actions to fix compile errors with Aider">
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
@@ -164,14 +165,19 @@
             <action id="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorAction"
                     class="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorAction"
                     text="Fix Error with Aider"
+                    icon="META-INF/pluginIcon_13.svg"
                     description="Group of actions to fix errors with Aider">
                 <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
                 <add-to-group group-id="RunContextPopupGroup" anchor="first"/>
+                <add-to-group group-id="TestTreePopupMenu" anchor="first"/>
             </action>
             <action id="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorInteractive"
                     class="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorInteractive"
+                    icon="META-INF/pluginIcon_13.svg"
                     text="Fix Test with Aider"
                     description="Group of actions to fix errors with Aider">
+                <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
+                <add-to-group group-id="RunContextPopupGroup" anchor="first"/>
                 <add-to-group group-id="TestTreePopupMenu" anchor="first"/>
             </action>
         </group>
