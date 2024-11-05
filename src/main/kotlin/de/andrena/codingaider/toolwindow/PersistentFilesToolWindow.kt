@@ -86,6 +86,7 @@ class PersistentFilesComponent(private val project: Project) {
                 }
                 row {
                     button("Add Files") { addPersistentFiles() }
+                    button("Add Open Files") { addOpenFilesToPersistent() }
                     button("Toggle Read-Only") { toggleReadOnlyMode() }
                     button("Remove Files") { removeSelectedFiles() }
                 }
@@ -127,6 +128,13 @@ class PersistentFilesComponent(private val project: Project) {
         persistentFileService.getPersistentFiles().forEach { file ->
             persistentFilesListModel.addElement(file)
         }
+    }
+
+    private fun addOpenFilesToPersistent() {
+        val openFiles = FileEditorManager.getInstance(project).openFiles
+        val fileDataList = openFiles.map { FileData(it.path, false) }
+        persistentFileService.addAllFiles(fileDataList)
+        loadPersistentFiles()
     }
 
     private inner class PersistentFileRenderer : DefaultListCellRenderer() {
