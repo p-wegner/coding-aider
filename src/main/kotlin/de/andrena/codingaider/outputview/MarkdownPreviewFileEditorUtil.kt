@@ -1,6 +1,13 @@
 package de.andrena.codingaider.outputview
 
 import com.intellij.openapi.editor.Document
+import com.vladsch.flexmark.parser.Parser
+import com.vladsch.flexmark.html.HtmlRenderer
+import com.vladsch.flexmark.util.data.MutableDataSet
+import java.awt.Desktop
+import java.net.URI
+import javax.swing.JEditorPane
+import javax.swing.event.HyperlinkEvent
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
