@@ -188,38 +188,6 @@ class MarkdownDialog(
     }
 
 }
-package de.andrena.codingaider.outputview
-
-import com.vladsch.flexmark.html.HtmlRenderer
-import com.vladsch.flexmark.parser.Parser
-import com.vladsch.flexmark.util.data.MutableDataSet
-import java.awt.BorderLayout
-import javax.swing.JEditorPane
-import javax.swing.JPanel
-import javax.swing.event.HyperlinkEvent
-import javax.swing.text.html.HTMLEditorKit
-import javax.swing.text.html.StyleSheet
-
-class CustomMarkdownViewer : JPanel() {
-    private val options = MutableDataSet()
-    private val parser = Parser.builder(options).build()
-    private val renderer = HtmlRenderer.builder(options).build()
-    private val editorPane = JEditorPane().apply {
-        contentType = "text/html"
-        isEditable = false
-        addHyperlinkListener { event ->
-            if (event.eventType == HyperlinkEvent.EventType.ACTIVATED) {
-                // Handle link clicks if needed
-            }
-        }
-        
-        // Configure HTML styling
-        (editorKit as HTMLEditorKit).styleSheet = StyleSheet().apply {
-            addRule("body { font-family: Arial, sans-serif; margin: 8px; }")
-            addRule("pre { background-color: #f5f5f5; padding: 8px; border-radius: 4px; }")
-            addRule("code { font-family: monospace; }")
-            addRule("h1, h2, h3 { color: #2c3e50; }")
-            addRule("a { color: #3498db; }")
         }
     }
 
