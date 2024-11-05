@@ -6,25 +6,37 @@ graph TD
     Actions --> Settings
     Actions --> Command
     Actions --> Executors
+    Actions --> OutputView
     
     InputDialog --> Services
     InputDialog --> Command
     InputDialog --> OutputView
+    InputDialog --> Settings
     
     Executors --> Docker
     Executors --> Command
+    Executors --> Utils
+    Executors --> OutputView
     
     ToolWindow --> Services
     ToolWindow --> Messages
+    ToolWindow --> Utils
     
     OutputView --> Services
+    OutputView --> Settings
     
     Services --> Utils
     Services --> Settings
+    Services --> Command
     
     Command --> Utils
     
     Messages --> Services
+    Messages --> Utils
+    
+    Docker --> Utils
+    
+    Settings --> Utils
     
     style Actions fill:#f9f,stroke:#333
     style Command fill:#ff9,stroke:#333
