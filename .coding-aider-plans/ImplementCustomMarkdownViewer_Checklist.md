@@ -45,17 +45,10 @@ Refer to the [Implement Custom Markdown Viewer for MarkdownDialog](ImplementCust
     - [x] Remove the `org.intellij.plugins.markdown` plugin dependency.
     - [x] Add the dependency for the selected markdown parsing library.
 
-### 6. Testing and Validation
+### 5. Improve UX
 
-- [ ] Test the updated `MarkdownDialog` with various markdown inputs, including:
-    - [ ] Basic markdown syntax (headings, lists, code blocks).
-    - [ ] Advanced features (tables, images, links).
-- [ ] Verify real-time updates:
-    - [ ] Content changes reflect immediately.
-- [ ] Check for performance issues:
-    - [ ] No significant lag or memory usage spikes.
-- [ ] Ensure user interactions work as expected:
-    - [ ] Scrolling, resizing, and focus behavior.
+- [ ] Implement autoscrolling behaviour like in shell applications.
+  If the user has scrolled, autoscrolling is off. If view is at the bottom of the content, autoscrolling is turned on.
 
 ### 7. Update Documentation
 
@@ -64,17 +57,3 @@ Refer to the [Implement Custom Markdown Viewer for MarkdownDialog](ImplementCust
     - [ ] Usage and features.
     - [ ] Any limitations or caveats.
 - [ ] Update any other relevant documentation or comments in the code.
-
-### 8. Code Review and Merge
-
-- [ ] Perform a thorough code review.
-    - [ ] Check for code quality, adherence to standards, and potential issues.
-- [ ] Make any necessary refactoring or fixes based on the review.
-- [ ] Commit all changes with clear commit messages.
-- [ ] Merge the changes into the main branch after approval.
-
-### 9. Post-Implementation
-
-- [ ] Monitor for any issues or bugs reported after deployment.
-- [ ] Be prepared to make quick fixes if necessary.
-- [ ] Consider writing unit tests for the new components if applicable.

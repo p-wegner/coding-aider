@@ -9,8 +9,8 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.LocalFileSystem
-import com.vladsch.flexmark.parser.Parser
 import com.vladsch.flexmark.html.HtmlRenderer
+import com.vladsch.flexmark.parser.Parser
 import com.vladsch.flexmark.util.data.MutableDataSet
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
@@ -21,7 +21,6 @@ import de.andrena.codingaider.utils.FileRefresher
 import java.io.File
 import java.math.BigInteger
 import java.net.URI
-import java.net.URL
 import java.security.MessageDigest
 
 class AiderWebCrawlAction : AnAction() {

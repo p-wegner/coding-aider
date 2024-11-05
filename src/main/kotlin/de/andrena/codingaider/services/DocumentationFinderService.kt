@@ -15,7 +15,7 @@ class DocumentationFinderService(private val project: Project) {
     private fun findDocumentationForFile(file: VirtualFile): List<FileData> {
         var currentDir = file.parent
         val projectRootPath = project.basePath
-
+        // TODO: exclude .coding-aider-plans folder
         while (currentDir != null && currentDir.path.startsWith(projectRootPath ?: "")) {
             val markdownFiles = currentDir.children
                 ?.filter { it.extension?.lowercase() == "md" && !it.name.startsWith(".aider") }
