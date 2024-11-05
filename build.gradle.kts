@@ -23,6 +23,11 @@ dependencies {
     implementation("com.vladsch.flexmark:flexmark-ext-tables:0.64.8")
     implementation("com.vladsch.flexmark:flexmark-ext-gfm-strikethrough:0.64.8")
     implementation("com.vladsch.flexmark:flexmark-ext-autolink:0.64.8")
+    implementation("com.vladsch.flexmark:flexmark:0.64.8")
+    implementation("com.vladsch.flexmark:flexmark-util:0.64.8")
+    implementation("com.vladsch.flexmark:flexmark-ext-tables:0.64.8")
+    implementation("com.vladsch.flexmark:flexmark-ext-gfm-strikethrough:0.64.8")
+    implementation("com.vladsch.flexmark:flexmark-ext-autolink:0.64.8")
     implementation("com.knuddels:jtokkit:1.1.0")
 
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
