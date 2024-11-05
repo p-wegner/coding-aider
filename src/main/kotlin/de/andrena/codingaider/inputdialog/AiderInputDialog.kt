@@ -149,6 +149,7 @@ class AiderInputDialog(
             {
                 lazyCacheDelegate.evict()
                 updateTokenCount()
+                updateModeUI()
             }
 
         )
@@ -162,7 +163,6 @@ class AiderInputDialog(
                     text = selectedItem.displayName
                     toolTipText = selectedItem.tooltip
                     icon = selectedItem.icon
-                    updateModeUI()
                 }.apply {
                     this.selectedItem = initialMode
                     whenItemSelected { updateModeUI() }
@@ -181,6 +181,7 @@ class AiderInputDialog(
         inputTextField.minimumSize = Dimension(300, 100)
         aiderContextView.minimumSize = Dimension(300, 200)
         modeSegmentedButton?.selectedItem = initialMode
+        updateModeUI()
     }
 
     private fun createSettingsButton(): ActionButton {
