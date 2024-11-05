@@ -151,9 +151,6 @@ class AiderSettingsConfigurable() : Configurable {
             }
 
             group("General Settings") {
-                row { cell(enableDocumentationLookupCheckBox).component.apply {
-                    toolTipText = "If enabled, documentation files (*.md) in parent directories will be included in the context"
-                } }
                 row { cell(useYesFlagCheckBox) }
                 row("Default LLM Model:") {
                     cell(llmComboBox).component.apply {
@@ -295,7 +292,9 @@ class AiderSettingsConfigurable() : Configurable {
                                 "If enabled, the Aider configuration file will be mounted in the Docker container."
                         }
                 }
-
+                row { cell(enableDocumentationLookupCheckBox).component.apply {
+                    toolTipText = "If enabled, documentation files (*.md) in parent directories will be included in the context"
+                } }
                 row("Documentation LLM Model:") {
                     cell(documentationLlmComboBox).component.apply {
                         renderer = LlmComboBoxRenderer()
@@ -390,7 +389,7 @@ class AiderSettingsConfigurable() : Configurable {
         autoCommitsComboBox.selectedIndex = settings.autoCommits.toIndex()
         dirtyCommitsComboBox.selectedIndex = settings.dirtyCommits.toIndex()
         useStructuredModeCheckBox.isSelected = settings.useStructuredMode
-
+        enableDocumentationLookupCheckBox.isSelected = settings.enableDocumentationLookup
         alwaysIncludeOpenFilesCheckBox.isSelected = settings.alwaysIncludeOpenFiles
         documentationLlmComboBox.selectedItem = settings.documentationLlm
         dockerImageTagField.text = settings.dockerImageTag

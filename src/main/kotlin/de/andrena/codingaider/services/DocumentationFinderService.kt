@@ -18,8 +18,9 @@ class DocumentationFinderService(private val project: Project) {
 
     private fun findDocumentationForFile(file: VirtualFile): List<FileData> {
         var currentDir = file.parent
+        val projectRootPath = project.basePath
 
-        while (currentDir != null) {
+        while (currentDir != null && currentDir.path != projectRootPath) {
             val markdownFiles = currentDir.children
                 ?.filter { it.extension?.lowercase() == "md" }
                 ?.map { FileData(it.path, true) }
