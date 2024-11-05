@@ -41,9 +41,9 @@ Refer to the [Implement Custom Markdown Viewer for MarkdownDialog](ImplementCust
 
 ### 5. Update Project Dependencies
 
-- [ ] In `build.gradle.kts`:
-    - [ ] Remove the `org.intellij.plugins.markdown` plugin dependency.
-    - [ ] Add the dependency for the selected markdown parsing library.
+- [x] In `build.gradle.kts`:
+    - [x] Remove the `org.intellij.plugins.markdown` plugin dependency.
+    - [x] Add the dependency for the selected markdown parsing library.
 
 ### 6. Testing and Validation
 

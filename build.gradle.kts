@@ -18,7 +18,11 @@ dependencies {
     implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.17.2")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.2")
     implementation("net.sourceforge.htmlunit:htmlunit:2.70.0")
-    implementation("com.vladsch.flexmark:flexmark-all:0.64.8")
+    implementation("com.vladsch.flexmark:flexmark:0.64.8")
+    implementation("com.vladsch.flexmark:flexmark-util:0.64.8")
+    implementation("com.vladsch.flexmark:flexmark-ext-tables:0.64.8")
+    implementation("com.vladsch.flexmark:flexmark-ext-gfm-strikethrough:0.64.8")
+    implementation("com.vladsch.flexmark:flexmark-ext-autolink:0.64.8")
     implementation("com.knuddels:jtokkit:1.1.0")
 
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
