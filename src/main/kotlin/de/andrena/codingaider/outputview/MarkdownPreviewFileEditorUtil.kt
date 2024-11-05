@@ -55,15 +55,6 @@ class MarkdownPreviewFileEditorUtil {
         }
     }
 }
-package de.andrena.codingaider.outputview
-
-import com.vladsch.flexmark.html.HtmlRenderer
-import com.vladsch.flexmark.parser.Parser
-import com.vladsch.flexmark.util.data.MutableDataSet
-import javax.swing.JEditorPane
-import javax.swing.event.HyperlinkEvent
-import java.awt.Desktop
-import java.net.URI
 
 class CustomMarkdownViewer : JEditorPane() {
     private val options = MutableDataSet()
