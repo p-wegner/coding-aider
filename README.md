@@ -39,7 +39,7 @@ Additionally API keys for the LLM Providers you intend to use are required.
 
 5. **Git Integration**: Automatically launch a Git comparison tool post-Aider operations for easy change review.
 
-6. **Real-time Progress Tracking**: Monitor Aider command progress through Markdown dialog.
+6. **Real-time Progress Tracking**: Monitor Aider command progress through a custom Markdown viewer.
 
 7. **Multi-File Support**: Execute Aider actions on multiple files or directories while controlling the context provided
    to Aider from your IDE.

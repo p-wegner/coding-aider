@@ -31,7 +31,6 @@ dependencies {
         intellijIdeaCommunity("2024.1.3")
 //        bundledModule("intellij.platform.vcs.impl")
         instrumentationTools()
-        bundledPlugin("org.intellij.plugins.markdown")
         bundledPlugin("org.jetbrains.plugins.terminal")
         bundledPlugin("Git4Idea")
     }
