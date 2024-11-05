@@ -10,11 +10,15 @@ import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.addKeyboardAction
 import com.intellij.ui.LayeredIcon
 import com.intellij.ui.OnePixelSplitter
 import com.intellij.ui.TextFieldWithAutoCompletion
+import com.intellij.ui.components.JBLabel
+import com.intellij.ui.dsl.builder.SegmentedButton
+import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.textCompletion.TextCompletionUtil
 import com.intellij.util.ui.JBUI
 import de.andrena.codingaider.actions.ide.SettingsAction
@@ -34,29 +38,18 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.swing.*
 
-enum class AiderMode {
-    SHELL, NORMAL, ARCHITECT, STRUCTURED;
+enum class AiderMode(
+    val displayName: String,
+    val tooltip: String,
+    val icon: Icon,
 
-    fun getDisplayName() = when(this) {
-        SHELL -> "Shell"
-        NORMAL -> "Normal"
-        ARCHITECT -> "Architect"
-        STRUCTURED -> "Structured"
-    }
-
-    fun getTooltip() = when(this) {
-        SHELL -> "Execute shell commands"
-        NORMAL -> "Standard AI code assistance"
-        ARCHITECT -> "AI architecture assistance"
-        STRUCTURED -> "Organized feature development with plans"
-    }
-
-    fun getIcon() = when(this) {
-        SHELL -> AllIcons.Debugger.Console
-        NORMAL -> AllIcons.Actions.Edit
-        ARCHITECT -> AllIcons.Actions.Search
-        STRUCTURED -> AllIcons.Actions.ListFiles
-    }
+    ) {
+    SHELL("Shell", "Execute shell commands", AllIcons.Debugger.Console),
+    NORMAL("Normal", "Standard AI code assistance", AllIcons.Actions.Edit),
+    ARCHITECT("Architect", "AI architecture assistance", AllIcons.Actions.Search),
+    STRUCTURED(
+        "Structured", "Organized feature development with plans", AllIcons.Actions.ListFiles
+    );
 }
 
 class SegmentedButtonItem(val text: String, val icon: Icon, val tooltip: String)
@@ -73,31 +66,29 @@ class AiderInputDialog(
 
 
     private val inputTextField: TextFieldWithAutoCompletion<String> =
-        EditorFactory.getInstance().createDocument(initialText)
-            .let { _ ->
-                TextFieldWithAutoCompletion(project, aiderCompletionProvider, false, initialText)
-            }
-            .apply {
-                setOneLineMode(false)
-                addSettingsProvider { editor ->
-                    editor?.apply {
-                        setHorizontalScrollbarVisible(true)
-                        setVerticalScrollbarVisible(true)
-                        settings.apply {
-                            isShowIntentionBulb = true
-                            isLineNumbersShown = true
-                            isAutoCodeFoldingEnabled = true
-                        }
+        EditorFactory.getInstance().createDocument(initialText).let { _ ->
+            TextFieldWithAutoCompletion(project, aiderCompletionProvider, false, initialText)
+        }.apply {
+            setOneLineMode(false)
+            addSettingsProvider { editor ->
+                editor?.apply {
+                    setHorizontalScrollbarVisible(true)
+                    setVerticalScrollbarVisible(true)
+                    settings.apply {
+                        isShowIntentionBulb = true
+                        isLineNumbersShown = true
+                        isAutoCodeFoldingEnabled = true
                     }
                 }
-                this.getEditor(true)?.let { editor ->
-                    TextCompletionUtil.installCompletionHint(editor)
-                }
-                val value: DocumentListener = object : DocumentListener {
-                    override fun documentChanged(e: DocumentEvent) = updateTokenCount()
-                }
-                document.addDocumentListener(value)
             }
+            this.getEditor(true)?.let { editor ->
+                TextCompletionUtil.installCompletionHint(editor)
+            }
+            val value: DocumentListener = object : DocumentListener {
+                override fun documentChanged(e: DocumentEvent) = updateTokenCount()
+            }
+            document.addDocumentListener(value)
+        }
     private val yesCheckBox = JCheckBox("Add --yes flag", settings.useYesFlag).apply {
         toolTipText = "Automatically answer 'yes' to prompts"
     }
@@ -121,10 +112,7 @@ class AiderInputDialog(
             val selectedFiles = fileChooser.selectedFiles
             val fileDataList = selectedFiles.flatMap { file ->
                 if (file.isDirectory) {
-                    file.walkTopDown()
-                        .filter { it.isFile }
-                        .map { FileData(it.absolutePath, false) }
-                        .toList()
+                    file.walkTopDown().filter { it.isFile }.map { FileData(it.absolutePath, false) }.toList()
                 } else {
                     listOf(FileData(file.absolutePath, false))
                 }
@@ -150,30 +138,13 @@ class AiderInputDialog(
         }
     }
     private val additionalArgsField = JTextField(settings.additionalArgs, 20)
-    private var currentMode = if (settings.isShellMode) AiderMode.SHELL
-        else if (settings.useStructuredMode) AiderMode.STRUCTURED
-        else AiderMode.NORMAL
-        
-    private val modeSegmentedButton = panel {
-        row {
-            cell(JBLabel("Mode:"))
-            segmentedButton(
-                AiderMode.values().map { mode ->
-                    SegmentedButtonItem(
-                        mode.getDisplayName(),
-                        mode.getIcon(),
-                        mode.getTooltip()
-                    )
-                }
-            ) { selectedItem ->
-                currentMode = AiderMode.values()[selectedItem]
-                updateModeUI()
-            }.apply {
-                component.selectedIndex = currentMode.ordinal
-            }
-        }
-    }
-    private val messageLabel = JLabel("Enter your message:")
+    private var initialMode = if (settings.isShellMode) AiderMode.SHELL
+    else if (settings.useStructuredMode) AiderMode.STRUCTURED
+    else AiderMode.NORMAL
+
+    private lateinit var modeSegmentedButton: SegmentedButton<AiderMode>
+    private val modeSegmentedButtonPanel: DialogPanel
+    private val messageLabel: JLabel
     private val tokenCountLabel = JLabel("Tokens: 0").apply {
         toolTipText =
             "The actual token count may vary depending on the model. The displayed number uses GPT-4O encoding as a heuristic."
@@ -187,9 +158,10 @@ class AiderInputDialog(
 
     init {
         title = "Aider Command"
+        messageLabel = JLabel("Enter your message:")
+
         persistentFileService = project.service<PersistentFileService>()
-        aiderContextView = AiderContextView(
-            project,
+        aiderContextView = AiderContextView(project,
             files + persistentFileService.getPersistentFiles(),
             { fileName -> insertTextAtCursor(fileName) },
             {
@@ -201,6 +173,20 @@ class AiderInputDialog(
         splitPane = OnePixelSplitter(true, 0.6f)
         settingsButton = createSettingsButton()
         lazyCacheDelegate.evict()
+        modeSegmentedButtonPanel = panel {
+            row {
+                cell(JBLabel("Mode:"))
+                modeSegmentedButton = segmentedButton(AiderMode.values().map { it }) { selectedItem ->
+                    initialMode = selectedItem
+                    text = selectedItem.displayName
+                    toolTipText = selectedItem.tooltip
+                    icon = selectedItem.icon
+                    updateModeUI()
+                }.apply {
+                    this.selectedItem = initialMode
+                }
+            }
+        }
         init()
         loadHistory()
         setOKButtonText("OK")
@@ -221,10 +207,7 @@ class AiderInputDialog(
             description = "Open aider settings"
         }
         return ActionButton(
-            settingsAction,
-            presentation,
-            "AiderSettingsButton",
-            ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
+            settingsAction, presentation, "AiderSettingsButton", ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
         )
     }
 
@@ -282,11 +265,7 @@ class AiderInputDialog(
 
     private inner class HistoryItemRenderer : DefaultListCellRenderer() {
         override fun getListCellRendererComponent(
-            list: JList<*>?,
-            value: Any?,
-            index: Int,
-            isSelected: Boolean,
-            cellHasFocus: Boolean
+            list: JList<*>?, value: Any?, index: Int, isSelected: Boolean, cellHasFocus: Boolean
         ): Component {
             val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
             if (value is HistoryItem) {
@@ -319,7 +298,7 @@ class AiderInputDialog(
 
         // First row: Shell Mode toggle, Structured Mode toggle, LLM selection, History, and Token Count
         val firstRowPanel = JPanel(GridBagLayout())
-        firstRowPanel.add(modeSegmentedButton, GridBagConstraints().apply {
+        firstRowPanel.add(modeSegmentedButtonPanel, GridBagConstraints().apply {
             gridx = 0
             gridy = 0
             weightx = 0.0
@@ -361,18 +340,14 @@ class AiderInputDialog(
             weightx = 0.7
             fill = GridBagConstraints.HORIZONTAL
         })
-        val restoreButton = ActionButton(
-            object : AnAction() {
-                override fun actionPerformed(e: AnActionEvent) {
-                    restoreLastState()
-                }
-            },
-            Presentation("Restore To Last Executed Command").apply {
-                icon = AllIcons.Actions.Rollback
-                description = "Restore dialog to last used state"
-            },
-            "AiderRestoreButton",
-            ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
+        val restoreButton = ActionButton(object : AnAction() {
+            override fun actionPerformed(e: AnActionEvent) {
+                restoreLastState()
+            }
+        }, Presentation("Restore To Last Executed Command").apply {
+            icon = AllIcons.Actions.Rollback
+            description = "Restore dialog to last used state"
+        }, "AiderRestoreButton", ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
         )
 
         firstRowPanel.add(restoreButton, GridBagConstraints().apply {
@@ -471,17 +446,14 @@ class AiderInputDialog(
                 it.registerCustomShortcutSet(
                     CustomShortcutSet(
                         KeyStroke.getKeyStroke(
-                            KeyEvent.VK_F,
-                            InputEvent.ALT_DOWN_MASK
+                            KeyEvent.VK_F, InputEvent.ALT_DOWN_MASK
                         )
                     ), aiderContextView
                 )
             })
 
             add(object : AnAction(
-                "Remove Files",
-                "Remove selected files from the context view",
-                AllIcons.Actions.Cancel
+                "Remove Files", "Remove selected files from the context view", AllIcons.Actions.Cancel
             ) {
                 override fun actionPerformed(e: AnActionEvent) {
                     aiderContextView.removeSelectedFiles()
@@ -497,9 +469,7 @@ class AiderInputDialog(
 
         val fileStatusActionGroup = DefaultActionGroup().apply {
             add(object : AnAction(
-                "Toggle Read-Only Mode",
-                "Toggle Read-Only Mode for selected file",
-                AllIcons.Actions.Edit
+                "Toggle Read-Only Mode", "Toggle Read-Only Mode for selected file", AllIcons.Actions.Edit
             ) {
                 override fun actionPerformed(e: AnActionEvent) {
                     aiderContextView.toggleReadOnlyMode()
@@ -514,17 +484,14 @@ class AiderInputDialog(
                 it.registerCustomShortcutSet(
                     CustomShortcutSet(
                         KeyStroke.getKeyStroke(
-                            KeyEvent.VK_R,
-                            InputEvent.CTRL_DOWN_MASK
+                            KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK
                         )
                     ), aiderContextView
                 )
             })
 
             add(object : AnAction(
-                "Toggle Persistent Files",
-                "Toggle selected files' persistent status",
-                AllIcons.Actions.MenuSaveall
+                "Toggle Persistent Files", "Toggle selected files' persistent status", AllIcons.Actions.MenuSaveall
             ) {
                 override fun actionPerformed(e: AnActionEvent) {
                     aiderContextView.togglePersistentFile()
@@ -539,8 +506,7 @@ class AiderInputDialog(
                 it.registerCustomShortcutSet(
                     CustomShortcutSet(
                         KeyStroke.getKeyStroke(
-                            KeyEvent.VK_P,
-                            InputEvent.CTRL_DOWN_MASK
+                            KeyEvent.VK_P, InputEvent.CTRL_DOWN_MASK
                         )
                     ), aiderContextView
                 )
@@ -574,29 +540,31 @@ class AiderInputDialog(
     fun getLlm(): String = llmComboBox.selectedItem as String
     fun getAdditionalArgs(): String = additionalArgsField.text
     fun getAllFiles(): List<FileData> = aiderContextView?.getAllFiles() ?: emptyList()
-    fun isShellMode(): Boolean = currentMode == AiderMode.SHELL
-    fun isStructuredMode(): Boolean = currentMode == AiderMode.STRUCTURED
-    
+    private val selectedMode get() = modeSegmentedButton.selectedItem ?: initialMode
+    fun isShellMode(): Boolean = selectedMode == AiderMode.SHELL
+    fun isStructuredMode(): Boolean = selectedMode == AiderMode.STRUCTURED
+
     private fun updateModeUI() {
-        val isShellMode = currentMode == AiderMode.SHELL
+        val isShellMode = initialMode == AiderMode.SHELL
         inputTextField.isVisible = !isShellMode
         messageLabel.isVisible = !isShellMode
-        messageLabel.text = when(currentMode) {
+        messageLabel.text = when (initialMode) {
             AiderMode.SHELL -> "Shell mode enabled"
             AiderMode.STRUCTURED -> "Enter feature description or leave empty to continue plan:"
             else -> "Enter your message:"
         }
     }
+
     private fun restoreLastState() {
         AiderDialogStateService.getInstance(project).getLastState()?.let { state ->
             inputTextField.text = state.message
             yesCheckBox.isSelected = state.useYesFlag
             llmComboBox.selectedItem = state.llm
             additionalArgsField.text = state.additionalArgs
-            currentMode = if (state.isShellMode) AiderMode.SHELL
-                else if (state.isStructuredMode) AiderMode.STRUCTURED
-                else AiderMode.NORMAL
-            modeSegmentedButton.component.selectedIndex = currentMode.ordinal
+            initialMode = if (state.isShellMode) AiderMode.SHELL
+            else if (state.isStructuredMode) AiderMode.STRUCTURED
+            else AiderMode.NORMAL
+            modeSegmentedButton.selectedItem = initialMode
             aiderContextView.setFiles(state.files)
         }
     }
@@ -624,11 +592,7 @@ class AiderInputDialog(
         }
 
         override fun getListCellRendererComponent(
-            list: JList<*>?,
-            value: Any?,
-            index: Int,
-            isSelected: Boolean,
-            cellHasFocus: Boolean
+            list: JList<*>?, value: Any?, index: Int, isSelected: Boolean, cellHasFocus: Boolean
         ): Component {
             val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
             if (component is JLabel && value is String) {
