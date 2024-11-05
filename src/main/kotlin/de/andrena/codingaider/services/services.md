@@ -75,7 +75,18 @@ graph TD
   - Custom timestamp parsing
   - Structured mode input extraction
 
-### 7. FileExtractorService
+### 7. MarkdownConversionService
+- **Purpose**: Converts HTML content to clean Markdown format
+- **Key Features**:
+  - HTML cleaning and sanitization
+  - Intelligent noise removal
+  - Configurable markdown conversion
+- **Exceptional Implementation**:
+  - Uses JSoup for HTML processing
+  - Flexmark for markdown conversion
+  - Extensible conversion options
+
+### 8. FileExtractorService
 - **Purpose**: Handles file extraction from various sources
 - **Key Features**:
   - JAR file content extraction
