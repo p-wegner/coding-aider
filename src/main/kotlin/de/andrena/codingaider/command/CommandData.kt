@@ -12,12 +12,10 @@ import de.andrena.codingaider.inputdialog.AiderMode
  * be passed as options to aider, others have to be passed with --model {llm}
  * @property additionalArgs Any additional command-line arguments for Aider.
  * @property files List of files to be included in the Aider command.
- * @property isShellMode If true, enables shell mode for Aider.
  * @property lintCmd Command to run for linting the code.
  * @property deactivateRepoMap If true, disables the repository mapping feature.
  * @property editFormat Specifies the format for edit instructions (e.g., "diff").
  * @property options Contains optional parameters for the command, including whether to disable presentation of changes.
- * @property structuredMode If true, enables structured mode for the command.
  * @property aiderMode The mode to use for the command.
  */
 data class CommandData(
@@ -26,7 +24,6 @@ data class CommandData(
     val llm: String,
     val additionalArgs: String,
     val files: List<FileData>,
-
     val lintCmd: String,
     val deactivateRepoMap: Boolean = false,
     val editFormat: String = "",
