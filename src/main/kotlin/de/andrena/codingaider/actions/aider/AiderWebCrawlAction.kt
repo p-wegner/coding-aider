@@ -7,22 +7,15 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.LocalFileSystem
-import com.vladsch.flexmark.ext.tables.TablesExtension
-import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension
-import com.vladsch.flexmark.ext.autolink.AutolinkExtension
-import com.vladsch.flexmark.html.HtmlRenderer
-import com.vladsch.flexmark.parser.Parser
-import com.vladsch.flexmark.util.data.MutableDataSet
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
-import org.jsoup.safety.Safelist
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.CommandOptions
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.AiderMode
+import de.andrena.codingaider.services.MarkdownConversionService
 import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileRefresher
@@ -53,7 +46,7 @@ class AiderWebCrawlAction : AnAction() {
             val file = File(filePath)
 
             if (!file.exists()) {
-                crawlAndProcessWebPage(url, file)
+                crawlAndProcessWebPage(url, file, project)
 
                 val commandData = CommandData(
                     message = """
@@ -109,7 +102,7 @@ class AiderWebCrawlAction : AnAction() {
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
-    private fun crawlAndProcessWebPage(url: String, file: File) {
+    private fun crawlAndProcessWebPage(url: String, file: File, project: Project) {
         val webClient = WebClient()
         webClient.options.apply {
             isJavaScriptEnabled = false
@@ -117,13 +110,13 @@ class AiderWebCrawlAction : AnAction() {
             isThrowExceptionOnFailingStatusCode = false
             isCssEnabled = false
         }
-        
+
         val page: HtmlPage = webClient.getPage(url)
         val htmlContent = page.asXml()
-        
-        val markdownService = project.getService(MarkdownConversionService::class.java)
-        val markdown = markdownService.convertHtmlToMarkdown(htmlContent, url)
-        
+
+        val markdown = project.getService(MarkdownConversionService::class.java)
+            .convertHtmlToMarkdown(htmlContent, url)
+
         file.writeText(markdown)
     }
 
@@ -145,55 +138,5 @@ class AiderWebCrawlAction : AnAction() {
             .getNotificationGroup("Aider Web Crawl")
             .createNotification(content, type)
             .notify(project)
-    }
-}
-package de.andrena.codingaider.services
-
-import com.intellij.openapi.components.Service
-import com.intellij.openapi.project.Project
-import com.vladsch.flexmark.ext.tables.TablesExtension
-import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension
-import com.vladsch.flexmark.ext.autolink.AutolinkExtension
-import com.vladsch.flexmark.html.HtmlRenderer
-import com.vladsch.flexmark.parser.Parser
-import com.vladsch.flexmark.util.data.MutableDataSet
-import org.jsoup.Jsoup
-import org.jsoup.safety.Safelist
-
-@Service(Service.Level.PROJECT)
-class MarkdownConversionService(project: Project) {
-    
-    fun convertHtmlToMarkdown(htmlContent: String, baseUrl: String): String {
-        // Clean HTML with jsoup first
-        val cleanHtml = Jsoup.clean(htmlContent, baseUrl, Safelist.relaxed()
-            .addTags("div", "span", "pre", "code")
-            .addAttributes("pre", "class")
-            .addAttributes("code", "class"))
-        
-        // Further process with jsoup to improve structure
-        val doc = Jsoup.parse(cleanHtml)
-        // Remove common noise elements
-        doc.select("nav, footer, .sidebar, .advertisement, .banner, script, style, iframe").remove()
-        
-        // Configure flexmark with extensions
-        val options = MutableDataSet().apply {
-            set(Parser.EXTENSIONS, listOf(
-                TablesExtension.create(),
-                StrikethroughExtension.create(),
-                AutolinkExtension.create()
-            ))
-            // Optimize HTML to Markdown conversion
-            set(HtmlRenderer.SOFT_BREAK, "\n")
-            set(HtmlRenderer.GENERATE_HEADER_ID, true)
-            set(Parser.LISTS_AUTO_LOOSE, false)
-            set(Parser.HEADING_NO_ATX_SPACE, true)
-        }
-        
-        val parser = Parser.builder(options).build()
-        val renderer = HtmlRenderer.builder(options).build()
-        val document = parser.parse(doc.html())
-        return renderer.render(document)
-            .replace(Regex("\\n{3,}"), "\n\n") // Remove excessive newlines
-            .trim()
     }
 }
