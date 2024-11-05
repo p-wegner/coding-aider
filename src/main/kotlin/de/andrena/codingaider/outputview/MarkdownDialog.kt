@@ -188,23 +188,3 @@ class MarkdownDialog(
     }
 
 }
-        }
-    }
-
-    init {
-        layout = BorderLayout()
-        add(editorPane, BorderLayout.CENTER)
-    }
-
-    fun setMarkdownContent(markdown: String) {
-        val document = parser.parse(markdown)
-        val html = renderer.render(document)
-        editorPane.text = """
-            <html>
-                <body>
-                    $html
-                </body>
-            </html>
-        """.trimIndent()
-    }
-}
