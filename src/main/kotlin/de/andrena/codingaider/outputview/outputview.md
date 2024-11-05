@@ -1,42 +1,84 @@
 # Output View Module Documentation
 
 ## Overview
-The Output View module is responsible for displaying output in a user-friendly manner within the application. It provides a dialog interface for presenting markdown content and allows users to interact with the output through various controls.
+The Output View module is a critical component of the Coding Aider plugin, responsible for displaying output in a user-friendly, interactive markdown-based dialog within the IntelliJ IDEA environment. It provides flexible mechanisms for presenting dynamic content, handling long-running processes, and offering user interaction controls.
 
-## Key Classes
+## System Architecture
 
-### Abortable
-- **File**: [Abortable.kt](Abortable.kt)
-- **Description**: This interface defines a contract for classes that can abort a command. It contains a single method:
-  - `fun abortCommand()`: This method should be implemented to define the behavior when a command is aborted.
+### Key Components
+1. **[Abortable.kt](Abortable.kt)**: Defines an interface for command abortion
+2. **[MarkdownDialog.kt](MarkdownDialog.kt)**: Primary dialog implementation for markdown content display
+3. **[MarkdownPreviewFileEditorUtil.kt](MarkdownPreviewFileEditorUtil.kt)**: Utility for creating markdown preview editors
 
-### MarkdownDialog
-- **File**: [MarkdownDialog.kt](MarkdownDialog.kt)
-- **Description**: This class represents a dialog that displays markdown content. It allows users to view output and provides options to close or keep the dialog open.
-- **Constructor Parameters**:
-  - `project: Project`: The current project context.
-  - `initialTitle: String`: The title of the dialog.
-  - `initialText: String`: The initial text to display in the dialog.
-  - `onAbort: Abortable?`: An optional Abortable instance to handle abort actions.
+### Data Flow Diagram
+```mermaid
+graph TD
+    A[External Process] -->|Output Data| B[MarkdownDialog]
+    B -->|Update Content| C[Markdown Preview]
+    B -->|User Interaction| D{Control Actions}
+    D -->|Abort| E[Abortable Interface]
+    D -->|Keep Open| F[Cancel Auto-Close]
+```
+
+## Key Interfaces and Classes
+
+### Abortable Interface
+- **Location**: [Abortable.kt](Abortable.kt)
+- **Purpose**: Provides a standardized mechanism for aborting long-running commands
+- **Method**: 
+  ```kotlin
+  fun abortCommand()
+  ```
+
+### MarkdownDialog Class
+- **Location**: [MarkdownDialog.kt](MarkdownDialog.kt)
+- **Responsibilities**:
+  - Display markdown content dynamically
+  - Manage dialog lifecycle
+  - Provide user interaction controls
 - **Key Methods**:
-  - `fun updateProgress(output: String, message: String)`: Updates the displayed output and title of the dialog.
-  - `fun startAutoCloseTimer(autocloseDelay: Int)`: Starts a timer to automatically close the dialog after a specified delay.
-  - `fun setProcessFinished()`: Marks the process as finished and updates the close button text.
-  - `fun focus(delay: Long = 100)`: Brings the dialog to the front and requests focus.
+  - `updateProgress(output: String, message: String)`
+  - `startAutoCloseTimer(autocloseDelay: Int)`
+  - `setProcessFinished()`
+  - `focus(delay: Long = 100)`
+
+### MarkdownPreviewFileEditorUtil
+- **Location**: [MarkdownPreviewFileEditorUtil.kt](MarkdownPreviewFileEditorUtil.kt)
+- **Purpose**: Dynamically create markdown preview editors across different plugin API versions
 
 ## Design Patterns
-- The module utilizes the **Observer** pattern through the `Abortable` interface, allowing different components to respond to abort commands.
-
-## Dependencies
-- The `MarkdownDialog` class depends on the `Project` class from the IntelliJ platform and the `Abortable` interface for handling abort actions.
-
-## Data Flow
-- The `MarkdownDialog` receives output data and updates its display accordingly. It can also trigger abort actions through the `Abortable` interface.
+- **Observer Pattern**: Implemented via `Abortable` interface
+- **Utility Pattern**: Demonstrated in `MarkdownPreviewFileEditorUtil`
+- **Facade Pattern**: `MarkdownDialog` provides a simplified interface for complex UI interactions
 
 ## Exceptional Implementation Details
-- The `MarkdownDialog` class includes a timer for auto-closing the dialog, which can be configured through user settings.
 
-- The `MarkdownDialog` uses `invokeLater` to ensure UI updates are performed on the Event Dispatch Thread, which is crucial for thread safety in Swing applications.
+### Thread Safety
+- Uses `invokeLater` and `ApplicationManager.getApplication().invokeLater` to ensure thread-safe UI updates
+- Leverages Swing's Event Dispatch Thread (EDT) for all UI modifications
 
-- The `MarkdownDialog` provides a `Keep Open` button that allows users to cancel the auto-close timer, offering flexibility in user interaction.
+### Dynamic Constructor Resolution
+- `MarkdownPreviewFileEditorUtil` dynamically finds appropriate constructors for `MarkdownPreviewFileEditor`
+- Supports multiple versions of the Markdown plugin by introspecting available constructors
+
+### Configurable User Experience
+- Provides auto-close functionality with user-configurable settings
+- Offers a "Keep Open" button to interrupt automatic closing
+- Supports custom abort mechanisms through the `Abortable` interface
+
+## Dependencies
+- IntelliJ Platform SDK
+- Markdown Plugin
+- Kotlin Standard Library
+- Swing UI Toolkit
+
+## Configuration and Extensibility
+- Configurable via `AiderSettings`
+- Easily extendable through the `Abortable` interface
+- Supports dynamic content updates during long-running processes
+
+## Performance Considerations
+- Uses lightweight `LightVirtualFile` for markdown rendering
+- Implements periodic UI refresh to ensure responsiveness
+- Minimizes blocking operations through asynchronous updates
 

@@ -1,56 +1,97 @@
-# Aider Module Documentation
+# Aider Settings Module Documentation
 
 ## Overview
-The Aider module provides functionalities for managing project settings and configurations related to the Aider tool. It includes default settings, project-specific settings, and user interface components for configuring these settings within an IDE.
+The Aider Settings module provides a comprehensive configuration management system for the Aider IDE plugin, enabling flexible and persistent settings across application and project levels.
 
-## Key Classes and Interfaces
+## Module Structure
 
-### AiderDefaults
-- **Purpose**: Contains default values for various settings used in the Aider module.
-- **Key Constants**:
-  - `ALWAYS_INCLUDE_OPEN_FILES`: Boolean indicating whether to always include open files.
-  - `USE_STRUCTURED_MODE`: Boolean indicating whether to use structured mode.
-  - `DOCKER_IMAGE`: String representing the default Docker image for Aider.
+### Key Components
+- [AiderDefaults.kt](./AiderDefaults.kt): Central repository for default configuration values
+- [AiderSettings.kt](./AiderSettings.kt): Application-wide persistent settings management
+- [AiderProjectSettings.kt](./AiderProjectSettings.kt): Project-specific persistent settings
+- [AiderSettingsConfigurable.kt](./AiderSettingsConfigurable.kt): Global settings UI configuration
+- [AiderProjectSettingsConfigurable.kt](./AiderProjectSettingsConfigurable.kt): Project-level settings UI configuration
+- [AiderTestCommand.kt](./AiderTestCommand.kt): Utility for testing Aider command execution
 
-### AiderSettings
-- **Purpose**: Manages application-wide settings for Aider.
-- **Key Methods**:
-  - `getState()`: Returns the current state of the settings.
-  - `loadState(state: State)`: Loads the provided state into the settings.
-- **Data Flow**: This class interacts with the application state and persists settings across sessions.
+## Design Patterns and Architectural Principles
+- **Singleton Pattern**: Ensures single, consistent settings instances
+- **Persistent State Management**: Leverages IntelliJ Platform's `PersistentStateComponent`
+- **Separation of Concerns**: Distinct classes for defaults, global, and project-level settings
 
-### AiderTestCommand
-- **Purpose**: Executes a test command for Aider and notifies observers of the command's progress.
-- **Key Methods**:
-  - `execute(observer: CommandObserver?, useDockerAider: Boolean)`: Executes the command and notifies the observer.
+## Data Flow Diagram
+```mermaid
+graph TD
+    AiderDefaults[AiderDefaults] --> |Default Values| AiderSettings[AiderSettings]
+    AiderSettings --> |Global Configuration| AiderSettingsConfigurable[AiderSettingsConfigurable]
+    AiderSettings --> |Persistent Storage| XMLStorage[XML Storage]
+    
+    AiderProjectSettings[AiderProjectSettings] --> |Project-Specific Config| AiderProjectSettingsConfigurable[AiderProjectSettingsConfigurable]
+    AiderProjectSettings --> |Project Persistent Storage| ProjectXMLStorage[Project XML Storage]
+    
+    AiderTestCommand[AiderTestCommand] --> |Validates Configuration| AiderSettings
+```
 
-### AiderProjectSettings
-- **Purpose**: Manages project-specific settings for Aider.
-- **Key Methods**:
-  - `getState()`: Returns the current state of the project settings.
-  - `loadState(state: State)`: Loads the provided state into the project settings.
+## Key Configuration Areas
+1. **LLM and API Settings**
+   - Model selection
+   - API key management
+   - Default language models
 
-### AiderSettingsConfigurable
-- **Purpose**: Provides a user interface for configuring Aider settings within the IDE.
-- **Key Methods**:
-  - `createComponent()`: Creates the UI component for settings configuration.
-  - `apply()`: Applies the changes made in the UI to the settings.
+2. **Execution Modes**
+   - Docker integration
+   - Shell mode
+   - Structured editing
 
-### AiderProjectSettingsConfigurable
-- **Purpose**: Provides a user interface for configuring project-specific settings for Aider.
-- **Key Methods**:
-  - `createComponent()`: Creates the UI component for project settings configuration.
-  - `apply()`: Applies the changes made in the UI to the project settings.
+3. **Git and Version Control**
+   - Commit strategies
+   - Comparison tools
+   - Change context inclusion
 
-## Design Patterns
-- **Singleton Pattern**: Used in `AiderSettings` and `AiderProjectSettings` to ensure a single instance of settings is used throughout the application.
+4. **Advanced Settings**
+   - Logging verbosity
+   - Dialog behaviors
+   - Markdown processing
+
+## Exceptional Implementation Details
+- Dynamic API key validation with visual indicators
+- Flexible Docker image and tag configuration
+- Experimental features with cautionary tooltips
+- Comprehensive settings persistence across IDE sessions
 
 ## Dependencies
-- The Aider module depends on the IntelliJ Platform SDK for UI components and project management.
-- It interacts with other modules that handle command execution and file management.
+- IntelliJ Platform SDK
+- Swing UI components
+- Custom command execution framework
 
-## Data Flow
-- The settings are loaded and saved using the `PersistentStateComponent` interface, allowing for seamless integration with the IDE's settings management.
-- User interactions with the UI components trigger updates to the settings, which are then persisted.
+## Extensibility
+The modular design allows easy addition of new configuration options by extending existing classes and updating default values.
+
+## Security Considerations
+- Secure API key storage
+- Configurable key visibility
+- Environment and file-based key support
+
+## Performance Notes
+- Minimal overhead for settings management
+- Lazy loading of configuration components
+- Efficient state serialization
+
+## Future Improvements
+- Enhanced LLM model support
+- More granular configuration options
+- Improved error handling and validation
+
+## Usage Guidelines
+1. Configure global settings via IDE preferences
+2. Override project-specific settings when needed
+3. Use test command to validate configuration
+4. Refer to tooltips for detailed option explanations
+
+## Contribution
+When adding new settings:
+- Update `AiderDefaults`
+- Modify `AiderSettings.State`
+- Extend `AiderSettingsConfigurable`
+- Ensure backward compatibility
 
 

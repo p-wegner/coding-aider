@@ -1,55 +1,99 @@
-# Aider Module Documentation
+# Aider Input Dialog Module Documentation
 
 ## Overview
-The Aider module provides a user interface for interacting with various coding aids, including file management and command execution. It allows users to input commands, manage files, and view context-related information.
+The Aider Input Dialog module provides a sophisticated, context-aware interface for AI-assisted code development within the IntelliJ IDEA environment. It enables developers to interact with AI language models, manage project files, and generate code suggestions with enhanced usability.
 
-## Key Classes
+## System Architecture
+
+```mermaid
+graph TD
+    A[AiderInputDialog] --> B[AiderContextView]
+    A --> C[AiderCompletionProvider]
+    A --> D[TokenCountService]
+    A --> E[PersistentFileService]
+    B --> F[FileExtractorService]
+    C --> F
+    F --> G[FileData]
+```
+
+## Key Components
 
 ### AiderInputDialog
-- **Purpose**: Represents the main dialog for user input, allowing users to enter commands and manage settings.
-- **Constructor**: 
-  - `AiderInputDialog(Project project, List<FileData> files, String initialText, ApiKeyChecker apiKeyChecker)`
-- **Key Methods**:
-  - `createCenterPanel()`: Constructs the main panel of the dialog.
-  - `getInputText()`: Retrieves the text entered by the user.
-  - `isYesFlagChecked()`: Checks if the "yes" flag is selected.
-  - `getLlm()`: Gets the selected language model.
-  - `getAdditionalArgs()`: Retrieves additional arguments entered by the user.
+- **Purpose**: Central user interaction point for AI-assisted coding
+- **Key Features**:
+  - Dynamic language model selection
+  - Command history navigation
+  - Token count tracking
+  - Flexible input modes (shell, structured)
+  - Persistent file management
+
+#### Notable Methods
+- `createCenterPanel()`: Constructs the complex, multi-component dialog UI
+- `getInputText()`: Retrieves user's command input
+- `getAllFiles()`: Retrieves current context files
+- `restoreLastState()`: Restores previous dialog configuration
 
 ### AiderContextView
-- **Purpose**: Manages the context view of files, allowing users to see and interact with files in the project.
-- **Constructor**: 
-  - `AiderContextView(Project project, List<FileData> allFiles, (String) -> Unit onFileNameSelected, () -> Unit onFilesChanged)`
-- **Key Methods**:
-  - `selectedFilesChanged()`: Updates the view when the selected files change.
-  - `addOpenFilesToContext()`: Adds currently open files to the context view.
-  - `removeSelectedFiles()`: Removes selected files from the context view.
+- **Purpose**: Manage and visualize project file context
+- **Key Features**:
+  - Tree-based file representation
+  - File status tracking (read-only, persistent)
+  - Dynamic file addition/removal
+  - Token count calculation for context
+
+#### Notable Methods
+- `selectedFilesChanged()`: Updates file context view
+- `toggleReadOnlyMode()`: Modify file interaction permissions
+- `addOpenFilesToContext()`: Include currently open files
 
 ### AiderCompletionProvider
-- **Purpose**: Provides code completion suggestions based on the context of the user's input.
-- **Constructor**: 
-  - `AiderCompletionProvider(Project project, List<FileData> files)`
-- **Key Methods**:
-  - `getItems(String prefix, boolean cached, CompletionParameters parameters)`: Returns a collection of completion items based on the input prefix.
-  - `extractCompletions(Project project, List<FileData> files)`: Extracts completion suggestions from the provided files.
+- **Purpose**: Intelligent code completion and suggestion
+- **Key Features**:
+  - Dynamic extraction of class and method information
+  - Context-aware completion suggestions
+  - Supports multiple programming language elements
+
+#### Notable Methods
+- `getItems()`: Generate context-specific completion suggestions
+- `extractCompletions()`: Parse project files for completion data
 
 ## Design Patterns
-- **MVC (Model-View-Controller)**: The Aider module follows the MVC pattern, separating the user interface (AiderInputDialog, AiderContextView) from the business logic (AiderCompletionProvider).
+- **Model-View-Controller (MVC)**
+- **Lazy Initialization** (via `LazyCacheDelegate`)
+- **Strategy Pattern** (for API key and LLM selection)
+
+## Exceptional Implementation Details
+- Advanced token counting mechanism
+- Dynamic file extraction and management
+- Intelligent code completion with multi-language support
+- Flexible input modes (normal, shell, structured)
 
 ## Dependencies
-- **IntelliJ Platform SDK**: The module relies on the IntelliJ Platform SDK for UI components and project management.
-- **FileData**: A data class representing file information, used across the module for file management.
+- IntelliJ Platform SDK
+- Kotlin Reflection
+- Custom Services:
+  - `TokenCountService`
+  - `FileExtractorService`
+  - `PersistentFileService`
 
-## Data Flow
-1. The user interacts with the `AiderInputDialog` to enter commands.
-2. The `AiderContextView` displays the files available in the project.
-3. The `AiderCompletionProvider` suggests completions based on the user's input and the files in the project.
+## Configuration and Extensibility
+- Supports multiple language models
+- Configurable through IDE settings
+- Extensible completion and file management strategies
 
 ## Links to Key Files
 - [AiderInputDialog.kt](./AiderInputDialog.kt)
 - [AiderContextView.kt](./AiderContextView.kt)
 - [AiderCompletionProvider.kt](./AiderCompletionProvider.kt)
 
-## Exceptional Implementation Details
-- The `AiderContextView` uses a tree structure to manage and display files, allowing for easy navigation and manipulation.
-- The `AiderCompletionProvider` dynamically extracts completion suggestions from the project's files, enhancing the user experience by providing relevant suggestions.
+## Usage Scenarios
+1. Code generation with context-aware suggestions
+2. File management during AI-assisted development
+3. Tracking and managing development context
+4. Flexible command input for various development tasks
+
+## Performance Considerations
+- Lazy token counting
+- Efficient file parsing
+- Minimal overhead in IDE interaction
+```

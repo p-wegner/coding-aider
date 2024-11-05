@@ -1,62 +1,88 @@
 # Coding Aider Utils Module
 
 ## Overview
-The Coding Aider Utils module provides a set of utility classes and functions that facilitate various operations related to file handling, Git interactions, and API key management. This module is designed to support the main functionalities of the Coding Aider application by providing reusable components.
+The Coding Aider Utils module is a comprehensive utility package designed to support the Coding Aider application's core functionalities. It provides a robust set of tools for file management, Git interactions, API key handling, and reflection-based operations within the IntelliJ IDEA plugin ecosystem.
 
-## Key Classes and Interfaces
+## Module Architecture
 
-### 1. `FileTraversal`
-- **Purpose**: Provides methods to traverse files and directories.
+### Architectural Diagram
+```mermaid
+graph TD
+    A[ApiKeyChecker] -->|Manages API Keys| B[ApiKeyManager]
+    C[FileTraversal] -->|Provides File Data| D[GitUtils]
+    E[FileRefresher] -->|Refreshes Files| F[IntelliJ VFS]
+    G[ReflectionUtils] -->|Accesses Private Fields| H[Console Views]
+```
+
+## Key Components
+
+### 1. File Management
+#### `FileTraversal`
+- **Purpose**: Recursively traverse files and directories
 - **Key Methods**:
-  - `traverseFilesOrDirectories(files: Array<VirtualFile>, isReadOnly: Boolean = false): List<FileData>`: Traverses the provided files or directories and returns a list of `FileData`.
+  - `traverseFilesOrDirectories()`: Generates a list of `FileData` from given virtual files
+- **Exceptional Behavior**: Handles both files and nested directories efficiently
 
-### 2. `GitUtils`
-- **Purpose**: Contains utility functions for interacting with Git repositories.
+#### `FileRefresher`
+- **Purpose**: Synchronize file system changes in IntelliJ's Virtual File System
 - **Key Methods**:
-  - `getCurrentCommitHash(project: Project): String?`: Retrieves the current commit hash of the Git repository associated with the given project.
-  - `openGitComparisonTool(project: Project, commitHash: String, afterAction: () -> Unit)`: Opens a Git comparison tool to show changes related to a specific commit.
+  - `refreshFiles()`: Refreshes files and optionally displays a markdown dialog
+- **Thread Safety**: Uses `ApplicationManager` and `WriteAction` for safe UI interactions
 
-### 3. `ApiKeyChecker`
-- **Purpose**: Interface for checking the availability of API keys for various LLMs (Large Language Models).
+### 2. Version Control
+#### `GitUtils`
+- **Purpose**: Provide Git repository interaction utilities
 - **Key Methods**:
-  - `isApiKeyAvailableForLlm(llm: String): Boolean`: Checks if an API key is available for the specified LLM.
-  - `getApiKeyForLlm(llm: String): String?`: Retrieves the API key associated with the specified LLM.
+  - `getCurrentCommitHash()`: Retrieve current Git commit hash
+  - `openGitComparisonTool()`: Open diff viewer for specific commits
+- **Exceptional Handling**: Gracefully manages scenarios with no active Git repository
 
-### 4. `DefaultApiKeyChecker`
-- **Purpose**: Implementation of the `ApiKeyChecker` interface.
-- **Key Methods**:
-  - Implements all methods defined in the `ApiKeyChecker` interface, providing functionality to check and retrieve API keys.
+### 3. API Key Management
+#### `ApiKeyChecker` & `DefaultApiKeyChecker`
+- **Purpose**: Secure API key retrieval and validation
+- **Key Features**:
+  - Multi-source API key lookup (Credential Store, Environment Variables, .env files)
+  - Support for multiple LLM providers
+- **Supported LLMs**:
+  - Anthropic (Sonnet, Haiku)
+  - OpenAI (GPT-4o, Mini)
+  - DeepSeek
 
-### 5. `ApiKeyManager`
-- **Purpose**: Manages the storage and retrieval of API keys using the IntelliJ credential store.
+#### `ApiKeyManager`
+- **Purpose**: Secure credential storage using IntelliJ's `PasswordSafe`
 - **Key Methods**:
-  - `saveApiKey(keyName: String, apiKey: String)`: Saves the specified API key.
-  - `getApiKey(keyName: String): String?`: Retrieves the specified API key.
+  - `saveApiKey()`: Securely store API keys
+  - `getApiKey()`: Retrieve stored API keys
+  - `removeApiKey()`: Delete stored credentials
 
-### 6. `FileRefresher`
-- **Purpose**: Provides functionality to refresh files in the virtual file system.
+### 4. Reflection Utilities
+#### `ReflectionUtils`
+- **Purpose**: Access private fields in IntelliJ console views
 - **Key Methods**:
-  - `refreshFiles(files: Array<VirtualFile>, markdownDialog: MarkdownDialog? = null)`: Refreshes the specified files and optionally shows a markdown dialog.
-
-### 7. `ReflectionUtils`
-- **Purpose**: Provides utility functions for reflection-based operations on specific console views.
-- **Key Methods**:
-  - `getNodesMapFromBuildView(view: BuildTreeConsoleView): Map<*, *>?`: Retrieves the nodes map from a build view.
-  - `getTestsMapFromConsoleView(view: SMTRunnerConsoleView): Map<*, *>?`: Retrieves the tests map from a test runner console view.
+  - `getNodesMapFromBuildView()`: Extract nodes from build console
+  - `getTestsMapFromConsoleView()`: Retrieve test information
 
 ## Design Patterns
-- **Singleton Pattern**: Used in utility classes like `FileTraversal`, `GitUtils`, `ApiKeyManager`, and `FileRefresher` to ensure a single instance is used throughout the application.
+- **Singleton Pattern**: Implemented across utility classes
+- **Dependency Injection**: Leverages IntelliJ's service-based architecture
+- **Strategy Pattern**: Flexible API key retrieval strategies
 
 ## Dependencies
-- The module relies on IntelliJ Platform SDK for file handling and project management.
-- It interacts with Git through the `git4idea` library.
-- Uses reflection to access private fields in specific console views.
+- IntelliJ Platform SDK
+- `git4idea` library
+- Kotlin Reflection
 
-## Data Flow
-- The `FileTraversal` class can be used to gather file data, which can then be processed by other components like `GitUtils` for version control operations.
-- The `ApiKeyChecker` and `ApiKeyManager` work together to manage API keys, ensuring that the application can securely access necessary credentials.
+## Security Considerations
+- Credentials stored using IntelliJ's secure `PasswordSafe`
+- Multi-source API key retrieval with prioritized lookup
+- No plain-text storage of sensitive information
 
-## Links to Files
+## Performance Notes
+- Lazy loading of Git repositories
+- Efficient file traversal using Kotlin sequences
+- Minimal overhead reflection techniques
+
+## Linked Files
 - [FileTraversal.kt](FileTraversal.kt)
 - [GitUtils.kt](GitUtils.kt)
 - [ApiKeyChecker.kt](ApiKeyChecker.kt)

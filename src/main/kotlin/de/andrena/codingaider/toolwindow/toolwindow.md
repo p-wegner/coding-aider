@@ -1,40 +1,69 @@
 # Persistent Files Tool Window
 
 ## Overview
-The `PersistentFilesToolWindow` module provides a user interface component for managing persistent files within the Coding Aider application. It allows users to add, remove, and toggle the read-only status of files, as well as view a list of persistent files.
+The Persistent Files Tool Window is a specialized module in the Coding Aider application designed to provide users with a comprehensive file management interface. It enables developers to maintain a persistent list of files across IDE sessions, with advanced features like read-only toggling and batch file management.
 
-## Key Classes and Interfaces
+## Architecture and Design
 
-### PersistentFilesToolWindow
-- **Purpose**: Implements the `ToolWindowFactory` interface to create the content of the persistent files tool window.
-- **Methods**:
-  - `createToolWindowContent(project: Project, toolWindow: ToolWindow)`: Initializes the tool window content.
+### Key Components
+- **[PersistentFilesToolWindow.kt](./PersistentFilesToolWindow.kt)**: Primary implementation of the tool window
+- **PersistentFileService**: Backend service for managing persistent file data
+- **FileData**: Data model representing file metadata
 
-### PersistentFilesComponent
-- **Purpose**: Manages the list of persistent files and handles user interactions.
-- **Methods**:
-  - `getContent()`: Returns the main UI component for the tool window.
-  - `addPersistentFiles()`: Opens a file chooser to add files to the persistent list.
-  - `toggleReadOnlyMode()`: Toggles the read-only status of selected files.
-  - `removeSelectedFiles()`: Removes selected files from the persistent list.
-  - `loadPersistentFiles()`: Loads the current list of persistent files from the service.
+### Design Patterns
+- **Observer Pattern**: Utilizes IntelliJ Platform's message bus for real-time UI updates
+- **Component-Based Design**: Separates UI rendering and file management logic
 
-### PersistentFileRenderer
-- **Purpose**: Custom renderer for displaying file data in the list.
-- **Methods**:
-  - `getListCellRendererComponent(...)`: Customizes the display of each file in the list.
+### Class Responsibilities
 
-## Design Patterns
-- **Observer Pattern**: The module subscribes to changes in persistent files using the message bus, allowing it to react to updates in real-time.
+#### PersistentFilesToolWindow
+- Implements `ToolWindowFactory`
+- Creates the tool window content
+- **Key Method**: `createToolWindowContent(project: Project, toolWindow: ToolWindow)`
 
-## Dependencies
-- **PersistentFileService**: A service that manages the persistent file data.
-- **FileData**: A data class representing the file information, including its path and read-only status.
+#### PersistentFilesComponent
+Manages the core functionality of file persistence:
+- File list management
+- User interaction handling
+- Integration with `PersistentFileService`
 
-## Data Flow
-1. The `PersistentFilesToolWindow` creates an instance of `PersistentFilesComponent`.
-2. `PersistentFilesComponent` interacts with `PersistentFileService` to manage file data.
-3. User actions (add, remove, toggle) trigger updates in the UI and the underlying data model.
+**Key Methods**:
+- `addPersistentFiles()`: File selection and addition
+- `toggleReadOnlyMode()`: Read-only status management
+- `removeSelectedFiles()`: Batch file removal
+- `loadPersistentFiles()`: Synchronizes UI with persistent file list
 
-## Important Links
-- [PersistentFilesToolWindow.kt](./PersistentFilesToolWindow.kt)
+#### PersistentFileRenderer
+- Custom list cell renderer
+- Displays file paths with read-only status
+
+### Data Flow Diagram
+```mermaid
+graph TD
+    User[User Interaction] --> PersistentFilesComponent
+    PersistentFilesComponent --> PersistentFileService[PersistentFileService]
+    PersistentFileService --> MessageBus[Message Bus]
+    MessageBus --> UI[UI Update]
+```
+
+### Exceptional Implementation Details
+- Supports both individual file and directory selection
+- Provides keyboard (Delete key) and double-click file opening
+- Real-time UI updates via message bus subscription
+
+### Dependencies
+- IntelliJ Platform SDK
+- Kotlin Stdlib
+- Custom `PersistentFileService`
+
+### Usage Scenarios
+1. Maintaining a list of frequently accessed files
+2. Marking files as read-only for reference
+3. Persistent file tracking across IDE sessions
+
+## Configuration and Extensibility
+The module is designed to be easily extensible and configurable within the Coding Aider ecosystem.
+
+## Related Documentation
+- [FileData Documentation](../command/FileData.kt)
+- [PersistentFileService Documentation](../services/PersistentFileService.kt)

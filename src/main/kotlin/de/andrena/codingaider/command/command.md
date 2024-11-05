@@ -1,49 +1,99 @@
 # Command Module Documentation
 
 ## Overview
-The Command module is responsible for defining the data structures and interfaces required to execute commands in the Aider application. It encapsulates the necessary information for command execution, including messages, flags, and file data.
+The Command module provides a robust and flexible data structure for managing command execution within the Coding Aider application. It encapsulates complex command configurations, supporting various scenarios of code interaction and AI-assisted development.
 
-## Key Classes
+## Architecture and Design Patterns
+
+### Design Principles
+- **Data Transfer Object (DTO) Pattern**: Utilizes lightweight data classes to transfer command configuration between application components.
+- **Immutability**: Leverages Kotlin's `data class` for immutable, thread-safe configuration objects.
+- **Flexible Configuration**: Supports extensive customization through optional parameters and flags.
+
+## Key Components
 
 ### FileData
-- **Purpose**: Represents a file's metadata.
-- **Properties**:
-  - `filePath`: The path to the file.
-  - `isReadOnly`: A boolean indicating if the file is read-only.
+A lightweight data class representing file metadata for command processing.
+
+```kotlin
+data class FileData(
+    val filePath: String,     // Absolute or relative path to the file
+    val isReadOnly: Boolean   // Indicates file modification permissions
+)
+```
+
+#### Key Features
+- Tracks individual file properties
+- Supports read-only file handling
+- Used in multi-file command scenarios
 
 ### CommandData
-- **Purpose**: Represents the data required to execute an Aider command.
-- **Properties**:
-  - `message`: The main message or instruction for Aider.
-  - `useYesFlag`: If true, automatically confirms all prompts.
-  - `llm`: The language model to be used (e.g., "gpt-4").
-  - `additionalArgs`: Any additional command-line arguments for Aider.
-  - `files`: List of `FileData` instances to be included in the Aider command.
-  - `isShellMode`: If true, enables shell mode for Aider.
-  - `lintCmd`: Command to run for linting the code.
-  - `deactivateRepoMap`: If true, disables the repository mapping feature.
-  - `editFormat`: Specifies the format for edit instructions (e.g., "diff").
-  - `projectPath`: The path to the project.
-  - `options`: Contains optional parameters for the command, including whether to disable presentation of changes.
-  - `structuredMode`: If true, enables structured mode.
+Comprehensive configuration for executing Aider commands with extensive customization options.
+
+```kotlin
+data class CommandData(
+    val message: String,          // Primary instruction/message
+    val useYesFlag: Boolean,      // Automatic prompt confirmation
+    val llm: String,               // Specified language model
+    val additionalArgs: String,   // Extra command-line arguments
+    val files: List<FileData>,     // Files involved in the command
+    val isShellMode: Boolean,      // Shell interaction mode
+    val lintCmd: String,           // Linting command
+    val projectPath: String,       // Project root directory
+    val options: CommandOptions    // Advanced configuration options
+)
+```
+
+#### Advanced Configuration Options
+- Language model selection
+- Shell mode toggling
+- Linting integration
+- Multi-file command support
 
 ### CommandOptions
-- **Purpose**: Represents the optional parameters for the Aider command.
-- **Properties**:
-  - `disablePresentation`: If true, disables the presentation of changes after command execution.
-  - `useDockerAider`: If true, uses the Docker Aider image ignoring the settings.
-  - `commitHashToCompareWith`: If not null, compares the changes with the specified commit hash.
-  - `autoCloseDelay`: If not null, sets the auto close delay for the markdown dialog.
+Provides granular control over command execution and presentation.
 
-## Dependencies
-This module relies on the Kotlin standard library and is designed to work within the Aider application framework. The `FileData`, `CommandData`, and `CommandOptions` classes are used throughout the application to manage command execution.
+```kotlin
+data class CommandOptions(
+    val disablePresentation: Boolean = false,   // Suppress change visualization
+    val useDockerAider: Boolean? = null,        // Docker container preference
+    val commitHashToCompareWith: String? = null,// Git comparison reference
+    val autoCloseDelay: Int? = null             // Markdown dialog auto-close timing
+)
+```
 
-## Data Flow
-The `CommandData` class aggregates multiple `FileData` instances, allowing commands to be executed on multiple files simultaneously. The data flows from user input through the command interface, where it is processed and executed based on the properties defined in these classes.
+## Data Flow Visualization
 
-## Design Patterns
-The module follows the Data Transfer Object (DTO) pattern, encapsulating data in simple objects that can be easily transferred between different parts of the application.
+```mermaid
+graph TD
+    UserInput[User Input] --> CommandConfiguration[Command Configuration]
+    CommandConfiguration --> CommandData[CommandData]
+    CommandData --> FileData[FileData Collection]
+    FileData --> AIProcessor[AI Command Processor]
+    AIProcessor --> ExecutionResult[Execution Result]
+```
 
-## Links to Files
+## Exceptional Implementation Details
+- Supports structured and unstructured command modes
+- Flexible LLM model specification
+- Optional Docker container execution
+- Git change comparison capabilities
+
+## Module Dependencies
+- Kotlin Standard Library
+- Aider Application Framework
+
+## Potential Use Cases
+1. AI-assisted code refactoring
+2. Multi-file code generation
+3. Automated code review and linting
+4. Flexible development workflow management
+
+## Related Files
 - [FileData.kt](./FileData.kt)
 - [CommandData.kt](./CommandData.kt)
+
+## Best Practices
+- Use immutable configuration objects
+- Leverage optional parameters for flexibility
+- Prefer composition over complex inheritance
