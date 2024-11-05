@@ -32,7 +32,7 @@ class MarkdownDialog(
     private val textArea: MarkdownPreviewFileEditor = MarkdownPreviewFileEditor(
         project,
         virtualFile,
-//        EditorFactory.getInstance().createEditor(document, project, virtualFile, true)
+//        createEditor
     ).apply {
         setMainEditor(createEditor)
     }
