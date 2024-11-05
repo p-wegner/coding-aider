@@ -2,6 +2,7 @@ package de.andrena.codingaider.outputview
 
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.fileEditor.FileDocumentManager
+import com.intellij.openapi.fileEditor.TextEditorWithPreviewProvider
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.components.JBScrollPane
