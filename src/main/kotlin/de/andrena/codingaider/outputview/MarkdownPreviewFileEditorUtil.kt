@@ -50,7 +50,6 @@ class CustomMarkdownViewer {
             </html>
         """.trimIndent()
         component.text = styledHtml
-        component.caretPosition = 0
     }
 }
 

@@ -47,7 +47,8 @@ class MarkdownDialog(
         scrollPane.verticalScrollBar.addAdjustmentListener { e ->
             if (!e.valueIsAdjusting) {
                 val scrollBar = scrollPane.verticalScrollBar
-                autoScroll = scrollBar.value >= scrollBar.maximum - scrollBar.visibleAmount
+                val maxPosition = scrollBar.maximum - scrollBar.visibleAmount
+                autoScroll = scrollBar.value >= maxPosition
             }
         }
         
@@ -117,23 +118,14 @@ class MarkdownDialog(
                 markdownViewer.setMarkdownContent(output.replace("\r\n", "\n"))
                 title = message
                 
-                // Use multiple invokeLater calls to ensure proper ordering
-                SwingUtilities.invokeLater {
-                    // First revalidate and repaint
-                    scrollPane.revalidate()
-                    markdownViewer.component.revalidate()
-                    scrollPane.repaint()
-                    
-                    // Then schedule the scroll in another invokeLater
-                    SwingUtilities.invokeLater {
-                        if (autoScroll) {
-                            val scrollBar = scrollPane.verticalScrollBar
-                            // Force layout to update
-                            scrollPane.validate()
-                            // Scroll to bottom
-                            scrollBar.value = scrollBar.maximum
-                        }
-                    }
+                // Revalidate and repaint components
+                markdownViewer.component.revalidate()
+                markdownViewer.component.repaint()
+
+                if (autoScroll) {
+                    // Scroll to the bottom by setting the caret position to the end
+                    val docLength = markdownViewer.component.document.length
+                    markdownViewer.component.caretPosition = docLength
                 }
             } catch (e: Exception) {
                 println("Error updating markdown dialog: ${e.message}")
