@@ -35,9 +35,9 @@ Refer to the [Implement Custom Markdown Viewer for MarkdownDialog](ImplementCust
 
 ### 4. Remove `MarkdownPreviewFileEditorUtil.kt`
 
-- [ ] Remove `MarkdownPreviewFileEditorUtil.kt` from the project.
-- [ ] Search for any references to this utility and remove them.
-- [ ] Test to ensure removal does not affect other parts of the application.
+- [x] Remove `MarkdownPreviewFileEditorUtil.kt` from the project.
+- [x] Search for any references to this utility and remove them.
+- [x] Test to ensure removal does not affect other parts of the application.
 
 ### 5. Update Project Dependencies
 
