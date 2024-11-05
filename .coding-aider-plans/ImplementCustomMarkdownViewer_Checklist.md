@@ -26,12 +26,12 @@ Refer to the [Implement Custom Markdown Viewer for MarkdownDialog](ImplementCust
 
 ### 3. Update `MarkdownDialog.kt`
 
-- [ ] Replace `MarkdownPreviewFileEditor` with the custom markdown viewer component.
-- [ ] Update methods to load and display markdown content:
-    - [ ] Convert markdown text to HTML using the selected library.
-    - [ ] Render the HTML content in the custom viewer.
-- [ ] Ensure real-time updates work correctly when content changes.
-- [ ] Handle any events or interactions previously managed by `MarkdownPreviewFileEditor`.
+- [x] Replace `MarkdownPreviewFileEditor` with the custom markdown viewer component.
+- [x] Update methods to load and display markdown content:
+    - [x] Convert markdown text to HTML using the selected library.
+    - [x] Render the HTML content in the custom viewer.
+- [x] Ensure real-time updates work correctly when content changes.
+- [x] Handle any events or interactions previously managed by `MarkdownPreviewFileEditor`.
 
 ### 4. Remove `MarkdownPreviewFileEditorUtil.kt`
 

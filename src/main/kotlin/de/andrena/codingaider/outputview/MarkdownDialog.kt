@@ -22,7 +22,6 @@ class MarkdownDialog(
     private val onAbort: Abortable? = null
 ) : JDialog(null as Frame?, false) {
     private val markdownViewer = CustomMarkdownViewer()
-
     private val scrollPane = JBScrollPane(markdownViewer.component).apply {
         horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
         verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
@@ -108,20 +107,13 @@ class MarkdownDialog(
                 markdownViewer.setMarkdownContent(output.replace("\r\n", "\n"))
                 title = message
                 
-                // Ensure UI updates happen on EDT
-                SwingUtilities.invokeLater {
-                    // Update preview
-                    markdownViewer.component.revalidate()
-                    markdownViewer.component.repaint()
-                    
-                    // Scroll to bottom
-                    val scrollBar = scrollPane.verticalScrollBar
-                    scrollBar.value = scrollBar.maximum
-                    
-                    // Final refresh
-                    scrollPane.revalidate()
-                    scrollPane.repaint()
-                }
+                // Scroll to bottom and refresh UI
+                val scrollBar = scrollPane.verticalScrollBar
+                scrollBar.value = scrollBar.maximum
+                
+                // Final refresh
+                scrollPane.revalidate()
+                scrollPane.repaint()
             } catch (e: Exception) {
                 println("Error updating markdown dialog: ${e.message}")
                 e.printStackTrace()
