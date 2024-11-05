@@ -7,9 +7,10 @@ private val structuredModeTooltip = """
     <html>Enable structured mode for organized feature development:<br>
     1. Describe a feature to generate a plan and checklist<br>
     2. Plans are stored in .coding-aider-plans directory<br>
-    3. Aider updates plans based on progress and new requirements<br>
-    4. Implements plan step-by-step when in context<br>
-    5. Message can be left empty to continue with an existing plan<br>
+    3. (Optional) Review and update the plan and checklist manually<br>
+    4. Aider updates the checklist automatically and will usually continue with the next unchecked steps<br>
+    5. Implements plan step-by-step when in context<br>
+    6. Message can be left empty to continue with an existing plan<br>
     Use for better tracking and systematic development</html>
 """.trimIndent()
 

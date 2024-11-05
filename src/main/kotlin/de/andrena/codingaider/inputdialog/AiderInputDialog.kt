@@ -23,10 +23,7 @@ import com.intellij.util.textCompletion.TextCompletionUtil
 import com.intellij.util.ui.JBUI
 import de.andrena.codingaider.actions.ide.SettingsAction
 import de.andrena.codingaider.command.FileData
-import de.andrena.codingaider.services.AiderDialogStateService
-import de.andrena.codingaider.services.AiderHistoryService
-import de.andrena.codingaider.services.PersistentFileService
-import de.andrena.codingaider.services.TokenCountService
+import de.andrena.codingaider.services.*
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
@@ -531,13 +528,23 @@ class AiderInputDialog(
     fun isStructuredMode(): Boolean = selectedMode == AiderMode.STRUCTURED
 
     private fun updateModeUI() {
-        val isShellMode = selectedMode == AiderMode.SHELL
-        inputTextField.isEnabled = !isShellMode
+        inputTextField.isEnabled = selectedMode != AiderMode.SHELL
         messageLabel.text = when (selectedMode) {
-            AiderMode.SHELL -> "Shell mode enabled"
-            AiderMode.STRUCTURED -> "Enter feature description or leave empty to continue plan:"
+            AiderMode.SHELL -> "Shell mode enabled, no message required"
+            AiderMode.STRUCTURED -> getStructuredModeMessageLabel()
             else -> "Enter your message:"
         }
+    }
+
+    private fun getStructuredModeMessageLabel(): String {
+        val existingPlans =
+            project.service<AiderPlanService>().getExistingPlans(persistentFileService.getPersistentFiles())
+        if (existingPlans.isNotEmpty()) {
+            val firstPlan = existingPlans.first()
+            val planName = firstPlan.filePath.substringAfterLast("/")
+            return "Continue with the plan $planName (message may be left empty):"
+        }
+        return "Enter feature description that will be used to create a plan:"
     }
 
     private fun restoreLastState() {

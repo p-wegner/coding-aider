@@ -3,6 +3,7 @@ package de.andrena.codingaider.services
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
+import de.andrena.codingaider.command.FileData
 import java.io.File
 
 @Service(Service.Level.PROJECT)
@@ -25,8 +26,9 @@ class AiderPlanService(private val project: Project) {
     }
 
     fun createAiderPlanSystemPrompt(commandData: CommandData): String {
-        val existingPlan =
-            commandData.files.firstOrNull { it.filePath.contains(AIDER_PLANS_FOLDER) && it.filePath.endsWith(".md") }
+        val files = commandData.files
+
+        val existingPlan = getExistingPlans(files)
 
         val s = """
             SYSTEM Instead of making changes to the code, markdown files should be used to track progress on the feature.
@@ -42,9 +44,11 @@ class AiderPlanService(private val project: Project) {
         """
         val basePrompt = s.trimStartingWhiteSpaces()
 
-        val planSpecificPrompt = existingPlan?.let {
+        val firstPlan = existingPlan.firstOrNull()
+        val relativePlanPath = firstPlan?.filePath?.removePrefix(commandData.projectPath) ?: ""
+        val planSpecificPrompt = firstPlan?.let {
             """
-            SYSTEM A plan already exists. Continue implementing the existing plan ${existingPlan.filePath} and its checklist step by step.
+            SYSTEM A plan already exists. Continue implementing the existing plan $relativePlanPath and its checklist step by step.
             SYSTEM Start implementing before updating the checklist. If no changes are done, don't update the checklist.
             SYSTEM In that case inform the user why no changes were made.
             SYSTEM New files that are not the plan and are not part of the checklist should be created in a suitable location.
@@ -66,6 +70,9 @@ ${planSpecificPrompt.trimStartingWhiteSpaces()}
 $STRUCTURED_MODE_MARKER ${commandData.message}
             """.trimStartingWhiteSpaces()
     }
+
+    fun getExistingPlans(files: List<FileData>) =
+        files.filter { it.filePath.contains(AIDER_PLANS_FOLDER) && it.filePath.endsWith(".md") }
 
     private fun String.trimStartingWhiteSpaces() = trimIndent().trimStart { it.isWhitespace() }
 
