@@ -6,65 +6,100 @@ The Output View module is a critical component of the Coding Aider plugin, respo
 ## System Architecture
 
 ### Key Components
-1. **[Abortable.kt](Abortable.kt)**: Defines an interface for command abortion
-2. **[MarkdownDialog.kt](MarkdownDialog.kt)**: Primary dialog implementation for markdown content display
-3. **[MarkdownPreviewFileEditorUtil.kt](MarkdownPreviewFileEditorUtil.kt)**: Utility for creating markdown preview editors
+1. **[Abortable.kt](./Abortable.kt)**: Defines an interface for command abortion
+2. **[MarkdownDialog.kt](./MarkdownDialog.kt)**: Primary dialog implementation for markdown content display
+3. **[MarkdownPreviewFileEditorUtil.kt](./MarkdownPreviewFileEditorUtil.kt)**: Utility for creating markdown preview editors
 
-### Data Flow Diagram
+### Project Dependencies and Interactions
 ```mermaid
 graph TD
-    A[External Process] -->|Output Data| B[MarkdownDialog]
-    B -->|Update Content| C[Markdown Preview]
-    B -->|User Interaction| D{Control Actions}
-    D -->|Abort| E[Abortable Interface]
-    D -->|Keep Open| F[Cancel Auto-Close]
+    subgraph OutputView Module
+        A[Abortable.kt]
+        B[MarkdownDialog.kt]
+        C[MarkdownPreviewFileEditorUtil.kt]
+    end
+    
+    subgraph External Dependencies
+        D[IntelliJ Platform SDK]
+        E[Markdown Plugin]
+        F[Swing UI Toolkit]
+        G[AiderSettings]
+    end
+    
+    subgraph Interaction Flow
+        H[External Process] -->|Trigger Dialog| B
+        B -->|Abort Command| A
+        B -->|Configure Dialog| G
+    end
+    
+    B --> D
+    B --> E
+    B --> F
+    A --> B
+    C --> B
+    C --> D
+    C --> E
 ```
 
 ## Key Interfaces and Classes
 
 ### Abortable Interface
-- **Location**: [Abortable.kt](Abortable.kt)
+- **Location**: [./Abortable.kt](./Abortable.kt)
 - **Purpose**: Provides a standardized mechanism for aborting long-running commands
-- **Method**: 
+- **Interface Definition**:
   ```kotlin
-  fun abortCommand()
+  interface Abortable {
+      fun abortCommand()
+  }
   ```
+- **Usage**: Allows external processes to implement custom abortion logic for long-running tasks
 
 ### MarkdownDialog Class
-- **Location**: [MarkdownDialog.kt](MarkdownDialog.kt)
+- **Location**: [./MarkdownDialog.kt](./MarkdownDialog.kt)
 - **Responsibilities**:
   - Display markdown content dynamically
   - Manage dialog lifecycle
   - Provide user interaction controls
 - **Key Methods**:
-  - `updateProgress(output: String, message: String)`
-  - `startAutoCloseTimer(autocloseDelay: Int)`
-  - `setProcessFinished()`
-  - `focus(delay: Long = 100)`
+  - `updateProgress(output: String, message: String)`: Update dialog content and title
+  - `startAutoCloseTimer(autocloseDelay: Int)`: Implement auto-close functionality
+  - `setProcessFinished()`: Mark process completion
+  - `focus(delay: Long = 100)`: Bring dialog to front
+- **Exceptional Features**:
+  - Thread-safe UI updates using `invokeLater`
+  - Dynamic content refresh
+  - Configurable auto-close behavior
 
 ### MarkdownPreviewFileEditorUtil
-- **Location**: [MarkdownPreviewFileEditorUtil.kt](MarkdownPreviewFileEditorUtil.kt)
+- **Location**: [./MarkdownPreviewFileEditorUtil.kt](./MarkdownPreviewFileEditorUtil.kt)
 - **Purpose**: Dynamically create markdown preview editors across different plugin API versions
+- **Key Method**: `createMarkdownPreviewEditor()`
+  - Supports multiple constructor signatures
+  - Dynamically resolves appropriate constructor based on available Markdown plugin version
 
-## Design Patterns
+## Design Patterns and Principles
 - **Observer Pattern**: Implemented via `Abortable` interface
 - **Utility Pattern**: Demonstrated in `MarkdownPreviewFileEditorUtil`
 - **Facade Pattern**: `MarkdownDialog` provides a simplified interface for complex UI interactions
+- **Dependency Injection**: Supports flexible configuration through constructor parameters
 
 ## Exceptional Implementation Details
 
-### Thread Safety
-- Uses `invokeLater` and `ApplicationManager.getApplication().invokeLater` to ensure thread-safe UI updates
-- Leverages Swing's Event Dispatch Thread (EDT) for all UI modifications
-
 ### Dynamic Constructor Resolution
-- `MarkdownPreviewFileEditorUtil` dynamically finds appropriate constructors for `MarkdownPreviewFileEditor`
-- Supports multiple versions of the Markdown plugin by introspecting available constructors
+- Introspects `MarkdownPreviewFileEditor` constructors
+- Supports multiple Markdown plugin versions
+- Fallback mechanism for constructor selection
 
-### Configurable User Experience
-- Provides auto-close functionality with user-configurable settings
-- Offers a "Keep Open" button to interrupt automatic closing
-- Supports custom abort mechanisms through the `Abortable` interface
+### Thread Safety and Performance
+- Uses Swing's Event Dispatch Thread (EDT)
+- Implements non-blocking UI updates
+- Periodic refresh to ensure responsiveness
+- Lightweight rendering with `LightVirtualFile`
+
+## Configuration and Extensibility
+- Configurable via `AiderSettings`
+- Supports custom abort mechanisms
+- Dynamic content updates during processes
 
 ## Dependencies
 - IntelliJ Platform SDK
@@ -72,13 +107,13 @@ graph TD
 - Kotlin Standard Library
 - Swing UI Toolkit
 
-## Configuration and Extensibility
-- Configurable via `AiderSettings`
-- Easily extendable through the `Abortable` interface
-- Supports dynamic content updates during long-running processes
+## Error Handling and Logging
+- Graceful error handling in UI updates
+- Prints error details to console
+- Prevents UI freezing during error scenarios
 
-## Performance Considerations
-- Uses lightweight `LightVirtualFile` for markdown rendering
-- Implements periodic UI refresh to ensure responsiveness
-- Minimizes blocking operations through asynchronous updates
+## Future Improvements
+- Enhanced logging mechanism
+- More granular configuration options
+- Support for additional markdown rendering features
 
