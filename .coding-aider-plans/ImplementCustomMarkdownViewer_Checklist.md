@@ -16,13 +16,13 @@ Refer to the [Implement Custom Markdown Viewer for MarkdownDialog](ImplementCust
 
 ### 2. Create a Custom Markdown Viewer Component
 
-- [ ] Implement a Swing component to render HTML content.
-    - [ ] Use `JEditorPane` or `JFXPanel` with `WebView`.
-- [ ] Ensure the component can:
-    - [ ] Display HTML generated from markdown.
-    - [ ] Handle scrolling and resizing.
-    - [ ] Support hyperlinks and other interactive elements.
-- [ ] Test the component independently with sample HTML content.
+- [x] Implement a Swing component to render HTML content.
+    - [x] Use `JEditorPane` or `JFXPanel` with `WebView`.
+- [x] Ensure the component can:
+    - [x] Display HTML generated from markdown.
+    - [x] Handle scrolling and resizing.
+    - [x] Support hyperlinks and other interactive elements.
+- [x] Test the component independently with sample HTML content.
 
 ### 3. Update `MarkdownDialog.kt`
 
