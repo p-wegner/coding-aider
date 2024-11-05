@@ -6,6 +6,7 @@ import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.util.data.MutableDataSet
 import java.awt.Desktop
 import java.net.URI
+import java.net.URL
 import javax.swing.JEditorPane
 import javax.swing.event.HyperlinkEvent
 import com.intellij.openapi.editor.EditorFactory
