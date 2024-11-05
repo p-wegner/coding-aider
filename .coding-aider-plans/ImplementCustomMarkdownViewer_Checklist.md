@@ -47,7 +47,7 @@ Refer to the [Implement Custom Markdown Viewer for MarkdownDialog](ImplementCust
 
 ### 5. Improve UX
 
-- [ ] Implement autoscrolling behaviour like in shell applications.
+- [x] Implement autoscrolling behaviour like in shell applications.
   If the user has scrolled, autoscrolling is off. If view is at the bottom of the content, autoscrolling is turned on.
 
 ### 7. Update Documentation

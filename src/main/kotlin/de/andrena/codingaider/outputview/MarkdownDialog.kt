@@ -37,10 +37,19 @@ class MarkdownDialog(
         mnemonic = onAbort?.let { KeyEvent.VK_A } ?: KeyEvent.VK_C
     }
     private var isProcessFinished = false
+    private var autoScroll = true
 
     init {
         title = initialTitle
         markdownViewer.setMarkdownContent(initialText)
+        
+        // Add scroll listener to detect when user manually scrolls
+        scrollPane.verticalScrollBar.addAdjustmentListener { e ->
+            if (!e.valueIsAdjusting) {
+                val scrollBar = scrollPane.verticalScrollBar
+                autoScroll = scrollBar.value >= scrollBar.maximum - scrollBar.visibleAmount
+            }
+        }
         
         // Start refresh timer
         refreshTimer = Timer().apply {
@@ -108,9 +117,11 @@ class MarkdownDialog(
                 markdownViewer.setMarkdownContent(output.replace("\r\n", "\n"))
                 title = message
                 
-                // Scroll to bottom and refresh UI
-                val scrollBar = scrollPane.verticalScrollBar
-                scrollBar.value = scrollBar.maximum
+                // Only scroll to bottom if autoScroll is enabled
+                if (autoScroll) {
+                    val scrollBar = scrollPane.verticalScrollBar
+                    scrollBar.value = scrollBar.maximum - scrollBar.visibleAmount
+                }
                 
                 // Final refresh
                 scrollPane.revalidate()
