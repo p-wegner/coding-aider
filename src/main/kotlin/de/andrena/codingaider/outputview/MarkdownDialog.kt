@@ -116,20 +116,29 @@ class MarkdownDialog(
 
     }
 
+    private var lastContent = ""
+
     fun updateProgress(output: String, message: String) {
         com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
             try {
-                markdownViewer.setMarkdownContent(output.replace("\r\n", "\n"))
-                title = message
-                
-                // Revalidate and repaint components
-                markdownViewer.component.revalidate()
-                markdownViewer.component.repaint()
+                val newContent = output.replace("\r\n", "\n")
+                if (newContent != lastContent) {
+                    lastContent = newContent
+                    
+                    // Store current scroll position
+                    val scrollBar = scrollPane.verticalScrollBar
+                    val wasAtBottom = autoScroll && 
+                        (scrollBar.value + scrollBar.visibleAmount + 10 >= scrollBar.maximum)
+                    
+                    // Update content
+                    markdownViewer.setMarkdownContent(newContent)
+                    title = message
 
-                if (autoScroll) {
-                    SwingUtilities.invokeLater {
-                        val scrollBar = scrollPane.verticalScrollBar
-                        scrollBar.value = scrollBar.maximum
+                    // Only scroll if we were at bottom before update
+                    if (wasAtBottom) {
+                        SwingUtilities.invokeLater {
+                            scrollBar.value = scrollBar.maximum
+                        }
                     }
                 }
             } catch (e: Exception) {
