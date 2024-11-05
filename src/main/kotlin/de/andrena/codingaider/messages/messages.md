@@ -25,6 +25,3 @@ This module depends on the IntelliJ Platform's messaging system, specifically th
 
 ## Related Files
 - [PersistentFilesChangedTopic.kt](./PersistentFilesChangedTopic.kt)
-
-## UML Diagram
-For a visual representation of the data flow and dependencies, refer to the [messages.puml](./messages.puml) file.

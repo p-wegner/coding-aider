@@ -47,4 +47,3 @@ The module follows the Data Transfer Object (DTO) pattern, encapsulating data in
 ## Links to Files
 - [FileData.kt](./FileData.kt)
 - [CommandData.kt](./CommandData.kt)
-- [command.puml](./command.puml)

@@ -53,8 +53,4 @@ The Aider module provides functionalities for managing project settings and conf
 - The settings are loaded and saved using the `PersistentStateComponent` interface, allowing for seamless integration with the IDE's settings management.
 - User interactions with the UI components trigger updates to the settings, which are then persisted.
 
-## PlantUML Diagram
-Refer to the PlantUML diagram for a visual representation of the dependencies and data flow within the Aider module.
-
-![PlantUML Diagram](settings.puml)
 

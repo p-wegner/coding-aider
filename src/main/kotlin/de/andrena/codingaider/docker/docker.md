@@ -41,6 +41,4 @@ To use the `DockerContainerManager`, create an instance and call the appropriate
 ## Exception Handling
 The class includes exception handling to log errors when stopping the Docker container or removing the CID file.
 
-## UML Diagram
-For a visual representation of the data flow and dependencies, refer to the [docker.puml](docker.puml) file.
 

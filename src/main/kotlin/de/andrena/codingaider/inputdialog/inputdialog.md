@@ -53,6 +53,3 @@ The Aider module provides a user interface for interacting with various coding a
 ## Exceptional Implementation Details
 - The `AiderContextView` uses a tree structure to manage and display files, allowing for easy navigation and manipulation.
 - The `AiderCompletionProvider` dynamically extracts completion suggestions from the project's files, enhancing the user experience by providing relevant suggestions.
-
-## UML Diagram
-For a visual representation of the module's structure and interactions, refer to the [inputdialog.puml](./inputdialog.puml) file.
