@@ -11,16 +11,13 @@ import com.intellij.ui.components.JBList
 import com.intellij.ui.content.ContentFactory
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.command.FileData
-import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.messages.PersistentFilesChangedTopic
-import javax.swing.DefaultListCellRenderer
-import javax.swing.DefaultListModel
-import javax.swing.JComponent
-import javax.swing.JLabel
+import de.andrena.codingaider.services.PersistentFileService
 import java.awt.Component
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import javax.swing.JList
+import java.io.File
+import javax.swing.*
 
 class PersistentFilesToolWindow : ToolWindowFactory {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
@@ -142,7 +139,9 @@ class PersistentFilesComponent(private val project: Project) {
         ): Component {
             val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
             if (component is JLabel && value is FileData) {
-                component.text = "${value.filePath} ${if (value.isReadOnly) "(Read-Only)" else ""}"
+                val file = File(value.filePath)
+                component.text = "${file.nameWithoutExtension} ${if (value.isReadOnly) "(Read-Only)" else ""}"
+                component.toolTipText = value.filePath
             }
             return component
         }
