@@ -23,12 +23,10 @@ class MarkdownDialog(
 ) : JDialog(null as Frame?, false) {
     private val textArea = CustomMarkdownViewer()
 
-    private val scrollPane by lazy {
-        JBScrollPane(textArea.component).apply {
-            setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED)
-            setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS)
-            viewport.scrollMode = JViewport.BACKINGSTORE_SCROLL_MODE
-        }
+    private val scrollPane = JBScrollPane(textArea.component).apply {
+        horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
+        verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
+        viewport.scrollMode = JViewport.BACKINGSTORE_SCROLL_MODE
     }
     private var autoCloseTimer: TimerTask? = null
     private var refreshTimer: Timer? = null
@@ -48,7 +46,6 @@ class MarkdownDialog(
         refreshTimer = Timer().apply {
             scheduleAtFixedRate(0, 1000) {
                 invokeLater {
-                    textArea.selectNotify()
                     textArea.component.revalidate()
                     textArea.component.repaint()
                 }

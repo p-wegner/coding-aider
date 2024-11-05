@@ -67,17 +67,18 @@ class MarkdownPreviewFileEditorUtil {
     }
 }
 
-class CustomMarkdownViewer : JEditorPane() {
+class CustomMarkdownViewer {
+    val component: JEditorPane = JEditorPane().apply {
+        contentType = "text/html"
+        isEditable = false
+        putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true)
+    }
     private val options = MutableDataSet()
     private val parser = Parser.builder(options).build()
     private val renderer = HtmlRenderer.builder(options).build()
 
     init {
-        contentType = "text/html"
-        isEditable = false
-        putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true)
-
-        addHyperlinkListener { event ->
+        component.addHyperlinkListener { event ->
             if (event.eventType == HyperlinkEvent.EventType.ACTIVATED) {
                 try {
                     Desktop.getDesktop().browse(URI(event.url.toString()))
@@ -107,7 +108,7 @@ class CustomMarkdownViewer : JEditorPane() {
             </body>
             </html>
         """.trimIndent()
-        text = styledHtml
-        caretPosition = 0
+        component.text = styledHtml
+        component.caretPosition = 0
     }
 }
