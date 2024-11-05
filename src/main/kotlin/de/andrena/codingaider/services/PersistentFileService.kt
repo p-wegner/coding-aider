@@ -88,15 +88,36 @@ class PersistentFileService(private val project: Project) {
         savePersistentFilesToContextFile()
     }
 
-    fun getPersistentFiles(): List<FileData> = persistentFiles
+    fun getPersistentFiles(): List<FileData> {
+        // Clean up persistent files that no longer exist
+        val validFiles = persistentFiles.filter { fileData ->
+            val virtualFile = LocalFileSystem.getInstance().findFileByPath(fileData.filePath)
+            virtualFile?.exists() ?: false
+        }
+
+        if (validFiles.size != persistentFiles.size) {
+            persistentFiles.clear()
+            persistentFiles.addAll(validFiles)
+            savePersistentFilesToContextFile()
+        }
+
+        return persistentFiles
+    }
+
     fun addAllFiles(selectedFiles: List<FileData>) {
         selectedFiles.forEach { addFile(it) }
     }
 
     fun updateFile(updatedFile: FileData) {
         val index = persistentFiles.indexOfFirst { it.filePath == updatedFile.filePath }
-        if (index != -1) {
+        val virtualFile = LocalFileSystem.getInstance().findFileByPath(updatedFile.filePath)
+        
+        if (index != -1 && virtualFile?.exists() == true) {
             persistentFiles[index] = updatedFile
+            savePersistentFilesToContextFile()
+        } else if (index != -1) {
+            // If file no longer exists, remove it from persistent files
+            persistentFiles.removeAt(index)
             savePersistentFilesToContextFile()
         }
     }
