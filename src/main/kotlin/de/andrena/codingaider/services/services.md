@@ -1,66 +1,104 @@
 # Aider Services Documentation
 
 ## Overview
-The Aider Services module provides a set of services that facilitate the management of user interactions, file handling, token counting, and documentation discovery within the Coding Aider application. This module is designed to support various functionalities such as maintaining history, counting tokens in text, managing persistent files, and finding relevant documentation.
+The Aider Services module provides a comprehensive set of services for the Coding Aider IntelliJ IDEA plugin, facilitating intelligent code interaction, file management, and project documentation. This module supports advanced features like token counting, persistent file tracking, dialog state management, and dynamic documentation discovery.
 
-## Key Classes and Interfaces
+## Module Architecture
 
-### AiderHistoryService
-- **Purpose**: Manages the input and chat history of the application.
-- **Key Methods**:
-  - `getInputHistory()`: Returns a list of input history entries with timestamps.
-  - `getLastChatHistory()`: Retrieves the last chat history entry.
-- **Implementation Details**: Utilizes local files to store history data, ensuring persistence across sessions.
+### Service Dependencies
+```mermaid
+graph TD
+    A[AiderPlanService] --> B[AiderDialogStateService]
+    A --> C[DocumentationFinderService]
+    D[PersistentFileService] --> E[FileExtractorService]
+    F[TokenCountService] --> G[AiderHistoryService]
+    H[AiderDialogStateService] --> D
+```
 
-### TokenCountService
-- **Purpose**: Counts tokens in text and files.
-- **Key Methods**:
-  - `countTokensInText(text: String)`: Counts the number of tokens in the provided text.
-  - `countTokensInFiles(files: List<FileData>)`: Counts tokens across multiple files.
-- **Implementation Details**: Uses the `jtokkit` library for token counting, supporting various encoding models.
+## Key Services
 
-### PersistentFileService
-- **Purpose**: Handles the loading and saving of persistent files.
-- **Key Methods**:
-  - `loadPersistentFiles()`: Loads persistent file data from a YAML context file.
-  - `savePersistentFilesToContextFile()`: Saves the current state of persistent files to the context file.
-  - `addFile(file: FileData)`: Adds a new file to the persistent list.
-- **Implementation Details**: Employs Jackson for YAML processing and IntelliJ's `LocalFileSystem` for file operations.
+### 1. AiderPlanService
+- **Purpose**: Manages structured coding plans and checklists
+- **Key Features**:
+  - Generates system prompts for feature implementation
+  - Supports structured mode for plan tracking
+  - Creates plan and checklist markdown files
+- **Exceptional Implementation**:
+  - Uses custom markers for plan identification
+  - Dynamically adapts prompts based on existing plans
 
-### AiderDialogStateService
-- **Purpose**: Maintains the state of the dialog interactions.
-- **Key Methods**:
-  - `saveState(...)`: Saves the current dialog state.
-  - `getLastState()`: Retrieves the last saved dialog state.
-- **Implementation Details**: Stores dialog states in memory, providing quick access to the last interaction state.
+### 2. TokenCountService
+- **Purpose**: Precise token counting for AI interactions
+- **Key Features**:
+  - Uses `jtokkit` for accurate token estimation
+  - Supports multiple encoding models
+  - Can count tokens in text and files
+- **Exceptional Implementation**:
+  - Configurable encoding registry
+  - Robust error handling during token counting
 
-### AiderPlanService
-- **Purpose**: Manages the creation and handling of plans for coding tasks.
-- **Key Methods**:
-  - `createAiderPlanSystemPrompt(commandData: CommandData)`: Generates a system prompt for creating a coding plan.
-- **Implementation Details**: Integrates structured mode markers to facilitate plan and checklist management.
+### 3. PersistentFileService
+- **Purpose**: Manages file context across plugin sessions
+- **Key Features**:
+  - YAML-based persistent file tracking
+  - Supports read-only and editable file states
+  - Provides file change notifications
+- **Exceptional Implementation**:
+  - Uses Jackson for YAML processing
+  - Integrates with IntelliJ's `LocalFileSystem`
+  - Implements a message bus for file change events
 
-### DocumentationFinderService
-- **Purpose**: Discovers relevant markdown documentation files in the project hierarchy.
-- **Key Methods**:
-  - `findDocumentationFiles(virtualFiles: Array<VirtualFile>)`: Finds documentation files related to given files.
-  - `findDocumentationForFile(file: VirtualFile)`: Traverses up the directory tree to find markdown files.
-- **Implementation Details**: Recursively searches parent directories for markdown files to provide context.
+### 4. DocumentationFinderService
+- **Purpose**: Intelligent documentation discovery
+- **Key Features**:
+  - Recursively finds markdown documentation
+  - Supports project-wide documentation context
+- **Exceptional Implementation**:
+  - Traverses directory hierarchy
+  - Filters documentation files dynamically
+
+### 5. AiderDialogStateService
+- **Purpose**: Maintains conversation and interaction state
+- **Key Features**:
+  - Stores comprehensive dialog metadata
+  - Supports mode tracking (shell, structured)
+- **Exceptional Implementation**:
+  - Immutable state representation
+  - Project-scoped state management
+
+### 6. AiderHistoryService
+- **Purpose**: Tracks user interactions and chat history
+- **Key Features**:
+  - Persistent input and chat history
+  - Structured mode aware history parsing
+- **Exceptional Implementation**:
+  - Custom timestamp parsing
+  - Structured mode input extraction
+
+### 7. FileExtractorService
+- **Purpose**: Handles file extraction from various sources
+- **Key Features**:
+  - JAR file content extraction
+  - Temporary file management
+- **Exceptional Implementation**:
+  - Dynamic file path handling
+  - Supports extraction from compressed archives
 
 ## Design Patterns
-- **Singleton Pattern**: Each service class is implemented as a singleton, ensuring that only one instance of each service exists per project.
+- **Singleton Pattern**: All services use IntelliJ's service mechanism
+- **Dependency Injection**: Project-scoped service instantiation
+- **Immutable State**: Dialog state representation
 
-## Dependencies
-- The services depend on the IntelliJ Platform SDK for project management and file handling.
-- The `FileData` class is used across multiple services to represent file-related data.
+## External Dependencies
+- IntelliJ Platform SDK
+- Jackson (YAML processing)
+- JTokkit (Token counting)
 
-## Data Flow
-- The `AiderHistoryService` and `TokenCountService` interact with user inputs and outputs, while `PersistentFileService` manages the state of files.
-- The `AiderDialogStateService` maintains the state of user interactions, which can be influenced by the outputs of the `AiderPlanService`.
-
-## File Links
-- [AiderHistoryService.kt](./AiderHistoryService.kt)
+## File References
+- [AiderPlanService.kt](./AiderPlanService.kt)
 - [TokenCountService.kt](./TokenCountService.kt)
 - [PersistentFileService.kt](./PersistentFileService.kt)
+- [DocumentationFinderService.kt](./DocumentationFinderService.kt)
 - [AiderDialogStateService.kt](./AiderDialogStateService.kt)
-- [AiderPlanService.kt](./AiderPlanService.kt)
+- [AiderHistoryService.kt](./AiderHistoryService.kt)
+- [FileExtractorService.kt](./FileExtractorService.kt)
