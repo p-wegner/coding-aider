@@ -53,10 +53,15 @@ graph TD
 
 ## Actions Module
 The Aider Actions module provides a set of actions that enhance the functionality of the Aider tool within the IDE. Key classes include:
-- **SettingsAction**: Opens the Aider settings dialog.
-- **PersistentFilesAction**: Manages files that should persist across sessions.
-- **ShowLastCommandResultAction**: Displays the result of the last command executed by Aider.
-- **CommitAction**: Commits changes to the version control system.
+- **AiderAction**: Main action for interacting with the AI assistant
+- **AiderClipboardImageAction**: Handles clipboard image processing
+- **AiderWebCrawlAction**: Enables web crawling functionality
+- **ApplyDesignPatternAction**: Assists in applying design patterns
+- **DocumentCodeAction**: Generates code documentation
+- **DocumentEachFolderAction**: Creates documentation for project folders
+- **FixBuildAndTestErrorAction**: Helps resolve build and test errors
+- **SettingsAction**: Opens the Aider settings dialog
+- **PersistentFilesAction**: Manages files that should persist across sessions
 
 [Link to Actions Documentation](src/main/kotlin/de/andrena/codingaider/actions/actions.md)
 
