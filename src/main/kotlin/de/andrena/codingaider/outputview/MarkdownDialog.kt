@@ -46,8 +46,8 @@ class MarkdownDialog(
         refreshTimer = Timer().apply {
             scheduleAtFixedRate(0, 1000) {
                 invokeLater {
-                    textArea.component.revalidate()
-                    textArea.component.repaint()
+                    markdownViewer.component.revalidate()
+                    markdownViewer.component.repaint()
                 }
             }
         }
