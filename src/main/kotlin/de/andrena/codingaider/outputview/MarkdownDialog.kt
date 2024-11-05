@@ -53,9 +53,7 @@ class MarkdownDialog(
             // Consider "at bottom" when within 10 pixels of the bottom
             val isAtBottom = (current + extent + 10) >= maximum
             
-            if (!e.valueIsAdjusting) {
-                autoScroll = isAtBottom
-            }
+            autoScroll = isAtBottom
         }
         
         // Start refresh timer
