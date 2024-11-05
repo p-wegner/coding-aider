@@ -59,17 +59,7 @@ class DocumentEachFolderAction : AnAction() {
                 )
 
                 val commandData = CommandData(
-                    message = """Generate a markdown documentation for the code in the provided files and directories: $fileNames. 
-                            |Store the results in $folder/$filename.
-                            |If there are exceptional implementation details, mention them.
-                            |
-                            |Good code documentation should provide a high-level overview of the module's purpose and functionality.
-                            |Important files should be clearly described and linked in the documentation file.
-                            |Include details on the module's public interfaces, key classes, and methods, as well as any design patterns used.
-                            |Document the dependencies and data flow between this module and others of the project using a Mermaid diagram embedded in the markdown file.
-                            |Make sure files are linked using relative paths.
-                            |If the file already exists, update it instead.
-                            |""".trimMargin(),
+                    message = getIndividualDocumentationPrompt(fileNames, folder, filename),
                     useYesFlag = true,
                     llm = documentationLlm,
                     additionalArgs = settings.additionalArgs,
@@ -104,14 +94,7 @@ class DocumentEachFolderAction : AnAction() {
                     )
 
                     val summaryCommandData = CommandData(
-                        message = """Summarize the following documentation files: ${documentationFiles.joinToString(", ") { it.filePath }}.
-                        |Provide a concise overview of the key points and any notable details.
-                        |Include relevant links to the documentation files.
-                        |IMPORTANT: The dependencies between the individual modules in the project should be described using a Mermaid diagram embedded in the markdown file.
-                        |Make sure files are linked using relative paths.
-                        |Store the results in the root folder of the project in the file "overview.md".
-                        |To calculate the dependencies, use the the ".
-                        |""".trimMargin(),
+                        message = getOverviewPrompt(documentationFiles),
                         useYesFlag = true,
                         llm = documentationLlm,
                         additionalArgs = settings.additionalArgs,
@@ -134,5 +117,33 @@ class DocumentEachFolderAction : AnAction() {
                 }
             }
         }
+
+        private fun getOverviewPrompt(documentationFiles: List<FileData>) =
+            """Summarize the following documentation files: ${documentationFiles.joinToString(", ") { it.filePath }}.
+|Provide a concise overview of the key points and any notable details.
+|Include relevant links to the documentation files.
+|IMPORTANT: The dependencies between the individual modules in the project should be described using a Mermaid diagram embedded in the markdown file.
+|Focus on a high level overview of the project and its modules.
+|Make sure files are linked using relative paths.
+|Store the results in the root folder of the project in the file "overview.md".
+|To calculate the dependencies, use the existing mermaid diagrams in the documentation files.
+|""".trimMargin()
+
+        private fun getIndividualDocumentationPrompt(
+            fileNames: List<String>,
+            folder: VirtualFile,
+            filename: String
+        ) =
+            """Generate a markdown documentation for the code in the provided files and directories: $fileNames. 
+|Store the results in $folder/$filename.
+|If there are exceptional implementation details, mention them.
+|
+|Good code documentation should provide a high-level overview of the module's purpose and functionality.
+|Important files should be clearly described and linked in the documentation file.
+|Include details on the module's public interfaces, key classes, and methods, as well as any design patterns used.
+|Document the dependencies between classes in the module $filename and classes of the project outside of the $filename module using a Mermaid diagram embedded in the markdown file.
+|Make sure files are linked using relative paths.
+|If the file already exists, update it instead.
+|""".trimMargin()
     }
 }
