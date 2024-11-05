@@ -45,10 +45,16 @@ class MarkdownDialog(
         
         // Add scroll listener to detect when user manually scrolls
         scrollPane.verticalScrollBar.addAdjustmentListener { e ->
+            val scrollBar = scrollPane.verticalScrollBar
+            val extent = scrollBar.model.extent
+            val maximum = scrollBar.model.maximum
+            val current = scrollBar.model.value
+            
+            // Consider "at bottom" when within 10 pixels of the bottom
+            val isAtBottom = (current + extent + 10) >= maximum
+            
             if (!e.valueIsAdjusting) {
-                val scrollBar = scrollPane.verticalScrollBar
-                val maxPosition = scrollBar.maximum - scrollBar.visibleAmount
-                autoScroll = scrollBar.value >= maxPosition
+                autoScroll = isAtBottom
             }
         }
         
@@ -123,9 +129,10 @@ class MarkdownDialog(
                 markdownViewer.component.repaint()
 
                 if (autoScroll) {
-                    // Scroll to the bottom by setting the caret position to the end
-                    val docLength = markdownViewer.component.document.length
-                    markdownViewer.component.caretPosition = docLength
+                    SwingUtilities.invokeLater {
+                        val scrollBar = scrollPane.verticalScrollBar
+                        scrollBar.value = scrollBar.maximum
+                    }
                 }
             } catch (e: Exception) {
                 println("Error updating markdown dialog: ${e.message}")
