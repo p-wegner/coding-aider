@@ -40,6 +40,7 @@ class MarkdownDialog(
 
     init {
         title = initialTitle
+        markdownViewer.setMarkdownContent(initialText)
         
         // Start refresh timer
         refreshTimer = Timer().apply {
