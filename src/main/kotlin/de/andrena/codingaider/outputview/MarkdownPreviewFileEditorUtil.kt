@@ -1,23 +1,26 @@
 package de.andrena.codingaider.outputview
 
 import com.intellij.openapi.editor.Document
-import com.vladsch.flexmark.parser.Parser
-import com.vladsch.flexmark.html.HtmlRenderer
-import com.vladsch.flexmark.util.data.MutableDataSet
-import java.awt.Desktop
-import java.net.URI
-import java.net.URL
-import javax.swing.JEditorPane
-import javax.swing.event.HyperlinkEvent
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
+import com.vladsch.flexmark.html.HtmlRenderer
+import com.vladsch.flexmark.parser.Parser
+import com.vladsch.flexmark.util.data.MutableDataSet
 import org.intellij.plugins.markdown.ui.preview.MarkdownPreviewFileEditor
+import java.awt.Desktop
+import java.net.URI
+import javax.swing.JEditorPane
+import javax.swing.event.HyperlinkEvent
 
 class MarkdownPreviewFileEditorUtil {
     companion object {
         // Support api changes in the Markdown plugin
-        fun createMarkdownPreviewEditor(project: Project, virtualFile: VirtualFile, document: Document): MarkdownPreviewFileEditor {
+        fun createMarkdownPreviewEditor(
+            project: Project,
+            virtualFile: VirtualFile,
+            document: Document
+        ): MarkdownPreviewFileEditor {
             val editor = EditorFactory.getInstance().createEditor(document, project, virtualFile, true)
             val editorClass = MarkdownPreviewFileEditor::class.java
             val constructors = editorClass.declaredConstructors
@@ -77,7 +80,7 @@ class CustomMarkdownViewer : JEditorPane() {
         addHyperlinkListener { event ->
             if (event.eventType == HyperlinkEvent.EventType.ACTIVATED) {
                 try {
-                    Desktop.getDesktop().browse(URI(event.URL.toString()))
+                    Desktop.getDesktop().browse(URI(event.url.toString()))
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
