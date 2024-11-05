@@ -50,13 +50,19 @@ class RefactorToCleanCodeAction : AnAction() {
 
         private fun buildRefactorInstructions(fileNames: List<String>): String {
             return """
-                Analyze and refactor the following files to implement clean code principles and adhere to SOLID principles: $fileNames.
+                Analyze and refactor the following files to implement common coding principles: $fileNames
+                Principles to follow sorted by importance:
+                - KISS principle - Keep It Simple, Stupid
+                - DRY (Don't Repeat Yourself) principle
+                - YAGNI principle - You Ain't Gonna Need It
+                - Clean code principles
+                - SOLID principles
+                - Only add comments when naming is not sufficient to explain the code
                 
                 Please follow these steps:
                 1. Review the code for adherence to clean code principles:
                    - Meaningful names for variables, functions, and classes
                    - Functions that do one thing
-                   - Proper comments and documentation
                    - DRY (Don't Repeat Yourself) principle
                    - Proper formatting and organization
                 
@@ -82,6 +88,7 @@ class RefactorToCleanCodeAction : AnAction() {
                    - Any design patterns or architectural improvements implemented
                 
                 Please make these refactorings while preserving the overall structure and functionality of the code. If any changes might affect the behavior of the code, highlight these in your explanation.
+                IMPORTANT: The most important principle to follow is the KISS principle. It means that you should always strive to keep your code as simple as possible, without sacrificing readability or maintainability.
             """.trimIndent()
         }
     }
