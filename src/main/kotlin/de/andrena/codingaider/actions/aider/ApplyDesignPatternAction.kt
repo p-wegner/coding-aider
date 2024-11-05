@@ -67,7 +67,6 @@ class ApplyDesignPatternAction : AnAction() {
                     llm = settings.llm,
                     additionalArgs = settings.additionalArgs,
                     files = allFiles,
-                    isShellMode = false,
                     lintCmd = settings.lintCmd,
                     deactivateRepoMap = settings.deactivateRepoMap,
                     editFormat = settings.editFormat,

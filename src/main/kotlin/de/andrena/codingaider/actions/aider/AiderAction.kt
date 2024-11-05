@@ -12,6 +12,7 @@ import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.executors.api.ShellExecutor
 import de.andrena.codingaider.inputdialog.AiderInputDialog
+import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.AiderDialogStateService
 import de.andrena.codingaider.services.DocumentationFinderService
 import de.andrena.codingaider.services.PersistentFileService
@@ -62,7 +63,7 @@ class AiderAction : AnAction() {
                 val allFiles = traversedFiles.distinctBy { it.filePath }
 
                 if (directShellMode) {
-                    val commandData = collectDefaultCommandData(allFiles, project)
+                    val commandData = collectDefaultShellCommandData(allFiles, project)
                     ShellExecutor(project, commandData).execute()
                 } else {
                     val dialog = AiderInputDialog(project, allFiles.distinctBy { it.filePath }
@@ -76,7 +77,8 @@ class AiderAction : AnAction() {
                             dialog.getAdditionalArgs(),
                             dialog.getAllFiles(),
                             dialog.isShellMode(),
-                            dialog.isStructuredMode()
+                            dialog.isStructuredMode(),
+                            dialog.selectedMode
                         )
                         if (commandData.isShellMode) {
                             ShellExecutor(project, commandData).execute()
@@ -104,16 +106,15 @@ class AiderAction : AnAction() {
                 llm = dialog.getLlm(),
                 additionalArgs = dialog.getAdditionalArgs(),
                 files = dialog.getAllFiles(),
-                isShellMode = dialog.isShellMode(),
                 lintCmd = settings.lintCmd,
                 deactivateRepoMap = settings.deactivateRepoMap,
                 editFormat = settings.editFormat,
                 projectPath = project.basePath ?: "",
-                structuredMode = dialog.isStructuredMode()
+                aiderMode = dialog.selectedMode
             )
         }
 
-        private fun collectDefaultCommandData(files: List<FileData>, project: Project): CommandData {
+        private fun collectDefaultShellCommandData(files: List<FileData>, project: Project): CommandData {
             val settings = getInstance()
             return CommandData(
                 message = "",
@@ -121,11 +122,11 @@ class AiderAction : AnAction() {
                 llm = settings.llm,
                 additionalArgs = settings.additionalArgs,
                 files = files,
-                isShellMode = true, // Always true for direct shell mode
                 lintCmd = settings.lintCmd,
                 deactivateRepoMap = settings.deactivateRepoMap,
                 editFormat = settings.editFormat,
-                projectPath = project.basePath ?: ""
+                projectPath = project.basePath ?: "",
+                aiderMode = AiderMode.SHELL
             )
         }
     }

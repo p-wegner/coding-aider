@@ -64,12 +64,10 @@ class DocumentEachFolderAction : AnAction() {
                     llm = documentationLlm,
                     additionalArgs = settings.additionalArgs,
                     files = writableFileDataList,
-                    isShellMode = false,
                     lintCmd = settings.lintCmd,
                     deactivateRepoMap = settings.deactivateRepoMap,
                     editFormat = settings.editFormat,
                     projectPath = project.basePath ?: "",
-                    structuredMode = false,
                     options = CommandOptions(disablePresentation = true, autoCloseDelay = 1)
                 )
                 val ideBasedExecutor = IDEBasedExecutor(project, commandData)
@@ -99,12 +97,10 @@ class DocumentEachFolderAction : AnAction() {
                         llm = documentationLlm,
                         additionalArgs = settings.additionalArgs,
                         files = writableSummaryFiles,
-                        isShellMode = false,
                         lintCmd = settings.lintCmd,
                         deactivateRepoMap = settings.deactivateRepoMap,
                         editFormat = settings.editFormat,
                         projectPath = project.basePath ?: "",
-                        structuredMode = false,
                         options = CommandOptions(
                             disablePresentation = false,
                             commitHashToCompareWith = currentCommitHash,

@@ -16,6 +16,7 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.CommandOptions
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
+import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileRefresher
@@ -70,12 +71,12 @@ class AiderWebCrawlAction : AnAction() {
                     llm = settings.webCrawlLlm,
                     additionalArgs = "",
                     files = listOf(FileData(filePath, false)),
-                    isShellMode = false,
                     lintCmd = "",
                     projectPath = project.basePath ?: "",
-                    structuredMode = false,
                     editFormat = "whole",
+                    aiderMode = AiderMode.NORMAL,
                     options = CommandOptions(autoCommit = false, dirtyCommits = false)
+
                 )
                 if (settings.activateIdeExecutorAfterWebcrawl) {
                     IDEBasedExecutor(project, commandData).execute()

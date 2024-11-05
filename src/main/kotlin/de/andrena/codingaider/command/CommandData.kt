@@ -1,5 +1,7 @@
 package de.andrena.codingaider.command
 
+import de.andrena.codingaider.inputdialog.AiderMode
+
 
 /**
  * Represents the data required to execute an Aider command.
@@ -15,6 +17,8 @@ package de.andrena.codingaider.command
  * @property deactivateRepoMap If true, disables the repository mapping feature.
  * @property editFormat Specifies the format for edit instructions (e.g., "diff").
  * @property options Contains optional parameters for the command, including whether to disable presentation of changes.
+ * @property structuredMode If true, enables structured mode for the command.
+ * @property aiderMode The mode to use for the command.
  */
 data class CommandData(
     val message: String,
@@ -22,14 +26,17 @@ data class CommandData(
     val llm: String,
     val additionalArgs: String,
     val files: List<FileData>,
-    val isShellMode: Boolean,
+
     val lintCmd: String,
     val deactivateRepoMap: Boolean = false,
     val editFormat: String = "",
     val projectPath: String,
     val options: CommandOptions = CommandOptions.DEFAULT,
-    val structuredMode: Boolean = false
-)
+    val aiderMode: AiderMode = AiderMode.NORMAL
+) {
+    val isShellMode: Boolean get() = aiderMode == AiderMode.SHELL
+    val structuredMode: Boolean get() = aiderMode == AiderMode.STRUCTURED
+}
 
 /**
  * Represents the optional parameters for the Aider command.

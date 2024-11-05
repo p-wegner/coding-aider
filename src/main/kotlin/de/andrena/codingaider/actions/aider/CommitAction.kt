@@ -23,11 +23,9 @@ class CommitAction : AnAction() {
                 llm = settings.llm,
                 additionalArgs = "",
                 files = emptyList(),
-                isShellMode = false,
                 lintCmd = settings.lintCmd,
                 deactivateRepoMap = settings.deactivateRepoMap,
                 projectPath = project.basePath ?: "",
-                structuredMode = false
             )
             IDEBasedExecutor(project, commandData).execute()
         }

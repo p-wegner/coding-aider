@@ -14,14 +14,13 @@ class AiderTestCommand() {
             llm = "",
             additionalArgs = "--help",
             files = emptyList(),
-            isShellMode = false,
             lintCmd = "",
             deactivateRepoMap = false,
             editFormat = "",
             projectPath = "",
             options = CommandOptions(useDockerAider = useDockerAider)
         )
-        LiveUpdateExecutor(commandData,ProjectManager.getInstance().defaultProject).apply {
+        LiveUpdateExecutor(commandData, ProjectManager.getInstance().defaultProject).apply {
             observer?.let { addObserver(it) }
             execute()
         }

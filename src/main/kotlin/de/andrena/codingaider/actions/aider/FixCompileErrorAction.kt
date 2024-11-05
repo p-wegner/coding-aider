@@ -85,7 +85,6 @@ abstract class BaseFixCompileErrorAction : AnAction() {
                 llm = settings.llm,
                 additionalArgs = settings.additionalArgs,
                 files = files,
-                isShellMode = isShellMode,
                 lintCmd = settings.lintCmd,
                 deactivateRepoMap = settings.deactivateRepoMap,
                 editFormat = settings.editFormat,

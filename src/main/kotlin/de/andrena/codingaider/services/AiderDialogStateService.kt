@@ -4,6 +4,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.Service.Level
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.FileData
+import de.andrena.codingaider.inputdialog.AiderMode
 
 @Service(Level.PROJECT)
 class AiderDialogStateService(private val project: Project) {
@@ -16,7 +17,8 @@ class AiderDialogStateService(private val project: Project) {
         additionalArgs: String,
         files: List<FileData>,
         isShellMode: Boolean,
-        isStructuredMode: Boolean
+        isStructuredMode: Boolean,
+        aiderMode: AiderMode
     ) {
         lastState = DialogState(
             message,
@@ -25,7 +27,8 @@ class AiderDialogStateService(private val project: Project) {
             additionalArgs,
             files,
             isShellMode,
-            isStructuredMode
+            isStructuredMode,
+            aiderMode
         )
     }
 
@@ -38,7 +41,9 @@ class AiderDialogStateService(private val project: Project) {
         val additionalArgs: String,
         val files: List<FileData>,
         val isShellMode: Boolean,
-        val isStructuredMode: Boolean
+        val isStructuredMode: Boolean,
+        val aiderMode: AiderMode
+
     )
 
     companion object {

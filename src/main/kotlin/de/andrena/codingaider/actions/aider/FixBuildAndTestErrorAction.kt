@@ -30,7 +30,7 @@ class FixBuildAndTestErrorActionGroup : DefaultActionGroup() {
         fun hasGradleErrors(project: Project): Boolean =
             RunContentManager.getInstance(project).allDescriptors.any { it.processHandler != null && it.processHandler?.exitCode?.let { it != 0 } ?: false }
 
-        fun getSelectedFiles( e: AnActionEvent): List<FileData> {
+        fun getSelectedFiles(e: AnActionEvent): List<FileData> {
             val selectedFiles = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY) ?: return emptyList()
             return selectedFiles.map { FileData(it.path, false) }
         }
@@ -120,7 +120,6 @@ abstract class BaseFixBuildAndTestErrorAction : AnAction() {
                 llm = settings.llm,
                 additionalArgs = settings.additionalArgs,
                 files = files,
-                isShellMode = isShellMode,
                 lintCmd = settings.lintCmd,
                 deactivateRepoMap = settings.deactivateRepoMap,
                 editFormat = settings.editFormat,
@@ -142,9 +141,10 @@ class FixBuildAndTestErrorAction : BaseFixBuildAndTestErrorAction() {
     init {
         templatePresentation.text = "Quick Fix Error"
     }
+
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        fixGradleError(project,e)
+        fixGradleError(project, e)
     }
 
     companion object {
@@ -165,7 +165,7 @@ class FixBuildAndTestErrorInteractive : BaseFixBuildAndTestErrorAction() {
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        showDialog(project,e)
+        showDialog(project, e)
     }
 
     private fun showDialog(project: Project, e: AnActionEvent) {
