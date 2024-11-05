@@ -117,15 +117,22 @@ class MarkdownDialog(
                 markdownViewer.setMarkdownContent(output.replace("\r\n", "\n"))
                 title = message
                 
-                // Revalidate first to ensure proper layout
-                scrollPane.revalidate()
-                scrollPane.repaint()
-                
-                // Schedule scroll after layout is complete
+                // Use multiple invokeLater calls to ensure proper ordering
                 SwingUtilities.invokeLater {
-                    if (autoScroll) {
-                        val scrollBar = scrollPane.verticalScrollBar
-                        scrollBar.value = scrollBar.maximum - scrollBar.visibleAmount
+                    // First revalidate and repaint
+                    scrollPane.revalidate()
+                    markdownViewer.component.revalidate()
+                    scrollPane.repaint()
+                    
+                    // Then schedule the scroll in another invokeLater
+                    SwingUtilities.invokeLater {
+                        if (autoScroll) {
+                            val scrollBar = scrollPane.verticalScrollBar
+                            // Force layout to update
+                            scrollPane.validate()
+                            // Scroll to bottom
+                            scrollBar.value = scrollBar.maximum
+                        }
                     }
                 }
             } catch (e: Exception) {
