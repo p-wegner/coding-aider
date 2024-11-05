@@ -4,6 +4,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
+import java.io.File
 
 @Service(Service.Level.PROJECT)
 class AiderPlanService(private val project: Project) {
@@ -15,6 +16,15 @@ class AiderPlanService(private val project: Project) {
 
         @JvmStatic
         fun getInstance(project: Project): AiderPlanService = project.service()
+    }
+
+    fun createPlanFolderIfNeeded(commandData: CommandData) {
+        if (commandData.structuredMode) {
+            val plansDir = File(commandData.projectPath, AIDER_PLANS_FOLDER)
+            if (!plansDir.exists()) {
+                plansDir.mkdir()
+            }
+        }
     }
 
     fun createAiderPlanSystemPrompt(commandData: CommandData): String {
@@ -59,6 +69,6 @@ ${planSpecificPrompt.trimStartingWhiteSpaces()}
 $STRUCTURED_MODE_MARKER ${commandData.message}
             """.trimStartingWhiteSpaces()
     }
-
     private fun String.trimStartingWhiteSpaces() = trimIndent().trimStart { it.isWhitespace() }
+
 }

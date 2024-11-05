@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.docker.DockerContainerManager
 import de.andrena.codingaider.executors.api.CommandSubject
+import de.andrena.codingaider.services.AiderPlanService
 import de.andrena.codingaider.services.FileExtractorService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.ApiKeyChecker
@@ -35,7 +36,11 @@ class CommandExecutor(
         ) else NativeAiderExecutionStrategy(project, apiKeyChecker, settings)
     }
 
+    private val aiderPlanService = AiderPlanService.getInstance(project)
+
     fun executeCommand(): String {
+        aiderPlanService.createPlanFolderIfNeeded(commandData)
+
         val fileExtractorService = FileExtractorService.getInstance()
         val extractedFiles = fileExtractorService.extractFilesIfNeeded(commandData.files)
         val updatedCommandData = commandData.copy(files = extractedFiles)
