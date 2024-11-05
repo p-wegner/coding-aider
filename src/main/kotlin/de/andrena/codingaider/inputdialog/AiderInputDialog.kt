@@ -38,6 +38,15 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.swing.*
 
+const val structuredModeTooltip = "<html>Enable structured mode for organized feature development:<br>" +
+        "1. Describe a feature to generate a plan and checklist<br>" +
+        "2. Plans are stored in .coding-aider-plans directory<br>" +
+        "3. Aider updates plans based on progress and new requirements<br>" +
+        "4. Implements plan step-by-step when in context<br>" +
+        "5. Message can be left empty to continue with an existing plan<br>" +
+        "Use for better tracking and systematic development</html>"
+
+
 enum class AiderMode(
     val displayName: String,
     val tooltip: String,
@@ -47,12 +56,12 @@ enum class AiderMode(
     SHELL("Shell", "Execute shell commands", AllIcons.Debugger.Console),
     NORMAL("Normal", "Standard AI code assistance", AllIcons.Actions.Edit),
     ARCHITECT("Architect", "AI architecture assistance", AllIcons.Actions.Search),
+
+
     STRUCTURED(
-        "Structured", "Organized feature development with plans", AllIcons.Actions.ListFiles
+        "Structured", structuredModeTooltip, AllIcons.Actions.ListFiles
     );
 }
-
-class SegmentedButtonItem(val text: String, val icon: Icon, val tooltip: String)
 
 class AiderInputDialog(
     val project: Project,
@@ -142,7 +151,7 @@ class AiderInputDialog(
     else if (settings.useStructuredMode) AiderMode.STRUCTURED
     else AiderMode.NORMAL
 
-    private lateinit var modeSegmentedButton: SegmentedButton<AiderMode>
+    private var modeSegmentedButton: SegmentedButton<AiderMode>? = null
     private val modeSegmentedButtonPanel: DialogPanel
     private val messageLabel: JLabel
     private val tokenCountLabel = JLabel("Tokens: 0").apply {
@@ -184,6 +193,7 @@ class AiderInputDialog(
                     updateModeUI()
                 }.apply {
                     this.selectedItem = initialMode
+                    whenItemSelected { updateModeUI() }
                 }
             }
         }
@@ -540,15 +550,14 @@ class AiderInputDialog(
     fun getLlm(): String = llmComboBox.selectedItem as String
     fun getAdditionalArgs(): String = additionalArgsField.text
     fun getAllFiles(): List<FileData> = aiderContextView?.getAllFiles() ?: emptyList()
-    private val selectedMode get() = modeSegmentedButton.selectedItem ?: initialMode
+    private val selectedMode get() = modeSegmentedButton?.selectedItem ?: initialMode
     fun isShellMode(): Boolean = selectedMode == AiderMode.SHELL
     fun isStructuredMode(): Boolean = selectedMode == AiderMode.STRUCTURED
 
     private fun updateModeUI() {
-        val isShellMode = initialMode == AiderMode.SHELL
-        inputTextField.isVisible = !isShellMode
-        messageLabel.isVisible = !isShellMode
-        messageLabel.text = when (initialMode) {
+        val isShellMode = selectedMode == AiderMode.SHELL
+        inputTextField.isEnabled = !isShellMode
+        messageLabel.text = when (selectedMode) {
             AiderMode.SHELL -> "Shell mode enabled"
             AiderMode.STRUCTURED -> "Enter feature description or leave empty to continue plan:"
             else -> "Enter your message:"
@@ -564,7 +573,7 @@ class AiderInputDialog(
             initialMode = if (state.isShellMode) AiderMode.SHELL
             else if (state.isStructuredMode) AiderMode.STRUCTURED
             else AiderMode.NORMAL
-            modeSegmentedButton.selectedItem = initialMode
+            modeSegmentedButton?.selectedItem = initialMode
             aiderContextView.setFiles(state.files)
         }
     }
