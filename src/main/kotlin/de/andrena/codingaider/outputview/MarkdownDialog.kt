@@ -117,15 +117,17 @@ class MarkdownDialog(
                 markdownViewer.setMarkdownContent(output.replace("\r\n", "\n"))
                 title = message
                 
-                // Only scroll to bottom if autoScroll is enabled
-                if (autoScroll) {
-                    val scrollBar = scrollPane.verticalScrollBar
-                    scrollBar.value = scrollBar.maximum - scrollBar.visibleAmount
-                }
-                
-                // Final refresh
+                // Revalidate first to ensure proper layout
                 scrollPane.revalidate()
                 scrollPane.repaint()
+                
+                // Schedule scroll after layout is complete
+                SwingUtilities.invokeLater {
+                    if (autoScroll) {
+                        val scrollBar = scrollPane.verticalScrollBar
+                        scrollBar.value = scrollBar.maximum - scrollBar.visibleAmount
+                    }
+                }
             } catch (e: Exception) {
                 println("Error updating markdown dialog: ${e.message}")
                 e.printStackTrace()
