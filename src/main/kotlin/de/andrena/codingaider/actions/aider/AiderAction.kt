@@ -43,8 +43,13 @@ class AiderAction : AnAction() {
                     .filterNot { file -> persistentFiles.any { it.filePath == file.filePath } }
                     .toMutableList()
 
-                val documentationFinderService = DocumentationFinderService.getInstance(project)
-                val documentationFiles = documentationFinderService.findDocumentationFiles(files)
+                val settings = getInstance()
+                val documentationFiles = if (settings.enableDocumentationLookup) {
+                    val documentationFinderService = DocumentationFinderService.getInstance(project)
+                    documentationFinderService.findDocumentationFiles(files)
+                } else {
+                    emptyList()
+                }
                     .filterNot { docFile -> 
                         persistentFiles.any { it.filePath == docFile.filePath } ||
                         traversedFiles.any { it.filePath == docFile.filePath }

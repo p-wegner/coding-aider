@@ -48,6 +48,7 @@ class AiderSettingsConfigurable() : Configurable {
     private val autoCommitsComboBox: ComboBox<String>
     private val dirtyCommitsComboBox: ComboBox<String>
     private val useStructuredModeCheckBox: JBCheckBox
+    private val enableDocumentationLookupCheckBox: JBCheckBox
     private val alwaysIncludeOpenFilesCheckBox: JBCheckBox
     private val apiKeyFields: MutableMap<String, JPasswordField>
     private val documentationLlmComboBox: ComboBox<String>
@@ -150,6 +151,9 @@ class AiderSettingsConfigurable() : Configurable {
             }
 
             group("General Settings") {
+                row { cell(enableDocumentationLookupCheckBox).component.apply {
+                    toolTipText = "If enabled, documentation files (*.md) in parent directories will be included in the context"
+                } }
                 row { cell(useYesFlagCheckBox) }
                 row("Default LLM Model:") {
                     cell(llmComboBox).component.apply {
@@ -328,6 +332,7 @@ class AiderSettingsConfigurable() : Configurable {
                 autoCommitsComboBox.selectedIndex != settings.autoCommits.toIndex() ||
                 dirtyCommitsComboBox.selectedIndex != settings.dirtyCommits.toIndex() ||
                 useStructuredModeCheckBox.isSelected != settings.useStructuredMode ||
+                enableDocumentationLookupCheckBox.isSelected != settings.enableDocumentationLookup ||
                 alwaysIncludeOpenFilesCheckBox.isSelected != settings.alwaysIncludeOpenFiles ||
                 documentationLlmComboBox.selectedItem as String != settings.documentationLlm ||
                 dockerImageTagField.text != settings.dockerImageTag ||
@@ -356,6 +361,7 @@ class AiderSettingsConfigurable() : Configurable {
         settings.autoCommits = AiderSettings.AutoCommitSetting.fromIndex(autoCommitsComboBox.selectedIndex)
         settings.dirtyCommits = AiderSettings.DirtyCommitSetting.fromIndex(dirtyCommitsComboBox.selectedIndex)
         settings.useStructuredMode = useStructuredModeCheckBox.isSelected
+        settings.enableDocumentationLookup = enableDocumentationLookupCheckBox.isSelected
         settings.alwaysIncludeOpenFiles = alwaysIncludeOpenFilesCheckBox.isSelected
         settings.documentationLlm = documentationLlmComboBox.selectedItem as String
         settings.dockerImageTag = dockerImageTagField.text
@@ -603,6 +609,7 @@ class AiderSettingsConfigurable() : Configurable {
         this.autoCommitsComboBox = ComboBox(arrayOf("Default", "On", "Off"))
         this.dirtyCommitsComboBox = ComboBox(arrayOf("Default", "On", "Off"))
         this.useStructuredModeCheckBox = JBCheckBox("Use Structured Mode")
+        this.enableDocumentationLookupCheckBox = JBCheckBox("Enable documentation lookup")
         this.alwaysIncludeOpenFilesCheckBox = JBCheckBox("Always include open files in context")
         this.apiKeyFields = mutableMapOf<String, JPasswordField>()
         this.documentationLlmComboBox = ComboBox(arrayOf("Default") + apiKeyChecker.getAllLlmOptions().toTypedArray())

@@ -1,6 +1,7 @@
 package de.andrena.codingaider.settings
 
 object AiderDefaults {
+    const val ENABLE_DOCUMENTATION_LOOKUP = false
     const val ALWAYS_INCLUDE_OPEN_FILES = false
     const val USE_STRUCTURED_MODE = false
     const val MARKDOWN_DIALOG_AUTOCLOSE_DELAY_IN_S: Int = 10

@@ -10,6 +10,7 @@ import com.intellij.openapi.components.*
 )
 class AiderSettings : PersistentStateComponent<AiderSettings.State> {
     data class State(
+        var enableDocumentationLookup: Boolean = AiderDefaults.ENABLE_DOCUMENTATION_LOOKUP,
         var useYesFlag: Boolean = AiderDefaults.USE_YES_FLAG,
         var llm: String = AiderDefaults.LLM,
         var additionalArgs: String = AiderDefaults.ADDITIONAL_ARGS,
@@ -42,6 +43,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         }
 
     private var myState = State()
+
+    var enableDocumentationLookup: Boolean
+        get() = myState.enableDocumentationLookup
+        set(value) {
+            myState.enableDocumentationLookup = value
+        }
 
     override fun getState(): State = myState
 
