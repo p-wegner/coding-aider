@@ -39,8 +39,11 @@ data class CommandData(
     val files: List<FileData>,     // Files involved in the command
     val isShellMode: Boolean,      // Shell interaction mode
     val lintCmd: String,           // Linting command
+    val deactivateRepoMap: Boolean, // Option to disable repository mapping
+    val editFormat: String,        // Format for edit instructions
     val projectPath: String,       // Project root directory
-    val options: CommandOptions    // Advanced configuration options
+    val options: CommandOptions,   // Advanced configuration options
+    val structuredMode: Boolean    // Toggle for structured command mode
 )
 ```
 
@@ -49,6 +52,8 @@ data class CommandData(
 - Shell mode toggling
 - Linting integration
 - Multi-file command support
+- Repository mapping control
+- Structured and unstructured modes
 
 ### CommandOptions
 Provides granular control over command execution and presentation.
@@ -71,6 +76,7 @@ graph TD
     CommandData --> FileData[FileData Collection]
     FileData --> AIProcessor[AI Command Processor]
     AIProcessor --> ExecutionResult[Execution Result]
+    CommandData --> CommandOptions[CommandOptions]
 ```
 
 ## Exceptional Implementation Details
@@ -78,6 +84,9 @@ graph TD
 - Flexible LLM model specification
 - Optional Docker container execution
 - Git change comparison capabilities
+- Configurable repository mapping
+- Customizable edit instruction formats
+- Comprehensive command options with default values
 
 ## Module Dependencies
 - Kotlin Standard Library
@@ -88,6 +97,7 @@ graph TD
 2. Multi-file code generation
 3. Automated code review and linting
 4. Flexible development workflow management
+5. Configurable AI command execution
 
 ## Related Files
 - [FileData.kt](./FileData.kt)
@@ -97,3 +107,5 @@ graph TD
 - Use immutable configuration objects
 - Leverage optional parameters for flexibility
 - Prefer composition over complex inheritance
+- Utilize default values for optional configurations
+- Maintain clear separation of concerns between data classes
