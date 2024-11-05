@@ -17,19 +17,20 @@ class DocumentationFinderService(private val project: Project) {
     }
 
     private fun findDocumentationForFile(file: VirtualFile): List<FileData> {
-        val docs = mutableListOf<FileData>()
         var currentDir = file.parent
 
         while (currentDir != null) {
             val markdownFiles = currentDir.children
                 ?.filter { it.extension?.lowercase() == "md" }
-                ?.map { FileData(it.path, false) }
+                ?.map { FileData(it.path, true) }
                 ?: emptyList()
 
-            docs.addAll(markdownFiles)
+            if (markdownFiles.isNotEmpty()) {
+                return markdownFiles
+            }
             currentDir = currentDir.parent
         }
 
-        return docs
+        return emptyList()
     }
 }
