@@ -34,8 +34,7 @@ class DocumentEachFolderAction : AnAction() {
 
     data class DocumentationAction(
         val isFinished: CountDownLatch,
-        val documentationFileData: FileData,
-        val dependenciesFileData: FileData
+        val documentationFileData: FileData
     )
 
     companion object {
@@ -50,18 +49,13 @@ class DocumentEachFolderAction : AnAction() {
                 val fileDataList = allFiles.map { FileData(it.filePath, it.isReadOnly) }
                 val filename = "${folder.name}.md"
 
-                // Create markdown and PlantUML files
+                // Create markdown file
                 val markdownFile = File(folder.path, filename)
-                val pumlFilename = "${folder.name}.puml"
-                val pumlFile = File(folder.path, pumlFilename)
-
-                // Ensure files exist and are writable
+                // Ensure file exists and is writable
                 markdownFile.createNewFile()
-                pumlFile.createNewFile()
 
                 val writableFileDataList = fileDataList + listOf(
-                    FileData(markdownFile.path, false),
-                    FileData(pumlFile.path, false)
+                    FileData(markdownFile.path, false)
                 )
 
                 val commandData = CommandData(
@@ -72,8 +66,7 @@ class DocumentEachFolderAction : AnAction() {
                             |Good code documentation should provide a high-level overview of the module's purpose and functionality.
                             |Important files should be clearly described and linked in the documentation file.
                             |Include details on the module's public interfaces, key classes, and methods, as well as any design patterns used.
-                            |Document the dependencies and data flow between this module and others of the project. 
-                            |This should be done using PlantUML and stored as $folder/$pumlFilename.
+                            |Document the dependencies and data flow between this module and others of the project using a Mermaid diagram embedded in the markdown file.
                             |Make sure files are linked using relative paths.
                             |If the file already exists, update it instead.
                             |""".trimMargin(),
@@ -93,36 +86,30 @@ class DocumentEachFolderAction : AnAction() {
                 ideBasedExecutor.execute()
                 DocumentationAction(
                     ideBasedExecutor.isFinished(),
-                    FileData(File(folder.path, filename).path, true),
-                    FileData(File(folder.path, pumlFilename).path, true)
+                    FileData(File(folder.path, filename).path, true)
                 )
             }
             thread {
                 documentationActions.forEach { it.isFinished.await() }
                 if (documentationActions.isNotEmpty()) {
                     val documentationFiles = documentationActions.map { it.documentationFileData }
-                    val dependenciesFiles = documentationActions.map { it.dependenciesFileData }
-                    // Create overview markdown and PlantUML files
+                    // Create overview markdown file
                     val overviewMarkdownFile = File(project.basePath, "overview.md")
-                    val overviewPumlFile = File(project.basePath, "overview.puml")
 
-                    // Ensure files exist and are writable
+                    // Ensure file exists and is writable
                     overviewMarkdownFile.createNewFile()
-                    overviewPumlFile.createNewFile()
 
-                    val writableSummaryFiles = documentationFiles + dependenciesFiles + listOf(
-                        FileData(overviewMarkdownFile.path, false),
-                        FileData(overviewPumlFile.path, false)
+                    val writableSummaryFiles = documentationFiles + listOf(
+                        FileData(overviewMarkdownFile.path, false)
                     )
 
                     val summaryCommandData = CommandData(
                         message = """Summarize the following documentation files: ${documentationFiles.joinToString(", ") { it.filePath }}.
                         |Provide a concise overview of the key points and any notable details.
                         |Include relevant links to the documentation files.
-                        |IMPORTANT: The dependencies between the individual modules in the project should be described using PlantUML and stored as a separate file.
+                        |IMPORTANT: The dependencies between the individual modules in the project should be described using a Mermaid diagram embedded in the markdown file.
                         |Make sure files are linked using relative paths.
                         |Store the results in the root folder of the project in the file "overview.md".
-                        |The dependencies should be described using PlantUML and stored in the file "overview.puml".
                         |To calculate the dependencies, use the the ".
                         |""".trimMargin(),
                         useYesFlag = true,
