@@ -14,6 +14,22 @@ graph TD
     B --> F[FileExtractorService]
     C --> F
     F --> G[FileData]
+    
+    subgraph External Dependencies
+        H[IntelliJ Platform SDK]
+        I[Kotlin Reflection]
+        J[AiderSettings]
+        K[AiderDialogStateService]
+    end
+    
+    A --> H
+    A --> I
+    A --> J
+    A --> K
+    B --> H
+    C --> H
+    D --> H
+    E --> H
 ```
 
 ## Key Components
@@ -61,12 +77,16 @@ graph TD
 - **Model-View-Controller (MVC)**
 - **Lazy Initialization** (via `LazyCacheDelegate`)
 - **Strategy Pattern** (for API key and LLM selection)
+- **Decorator Pattern** (for file status management)
+- **Observer Pattern** (for UI updates and event handling)
 
 ## Exceptional Implementation Details
-- Advanced token counting mechanism
-- Dynamic file extraction and management
+- Advanced token counting mechanism using lazy evaluation
+- Dynamic file extraction and management with persistent file tracking
 - Intelligent code completion with multi-language support
 - Flexible input modes (normal, shell, structured)
+- Comprehensive error handling and API key validation
+- Customizable UI with dynamic action groups and toolbars
 
 ## Dependencies
 - IntelliJ Platform SDK
@@ -75,11 +95,15 @@ graph TD
   - `TokenCountService`
   - `FileExtractorService`
   - `PersistentFileService`
+  - `AiderDialogStateService`
+  - `AiderHistoryService`
 
 ## Configuration and Extensibility
 - Supports multiple language models
 - Configurable through IDE settings
 - Extensible completion and file management strategies
+- Supports custom API key providers
+- Configurable token counting strategies
 
 ## Links to Key Files
 - [AiderInputDialog.kt](./AiderInputDialog.kt)
@@ -91,9 +115,24 @@ graph TD
 2. File management during AI-assisted development
 3. Tracking and managing development context
 4. Flexible command input for various development tasks
+5. Persistent file tracking across IDE sessions
 
 ## Performance Considerations
 - Lazy token counting
 - Efficient file parsing
 - Minimal overhead in IDE interaction
+- Background thread for API key validation
+- Caching of file extraction results
+
+## Security and Privacy
+- Secure API key management
+- Optional persistent file tracking
+- Configurable read-only modes
+- Support for multiple authentication methods
+
+## Future Improvements
+- Enhanced multi-language support
+- More granular token counting
+- Advanced file diff and merge capabilities
+- Machine learning-based context understanding
 ```
