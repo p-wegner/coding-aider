@@ -23,7 +23,7 @@ class DocumentationFinderService(private val project: Project) {
         while (currentDir != null && currentDir.path != projectRootPath) {
             val markdownFiles = currentDir.children
                 ?.filter { it.extension?.lowercase() == "md" }
-                ?.map { FileData(it.path, true) }
+                ?.map { FileData(it.path, false) }
                 ?: emptyList()
 
             if (markdownFiles.isNotEmpty()) {
