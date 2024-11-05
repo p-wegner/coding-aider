@@ -5,6 +5,7 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.components.service
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -79,7 +80,7 @@ class AiderClipboardImageAction : AnAction() {
 
     private fun refreshAndAddFile(project: Project, filePath: String) {
         val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(File(filePath))
-        val persistentFileService = PersistentFileService.getInstance(project)
+        val persistentFileService = project.service<PersistentFileService>()
         persistentFileService.addFile(FileData(filePath, true))
         if (virtualFile != null) {
             FileRefresher.refreshFiles(arrayOf(virtualFile))

@@ -1,5 +1,6 @@
 package de.andrena.codingaider.executors
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
@@ -36,7 +37,7 @@ class CommandExecutor(
         ) else NativeAiderExecutionStrategy(project, apiKeyChecker, settings)
     }
 
-    private val aiderPlanService = AiderPlanService.getInstance(project)
+    private val aiderPlanService = project.service<AiderPlanService>()
 
     fun executeCommand(): String {
         aiderPlanService.createPlanFolderIfNeeded(commandData)

@@ -4,6 +4,7 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.CommandData
@@ -37,7 +38,7 @@ class AiderAction : AnAction() {
             val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
 
             if (project != null && !files.isNullOrEmpty()) {
-                val persistentFileService = PersistentFileService.getInstance(project)
+                val persistentFileService = project.service<PersistentFileService>()
                 val persistentFiles = persistentFileService.getPersistentFiles()
                 val traversedFiles = FileTraversal.traverseFilesOrDirectories(files)
                     .filterNot { file -> persistentFiles.any { it.filePath == file.filePath } }
@@ -45,19 +46,19 @@ class AiderAction : AnAction() {
 
                 val settings = getInstance()
                 val documentationFiles = if (settings.enableDocumentationLookup) {
-                    val documentationFinderService = DocumentationFinderService.getInstance(project)
+                    val documentationFinderService = project.service<DocumentationFinderService>()
                     documentationFinderService.findDocumentationFiles(files)
                 } else {
                     emptyList()
                 }
-                    .filterNot { docFile -> 
+                    .filterNot { docFile ->
                         persistentFiles.any { it.filePath == docFile.filePath } ||
-                        traversedFiles.any { it.filePath == docFile.filePath }
+                                traversedFiles.any { it.filePath == docFile.filePath }
                     }
 
                 traversedFiles.addAll(persistentFiles)
                 traversedFiles.addAll(documentationFiles)
-                
+
                 val allFiles = traversedFiles.distinctBy { it.filePath }
 
                 if (directShellMode) {

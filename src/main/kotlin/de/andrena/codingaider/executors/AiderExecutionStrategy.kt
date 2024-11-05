@@ -1,5 +1,6 @@
 package de.andrena.codingaider.executors
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.docker.DockerContainerManager
@@ -52,7 +53,7 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
             if (!commandData.isShellMode) {
                 add("-m")
                 if (commandData.structuredMode) {
-                    add(AiderPlanService.getInstance(project).createAiderPlanSystemPrompt(commandData))
+                    add(project.service<AiderPlanService>().createAiderPlanSystemPrompt(commandData))
                 } else {
                     add(commandData.message)
                 }

@@ -4,6 +4,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.components.service
 import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
@@ -21,8 +22,8 @@ import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.services.AiderDialogStateService
 import de.andrena.codingaider.services.AiderHistoryService
 import de.andrena.codingaider.services.PersistentFileService
-import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.services.TokenCountService
+import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
 import java.awt.*
@@ -140,7 +141,7 @@ class AiderInputDialog(
             "The actual token count may vary depending on the model. The displayed number uses GPT-4O encoding as a heuristic."
     }
     private val historyComboBox = ComboBox<HistoryItem>()
-    private val historyService = AiderHistoryService.getInstance(project)
+    private val historyService = project.service<AiderHistoryService>()
     private val aiderContextView: AiderContextView
     private val persistentFileService: PersistentFileService
     private var splitPane: OnePixelSplitter
@@ -148,7 +149,7 @@ class AiderInputDialog(
 
     init {
         title = "Aider Command"
-        persistentFileService = PersistentFileService.getInstance(project)
+        persistentFileService = project.service<PersistentFileService>()
         aiderContextView = AiderContextView(
             project,
             files + persistentFileService.getPersistentFiles(),
@@ -570,13 +571,13 @@ class AiderInputDialog(
 
     private inner class LlmComboBoxRenderer : DefaultListCellRenderer() {
         private val apiKeyStatus = mutableMapOf<String, Boolean>()
-        
+
         init {
             // Initialize status checking in background
             com.intellij.openapi.application.ApplicationManager.getApplication().executeOnPooledThread {
                 llmOptions.forEach { llm ->
-                    apiKeyStatus[llm] = apiKeyChecker.getApiKeyForLlm(llm)?.let { 
-                        apiKeyChecker.isApiKeyAvailableForLlm(llm) 
+                    apiKeyStatus[llm] = apiKeyChecker.getApiKeyForLlm(llm)?.let {
+                        apiKeyChecker.isApiKeyAvailableForLlm(llm)
                     } ?: true
                 }
                 // Trigger UI update

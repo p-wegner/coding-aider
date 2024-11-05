@@ -1,5 +1,6 @@
 package de.andrena.codingaider.executors.api
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFileManager
@@ -123,7 +124,7 @@ class IDEBasedExecutor(
 
                 val newPlanFiles = currentPlanFiles.subtract(initialPlanFiles)
                 newPlanFiles.forEach { file ->
-                    PersistentFileService.getInstance(project).addFile(FileData(file.absolutePath, false))
+                    project.service<PersistentFileService>().addFile(FileData(file.absolutePath, false))
                 }
             }
         }

@@ -6,7 +6,6 @@ import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
@@ -22,11 +21,6 @@ class PersistentFileService(private val project: Project) {
     private val objectMapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
     private val filesChanged: PersistentFilesChangedTopic by lazy {
         project.messageBus.syncPublisher(PersistentFilesChangedTopic.PERSISTENT_FILES_CHANGED_TOPIC)
-    }
-
-    companion object {
-        @JvmStatic
-        fun getInstance(project: Project): PersistentFileService = project.service()
     }
 
     init {

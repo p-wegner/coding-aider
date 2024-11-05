@@ -1,7 +1,6 @@
 package de.andrena.codingaider.services
 
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import java.io.File
@@ -14,8 +13,6 @@ class AiderPlanService(private val project: Project) {
         const val AIDER_PLANS_FOLDER = ".coding-aider-plans"
         const val STRUCTURED_MODE_MARKER = "[STRUCTURED MODE]"
 
-        @JvmStatic
-        fun getInstance(project: Project): AiderPlanService = project.service()
     }
 
     fun createPlanFolderIfNeeded(commandData: CommandData) {
@@ -69,6 +66,7 @@ ${planSpecificPrompt.trimStartingWhiteSpaces()}
 $STRUCTURED_MODE_MARKER ${commandData.message}
             """.trimStartingWhiteSpaces()
     }
+
     private fun String.trimStartingWhiteSpaces() = trimIndent().trimStart { it.isWhitespace() }
 
 }

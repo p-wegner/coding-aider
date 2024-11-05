@@ -1,16 +1,12 @@
 package de.andrena.codingaider.services
 
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.FileData
 
 @Service(Service.Level.PROJECT)
 class DocumentationFinderService(private val project: Project) {
-    companion object {
-        fun getInstance(project: Project): DocumentationFinderService = project.service()
-    }
 
     fun findDocumentationFiles(virtualFiles: Array<VirtualFile>): List<FileData> {
         return virtualFiles.flatMap { findDocumentationForFile(it) }.distinct()

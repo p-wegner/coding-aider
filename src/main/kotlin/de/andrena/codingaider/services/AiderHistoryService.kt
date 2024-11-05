@@ -1,7 +1,6 @@
 package de.andrena.codingaider.services
 
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.services.AiderPlanService.Companion.STRUCTURED_MODE_MARKER
 import java.io.File
@@ -49,11 +48,6 @@ class AiderHistoryService(private val project: Project) {
         return chatHistoryFile.readText()
             .split("\n#### ")
             .lastOrNull()?.trim() ?: "No chat history available."
-    }
-
-    companion object {
-        @JvmStatic
-        fun getInstance(project: Project): AiderHistoryService = project.service()
     }
 
 }
