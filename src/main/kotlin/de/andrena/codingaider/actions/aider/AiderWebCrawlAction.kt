@@ -9,7 +9,9 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.LocalFileSystem
-import com.vladsch.flexmark.html2md.converter.FlexmarkHtmlConverter
+import com.vladsch.flexmark.parser.Parser
+import com.vladsch.flexmark.html.HtmlRenderer
+import com.vladsch.flexmark.util.data.MutableDataSet
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
@@ -101,7 +103,11 @@ class AiderWebCrawlAction : AnAction() {
         webClient.options.isJavaScriptEnabled = false
         val page: HtmlPage = webClient.getPage(url)
         val htmlContent = page.asXml()
-        val markdown = FlexmarkHtmlConverter.builder().build().convert(htmlContent)
+        val options = MutableDataSet()
+        val parser = Parser.builder(options).build()
+        val renderer = HtmlRenderer.builder(options).build()
+        val document = parser.parse(htmlContent)
+        val markdown = renderer.render(document)
         file.writeText(markdown)
     }
 
