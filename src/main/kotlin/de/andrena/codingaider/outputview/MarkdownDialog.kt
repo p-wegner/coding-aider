@@ -21,9 +21,9 @@ class MarkdownDialog(
     initialText: String,
     private val onAbort: Abortable? = null
 ) : JDialog(null as Frame?, false) {
-    private val textArea = CustomMarkdownViewer()
+    private val markdownViewer = CustomMarkdownViewer()
 
-    private val scrollPane = JBScrollPane(textArea.component).apply {
+    private val scrollPane = JBScrollPane(markdownViewer.component).apply {
         horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
         verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
         viewport.scrollMode = JViewport.BACKINGSTORE_SCROLL_MODE
@@ -105,14 +105,14 @@ class MarkdownDialog(
     fun updateProgress(output: String, message: String) {
         com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
             try {
-                textArea.setMarkdownContent(output.replace("\r\n", "\n"))
+                markdownViewer.setMarkdownContent(output.replace("\r\n", "\n"))
                 title = message
                 
                 // Ensure UI updates happen on EDT
                 SwingUtilities.invokeLater {
                     // Update preview
-                    textArea.component.revalidate()
-                    textArea.component.repaint()
+                    markdownViewer.component.revalidate()
+                    markdownViewer.component.repaint()
                     
                     // Scroll to bottom
                     val scrollBar = scrollPane.verticalScrollBar
@@ -165,7 +165,7 @@ class MarkdownDialog(
             SwingUtilities.invokeLater {
                 toFront()
                 requestFocus()
-                textArea.component.requestFocusInWindow()
+                markdownViewer.component.requestFocusInWindow()
             }
         }
     }
