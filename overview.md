@@ -1,5 +1,44 @@
 # Overview of Coding Aider Modules
 
+```mermaid
+graph TD
+    Actions --> Services
+    Actions --> Settings
+    Actions --> Command
+    Actions --> Executors
+    
+    InputDialog --> Services
+    InputDialog --> Command
+    InputDialog --> OutputView
+    
+    Executors --> Docker
+    Executors --> Command
+    
+    ToolWindow --> Services
+    ToolWindow --> Messages
+    
+    OutputView --> Services
+    
+    Services --> Utils
+    Services --> Settings
+    
+    Command --> Utils
+    
+    Messages --> Services
+    
+    style Actions fill:#f9f,stroke:#333
+    style Command fill:#ff9,stroke:#333
+    style Docker fill:#9ff,stroke:#333
+    style Executors fill:#f99,stroke:#333
+    style InputDialog fill:#9f9,stroke:#333
+    style Messages fill:#99f,stroke:#333
+    style OutputView fill:#f9f,stroke:#333
+    style Services fill:#ff9,stroke:#333
+    style Settings fill:#9ff,stroke:#333
+    style ToolWindow fill:#f99,stroke:#333
+    style Utils fill:#9f9,stroke:#333
+```
+
 ## Actions Module
 The Aider Actions module provides a set of actions that enhance the functionality of the Aider tool within the IDE. Key classes include:
 - **SettingsAction**: Opens the Aider settings dialog.
