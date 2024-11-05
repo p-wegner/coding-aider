@@ -569,6 +569,21 @@ class AiderInputDialog(
     }
 
     private inner class LlmComboBoxRenderer : DefaultListCellRenderer() {
+        private val apiKeyStatus = mutableMapOf<String, Boolean>()
+        
+        init {
+            // Initialize status checking in background
+            com.intellij.openapi.application.ApplicationManager.getApplication().executeOnPooledThread {
+                llmOptions.forEach { llm ->
+                    apiKeyStatus[llm] = apiKeyChecker.getApiKeyForLlm(llm)?.let { 
+                        apiKeyChecker.isApiKeyAvailableForLlm(llm) 
+                    } ?: true
+                }
+                // Trigger UI update
+                SwingUtilities.invokeLater { llmComboBox.repaint() }
+            }
+        }
+
         override fun getListCellRendererComponent(
             list: JList<*>?,
             value: Any?,
@@ -579,7 +594,7 @@ class AiderInputDialog(
             val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
             if (component is JLabel && value is String) {
                 val apiKey = apiKeyChecker.getApiKeyForLlm(value)
-                if (apiKey != null && !apiKeyChecker.isApiKeyAvailableForLlm(value)) {
+                if (apiKey != null && apiKeyStatus[value] == false) {
                     icon = UIManager.getIcon("OptionPane.errorIcon")
                     toolTipText =
                         "API key not found in default locations for $value. This may not be an error if you're using an alternative method to provide the key."
