@@ -12,6 +12,7 @@ import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.executors.api.ShellExecutor
 import de.andrena.codingaider.inputdialog.AiderInputDialog
 import de.andrena.codingaider.services.AiderDialogStateService
+import de.andrena.codingaider.services.DocumentationFinderService
 import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileTraversal
@@ -38,11 +39,21 @@ class AiderAction : AnAction() {
             if (project != null && !files.isNullOrEmpty()) {
                 val persistentFileService = PersistentFileService.getInstance(project)
                 val persistentFiles = persistentFileService.getPersistentFiles()
-                val allFiles = FileTraversal.traverseFilesOrDirectories(files)
+                val traversedFiles = FileTraversal.traverseFilesOrDirectories(files)
                     .filterNot { file -> persistentFiles.any { it.filePath == file.filePath } }
                     .toMutableList()
 
-                allFiles.addAll(persistentFiles)
+                val documentationFinderService = DocumentationFinderService.getInstance(project)
+                val documentationFiles = documentationFinderService.findDocumentationFiles(files)
+                    .filterNot { docFile -> 
+                        persistentFiles.any { it.filePath == docFile.filePath } ||
+                        traversedFiles.any { it.filePath == docFile.filePath }
+                    }
+
+                traversedFiles.addAll(persistentFiles)
+                traversedFiles.addAll(documentationFiles)
+                
+                val allFiles = traversedFiles.distinctBy { it.filePath }
 
                 if (directShellMode) {
                     val commandData = collectDefaultCommandData(allFiles, project)

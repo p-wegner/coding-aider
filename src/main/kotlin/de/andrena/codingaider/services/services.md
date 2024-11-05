@@ -1,7 +1,7 @@
 # Aider Services Documentation
 
 ## Overview
-The Aider Services module provides a set of services that facilitate the management of user interactions, file handling, and token counting within the Coding Aider application. This module is designed to support various functionalities such as maintaining history, counting tokens in text, and managing persistent files.
+The Aider Services module provides a set of services that facilitate the management of user interactions, file handling, token counting, and documentation discovery within the Coding Aider application. This module is designed to support various functionalities such as maintaining history, counting tokens in text, managing persistent files, and finding relevant documentation.
 
 ## Key Classes and Interfaces
 
@@ -40,6 +40,13 @@ The Aider Services module provides a set of services that facilitate the managem
   - `createAiderPlanSystemPrompt(commandData: CommandData)`: Generates a system prompt for creating a coding plan.
 - **Implementation Details**: Integrates structured mode markers to facilitate plan and checklist management.
 
+### DocumentationFinderService
+- **Purpose**: Discovers relevant markdown documentation files in the project hierarchy.
+- **Key Methods**:
+  - `findDocumentationFiles(virtualFiles: Array<VirtualFile>)`: Finds documentation files related to given files.
+  - `findDocumentationForFile(file: VirtualFile)`: Traverses up the directory tree to find markdown files.
+- **Implementation Details**: Recursively searches parent directories for markdown files to provide context.
+
 ## Design Patterns
 - **Singleton Pattern**: Each service class is implemented as a singleton, ensuring that only one instance of each service exists per project.
 
@@ -57,3 +64,39 @@ The Aider Services module provides a set of services that facilitate the managem
 - [PersistentFileService.kt](./PersistentFileService.kt)
 - [AiderDialogStateService.kt](./AiderDialogStateService.kt)
 - [AiderPlanService.kt](./AiderPlanService.kt)
+package de.andrena.codingaider.services
+
+import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
+import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFile
+import de.andrena.codingaider.command.FileData
+import java.io.File
+
+@Service(Service.Level.PROJECT)
+class DocumentationFinderService(private val project: Project) {
+    companion object {
+        fun getInstance(project: Project): DocumentationFinderService = project.service()
+    }
+
+    fun findDocumentationFiles(virtualFiles: Array<VirtualFile>): List<FileData> {
+        return virtualFiles.flatMap { findDocumentationForFile(it) }.distinct()
+    }
+
+    private fun findDocumentationForFile(file: VirtualFile): List<FileData> {
+        val docs = mutableListOf<FileData>()
+        var currentDir = file.parent
+
+        while (currentDir != null) {
+            val markdownFiles = currentDir.children
+                ?.filter { it.extension?.lowercase() == "md" }
+                ?.map { FileData(it.path, true) }
+                ?: emptyList()
+            
+            docs.addAll(markdownFiles)
+            currentDir = currentDir.parent
+        }
+
+        return docs
+    }
+}
