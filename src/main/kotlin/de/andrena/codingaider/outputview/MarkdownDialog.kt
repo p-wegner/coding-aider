@@ -125,19 +125,24 @@ class MarkdownDialog(
                 if (newContent != lastContent) {
                     lastContent = newContent
                     
-                    // Store current scroll position
+                    // Store scroll info before update
                     val scrollBar = scrollPane.verticalScrollBar
+                    val currentValue = scrollBar.value
                     val wasAtBottom = autoScroll && 
-                        (scrollBar.value + scrollBar.visibleAmount + 10 >= scrollBar.maximum)
+                        (currentValue + scrollBar.visibleAmount + 10 >= scrollBar.maximum)
                     
                     // Update content
                     markdownViewer.setMarkdownContent(newContent)
                     title = message
 
-                    // Only scroll if we were at bottom before update
-                    if (wasAtBottom) {
-                        SwingUtilities.invokeLater {
+                    // Handle scrolling after content update
+                    SwingUtilities.invokeLater {
+                        if (wasAtBottom) {
+                            // Scroll to bottom if we were at bottom
                             scrollBar.value = scrollBar.maximum
+                        } else {
+                            // Try to maintain previous scroll position
+                            scrollBar.value = currentValue
                         }
                     }
                 }

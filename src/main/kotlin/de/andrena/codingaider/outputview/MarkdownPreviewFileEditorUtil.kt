@@ -30,7 +30,12 @@ class CustomMarkdownViewer {
         }
     }
 
+    private var currentContent = ""
+
     fun setMarkdownContent(markdown: String) {
+        if (markdown == currentContent) return
+        currentContent = markdown
+        
         val document = parser.parse(markdown)
         val html = renderer.render(document)
         val styledHtml = """
@@ -49,7 +54,16 @@ class CustomMarkdownViewer {
             </body>
             </html>
         """.trimIndent()
+
+        // Store current caret position
+        val caretPos = component.caretPosition
         component.text = styledHtml
+        // Restore caret position if possible
+        try {
+            component.caretPosition = minOf(caretPos, component.document.length)
+        } catch (e: Exception) {
+            // Ignore if we can't restore position
+        }
     }
 }
 
