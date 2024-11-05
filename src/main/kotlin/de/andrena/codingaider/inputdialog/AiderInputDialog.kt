@@ -183,6 +183,7 @@ class AiderInputDialog(
         // Set minimum size for the dialog and its components
         inputTextField.minimumSize = Dimension(300, 100)
         aiderContextView.minimumSize = Dimension(300, 200)
+        modeSegmentedButton?.selectedItem = initialMode
     }
 
     private fun createSettingsButton(): ActionButton {

@@ -44,7 +44,8 @@ dependencies {
         bundledPlugin("Git4Idea")
     }
 }
-intellijPlatform{
+intellijPlatform {
+
 }
 tasks.test {
     useJUnitPlatform()
