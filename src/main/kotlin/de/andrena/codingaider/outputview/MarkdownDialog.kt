@@ -1,14 +1,8 @@
 package de.andrena.codingaider.outputview
 
-import com.intellij.openapi.editor.EditorFactory
-import com.intellij.openapi.fileEditor.FileDocumentManager
-import com.intellij.openapi.fileEditor.TextEditorWithPreviewProvider
 import com.intellij.openapi.project.Project
-import com.intellij.testFramework.LightVirtualFile
 import com.intellij.ui.components.JBScrollPane
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
-import org.intellij.plugins.markdown.lang.MarkdownFileType
-import org.intellij.plugins.markdown.ui.preview.MarkdownPreviewFileEditor
 import java.awt.BorderLayout
 import java.awt.EventQueue.invokeLater
 import java.awt.Frame
@@ -27,9 +21,7 @@ class MarkdownDialog(
     initialText: String,
     private val onAbort: Abortable? = null
 ) : JDialog(null as Frame?, false) {
-    private val virtualFile = LightVirtualFile("preview.md", MarkdownFileType.INSTANCE, initialText.replace("\r\n", "\n"))
-    private val document = FileDocumentManager.getInstance().getDocument(virtualFile)!!
-    private val textArea: MarkdownPreviewFileEditor = MarkdownPreviewFileEditorUtil.createMarkdownPreviewEditor(project, virtualFile, document)
+    private val textArea = CustomMarkdownViewer()
 
     private val scrollPane by lazy {
         JBScrollPane(textArea.component).apply {
@@ -116,14 +108,8 @@ class MarkdownDialog(
     fun updateProgress(output: String, message: String) {
         com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
             try {
-                com.intellij.openapi.application.WriteAction.runAndWait<Throwable> {
-                    document.setText(output.replace("\r\n", "\n"))
-                }
-                
+                textArea.setMarkdownContent(output.replace("\r\n", "\n"))
                 title = message
-                
-                // Force preview refresh
-                textArea.selectNotify()
                 
                 // Ensure UI updates happen on EDT
                 SwingUtilities.invokeLater {
