@@ -17,81 +17,122 @@ The Aider Settings module provides a comprehensive configuration management syst
 - **Singleton Pattern**: Ensures single, consistent settings instances
 - **Persistent State Management**: Leverages IntelliJ Platform's `PersistentStateComponent`
 - **Separation of Concerns**: Distinct classes for defaults, global, and project-level settings
+- **Dependency Injection**: Uses IntelliJ Platform's service locator pattern
+- **Observer Pattern**: Implemented in command execution and settings management
 
-## Data Flow Diagram
+## Module Responsibilities
+
+### [AiderDefaults.kt](./AiderDefaults.kt)
+- Defines default configuration values for the entire Aider plugin
+- Provides centralized constant management
+- Ensures consistent default behavior across the application
+
+### [AiderSettings.kt](./AiderSettings.kt)
+- Application-level persistent settings management
+- Implements `PersistentStateComponent` for XML-based state persistence
+- Supports dynamic configuration of global plugin settings
+- Manages complex settings like auto-commits and Docker integration
+
+### [AiderProjectSettings.kt](./AiderProjectSettings.kt)
+- Project-specific persistent settings management
+- Tracks project-level file configurations
+- Supports read-only file management
+- Enables project-specific customizations
+
+### [AiderSettingsConfigurable.kt](./AiderSettingsConfigurable.kt)
+- Provides comprehensive UI for global plugin settings
+- Implements dynamic API key management
+- Supports complex configuration scenarios
+- Offers tooltips and validation for settings
+
+### [AiderProjectSettingsConfigurable.kt](./AiderProjectSettingsConfigurable.kt)
+- Manages project-level file persistence
+- Enables adding, removing, and toggling file read-only status
+- Provides intuitive file management interface
+
+### [AiderTestCommand.kt](./AiderTestCommand.kt)
+- Validates Aider installation and configuration
+- Supports Docker and native execution testing
+- Provides feedback on command execution
+
+## Data Flow and Interaction Diagram
 ```mermaid
 graph TD
-    AiderDefaults[AiderDefaults] --> |Default Values| AiderSettings[AiderSettings]
-    AiderSettings --> |Global Configuration| AiderSettingsConfigurable[AiderSettingsConfigurable]
-    AiderSettings --> |Persistent Storage| XMLStorage[XML Storage]
+    User[User Interaction] --> AiderSettingsConfigurable
+    User --> AiderProjectSettingsConfigurable
     
-    AiderProjectSettings[AiderProjectSettings] --> |Project-Specific Config| AiderProjectSettingsConfigurable[AiderProjectSettingsConfigurable]
-    AiderProjectSettings --> |Project Persistent Storage| ProjectXMLStorage[Project XML Storage]
+    AiderSettingsConfigurable --> AiderSettings
+    AiderProjectSettingsConfigurable --> AiderProjectSettings
     
-    AiderTestCommand[AiderTestCommand] --> |Validates Configuration| AiderSettings
+    AiderSettings --> AiderDefaults
+    AiderProjectSettings --> PersistentFileService
+    
+    AiderTestCommand --> AiderSettings
+    AiderTestCommand --> LiveUpdateExecutor
+    
+    subgraph Persistence
+        AiderSettings --> XMLStorage[Global XML Storage]
+        AiderProjectSettings --> ProjectXMLStorage[Project XML Storage]
+    end
 ```
-
-## Key Configuration Areas
-1. **LLM and API Settings**
-   - Model selection
-   - API key management
-   - Default language models
-
-2. **Execution Modes**
-   - Docker integration
-   - Shell mode
-   - Structured editing
-
-3. **Git and Version Control**
-   - Commit strategies
-   - Comparison tools
-   - Change context inclusion
-
-4. **Advanced Settings**
-   - Logging verbosity
-   - Dialog behaviors
-   - Markdown processing
 
 ## Exceptional Implementation Details
 - Dynamic API key validation with visual indicators
 - Flexible Docker image and tag configuration
-- Experimental features with cautionary tooltips
 - Comprehensive settings persistence across IDE sessions
-
-## Dependencies
-- IntelliJ Platform SDK
-- Swing UI components
-- Custom command execution framework
-
-## Extensibility
-The modular design allows easy addition of new configuration options by extending existing classes and updating default values.
+- Advanced file management with read-only support
+- Experimental features with cautionary tooltips
+- Integrated command testing mechanism
 
 ## Security Considerations
 - Secure API key storage
 - Configurable key visibility
 - Environment and file-based key support
+- Masked API key display
+- Controlled API key management
 
-## Performance Notes
+## Performance Optimization
 - Minimal overhead for settings management
 - Lazy loading of configuration components
 - Efficient state serialization
+- Non-blocking UI interactions
 
-## Future Improvements
-- Enhanced LLM model support
-- More granular configuration options
-- Improved error handling and validation
+## Extensibility
+- Modular design allows easy addition of configuration options
+- Supports extending existing classes
+- Flexible default value management
 
-## Usage Guidelines
+## Dependencies
+- IntelliJ Platform SDK
+- Swing UI components
+- Custom command execution framework
+- Java Swing for UI components
+
+## Usage and Integration Guidelines
 1. Configure global settings via IDE preferences
 2. Override project-specific settings when needed
 3. Use test command to validate configuration
 4. Refer to tooltips for detailed option explanations
 
-## Contribution
+## Future Roadmap
+- Enhanced LLM model support
+- More granular configuration options
+- Improved error handling and validation
+- Advanced file tracking mechanisms
+- Cross-platform configuration synchronization
+
+## Contribution Guidelines
 When adding new settings:
 - Update `AiderDefaults`
 - Modify `AiderSettings.State`
 - Extend `AiderSettingsConfigurable`
 - Ensure backward compatibility
+- Add comprehensive documentation
+- Implement thorough testing
+
+## Licensing and Attribution
+- Part of the Aider IDE Plugin
+- Open-source contribution welcome
+- Follows IntelliJ Platform SDK guidelines
 
 
