@@ -34,6 +34,33 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.swing.*
 
+enum class AiderMode {
+    SHELL, NORMAL, ARCHITECT, STRUCTURED;
+
+    fun getDisplayName() = when(this) {
+        SHELL -> "Shell"
+        NORMAL -> "Normal"
+        ARCHITECT -> "Architect"
+        STRUCTURED -> "Structured"
+    }
+
+    fun getTooltip() = when(this) {
+        SHELL -> "Execute shell commands"
+        NORMAL -> "Standard AI code assistance"
+        ARCHITECT -> "AI architecture assistance"
+        STRUCTURED -> "Organized feature development with plans"
+    }
+
+    fun getIcon() = when(this) {
+        SHELL -> AllIcons.Debugger.Console
+        NORMAL -> AllIcons.Actions.Edit
+        ARCHITECT -> AllIcons.Actions.Search
+        STRUCTURED -> AllIcons.Actions.ListFiles
+    }
+}
+
+class SegmentedButtonItem(val text: String, val icon: Icon, val tooltip: String)
+
 class AiderInputDialog(
     val project: Project,
     files: List<FileData>,
@@ -123,17 +150,28 @@ class AiderInputDialog(
         }
     }
     private val additionalArgsField = JTextField(settings.additionalArgs, 20)
-    private val modeToggle = JCheckBox("Shell Mode", settings.isShellMode).apply {
-        toolTipText = "Toggle between normal mode and shell mode"
-    }
-    private val structuredModeCheckBox = JCheckBox("Structured Mode", settings.useStructuredMode).apply {
-        toolTipText = "<html>Enable structured mode for organized feature development:<br>" +
-                "1. Describe a feature to generate a plan and checklist<br>" +
-                "2. Plans are stored in .coding-aider-plans directory<br>" +
-                "3. Aider updates plans based on progress and new requirements<br>" +
-                "4. Implements plan step-by-step when in context<br>" +
-                "5. Message can be left empty to continue with an existing plan<br>" +
-                "Use for better tracking and systematic development</html>"
+    private var currentMode = if (settings.isShellMode) AiderMode.SHELL
+        else if (settings.useStructuredMode) AiderMode.STRUCTURED
+        else AiderMode.NORMAL
+        
+    private val modeSegmentedButton = panel {
+        row {
+            cell(JBLabel("Mode:"))
+            segmentedButton(
+                AiderMode.values().map { mode ->
+                    SegmentedButtonItem(
+                        mode.getDisplayName(),
+                        mode.getIcon(),
+                        mode.getTooltip()
+                    )
+                }
+            ) { selectedItem ->
+                currentMode = AiderMode.values()[selectedItem]
+                updateModeUI()
+            }.apply {
+                component.selectedIndex = currentMode.ordinal
+            }
+        }
     }
     private val messageLabel = JLabel("Enter your message:")
     private val tokenCountLabel = JLabel("Tokens: 0").apply {
@@ -281,18 +319,11 @@ class AiderInputDialog(
 
         // First row: Shell Mode toggle, Structured Mode toggle, LLM selection, History, and Token Count
         val firstRowPanel = JPanel(GridBagLayout())
-        modeToggle.mnemonic = KeyEvent.VK_M
-        firstRowPanel.add(modeToggle, GridBagConstraints().apply {
+        firstRowPanel.add(modeSegmentedButton, GridBagConstraints().apply {
             gridx = 0
             gridy = 0
             weightx = 0.0
-            insets = JBUI.insetsRight(10)
-        })
-        structuredModeCheckBox.mnemonic = KeyEvent.VK_S
-        firstRowPanel.add(structuredModeCheckBox, GridBagConstraints().apply {
-            gridx = 1
-            gridy = 0
-            weightx = 0.0
+            gridwidth = 2
             insets = JBUI.insetsRight(10)
         })
         val selectLlmLabel = JLabel("LLM:").apply {
@@ -533,12 +564,6 @@ class AiderInputDialog(
         splitPane.secondComponent = contextPanel
         panel.add(splitPane, BorderLayout.CENTER)
 
-        modeToggle.addActionListener {
-            val isShellMode = modeToggle.isSelected
-            inputTextField.isVisible = !isShellMode
-            messageLabel.isVisible = !isShellMode
-            messageLabel.text = if (isShellMode) "Shell mode enabled" else "Enter your message:"
-        }
 
         return panel
     }
@@ -549,16 +574,29 @@ class AiderInputDialog(
     fun getLlm(): String = llmComboBox.selectedItem as String
     fun getAdditionalArgs(): String = additionalArgsField.text
     fun getAllFiles(): List<FileData> = aiderContextView?.getAllFiles() ?: emptyList()
-    fun isShellMode(): Boolean = modeToggle.isSelected
-    fun isStructuredMode(): Boolean = structuredModeCheckBox.isSelected
+    fun isShellMode(): Boolean = currentMode == AiderMode.SHELL
+    fun isStructuredMode(): Boolean = currentMode == AiderMode.STRUCTURED
+    
+    private fun updateModeUI() {
+        val isShellMode = currentMode == AiderMode.SHELL
+        inputTextField.isVisible = !isShellMode
+        messageLabel.isVisible = !isShellMode
+        messageLabel.text = when(currentMode) {
+            AiderMode.SHELL -> "Shell mode enabled"
+            AiderMode.STRUCTURED -> "Enter feature description or leave empty to continue plan:"
+            else -> "Enter your message:"
+        }
+    }
     private fun restoreLastState() {
         AiderDialogStateService.getInstance(project).getLastState()?.let { state ->
             inputTextField.text = state.message
             yesCheckBox.isSelected = state.useYesFlag
             llmComboBox.selectedItem = state.llm
             additionalArgsField.text = state.additionalArgs
-            modeToggle.isSelected = state.isShellMode
-            structuredModeCheckBox.isSelected = state.isStructuredMode
+            currentMode = if (state.isShellMode) AiderMode.SHELL
+                else if (state.isStructuredMode) AiderMode.STRUCTURED
+                else AiderMode.NORMAL
+            modeSegmentedButton.component.selectedIndex = currentMode.ordinal
             aiderContextView.setFiles(state.files)
         }
     }
