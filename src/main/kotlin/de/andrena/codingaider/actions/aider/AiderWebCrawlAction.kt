@@ -13,6 +13,7 @@ import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
 import com.vladsch.flexmark.util.data.MutableDataSet
 import de.andrena.codingaider.command.CommandData
+import de.andrena.codingaider.command.CommandOptions
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.services.PersistentFileService
@@ -40,7 +41,7 @@ class AiderWebCrawlAction : AnAction() {
             }
 
             val pageName = URI(url).toURL().path.split("/").lastOrNull() ?: "index"
-            val fileName = "$pageName-$combinedHash.md"
+            val fileName = "$pageName-raw-$combinedHash.md"
             val filePath = "$docsPath/$fileName"
             val file = File(filePath)
 
@@ -62,6 +63,8 @@ class AiderWebCrawlAction : AnAction() {
                         10. Remove any content that seems out of context or irrelevant to the main topic.
                         11. Summarize lengthy paragraphs while retaining key information.
                         12. Ensure the final document is concise, well-structured, and focused on the core technical content.
+                        Important: Make sure to save the simplified markdown documentation in a separate file without the raw infix and not in the same file as the initial content.
+                    } 
                     """.trimIndent(),
                     useYesFlag = true,
                     llm = settings.webCrawlLlm,
@@ -70,7 +73,9 @@ class AiderWebCrawlAction : AnAction() {
                     isShellMode = false,
                     lintCmd = "",
                     projectPath = project.basePath ?: "",
-                    structuredMode = false
+                    structuredMode = false,
+                    editFormat = "whole",
+                    options = CommandOptions(autoCommit = false, dirtyCommits = false)
                 )
                 if (settings.activateIdeExecutorAfterWebcrawl) {
                     IDEBasedExecutor(project, commandData).execute()

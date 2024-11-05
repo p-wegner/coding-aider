@@ -50,6 +50,36 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
                 add("--map-tokens")
                 add("0")
             }
+            if (commandData.options.autoCommit != null) {
+                if (commandData.options.autoCommit) {
+                    add("--auto-commits")
+                } else {
+                    add("--no-auto-commits")
+                }
+            } else {
+                when (settings.autoCommits) {
+                    AiderSettings.AutoCommitSetting.ON -> add("--auto-commits")
+                    AiderSettings.AutoCommitSetting.OFF -> add("--no-auto-commits")
+                    AiderSettings.AutoCommitSetting.DEFAULT -> {} // Do nothing, use Aider's default
+                }
+            }
+            if (commandData.options.dirtyCommits != null) {
+                if (commandData.options.dirtyCommits) {
+                    add("--dirty-commits")
+                } else {
+                    add("--no-dirty-commits")
+                }
+            } else {
+                when (settings.dirtyCommits) {
+                    AiderSettings.DirtyCommitSetting.ON -> add("--dirty-commits")
+                    AiderSettings.DirtyCommitSetting.OFF -> add("--no-dirty-commits")
+                    AiderSettings.DirtyCommitSetting.DEFAULT -> {} // Do nothing, use Aider's default
+                }
+            }
+            if (settings.includeChangeContext) {
+                add("--commit-prompt")
+                add(getCommitPrompt())
+            }
             if (!commandData.isShellMode) {
                 add("-m")
                 if (commandData.structuredMode) {
@@ -58,20 +88,7 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
                     add(commandData.message)
                 }
             }
-            when (settings.autoCommits) {
-                AiderSettings.AutoCommitSetting.ON -> add("--auto-commits")
-                AiderSettings.AutoCommitSetting.OFF -> add("--no-auto-commits")
-                AiderSettings.AutoCommitSetting.DEFAULT -> {} // Do nothing, use Aider's default
-            }
-            when (settings.dirtyCommits) {
-                AiderSettings.DirtyCommitSetting.ON -> add("--dirty-commits")
-                AiderSettings.DirtyCommitSetting.OFF -> add("--no-dirty-commits")
-                AiderSettings.DirtyCommitSetting.DEFAULT -> {} // Do nothing, use Aider's default
-            }
-            if (settings.includeChangeContext) {
-                add("--commit-prompt")
-                add(getCommitPrompt())
-            }
+
         }
     }
 
