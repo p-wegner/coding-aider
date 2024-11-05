@@ -28,10 +28,13 @@ class MarkdownDialog(
 ) : JDialog(null as Frame?, false) {
     private val virtualFile = LightVirtualFile("preview.md", MarkdownFileType.INSTANCE, initialText.replace("\r\n", "\n"))
     private val document = FileDocumentManager.getInstance().getDocument(virtualFile)!!
-    private val textArea: MarkdownPreviewFileEditor = MarkdownPreviewFileEditor(project, virtualFile).apply {
-        setMainEditor(
-            EditorFactory.getInstance().createEditor(document, project, virtualFile, true)
-        )
+    private val createEditor = EditorFactory.getInstance().createEditor(document, project, virtualFile, true)
+    private val textArea: MarkdownPreviewFileEditor = MarkdownPreviewFileEditor(
+        project,
+        virtualFile,
+//        EditorFactory.getInstance().createEditor(document, project, virtualFile, true)
+    ).apply {
+        setMainEditor(createEditor)
     }
     private val scrollPane by lazy {
         JBScrollPane(textArea.component).apply {
