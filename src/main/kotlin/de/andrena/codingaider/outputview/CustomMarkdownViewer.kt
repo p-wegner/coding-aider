@@ -78,8 +78,8 @@ class CustomMarkdownViewer {
                         word-wrap: break-word;
                     }
                     pre {
-                        white-space: pre-wrap;
-                        word-wrap: break-word;
+                        white-space: pre;
+                        overflow-x: auto;
                     }
                     table {
                         border-collapse: collapse;

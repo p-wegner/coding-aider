@@ -23,8 +23,8 @@ class MarkdownDialog(
 ) : JDialog(null as Frame?, false) {
     private val markdownViewer = CustomMarkdownViewer()
     private val scrollPane = JBScrollPane(markdownViewer.component).apply {
-        horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
-        verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
+        horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
+        verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
         viewport.scrollMode = JViewport.BACKINGSTORE_SCROLL_MODE
     }
     private var autoCloseTimer: TimerTask? = null
@@ -65,7 +65,8 @@ class MarkdownDialog(
                 }
             }
         }
-        preferredSize = java.awt.Dimension(1000, 800)
+        preferredSize = java.awt.Dimension(800, 600)
+        minimumSize = java.awt.Dimension(400, 300)
         pack()
         setLocationRelativeTo(null)
         layout = BorderLayout()
