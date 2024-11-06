@@ -41,12 +41,29 @@ class CustomMarkdownViewer {
         val styledHtml = """
             <html>
             <head>
-                <style>
-                    body { font-family: sans-serif; margin: 20px; }
-                    pre { background-color: #f5f5f5; padding: 10px; border-radius: 5px; }
-                    code { font-family: monospace; }
-                    a { color: #2196F3; }
-                    img { max-width: 100%; }
+                <style type="text/css">
+                    body { 
+                        font-family: Arial, sans-serif; 
+                        margin: 20px;
+                        line-height: 1.6;
+                    }
+                    pre { 
+                        background-color: #f0f0f0; 
+                        padding: 10px; 
+                        border: 1px solid #ddd;
+                    }
+                    code { 
+                        font-family: "Courier New", Courier, monospace; 
+                    }
+                    a { 
+                        color: #0000EE; 
+                        text-decoration: underline;
+                    }
+                    img { 
+                        width: auto;
+                        height: auto;
+                        max-width: 100%;
+                    }
                 </style>
             </head>
             <body>
