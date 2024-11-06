@@ -3,6 +3,7 @@ package de.andrena.codingaider.outputview
 import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
 import com.vladsch.flexmark.util.data.MutableDataSet
+import com.vladsch.flexmark.ext.tables.TablesExtension
 import java.awt.Desktop
 import java.net.URI
 import javax.swing.JEditorPane
@@ -14,7 +15,9 @@ class CustomMarkdownViewer {
         isEditable = false
         putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true)
     }
-    private val options = MutableDataSet()
+    private val options = MutableDataSet().apply {
+        set(Parser.EXTENSIONS, listOf(TablesExtension.create()))
+    }
     private val parser = Parser.builder(options).build()
     private val renderer = HtmlRenderer.builder(options).build()
 
@@ -63,6 +66,22 @@ class CustomMarkdownViewer {
                         width: auto;
                         height: auto;
                         max-width: 100%;
+                    }
+                    table {
+                        border-collapse: collapse;
+                        margin: 15px 0;
+                        width: 100%;
+                    }
+                    th, td {
+                        border: 1px solid #ddd;
+                        padding: 8px;
+                        text-align: left;
+                    }
+                    th {
+                        background-color: #f5f5f5;
+                    }
+                    tr:nth-child(even) {
+                        background-color: #f9f9f9;
                     }
                 </style>
             </head>
