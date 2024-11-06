@@ -1,8 +1,8 @@
 package de.andrena.codingaider.outputview
 
 import com.intellij.openapi.project.Project
+import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBScrollPane
-import com.intellij.util.ui.UIUtil
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import java.awt.BorderLayout
 import java.awt.EventQueue.invokeLater
@@ -23,7 +23,7 @@ class MarkdownDialog(
     private val onAbort: Abortable? = null
 ) : JDialog(null as Frame?, false) {
     private val markdownViewer = CustomMarkdownViewer().apply {
-        setDarkTheme(!com.intellij.ui.JBColor.isBright())
+        setDarkTheme(!JBColor.isBright())
     }
     private val scrollPane = JBScrollPane(markdownViewer.component).apply {
         horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
@@ -47,7 +47,7 @@ class MarkdownDialog(
         markdownViewer.setMarkdownContent(initialText)
         
         // Add scroll listener to detect when user manually scrolls
-        scrollPane.verticalScrollBar.addAdjustmentListener { e ->
+        scrollPane.verticalScrollBar.addAdjustmentListener { _ ->
             val scrollBar = scrollPane.verticalScrollBar
             val extent = scrollBar.model.extent
             val maximum = scrollBar.model.maximum
