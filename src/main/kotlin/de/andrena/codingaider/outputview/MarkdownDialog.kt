@@ -2,6 +2,7 @@ package de.andrena.codingaider.outputview
 
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBScrollPane
+import com.intellij.util.ui.UIUtil
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import java.awt.BorderLayout
 import java.awt.EventQueue.invokeLater
@@ -21,7 +22,9 @@ class MarkdownDialog(
     initialText: String,
     private val onAbort: Abortable? = null
 ) : JDialog(null as Frame?, false) {
-    private val markdownViewer = CustomMarkdownViewer()
+    private val markdownViewer = CustomMarkdownViewer().apply {
+        setDarkTheme(UIUtil.isUnderDarcula())
+    }
     private val scrollPane = JBScrollPane(markdownViewer.component).apply {
         horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
         verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
