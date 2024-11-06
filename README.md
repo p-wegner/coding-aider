@@ -13,7 +13,7 @@ while allowing you complete control over the context utilized by the LLM.
 
 To utilize this plugin, you
 
-- must have a functional Aider installation
+- must have a functional Aider installation (version 0.61.0 or higher)
 - or be able to run docker containers
 
 Additionally API keys for the LLM Providers you intend to use are required.

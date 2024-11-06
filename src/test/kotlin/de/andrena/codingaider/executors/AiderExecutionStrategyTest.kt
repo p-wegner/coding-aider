@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.docker.DockerContainerManager
+import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.AiderPlanService
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
@@ -48,11 +49,9 @@ class AiderExecutionStrategyTest {
             llm = "--4o",
             useYesFlag = true,
             editFormat = "diff",
-            isShellMode = false,
             additionalArgs = "--verbose",
             lintCmd = "lint",
             deactivateRepoMap = true,
-            structuredMode = false
         )
         whenever(project.getService(AiderPlanService::class.java)).thenReturn(aiderPlanService)
     }
@@ -62,7 +61,7 @@ class AiderExecutionStrategyTest {
     fun `NativeAiderExecutionStrategy handles structured mode with existing plan`() {
         val existingPlanFile = FileData("/project/.coding-aider-plans/existing_plan.md", false)
         commandData = commandData.copy(
-            structuredMode = true,
+            aiderMode = AiderMode.STRUCTURED,
             message = "Continue with the plan",
             files = commandData.files + existingPlanFile
         )
@@ -78,7 +77,7 @@ class AiderExecutionStrategyTest {
     fun `DockerAiderExecutionStrategy handles structured mode with existing plan`() {
         val existingPlanFile = FileData("/project/.coding-aider-plans/existing_plan.md", false)
         commandData = commandData.copy(
-            structuredMode = true,
+            aiderMode = AiderMode.STRUCTURED,
             message = "Update the plan",
             files = commandData.files + existingPlanFile
         )
@@ -96,7 +95,7 @@ class AiderExecutionStrategyTest {
         val command = nativeStrategy.buildCommand(commandData)
         assertThat(command).containsExactly(
             "aider", "--4o", "--file", "/project/file1.txt", "--yes", "--edit-format", "diff",
-            "--no-suggest-shell-commands", "--no-pretty", "--verbose", "--lint-cmd", "lint",
+            "--no-suggest-shell-commands", "--no-pretty", "--no-fancy-input", "--verbose", "--lint-cmd", "lint",
             "--map-tokens", "0", "-m", "Test message"
         )
     }
@@ -106,7 +105,7 @@ class AiderExecutionStrategyTest {
         val command = nativeStrategy.buildCommand(commandData.copy(llm = "o1-preview"))
         assertThat(command).containsExactly(
             "aider", "--model", "o1-preview", "--file", "/project/file1.txt", "--yes", "--edit-format", "diff",
-            "--no-suggest-shell-commands", "--no-pretty", "--verbose", "--lint-cmd", "lint",
+            "--no-suggest-shell-commands", "--no-pretty", "--no-fancy-input", "--verbose", "--lint-cmd", "lint",
             "--map-tokens", "0", "-m", "Test message"
         )
     }
@@ -123,7 +122,8 @@ class AiderExecutionStrategyTest {
             "-v", "/project:/app",
             "paulgauthier/aider:v0.62.0",
             "--4o", "--file", "/app/file1.txt", "--yes", "--edit-format", "diff",
-            "--no-suggest-shell-commands", "--no-pretty", "--verbose", "--lint-cmd", "lint",
+            "--no-suggest-shell-commands", "--no-pretty",
+            "--no-fancy-input","--verbose", "--lint-cmd", "lint",
             "--map-tokens", "0", "-m", "Test message"
         )
     }
@@ -180,7 +180,7 @@ class AiderExecutionStrategyTest {
 
     @Test
     fun `NativeAiderExecutionStrategy handles structured mode with single-line message`() {
-        commandData = commandData.copy(structuredMode = true, message = "Single line message")
+        commandData = commandData.copy(aiderMode = AiderMode.STRUCTURED, message = "Single line message")
 
         val command = nativeStrategy.buildCommand(commandData)
 
@@ -190,7 +190,7 @@ class AiderExecutionStrategyTest {
 
     @Test
     fun `NativeAiderExecutionStrategy handles structured mode with multi-line message`() {
-        commandData = commandData.copy(structuredMode = true, message = multiLineMessage)
+        commandData = commandData.copy(aiderMode = AiderMode.STRUCTURED, message = multiLineMessage)
 
         val command = nativeStrategy.buildCommand(commandData)
 
@@ -200,7 +200,7 @@ class AiderExecutionStrategyTest {
 
     @Test
     fun `DockerAiderExecutionStrategy handles structured mode with multi-line message`() {
-        commandData = commandData.copy(structuredMode = true, message = multiLineMessage)
+        commandData = commandData.copy(aiderMode = AiderMode.STRUCTURED, message = multiLineMessage)
         whenever(dockerManager.getCidFilePath()).thenReturn("/tmp/docker.cid")
 
         val command = dockerStrategy.buildCommand(commandData)

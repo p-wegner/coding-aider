@@ -4,6 +4,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.docker.DockerContainerManager
+import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.AiderPlanService
 import de.andrena.codingaider.settings.AiderDefaults
 import de.andrena.codingaider.settings.AiderSettings
@@ -38,6 +39,7 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
             if (!commandData.isShellMode) {
                 add("--no-suggest-shell-commands")
                 add("--no-pretty")
+                add("--no-fancy-input")
             }
             if (commandData.additionalArgs.isNotEmpty()) {
                 addAll(commandData.additionalArgs.split(" "))
@@ -80,15 +82,23 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
                 add("--commit-prompt")
                 add(getCommitPrompt())
             }
-            if (!commandData.isShellMode) {
-                add("-m")
-                if (commandData.structuredMode) {
-                    add(project.service<AiderPlanService>().createAiderPlanSystemPrompt(commandData))
-                } else {
+            when (commandData.aiderMode) {
+                AiderMode.NORMAL -> {
+                    add("-m")
                     add(commandData.message)
                 }
-            }
 
+                AiderMode.STRUCTURED -> {
+                    add("-m")
+                    add(project.service<AiderPlanService>().createAiderPlanSystemPrompt(commandData))
+                }
+
+                AiderMode.ARCHITECT -> {
+                    add("-m")
+                    add("/architect ${commandData.message}")
+                }
+                else -> {}
+            }
         }
     }
 
