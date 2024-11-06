@@ -42,15 +42,8 @@ dependencies {
         instrumentationTools()
         bundledPlugin("org.jetbrains.plugins.terminal")
         bundledPlugin("Git4Idea")
-        pluginVerification {
-            ides {
-                version("2024.1")
-                version("2024.2-EAP")
-            }
-            failureLevel {
-                COMPATIBILITY_PROBLEMS.failVerification()
-                NOT_DYNAMIC.failVerification()
-            }
+        verifyPlugin {
+            ideVersions.set(listOf("2024.1", "2024.2-EAP"))
         }
     }
 }
