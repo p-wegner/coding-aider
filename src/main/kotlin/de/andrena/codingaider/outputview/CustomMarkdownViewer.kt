@@ -44,7 +44,19 @@ class CustomMarkdownViewer {
     private var isDarkTheme = false
 
     companion object {
-        private const val HTML_TEMPLATE = """
+        private fun getHtmlTemplate(
+            bodyBg: String,
+            bodyText: String,
+            preBg: String,
+            preBorder: String,
+            preText: String,
+            codeColor: String,
+            linkColor: String,
+            tableBorder: String,
+            thBg: String,
+            trEvenBg: String,
+            content: String
+        ): String = """
             <html>
             <head>
                 <style type="text/css">
@@ -52,21 +64,21 @@ class CustomMarkdownViewer {
                         font-family: Arial, sans-serif; 
                         margin: 20px;
                         line-height: 1.6;
-                        background-color: %s;
-                        color: %s;
+                        background-color: $bodyBg;
+                        color: $bodyText;
                     }
                     pre { 
-                        background-color: %s; 
+                        background-color: $preBg; 
                         padding: 10px; 
-                        border: 1px solid %s;
-                        color: %s;
+                        border: 1px solid $preBorder;
+                        color: $preText;
                     }
                     code { 
                         font-family: "JetBrains Mono", "Courier New", Courier, monospace;
-                        color: %s;
+                        color: $codeColor;
                     }
                     a { 
-                        color: %s; 
+                        color: $linkColor; 
                         text-decoration: underline;
                     }
                     img { 
@@ -87,20 +99,20 @@ class CustomMarkdownViewer {
                         width: 100%;
                     }
                     th, td {
-                        border: 1px solid %s;
+                        border: 1px solid $tableBorder;
                         padding: 8px;
                         text-align: left;
                     }
                     th {
-                        background-color: %s;
+                        background-color: $thBg;
                     }
                     tr:nth-child(even) {
-                        background-color: %s;
+                        background-color: $trEvenBg;
                     }
                 </style>
             </head>
             <body>
-                %s
+                $content
             </body>
             </html>
         """
@@ -149,7 +161,19 @@ class CustomMarkdownViewer {
                 )
             }
 
-            val styledHtml = HTML_TEMPLATE.format(*colors, html)
+            val styledHtml = getHtmlTemplate(
+                bodyBg = colors[0],
+                bodyText = colors[1],
+                preBg = colors[2],
+                preBorder = colors[3],
+                preText = colors[4],
+                codeColor = colors[5],
+                linkColor = colors[6],
+                tableBorder = colors[7],
+                thBg = colors[8],
+                trEvenBg = colors[9],
+                content = html
+            )
 
             // Store current caret position
             val caretPos = component.caretPosition
