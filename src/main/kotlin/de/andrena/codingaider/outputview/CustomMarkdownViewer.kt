@@ -51,12 +51,14 @@ class CustomMarkdownViewer {
                         line-height: 1.6;
                     }
                     pre { 
-                        background-color: #f0f0f0; 
+                        background-color: #2b2b2b; 
                         padding: 10px; 
-                        border: 1px solid #ddd;
+                        border: 1px solid #444;
+                        color: #a9b7c6;
                     }
                     code { 
-                        font-family: "Courier New", Courier, monospace; 
+                        font-family: "JetBrains Mono", "Courier New", Courier, monospace;
+                        color: #a9b7c6;
                     }
                     a { 
                         color: #0000EE; 
