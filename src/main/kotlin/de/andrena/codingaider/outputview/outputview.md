@@ -8,7 +8,7 @@ The Output View module is a critical component of the Coding Aider plugin, respo
 ### Key Components
 1. **[Abortable.kt](./Abortable.kt)**: Defines an interface for command abortion
 2. **[MarkdownDialog.kt](./MarkdownDialog.kt)**: Primary dialog implementation for markdown content display
-3. **[MarkdownPreviewFileEditorUtil.kt](./MarkdownPreviewFileEditorUtil.kt)**: Utility for creating markdown preview editors
+3. **[CustomMarkdownViewer.kt](./CustomMarkdownViewer.kt)**: Utility for creating markdown preview editors
 
 ### Project Dependencies and Interactions
 ```mermaid
@@ -16,7 +16,7 @@ graph TD
     subgraph OutputView Module
         A[Abortable.kt]
         B[MarkdownDialog.kt]
-        C[MarkdownPreviewFileEditorUtil.kt]
+        C[CustomMarkdownViewer.kt]
     end
     
     subgraph External Dependencies
@@ -71,7 +71,7 @@ graph TD
   - Configurable auto-close behavior
 
 ### MarkdownPreviewFileEditorUtil
-- **Location**: [./MarkdownPreviewFileEditorUtil.kt](./MarkdownPreviewFileEditorUtil.kt)
+- **Location**: [./CustomMarkdownViewer.kt](./CustomMarkdownViewer.kt)
 - **Purpose**: Dynamically create markdown preview editors across different plugin API versions
 - **Key Method**: `createMarkdownPreviewEditor()`
   - Supports multiple constructor signatures

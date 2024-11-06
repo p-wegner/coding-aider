@@ -35,7 +35,7 @@ Currently, the `MarkdownDialog` in our application relies on the JetBrains Markd
    - Modify methods related to content updates to use the new component.
    - Ensure that content updates are reflected in real-time.
 
-4. **Remove `MarkdownPreviewFileEditorUtil.kt`**
+4. **Remove `CustomMarkdownViewer.kt`**
 
    - Since this utility class is specific to the JetBrains Markdown plugin, remove it from the codebase.
    - Clean up any references to this utility class.

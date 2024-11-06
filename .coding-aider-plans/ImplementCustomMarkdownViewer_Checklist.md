@@ -33,9 +33,9 @@ Refer to the [Implement Custom Markdown Viewer for MarkdownDialog](ImplementCust
 - [x] Ensure real-time updates work correctly when content changes.
 - [x] Handle any events or interactions previously managed by `MarkdownPreviewFileEditor`.
 
-### 4. Remove `MarkdownPreviewFileEditorUtil.kt`
+### 4. Remove `CustomMarkdownViewer.kt`
 
-- [x] Remove `MarkdownPreviewFileEditorUtil.kt` from the project.
+- [x] Remove `CustomMarkdownViewer.kt` from the project.
 - [x] Search for any references to this utility and remove them.
 - [x] Test to ensure removal does not affect other parts of the application.
 
