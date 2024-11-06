@@ -16,6 +16,7 @@ class CustomMarkdownViewer {
         contentType = "text/html"
         isEditable = false
         putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true)
+        putClientProperty("JEditorPane.honorDisplayProperties", true)
     }
     private val options = MutableDataSet().apply {
         set(Parser.EXTENSIONS, listOf(
@@ -72,6 +73,13 @@ class CustomMarkdownViewer {
                         width: auto;
                         height: auto;
                         max-width: 100%;
+                    }
+                    body {
+                        word-wrap: break-word;
+                    }
+                    pre {
+                        white-space: pre-wrap;
+                        word-wrap: break-word;
                     }
                     table {
                         border-collapse: collapse;
