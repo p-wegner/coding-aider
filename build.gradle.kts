@@ -38,10 +38,15 @@ dependencies {
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
     intellijPlatform {
         intellijIdeaCommunity("2024.1.3")
-//        bundledModule("intellij.platform.vcs.impl")
+        pluginVerifier()
         instrumentationTools()
         bundledPlugin("org.jetbrains.plugins.terminal")
         bundledPlugin("Git4Idea")
+        pluginVerification {
+            ides {
+                recommended()
+            }
+        }
     }
 }
 intellijPlatform {
