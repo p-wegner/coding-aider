@@ -44,7 +44,12 @@ dependencies {
         bundledPlugin("Git4Idea")
         pluginVerification {
             ides {
-                recommended()
+                version("2024.1")
+                version("2024.2-EAP")
+            }
+            failureLevel {
+                COMPATIBILITY_PROBLEMS.failVerification()
+                NOT_DYNAMIC.failVerification()
             }
         }
     }
