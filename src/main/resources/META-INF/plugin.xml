@@ -48,7 +48,6 @@
 
         <p>Coding-Aider brings these powerful terminal-based features directly into your IDE, leveraging established IDE functionalities like Git integration and keyboard shortcuts.</p>
     ]]></description>
-    <idea-version since-build="232" until-build="241.*"/>
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
