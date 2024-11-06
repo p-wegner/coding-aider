@@ -124,28 +124,28 @@ class CustomMarkdownViewer {
             val colors = if (isDarkTheme) {
                 arrayOf(
                     "#2b2b2b", // body background
-                    "#a9b7c6", // body text
+                    "#ffffff", // body text
                     "#1e1e1e", // pre background
-                    "#444444", // pre border
-                    "#a9b7c6", // pre/code text
-                    "#a9b7c6", // code color
+                    "#666666", // pre border
+                    "#ffffff", // pre/code text
+                    "#ffffff", // code color
                     "#589df6", // link color
-                    "#444444", // table border
+                    "#666666", // table border
                     "#323232", // th background
-                    "#2b2b2b"  // tr even background
+                    "#363636"  // tr even background
                 )
             } else {
                 arrayOf(
                     "#ffffff", // body background
                     "#000000", // body text
                     "#f5f5f5", // pre background
-                    "#e0e0e0", // pre border
+                    "#cccccc", // pre border
                     "#000000", // pre/code text
                     "#000000", // code color
-                    "#0000EE", // link color
-                    "#ddd",    // table border
-                    "#f5f5f5", // th background
-                    "#f9f9f9"  // tr even background
+                    "#0066cc", // link color
+                    "#cccccc", // table border
+                    "#e6e6e6", // th background
+                    "#f5f5f5"  // tr even background
                 )
             }
 
