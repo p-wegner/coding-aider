@@ -23,7 +23,7 @@ class MarkdownDialog(
     private val onAbort: Abortable? = null
 ) : JDialog(null as Frame?, false) {
     private val markdownViewer = CustomMarkdownViewer().apply {
-        setDarkTheme(UIUtil.isUnderDarcula())
+        setDarkTheme(!com.intellij.ui.JBColor.isBright())
     }
     private val scrollPane = JBScrollPane(markdownViewer.component).apply {
         horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
