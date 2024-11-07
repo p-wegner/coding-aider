@@ -1,5 +1,6 @@
 package de.andrena.codingaider.toolwindow
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -12,6 +13,9 @@ import com.intellij.ui.content.ContentFactory
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.messages.PersistentFilesChangedTopic
+import de.andrena.codingaider.command.CommandData
+import de.andrena.codingaider.executors.api.IDEBasedExecutor
+import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.AiderPlan
 import de.andrena.codingaider.services.AiderPlanService
 import de.andrena.codingaider.services.PersistentFileService
@@ -80,6 +84,24 @@ class PersistentFilesComponent(private val project: Project) {
         aiderPlanService.getAiderPlans().forEach { plan ->
             plansListModel.addElement(plan)
         }
+    }
+
+    private fun executeSelectedPlan() {
+        val selectedPlan = plansList.selectedValue ?: return
+        val executor = project.service<IDEBasedExecutor>()
+        
+        val commandData = CommandData(
+            message = "",
+            useYesFlag = false,
+            llm = "",  // Will use default from settings
+            additionalArgs = "",
+            files = selectedPlan.files,
+            lintCmd = "",
+            projectPath = project.basePath ?: "",
+            aiderMode = AiderMode.STRUCTURED
+        )
+        
+        executor.execute(commandData)
     }
 
     private inner class PlanRenderer : DefaultListCellRenderer() {
@@ -154,6 +176,7 @@ class PersistentFilesComponent(private val project: Project) {
                 }
                 row {
                     button("Refresh Plans") { loadPlans() }
+                    button("Execute Selected Plan") { executeSelectedPlan() }
                 }
             }.resizableRow()
         }
