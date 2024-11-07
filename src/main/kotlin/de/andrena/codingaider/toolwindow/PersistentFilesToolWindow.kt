@@ -1,7 +1,6 @@
 package de.andrena.codingaider.toolwindow
 
 import com.intellij.icons.AllIcons
-import com.intellij.openapi.components.service
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.ui.JBColor
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
@@ -31,7 +30,6 @@ import java.awt.FlowLayout
 import java.awt.Insets
 import java.io.File
 import javax.swing.*
-import javax.swing.border.BorderFactory
 
 class PersistentFilesToolWindow : ToolWindowFactory {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
