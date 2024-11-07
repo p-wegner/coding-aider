@@ -9,12 +9,12 @@ Implementation Checklist:
     - [X] Add AiderPlan data class with completion status calculation
 
 - [ ] Enhance PersistentFilesToolWindow
-    - [ ] Add plans list model and JBList component
-    - [ ] Create custom cell renderer for plans
-    - [x] Add plans section to toolwindow UI
-    - [ ] Implement double-click to open plan files
-    - [ ] Add execute button functionality
-    - [ ] Add refresh button for plans list
+    - [X] Add plans list model and JBList component
+    - [X] Create custom cell renderer for plans
+    - [X] Add plans section to toolwindow UI
+    - [X] Implement double-click to open plan files
+    - [X] Add execute button functionality
+    - [X] Add refresh button for plans list
 
 - [ ] Implement plan loading and status calculation
     - [ ] Load plans from .coding-aider-plans directory

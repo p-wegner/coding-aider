@@ -132,10 +132,21 @@ class PersistentFilesComponent(private val project: Project) {
         private var showExecuteButton = false
         private var executeButtonBounds = Rectangle()
         private val label = JLabel()
+        private val statusIcon = JLabel()
+        private val countLabel = JLabel()
+        private val buttonPanel = JPanel(FlowLayout(FlowLayout.RIGHT, 4, 0))
 
         init {
             isOpaque = true
-            add(label, BorderLayout.CENTER)
+            val contentPanel = JPanel(BorderLayout(8, 0))
+            contentPanel.isOpaque = false
+            contentPanel.add(statusIcon, BorderLayout.WEST)
+            contentPanel.add(label, BorderLayout.CENTER)
+            contentPanel.add(countLabel, BorderLayout.EAST)
+            
+            add(contentPanel, BorderLayout.CENTER)
+            add(buttonPanel, BorderLayout.EAST)
+            border = BorderFactory.createEmptyBorder(4, 8, 4, 8)
         }
 
         override fun getListCellRendererComponent(
@@ -153,14 +164,23 @@ class PersistentFilesComponent(private val project: Project) {
             if (value != null) {
                 val planFile = value.files.firstOrNull()
                 val fileName = planFile?.filePath?.let { File(it).nameWithoutExtension } ?: "Unknown Plan"
-                val status = if (value.isPlanComplete()) "✓" else "⋯"
-                val openItems = value.openChecklistItems().size
-                label.text = "$fileName [$status] ($openItems open items)"
+                label.text = fileName
                 label.toolTipText = planFile?.filePath
+                
+                statusIcon.icon = if (value.isPlanComplete()) 
+                    AllIcons.Actions.Commit 
+                else 
+                    AllIcons.General.Information
+                
+                val openItems = value.openChecklistItems().size
+                countLabel.text = if (openItems > 0) "($openItems)" else ""
+                countLabel.foreground = if (openItems > 0) 
+                    UIManager.getColor("Label.infoForeground") 
+                else 
+                    foreground
             }
             
-            // Ensure proper padding for the execute button
-            border = BorderFactory.createEmptyBorder(4, 8, 4, 28)
+            buttonPanel.isVisible = showExecuteButton
             return this
         }
 
