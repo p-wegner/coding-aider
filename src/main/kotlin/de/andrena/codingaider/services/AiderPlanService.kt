@@ -43,18 +43,29 @@ class AiderPlanService(private val project: Project) {
         }
 
         return plansDir.listFiles { file -> file.extension == "md" }?.mapNotNull { file ->
-            val content = file.readText()
-            if (content.contains(AIDER_PLAN_MARKER)) {
-                // This is a plan file
-                val checklistFile = file.nameWithoutExtension + "_checklist.md"
-                val checklist = File(plansDir, checklistFile).takeIf { it.exists() }?.let { parseChecklist(it) } ?: emptyList()
-                
-                AiderPlan(
-                    plan = content,
-                    checklist = checklist,
-                    files = listOf(FileData(file.absolutePath, false))
-                )
-            } else null
+            try {
+                val content = file.readText()
+                if (content.contains(AIDER_PLAN_MARKER)) {
+                    // Extract plan content after the marker
+                    val planContent = content.substringAfter(AIDER_PLAN_MARKER).trim()
+                    
+                    // Look for associated checklist file
+                    val checklistFile = File(plansDir, "${file.nameWithoutExtension}_checklist.md")
+                    val checklist = if (checklistFile.exists()) {
+                        parseChecklist(checklistFile)
+                    } else emptyList()
+                    
+                    AiderPlan(
+                        plan = planContent,
+                        checklist = checklist,
+                        files = listOf(FileData(file.absolutePath, false))
+                    )
+                } else null
+            } catch (e: Exception) {
+                // Log error but continue processing other files
+                println("Error processing plan file ${file.name}: ${e.message}")
+                null
+            }
         } ?: emptyList()
     }
 
@@ -62,72 +73,86 @@ class AiderPlanService(private val project: Project) {
         val content = file.readText()
         if (!content.contains(AIDER_PLAN_CHECKLIST_MARKER)) return emptyList()
         
-        val lines = content.lines()
-        return parseChecklistItems(lines, 0, -1).first
+        // Extract content after the marker
+        val checklistContent = content.substringAfter(AIDER_PLAN_CHECKLIST_MARKER).trim()
+        val lines = checklistContent.lines()
+        
+        return parseChecklistItems(lines, 0, 0).first
     }
 
-    private fun parseChecklistItems(lines: List<String>, startIndex: Int, currentIndent: Int): Pair<List<ChecklistItem>, Int> {
+    private fun parseChecklistItems(
+        lines: List<String>, 
+        startIndex: Int, 
+        parentIndent: Int
+    ): Pair<List<ChecklistItem>, Int> {
         val items = mutableListOf<ChecklistItem>()
-        var currentLineIndex = startIndex
+        var currentIndex = startIndex
         
-        while (currentLineIndex < lines.size) {
-            val currentLine = lines[currentLineIndex]
-            
-            // Skip empty lines and headers
-            if (currentLine.isBlank() || currentLine.trimStart().startsWith("#")) {
-                currentLineIndex++
+        while (currentIndex < lines.size) {
+            val line = lines[currentIndex].takeIf { it.isNotBlank() } ?: run {
+                currentIndex++
                 continue
             }
             
-            val lineIndent = currentLine.indexOfFirst { !it.isWhitespace() }
+            val indent = line.indentationLevel()
             
             // Return if we've moved back to a higher level
-            if (currentIndent >= 0 && lineIndent < currentIndent) {
-                return Pair(items, currentLineIndex - startIndex)
+            if (indent < parentIndent) {
+                return Pair(items, currentIndex)
             }
             
-            // Process checklist items
-            if (isChecklistItem(currentLine)) {
-                val (item, nextIndex) = parseChecklistItem(lines, currentLineIndex, lineIndent)
+            // Process checklist items at current level
+            if (isChecklistItem(line)) {
+                val (item, nextIndex) = parseChecklistItem(lines, currentIndex)
                 items.add(item)
-                currentLineIndex = nextIndex
+                currentIndex = nextIndex
             } else {
-                currentLineIndex++
+                currentIndex++
             }
         }
         
-        return Pair(items, lines.size - startIndex)
+        return Pair(items, lines.size)
     }
+    
+    private fun String.indentationLevel(): Int = 
+        indexOfFirst { !it.isWhitespace() }.takeIf { it >= 0 } ?: length
     
     private fun isChecklistItem(line: String): Boolean = 
-        line.trim().startsWith("- [")
+        line.trim().matches(Regex("""- \[([ xX])\].*"""))
     
-    private fun parseChecklistItem(lines: List<String>, lineIndex: Int, indent: Int): Pair<ChecklistItem, Int> {
-        val line = lines[lineIndex]
-        val checked = line.contains("[x]")
-        val description = line.substringAfter("]").trim()
+    private fun parseChecklistItem(
+        lines: List<String>, 
+        currentIndex: Int
+    ): Pair<ChecklistItem, Int> {
+        val line = lines[currentIndex]
+        val indent = line.indentationLevel()
+        
+        // Parse current item
+        val checked = line.contains(Regex("""- \[[xX]\]"""))
+        val description = line.trim()
+            .removePrefix("- [")
+            .substringAfter("]")
+            .trim()
         
         // Look for nested items
-        val (children, processedLines) = if (hasNestedItems(lines, lineIndex, indent)) {
-            parseChecklistItems(lines, lineIndex + 1, getNextLineIndent(lines, lineIndex))
-        } else {
-            Pair(emptyList(), 0)
-        }
+        var nextIndex = currentIndex + 1
+        val children = if (hasNestedItems(lines, nextIndex, indent)) {
+            val (nestedItems, newIndex) = parseChecklistItems(lines, nextIndex, indent)
+            nextIndex = newIndex
+            nestedItems
+        } else emptyList()
         
-        return Pair(ChecklistItem(description, checked, children), lineIndex + processedLines + 1)
+        return Pair(ChecklistItem(description, checked, children), nextIndex)
     }
     
-    private fun hasNestedItems(lines: List<String>, currentIndex: Int, currentIndent: Int): Boolean {
-        val nextLine = lines.getOrNull(currentIndex + 1) ?: return false
-        return nextLine.isNotBlank() && 
-               nextLine.indexOfFirst { !it.isWhitespace() } > currentIndent
+    private fun hasNestedItems(
+        lines: List<String>, 
+        currentIndex: Int, 
+        parentIndent: Int
+    ): Boolean {
+        val nextLine = lines.getOrNull(currentIndex)?.takeIf { it.isNotBlank() } ?: return false
+        return nextLine.indentationLevel() > parentIndent && isChecklistItem(nextLine)
     }
-    
-    private fun getNextLineIndent(lines: List<String>, currentIndex: Int): Int =
-        lines.getOrNull(currentIndex + 1)
-            ?.takeIf { it.isNotBlank() }
-            ?.indexOfFirst { !it.isWhitespace() }
-            ?: -1
     fun createAiderPlanSystemPrompt(commandData: CommandData): String {
         val files = commandData.files
 
