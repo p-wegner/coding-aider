@@ -62,18 +62,50 @@ class AiderPlanService(private val project: Project) {
         val content = file.readText()
         if (!content.contains(AIDER_PLAN_CHECKLIST_MARKER)) return emptyList()
         
+        val lines = content.lines().filter { it.isNotBlank() && !it.startsWith("#") }
+        return parseChecklistItems(lines, 0).first
+    }
+
+    private fun parseChecklistItems(lines: List<String>, currentIndent: Int): Pair<List<ChecklistItem>, Int> {
         val items = mutableListOf<ChecklistItem>()
-        val lines = content.lines()
+        var i = 0
         
-        for (line in lines) {
+        while (i < lines.size) {
+            val line = lines[i]
+            val indent = line.indexOfFirst { !it.isWhitespace() }
+            
+            if (indent < currentIndent) {
+                // We've moved back out to a higher level
+                return Pair(items, i)
+            }
+            
             if (line.trim().startsWith("- [")) {
                 val checked = line.contains("- [x]")
                 val description = line.substringAfter("]").trim()
-                items.add(ChecklistItem(description, checked, emptyList()))
+                
+                // Look ahead for nested items
+                val (children, newIndex) = if (i + 1 < lines.size) {
+                    val nextLine = lines[i + 1]
+                    val nextIndent = nextLine.indexOfFirst { !it.isWhitespace() }
+                    
+                    if (nextIndent > indent) {
+                        // We have nested items
+                        parseChecklistItems(lines.subList(i + 1, lines.size), nextIndent)
+                    } else {
+                        Pair(emptyList(), 0)
+                    }
+                } else {
+                    Pair(emptyList(), 0)
+                }
+                
+                items.add(ChecklistItem(description, checked, children))
+                i += newIndex + 1
+            } else {
+                i++
             }
         }
         
-        return items
+        return Pair(items, lines.size)
     }
     fun createAiderPlanSystemPrompt(commandData: CommandData): String {
         val files = commandData.files
