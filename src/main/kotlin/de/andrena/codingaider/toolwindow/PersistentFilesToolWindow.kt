@@ -29,7 +29,9 @@ class PersistentFilesToolWindow : ToolWindowFactory {
 
 class PersistentFilesComponent(private val project: Project) {
     private val persistentFileService = project.getService(PersistentFileService::class.java)
+    private val aiderPlanService = project.getService(AiderPlanService::class.java)
     private val persistentFilesListModel = DefaultListModel<FileData>()
+    private val plansListModel = DefaultListModel<AiderPlan>()
     private val persistentFilesList = JBList(persistentFilesListModel).apply {
         cellRenderer = PersistentFileRenderer()
         addKeyListener(object : java.awt.event.KeyAdapter() {
@@ -41,12 +43,62 @@ class PersistentFilesComponent(private val project: Project) {
         })
     }
 
+    private val plansList = JBList(plansListModel).apply {
+        cellRenderer = PlanRenderer()
+        addMouseListener(object : MouseAdapter() {
+            override fun mouseClicked(e: MouseEvent) {
+                if (e.clickCount == 2) {
+                    val index = locationToIndex(e.point)
+                    if (index != -1) {
+                        val plan = plansListModel.getElementAt(index)
+                        val planFile = plan.files.firstOrNull()
+                        planFile?.let {
+                            val virtualFile = LocalFileSystem.getInstance().findFileByPath(it.filePath)
+                            virtualFile?.let { vf ->
+                                FileEditorManager.getInstance(project).openFile(vf, true)
+                            }
+                        }
+                    }
+                }
+            }
+        })
+    }
+
     private var doubleClickListener: (() -> Unit)? = null
 
     init {
         loadPersistentFiles()
+        loadPlans()
         subscribeToChanges()
         setupDoubleClickListener()
+    }
+
+    private fun loadPlans() {
+        plansListModel.clear()
+        aiderPlanService.getAiderPlans().forEach { plan ->
+            plansListModel.addElement(plan)
+        }
+    }
+
+    private inner class PlanRenderer : DefaultListCellRenderer() {
+        override fun getListCellRendererComponent(
+            list: JList<*>?,
+            value: Any?,
+            index: Int,
+            isSelected: Boolean,
+            cellHasFocus: Boolean
+        ): Component {
+            val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
+            if (component is JLabel && value is AiderPlan) {
+                val planFile = value.files.firstOrNull()
+                val fileName = planFile?.filePath?.let { File(it).nameWithoutExtension } ?: "Unknown Plan"
+                val status = if (value.isPlanComplete()) "✓" else "⋯"
+                val openItems = value.openChecklistItems().size
+                component.text = "$fileName [$status] ($openItems open items)"
+                component.toolTipText = planFile?.filePath
+            }
+            return component
+        }
     }
 
     private fun subscribeToChanges() {
@@ -89,6 +141,17 @@ class PersistentFilesComponent(private val project: Project) {
                     button("Add Open Files") { addOpenFilesToPersistent() }
                     button("Toggle Read-Only") { toggleReadOnlyMode() }
                     button("Remove Files") { removeSelectedFiles() }
+                }
+            }.resizableRow()
+            
+            group("Aider Plans") {
+                row {
+                    scrollCell(plansList)
+                        .align(com.intellij.ui.dsl.builder.Align.FILL)
+                        .resizableColumn()
+                }
+                row {
+                    button("Refresh Plans") { loadPlans() }
                 }
             }.resizableRow()
         }

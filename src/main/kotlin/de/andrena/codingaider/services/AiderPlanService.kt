@@ -39,11 +39,41 @@ class AiderPlanService(private val project: Project) {
         val plansDir = File(project.basePath, AIDER_PLANS_FOLDER)
         if (!plansDir.exists()) {
             plansDir.mkdir()
+            return emptyList()
         }
-        // TODO: Read files in folder and parse them, each plan could have links to a checklist,
-        // TODO: parse checklists and return them as AiderPlan objects
 
-        return emptyList()
+        return plansDir.listFiles { file -> file.extension == "md" }?.mapNotNull { file ->
+            val content = file.readText()
+            if (content.contains(AIDER_PLAN_MARKER)) {
+                // This is a plan file
+                val checklistFile = file.nameWithoutExtension + "_checklist.md"
+                val checklist = File(plansDir, checklistFile).takeIf { it.exists() }?.let { parseChecklist(it) } ?: emptyList()
+                
+                AiderPlan(
+                    plan = content,
+                    checklist = checklist,
+                    files = listOf(FileData(file.absolutePath, false))
+                )
+            } else null
+        } ?: emptyList()
+    }
+
+    private fun parseChecklist(file: File): List<ChecklistItem> {
+        val content = file.readText()
+        if (!content.contains(AIDER_PLAN_CHECKLIST_MARKER)) return emptyList()
+        
+        val items = mutableListOf<ChecklistItem>()
+        val lines = content.lines()
+        
+        for (line in lines) {
+            if (line.trim().startsWith("- [")) {
+                val checked = line.contains("- [x]")
+                val description = line.substringAfter("]").trim()
+                items.add(ChecklistItem(description, checked, emptyList()))
+            }
+        }
+        
+        return items
     }
     fun createAiderPlanSystemPrompt(commandData: CommandData): String {
         val files = commandData.files
