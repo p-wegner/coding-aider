@@ -1,7 +1,9 @@
 package de.andrena.codingaider.toolwindow
 
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.components.service
 import com.intellij.openapi.fileChooser.FileChooser
+import com.intellij.ui.JBColor
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
@@ -23,8 +25,13 @@ import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import java.awt.Component
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import com.intellij.openapi.ui.Messages
+import java.awt.Dimension
+import java.awt.FlowLayout
+import java.awt.Insets
 import java.io.File
 import javax.swing.*
+import javax.swing.border.BorderFactory
 
 class PersistentFilesToolWindow : ToolWindowFactory {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
@@ -87,9 +94,41 @@ class PersistentFilesComponent(private val project: Project) {
         }
     }
 
+    private fun createRunPlanButton(): JComponent {
+        val panel = JPanel(FlowLayout(FlowLayout.LEFT, 0, 0))
+        panel.background = JBColor.background()
+        
+        val runButton = JButton().apply {
+            icon = AllIcons.Actions.Execute
+            toolTipText = "Execute selected plan"
+            preferredSize = Dimension(22, 22)
+            margin = Insets(1, 1, 1, 1)
+            addActionListener { executeSelectedPlan() }
+        }
+        
+        val label = JLabel("Execute Plan", AllIcons.Actions.StartDebugger, SwingConstants.LEFT).apply {
+            border = BorderFactory.createEmptyBorder(0, 5, 0, 5)
+            foreground = JBColor.foreground()
+            addMouseListener(object : MouseAdapter() {
+                override fun mouseClicked(e: MouseEvent) {
+                    executeSelectedPlan()
+                }
+            })
+        }
+        
+        panel.add(runButton)
+        panel.add(label)
+        
+        return panel
+    }
+    
     private fun executeSelectedPlan() {
-        val selectedPlan = plansList.selectedValue ?: return
-        val settings =  getInstance()
+        val selectedPlan = plansList.selectedValue ?: run {
+            Messages.showWarningDialog(project, "Please select a plan to execute", "No Plan Selected")
+            return
+        }
+        
+        val settings = getInstance()
         val commandData = CommandData(
             message = "",
             useYesFlag = settings.useYesFlag,
@@ -176,7 +215,7 @@ class PersistentFilesComponent(private val project: Project) {
                 }
                 row {
                     button("Refresh Plans") { loadPlans() }
-                    button("Execute Selected Plan") { executeSelectedPlan() }
+                    cell(createRunPlanButton())
                 }
             }.resizableRow()
         }
