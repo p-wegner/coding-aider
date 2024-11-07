@@ -56,13 +56,28 @@ class PersistentFilesComponent(private val project: Project) {
     }
 
     private val plansList = JBList(plansListModel).apply {
-        cellRenderer = PlanRenderer()
+        val renderer = PlanListCellRenderer()
+        cellRenderer = renderer
+        
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
-                if (e.clickCount == 2) {
-                    val index = locationToIndex(e.point)
-                    if (index != -1) {
-                        val plan = plansListModel.getElementAt(index)
+                val index = locationToIndex(e.point)
+                if (index != -1) {
+                    val plan = plansListModel.getElementAt(index)
+                    val cell = getCellBounds(index, index)
+                    val executeButtonBounds = Rectangle(
+                        cell.x + cell.width - 25,
+                        cell.y,
+                        20,
+                        cell.height
+                    )
+                    
+                    if (executeButtonBounds.contains(e.point)) {
+                        executeSelectedPlan()
+                        return
+                    }
+                    
+                    if (e.clickCount == 2) {
                         val planFile = plan.files.firstOrNull()
                         planFile?.let {
                             val virtualFile = LocalFileSystem.getInstance().findFileByPath(it.filePath)
@@ -72,6 +87,28 @@ class PersistentFilesComponent(private val project: Project) {
                         }
                     }
                 }
+            }
+        })
+        
+        addMouseMotionListener(object : MouseAdapter() {
+            override fun mouseMoved(e: MouseEvent) {
+                val index = locationToIndex(e.point)
+                if (index != -1) {
+                    val cell = getCellBounds(index, index)
+                    val executeButtonBounds = Rectangle(
+                        cell.x + cell.width - 25,
+                        cell.y,
+                        20,
+                        cell.height
+                    )
+                    renderer.showExecuteButton(executeButtonBounds.contains(e.point))
+                    repaint(cell)
+                }
+            }
+            
+            override fun mouseExited(e: MouseEvent) {
+                renderer.showExecuteButton(false)
+                repaint()
             }
         })
     }
