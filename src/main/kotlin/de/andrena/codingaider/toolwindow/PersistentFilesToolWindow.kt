@@ -2,7 +2,6 @@ package de.andrena.codingaider.toolwindow
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.fileChooser.FileChooser
-import com.intellij.ui.JBColor
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
@@ -21,13 +20,10 @@ import de.andrena.codingaider.services.AiderPlan
 import de.andrena.codingaider.services.AiderPlanService
 import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
-import java.awt.Component
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import com.intellij.openapi.ui.Messages
-import java.awt.Dimension
-import java.awt.FlowLayout
-import java.awt.Insets
+import java.awt.*
 import java.io.File
 import javax.swing.*
 
