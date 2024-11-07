@@ -6,6 +6,17 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import java.io.File
 
+data class ChecklistItem(val description: String, val checked: Boolean, val children: List<ChecklistItem>)
+data class AiderPlan(val plan: String, val checklist: List<ChecklistItem>, val files: List<FileData>){
+    fun openChecklistItems(): List<ChecklistItem>{
+        // check recursively if all children are checked
+        return checklist.filter { !it.checked }
+    }
+    fun isPlanComplete() = checklist.all { it.checked }
+
+}
+
+
 @Service(Service.Level.PROJECT)
 class AiderPlanService(private val project: Project) {
     companion object {
@@ -24,7 +35,16 @@ class AiderPlanService(private val project: Project) {
             }
         }
     }
+    fun getAiderPlans(): List<AiderPlan> {
+        val plansDir = File(project.basePath, AIDER_PLANS_FOLDER)
+        if (!plansDir.exists()) {
+            plansDir.mkdir()
+        }
+        // TODO: Read files in folder and parse them, each plan could have links to a checklist,
+        // TODO: parse checklists and return them as AiderPlan objects
 
+        return emptyList()
+    }
     fun createAiderPlanSystemPrompt(commandData: CommandData): String {
         val files = commandData.files
 
