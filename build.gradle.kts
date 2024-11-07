@@ -42,12 +42,13 @@ dependencies {
         instrumentationTools()
         bundledPlugin("org.jetbrains.plugins.terminal")
         bundledPlugin("Git4Idea")
-        verifyPlugin {
-            ideVersions.set(listOf("2024.1", "2024.2-EAP"))
-        }
     }
 }
 intellijPlatform {
+    pluginVerification {
+//        ide(IntelliJPlatformType.IntellijIdeaCommunity, "2023.3")
+//        ide(IntelliJPlatformType.IntellijIdeaCommunity, "2024.1.3")
+    }
 
 }
 tasks.test {
@@ -62,18 +63,6 @@ sourceSets {
     }
 }
 
-// Configure Gradle IntelliJ Plugin
-// Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
-
-//intellij {
-//    version.set("2024.2.4")
-//    type.set("IC") // Target IDE Platform
-//
-////    plugins.set(listOf("org.jetbrains.plugins.terminal", "Git4Idea", "org.intellij.plugins.markdown"))
-//
-//    updateSinceUntilBuild.set(true)
-//    sandboxDir.set(file("${project.rootDir}/.sandbox"))
-//}
 
 tasks {
     withType<JavaCompile> {
