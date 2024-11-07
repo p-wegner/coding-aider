@@ -88,8 +88,6 @@ class PersistentFilesComponent(private val project: Project) {
 
     private fun executeSelectedPlan() {
         val selectedPlan = plansList.selectedValue ?: return
-        val executor = project.service<IDEBasedExecutor>()
-        
         val commandData = CommandData(
             message = "",
             useYesFlag = false,
@@ -101,7 +99,7 @@ class PersistentFilesComponent(private val project: Project) {
             aiderMode = AiderMode.STRUCTURED
         )
         
-        executor.execute(commandData)
+        IDEBasedExecutor(project, commandData).execute()
     }
 
     private inner class PlanRenderer : DefaultListCellRenderer() {
