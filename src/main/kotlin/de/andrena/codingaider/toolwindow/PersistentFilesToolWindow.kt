@@ -127,50 +127,53 @@ class PersistentFilesComponent(private val project: Project) {
         }
     }
 
-    private class PlanListCellRenderer : DefaultListCellRenderer() {
+    private class PlanListCellRenderer : JPanel(BorderLayout()), ListCellRenderer<AiderPlan> {
         private val executeIcon = AllIcons.Actions.Execute
         private var showExecuteButton = false
         private var executeButtonBounds = Rectangle()
+        private val label = JLabel()
+
+        init {
+            isOpaque = true
+            add(label, BorderLayout.CENTER)
+        }
 
         override fun getListCellRendererComponent(
-            list: JList<*>?,
-            value: Any?,
+            list: JList<out AiderPlan>?,
+            value: AiderPlan?,
             index: Int,
             isSelected: Boolean,
             cellHasFocus: Boolean
         ): Component {
-            val label = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus) as JLabel
-            if (value is AiderPlan) {
+            // Set background colors based on selection state
+            background = if (isSelected) list?.selectionBackground else list?.background
+            label.background = background
+            label.foreground = if (isSelected) list?.selectionForeground else list?.foreground
+            
+            if (value != null) {
                 val planFile = value.files.firstOrNull()
                 val fileName = planFile?.filePath?.let { File(it).nameWithoutExtension } ?: "Unknown Plan"
                 val status = if (value.isPlanComplete()) "✓" else "⋯"
                 val openItems = value.openChecklistItems().size
                 label.text = "$fileName [$status] ($openItems open items)"
                 label.toolTipText = planFile?.filePath
-
-                // Custom painting for execute button
-                label.icon = null // Clear any existing icon
-                label.border = BorderFactory.createEmptyBorder(4, 4, 4, 24) // Make room for execute button
             }
-            return object : JPanel(BorderLayout()) {
-                init {
-                    isOpaque = true
-                    add(label)
-                    background = label.background
-                }
+            
+            // Ensure proper padding for the execute button
+            border = BorderFactory.createEmptyBorder(4, 8, 4, 28)
+            return this
+        }
 
-                override fun paintComponent(g: Graphics) {
-                    super.paintComponent(g)
-                    if (showExecuteButton && value is AiderPlan) {
-                        executeButtonBounds = Rectangle(
-                            width - 20 - 4,
-                            (height - 16) / 2,
-                            16,
-                            16
-                        )
-                        executeIcon.paintIcon(this, g, executeButtonBounds.x, executeButtonBounds.y)
-                    }
-                }
+        override fun paintComponent(g: Graphics) {
+            super.paintComponent(g)
+            if (showExecuteButton) {
+                executeButtonBounds = Rectangle(
+                    width - 24,
+                    (height - 16) / 2,
+                    16,
+                    16
+                )
+                executeIcon.paintIcon(this, g, executeButtonBounds.x, executeButtonBounds.y)
             }
         }
 
