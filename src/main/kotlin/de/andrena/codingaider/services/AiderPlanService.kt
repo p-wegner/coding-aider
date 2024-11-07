@@ -89,25 +89,25 @@ class AiderPlanService(private val project: Project) {
         var currentIndex = startIndex
         
         while (currentIndex < lines.size) {
-            val line = lines[currentIndex].takeIf { it.isNotBlank() } ?: run {
+            val line = lines[currentIndex]
+            if (line.isBlank()) {
                 currentIndex++
-                continue
-            }
+            } else {
             
             val indent = line.indentationLevel()
-            
-            // Return if we've moved back to a higher level
-            if (indent < parentIndent) {
-                return Pair(items, currentIndex)
-            }
-            
-            // Process checklist items at current level
-            if (isChecklistItem(line)) {
-                val (item, nextIndex) = parseChecklistItem(lines, currentIndex)
-                items.add(item)
-                currentIndex = nextIndex
-            } else {
-                currentIndex++
+                // Return if we've moved back to a higher level
+                if (indent < parentIndent) {
+                    return Pair(items, currentIndex)
+                }
+                
+                // Process checklist items at current level
+                if (isChecklistItem(line)) {
+                    val (item, nextIndex) = parseChecklistItem(lines, currentIndex)
+                    items.add(item)
+                    currentIndex = nextIndex
+                } else {
+                    currentIndex++
+                }
             }
         }
         
