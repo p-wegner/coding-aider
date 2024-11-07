@@ -92,32 +92,45 @@ class PersistentFilesComponent(private val project: Project) {
         }
     }
 
-    private fun createRunPlanButton(): JComponent {
-        val panel = JPanel(FlowLayout(FlowLayout.LEFT, 0, 0))
-        panel.background = JBColor.background()
-        
-        val runButton = JButton().apply {
-            icon = AllIcons.Actions.Execute
-            toolTipText = "Execute selected plan"
-            preferredSize = Dimension(22, 22)
-            margin = Insets(1, 1, 1, 1)
-            addActionListener { executeSelectedPlan() }
+    private class PlanListCellRenderer : DefaultListCellRenderer() {
+        private val executeButton = JButton(AllIcons.Actions.Execute).apply {
+            preferredSize = Dimension(20, 20)
+            isBorderPainted = false
+            isContentAreaFilled = false
+            isOpaque = false
+            toolTipText = "Execute plan"
         }
-        
-        val label = JLabel("Execute Plan", AllIcons.Actions.StartDebugger, SwingConstants.LEFT).apply {
-            border = BorderFactory.createEmptyBorder(0, 5, 0, 5)
-            foreground = JBColor.foreground()
-            addMouseListener(object : MouseAdapter() {
-                override fun mouseClicked(e: MouseEvent) {
-                    executeSelectedPlan()
-                }
-            })
+        private val panel = JPanel(BorderLayout()).apply {
+            isOpaque = true
+            add(executeButton, BorderLayout.EAST)
+            executeButton.isVisible = false
         }
-        
-        panel.add(runButton)
-        panel.add(label)
-        
-        return panel
+
+        override fun getListCellRendererComponent(
+            list: JList<*>?,
+            value: Any?,
+            index: Int,
+            isSelected: Boolean,
+            cellHasFocus: Boolean
+        ): Component {
+            val label = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus) as JLabel
+            if (value is AiderPlan) {
+                val planFile = value.files.firstOrNull()
+                val fileName = planFile?.filePath?.let { File(it).nameWithoutExtension } ?: "Unknown Plan"
+                val status = if (value.isPlanComplete()) "✓" else "⋯"
+                val openItems = value.openChecklistItems().size
+                label.text = "$fileName [$status] ($openItems open items)"
+                label.toolTipText = planFile?.filePath
+            }
+            panel.add(label, BorderLayout.CENTER)
+            panel.background = label.background
+            panel.foreground = label.foreground
+            return panel
+        }
+
+        fun showExecuteButton(show: Boolean) {
+            executeButton.isVisible = show
+        }
     }
     
     private fun executeSelectedPlan() {
@@ -141,26 +154,6 @@ class PersistentFilesComponent(private val project: Project) {
         IDEBasedExecutor(project, commandData).execute()
     }
 
-    private inner class PlanRenderer : DefaultListCellRenderer() {
-        override fun getListCellRendererComponent(
-            list: JList<*>?,
-            value: Any?,
-            index: Int,
-            isSelected: Boolean,
-            cellHasFocus: Boolean
-        ): Component {
-            val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
-            if (component is JLabel && value is AiderPlan) {
-                val planFile = value.files.firstOrNull()
-                val fileName = planFile?.filePath?.let { File(it).nameWithoutExtension } ?: "Unknown Plan"
-                val status = if (value.isPlanComplete()) "✓" else "⋯"
-                val openItems = value.openChecklistItems().size
-                component.text = "$fileName [$status] ($openItems open items)"
-                component.toolTipText = planFile?.filePath
-            }
-            return component
-        }
-    }
 
     private fun subscribeToChanges() {
         project.messageBus.connect().subscribe(
@@ -213,7 +206,6 @@ class PersistentFilesComponent(private val project: Project) {
                 }
                 row {
                     button("Refresh Plans") { loadPlans() }
-                    cell(createRunPlanButton())
                 }
             }.resizableRow()
         }
