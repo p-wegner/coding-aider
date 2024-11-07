@@ -61,11 +61,13 @@ class PersistentFilesComponent(private val project: Project) {
                 if (index != -1) {
                     val plan = plansListModel.getElementAt(index)
                     val cell = getCellBounds(index, index)
+                    val renderer = cellRenderer as PlanListCellRenderer
+                    val buttonBounds = renderer.getExecuteButtonBounds()
                     val executeButtonBounds = Rectangle(
-                        cell.x + cell.width - 25,
-                        cell.y,
-                        20,
-                        cell.height
+                        cell.x + buttonBounds.x,
+                        cell.y + buttonBounds.y,
+                        buttonBounds.width,
+                        buttonBounds.height
                     )
                     
                     if (executeButtonBounds.contains(e.point)) {
@@ -126,18 +128,9 @@ class PersistentFilesComponent(private val project: Project) {
     }
 
     private class PlanListCellRenderer : DefaultListCellRenderer() {
-        private val executeButton = JButton(AllIcons.Actions.Execute).apply {
-            preferredSize = Dimension(20, 20)
-            isBorderPainted = false
-            isContentAreaFilled = false
-            isOpaque = false
-            toolTipText = "Execute plan"
-        }
-        private val panel = JPanel(BorderLayout()).apply {
-            isOpaque = true
-            add(executeButton, BorderLayout.EAST)
-            executeButton.isVisible = false
-        }
+        private val executeIcon = AllIcons.Actions.Execute
+        private var showExecuteButton = false
+        private var executeButtonBounds = Rectangle()
 
         override fun getListCellRendererComponent(
             list: JList<*>?,
@@ -154,16 +147,38 @@ class PersistentFilesComponent(private val project: Project) {
                 val openItems = value.openChecklistItems().size
                 label.text = "$fileName [$status] ($openItems open items)"
                 label.toolTipText = planFile?.filePath
+
+                // Custom painting for execute button
+                label.icon = null // Clear any existing icon
+                label.border = BorderFactory.createEmptyBorder(4, 4, 4, 24) // Make room for execute button
             }
-            panel.add(label, BorderLayout.CENTER)
-            panel.background = label.background
-            panel.foreground = label.foreground
-            return panel
+            return object : JPanel(BorderLayout()) {
+                init {
+                    isOpaque = true
+                    add(label)
+                    background = label.background
+                }
+
+                override fun paintComponent(g: Graphics) {
+                    super.paintComponent(g)
+                    if (showExecuteButton && value is AiderPlan) {
+                        executeButtonBounds = Rectangle(
+                            width - 20 - 4,
+                            (height - 16) / 2,
+                            16,
+                            16
+                        )
+                        executeIcon.paintIcon(this, g, executeButtonBounds.x, executeButtonBounds.y)
+                    }
+                }
+            }
         }
 
         fun showExecuteButton(show: Boolean) {
-            executeButton.isVisible = show
+            showExecuteButton = show
         }
+
+        fun getExecuteButtonBounds(): Rectangle = executeButtonBounds
     }
     
     private fun executeSelectedPlan() {
