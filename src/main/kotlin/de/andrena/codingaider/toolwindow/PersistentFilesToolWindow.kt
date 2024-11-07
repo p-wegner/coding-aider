@@ -19,6 +19,7 @@ import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.AiderPlan
 import de.andrena.codingaider.services.AiderPlanService
 import de.andrena.codingaider.services.PersistentFileService
+import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import java.awt.Component
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -88,9 +89,10 @@ class PersistentFilesComponent(private val project: Project) {
 
     private fun executeSelectedPlan() {
         val selectedPlan = plansList.selectedValue ?: return
+        val settings =  getInstance()
         val commandData = CommandData(
             message = "",
-            useYesFlag = false,
+            useYesFlag = settings.useYesFlag,
             llm = "",  // Will use default from settings
             additionalArgs = "",
             files = selectedPlan.files,
