@@ -61,8 +61,8 @@ class PersistentFilesComponent(private val project: Project) {
                 if (index != -1) {
                     val plan = plansListModel.getElementAt(index)
                     val cell = getCellBounds(index, index)
-                    val renderer = cellRenderer as PlanListCellRenderer
-                    val buttonBounds = renderer.getExecuteButtonBounds()
+                    val renderer2 = cellRenderer as PlanListCellRenderer
+                    val buttonBounds = renderer2.getExecuteButtonBounds()
                     val executeButtonBounds = Rectangle(
                         cell.x + buttonBounds.x,
                         cell.y + buttonBounds.y,
