@@ -16,11 +16,11 @@ Implementation Checklist:
     - [X] Add execute button functionality
     - [X] Add refresh button for plans list
 
-- [ ] Implement plan loading and status calculation
-    - [ ] Load plans from .coding-aider-plans directory
-    - [ ] Parse plan markdown files
-    - [ ] Parse and track checklist completion status
-    - [ ] Calculate open items count
+- [X] Implement plan loading and status calculation
+    - [X] Load plans from .coding-aider-plans directory
+    - [X] Parse plan markdown files
+    - [X] Parse and track checklist completion status
+    - [X] Calculate open items count
 
 - [ ] Add visual feedback
     - [ ] Show completion status icons

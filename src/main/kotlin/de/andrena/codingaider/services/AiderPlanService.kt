@@ -42,31 +42,38 @@ class AiderPlanService(private val project: Project) {
             return emptyList()
         }
 
-        return plansDir.listFiles { file -> file.extension == "md" }?.mapNotNull { file ->
-            try {
-                val content = file.readText()
-                if (content.contains(AIDER_PLAN_MARKER)) {
-                    // Extract plan content after the marker
-                    val planContent = content.substringAfter(AIDER_PLAN_MARKER).trim()
-                    
-                    // Look for associated checklist file
-                    val checklistFile = File(plansDir, "${file.nameWithoutExtension}_checklist.md")
-                    val checklist = if (checklistFile.exists()) {
-                        parseChecklist(checklistFile)
-                    } else emptyList()
-                    
-                    AiderPlan(
-                        plan = planContent,
-                        checklist = checklist,
-                        files = listOf(FileData(file.absolutePath, false))
-                    )
-                } else null
-            } catch (e: Exception) {
-                // Log error but continue processing other files
-                println("Error processing plan file ${file.name}: ${e.message}")
-                null
-            }
-        } ?: emptyList()
+        return plansDir.listFiles { file -> file.extension == "md" && !file.nameWithoutExtension.endsWith("_checklist") }
+            ?.mapNotNull { file ->
+                try {
+                    val content = file.readText()
+                    if (content.contains(AIDER_PLAN_MARKER)) {
+                        // Extract plan content after the marker
+                        val planContent = content.substringAfter(AIDER_PLAN_MARKER).trim()
+                        
+                        // Look for associated checklist file
+                        val checklistFile = File(plansDir, "${file.nameWithoutExtension}_checklist.md")
+                        val checklist = if (checklistFile.exists()) {
+                            parseChecklist(checklistFile)
+                        } else emptyList()
+                        
+                        // Include both plan and checklist files in the files list
+                        val files = mutableListOf(FileData(file.absolutePath, false))
+                        if (checklistFile.exists()) {
+                            files.add(FileData(checklistFile.absolutePath, false))
+                        }
+                        
+                        AiderPlan(
+                            plan = planContent,
+                            checklist = checklist,
+                            files = files
+                        )
+                    } else null
+                } catch (e: Exception) {
+                    // Log error but continue processing other files
+                    println("Error processing plan file ${file.name}: ${e.message}")
+                    null
+                }
+            } ?: emptyList()
     }
 
     private fun parseChecklist(file: File): List<ChecklistItem> {
