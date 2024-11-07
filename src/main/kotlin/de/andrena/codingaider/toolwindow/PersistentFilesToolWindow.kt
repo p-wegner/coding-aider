@@ -12,6 +12,8 @@ import com.intellij.ui.content.ContentFactory
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.messages.PersistentFilesChangedTopic
+import de.andrena.codingaider.services.AiderPlan
+import de.andrena.codingaider.services.AiderPlanService
 import de.andrena.codingaider.services.PersistentFileService
 import java.awt.Component
 import java.awt.event.MouseAdapter
