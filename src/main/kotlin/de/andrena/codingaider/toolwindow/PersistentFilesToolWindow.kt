@@ -177,22 +177,24 @@ class PersistentFilesComponent(private val project: Project) {
                 }
                 
                 val tooltip = buildString {
-                    appendLine("Plan: ${planFile?.filePath}")
-                    appendLine("Status: $completionStatus")
-                    appendLine("Progress: ${totalItems - openItems}/$totalItems items completed")
-                    appendLine("\nOpen Items:")
+                    appendLine("<html><body style='width: 400px'>")
+                    appendLine("<b>Plan:</b> ${planFile?.filePath}<br>")
+                    appendLine("<b>Status:</b> $completionStatus<br>")
+                    appendLine("<b>Progress:</b> ${totalItems - openItems}/$totalItems items completed<br>")
+                    appendLine("<br><b>Open Items:</b><br>")
                     value.openChecklistItems().take(5).forEach { item ->
-                        appendLine("• ${item.description}")
+                        appendLine("• ${item.description.replace("<", "&lt;").replace(">", "&gt;")}<br>")
                     }
                     if (value.openChecklistItems().size > 5) {
-                        appendLine("... and ${value.openChecklistItems().size - 5} more items")
+                        appendLine("<i>... and ${value.openChecklistItems().size - 5} more items</i><br>")
                     }
-                    appendLine("\nDescription:")
-                    appendLine(planPreview)
+                    appendLine("<br><b>Description:</b><br>")
+                    appendLine(planPreview.replace("<", "&lt;").replace(">", "&gt;").replace("\n", "<br>"))
                     
                     if (value.isPlanComplete()) {
-                        appendLine("\n✓ All tasks completed!")
+                        appendLine("<br><br><span style='color: green'>✓ All tasks completed!</span>")
                     }
+                    appendLine("</body></html>")
                 }
                 
                 // Set tooltip for all components

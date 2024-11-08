@@ -176,7 +176,7 @@ class AiderPlanService(private val project: Project) {
         val checkboxMatch = Regex("""^-?\s*\[([ xX])\](.*)""").find(line)
         if (checkboxMatch != null) {
             val (checkState, description) = checkboxMatch.destructured
-            val checked = checkState.uppercase() == "X"
+            val checked = checkState.trim().uppercase() in setOf("X", "✓")
             
             // Look for nested items
             var nextIndex = currentIndex + 1
