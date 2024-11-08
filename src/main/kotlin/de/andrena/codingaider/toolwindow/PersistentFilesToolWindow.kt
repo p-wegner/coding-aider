@@ -133,31 +133,30 @@ class PersistentFilesComponent(private val project: Project) {
         private var showExecuteButton = false
         private val label = JLabel()
         private val statusIcon = JLabel()
-        private val countLabel = JLabel()
         private val executeButton = JLabel(AllIcons.Actions.Execute)
-        private val buttonPanel = JPanel(FlowLayout(FlowLayout.RIGHT, 4, 0))
+        private val countLabel = JLabel()
+        private val leftPanel = JPanel(FlowLayout(FlowLayout.LEFT, 4, 0))
 
         init {
             isOpaque = true
             val contentPanel = JPanel(BorderLayout(8, 0))
             contentPanel.isOpaque = false
-            val iconPanel = JPanel(FlowLayout(FlowLayout.LEFT, 4, 0))
-            iconPanel.isOpaque = false
-            iconPanel.add(statusIcon)
+            leftPanel.isOpaque = false
             
             executeButton.apply {
                 toolTipText = "Continue executing this plan"
                 border = BorderFactory.createEmptyBorder(0, 4, 0, 4)
                 cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
             }
-            buttonPanel.add(executeButton)
             
-            contentPanel.add(iconPanel, BorderLayout.WEST)
+            leftPanel.add(statusIcon)
+            leftPanel.add(executeButton)
+            
+            contentPanel.add(leftPanel, BorderLayout.WEST)
             contentPanel.add(label, BorderLayout.CENTER)
             contentPanel.add(countLabel, BorderLayout.EAST)
             
             add(contentPanel, BorderLayout.CENTER)
-            add(buttonPanel, BorderLayout.EAST)
             border = BorderFactory.createEmptyBorder(4, 8, 4, 8)
         }
 
@@ -227,7 +226,7 @@ class PersistentFilesComponent(private val project: Project) {
                 }
             }
             
-            buttonPanel.isVisible = showExecuteButton
+            executeButton.isVisible = showExecuteButton
             return this
         }
 
@@ -236,7 +235,9 @@ class PersistentFilesComponent(private val project: Project) {
         }
 
         fun getExecuteButtonBounds(): Rectangle {
-            return executeButton.bounds
+            val bounds = executeButton.bounds
+            bounds.translate(leftPanel.x, leftPanel.y)
+            return bounds
         }
     }
     
