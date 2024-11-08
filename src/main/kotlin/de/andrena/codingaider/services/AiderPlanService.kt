@@ -84,35 +84,8 @@ class AiderPlanService(private val project: Project) {
         return Pair(items, lines.size)
     }
 
-    private fun String.indentationLevel(): Int =
-        takeWhile { it.isWhitespace() }.length
 
-    private fun isChecklistItem(line: String): Boolean =
-        line.trim().matches(Regex("""(?:-\s*)?\[([ xX])\].*"""))
 
-    private fun parseChecklistItem(lines: List<String>, currentIndex: Int): Pair<ChecklistItem, Int> {
-        val line = lines[currentIndex]
-        val indent = line.indentationLevel()
-        
-        val checkboxMatch = Regex("""\[([ xX])\]""").find(line)
-        val checked = checkboxMatch?.groupValues?.get(1)?.trim()?.lowercase() == "x"
-        val description = line.substring(checkboxMatch?.range?.last?.plus(1) ?: 0).trim()
-
-        var nextIndex = currentIndex + 1
-        while (nextIndex < lines.size && lines[nextIndex].isBlank()) {
-            nextIndex++
-        }
-
-        val children = if (nextIndex < lines.size && lines[nextIndex].indentationLevel() > indent) {
-            val (nestedItems, newIndex) = parseChecklistItems(lines, nextIndex, indent)
-            nextIndex = newIndex
-            nestedItems
-        } else {
-            emptyList()
-        }
-
-        return Pair(ChecklistItem(description, checked, children), nextIndex)
-    }
 
     fun getAiderPlans(): List<AiderPlan> {
         val plansDir = File(project.basePath, AIDER_PLANS_FOLDER)
@@ -165,40 +138,7 @@ class AiderPlanService(private val project: Project) {
             } ?: emptyList()
     }
 
-    private fun parseChecklistItems(
-        lines: List<String>, 
-        startIndex: Int, 
-        parentIndent: Int
-    ): Pair<List<ChecklistItem>, Int> {
-        val items = mutableListOf<ChecklistItem>()
-        var currentIndex = startIndex
-        
-        while (currentIndex < lines.size) {
-            val line = lines[currentIndex]
-            if (line.isBlank()) {
-                currentIndex++
-            } else {
-            
-            val indent = line.indentationLevel()
-                // Return if we've moved back to a higher level
-                if (indent < parentIndent) {
-                    return Pair(items, currentIndex)
-                }
-                
-                // Process checklist items at current level
-                if (isChecklistItem(line)) {
-                    val (item, nextIndex) = parseChecklistItem(lines, currentIndex)
-                    items.add(item)
-                    currentIndex = nextIndex
-                } else {
-                    currentIndex++
-                }
-            }
-        }
-        
-        return Pair(items, lines.size)
-    }
-    
+
     private fun String.indentationLevel(): Int = 
         indexOfFirst { !it.isWhitespace() }.takeIf { it >= 0 } ?: length
     
