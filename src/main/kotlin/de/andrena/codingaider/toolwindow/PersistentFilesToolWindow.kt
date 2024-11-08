@@ -180,8 +180,19 @@ class PersistentFilesComponent(private val project: Project) {
                     appendLine("Plan: ${planFile?.filePath}")
                     appendLine("Status: $completionStatus")
                     appendLine("Progress: ${totalItems - openItems}/$totalItems items completed")
+                    appendLine("\nOpen Items:")
+                    value.openChecklistItems().take(5).forEach { item ->
+                        appendLine("• ${item.description}")
+                    }
+                    if (value.openChecklistItems().size > 5) {
+                        appendLine("... and ${value.openChecklistItems().size - 5} more items")
+                    }
                     appendLine("\nDescription:")
                     appendLine(planPreview)
+                    
+                    if (value.isPlanComplete()) {
+                        appendLine("\n✓ All tasks completed!")
+                    }
                 }
                 
                 label.toolTipText = tooltip
