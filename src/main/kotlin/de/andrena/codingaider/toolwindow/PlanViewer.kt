@@ -49,7 +49,7 @@ class PlanViewer(private val project: Project) {
         }
     }
 
-    private class PlanListCellRenderer : JPanel(BorderLayout()), ListCellRenderer<AiderPlan?> {
+    class PlanListCellRenderer : JPanel(BorderLayout()), ListCellRenderer<AiderPlan?> {
         private val label = JLabel()
         private val statusIcon = JLabel()
         private val countLabel = JLabel()

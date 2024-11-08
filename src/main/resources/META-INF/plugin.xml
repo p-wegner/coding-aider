@@ -132,6 +132,13 @@
                     description="Start an Aider web crawl action">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt W"/>
             </action>
+            <action id="de.andrena.codingaider.actions.aider.ContinuePlanAction"
+                    class="de.andrena.codingaider.actions.aider.ContinuePlanAction"
+                    text="Continue Plan"
+                    description="Select and continue an unfinished plan"
+                    icon="AllIcons.Actions.Execute">
+                <keyboard-shortcut keymap="$default" first-keystroke="alt P"/>
+            </action>
             <action id="de.andrena.codingaider.actions.aider.AiderClipboardImageAction"
                     class="de.andrena.codingaider.actions.aider.AiderClipboardImageAction"
                     text="Aider Clipboard Image"
