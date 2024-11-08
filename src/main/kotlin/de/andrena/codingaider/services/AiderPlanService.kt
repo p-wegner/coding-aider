@@ -140,7 +140,8 @@ class AiderPlanService(private val project: Project) {
         indexOfFirst { !it.isWhitespace() }.takeIf { it >= 0 } ?: length
     
     private fun isChecklistItem(line: String): Boolean = 
-        line.trim().matches(Regex("""- \[([ xX])\].*"""))
+        line.trim().matches(Regex("""- \[([ xX])\].*""")) || 
+        line.trim().matches(Regex("""\[([ xX])\].*"""))  // Also match without leading dash
     
     private fun parseChecklistItem(
         lines: List<String>, 
@@ -150,9 +151,10 @@ class AiderPlanService(private val project: Project) {
         val indent = line.indentationLevel()
         
         // Parse current item
-        val checked = line.contains(Regex("""- \[[xX]\]"""))
+        val checked = line.contains(Regex("""\[[xX]\]"""))
         val description = line.trim()
-            .removePrefix("- [")
+            .removePrefix("- ") // Remove dash if present
+            .removePrefix("[")
             .substringAfter("]")
             .trim()
         
