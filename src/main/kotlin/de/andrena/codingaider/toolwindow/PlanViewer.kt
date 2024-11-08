@@ -94,28 +94,7 @@ class PlanViewer(private val project: Project) {
                     if (it.length > 200) it.take(200) + "..." else it
                 }
                 
-                val tooltip = buildString {
-                    appendLine("<html><body style='width: 400px'>")
-                    appendLine("<b>Plan:</b> ${planFile?.filePath}<br>")
-                    appendLine("<b>Status:</b> $completionStatus<br>")
-                    val checkedItems = totalItems - openItems
-                    appendLine("<b>Progress:</b> $checkedItems/$totalItems items completed<br>")
-                    appendLine("<br><b>Open Items:</b><br>")
-                    value.openChecklistItems().take(5).forEach { item ->
-                        appendLine("• ${item.description.replace("<", "&lt;").replace(">", "&gt;")}<br>")
-                    }
-                    if (value.openChecklistItems().size > 5) {
-                        appendLine("<i>... and ${value.openChecklistItems().size - 5} more items</i><br>")
-                    }
-                    appendLine("<br><b>Description:</b><br>")
-                    appendLine(planPreview.replace("<", "&lt;").replace(">", "&gt;").replace("\n", "<br>"))
-                    
-                    if (value.isPlanComplete()) {
-                        appendLine("<br><br><span style='color: green'>✓ All tasks completed!</span>")
-                    }
-                    appendLine("</body></html>")
-                }
-                
+                val tooltip = value.createTooltip()
                 toolTipText = tooltip
                 label.toolTipText = tooltip
                 countLabel.toolTipText = tooltip

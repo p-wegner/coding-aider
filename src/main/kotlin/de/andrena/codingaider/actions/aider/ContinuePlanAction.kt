@@ -56,6 +56,10 @@ private class SelectPlanDialog(private val project: Project) : DialogWrapper(pro
                         selectedIndex = 0
                         selectedPlan = selectedItem as AiderPlan
                     }
+                    toolTipText = (selectedItem as? AiderPlan)?.createTooltip()
+                    addActionListener {
+                        toolTipText = (selectedItem as? AiderPlan)?.createTooltip()
+                    }
                 })
             }
         }
