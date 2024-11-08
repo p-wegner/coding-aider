@@ -1,8 +1,10 @@
 package de.andrena.codingaider.toolwindow
 
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.ui.components.panels.Wrapper
 import com.intellij.openapi.vfs.newvfs.BulkFileListener
 import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
@@ -56,18 +58,6 @@ class PersistentFilesComponent(private val project: Project) {
 
     private val plansList = JBList(plansListModel)
 
-    private fun updateExecuteButtonVisibility(point: Point?) {
-        val index = point?.let { plansList.locationToIndex(it) } ?: -1
-        val renderer = plansList.cellRenderer as? PlanListCellRenderer
-        
-        if (index >= 0 && renderer != null) {
-            renderer.showExecuteButton(true)
-            plansList.repaint(plansList.getCellBounds(index, index))
-        } else {
-            renderer?.showExecuteButton(false)
-            plansList.repaint()
-        }
-    }
 
 
     init {
@@ -80,46 +70,18 @@ class PersistentFilesComponent(private val project: Project) {
             addMouseListener(object : MouseAdapter() {
                 override fun mouseClicked(e: MouseEvent) {
                     val index = plansList.locationToIndex(e.point)
-                    if (index >= 0) {
+                    if (index >= 0 && e.clickCount == 2) {
                         val plan = plansList.model.getElementAt(index)
-                        val renderer = plansList.cellRenderer as? PlanListCellRenderer
-
-                        if (e.clickCount == 2) {
-                            // Double click to open files
-                            plan.files.forEach { fileData ->
-                                val virtualFile = LocalFileSystem.getInstance().findFileByPath(fileData.filePath)
-                                if (virtualFile != null) {
-                                    FileEditorManager.getInstance(project).openFile(virtualFile, true)
-                                }
-                            }
-                        } else if (e.clickCount == 1 && renderer != null) {
-                            // Check if execute button was clicked
-                            val cellBounds = plansList.getCellBounds(index, index)
-                            if (cellBounds != null) {
-                                val buttonBounds = renderer.getExecuteButtonBounds()
-                                buttonBounds.translate(cellBounds.x, cellBounds.y)
-                                if (buttonBounds.contains(e.point)) {
-                                    executeSelectedPlan()
-                                }
+                        plan.files.forEach { fileData ->
+                            val virtualFile = LocalFileSystem.getInstance().findFileByPath(fileData.filePath)
+                            if (virtualFile != null) {
+                                FileEditorManager.getInstance(project).openFile(virtualFile, true)
                             }
                         }
                     }
                 }
-
-                override fun mouseEntered(e: MouseEvent) {
-                    updateExecuteButtonVisibility(e.point)
-                }
-
-                override fun mouseExited(e: MouseEvent) {
-                    updateExecuteButtonVisibility(null)
-                }
-
-                override fun mouseMoved(e: MouseEvent) {
-                    updateExecuteButtonVisibility(e.point)
-                }
             })
         }
-
     }
 
     private fun loadPlans() {
@@ -130,23 +92,8 @@ class PersistentFilesComponent(private val project: Project) {
     }
 
     private class PlanListCellRenderer : JPanel(BorderLayout()), ListCellRenderer<AiderPlan?> {
-        private var showExecuteButton = false
         private val label = JLabel()
         private val statusIcon = JLabel()
-        private val executeButton = JButton().apply {
-            icon = AllIcons.Actions.Execute
-            disabledIcon = AllIcons.Actions.Execute
-            preferredSize = Dimension(20, 20)
-            isBorderPainted = true
-            isContentAreaFilled = true
-            isOpaque = false
-            cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
-            toolTipText = "Continue executing this plan"
-            putClientProperty("JButton.buttonType", "toolbar")
-            putClientProperty("ActionToolbar.smallVariant", true)
-            putClientProperty("JButton.backgroundColor", UIManager.getColor("ActionButton.hoverBackground"))
-            putClientProperty("JButton.focusedBorderColor", UIManager.getColor("ActionButton.focusedBorderColor"))
-        }
         private val countLabel = JLabel()
         private val leftPanel = JPanel(FlowLayout(FlowLayout.LEFT, 4, 0))
 
@@ -156,20 +103,7 @@ class PersistentFilesComponent(private val project: Project) {
             contentPanel.isOpaque = false
             leftPanel.isOpaque = false
             
-            executeButton.addMouseListener(object : MouseAdapter() {
-                override fun mouseEntered(e: MouseEvent) {
-                    executeButton.putClientProperty("JButton.isHovered", true)
-                    executeButton.repaint()
-                }
-                
-                override fun mouseExited(e: MouseEvent) {
-                    executeButton.putClientProperty("JButton.isHovered", false) 
-                    executeButton.repaint()
-                }
-            })
-            
             leftPanel.add(statusIcon)
-            leftPanel.add(executeButton)
             
             contentPanel.add(leftPanel, BorderLayout.WEST)
             contentPanel.add(label, BorderLayout.CENTER)
@@ -186,7 +120,6 @@ class PersistentFilesComponent(private val project: Project) {
             isSelected: Boolean,
             cellHasFocus: Boolean
         ): Component {
-            // Set background colors based on selection state
             background = if (isSelected) list?.selectionBackground else list?.background
             label.background = background
             label.foreground = if (isSelected) list?.selectionForeground else list?.foreground
@@ -229,7 +162,6 @@ class PersistentFilesComponent(private val project: Project) {
                 toolTipText = tooltip
                 label.toolTipText = tooltip
                 countLabel.toolTipText = tooltip
-                executeButton.toolTipText = tooltip
                 
                 statusIcon.icon = if (value.isPlanComplete()) 
                     AllIcons.Actions.Commit 
@@ -245,19 +177,7 @@ class PersistentFilesComponent(private val project: Project) {
                 }
             }
             
-            executeButton.isVisible = true
-            executeButton.background = if (isSelected) list?.selectionBackground else list?.background
             return this
-        }
-
-        fun showExecuteButton(show: Boolean) {
-            showExecuteButton = show
-        }
-
-        fun getExecuteButtonBounds(): Rectangle {
-            val bounds = executeButton.bounds
-            bounds.translate(leftPanel.x, leftPanel.y)
-            return bounds
         }
     }
     
@@ -326,6 +246,13 @@ class PersistentFilesComponent(private val project: Project) {
             
             group("Aider Plans") {
                 row {
+                    cell(ActionManager.getInstance().createActionToolbar(
+                        "AiderPlans",
+                        DefaultActionGroup().apply { add(ContinuePlanAction()) },
+                        true
+                    ).component)
+                }
+                row {
                     scrollCell(plansList)
                         .align(com.intellij.ui.dsl.builder.Align.FILL)
                         .resizableColumn()
@@ -361,6 +288,20 @@ class PersistentFilesComponent(private val project: Project) {
         val selectedFiles = persistentFilesList.selectedValuesList
         persistentFileService.removePersistentFiles(selectedFiles.map { it.filePath })
         loadPersistentFiles()
+    }
+
+    private inner class ContinuePlanAction : AnAction(
+        "Continue Plan",
+        "Continue executing this plan",
+        AllIcons.Actions.Execute
+    ) {
+        override fun actionPerformed(e: AnActionEvent) {
+            executeSelectedPlan()
+        }
+
+        override fun update(e: AnActionEvent) {
+            e.presentation.isEnabled = plansList.selectedValue != null
+        }
     }
 
     private fun loadPersistentFiles() {
