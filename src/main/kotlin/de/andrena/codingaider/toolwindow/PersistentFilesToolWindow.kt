@@ -133,13 +133,19 @@ class PersistentFilesComponent(private val project: Project) {
         private var showExecuteButton = false
         private val label = JLabel()
         private val statusIcon = JLabel()
-        private val executeButton = JButton(AllIcons.Actions.Execute).apply {
+        private val executeButton = JButton().apply {
+            icon = AllIcons.Actions.Execute
+            disabledIcon = AllIcons.Actions.Execute
             preferredSize = Dimension(24, 24)
             isBorderPainted = false
             isContentAreaFilled = false
             isOpaque = false
             cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
             toolTipText = "Continue executing this plan"
+            putClientProperty("JButton.backgroundColor", UIManager.getColor("ActionButton.hoverBackground"))
+            putClientProperty("JButton.focusedBorderColor", UIManager.getColor("ActionButton.focusedBorderColor"))
+            putClientProperty("ActionButton.hoverBorderColor", UIManager.getColor("ActionButton.focusedBorderColor"))
+            putClientProperty("JButton.mouseHoverColor", UIManager.getColor("ActionButton.hoverBackground"))
         }
         private val countLabel = JLabel()
         private val leftPanel = JPanel(FlowLayout(FlowLayout.LEFT, 4, 0))
@@ -152,11 +158,13 @@ class PersistentFilesComponent(private val project: Project) {
             
             executeButton.addMouseListener(object : MouseAdapter() {
                 override fun mouseEntered(e: MouseEvent) {
-                    executeButton.isContentAreaFilled = true
+                    executeButton.putClientProperty("JButton.isHovered", true)
+                    executeButton.repaint()
                 }
                 
                 override fun mouseExited(e: MouseEvent) {
-                    executeButton.isContentAreaFilled = false
+                    executeButton.putClientProperty("JButton.isHovered", false) 
+                    executeButton.repaint()
                 }
             })
             
