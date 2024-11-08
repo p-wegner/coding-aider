@@ -251,12 +251,13 @@ class PersistentFilesComponent(private val project: Project) {
         val commandData = CommandData(
             message = "",
             useYesFlag = settings.useYesFlag,
-            llm = "",  // Will use default from settings
+            llm = settings.llm,
             additionalArgs = "",
             files = selectedPlan.files,
-            lintCmd = "",
+            lintCmd = settings.lintCmd,
             projectPath = project.basePath ?: "",
-            aiderMode = AiderMode.STRUCTURED
+            aiderMode = AiderMode.STRUCTURED,
+            deactivateRepoMap = settings.deactivateRepoMap
         )
         
         IDEBasedExecutor(project, commandData).execute()
