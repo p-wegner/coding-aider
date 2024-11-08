@@ -12,14 +12,15 @@ Implementation Checklist:
     - [X] Add plans list model and JBList component
     - [X] Create custom cell renderer for plans
     - [X] Add plans section to toolwindow UI
-    - [X] Implement double-click to open plan files
-    - [X] Add execute button functionality
+    - [ ] Implement double-click to open plan files
+    - [ ] Add execute button functionality
     - [X] Add refresh button for plans list
 
 - [X] Implement plan loading and status calculation
     - [X] Load plans from .coding-aider-plans directory
     - [X] Parse plan markdown files
-    - [X] Parse and track checklist completion status
+    - [ ] Parse and track checklist completion status correctly 
+    - [ ] (show number of open and completed items)
     - [X] Calculate open items count
 
 - [ ] Add visual feedback
