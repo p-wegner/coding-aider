@@ -195,7 +195,11 @@ class PersistentFilesComponent(private val project: Project) {
                     }
                 }
                 
+                // Set tooltip for all components
+                toolTipText = tooltip
                 label.toolTipText = tooltip
+                countLabel.toolTipText = tooltip
+                buttonPanel.toolTipText = tooltip
                 
                 statusIcon.icon = if (value.isPlanComplete()) 
                     AllIcons.Actions.Commit 
