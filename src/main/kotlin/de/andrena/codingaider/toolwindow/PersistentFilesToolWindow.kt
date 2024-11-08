@@ -141,7 +141,8 @@ class PersistentFilesComponent(private val project: Project) {
                     appendLine("<html><body style='width: 400px'>")
                     appendLine("<b>Plan:</b> ${planFile?.filePath}<br>")
                     appendLine("<b>Status:</b> $completionStatus<br>")
-                    appendLine("<b>Progress:</b> ${totalItems - openItems}/$totalItems items completed<br>")
+                    val checkedItems = totalItems - openItems
+                    appendLine("<b>Progress:</b> $checkedItems/$totalItems items completed<br>")
                     appendLine("<br><b>Open Items:</b><br>")
                     value.openChecklistItems().take(5).forEach { item ->
                         appendLine("• ${item.description.replace("<", "&lt;").replace(">", "&gt;")}<br>")
@@ -169,7 +170,8 @@ class PersistentFilesComponent(private val project: Project) {
                     AllIcons.General.BalloonInformation
                 statusIcon.toolTipText = tooltip
                 
-                countLabel.text = if (openItems > 0) "($openItems/$totalItems)" else "($totalItems/$totalItems)"
+                val checkedItems = totalItems - openItems
+                countLabel.text = "($checkedItems/$totalItems)"
                 countLabel.foreground = when {
                     openItems == 0 -> UIManager.getColor("Label.foreground")
                     openItems < totalItems/2 -> UIManager.getColor("Label.infoForeground")
