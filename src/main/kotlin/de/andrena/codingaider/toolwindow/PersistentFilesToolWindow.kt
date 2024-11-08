@@ -300,7 +300,8 @@ class PersistentFilesComponent(private val project: Project) {
         }
 
         override fun update(e: AnActionEvent) {
-            e.presentation.isEnabled = plansList.selectedValue != null
+            val selectedPlan = plansList.selectedValue
+            e.presentation.isEnabled = selectedPlan != null && !selectedPlan.isPlanComplete()
         }
     }
 
