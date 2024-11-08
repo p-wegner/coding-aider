@@ -134,6 +134,7 @@ class PersistentFilesComponent(private val project: Project) {
         private val label = JLabel()
         private val statusIcon = JLabel()
         private val countLabel = JLabel()
+        private val executeButton = JLabel(AllIcons.Actions.Execute)
         private val buttonPanel = JPanel(FlowLayout(FlowLayout.RIGHT, 4, 0))
 
         init {
@@ -144,9 +145,12 @@ class PersistentFilesComponent(private val project: Project) {
             iconPanel.isOpaque = false
             iconPanel.add(statusIcon)
             
-            val executeButton = JLabel(AllIcons.Actions.Execute)
-            executeButton.toolTipText = "Continue executing this plan"
-            iconPanel.add(executeButton)
+            executeButton.apply {
+                toolTipText = "Continue executing this plan"
+                border = BorderFactory.createEmptyBorder(0, 4, 0, 4)
+                cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+            }
+            buttonPanel.add(executeButton)
             
             contentPanel.add(iconPanel, BorderLayout.WEST)
             contentPanel.add(label, BorderLayout.CENTER)
@@ -229,6 +233,10 @@ class PersistentFilesComponent(private val project: Project) {
 
         fun showExecuteButton(show: Boolean) {
             showExecuteButton = show
+        }
+
+        fun getExecuteButtonBounds(): Rectangle {
+            return executeButton.bounds
         }
     }
     
