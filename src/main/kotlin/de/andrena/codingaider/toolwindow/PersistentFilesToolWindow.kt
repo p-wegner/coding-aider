@@ -133,7 +133,11 @@ class PersistentFilesComponent(private val project: Project) {
         private var showExecuteButton = false
         private val label = JLabel()
         private val statusIcon = JLabel()
-        private val executeButton = JLabel(AllIcons.Actions.Execute)
+        private val executeButton = JLabel(AllIcons.Actions.Execute).apply {
+            preferredSize = Dimension(20, 20)
+            border = BorderFactory.createEmptyBorder(2, 4, 2, 4)
+            isOpaque = true
+        }
         private val countLabel = JLabel()
         private val leftPanel = JPanel(FlowLayout(FlowLayout.LEFT, 4, 0))
 
@@ -210,7 +214,7 @@ class PersistentFilesComponent(private val project: Project) {
                 toolTipText = tooltip
                 label.toolTipText = tooltip
                 countLabel.toolTipText = tooltip
-                buttonPanel.toolTipText = tooltip
+                executeButton.toolTipText = tooltip
                 
                 statusIcon.icon = if (value.isPlanComplete()) 
                     AllIcons.Actions.Commit 
@@ -226,7 +230,8 @@ class PersistentFilesComponent(private val project: Project) {
                 }
             }
             
-            executeButton.isVisible = showExecuteButton
+            executeButton.isVisible = true
+            executeButton.background = if (isSelected) list?.selectionBackground else list?.background
             return this
         }
 
