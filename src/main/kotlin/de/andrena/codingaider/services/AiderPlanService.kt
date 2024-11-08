@@ -87,6 +87,19 @@ class AiderPlanService(private val project: Project) {
 
 
 
+    private fun processMarkdownReferences(content: String, plansDir: File): String {
+        val referencePattern = Regex("""\[.*?\]\((.*?)(?:\s.*?)?\)""")
+        return content.replace(referencePattern) { matchResult ->
+            val referencePath = matchResult.groupValues[1]
+            val referenceFile = File(plansDir, referencePath)
+            if (referenceFile.exists() && referenceFile.extension == "md") {
+                "\n${referenceFile.readText()}\n"
+            } else {
+                matchResult.value
+            }
+        }
+    }
+
     fun getAiderPlans(): List<AiderPlan> {
         val plansDir = File(project.basePath, AIDER_PLANS_FOLDER)
         if (!plansDir.exists()) {
@@ -99,18 +112,23 @@ class AiderPlanService(private val project: Project) {
                 try {
                     val content = file.readText()
                     if (content.contains(AIDER_PLAN_MARKER)) {
-                        // Extract plan content from the plan file
-                        val planContent = content.substringAfter(AIDER_PLAN_MARKER).trim()
+                        // Process markdown references to include referenced content
+                        val expandedContent = processMarkdownReferences(content, plansDir)
                         
-                        // Get checklist items from both files
-                        val planChecklist = extractChecklistItems(content)
+                        // Extract plan content from the expanded content
+                        val planContent = expandedContent.substringAfter(AIDER_PLAN_MARKER).trim()
+                        
+                        // Get checklist items from expanded content
+                        val planChecklist = extractChecklistItems(expandedContent)
                         
                         // Look for associated checklist file
                         val checklistFile = File(plansDir, "${file.nameWithoutExtension}_checklist.md")
                         val checklistItems = if (checklistFile.exists()) {
                             val checklistContent = checklistFile.readText()
                             if (checklistContent.contains(AIDER_PLAN_CHECKLIST_MARKER)) {
-                                extractChecklistItems(checklistContent)
+                                // Process references in checklist file too
+                                val expandedChecklistContent = processMarkdownReferences(checklistContent, plansDir)
+                                extractChecklistItems(expandedChecklistContent)
                             } else emptyList()
                         } else emptyList()
                         
