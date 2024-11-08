@@ -254,10 +254,9 @@ class PersistentFilesComponent(private val project: Project) {
             llm = settings.llm,
             additionalArgs = "",
             files = selectedPlan.files,
-            lintCmd = settings.lintCmd,
+            lintCmd = "",
             projectPath = project.basePath ?: "",
             aiderMode = AiderMode.STRUCTURED,
-            deactivateRepoMap = settings.deactivateRepoMap
         )
         
         IDEBasedExecutor(project, commandData).execute()
