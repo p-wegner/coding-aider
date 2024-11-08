@@ -248,11 +248,13 @@ class PersistentFilesComponent(private val project: Project) {
             
             group("Aider Plans") {
                 row {
-                    cell(ActionManager.getInstance().createActionToolbar(
-                        "AiderPlans",
+                    val toolbar = ActionManager.getInstance().createActionToolbar(
+                        "AiderPlansToolbar",
                         DefaultActionGroup().apply { add(ContinuePlanAction()) },
                         true
-                    ).component)
+                    )
+                    toolbar.targetComponent = plansList
+                    cell(Wrapper(toolbar.component))
                 }
                 row {
                     scrollCell(plansList)
