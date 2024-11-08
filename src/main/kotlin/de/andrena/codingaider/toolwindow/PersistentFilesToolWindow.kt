@@ -54,75 +54,14 @@ class PersistentFilesComponent(private val project: Project) {
     private val plansList = JBList(plansListModel).apply {
         cellRenderer = PlanListCellRenderer()
         
-        addMouseListener(object : MouseAdapter() {
-            override fun mouseClicked(e: MouseEvent) {
-                val index = locationToIndex(e.point)
-                if (index != -1) {
-                    val plan = plansListModel.getElementAt(index)
-                    val cell = getCellBounds(index, index)
-                    val renderer2 = (cellRenderer as? ListCellRenderer<*>)?.getListCellRendererComponent(
-                        plansList,
-                        plan,
-                        index,
-                        true,
-                        false
-                    ) as? PlanListCellRenderer
-                    val buttonBounds = renderer2?.getExecuteButtonBounds() ?: Rectangle()
-                    val executeButtonBounds = Rectangle(
-                        cell.x + buttonBounds.x,
-                        cell.y + buttonBounds.y,
-                        buttonBounds.width,
-                        buttonBounds.height
-                    )
-                    
-                    if (executeButtonBounds.contains(e.point)) {
-                        executeSelectedPlan()
-                        return
-                    }
-                    
-                    if (e.clickCount == 2) {
-                        val planFile = plan.files.firstOrNull()
-                        planFile?.let {
-                            val virtualFile = LocalFileSystem.getInstance().findFileByPath(it.filePath)
-                            virtualFile?.let { vf ->
-                                FileEditorManager.getInstance(project).openFile(vf, true)
-                            }
-                        }
-                    }
-                }
-            }
-        })
-        
-        addMouseMotionListener(object : MouseAdapter() {
-            override fun mouseMoved(e: MouseEvent) {
-                val index = locationToIndex(e.point)
-                if (index != -1) {
-                    val cell = getCellBounds(index, index)
-                    val executeButtonBounds = Rectangle(
-                        cell.x + cell.width - 25,
-                        cell.y,
-                        20,
-                        cell.height
-                    )
-                    renderer.showExecuteButton(executeButtonBounds.contains(e.point))
-                    repaint(cell)
-                }
-            }
-            
-            override fun mouseExited(e: MouseEvent) {
-                renderer.showExecuteButton(false)
-                repaint()
-            }
-        })
+
     }
 
-    private var doubleClickListener: (() -> Unit)? = null
 
     init {
         loadPersistentFiles()
         loadPlans()
         subscribeToChanges()
-        setupDoubleClickListener()
     }
 
     private fun loadPlans() {
@@ -242,23 +181,6 @@ class PersistentFilesComponent(private val project: Project) {
         )
     }
 
-    private fun setupDoubleClickListener() {
-        persistentFilesList.addMouseListener(object : MouseAdapter() {
-            override fun mouseClicked(e: MouseEvent) {
-                if (e.clickCount == 2) {
-                    val index = persistentFilesList.locationToIndex(e.point)
-                    if (index != -1) {
-                        val fileData = persistentFilesListModel.getElementAt(index)
-                        val virtualFile = LocalFileSystem.getInstance().findFileByPath(fileData.filePath)
-                        virtualFile?.let {
-                            FileEditorManager.getInstance(project).openFile(it, true)
-                            doubleClickListener?.invoke()
-                        }
-                    }
-                }
-            }
-        })
-    }
 
     fun getContent(): JComponent {
         return panel {

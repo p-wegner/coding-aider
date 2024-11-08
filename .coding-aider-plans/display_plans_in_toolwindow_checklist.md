@@ -20,7 +20,7 @@ Implementation Checklist:
     - [X] Load plans from .coding-aider-plans directory
     - [X] Parse plan markdown files
     - [ ] Parse and track checklist completion status correctly 
-    - [ ] (show number of open and completed items)
+    - [ ] show number of open and completed items
     - [X] Calculate open items count
 
 - [ ] Add visual feedback
