@@ -136,16 +136,16 @@ class PersistentFilesComponent(private val project: Project) {
         private val executeButton = JButton().apply {
             icon = AllIcons.Actions.Execute
             disabledIcon = AllIcons.Actions.Execute
-            preferredSize = Dimension(24, 24)
-            isBorderPainted = false
-            isContentAreaFilled = false
+            preferredSize = Dimension(20, 20)
+            isBorderPainted = true
+            isContentAreaFilled = true
             isOpaque = false
             cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
             toolTipText = "Continue executing this plan"
+            putClientProperty("JButton.buttonType", "toolbar")
+            putClientProperty("ActionToolbar.smallVariant", true)
             putClientProperty("JButton.backgroundColor", UIManager.getColor("ActionButton.hoverBackground"))
             putClientProperty("JButton.focusedBorderColor", UIManager.getColor("ActionButton.focusedBorderColor"))
-            putClientProperty("ActionButton.hoverBorderColor", UIManager.getColor("ActionButton.focusedBorderColor"))
-            putClientProperty("JButton.mouseHoverColor", UIManager.getColor("ActionButton.hoverBackground"))
         }
         private val countLabel = JLabel()
         private val leftPanel = JPanel(FlowLayout(FlowLayout.LEFT, 4, 0))
