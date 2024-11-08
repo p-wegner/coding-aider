@@ -310,9 +310,6 @@ class PersistentFilesComponent(private val project: Project) {
                         .align(com.intellij.ui.dsl.builder.Align.FILL)
                         .resizableColumn()
                 }
-                row {
-                    button("Refresh Plans") { loadPlans() }
-                }
             }.resizableRow()
         }
     }
