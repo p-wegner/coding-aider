@@ -297,6 +297,7 @@ class PersistentFilesComponent(private val project: Project) {
         "Continue executing this plan",
         AllIcons.Actions.Execute
     ) {
+        override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
         override fun actionPerformed(e: AnActionEvent) {
             executeSelectedPlan()
         }
