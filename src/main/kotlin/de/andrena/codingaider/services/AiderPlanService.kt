@@ -7,13 +7,28 @@ import de.andrena.codingaider.command.FileData
 import java.io.File
 
 data class ChecklistItem(val description: String, val checked: Boolean, val children: List<ChecklistItem>)
-data class AiderPlan(val plan: String, val checklist: List<ChecklistItem>, val files: List<FileData>){
-    fun openChecklistItems(): List<ChecklistItem>{
-        // check recursively if all children are checked
-        return checklist.filter { !it.checked }
+data class AiderPlan(val plan: String, val checklist: List<ChecklistItem>, val files: List<FileData>) {
+    fun openChecklistItems(): List<ChecklistItem> {
+        return checklist.flatMap { item -> getAllOpenItems(item) }
     }
-    fun isPlanComplete() = checklist.all { it.checked }
 
+    private fun getAllOpenItems(item: ChecklistItem): List<ChecklistItem> {
+        val result = mutableListOf<ChecklistItem>()
+        if (!item.checked) result.add(item)
+        item.children.forEach { child ->
+            result.addAll(getAllOpenItems(child))
+        }
+        return result
+    }
+
+    fun totalChecklistItems(): Int {
+        fun countItems(items: List<ChecklistItem>): Int {
+            return items.sumOf { item -> 1 + countItems(item.children) }
+        }
+        return countItems(checklist)
+    }
+
+    fun isPlanComplete() = openChecklistItems().isEmpty()
 }
 
 

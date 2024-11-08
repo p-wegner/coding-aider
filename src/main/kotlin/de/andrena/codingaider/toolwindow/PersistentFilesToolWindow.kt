@@ -170,14 +170,16 @@ class PersistentFilesComponent(private val project: Project) {
                 statusIcon.icon = if (value.isPlanComplete()) 
                     AllIcons.Actions.Commit 
                 else 
-                    AllIcons.General.Information
+                    AllIcons.General.BalloonInformation
                 
                 val openItems = value.openChecklistItems().size
-                countLabel.text = if (openItems > 0) "($openItems)" else ""
-                countLabel.foreground = if (openItems > 0) 
-                    UIManager.getColor("Label.infoForeground") 
-                else 
-                    foreground
+                val totalItems = value.totalChecklistItems()
+                countLabel.text = if (openItems > 0) "($openItems/$totalItems)" else "($totalItems/$totalItems)"
+                countLabel.foreground = when {
+                    openItems == 0 -> UIManager.getColor("Label.foreground")
+                    openItems < totalItems/2 -> UIManager.getColor("Label.infoForeground")
+                    else -> Color(255, 140, 0) // Orange for many open items
+                }
             }
             
             buttonPanel.isVisible = showExecuteButton
