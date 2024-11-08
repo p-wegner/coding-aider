@@ -51,7 +51,7 @@ class PersistentFilesComponent(private val project: Project) {
         })
     }
 
-    private val plansList: JBList<AiderPlan> = JBList<AiderPlan>(plansListModel).apply {
+    private val plansList = JBList(plansListModel).apply {
         val renderer = PlanListCellRenderer()
         cellRenderer = renderer
         
