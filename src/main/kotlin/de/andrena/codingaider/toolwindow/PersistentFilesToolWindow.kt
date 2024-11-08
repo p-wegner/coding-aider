@@ -39,8 +39,8 @@ class PersistentFilesComponent(private val project: Project) {
     private val persistentFileService = project.getService(PersistentFileService::class.java)
     private val aiderPlanService = project.getService(AiderPlanService::class.java)
     private val persistentFilesListModel = DefaultListModel<FileData>()
-    private val plansListModel: DefaultListModel<AiderPlan> = DefaultListModel()
-    private val persistentFilesList = JBList(persistentFilesListModel).apply {
+    private val plansListModel = DefaultListModel<AiderPlan>()
+    private val persistentFilesList: JBList<FileData> = JBList(persistentFilesListModel).apply {
         cellRenderer = PersistentFileRenderer()
         addKeyListener(object : java.awt.event.KeyAdapter() {
             override fun keyPressed(e: java.awt.event.KeyEvent) {
@@ -51,7 +51,7 @@ class PersistentFilesComponent(private val project: Project) {
         })
     }
 
-    private val plansList = JBList(plansListModel).apply {
+    private val plansList: JBList<AiderPlan> = JBList(plansListModel).apply {
         cellRenderer = PlanListCellRenderer()
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
@@ -91,7 +91,7 @@ class PersistentFilesComponent(private val project: Project) {
             }
             
             override fun mouseMoved(e: MouseEvent) {
-                updateExecuteButtonVisibility(e.point) 
+                updateExecuteButtonVisibility(e.point)
             }
         })
     }
@@ -266,7 +266,7 @@ class PersistentFilesComponent(private val project: Project) {
     private fun addPersistentFiles() {
         val descriptor = FileChooserDescriptor(true, true, false, false, false, true)
         val files = FileChooser.chooseFiles(descriptor, project, null)
-        val fileDataList = files.flatMap { file ->
+        val fileDataList = files.flatMap { file: com.intellij.openapi.vfs.VirtualFile ->
             if (file.isDirectory) {
                 file.children.filter { it.isValid && !it.isDirectory }.map { FileData(it.path, false) }
             } else {
