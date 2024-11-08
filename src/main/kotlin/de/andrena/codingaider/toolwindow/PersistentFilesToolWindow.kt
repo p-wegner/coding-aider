@@ -201,6 +201,7 @@ class PersistentFilesComponent(private val project: Project) {
                     AllIcons.Actions.Commit 
                 else 
                     AllIcons.General.BalloonInformation
+                statusIcon.toolTipText = tooltip
                 
                 countLabel.text = if (openItems > 0) "($openItems/$totalItems)" else "($totalItems/$totalItems)"
                 countLabel.foreground = when {
