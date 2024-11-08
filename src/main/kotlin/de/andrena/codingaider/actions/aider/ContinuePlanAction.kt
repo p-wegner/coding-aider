@@ -19,8 +19,11 @@ class ContinuePlanAction : AnAction() {
         val project = e.project ?: return
         val dialog = SelectPlanDialog(project)
         if (dialog.showAndGet()) {
-            dialog.selectedPlan?.let { plan ->
-                PlanViewer(project).executeSelectedPlan()
+            val selectedPlan = dialog.selectedPlan
+            if (selectedPlan != null) {
+                val planViewer = PlanViewer(project)
+                planViewer.plansList.setSelectedValue(selectedPlan, true)
+                planViewer.executeSelectedPlan()
             }
         }
     }
