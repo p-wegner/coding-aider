@@ -50,6 +50,16 @@ class AiderPlanService(private val project: Project) {
             }
         }
     }
+    private fun extractChecklistItems(content: String): List<ChecklistItem> {
+        val checklistPattern = Regex("""(?m)^[ \t]*(?:-[ \t]*)?\[([ xX])\](.+)$""")
+        val matches = checklistPattern.findAll(content)
+        return matches.map { match ->
+            val isChecked = match.groupValues[1].trim().lowercase() == "x"
+            val description = match.groupValues[2].trim()
+            ChecklistItem(description, isChecked, emptyList())
+        }.toList()
+    }
+
     fun getAiderPlans(): List<AiderPlan> {
         val plansDir = File(project.basePath, AIDER_PLANS_FOLDER)
         if (!plansDir.exists()) {
@@ -62,14 +72,18 @@ class AiderPlanService(private val project: Project) {
                 try {
                     val content = file.readText()
                     if (content.contains(AIDER_PLAN_MARKER)) {
-                        // Extract plan content after the marker
+                        // Extract plan content and checklist items from the plan file
                         val planContent = content.substringAfter(AIDER_PLAN_MARKER).trim()
+                        val planChecklist = extractChecklistItems(content)
                         
-                        // Look for associated checklist file
+                        // Look for associated checklist file and extract its items
                         val checklistFile = File(plansDir, "${file.nameWithoutExtension}_checklist.md")
-                        val checklist = if (checklistFile.exists()) {
-                            parseChecklist(checklistFile)
+                        val checklistItems = if (checklistFile.exists()) {
+                            extractChecklistItems(checklistFile.readText())
                         } else emptyList()
+                        
+                        // Combine checklist items from both files
+                        val combinedChecklist = planChecklist + checklistItems
                         
                         // Include both plan and checklist files in the files list
                         val files = mutableListOf(FileData(file.absolutePath, false))
@@ -79,27 +93,15 @@ class AiderPlanService(private val project: Project) {
                         
                         AiderPlan(
                             plan = planContent,
-                            checklist = checklist,
+                            checklist = combinedChecklist,
                             files = files
                         )
                     } else null
                 } catch (e: Exception) {
-                    // Log error but continue processing other files
                     println("Error processing plan file ${file.name}: ${e.message}")
                     null
                 }
             } ?: emptyList()
-    }
-
-    private fun parseChecklist(file: File): List<ChecklistItem> {
-        val content = file.readText()
-        if (!content.contains(AIDER_PLAN_CHECKLIST_MARKER)) return emptyList()
-        
-        // Extract content after the marker
-        val checklistContent = content.substringAfter(AIDER_PLAN_CHECKLIST_MARKER).trim()
-        val lines = checklistContent.lines()
-        
-        return parseChecklistItems(lines, 0, 0).first
     }
 
     private fun parseChecklistItems(
