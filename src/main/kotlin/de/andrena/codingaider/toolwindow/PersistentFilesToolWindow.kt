@@ -130,9 +130,7 @@ class PersistentFilesComponent(private val project: Project) {
     }
 
     private class PlanListCellRenderer : JPanel(BorderLayout()), ListCellRenderer<AiderPlan?> {
-        private val executeIcon = AllIcons.Actions.Execute
         private var showExecuteButton = false
-        private var executeButtonBounds = Rectangle()
         private val label = JLabel()
         private val statusIcon = JLabel()
         private val countLabel = JLabel()
@@ -142,7 +140,15 @@ class PersistentFilesComponent(private val project: Project) {
             isOpaque = true
             val contentPanel = JPanel(BorderLayout(8, 0))
             contentPanel.isOpaque = false
-            contentPanel.add(statusIcon, BorderLayout.WEST)
+            val iconPanel = JPanel(FlowLayout(FlowLayout.LEFT, 4, 0))
+            iconPanel.isOpaque = false
+            iconPanel.add(statusIcon)
+            
+            val executeButton = JLabel(AllIcons.Actions.Execute)
+            executeButton.toolTipText = "Continue executing this plan"
+            iconPanel.add(executeButton)
+            
+            contentPanel.add(iconPanel, BorderLayout.WEST)
             contentPanel.add(label, BorderLayout.CENTER)
             contentPanel.add(countLabel, BorderLayout.EAST)
             
@@ -221,24 +227,9 @@ class PersistentFilesComponent(private val project: Project) {
             return this
         }
 
-        override fun paintComponent(g: Graphics) {
-            super.paintComponent(g)
-            if (showExecuteButton) {
-                executeButtonBounds = Rectangle(
-                    width - 24,
-                    (height - 16) / 2,
-                    16,
-                    16
-                )
-                executeIcon.paintIcon(this, g, executeButtonBounds.x, executeButtonBounds.y)
-            }
-        }
-
         fun showExecuteButton(show: Boolean) {
             showExecuteButton = show
         }
-
-        fun getExecuteButtonBounds(): Rectangle = executeButtonBounds
     }
     
     private fun executeSelectedPlan() {
