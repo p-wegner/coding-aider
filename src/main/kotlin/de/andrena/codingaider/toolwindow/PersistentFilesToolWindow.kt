@@ -51,9 +51,9 @@ class PersistentFilesComponent(private val project: Project) {
         })
     }
 
-    private val plansList = JBList(plansListModel).apply {
+    private val plansList: JBList<AiderPlan> = JBList<AiderPlan>(plansListModel).apply {
         val renderer = PlanListCellRenderer()
-        cellRenderer = renderer
+        cellRenderer = renderer as ListCellRenderer<AiderPlan>
         
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
@@ -133,7 +133,7 @@ class PersistentFilesComponent(private val project: Project) {
         }
     }
 
-    private class PlanListCellRenderer : JPanel(BorderLayout()), ListCellRenderer<AiderPlan> {
+    private class PlanListCellRenderer : JPanel(BorderLayout()), ListCellRenderer<AiderPlan?> {
         private val executeIcon = AllIcons.Actions.Execute
         private var showExecuteButton = false
         private var executeButtonBounds = Rectangle()
