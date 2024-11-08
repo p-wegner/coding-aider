@@ -51,9 +51,8 @@ class PersistentFilesComponent(private val project: Project) {
         })
     }
 
-    private val plansList: JBList<AiderPlan> = JBList<AiderPlan>(plansListModel).apply {
-        val renderer = PlanListCellRenderer()
-        cellRenderer = renderer as ListCellRenderer<AiderPlan>
+    private val plansList = JBList(plansListModel).apply {
+        cellRenderer = PlanListCellRenderer()
         
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
