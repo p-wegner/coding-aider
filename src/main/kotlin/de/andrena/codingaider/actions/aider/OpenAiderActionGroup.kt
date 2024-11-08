@@ -87,6 +87,13 @@ class OpenAiderActionGroup : AnAction(), DumbAware {
         )
         addQuickAccessAction(
             popupActionGroup,
+            "de.andrena.codingaider.actions.aider.ContinuePlanAction",
+            "Continue Plan",
+            AllIcons.Actions.Execute,
+            'P'
+        )
+        addQuickAccessAction(
+            popupActionGroup,
             "de.andrena.codingaider.actions.ide.ShowLastCommandResultAction",
             "Show Last Command Result",
             AllIcons.Actions.Preview,
