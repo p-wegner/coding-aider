@@ -2,6 +2,9 @@ package de.andrena.codingaider.toolwindow
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.fileChooser.FileChooser
+import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.vfs.newvfs.BulkFileListener
+import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
@@ -71,6 +74,7 @@ class PersistentFilesComponent(private val project: Project) {
         loadPersistentFiles()
         loadPlans()
         subscribeToChanges()
+        subscribeToFileChanges()
         plansList.run {
             cellRenderer = PlanListCellRenderer()
             addMouseListener(object : MouseAdapter() {
@@ -233,6 +237,21 @@ class PersistentFilesComponent(private val project: Project) {
                 override fun onPersistentFilesChanged() = loadPersistentFiles()
             }
         )
+    }
+
+    private fun subscribeToFileChanges() {
+        val connection = project.messageBus.connect()
+        connection.subscribe(VirtualFileManager.VFS_CHANGES, object : BulkFileListener {
+            override fun after(events: List<VFileEvent>) {
+                val plansPath = "${project.basePath}/${AiderPlanService.AIDER_PLANS_FOLDER}"
+                val affectsPlanFiles = events.any { event ->
+                    event.path.startsWith(plansPath) && event.path.endsWith(".md")
+                }
+                if (affectsPlanFiles) {
+                    loadPlans()
+                }
+            }
+        })
     }
 
 
