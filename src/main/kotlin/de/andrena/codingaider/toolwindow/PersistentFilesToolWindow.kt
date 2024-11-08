@@ -133,10 +133,13 @@ class PersistentFilesComponent(private val project: Project) {
         private var showExecuteButton = false
         private val label = JLabel()
         private val statusIcon = JLabel()
-        private val executeButton = JLabel(AllIcons.Actions.Execute).apply {
-            preferredSize = Dimension(20, 20)
-            border = BorderFactory.createEmptyBorder(2, 4, 2, 4)
-            isOpaque = true
+        private val executeButton = JButton(AllIcons.Actions.Execute).apply {
+            preferredSize = Dimension(24, 24)
+            isBorderPainted = false
+            isContentAreaFilled = false
+            isOpaque = false
+            cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+            toolTipText = "Continue executing this plan"
         }
         private val countLabel = JLabel()
         private val leftPanel = JPanel(FlowLayout(FlowLayout.LEFT, 4, 0))
@@ -147,11 +150,15 @@ class PersistentFilesComponent(private val project: Project) {
             contentPanel.isOpaque = false
             leftPanel.isOpaque = false
             
-            executeButton.apply {
-                toolTipText = "Continue executing this plan"
-                border = BorderFactory.createEmptyBorder(0, 4, 0, 4)
-                cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
-            }
+            executeButton.addMouseListener(object : MouseAdapter() {
+                override fun mouseEntered(e: MouseEvent) {
+                    executeButton.isContentAreaFilled = true
+                }
+                
+                override fun mouseExited(e: MouseEvent) {
+                    executeButton.isContentAreaFilled = false
+                }
+            })
             
             leftPanel.add(statusIcon)
             leftPanel.add(executeButton)
