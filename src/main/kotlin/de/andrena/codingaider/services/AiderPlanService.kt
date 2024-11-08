@@ -142,34 +142,37 @@ class AiderPlanService(private val project: Project) {
     private fun String.indentationLevel(): Int = 
         indexOfFirst { !it.isWhitespace() }.takeIf { it >= 0 } ?: length
     
-    private fun isChecklistItem(line: String): Boolean = 
-        line.trim().matches(Regex("""- \[([ xX])\].*""")) || 
-        line.trim().matches(Regex("""\[([ xX])\].*"""))  // Also match without leading dash
+    private fun isChecklistItem(line: String): Boolean {
+        val trimmed = line.trim()
+        return trimmed.matches(Regex("""^-?\s*\[([ xX])\].*"""))
+    }
     
     private fun parseChecklistItem(
         lines: List<String>, 
         currentIndex: Int
     ): Pair<ChecklistItem, Int> {
-        val line = lines[currentIndex]
-        val indent = line.indentationLevel()
+        val line = lines[currentIndex].trim()
+        val indent = lines[currentIndex].indentationLevel()
         
-        // Parse current item
-        val checked = line.contains(Regex("""\[[xX]\]"""))
-        val description = line.trim()
-            .removePrefix("- ") // Remove dash if present
-            .removePrefix("[")
-            .substringAfter("]")
-            .trim()
+        // Extract checkbox state and description
+        val checkboxMatch = Regex("""^-?\s*\[([ xX])\](.*)""").find(line)
+        if (checkboxMatch != null) {
+            val (checkState, description) = checkboxMatch.destructured
+            val checked = checkState.uppercase() == "X"
+            
+            // Look for nested items
+            var nextIndex = currentIndex + 1
+            val children = if (nextIndex < lines.size && hasNestedItems(lines, nextIndex, indent)) {
+                val (nestedItems, newIndex) = parseChecklistItems(lines, nextIndex, indent)
+                nextIndex = newIndex
+                nestedItems
+            } else emptyList()
+            
+            return Pair(ChecklistItem(description.trim(), checked, children), nextIndex)
+        }
         
-        // Look for nested items
-        var nextIndex = currentIndex + 1
-        val children = if (hasNestedItems(lines, nextIndex, indent)) {
-            val (nestedItems, newIndex) = parseChecklistItems(lines, nextIndex, indent)
-            nextIndex = newIndex
-            nestedItems
-        } else emptyList()
-        
-        return Pair(ChecklistItem(description, checked, children), nextIndex)
+        // Fallback for malformed items
+        return Pair(ChecklistItem(line, false, emptyList()), currentIndex + 1)
     }
     
     private fun hasNestedItems(
