@@ -99,11 +99,13 @@ class AiderPlanService(private val project: Project) {
                 try {
                     val content = file.readText()
                     if (content.contains(AIDER_PLAN_MARKER)) {
-                        // Extract plan content and checklist items from the plan file
+                        // Extract plan content from the plan file
                         val planContent = content.substringAfter(AIDER_PLAN_MARKER).trim()
+                        
+                        // Get checklist items from both files
                         val planChecklist = extractChecklistItems(content)
                         
-                        // Look for associated checklist file and extract its items
+                        // Look for associated checklist file
                         val checklistFile = File(plansDir, "${file.nameWithoutExtension}_checklist.md")
                         val checklistItems = if (checklistFile.exists()) {
                             val checklistContent = checklistFile.readText()
@@ -112,11 +114,9 @@ class AiderPlanService(private val project: Project) {
                             } else emptyList()
                         } else emptyList()
                         
-                        // Combine checklist items, prioritizing items from the checklist file
-                        val combinedChecklist = if (checklistItems.isNotEmpty()) {
-                            checklistItems
-                        } else {
-                            planChecklist
+                        // Combine checklist items from both files
+                        val combinedChecklist = (checklistItems + planChecklist).distinctBy { 
+                            it.description.trim() 
                         }
                         
                         // Include both plan and checklist files in the files list
