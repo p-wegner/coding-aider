@@ -191,8 +191,6 @@ class PersistentFilesComponent(private val project: Project) {
                 else 
                     AllIcons.General.BalloonInformation
                 
-                val openItems = value.openChecklistItems().size
-                val totalItems = value.totalChecklistItems()
                 countLabel.text = if (openItems > 0) "($openItems/$totalItems)" else "($totalItems/$totalItems)"
                 countLabel.foreground = when {
                     openItems == 0 -> UIManager.getColor("Label.foreground")
