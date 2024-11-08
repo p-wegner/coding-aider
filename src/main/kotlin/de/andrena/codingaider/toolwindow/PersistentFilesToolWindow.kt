@@ -55,10 +55,10 @@ class PersistentFilesComponent(private val project: Project) {
         cellRenderer = PlanListCellRenderer()
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
-                val index = locationToIndex(e.point)
+                val index = plansList.locationToIndex(e.point)
                 if (index >= 0) {
-                    val plan = model.getElementAt(index)
-                    val renderer = cellRenderer as? PlanListCellRenderer
+                    val plan = plansList.model.getElementAt(index)
+                    val renderer = plansList.cellRenderer as? PlanListCellRenderer
                     
                     if (e.clickCount == 2) {
                         // Double click to open files
@@ -70,7 +70,7 @@ class PersistentFilesComponent(private val project: Project) {
                         }
                     } else if (e.clickCount == 1 && renderer != null) {
                         // Check if execute button was clicked
-                        val cellBounds = getCellBounds(index, index)
+                        val cellBounds = plansList.getCellBounds(index, index)
                         if (cellBounds != null) {
                             val buttonBounds = renderer.getExecuteButtonBounds()
                             buttonBounds.translate(cellBounds.x, cellBounds.y)
@@ -97,15 +97,15 @@ class PersistentFilesComponent(private val project: Project) {
     }
     
     private fun updateExecuteButtonVisibility(point: Point?) {
-        val index = point?.let { locationToIndex(it) } ?: -1
-        val renderer = cellRenderer as? PlanListCellRenderer
+        val index = point?.let { plansList.locationToIndex(it) } ?: -1
+        val renderer = plansList.cellRenderer as? PlanListCellRenderer
         
         if (index >= 0 && renderer != null) {
             renderer.showExecuteButton(true)
-            repaint(getCellBounds(index, index))
+            plansList.repaint(plansList.getCellBounds(index, index))
         } else {
             renderer?.showExecuteButton(false)
-            repaint()
+            plansList.repaint()
         }
     }
 
