@@ -51,13 +51,67 @@ class AiderPlanService(private val project: Project) {
         }
     }
     private fun extractChecklistItems(content: String): List<ChecklistItem> {
-        val checklistPattern = Regex("""(?m)^[ \t]*(?:-[ \t]*)?\[([ xX])\](.+)$""")
-        val matches = checklistPattern.findAll(content)
-        return matches.map { match ->
-            val isChecked = match.groupValues[1].trim().lowercase() == "x"
-            val description = match.groupValues[2].trim()
-            ChecklistItem(description, isChecked, emptyList())
-        }.toList()
+        val lines = content.lines()
+        val (items, _) = parseChecklistItems(lines, 0, -1)
+        return items
+    }
+
+    private fun parseChecklistItems(lines: List<String>, startIndex: Int, parentIndent: Int): Pair<List<ChecklistItem>, Int> {
+        val items = mutableListOf<ChecklistItem>()
+        var currentIndex = startIndex
+
+        while (currentIndex < lines.size) {
+            val line = lines[currentIndex].trimEnd()
+            if (line.isBlank()) {
+                currentIndex++
+                continue
+            }
+
+            val indent = line.indentationLevel()
+            if (indent < parentIndent) {
+                return Pair(items, currentIndex)
+            }
+
+            if (isChecklistItem(line)) {
+                val (item, nextIndex) = parseChecklistItem(lines, currentIndex)
+                items.add(item)
+                currentIndex = nextIndex
+            } else {
+                currentIndex++
+            }
+        }
+
+        return Pair(items, lines.size)
+    }
+
+    private fun String.indentationLevel(): Int =
+        takeWhile { it.isWhitespace() }.length
+
+    private fun isChecklistItem(line: String): Boolean =
+        line.trim().matches(Regex("""(?:-\s*)?\[([ xX])\].*"""))
+
+    private fun parseChecklistItem(lines: List<String>, currentIndex: Int): Pair<ChecklistItem, Int> {
+        val line = lines[currentIndex]
+        val indent = line.indentationLevel()
+        
+        val checkboxMatch = Regex("""\[([ xX])\]""").find(line)
+        val checked = checkboxMatch?.groupValues?.get(1)?.trim()?.lowercase() == "x"
+        val description = line.substring(checkboxMatch?.range?.last?.plus(1) ?: 0).trim()
+
+        var nextIndex = currentIndex + 1
+        while (nextIndex < lines.size && lines[nextIndex].isBlank()) {
+            nextIndex++
+        }
+
+        val children = if (nextIndex < lines.size && lines[nextIndex].indentationLevel() > indent) {
+            val (nestedItems, newIndex) = parseChecklistItems(lines, nextIndex, indent)
+            nextIndex = newIndex
+            nestedItems
+        } else {
+            emptyList()
+        }
+
+        return Pair(ChecklistItem(description, checked, children), nextIndex)
     }
 
     fun getAiderPlans(): List<AiderPlan> {
@@ -79,11 +133,18 @@ class AiderPlanService(private val project: Project) {
                         // Look for associated checklist file and extract its items
                         val checklistFile = File(plansDir, "${file.nameWithoutExtension}_checklist.md")
                         val checklistItems = if (checklistFile.exists()) {
-                            extractChecklistItems(checklistFile.readText())
+                            val checklistContent = checklistFile.readText()
+                            if (checklistContent.contains(AIDER_PLAN_CHECKLIST_MARKER)) {
+                                extractChecklistItems(checklistContent)
+                            } else emptyList()
                         } else emptyList()
                         
-                        // Combine checklist items from both files
-                        val combinedChecklist = planChecklist + checklistItems
+                        // Combine checklist items, prioritizing items from the checklist file
+                        val combinedChecklist = if (checklistItems.isNotEmpty()) {
+                            checklistItems
+                        } else {
+                            planChecklist
+                        }
                         
                         // Include both plan and checklist files in the files list
                         val files = mutableListOf(FileData(file.absolutePath, false))
