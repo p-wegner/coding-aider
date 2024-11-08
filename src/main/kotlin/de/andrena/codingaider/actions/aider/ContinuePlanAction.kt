@@ -35,8 +35,7 @@ class ContinuePlanAction : AnAction() {
 
 private class SelectPlanDialog(private val project: Project) : DialogWrapper(project) {
     private val planService = project.getService(AiderPlanService::class.java)
-    private val unfinishedPlans = planService.getPlans().filter { !it.isPlanComplete() }
-    private val planComboBox = JBList(unfinishedPlans)
+    private val unfinishedPlans = planService.getAiderPlans().filter { !it.isPlanComplete() }
     
     var selectedPlan: AiderPlan? = null
 
