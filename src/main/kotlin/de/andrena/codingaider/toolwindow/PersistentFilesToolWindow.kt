@@ -39,7 +39,7 @@ class PersistentFilesComponent(private val project: Project) {
     private val persistentFileService = project.getService(PersistentFileService::class.java)
     private val aiderPlanService = project.getService(AiderPlanService::class.java)
     private val persistentFilesListModel = DefaultListModel<FileData>()
-    private val plansListModel = DefaultListModel<AiderPlan>()
+    private val plansListModel: DefaultListModel<AiderPlan> = DefaultListModel()
     private val persistentFilesList = JBList(persistentFilesListModel).apply {
         cellRenderer = PersistentFileRenderer()
         addKeyListener(object : java.awt.event.KeyAdapter() {
@@ -51,7 +51,7 @@ class PersistentFilesComponent(private val project: Project) {
         })
     }
 
-    private val plansList = JBList(plansListModel).apply {
+    private val plansList: JBList<AiderPlan> = JBList<AiderPlan>(plansListModel).apply {
         val renderer = PlanListCellRenderer()
         cellRenderer = renderer
         
