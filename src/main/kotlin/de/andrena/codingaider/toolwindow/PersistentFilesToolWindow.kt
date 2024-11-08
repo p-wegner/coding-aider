@@ -167,7 +167,24 @@ class PersistentFilesComponent(private val project: Project) {
                 val planFile = value.files.firstOrNull()
                 val fileName = planFile?.filePath?.let { File(it).nameWithoutExtension } ?: "Unknown Plan"
                 label.text = fileName
-                label.toolTipText = planFile?.filePath
+                
+                // Create detailed tooltip
+                val openItems = value.openChecklistItems().size
+                val totalItems = value.totalChecklistItems()
+                val completionStatus = if (value.isPlanComplete()) "Complete" else "In Progress"
+                val planPreview = value.plan.lines().take(3).joinToString("\n").let {
+                    if (it.length > 200) it.take(200) + "..." else it
+                }
+                
+                val tooltip = buildString {
+                    appendLine("Plan: ${planFile?.filePath}")
+                    appendLine("Status: $completionStatus")
+                    appendLine("Progress: ${totalItems - openItems}/$totalItems items completed")
+                    appendLine("\nDescription:")
+                    appendLine(planPreview)
+                }
+                
+                label.toolTipText = tooltip
                 
                 statusIcon.icon = if (value.isPlanComplete()) 
                     AllIcons.Actions.Commit 
