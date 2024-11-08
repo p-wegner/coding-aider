@@ -51,51 +51,8 @@ class PersistentFilesComponent(private val project: Project) {
         })
     }
 
-    private val plansList = JBList(plansListModel).apply {
-        cellRenderer = PlanListCellRenderer()
-        addMouseListener(object : MouseAdapter() {
-            override fun mouseClicked(e: MouseEvent) {
-                val index = plansList.locationToIndex(e.point)
-                if (index >= 0) {
-                    val plan = plansList.model.getElementAt(index)
-                    val renderer = plansList.cellRenderer as? PlanListCellRenderer
-                    
-                    if (e.clickCount == 2) {
-                        // Double click to open files
-                        plan.files.forEach { fileData ->
-                            val virtualFile = LocalFileSystem.getInstance().findFileByPath(fileData.filePath)
-                            if (virtualFile != null) {
-                                FileEditorManager.getInstance(project).openFile(virtualFile, true)
-                            }
-                        }
-                    } else if (e.clickCount == 1 && renderer != null) {
-                        // Check if execute button was clicked
-                        val cellBounds = plansList.getCellBounds(index, index)
-                        if (cellBounds != null) {
-                            val buttonBounds = renderer.getExecuteButtonBounds()
-                            buttonBounds.translate(cellBounds.x, cellBounds.y)
-                            if (buttonBounds.contains(e.point)) {
-                                executeSelectedPlan()
-                            }
-                        }
-                    }
-                }
-            }
-            
-            override fun mouseEntered(e: MouseEvent) {
-                updateExecuteButtonVisibility(e.point)
-            }
-            
-            override fun mouseExited(e: MouseEvent) {
-                updateExecuteButtonVisibility(null)
-            }
-            
-            override fun mouseMoved(e: MouseEvent) {
-                updateExecuteButtonVisibility(e.point)
-            }
-        })
-    }
-    
+    private val plansList = JBList(plansListModel)
+
     private fun updateExecuteButtonVisibility(point: Point?) {
         val index = point?.let { plansList.locationToIndex(it) } ?: -1
         val renderer = plansList.cellRenderer as? PlanListCellRenderer
@@ -114,6 +71,51 @@ class PersistentFilesComponent(private val project: Project) {
         loadPersistentFiles()
         loadPlans()
         subscribeToChanges()
+        plansList.run {
+            cellRenderer = PlanListCellRenderer()
+            addMouseListener(object : MouseAdapter() {
+                override fun mouseClicked(e: MouseEvent) {
+                    val index = plansList.locationToIndex(e.point)
+                    if (index >= 0) {
+                        val plan = plansList.model.getElementAt(index)
+                        val renderer = plansList.cellRenderer as? PlanListCellRenderer
+
+                        if (e.clickCount == 2) {
+                            // Double click to open files
+                            plan.files.forEach { fileData ->
+                                val virtualFile = LocalFileSystem.getInstance().findFileByPath(fileData.filePath)
+                                if (virtualFile != null) {
+                                    FileEditorManager.getInstance(project).openFile(virtualFile, true)
+                                }
+                            }
+                        } else if (e.clickCount == 1 && renderer != null) {
+                            // Check if execute button was clicked
+                            val cellBounds = plansList.getCellBounds(index, index)
+                            if (cellBounds != null) {
+                                val buttonBounds = renderer.getExecuteButtonBounds()
+                                buttonBounds.translate(cellBounds.x, cellBounds.y)
+                                if (buttonBounds.contains(e.point)) {
+                                    executeSelectedPlan()
+                                }
+                            }
+                        }
+                    }
+                }
+
+                override fun mouseEntered(e: MouseEvent) {
+                    updateExecuteButtonVisibility(e.point)
+                }
+
+                override fun mouseExited(e: MouseEvent) {
+                    updateExecuteButtonVisibility(null)
+                }
+
+                override fun mouseMoved(e: MouseEvent) {
+                    updateExecuteButtonVisibility(e.point)
+                }
+            })
+        }
+
     }
 
     private fun loadPlans() {
