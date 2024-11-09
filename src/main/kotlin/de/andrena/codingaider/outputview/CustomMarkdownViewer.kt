@@ -10,6 +10,12 @@ import com.vladsch.flexmark.ext.gfm.tasklist.TaskListExtension
 import com.vladsch.flexmark.ext.definition.DefinitionExtension
 import com.vladsch.flexmark.ext.footnotes.FootnoteExtension
 import com.vladsch.flexmark.ext.toc.TocExtension
+import com.vladsch.flexmark.util.ast.Node
+import com.vladsch.flexmark.util.html.AttributeProvider
+import com.vladsch.flexmark.util.html.MutableAttributes
+import com.vladsch.flexmark.html.AttributeProviderFactory
+import com.vladsch.flexmark.html.renderer.AttributablePart
+import com.vladsch.flexmark.ext.gfm.tasklist.TaskListItem
 import java.awt.Desktop
 import java.net.URI
 import javax.swing.JEditorPane
@@ -34,7 +40,18 @@ class CustomMarkdownViewer {
         ))
     }
     private val parser = Parser.builder(options).build()
-    private val renderer = HtmlRenderer.builder(options).build()
+    private val renderer = HtmlRenderer.builder(options)
+        .attributeProviderFactory { context -> TaskListAttributeProvider() }
+        .build()
+
+    private class TaskListAttributeProvider : AttributeProvider {
+        override fun setAttributes(node: Node, part: AttributablePart, attributes: MutableAttributes) {
+            if (node is TaskListItem) {
+                val checked = node.isChecked
+                attributes.replaceValue("data-task-status", if (checked) "[x]" else "[ ]")
+            }
+        }
+    }
 
     init {
         component.addHyperlinkListener { event ->
@@ -173,8 +190,13 @@ class CustomMarkdownViewer {
                     .task-list-item {
                         margin: 0.5em 0;
                         padding-left: 1.5em;
+                        position: relative;
                     }
-                    .task-list-item-checkbox {
+                    .task-list-item::before {
+                        content: attr(data-task-status);
+                        position: absolute;
+                        left: 0;
+                        font-family: monospace;
                         margin-right: 0.5em;
                     }
                     
