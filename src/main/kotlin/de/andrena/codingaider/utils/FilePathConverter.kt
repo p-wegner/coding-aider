@@ -16,7 +16,6 @@ class FilePathConverter {
         )
 
         fun convertPathsToMarkdownLinks(text: String, basePath: String? = null): String {
-            var result = text
             val lines = text.lines()
             
             val convertedLines = lines.map { line ->
@@ -52,7 +51,6 @@ class FilePathConverter {
         }
 
         private fun convertPathToLink(path: String, isRelative: Boolean = false): String {
-            val file = File(path)
             if (isLikelyValidPath(path)) {
                 val displayPath = path
                 val urlPath = if (isRelative) {
@@ -77,10 +75,5 @@ class FilePathConverter {
             return false
         }
 
-        fun isLikelyFilePath(text: String): Boolean {
-            return windowsPathRegex.matches(text) || 
-                   unixPathRegex.matches(text) || 
-                   relativePathRegex.matches(text)
-        }
     }
 }

@@ -19,6 +19,7 @@ import com.vladsch.flexmark.html.renderer.AttributablePart
 import com.vladsch.flexmark.ext.gfm.tasklist.TaskListItem
 import com.vladsch.flexmark.html.AttributeProvider
 import com.vladsch.flexmark.html.renderer.LinkResolverContext
+import de.andrena.codingaider.utils.FilePathConverter
 import java.awt.Desktop
 import java.io.File
 import java.net.URI
