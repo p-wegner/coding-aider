@@ -8,7 +8,8 @@ class FilePathConverter {
     companion object {
         private val windowsPathRegex = """[A-Za-z]:\\[^<>:"|?*\n\r]+""".toRegex()
         private val unixPathRegex = """(/[^<>:"|?*\n\r]+)+""".toRegex()
-        private val relativePathRegex = """\.{0,2}/[^<>:"|?*\n\r]+""".toRegex()
+        private val relativePathRegex = """\.{0,2}[/\\][^<>:"|?*\n\r]+""".toRegex()
+        private val backslashPathRegex = """src\\[^<>:"|?*\n\r]+""".toRegex()
         
         private val commonExtensions = setOf(
             "md", "txt", "java", "kt", "py", "js", "html", "css", "xml", "json", 
@@ -31,10 +32,16 @@ class FilePathConverter {
                     convertPathToLink(matchResult.value)
                 }
 
+                // Process backslash paths
+                processedLine = processedLine.replace(backslashPathRegex) { matchResult ->
+                    val path = matchResult.value.replace("\\", "/")
+                    convertPathToLink(path, isRelative = true)
+                }
+
                 // Process relative paths if basePath is provided
                 if (basePath != null) {
                     processedLine = processedLine.replace(relativePathRegex) { matchResult ->
-                        val relativePath = matchResult.value
+                        val relativePath = matchResult.value.replace("\\", "/")
                         val absolutePath = File(basePath, relativePath).absolutePath
                         if (isLikelyValidPath(absolutePath)) {
                             convertPathToLink(relativePath, isRelative = true)
