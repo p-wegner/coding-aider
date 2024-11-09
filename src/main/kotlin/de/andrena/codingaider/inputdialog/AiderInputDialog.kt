@@ -124,10 +124,22 @@ class AiderInputDialog(
     private val optionsPanel = com.intellij.ui.components.panels.Wrapper().apply {
         setContent(flagAndArgsPanel)
         isVisible = true // Always visible for animation
-        if (projectSettings.isOptionsCollapsed) {
-            minimumSize = Dimension(0, 0)
-            maximumSize = Dimension(Int.MAX_VALUE, 0)
-            preferredSize = Dimension(0, 0)
+        updatePanelSize(projectSettings.isOptionsCollapsed)
+    }
+
+    private fun updatePanelSize(collapsed: Boolean) {
+        optionsPanel.apply {
+            if (collapsed) {
+                minimumSize = Dimension(0, 0)
+                maximumSize = Dimension(Int.MAX_VALUE, 0)
+                preferredSize = Dimension(0, 0)
+            } else {
+                minimumSize = null
+                maximumSize = null
+                preferredSize = null
+            }
+            revalidate()
+            repaint()
         }
     }
     private val panelAnimation = PanelAnimation(optionsPanel)
@@ -148,6 +160,7 @@ class AiderInputDialog(
                 
                 animation.animate(startHeight, endHeight) {
                     updateCollapseButtonIcon(!isCollapsed)
+                    updatePanelSize(!isCollapsed)
                 }
             }
         }
