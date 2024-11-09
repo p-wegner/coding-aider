@@ -308,8 +308,10 @@ class CustomMarkdownViewer {
         
         try {
             // Convert file paths to markdown links
-            val processedMarkdown = FilePathConverter.convertPathsToMarkdownLinks(markdown)
-            val document = parser.parse(markdown)
+            val project = com.intellij.openapi.project.ProjectManager.getInstance().openProjects.firstOrNull()
+            val basePath = project?.basePath
+            val processedMarkdown = FilePathConverter.convertPathsToMarkdownLinks(markdown, basePath)
+            val document = parser.parse(processedMarkdown)
             val html = renderer.render(document)
             
             val colors = if (isDarkTheme) {

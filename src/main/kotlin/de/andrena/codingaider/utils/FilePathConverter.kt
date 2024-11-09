@@ -8,35 +8,79 @@ class FilePathConverter {
     companion object {
         private val windowsPathRegex = """[A-Za-z]:\\[^<>:"|?*\n\r]+""".toRegex()
         private val unixPathRegex = """(/[^<>:"|?*\n\r]+)+""".toRegex()
+        private val relativePathRegex = """\.{0,2}/[^<>:"|?*\n\r]+""".toRegex()
+        
+        private val commonExtensions = setOf(
+            "md", "txt", "java", "kt", "py", "js", "html", "css", "xml", "json", 
+            "yaml", "yml", "properties", "gradle", "kts", "bat", "sh", "pdf"
+        )
 
-        fun convertPathsToMarkdownLinks(text: String): String {
+        fun convertPathsToMarkdownLinks(text: String, basePath: String? = null): String {
             var result = text
+            val lines = text.lines()
             
-            // Process Windows paths
-            result = result.replace(windowsPathRegex) { matchResult ->
-                val path = matchResult.value
-                if (File(path).exists()) {
-                    "[${path}](file:${path.replace("\\", "/")})"
-                } else {
-                    path
+            val convertedLines = lines.map { line ->
+                var processedLine = line
+                
+                // Process Windows absolute paths
+                processedLine = processedLine.replace(windowsPathRegex) { matchResult ->
+                    convertPathToLink(matchResult.value)
                 }
+
+                // Process Unix absolute paths
+                processedLine = processedLine.replace(unixPathRegex) { matchResult ->
+                    convertPathToLink(matchResult.value)
+                }
+
+                // Process relative paths if basePath is provided
+                if (basePath != null) {
+                    processedLine = processedLine.replace(relativePathRegex) { matchResult ->
+                        val relativePath = matchResult.value
+                        val absolutePath = File(basePath, relativePath).absolutePath
+                        if (isLikelyValidPath(absolutePath)) {
+                            convertPathToLink(relativePath, isRelative = true)
+                        } else {
+                            relativePath
+                        }
+                    }
+                }
+
+                processedLine
             }
 
-            // Process Unix paths
-            result = result.replace(unixPathRegex) { matchResult ->
-                val path = matchResult.value
-                if (File(path).exists()) {
-                    "[${path}](file:${path})"
-                } else {
-                    path
-                }
-            }
+            return convertedLines.joinToString("\n")
+        }
 
-            return result
+        private fun convertPathToLink(path: String, isRelative: Boolean = false): String {
+            val file = File(path)
+            if (isLikelyValidPath(path)) {
+                val displayPath = path
+                val urlPath = if (isRelative) {
+                    path
+                } else {
+                    "file:${path.replace("\\", "/")}"
+                }
+                return "[$displayPath]($urlPath)"
+            }
+            return path
+        }
+
+        private fun isLikelyValidPath(path: String): Boolean {
+            val file = File(path)
+            if (file.exists()) return true
+            
+            // Check if it has a common file extension
+            val extension = file.extension.lowercase()
+            if (extension in commonExtensions) return true
+            
+            // Additional heuristics can be added here
+            return false
         }
 
         fun isLikelyFilePath(text: String): Boolean {
-            return windowsPathRegex.matches(text) || unixPathRegex.matches(text)
+            return windowsPathRegex.matches(text) || 
+                   unixPathRegex.matches(text) || 
+                   relativePathRegex.matches(text)
         }
     }
 }
