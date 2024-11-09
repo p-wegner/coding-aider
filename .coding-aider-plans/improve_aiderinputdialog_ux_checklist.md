@@ -12,11 +12,11 @@ Related: [Plan](improve_aiderinputdialog_ux.md)
 - [x] Create collapsible panel for options row
 - [x] Add toggle button with icon for expand/collapse
 - [x] Update layout constraints for new organization
-- [ ] Implement smooth animation for panel transitions
+- [x] Implement smooth animation for panel transitions
 
 ## State Management
-- [ ] Add collapsed state persistence to settings
-- [ ] Implement state restoration on dialog creation
+- [x] Add collapsed state persistence to settings
+- [x] Implement state restoration on dialog creation
 - [ ] Handle state changes during runtime
 
 ## Testing & Refinement
