@@ -129,7 +129,9 @@ class AiderPlanService(private val project: Project) {
                         AiderPlan(
                             plan = planContent,
                             checklist = combinedChecklist,
-                            files = files
+                            planFiles = files,
+                            // TODO: parse context yaml to add files
+                            contextFiles = emptyList()
                         )
                     } else null
                 } catch (e: Exception) {
