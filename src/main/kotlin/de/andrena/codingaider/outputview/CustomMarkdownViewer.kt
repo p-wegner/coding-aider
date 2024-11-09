@@ -46,8 +46,8 @@ class CustomMarkdownViewer {
 
     private class TaskListAttributeProvider : AttributeProvider {
         override fun setAttributes(node: Node, part: AttributablePart, attributes: MutableAttributes) {
-            if (node is TaskListItem) {
-                val checked = (node as TaskListItem).isChecked
+            if (node is TaskListItem && part == AttributablePart.NODE) {
+                val checked = node.isItemDoneMarker
                 attributes.replaceValue("data-task-status", if (checked) "[x]" else "[ ]")
             }
         }
