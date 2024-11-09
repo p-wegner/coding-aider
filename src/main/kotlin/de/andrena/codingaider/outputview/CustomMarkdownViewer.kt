@@ -67,6 +67,12 @@ class CustomMarkdownViewer {
         }
     }
 
+    private var lookupPaths: List<String> = emptyList()
+
+    fun setLookupPaths(paths: List<String>) {
+        lookupPaths = paths
+    }
+
     init {
         component.addHyperlinkListener { event ->
             if (event.eventType == HyperlinkEvent.EventType.ACTIVATED) {
@@ -100,7 +106,7 @@ class CustomMarkdownViewer {
                                     file
                                 } else {
                                     // Then try each lookup path
-                                    LOOKUP_PATHS.map { lookupPath -> 
+                                    lookupPaths.map { lookupPath -> 
                                         File(basePath, "$lookupPath/$relativePath")
                                     }.firstOrNull { it.exists() }
                                         ?: throw IllegalArgumentException("File not found in any lookup path: $relativePath")
@@ -135,10 +141,6 @@ class CustomMarkdownViewer {
     private var isDarkTheme = false
 
     companion object {
-        private val LOOKUP_PATHS = listOf(
-            ".coding-aider-plans"  // Default plans folder
-        )
-
         private fun getHtmlTemplate(
             bodyBg: String,
             bodyText: String,

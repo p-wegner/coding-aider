@@ -60,6 +60,7 @@ private class SelectPlanDialog(private val project: Project) : DialogWrapper(pro
 
         val markdownViewer = CustomMarkdownViewer().apply {
             setDarkTheme(!JBColor.isBright())
+            setLookupPaths(listOf(AiderPlanService.AIDER_PLANS_FOLDER))
         }
 
         val scrollPane = JBScrollPane(markdownViewer.component).apply {
