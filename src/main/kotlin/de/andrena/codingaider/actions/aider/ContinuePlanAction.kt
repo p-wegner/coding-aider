@@ -61,6 +61,21 @@ private class SelectPlanDialog(private val project: Project) : DialogWrapper(pro
 
         val markdownViewer = CustomMarkdownViewer().apply {
             setDarkTheme(!JBColor.isBright())
+            component.apply {
+                // Set reasonable minimum size for the component
+                minimumSize = Dimension(400, 200)
+                // Allow the component to grow/shrink with the dialog
+                preferredSize = Dimension(600, 400)
+            }
+        }
+
+        // Create a scroll pane for the markdown viewer
+        val scrollPane = JBScrollPane(markdownViewer.component).apply {
+            // Set the scroll pane to always show vertical scrollbar if needed
+            verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
+            horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
+            // Set border to give some visual separation
+            border = BorderFactory.createLineBorder(JBColor.border())
         }
 
         planComboBox.addActionListener {
@@ -79,9 +94,11 @@ private class SelectPlanDialog(private val project: Project) : DialogWrapper(pro
             }
             row {
                 label("Details")
-                cell(JBScrollPane(markdownViewer.component))
+                cell(scrollPane)
                     .resizableColumn()
                     .align(AlignX.FILL)
+                    .growY()
+                    .preferredSize(Dimension(0, 400))
             }
         }.apply {
             preferredSize = Dimension(800, 600)
