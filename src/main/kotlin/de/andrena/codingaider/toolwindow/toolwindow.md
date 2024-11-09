@@ -92,5 +92,5 @@ The tool window is configurable through:
 
 ## Related Documentation
 - [FileData](../command/FileData.kt)
-- [AiderPlan](../services/AiderPlanService.kt)
+- [AiderPlan](../services/plans/AiderPlanService.kt)
 - [PersistentFileService](../services/PersistentFileService.kt)

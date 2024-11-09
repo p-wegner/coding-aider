@@ -24,6 +24,7 @@ import com.intellij.util.ui.JBUI
 import de.andrena.codingaider.actions.ide.SettingsAction
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.services.*
+import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker

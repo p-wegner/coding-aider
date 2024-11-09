@@ -106,7 +106,7 @@ graph TD
 - JTokkit (Token counting)
 
 ## File References
-- [AiderPlanService.kt](./AiderPlanService.kt)
+- [AiderPlanService.kt](plans/AiderPlanService.kt)
 - [TokenCountService.kt](./TokenCountService.kt)
 - [PersistentFileService.kt](./PersistentFileService.kt)
 - [DocumentationFinderService.kt](./DocumentationFinderService.kt)

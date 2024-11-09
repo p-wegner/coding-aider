@@ -9,7 +9,7 @@ import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.CommandExecutor
 import de.andrena.codingaider.outputview.Abortable
 import de.andrena.codingaider.outputview.MarkdownDialog
-import de.andrena.codingaider.services.AiderPlanService
+import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileRefresher

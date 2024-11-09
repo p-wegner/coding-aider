@@ -2,7 +2,7 @@ package de.andrena.codingaider.services
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
-import de.andrena.codingaider.services.AiderPlanService.Companion.STRUCTURED_MODE_MARKER
+import de.andrena.codingaider.services.plans.AiderPlanService.Companion.STRUCTURED_MODE_MARKER
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter

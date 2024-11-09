@@ -5,7 +5,7 @@ import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.docker.DockerContainerManager
 import de.andrena.codingaider.inputdialog.AiderMode
-import de.andrena.codingaider.services.AiderPlanService
+import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.settings.AiderDefaults
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.ApiKeyChecker

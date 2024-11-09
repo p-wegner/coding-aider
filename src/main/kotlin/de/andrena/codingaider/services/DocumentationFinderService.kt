@@ -4,7 +4,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.FileData
-import de.andrena.codingaider.services.AiderPlanService
+import de.andrena.codingaider.services.plans.AiderPlanService
 
 @Service(Service.Level.PROJECT)
 class DocumentationFinderService(private val project: Project) {

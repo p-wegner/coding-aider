@@ -5,7 +5,7 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.docker.DockerContainerManager
 import de.andrena.codingaider.inputdialog.AiderMode
-import de.andrena.codingaider.services.AiderPlanService
+import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
 import org.assertj.core.api.Assertions.assertThat

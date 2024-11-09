@@ -9,7 +9,7 @@ import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.ui.components.panels.Wrapper
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
-import de.andrena.codingaider.services.AiderPlanService
+import de.andrena.codingaider.services.plans.AiderPlanService
 import javax.swing.JComponent
 
 class PlansPanel(private val project: Project) {
