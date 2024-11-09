@@ -64,12 +64,16 @@ private class SelectPlanDialog(private val project: Project) : DialogWrapper(pro
         }
 
         // Create a scroll pane for the markdown viewer
-        val scrollPane = JBScrollPane(markdownViewer.component).apply {
+        // Wrap markdown viewer in a panel to control sizing
+        val markdownPanel = JPanel(BorderLayout()).apply {
+            add(markdownViewer.component, BorderLayout.CENTER)
+            preferredSize = Dimension(600, 400)
+        }
+
+        val scrollPane = JBScrollPane(markdownPanel).apply {
             verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
             horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
             border = BorderFactory.createLineBorder(JBColor.border())
-            preferredSize = Dimension(600, 400)
-            minimumSize = Dimension(400, 200)
         }
 
         planComboBox.addActionListener {
@@ -80,7 +84,7 @@ private class SelectPlanDialog(private val project: Project) : DialogWrapper(pro
         // Set initial text
         markdownViewer.setMarkdownContent((planComboBox.selectedItem as? AiderPlan)?.plan ?: "")
 
-        val mainPanel = panel {
+        return panel {
             row {
                 label("Plan")
                 cell(planComboBox)
@@ -91,12 +95,12 @@ private class SelectPlanDialog(private val project: Project) : DialogWrapper(pro
                 cell(scrollPane)
                     .resizableColumn()
                     .align(AlignX.FILL)
+            }.resizableRow()
+        }.withPreferredSize(800, 600)
+            .withMinimumSize(600, 400)
+            .apply {
+                border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
             }
-        }.apply {
-            preferredSize = Dimension(800, 600)
-            minimumSize = Dimension(600, 400)
-            border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
-        }
 
         return mainPanel
     }
