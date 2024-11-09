@@ -68,8 +68,26 @@ class CustomMarkdownViewer {
         component.addHyperlinkListener { event ->
             if (event.eventType == HyperlinkEvent.EventType.ACTIVATED) {
                 try {
-                    // TODO: support local links with relative oaths, open in IDE 
-                    Desktop.getDesktop().browse(URI(event.url.toString()))
+                    val url = event.url.toString()
+                    if (url.startsWith("file:")) {
+                        // Convert URL to file path
+                        val filePath = java.net.URLDecoder.decode(url.removePrefix("file:"), "UTF-8")
+                        val file = File(filePath)
+                        
+                        // Get project instance
+                        val project = com.intellij.openapi.project.ProjectManager.getInstance().openProjects.firstOrNull()
+                        if (project != null) {
+                            // Open file in IDE
+                            com.intellij.openapi.fileEditor.OpenFileDescriptor(
+                                project,
+                                com.intellij.openapi.vfs.LocalFileSystem.getInstance().findFileByIoFile(file)
+                                    ?: throw IllegalArgumentException("File not found: $filePath")
+                            ).navigate(true)
+                        }
+                    } else {
+                        // For external URLs, use default browser
+                        Desktop.getDesktop().browse(URI(url))
+                    }
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
