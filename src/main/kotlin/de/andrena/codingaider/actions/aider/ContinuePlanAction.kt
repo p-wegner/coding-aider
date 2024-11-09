@@ -14,6 +14,7 @@ import de.andrena.codingaider.toolwindow.PlanViewer
 import com.intellij.ui.JBColor
 import de.andrena.codingaider.outputview.CustomMarkdownViewer
 import com.intellij.ui.components.JBScrollPane
+import java.awt.BorderLayout
 import java.awt.Dimension
 import javax.swing.*
 
@@ -97,11 +98,11 @@ private class SelectPlanDialog(private val project: Project) : DialogWrapper(pro
                     .align(AlignX.FILL)
             }.resizableRow()
         }.withPreferredSize(800, 600)
-            .withMinimumSize(600, 400)
+
             .apply {
                 border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
+                minimumSize = Dimension(600, 400)
             }
 
-        return mainPanel
     }
 }
