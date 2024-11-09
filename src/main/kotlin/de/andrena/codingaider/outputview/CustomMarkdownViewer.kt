@@ -11,11 +11,12 @@ import com.vladsch.flexmark.ext.definition.DefinitionExtension
 import com.vladsch.flexmark.ext.footnotes.FootnoteExtension
 import com.vladsch.flexmark.ext.toc.TocExtension
 import com.vladsch.flexmark.util.ast.Node
-import com.vladsch.flexmark.util.html.AttributeProvider
 import com.vladsch.flexmark.util.html.MutableAttributes
 import com.vladsch.flexmark.html.AttributeProviderFactory
 import com.vladsch.flexmark.html.renderer.AttributablePart
 import com.vladsch.flexmark.ext.gfm.tasklist.TaskListItem
+import com.vladsch.flexmark.html.AttributeProvider
+import com.vladsch.flexmark.html.renderer.LinkResolverContext
 import java.awt.Desktop
 import java.net.URI
 import javax.swing.JEditorPane
@@ -41,13 +42,29 @@ class CustomMarkdownViewer {
     }
     private val parser = Parser.builder(options).build()
     private val renderer = HtmlRenderer.builder(options)
-        .attributeProviderFactory(AttributeProviderFactory { context -> TaskListAttributeProvider() })
+        .attributeProviderFactory(object : AttributeProviderFactory {
+            override fun apply(context: LinkResolverContext): AttributeProvider {
+                return TaskListAttributeProvider()
+            }
+
+            override fun getAfterDependents(): MutableSet<Class<*>>? {
+                TODO("Not yet implemented")
+            }
+
+            override fun getBeforeDependents(): MutableSet<Class<*>>? {
+                TODO("Not yet implemented")
+            }
+
+            override fun affectsGlobalScope(): Boolean {
+                TODO("Not yet implemented")
+            }
+        })
         .build()
 
     private class TaskListAttributeProvider : AttributeProvider {
         override fun setAttributes(node: Node, part: AttributablePart, attributes: MutableAttributes) {
-            if (node is TaskListItem && part == AttributablePart.NODE) {
-                val checked = node.isItemDoneMarker
+            if (node is TaskListItem) {
+                val checked = (node as TaskListItem).isChecked
                 attributes.replaceValue("data-task-status", if (checked) "[x]" else "[ ]")
             }
         }
