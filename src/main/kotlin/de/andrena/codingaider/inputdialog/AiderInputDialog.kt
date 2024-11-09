@@ -141,7 +141,7 @@ class AiderInputDialog(
     private val persistentFileService: PersistentFileService
     private var splitPane: OnePixelSplitter
     private val settingsButton: ActionButton
-    private lateinit var collapseButton: ActionButton
+    private val collapseButton: ActionButton = createCollapseButton()
 
     init {
         title = "Aider Command"
@@ -376,21 +376,6 @@ class AiderInputDialog(
             optionsPanel.setContent(flagAndArgsPanel)
         }
         
-        val collapseButton = ActionButton(
-            object : AnAction() {
-                override fun actionPerformed(e: AnActionEvent) {
-                    projectSettings.isOptionsCollapsed = !projectSettings.isOptionsCollapsed
-                    updateOptionsPanel(optionsPanel, flagAndArgsPanel, collapseButton)
-                }
-            },
-            Presentation().apply {
-                icon = if (projectSettings.isOptionsCollapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
-                text = "Toggle Options"
-                description = "Show/hide additional options (LLM selection, flags and arguments)"
-            },
-            "AiderOptionsButton",
-            ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
-        )
         
         val optionsHeader = JPanel(BorderLayout()).apply {
             add(collapseButton, BorderLayout.WEST)
@@ -627,7 +612,23 @@ class AiderInputDialog(
      * @param panel The options panel to show/hide
      * @param collapseButton The button that toggles the panel state
      */
-    private fun updateOptionsPanel(wrapper: com.intellij.ui.components.panels.Wrapper, panel: JPanel, collapseButton: ActionButton) {
+    private fun createCollapseButton() = ActionButton(
+        object : AnAction() {
+            override fun actionPerformed(e: AnActionEvent) {
+                projectSettings.isOptionsCollapsed = !projectSettings.isOptionsCollapsed
+                updateOptionsPanel(optionsPanel, flagAndArgsPanel)
+            }
+        },
+        Presentation().apply {
+            icon = if (projectSettings.isOptionsCollapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
+            text = "Toggle Options"
+            description = "Show/hide additional options (LLM selection, flags and arguments)"
+        },
+        "AiderOptionsButton",
+        ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
+    )
+
+    private fun updateOptionsPanel(wrapper: com.intellij.ui.components.panels.Wrapper, panel: JPanel) {
         val isCollapsed = projectSettings.isOptionsCollapsed
         
         val animation = PanelAnimation(wrapper)
