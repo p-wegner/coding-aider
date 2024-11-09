@@ -20,4 +20,9 @@ object FileRefresher {
             }
         }
     }
+
+    fun refreshPath(aiderPlansFolder: String) {
+       // TODO: Refresh all files in the folder
+        TODO("Not yet implemented")
+    }
 }
