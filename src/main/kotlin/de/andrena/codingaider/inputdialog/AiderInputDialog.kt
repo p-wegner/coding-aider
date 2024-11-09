@@ -415,64 +415,57 @@ class AiderInputDialog(
      * The panel's collapsed state is persisted in project settings.
      */
     private fun createOptionsPanel(): JPanel {
-        return JPanel(BorderLayout()).apply {
-            border = JBUI.Borders.empty(2, 5, 2, 5)
-            
-            val contentPanel = JPanel(GridBagLayout()).apply {
-                border = JBUI.Borders.empty(5)
-                val gbc = GridBagConstraints().apply {
-                    fill = GridBagConstraints.NONE
-                    anchor = GridBagConstraints.WEST
-                    insets = JBUI.insets(2, 5)
-                }
-                
-                // LLM selection
-                add(JLabel("LLM:").apply {
-                    displayedMnemonic = KeyEvent.VK_L
-                    labelFor = llmComboBox
-                    toolTipText = "Select the Language Model to use"
-                }, gbc.apply {
-                    gridx = 0
-                    gridy = 0
-                })
-                add(llmComboBox.apply {
-                    preferredSize = Dimension(150, preferredSize.height)
-                }, gbc.apply {
-                    gridx = 1
-                    gridy = 0
-                    weightx = 0.3
-                })
-                
-                // Yes flag
-                add(yesCheckBox.apply {
-                    mnemonic = KeyEvent.VK_Y
-                }, gbc.apply {
-                    gridx = 2
-                    gridy = 0
-                    insets.left = 20
-                })
-                
-                // Additional args
-                add(JLabel("Args:").apply {
-                    displayedMnemonic = KeyEvent.VK_A
-                    labelFor = additionalArgsField
-                    toolTipText = "Additional arguments for the Aider command"
-                }, gbc.apply {
-                    gridx = 3
-                    gridy = 0
-                    insets.left = 20
-                })
-                add(additionalArgsField.apply {
-                    preferredSize = Dimension(200, preferredSize.height)
-                }, gbc.apply {
-                    gridx = 4
-                    gridy = 0
-                    weightx = 0.7
-                    fill = GridBagConstraints.HORIZONTAL
-                })
+        return JPanel(GridBagLayout()).apply {
+            val gbc = GridBagConstraints().apply {
+                fill = GridBagConstraints.NONE
+                anchor = GridBagConstraints.WEST
+                insets = JBUI.insets(0, 2)
             }
             
-            add(contentPanel, BorderLayout.CENTER)
+            // LLM selection
+            add(JLabel("LLM:").apply {
+                displayedMnemonic = KeyEvent.VK_L
+                labelFor = llmComboBox
+                toolTipText = "Select the Language Model to use"
+            }, gbc.apply {
+                gridx = 0
+                gridy = 0
+            })
+            add(llmComboBox.apply {
+                preferredSize = Dimension(150, preferredSize.height)
+            }, gbc.apply {
+                gridx = 1
+                gridy = 0
+                weightx = 0.3
+            })
+            
+            // Yes flag
+            add(yesCheckBox.apply {
+                mnemonic = KeyEvent.VK_Y
+            }, gbc.apply {
+                gridx = 2
+                gridy = 0
+                insets.left = 10
+            })
+            
+            // Additional args
+            add(JLabel("Args:").apply {
+                displayedMnemonic = KeyEvent.VK_A
+                labelFor = additionalArgsField
+                toolTipText = "Additional arguments for the Aider command"
+            }, gbc.apply {
+                gridx = 3
+                gridy = 0
+                insets.left = 10
+            })
+            add(additionalArgsField.apply {
+                preferredSize = Dimension(200, preferredSize.height)
+            }, gbc.apply {
+                gridx = 4
+                gridy = 0
+                weightx = 0.7
+                fill = GridBagConstraints.HORIZONTAL
+            })
         }
     }
     
