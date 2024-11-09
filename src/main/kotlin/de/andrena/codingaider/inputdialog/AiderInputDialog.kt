@@ -144,6 +144,7 @@ class AiderInputDialog(
     private val flagAndArgsPanel = createOptionsPanel()
     private val optionsPanel = com.intellij.ui.components.panels.Wrapper().apply {
         setContent(if (!projectSettings.isOptionsCollapsed) flagAndArgsPanel else null)
+        preferredSize = if (!projectSettings.isOptionsCollapsed) null else Dimension(0, 0)
     }
     private val collapseButton: ActionButton = createCollapseButton()
 
@@ -634,33 +635,38 @@ class AiderInputDialog(
 
     private fun updateOptionsPanel(wrapper: com.intellij.ui.components.panels.Wrapper, panel: JPanel, button: ActionButton) {
         val isCollapsed = projectSettings.isOptionsCollapsed
+        button.presentation.icon = if (isCollapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
         
-        if (isCollapsed) {
-            if (wrapper.targetComponent != null) {
+        // Only animate if this is triggered by a button click (not during initialization)
+        if (wrapper.isShowing) {
+            if (isCollapsed) {
+                if (wrapper.targetComponent != null) {
+                    val animation = PanelAnimation(wrapper)
+                    animation.animate(
+                        startHeight = panel.preferredSize.height,
+                        endHeight = 0,
+                        onComplete = { 
+                            wrapper.setContent(null)
+                            wrapper.revalidate()
+                            wrapper.repaint()
+                        }
+                    )
+                }
+            } else {
+                wrapper.setContent(panel)
                 val animation = PanelAnimation(wrapper)
                 animation.animate(
-                    startHeight = panel.preferredSize.height,
-                    endHeight = 0,
-                    onComplete = { 
-                        wrapper.setContent(null)
+                    startHeight = 0,
+                    endHeight = panel.preferredSize.height,
+                    onComplete = {
                         wrapper.revalidate()
                         wrapper.repaint()
                     }
                 )
             }
-            button.presentation.icon = AllIcons.General.ArrowRight
         } else {
-            wrapper.setContent(panel)
-            val animation = PanelAnimation(wrapper)
-            animation.animate(
-                startHeight = 0,
-                endHeight = panel.preferredSize.height,
-                onComplete = {
-                    wrapper.revalidate()
-                    wrapper.repaint()
-                }
-            )
-            button.presentation.icon = AllIcons.General.ArrowDown
+            // During initialization, just set the content without animation
+            wrapper.setContent(if (!isCollapsed) panel else null)
         }
     }
 
