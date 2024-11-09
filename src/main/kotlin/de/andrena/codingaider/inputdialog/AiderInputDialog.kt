@@ -28,6 +28,7 @@ import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.settings.AiderProjectSettings
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.ApiKeyChecker
+import de.andrena.codingaider.utils.CollapsiblePanel
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
 import de.andrena.codingaider.utils.PanelAnimation
 import java.awt.*
