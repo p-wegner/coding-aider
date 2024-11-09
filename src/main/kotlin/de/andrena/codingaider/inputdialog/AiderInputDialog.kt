@@ -141,8 +141,10 @@ class AiderInputDialog(
     private val persistentFileService: PersistentFileService
     private var splitPane: OnePixelSplitter
     private val settingsButton: ActionButton
-    private val optionsPanel = com.intellij.ui.components.panels.Wrapper()
     private val flagAndArgsPanel = createOptionsPanel()
+    private val optionsPanel = com.intellij.ui.components.panels.Wrapper().apply {
+        setContent(if (!projectSettings.isOptionsCollapsed) flagAndArgsPanel else null)
+    }
     private val collapseButton: ActionButton = createCollapseButton()
 
     init {
@@ -633,20 +635,30 @@ class AiderInputDialog(
     private fun updateOptionsPanel(wrapper: com.intellij.ui.components.panels.Wrapper, panel: JPanel, button: ActionButton) {
         val isCollapsed = projectSettings.isOptionsCollapsed
         
-        val animation = PanelAnimation(wrapper)
-        
         if (isCollapsed) {
-            animation.animate(
-                startHeight = panel.preferredSize.height,
-                endHeight = 0,
-                onComplete = { wrapper.setContent(null) }
-            )
+            if (wrapper.targetComponent != null) {
+                val animation = PanelAnimation(wrapper)
+                animation.animate(
+                    startHeight = panel.preferredSize.height,
+                    endHeight = 0,
+                    onComplete = { 
+                        wrapper.setContent(null)
+                        wrapper.revalidate()
+                        wrapper.repaint()
+                    }
+                )
+            }
             button.presentation.icon = AllIcons.General.ArrowRight
         } else {
             wrapper.setContent(panel)
+            val animation = PanelAnimation(wrapper)
             animation.animate(
                 startHeight = 0,
-                endHeight = panel.preferredSize.height
+                endHeight = panel.preferredSize.height,
+                onComplete = {
+                    wrapper.revalidate()
+                    wrapper.repaint()
+                }
             )
             button.presentation.icon = AllIcons.General.ArrowDown
         }
