@@ -614,20 +614,26 @@ class AiderInputDialog(
      * @param collapseButton The button that toggles the panel state
      */
     private fun updateOptionsPanel(wrapper: com.intellij.ui.components.panels.Wrapper, panel: JPanel, collapseButton: ActionButton) {
-        val animator = com.intellij.util.ui.Animator(
+        val startHeight = if (projectSettings.isOptionsCollapsed) panel.preferredSize.height else 0
+        val endHeight = if (projectSettings.isOptionsCollapsed) 0 else panel.preferredSize.height
+        
+        val animator = object : com.intellij.util.ui.Animator(
             "OptionsPanel",
-            if (projectSettings.isOptionsCollapsed) panel.preferredSize.height else 0,
-            if (projectSettings.isOptionsCollapsed) 0 else panel.preferredSize.height,
-            200, // Animation duration in ms
-            false, // Don't repeat
-            { height ->
+            4, // Number of frames
+            200, // Total animation duration
+            false // Don't repeat
+        ) {
+            override fun paintNow(frame: Int, totalFrames: Int, cycle: Int) {
+                val fraction = frame.toFloat() / (totalFrames - 1)
+                val height = startHeight + ((endHeight - startHeight) * fraction).toInt()
+                
                 panel.preferredSize = Dimension(panel.preferredSize.width, height)
                 wrapper.setContent(if (height == 0) null else panel)
                 collapseButton.presentation.icon = if (height == 0) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
                 wrapper.parent?.revalidate()
                 wrapper.parent?.repaint()
             }
-        )
+        }
         animator.resume()
     }
 
