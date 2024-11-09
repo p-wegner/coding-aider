@@ -464,29 +464,28 @@ class AiderInputDialog(
      * @param collapseButton The button that toggles the panel state
      */
     private fun createCollapseButton(
-        isCollapsed: () -> Boolean,
-        onToggle: () -> Unit,
-        getIcon: () -> Icon
+        name: String,
+        isCollapsedProperty: kotlin.reflect.KMutableProperty0<Boolean>,
+        wrapper: com.intellij.ui.components.panels.Wrapper,
+        panel: JComponent,
+        animation: PanelAnimation
     ) = ActionButton(
         object : AnAction() {
             override fun actionPerformed(e: AnActionEvent) {
-                projectSettings.isOptionsCollapsed = !projectSettings.isOptionsCollapsed
-                updateOptionsPanel(optionsPanel, flagAndArgsPanel, this@AiderInputDialog.collapseButton)
+                isCollapsedProperty.set(!isCollapsedProperty.get())
+                updateCollapsiblePanel(wrapper, panel, this@ActionButton, isCollapsedProperty.get()) {
+                    if (isCollapsedProperty.get()) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
+                }
             }
         },
         Presentation().apply {
-            icon = if (projectSettings.isOptionsCollapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
-            text = "Toggle Options"
-            description = "Show/hide additional options (LLM selection, flags and arguments)"
+            icon = if (isCollapsedProperty.get()) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
+            text = "Toggle $name"
+            description = "Show/hide $name panel"
         },
-        "AiderOptionsButton",
+        "Aider${name}Button",
         ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
-    ).apply {
-        addActionListener { 
-            projectSettings.isOptionsCollapsed = !projectSettings.isOptionsCollapsed
-            updateOptionsPanel(optionsPanel, flagAndArgsPanel, this)
-        }
-    }
+    )
 
     private fun updateCollapsiblePanel(
         wrapper: com.intellij.ui.components.panels.Wrapper,
