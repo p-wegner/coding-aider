@@ -13,6 +13,7 @@ import de.andrena.codingaider.services.AiderPlanService
 import de.andrena.codingaider.toolwindow.PlanViewer
 import com.intellij.ui.EditorTextField
 import com.intellij.ui.components.JBScrollPane
+import java.awt.Dimension
 import javax.swing.*
 
 class ContinuePlanAction : AnAction() {
@@ -65,11 +66,11 @@ private class SelectPlanDialog(private val project: Project) : DialogWrapper(pro
 
         planComboBox.addActionListener {
             selectedPlan = planComboBox.selectedItem as? AiderPlan
-            detailsArea.text = selectedPlan?.plan?.lines()?.take(10)?.joinToString("\n")
+            detailsArea.text = selectedPlan?.plan?.lines()?.take(10)?.joinToString("\n") ?:""
         }
 
         // Set initial text
-        detailsArea.text = (planComboBox.selectedItem as? AiderPlan)?.plan?.lines()?.take(10)?.joinToString("\n")
+        detailsArea.text = (planComboBox.selectedItem as? AiderPlan)?.plan?.lines()?.take(10)?.joinToString("\n") ?:""
 
         return panel {
             row("Select a plan to continue:") {
