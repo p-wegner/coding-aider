@@ -68,6 +68,7 @@ class CustomMarkdownViewer {
         component.addHyperlinkListener { event ->
             if (event.eventType == HyperlinkEvent.EventType.ACTIVATED) {
                 try {
+                    // TODO: support local links with relative oaths, open in IDE 
                     Desktop.getDesktop().browse(URI(event.url.toString()))
                 } catch (e: Exception) {
                     e.printStackTrace()
