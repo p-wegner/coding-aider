@@ -41,13 +41,13 @@ class CustomMarkdownViewer {
     }
     private val parser = Parser.builder(options).build()
     private val renderer = HtmlRenderer.builder(options)
-        .attributeProviderFactory { context -> TaskListAttributeProvider() }
+        .attributeProviderFactory(AttributeProviderFactory { context -> TaskListAttributeProvider() })
         .build()
 
     private class TaskListAttributeProvider : AttributeProvider {
         override fun setAttributes(node: Node, part: AttributablePart, attributes: MutableAttributes) {
             if (node is TaskListItem) {
-                val checked = node.isChecked
+                val checked = (node as TaskListItem).isChecked
                 attributes.replaceValue("data-task-status", if (checked) "[x]" else "[ ]")
             }
         }
