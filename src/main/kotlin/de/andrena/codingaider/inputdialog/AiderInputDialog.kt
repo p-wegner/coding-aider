@@ -614,27 +614,39 @@ class AiderInputDialog(
      * @param collapseButton The button that toggles the panel state
      */
     private fun updateOptionsPanel(wrapper: com.intellij.ui.components.panels.Wrapper, panel: JPanel, collapseButton: ActionButton) {
-        val startHeight = if (projectSettings.isOptionsCollapsed) panel.preferredSize.height else 0
-        val endHeight = if (projectSettings.isOptionsCollapsed) 0 else panel.preferredSize.height
+        val isCollapsed = projectSettings.isOptionsCollapsed
+        val startHeight = if (!isCollapsed) panel.preferredSize.height else 0
+        val endHeight = if (!isCollapsed) 0 else panel.preferredSize.height
+        
+        // Set initial content if expanding
+        if (!isCollapsed) {
+            wrapper.setContent(panel)
+        }
         
         val animator = object : com.intellij.util.ui.Animator(
             "OptionsPanel",
-            4, // Number of frames
-            200, // Total animation duration
-            false // Don't repeat
+            10, // Increased number of frames for smoother animation
+            300, // Increased duration for smoother animation
+            false
         ) {
             override fun paintNow(frame: Int, totalFrames: Int, cycle: Int) {
                 val fraction = frame.toFloat() / (totalFrames - 1)
                 val height = startHeight + ((endHeight - startHeight) * fraction).toInt()
                 
                 panel.preferredSize = Dimension(panel.preferredSize.width, height)
-                wrapper.setContent(if (height == 0) null else panel)
-                collapseButton.presentation.icon = if (height == 0) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
+                if (height == 0) {
+                    wrapper.setContent(null)
+                }
+                collapseButton.presentation.icon = if (isCollapsed) AllIcons.General.ArrowDown else AllIcons.General.ArrowRight
+                
                 wrapper.parent?.revalidate()
                 wrapper.parent?.repaint()
             }
         }
         animator.resume()
+        
+        // Update the collapsed state after animation
+        projectSettings.isOptionsCollapsed = !isCollapsed
     }
 
     private fun restoreLastState() {
