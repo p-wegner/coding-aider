@@ -21,6 +21,7 @@ import com.intellij.ui.dsl.builder.SegmentedButton
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.util.textCompletion.TextCompletionUtil
 import com.intellij.util.ui.JBUI
+import com.sun.java.accessibility.util.AWTEventMonitor.addActionListener
 import de.andrena.codingaider.actions.ide.SettingsAction
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.services.*
