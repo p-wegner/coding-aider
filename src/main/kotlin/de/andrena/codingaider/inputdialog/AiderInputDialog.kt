@@ -29,6 +29,7 @@ import de.andrena.codingaider.settings.AiderProjectSettings
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
+import de.andrena.codingaider.utils.PanelAnimation
 import java.awt.*
 import java.awt.event.KeyEvent
 import javax.swing.*
@@ -119,9 +120,10 @@ class AiderInputDialog(
     private val flagAndArgsPanel = createOptionsPanel()
     private val optionsPanel = com.intellij.ui.components.panels.Wrapper().apply {
         setContent(flagAndArgsPanel)
-        isVisible = !projectSettings.isOptionsCollapsed
+        isVisible = true // Always visible for animation
         preferredSize = if (!projectSettings.isOptionsCollapsed) null else Dimension(0, 0)
     }
+    private val panelAnimation = PanelAnimation(optionsPanel)
     private val collapseButton: ActionButton = createCollapseButton()
 
     init {
@@ -356,24 +358,40 @@ class AiderInputDialog(
      */
     private fun createOptionsPanel(): JPanel {
         return JPanel(BorderLayout()).apply {
-            border = JBUI.Borders.empty(0, 10, 10, 10)
+            border = JBUI.Borders.empty(5, 10, 10, 10)
             
-            val contentPanel = JPanel(FlowLayout(FlowLayout.LEFT, 10, 0)).apply {
+            val contentPanel = JPanel(GridBagLayout()).apply {
                 border = JBUI.Borders.empty(5)
+                val gbc = GridBagConstraints().apply {
+                    fill = GridBagConstraints.NONE
+                    anchor = GridBagConstraints.WEST
+                    insets = JBUI.insets(2, 5)
+                }
                 
                 // LLM selection
                 add(JLabel("LLM:").apply {
                     displayedMnemonic = KeyEvent.VK_L
                     labelFor = llmComboBox
                     toolTipText = "Select the Language Model to use"
+                }, gbc.apply {
+                    gridx = 0
+                    gridy = 0
                 })
                 add(llmComboBox.apply {
                     preferredSize = Dimension(150, preferredSize.height)
+                }, gbc.apply {
+                    gridx = 1
+                    gridy = 0
+                    weightx = 0.3
                 })
                 
                 // Yes flag
                 add(yesCheckBox.apply {
                     mnemonic = KeyEvent.VK_Y
+                }, gbc.apply {
+                    gridx = 2
+                    gridy = 0
+                    insets.left = 20
                 })
                 
                 // Additional args
@@ -381,9 +399,18 @@ class AiderInputDialog(
                     displayedMnemonic = KeyEvent.VK_A
                     labelFor = additionalArgsField
                     toolTipText = "Additional arguments for the Aider command"
+                }, gbc.apply {
+                    gridx = 3
+                    gridy = 0
+                    insets.left = 20
                 })
                 add(additionalArgsField.apply {
                     preferredSize = Dimension(200, preferredSize.height)
+                }, gbc.apply {
+                    gridx = 4
+                    gridy = 0
+                    weightx = 0.7
+                    fill = GridBagConstraints.HORIZONTAL
                 })
             }
             
@@ -424,9 +451,14 @@ class AiderInputDialog(
         val isCollapsed = projectSettings.isOptionsCollapsed
         button.presentation.icon = if (isCollapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
         
-        wrapper.isVisible = !isCollapsed
-        wrapper.revalidate()
-        wrapper.repaint()
+        val startHeight = if (isCollapsed) panel.preferredSize.height else 0
+        val endHeight = if (isCollapsed) 0 else panel.preferredSize.height
+        
+        panelAnimation.animate(startHeight, endHeight) {
+            wrapper.preferredSize = if (isCollapsed) Dimension(0, 0) else null
+            wrapper.revalidate()
+            wrapper.repaint()
+        }
     }
 
     private fun restoreLastState() {
