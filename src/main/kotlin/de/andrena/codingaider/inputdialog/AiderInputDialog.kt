@@ -33,6 +33,9 @@ import java.awt.*
 import java.awt.event.InputEvent
 import java.awt.event.KeyEvent
 import java.io.File
+import org.pushingpixels.trident.Timeline
+import org.pushingpixels.trident.callback.TimelineCallback
+import org.pushingpixels.trident.ease.Spline
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.swing.*
@@ -554,60 +557,68 @@ class AiderInputDialog(
      * The panel's collapsed state is persisted in project settings.
      */
     private fun createOptionsPanel(): JPanel {
-        val panel = JPanel(GridBagLayout())
-        val gbc = GridBagConstraints()
-        
-        // LLM selection
-        val selectLlmLabel = JLabel("LLM:").apply {
-            displayedMnemonic = KeyEvent.VK_L
-            labelFor = llmComboBox
-            toolTipText = "Select the Language Model to use"
+        return JPanel(BorderLayout()).apply {
+            border = JBUI.Borders.empty(0, 10, 10, 10)
+            
+            val contentPanel = JPanel(GridBagLayout()).apply {
+                border = JBUI.Borders.empty(5)
+                background = UIManager.getColor("Panel.background").brighter()
+                
+                val gbc = GridBagConstraints()
+                
+                // LLM selection
+                val selectLlmLabel = JLabel("LLM:").apply {
+                    displayedMnemonic = KeyEvent.VK_L
+                    labelFor = llmComboBox
+                    toolTipText = "Select the Language Model to use"
+                }
+                add(selectLlmLabel, GridBagConstraints().apply {
+                    gridx = 0
+                    gridy = 0
+                    weightx = 0.0
+                    insets = JBUI.insets(5)
+                })
+                add(llmComboBox, GridBagConstraints().apply {
+                    gridx = 1
+                    gridy = 0
+                    weightx = 1.0
+                    fill = GridBagConstraints.HORIZONTAL
+                    insets = JBUI.insets(5)
+                })
+                
+                // Yes flag
+                yesCheckBox.mnemonic = KeyEvent.VK_Y
+                add(yesCheckBox, GridBagConstraints().apply {
+                    gridx = 0
+                    gridy = 1
+                    weightx = 0.0
+                    gridwidth = 2
+                    insets = JBUI.insets(5)
+                })
+                
+                // Additional args
+                val additionalArgsLabel = JLabel("Args:").apply {
+                    displayedMnemonic = KeyEvent.VK_A
+                    labelFor = additionalArgsField
+                    toolTipText = "Additional arguments for the Aider command"
+                }
+                add(additionalArgsLabel, GridBagConstraints().apply {
+                    gridx = 0
+                    gridy = 2
+                    weightx = 0.0
+                    insets = JBUI.insets(5)
+                })
+                add(additionalArgsField, GridBagConstraints().apply {
+                    gridx = 1
+                    gridy = 2
+                    weightx = 1.0
+                    fill = GridBagConstraints.HORIZONTAL
+                    insets = JBUI.insets(5)
+                })
+            }
+            
+            add(contentPanel, BorderLayout.CENTER)
         }
-        panel.add(selectLlmLabel, GridBagConstraints().apply {
-            gridx = 0
-            gridy = 0
-            weightx = 0.0
-            insets = JBUI.insets(5)
-        })
-        panel.add(llmComboBox, GridBagConstraints().apply {
-            gridx = 1
-            gridy = 0
-            weightx = 1.0
-            fill = GridBagConstraints.HORIZONTAL
-            insets = JBUI.insets(5)
-        })
-        
-        // Yes flag
-        yesCheckBox.mnemonic = KeyEvent.VK_Y
-        panel.add(yesCheckBox, GridBagConstraints().apply {
-            gridx = 0
-            gridy = 1
-            weightx = 0.0
-            gridwidth = 2
-            insets = JBUI.insets(5)
-        })
-        
-        // Additional args
-        val additionalArgsLabel = JLabel("Args:").apply {
-            displayedMnemonic = KeyEvent.VK_A
-            labelFor = additionalArgsField
-            toolTipText = "Additional arguments for the Aider command"
-        }
-        panel.add(additionalArgsLabel, GridBagConstraints().apply {
-            gridx = 0
-            gridy = 2
-            weightx = 0.0
-            insets = JBUI.insets(5)
-        })
-        panel.add(additionalArgsField, GridBagConstraints().apply {
-            gridx = 1
-            gridy = 2
-            weightx = 1.0
-            fill = GridBagConstraints.HORIZONTAL
-            insets = JBUI.insets(5)
-        })
-        
-        return panel
     }
     
     /**
@@ -621,16 +632,31 @@ class AiderInputDialog(
     private fun updateOptionsPanel(wrapper: com.intellij.ui.components.panels.Wrapper, panel: JPanel, collapseButton: ActionButton) {
         val isCollapsed = projectSettings.isOptionsCollapsed
         
+        // Create slide animation
+        val timeline = Timeline(wrapper)
+        
         if (isCollapsed) {
-            wrapper.setContent(null)
+            timeline.addPropertyToInterpolate("preferredSize", 
+                Dimension(wrapper.width, panel.preferredSize.height), 
+                Dimension(wrapper.width, 0))
+            timeline.addCallback(object : TimelineCallback {
+                override fun onTimelineStateChanged(state: TimelineState?, timelinePosition: Float, time: Long) {
+                    if (state == TimelineState.DONE) {
+                        wrapper.setContent(null)
+                    }
+                }
+            })
             collapseButton.presentation.icon = AllIcons.General.ArrowRight
         } else {
             wrapper.setContent(panel)
+            timeline.addPropertyToInterpolate("preferredSize", 
+                Dimension(wrapper.width, 0),
+                Dimension(wrapper.width, panel.preferredSize.height))
             collapseButton.presentation.icon = AllIcons.General.ArrowDown
         }
         
-        wrapper.parent?.revalidate()
-        wrapper.parent?.repaint()
+        timeline.duration = 200
+        timeline.play()
     }
 
     private fun restoreLastState() {
