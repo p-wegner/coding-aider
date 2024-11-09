@@ -76,8 +76,8 @@ class AiderInputDialog(
     }
 
     private fun updateTokenCount() {
-        val messageTokens = tokenCountService.countTokensInText(getInputText())
-        tokenCountLabel.text = "Tokens: ${messageTokens + allFileTokens}"
+        val totalTokens = tokenCountService.countTokensInText(getInputText()) + allFileTokens
+        tokenCountLabel.text = "$totalTokens tokens"
     }
 
     val lazyCacheDelegate = LazyCacheDelegate { tokenCountService.countTokensInFiles(getAllFiles()) }
@@ -109,9 +109,11 @@ class AiderInputDialog(
     private var modeSegmentedButton: SegmentedButton<AiderMode>? = null
     private val modeSegmentedButtonPanel: DialogPanel
     private val messageLabel: JLabel
-    private val tokenCountLabel = JLabel("Tokens: 0").apply {
-        toolTipText =
-            "The actual token count may vary depending on the model. The displayed number uses GPT-4O encoding as a heuristic."
+    private val tokenCountLabel = JLabel("0 tokens").apply {
+        toolTipText = "The actual token count may vary depending on the model. The displayed number uses GPT-4O encoding as a heuristic."
+        foreground = UIManager.getColor("Label.disabledForeground")
+        border = JBUI.Borders.empty(2, 5)
+        horizontalAlignment = SwingConstants.RIGHT
     }
     private val historyComboBox = AiderHistoryComboBox(project, inputTextField)
     private val aiderContextView: AiderContextView
@@ -319,12 +321,6 @@ class AiderInputDialog(
             fill = GridBagConstraints.NONE
             insets = JBUI.insetsLeft(10)
         })
-        firstRowPanel.add(tokenCountLabel, GridBagConstraints().apply {
-            gridx = 8
-            gridy = 0
-            weightx = 0.0
-            insets = JBUI.insetsLeft(10)
-        })
         topPanel.add(firstRowPanel, gbc)
 
         // Update token count initially
@@ -338,7 +334,12 @@ class AiderInputDialog(
         gbc.gridy++
         gbc.weighty = 1.0
         gbc.fill = GridBagConstraints.BOTH
-        topPanel.add(inputTextField, gbc)
+        
+        // Create a panel to hold input field and token count
+        val inputPanel = JPanel(BorderLayout())
+        inputPanel.add(inputTextField, BorderLayout.CENTER)
+        inputPanel.add(tokenCountLabel, BorderLayout.SOUTH)
+        topPanel.add(inputPanel, gbc)
 
         // Options panel with collapsible UI
         gbc.gridy++
