@@ -360,7 +360,6 @@ class AiderInputDialog(
             
             val contentPanel = JPanel(GridBagLayout()).apply {
                 border = JBUI.Borders.empty(5)
-                background = UIManager.getColor("Panel.background").brighter()
                 
                 // LLM selection
                 val selectLlmLabel = JLabel("LLM:").apply {
