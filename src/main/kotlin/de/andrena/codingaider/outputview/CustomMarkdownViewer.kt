@@ -6,6 +6,10 @@ import com.vladsch.flexmark.util.data.MutableDataSet
 import com.vladsch.flexmark.ext.tables.TablesExtension
 import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension
 import com.vladsch.flexmark.ext.autolink.AutolinkExtension
+import com.vladsch.flexmark.ext.gfm.tasklist.TaskListExtension
+import com.vladsch.flexmark.ext.definition.DefinitionExtension
+import com.vladsch.flexmark.ext.footnotes.FootnoteExtension
+import com.vladsch.flexmark.ext.toc.TocExtension
 import java.awt.Desktop
 import java.net.URI
 import javax.swing.JEditorPane
@@ -22,7 +26,11 @@ class CustomMarkdownViewer {
         set(Parser.EXTENSIONS, listOf(
             TablesExtension.create(),
             StrikethroughExtension.create(),
-            AutolinkExtension.create()
+            AutolinkExtension.create(),
+            TaskListExtension.create(),
+            DefinitionExtension.create(),
+            FootnoteExtension.create(),
+            TocExtension.create()
         ))
     }
     private val parser = Parser.builder(options).build()
@@ -108,6 +116,66 @@ class CustomMarkdownViewer {
                     }
                     tr:nth-child(even) {
                         background-color: $trEvenBg;
+                    }
+                    /* Headings */
+                    h1, h2, h3, h4, h5, h6 {
+                        margin-top: 24px;
+                        margin-bottom: 16px;
+                        font-weight: bold;
+                        line-height: 1.25;
+                    }
+                    h1 { font-size: 2em; border-bottom: 1px solid $tableBorder; }
+                    h2 { font-size: 1.5em; border-bottom: 1px solid $tableBorder; }
+                    h3 { font-size: 1.25em; }
+                    h4 { font-size: 1em; }
+                    h5 { font-size: 0.875em; }
+                    h6 { font-size: 0.85em; }
+                    
+                    /* Lists */
+                    ul, ol {
+                        padding-left: 2em;
+                        margin: 1em 0;
+                    }
+                    li { margin: 0.25em 0; }
+                    
+                    /* Task Lists */
+                    .task-list {
+                        list-style-type: none;
+                        padding-left: 0;
+                    }
+                    .task-list-item {
+                        margin: 0.5em 0;
+                        padding-left: 1.5em;
+                    }
+                    .task-list-item-checkbox {
+                        margin-right: 0.5em;
+                    }
+                    
+                    /* Blockquotes */
+                    blockquote {
+                        margin: 1em 0;
+                        padding: 0 1em;
+                        color: #666666;
+                        border-left: 0.25em solid #ddd;
+                    }
+                    
+                    /* Definition Lists */
+                    dl {
+                        margin: 1em 0;
+                    }
+                    dt {
+                        font-weight: bold;
+                        margin-top: 1em;
+                    }
+                    dd {
+                        margin-left: 2em;
+                    }
+                    
+                    /* Footnotes */
+                    .footnotes {
+                        border-top: 1px solid $tableBorder;
+                        margin-top: 2em;
+                        padding-top: 1em;
                     }
                 </style>
             </head>
