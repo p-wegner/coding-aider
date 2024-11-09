@@ -41,7 +41,7 @@ dependencies {
     testImplementation("org.mockito:mockito-core:5.11.0")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
     intellijPlatform {
-        intellijIdeaCommunity("2024.1.3")
+        intellijIdeaCommunity("2024.1.7")
         pluginVerifier()
         instrumentationTools()
         bundledPlugin("org.jetbrains.plugins.terminal")
@@ -50,8 +50,11 @@ dependencies {
 }
 intellijPlatform {
     pluginVerification {
-        ide(IntelliJPlatformType.IntellijIdeaCommunity, "2023.3")
-        ide(IntelliJPlatformType.IntellijIdeaCommunity, "2024.1.3")
+        ides{
+            recommended()
+            ide("IC-2024.1.7")
+            ide("IC-2024.2.4")
+        }
     }
 
 }
@@ -83,8 +86,8 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("232")
-        untilBuild.set("242.*")
+        sinceBuild.set("241.*")
+//        untilBuild.set("242.*")
         version = project.version.toString()
     }
 
