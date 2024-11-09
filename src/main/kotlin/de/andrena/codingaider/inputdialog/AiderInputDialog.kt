@@ -135,8 +135,7 @@ class AiderInputDialog(
         toolTipText =
             "The actual token count may vary depending on the model. The displayed number uses GPT-4O encoding as a heuristic."
     }
-    private val historyComboBox = ComboBox<HistoryItem>()
-    private val historyService = project.service<AiderHistoryService>()
+    private val historyComboBox = AiderHistoryComboBox(project, inputTextField)
     private val aiderContextView: AiderContextView
     private val persistentFileService: PersistentFileService
     private var splitPane: OnePixelSplitter
@@ -215,13 +214,7 @@ class AiderInputDialog(
     }
 
     private fun navigateHistory(direction: Int) {
-        val currentIndex = historyComboBox.selectedIndex
-        val newIndex = (currentIndex + direction).coerceIn(0, historyComboBox.itemCount - 1)
-        if (newIndex != currentIndex) {
-            historyComboBox.selectedIndex = newIndex
-            val selectedItem = historyComboBox.selectedItem as? HistoryItem
-            inputTextField.text = selectedItem?.command?.joinToString("\n") ?: ""
-        }
+        historyComboBox.navigateHistory(direction)
     }
 
     override fun createActions(): Array<Action> {
@@ -238,43 +231,6 @@ class AiderInputDialog(
         }
     }
 
-    private fun loadHistory() {
-        historyComboBox.addItem(HistoryItem(emptyList(), null))  // Empty entry
-        historyService.getInputHistory().forEach { (dateTime, command) ->
-            historyComboBox.addItem(HistoryItem(command, dateTime))
-        }
-        historyComboBox.renderer = HistoryItemRenderer()
-        historyComboBox.selectedIndex = 0  // Select the empty entry initially
-        historyComboBox.addActionListener {
-            if (historyComboBox.selectedIndex > 0 && historyComboBox.selectedItem is HistoryItem) {
-                val selectedItem = historyComboBox.selectedItem as HistoryItem
-                inputTextField.text = selectedItem.command.joinToString("\n")
-            } else {
-                inputTextField.text = ""  // Clear the input area when empty entry is selected
-            }
-        }
-    }
-
-    private data class HistoryItem(val command: List<String>, val dateTime: LocalDateTime?)
-
-    private inner class HistoryItemRenderer : DefaultListCellRenderer() {
-        override fun getListCellRendererComponent(
-            list: JList<*>?, value: Any?, index: Int, isSelected: Boolean, cellHasFocus: Boolean
-        ): Component {
-            val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
-            if (value is HistoryItem) {
-                text = value.command.firstOrNull() ?: ""
-                if (value.dateTime != null) {
-                    val formattedDate = value.dateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
-                    val fullCommand = value.command.joinToString("\n")
-                    toolTipText = "<html>$formattedDate<br><pre>$fullCommand</pre></html>"
-                } else {
-                    toolTipText = null
-                }
-            }
-            return component
-        }
-    }
 
     override fun createCenterPanel(): JComponent {
         val panel = JPanel(BorderLayout())
