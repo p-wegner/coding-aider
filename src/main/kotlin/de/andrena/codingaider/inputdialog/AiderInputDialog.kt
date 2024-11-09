@@ -325,20 +325,18 @@ class AiderInputDialog(
             preferredSize = if (!projectSettings.isContextCollapsed) null else Dimension(0, 0)
         }
 
-        val contextCollapseButton = ActionButton(
-            object : AnAction() {
-                override fun actionPerformed(e: AnActionEvent) {
-                    projectSettings.isContextCollapsed = !projectSettings.isContextCollapsed
-                    updateContextPanel(contextWrapper, contextViewPanel, this@AiderInputDialog.collapseButton)
-                }
+        val contextCollapseButton = createCollapseButton(
+            isCollapsed = { projectSettings.isContextCollapsed },
+            onToggle = {
+                projectSettings.isContextCollapsed = !projectSettings.isContextCollapsed
+                updateCollapsiblePanel(
+                    contextWrapper,
+                    contextViewPanel,
+                    contextCollapseButton,
+                    projectSettings.isContextCollapsed
+                ) { if (projectSettings.isContextCollapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown }
             },
-            Presentation().apply {
-                icon = if (projectSettings.isContextCollapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
-                text = "Toggle Context Files"
-                description = "Show/hide context files panel"
-            },
-            "AiderContextButton",
-            ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
+            getIcon = { if (projectSettings.isContextCollapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown }
         )
 
         val contextHeader = JPanel(BorderLayout()).apply {
@@ -466,11 +464,9 @@ class AiderInputDialog(
      * @param collapseButton The button that toggles the panel state
      */
     private fun createCollapseButton(
-        name: String,
-        isCollapsedProperty: kotlin.reflect.KMutableProperty0<Boolean>,
-        wrapper: com.intellij.ui.components.panels.Wrapper,
-        panel: JComponent,
-        animation: PanelAnimation
+        isCollapsed: () -> Boolean,
+        onToggle: () -> Unit,
+        getIcon: () -> Icon
     ) = ActionButton(
         object : AnAction() {
             override fun actionPerformed(e: AnActionEvent) {
@@ -492,23 +488,14 @@ class AiderInputDialog(
         }
     }
 
-    private fun updateContextPanel(wrapper: com.intellij.ui.components.panels.Wrapper, panel: JComponent, button: ActionButton) {
-        val isCollapsed = projectSettings.isContextCollapsed
-        button.presentation.icon = if (isCollapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
-        
-        val startHeight = if (isCollapsed) panel.preferredSize.height else 0
-        val endHeight = if (isCollapsed) 0 else panel.preferredSize.height
-        
-        panelAnimation.animate(startHeight, endHeight) {
-            wrapper.preferredSize = if (isCollapsed) Dimension(0, 0) else null
-            wrapper.revalidate()
-            wrapper.repaint()
-        }
-    }
-
-    private fun updateOptionsPanel(wrapper: com.intellij.ui.components.panels.Wrapper, panel: JPanel, button: ActionButton) {
-        val isCollapsed = projectSettings.isOptionsCollapsed
-        button.presentation.icon = if (isCollapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
+    private fun updateCollapsiblePanel(
+        wrapper: com.intellij.ui.components.panels.Wrapper,
+        panel: JComponent,
+        button: ActionButton,
+        isCollapsed: Boolean,
+        getIcon: () -> Icon
+    ) {
+        button.presentation.icon = getIcon()
         
         val startHeight = if (isCollapsed) panel.preferredSize.height else 0
         val endHeight = if (isCollapsed) 0 else panel.preferredSize.height
