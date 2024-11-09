@@ -124,7 +124,13 @@ class AiderInputDialog(
         preferredSize = if (!projectSettings.isOptionsCollapsed) null else Dimension(0, 0)
     }
     private val panelAnimation = PanelAnimation(optionsPanel)
-    private val collapseButton: ActionButton = createCollapseButton()
+    private val collapseButton: ActionButton = createCollapseButton(
+        "Options",
+        projectSettings::isOptionsCollapsed,
+        optionsPanel,
+        flagAndArgsPanel,
+        panelAnimation
+    )
 
     init {
         title = "Aider Command"
@@ -312,6 +318,7 @@ class AiderInputDialog(
         topPanel.add(optionsPanel, gbc.apply { gridy++ })
 
         // Context view with collapsible UI
+        // Context view with collapsible UI
         val contextViewPanel = AiderContextViewPanel(project, aiderContextView)
         val contextWrapper = com.intellij.ui.components.panels.Wrapper().apply {
             setContent(contextViewPanel)
@@ -319,15 +326,15 @@ class AiderInputDialog(
             preferredSize = if (!projectSettings.isContextCollapsed) null else Dimension(0, 0)
         }
         val contextAnimation = PanelAnimation(contextWrapper)
-        
-        val contextCollapseButton = createCollapseButtonFor(
-            "Context",
+
+        val contextCollapseButton = createCollapseButton(
+            "Context Files",
             projectSettings::isContextCollapsed,
             contextWrapper,
             contextViewPanel,
             contextAnimation
         )
-        
+
         val contextHeader = JPanel(BorderLayout()).apply {
             add(contextCollapseButton, BorderLayout.WEST)
             add(JLabel("Context Files"), BorderLayout.CENTER)
@@ -337,7 +344,7 @@ class AiderInputDialog(
         val contextPanel = JPanel(BorderLayout()).apply {
             add(contextHeader, BorderLayout.NORTH)
             add(contextWrapper, BorderLayout.CENTER)
-            border = JBUI.Borders.empty(5, 10, 10, 10)
+            border = JBUI.Borders.empty(5)
         }
 
         // Add all components to main panel
@@ -452,7 +459,7 @@ class AiderInputDialog(
      * @param panel The options panel to show/hide
      * @param collapseButton The button that toggles the panel state
      */
-    private fun createCollapseButtonFor(
+    private fun createCollapseButton(
         name: String,
         isCollapsedProperty: kotlin.reflect.KMutableProperty0<Boolean>,
         wrapper: com.intellij.ui.components.panels.Wrapper,
