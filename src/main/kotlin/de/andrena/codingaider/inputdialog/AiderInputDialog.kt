@@ -26,6 +26,7 @@ import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.services.*
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
+import de.andrena.codingaider.settings.AiderProjectSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
 import java.awt.*
@@ -108,7 +109,6 @@ class AiderInputDialog(
 
     private val llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
 
-    private val projectSettings = AiderProjectSettings.getInstance(project)
     private val projectSettings = AiderProjectSettings.getInstance(project)
     private val llmComboBox = object : ComboBox<String>(llmOptions) {
         override fun getToolTipText(): String? {
