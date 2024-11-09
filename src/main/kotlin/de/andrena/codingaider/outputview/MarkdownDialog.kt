@@ -1,8 +1,10 @@
 package de.andrena.codingaider.outputview
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBScrollPane
+import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import java.awt.BorderLayout
 import java.awt.EventQueue.invokeLater
@@ -22,7 +24,7 @@ class MarkdownDialog(
     initialText: String,
     private val onAbort: Abortable? = null
 ) : JDialog(null as Frame?, false) {
-    private val markdownViewer = CustomMarkdownViewer(listOf("src")).apply {
+    private val markdownViewer = CustomMarkdownViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
         setDarkTheme(!JBColor.isBright())
     }
     private val scrollPane = JBScrollPane(markdownViewer.component).apply {
@@ -53,8 +55,8 @@ class MarkdownDialog(
             val maximum = scrollBar.model.maximum
             val current = scrollBar.model.value
             
-            // Consider "at bottom" when within 10 pixels of the bottom
-            val isAtBottom = (current + extent + 10) >= maximum
+            // Consider "at bottom" when within 3 pixels of the bottom
+            val isAtBottom = (current + extent + 3) >= maximum
             
             autoScroll = isAtBottom
         }

@@ -20,7 +20,7 @@ import com.vladsch.flexmark.html.renderer.LinkResolverContext
 import de.andrena.codingaider.utils.FilePathConverter
 import javax.swing.JEditorPane
 
-class CustomMarkdownViewer {
+class CustomMarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
     val component: JEditorPane = JEditorPane().apply {
         contentType = "text/html"
         isEditable = false
@@ -62,17 +62,7 @@ class CustomMarkdownViewer {
         }
     }
 
-    private val lookupPaths: List<String>
-    private val hyperlinkHandler: HyperlinkHandler
-
-    constructor(lookupPaths: List<String> = emptyList()) {
-        this.lookupPaths = lookupPaths
-        this.hyperlinkHandler = HyperlinkHandler(lookupPaths)
-        component.addHyperlinkListener { event ->
-            hyperlinkHandler.handleHyperlinkEvent(event)
-        }
-    }
-
+    private val hyperlinkHandler: HyperlinkHandler = HyperlinkHandler(lookupPaths)
     private var currentContent = ""
     private var isDarkTheme = false
 
@@ -323,6 +313,12 @@ class CustomMarkdownViewer {
                 </body>
                 </html>
             """.trimIndent()
+        }
+    }
+
+    init {
+        component.addHyperlinkListener { event ->
+            hyperlinkHandler.handleHyperlinkEvent(event)
         }
     }
 }
