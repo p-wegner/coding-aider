@@ -61,7 +61,6 @@ private class SelectPlanDialog(private val project: Project) : DialogWrapper(pro
 
         val markdownViewer = CustomMarkdownViewer().apply {
             setDarkTheme(!JBColor.isBright())
-            component.preferredSize = Dimension(400, 200)
         }
 
         planComboBox.addActionListener {
@@ -80,6 +79,8 @@ private class SelectPlanDialog(private val project: Project) : DialogWrapper(pro
                 cell(JBScrollPane(markdownViewer.component))
                     .resizableColumn()
                     .align(AlignX.FILL)
+                    .constraints(growX, growY, push)
+                    .preferredSize(400, 300)
             }
         }
     }
