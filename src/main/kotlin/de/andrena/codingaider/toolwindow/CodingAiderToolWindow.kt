@@ -14,6 +14,7 @@ class CodingAiderToolWindow : ToolWindowFactory {
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         toolWindow.setToHideOnEmptyContent(false)
+        toolWindow.setAutoHide(false)
         val toolWindowContent = CodingAiderToolWindowContent(project)
         val content = ContentFactory.getInstance().createContent(toolWindowContent.getContent(), "", false)
         toolWindow.contentManager.addContent(content)
