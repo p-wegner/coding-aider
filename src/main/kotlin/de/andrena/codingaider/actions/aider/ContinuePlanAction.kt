@@ -7,11 +7,11 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.panel
-import de.andrena.codingaider.services.AiderPlan
 import de.andrena.codingaider.services.plans.AiderPlanService
 import com.intellij.ui.JBColor
 import de.andrena.codingaider.outputview.CustomMarkdownViewer
 import com.intellij.ui.components.JBScrollPane
+import de.andrena.codingaider.services.plans.AiderPlan
 import de.andrena.codingaider.toolwindow.plans.PlanViewer
 import java.awt.Dimension
 import javax.swing.*
