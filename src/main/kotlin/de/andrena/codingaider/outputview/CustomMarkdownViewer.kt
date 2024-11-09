@@ -138,6 +138,33 @@ class CustomMarkdownViewer {
                     }
                     li { margin: 0.25em 0; }
                     
+                    /* Ordered Lists specific styling */
+                    ol {
+                        counter-reset: item;
+                        list-style-type: none;
+                    }
+                    ol > li {
+                        counter-increment: item;
+                        position: relative;
+                    }
+                    ol > li:before {
+                        content: counter(item) ".";
+                        position: absolute;
+                        left: -2em;
+                        width: 1.5em;
+                        text-align: right;
+                    }
+                    /* Nested lists */
+                    ol ol {
+                        counter-reset: subitem;
+                    }
+                    ol ol > li {
+                        counter-increment: subitem;
+                    }
+                    ol ol > li:before {
+                        content: counter(item) "." counter(subitem);
+                    }
+                    
                     /* Task Lists */
                     .task-list {
                         list-style-type: none;
