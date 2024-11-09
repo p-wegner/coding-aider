@@ -1,41 +1,4 @@
-package de.andrena.codingaider.toolwindow
 
-import com.intellij.openapi.actionSystem.ActionManager
-import com.intellij.openapi.actionSystem.DefaultActionGroup
-import com.intellij.openapi.fileChooser.FileChooser
-import com.intellij.openapi.fileChooser.FileChooserDescriptor
-import com.intellij.openapi.fileEditor.FileEditorManager
-import com.intellij.openapi.project.Project
-import com.intellij.openapi.vfs.VirtualFileManager
-import com.intellij.openapi.vfs.newvfs.BulkFileListener
-import com.intellij.openapi.vfs.newvfs.events.VFileEvent
-import com.intellij.ui.components.JBList
-import com.intellij.ui.components.panels.Wrapper
-import com.intellij.ui.dsl.builder.Align
-import com.intellij.ui.dsl.builder.panel
-import de.andrena.codingaider.command.FileData
-import de.andrena.codingaider.messages.PersistentFilesChangedTopic
-import de.andrena.codingaider.services.AiderPlanService
-import de.andrena.codingaider.services.PersistentFileService
-import java.awt.Component
-import java.io.File
-import javax.swing.*
-
-class PersistentFilesComponent(private val project: Project) {
-    private val persistentFileService = project.getService(PersistentFileService::class.java)
-    private val aiderPlanService = project.getService(AiderPlanService::class.java)
-    private val persistentFilesListModel = DefaultListModel<FileData>()
-    private val planViewer = PlanViewer(project)
-    private val persistentFilesList: JBList<FileData> = JBList(persistentFilesListModel).apply {
-        cellRenderer = PersistentFileRenderer()
-        addKeyListener(object : java.awt.event.KeyAdapter() {
-            override fun keyPressed(e: java.awt.event.KeyEvent) {
-                if (e.keyCode == java.awt.event.KeyEvent.VK_DELETE) {
-                    removeSelectedFiles()
-                }
-            }
-        })
-    }
 
 
 
