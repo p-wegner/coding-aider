@@ -19,6 +19,7 @@ import de.andrena.codingaider.outputview.CustomMarkdownViewer
 import de.andrena.codingaider.services.plans.AiderPlan
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.settings.AiderSettings
+import de.andrena.codingaider.utils.FileRefresher
 import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
@@ -201,8 +202,10 @@ class PlanViewer(private val project: Project) {
                     val file = File(fileData.filePath)
                     if (file.exists()) {
                         file.delete()
+                        FileRefresher.refreshPath(file.parent)
                     }
                 }
+                FileRefresher.refreshPath(AiderPlanService.AIDER_PLANS_FOLDER)
                 updatePlans(project.getService(AiderPlanService::class.java).getAiderPlans())
             }
         }
