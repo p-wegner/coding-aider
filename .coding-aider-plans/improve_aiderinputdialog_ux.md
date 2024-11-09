@@ -35,4 +35,5 @@ Improve the user experience of AiderInputDialog by reorganizing the layout to hi
 - Use existing IntelliJ UI components for consistency
 - Maintain keyboard shortcuts and mnemonics
 - Ensure proper layout behavior when resizing
-- Handle state persistence through existing settings framework
+- Store collapsed state in AiderProjectSettings instead of AiderSettings
+- Consider using IntelliJ's built-in UI.Panels for collapsible functionality
