@@ -76,6 +76,7 @@ class CustomMarkdownViewer {
 
     init {
         component.addHyperlinkListener { event ->
+            // TODO: Extract this to a separate class
             if (event.eventType == HyperlinkEvent.EventType.ACTIVATED) {
                 try {
                     val url = event.url?.toString() ?: event.description
