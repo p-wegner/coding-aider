@@ -1,69 +1,96 @@
-# Persistent Files Tool Window
+# Coding Aider Tool Window
 
 ## Overview
-The Persistent Files Tool Window is a specialized module in the Coding Aider application designed to provide users with a comprehensive file management interface. It enables developers to maintain a persistent list of files across IDE sessions, with advanced features like read-only toggling and batch file management.
+The Coding Aider Tool Window is a specialized interface in the Coding Aider application that provides two main panels:
+1. Persistent Files Panel - For managing frequently accessed files
+2. Plans Panel - For viewing and executing Aider plans
 
 ## Architecture and Design
 
 ### Key Components
-- **[PersistentFilesToolWindow.kt](./CodingAiderToolWindow.kt)**: Primary implementation of the tool window
-- **PersistentFileService**: Backend service for managing persistent file data
-- **FileData**: Data model representing file metadata
+- **CodingAiderToolWindow**: Main tool window factory implementation
+- **CodingAiderToolWindowContent**: Content manager for both panels
+- **PersistentFilesPanel**: Manages persistent file list
+- **PlansPanel**: Handles plan display and execution
+- **PlanViewer**: Renders and manages plan interactions
 
 ### Design Patterns
-- **Observer Pattern**: Utilizes IntelliJ Platform's message bus for real-time UI updates
-- **Component-Based Design**: Separates UI rendering and file management logic
+- **Observer Pattern**: Uses IntelliJ Platform's message bus for real-time updates
+- **Component-Based Design**: Separates UI and business logic
+- **Factory Pattern**: Tool window creation
 
 ### Class Responsibilities
 
-#### PersistentFilesToolWindow
+#### CodingAiderToolWindow
 - Implements `ToolWindowFactory`
-- Creates the tool window content
+- Creates and initializes tool window content
 - **Key Method**: `createToolWindowContent(project: Project, toolWindow: ToolWindow)`
 
-#### PersistentFilesComponent
-Manages the core functionality of file persistence:
+#### PersistentFilesPanel
+Manages persistent files functionality:
 - File list management
-- User interaction handling
-- Integration with `PersistentFileService`
+- Read-only mode toggling
+- Batch file operations
+- Real-time file list updates
 
-**Key Methods**:
-- `addPersistentFiles()`: File selection and addition
-- `toggleReadOnlyMode()`: Read-only status management
-- `removeSelectedFiles()`: Batch file removal
-- `loadPersistentFiles()`: Synchronizes UI with persistent file list
+**Key Features**:
+- Add individual files or directories
+- Add currently open files
+- Toggle read-only status
+- Remove selected files
+- Double-click to open files
 
-#### PersistentFileRenderer
-- Custom list cell renderer
-- Displays file paths with read-only status
+#### PlansPanel & PlanViewer
+Handles Aider plans:
+- Displays plan list with completion status
+- Shows checklist progress
+- Enables plan continuation
+- Provides plan details on hover
 
-### Data Flow Diagram
+**Key Features**:
+- Visual progress indicators
+- Plan execution controls
+- Double-click to open plan files
+- Real-time plan updates
+
+### Data Flow
 ```mermaid
 graph TD
-    User[User Interaction] --> PersistentFilesComponent
-    PersistentFilesComponent --> PersistentFileService[PersistentFileService]
-    PersistentFileService --> MessageBus[Message Bus]
+    User[User Interaction] --> ToolWindow[Tool Window]
+    ToolWindow --> PersistentFiles[Persistent Files Panel]
+    ToolWindow --> Plans[Plans Panel]
+    PersistentFiles --> FileService[PersistentFileService]
+    Plans --> PlanService[AiderPlanService]
+    FileService --> MessageBus[Message Bus]
+    PlanService --> MessageBus
     MessageBus --> UI[UI Update]
 ```
 
-### Exceptional Implementation Details
-- Supports both individual file and directory selection
-- Provides keyboard (Delete key) and double-click file opening
-- Real-time UI updates via message bus subscription
+### Implementation Details
+- File system change monitoring
+- Plan completion tracking
+- Keyboard shortcuts support
+- Customizable UI components
 
 ### Dependencies
 - IntelliJ Platform SDK
 - Kotlin Stdlib
-- Custom `PersistentFileService`
+- Custom services:
+  - PersistentFileService
+  - AiderPlanService
 
 ### Usage Scenarios
-1. Maintaining a list of frequently accessed files
-2. Marking files as read-only for reference
-3. Persistent file tracking across IDE sessions
+1. Managing reference files across sessions
+2. Tracking and executing multi-step plans
+3. Monitoring plan progress
+4. Quick access to relevant project files
 
-## Configuration and Extensibility
-The module is designed to be easily extensible and configurable within the Coding Aider ecosystem.
+## Configuration
+The tool window is configurable through:
+- IntelliJ IDE settings
+- Coding Aider plugin settings
 
 ## Related Documentation
-- [FileData Documentation](../command/FileData.kt)
-- [PersistentFileService Documentation](../services/PersistentFileService.kt)
+- [FileData](../command/FileData.kt)
+- [AiderPlan](../services/AiderPlanService.kt)
+- [PersistentFileService](../services/PersistentFileService.kt)
