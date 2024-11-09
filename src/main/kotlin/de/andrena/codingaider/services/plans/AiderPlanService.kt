@@ -4,7 +4,10 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
-import org.yaml.snakeyaml.Yaml
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.readValue
 import java.io.File
 
 
@@ -253,21 +256,15 @@ $STRUCTURED_MODE_MARKER ${commandData.message}
 
     private fun String.trimStartingWhiteSpaces() = trimIndent().trimStart { it.isWhitespace() }
 
-    @Suppress("UNCHECKED_CAST")
+    private val objectMapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
+
+    private data class ContextYamlFile(val path: String, val readOnly: Boolean = false)
+    private data class ContextYamlData(val files: List<ContextYamlFile> = emptyList())
+
     private fun parseContextYaml(contextFile: File): List<FileData> {
         return try {
-            val yaml = Yaml()
-            val content = contextFile.readText()
-            val data = yaml.load(content) as? Map<String, Any>
-            val files = data?.get("files") as? List<Map<String, Any>>
-            
-            files?.mapNotNull { fileMap ->
-                val path = fileMap["path"] as? String
-                val readOnly = fileMap["readOnly"] as? Boolean ?: false
-                if (path != null) {
-                    FileData(path, readOnly)
-                } else null
-            } ?: emptyList()
+            val yamlData: ContextYamlData = objectMapper.readValue(contextFile)
+            yamlData.files.map { FileData(it.path, it.readOnly) }
         } catch (e: Exception) {
             println("Error parsing context yaml ${contextFile.name}: ${e.message}")
             emptyList()
