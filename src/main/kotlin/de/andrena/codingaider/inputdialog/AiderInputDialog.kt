@@ -318,7 +318,6 @@ class AiderInputDialog(
         topPanel.add(optionsPanel, gbc.apply { gridy++ })
 
         // Context view with collapsible UI
-        // Context view with collapsible UI
         val contextViewPanel = AiderContextViewPanel(project, aiderContextView)
         val contextWrapper = com.intellij.ui.components.panels.Wrapper().apply {
             setContent(contextViewPanel)
@@ -327,12 +326,20 @@ class AiderInputDialog(
         }
         val contextAnimation = PanelAnimation(contextWrapper)
 
-        val contextCollapseButton = createCollapseButton(
-            "Context Files",
-            projectSettings::isContextCollapsed,
-            contextWrapper,
-            contextViewPanel,
-            contextAnimation
+        val contextCollapseButton = ActionButton(
+            object : AnAction() {
+                override fun actionPerformed(e: AnActionEvent) {
+                    projectSettings.isContextCollapsed = !projectSettings.isContextCollapsed
+                    updateContextPanel(contextWrapper, contextViewPanel, this@apply)
+                }
+            },
+            Presentation().apply {
+                icon = if (projectSettings.isContextCollapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
+                text = "Toggle Context Files"
+                description = "Show/hide context files panel"
+            },
+            "AiderContextButton",
+            ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
         )
 
         val contextHeader = JPanel(BorderLayout()).apply {
@@ -483,6 +490,20 @@ class AiderInputDialog(
         addActionListener { 
             projectSettings.isOptionsCollapsed = !projectSettings.isOptionsCollapsed
             updateOptionsPanel(optionsPanel, flagAndArgsPanel, this)
+        }
+    }
+
+    private fun updateContextPanel(wrapper: com.intellij.ui.components.panels.Wrapper, panel: JComponent, button: ActionButton) {
+        val isCollapsed = projectSettings.isContextCollapsed
+        button.presentation.icon = if (isCollapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
+        
+        val startHeight = if (isCollapsed) panel.preferredSize.height else 0
+        val endHeight = if (isCollapsed) 0 else panel.preferredSize.height
+        
+        panelAnimation.animate(startHeight, endHeight) {
+            wrapper.preferredSize = if (isCollapsed) Dimension(0, 0) else null
+            wrapper.revalidate()
+            wrapper.repaint()
         }
     }
 
