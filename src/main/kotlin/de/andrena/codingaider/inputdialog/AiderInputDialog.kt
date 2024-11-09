@@ -308,40 +308,30 @@ class AiderInputDialog(
         gbc.weighty = 0.0
         gbc.fill = GridBagConstraints.HORIZONTAL
 
-        val optionsHeader = JPanel(BorderLayout()).apply {
-            add(collapseButton, BorderLayout.WEST)
-            add(JLabel("Additional Options"), BorderLayout.CENTER)
-            border = JBUI.Borders.empty(2)
-        }
+        val optionsCollapsible = CollapsiblePanel(
+            "Additional Options",
+            projectSettings::isOptionsCollapsed,
+            flagAndArgsPanel
+        )
         
-        topPanel.add(optionsHeader, gbc.apply { gridy++ })
-        topPanel.add(optionsPanel, gbc.apply { gridy++ })
+        topPanel.add(optionsCollapsible.headerPanel.apply { 
+            border = JBUI.Borders.empty(2) 
+        }, gbc.apply { gridy++ })
+        topPanel.add(optionsCollapsible.contentPanel, gbc.apply { gridy++ })
 
         // Context view with collapsible UI
         val contextViewPanel = AiderContextViewPanel(project, aiderContextView)
-        val contextWrapper = com.intellij.ui.components.panels.Wrapper().apply {
-            setContent(contextViewPanel)
-            isVisible = true
-            preferredSize = if (!projectSettings.isContextCollapsed) null else Dimension(0, 0)
-        }
-
-        val contextCollapseButton = createCollapseButton(
-            "Context",
+        val contextCollapsible = CollapsiblePanel(
+            "Context Files",
             projectSettings::isContextCollapsed,
-            contextWrapper,
-            contextViewPanel,
-            PanelAnimation(contextWrapper)
+            contextViewPanel
         )
 
-        val contextHeader = JPanel(BorderLayout()).apply {
-            add(contextCollapseButton, BorderLayout.WEST)
-            add(JLabel("Context Files"), BorderLayout.CENTER)
-            border = JBUI.Borders.empty(2)
-        }
-
         val contextPanel = JPanel(BorderLayout()).apply {
-            add(contextHeader, BorderLayout.NORTH)
-            add(contextWrapper, BorderLayout.CENTER)
+            add(contextCollapsible.headerPanel.apply { 
+                border = JBUI.Borders.empty(2) 
+            }, BorderLayout.NORTH)
+            add(contextCollapsible.contentPanel, BorderLayout.CENTER)
             border = JBUI.Borders.empty(5)
         }
 
@@ -449,42 +439,6 @@ class AiderInputDialog(
         }
     }
     
-    private fun createCollapseButton(
-        name: String,
-        isCollapsedProperty: kotlin.reflect.KMutableProperty0<Boolean>,
-        wrapper: com.intellij.ui.components.panels.Wrapper,
-        panel: JComponent,
-        animation: PanelAnimation
-    ): ActionButton {
-        return ActionButton(
-            object : AnAction() {
-                override fun actionPerformed(e: AnActionEvent) {
-                    isCollapsedProperty.set(!isCollapsedProperty.get())
-                    val isCollapsed = isCollapsedProperty.get()
-                    
-                    // Update button icon
-                    presentation.icon = if (isCollapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
-                    
-                    // Animate panel
-                    val startHeight = if (isCollapsed) panel.preferredSize.height else 0
-                    val endHeight = if (isCollapsed) 0 else panel.preferredSize.height
-                    
-                    animation.animate(startHeight, endHeight) {
-                        wrapper.preferredSize = if (isCollapsed) Dimension(0, 0) else null
-                        wrapper.revalidate()
-                        wrapper.repaint()
-                    }
-                }
-            },
-            Presentation().apply {
-                icon = if (isCollapsedProperty.get()) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
-                text = "Toggle $name"
-                description = "Show/hide $name panel"
-            },
-            "Aider${name}Button",
-            ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
-        )
-    }
 
     private fun restoreLastState() {
         AiderDialogStateService.getInstance(project).getLastState()?.let { state ->
