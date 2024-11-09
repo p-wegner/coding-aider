@@ -233,7 +233,8 @@ class AiderPlanService(private val project: Project) {
             SYSTEM In that case inform the user why no changes were made.
             SYSTEM New files that are not the plan and are not part of the checklist should be created in a suitable location.
             SYSTEM If no further information is given, use ${commandData.projectPath} as the location.
-            SYSTEM Update the plan and checklist as needed based on the current progress and any new requirements.
+            SYSTEM Update the plan, checklist  and context.yaml as needed based on the current progress and any new requirements.
+            SYSTEM Important: Always keep the context.yaml up to date with your changes. If files are created or edited, add them to the context.yaml.
             SYSTEM If the current instruction doesn't align with the existing plan, update the plan accordingly before proceeding.
             """
 
