@@ -141,6 +141,8 @@ class AiderInputDialog(
     private val persistentFileService: PersistentFileService
     private var splitPane: OnePixelSplitter
     private val settingsButton: ActionButton
+    private val optionsPanel = com.intellij.ui.components.panels.Wrapper()
+    private val flagAndArgsPanel = createOptionsPanel()
     private val collapseButton: ActionButton = createCollapseButton()
 
     init {
@@ -616,7 +618,7 @@ class AiderInputDialog(
         object : AnAction() {
             override fun actionPerformed(e: AnActionEvent) {
                 projectSettings.isOptionsCollapsed = !projectSettings.isOptionsCollapsed
-                updateOptionsPanel(optionsPanel, flagAndArgsPanel)
+                updateOptionsPanel(optionsPanel, flagAndArgsPanel, collapseButton)
             }
         },
         Presentation().apply {
@@ -628,7 +630,7 @@ class AiderInputDialog(
         ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
     )
 
-    private fun updateOptionsPanel(wrapper: com.intellij.ui.components.panels.Wrapper, panel: JPanel) {
+    private fun updateOptionsPanel(wrapper: com.intellij.ui.components.panels.Wrapper, panel: JPanel, button: ActionButton) {
         val isCollapsed = projectSettings.isOptionsCollapsed
         
         val animation = PanelAnimation(wrapper)
@@ -639,14 +641,14 @@ class AiderInputDialog(
                 endHeight = 0,
                 onComplete = { wrapper.setContent(null) }
             )
-            collapseButton.presentation.icon = AllIcons.General.ArrowRight
+            button.presentation.icon = AllIcons.General.ArrowRight
         } else {
             wrapper.setContent(panel)
             animation.animate(
                 startHeight = 0,
                 endHeight = panel.preferredSize.height
             )
-            collapseButton.presentation.icon = AllIcons.General.ArrowDown
+            button.presentation.icon = AllIcons.General.ArrowDown
         }
     }
 
