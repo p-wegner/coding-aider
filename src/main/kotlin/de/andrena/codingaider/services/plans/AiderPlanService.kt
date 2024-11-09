@@ -4,6 +4,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
+import org.yaml.snakeyaml.Yaml
 import java.io.File
 
 
@@ -122,16 +123,16 @@ class AiderPlanService(private val project: Project) {
                         
                         // Look for associated context file
                         val contextFile = File(plansDir, "${file.nameWithoutExtension}_context.yaml")
-                        if (contextFile.exists()) {
+                        val contextFiles = if (contextFile.exists()) {
                             files.add(FileData(contextFile.absolutePath, false))
-                        }
+                            parseContextYaml(contextFile)
+                        } else emptyList()
                         
                         AiderPlan(
                             plan = planContent,
                             checklist = combinedChecklist,
                             planFiles = files,
-                            // TODO: parse context yaml to add files
-                            contextFiles = emptyList()
+                            contextFiles = contextFiles
                         )
                     } else null
                 } catch (e: Exception) {
@@ -207,6 +208,13 @@ class AiderPlanService(private val project: Project) {
             SYSTEM - feature_name_context.yaml (file list)
             SYSTEM The plan and checklist should reference each other using markdown file references.
             SYSTEM The context.yaml should list all files that will be needed to implement the plan.
+            SYSTEM The context.yaml must follow this format:
+            SYSTEM ---
+            SYSTEM files:
+            SYSTEM - path: "full/path/to/file"
+            SYSTEM   readOnly: false
+            SYSTEM - path: "full/path/to/another/file"
+            SYSTEM   readOnly: true
             SYSTEM Be sure to use correct relative path (same folder) references between the files.
             SYSTEM Never proceed with changes if the plan is not committed yet.
             SYSTEM Once the plan properly describes the changes, start implementing them step by step. Commit each change as you go.
@@ -244,5 +252,26 @@ $STRUCTURED_MODE_MARKER ${commandData.message}
         files.filter { it.filePath.contains(AIDER_PLANS_FOLDER) && it.filePath.endsWith(".md") }
 
     private fun String.trimStartingWhiteSpaces() = trimIndent().trimStart { it.isWhitespace() }
+
+    @Suppress("UNCHECKED_CAST")
+    private fun parseContextYaml(contextFile: File): List<FileData> {
+        return try {
+            val yaml = Yaml()
+            val content = contextFile.readText()
+            val data = yaml.load(content) as? Map<String, Any>
+            val files = data?.get("files") as? List<Map<String, Any>>
+            
+            files?.mapNotNull { fileMap ->
+                val path = fileMap["path"] as? String
+                val readOnly = fileMap["readOnly"] as? Boolean ?: false
+                if (path != null) {
+                    FileData(path, readOnly)
+                } else null
+            } ?: emptyList()
+        } catch (e: Exception) {
+            println("Error parsing context yaml ${contextFile.name}: ${e.message}")
+            emptyList()
+        }
+    }
 
 }
