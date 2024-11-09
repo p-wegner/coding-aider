@@ -2,6 +2,7 @@ package de.andrena.codingaider.inputdialog
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.ui.TextFieldWithAutoCompletion
 import com.intellij.ui.components.JBList
 import de.andrena.codingaider.services.AiderHistoryService
 import java.awt.Component
@@ -15,7 +16,7 @@ import javax.swing.text.JTextComponent
 
 data class HistoryItem(val command: List<String>, val dateTime: LocalDateTime?)
 
-class AiderHistoryComboBox(private val project: Project, private val inputField: JTextComponent) : JComboBox<HistoryItem>() {
+class AiderHistoryComboBox(private val project: Project, private val inputField: TextFieldWithAutoCompletion<String>) : JComboBox<HistoryItem>() {
     private val historyService = project.service<AiderHistoryService>()
 
     init {
