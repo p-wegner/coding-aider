@@ -72,58 +72,14 @@ class CustomMarkdownViewer {
 
     fun setLookupPaths(paths: List<String>) {
         lookupPaths = paths
+        hyperlinkHandler = HyperlinkHandler(paths)
     }
+
+    private lateinit var hyperlinkHandler: HyperlinkHandler
 
     init {
         component.addHyperlinkListener { event ->
-            // TODO: Extract this to a separate class
-            if (event.eventType == HyperlinkEvent.EventType.ACTIVATED) {
-                try {
-                    val url = event.url?.toString() ?: event.description
-                    val project = com.intellij.openapi.project.ProjectManager.getInstance().openProjects.firstOrNull()
-                    
-                    val file = when {
-                        url.startsWith("file:") -> {
-                            // Handle absolute file paths
-                            val filePath = java.net.URLDecoder.decode(url.removePrefix("file:"), "UTF-8")
-                            File(filePath)
-                        }
-                        url.startsWith("./") -> {
-                            val basePath = project?.basePath
-                            if (basePath != null) {
-                                val relativePath = url.removePrefix("./")
-                                var file = File(basePath, relativePath)
-                                if (file.exists()) {
-                                    file
-                                } else {
-                                    lookupPaths.map { lookupPath ->
-                                        File(basePath, "$lookupPath/$relativePath")
-                                    }.firstOrNull { it.exists() }
-                                        ?: throw IllegalArgumentException("File not found in any lookup path: $relativePath")
-                                }
-                            } else {
-                                throw IllegalArgumentException("Project base path not found")
-                            }
-                        }
-                        else -> null
-                    }
-
-                    if (file != null && project != null) {
-                        
-                        // Open file in IDE
-                        OpenFileDescriptor(
-                            project,
-                            LocalFileSystem.getInstance().findFileByIoFile(file)
-                                ?: throw IllegalArgumentException("File not found: ${file.path}")
-                        ).navigate(true)
-                    } else {
-                        // For external URLs or when file/project not found, use default browser
-                        Desktop.getDesktop().browse(URI(url))
-                    }
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
+            hyperlinkHandler.handleHyperlinkEvent(event)
         }
     }
 
