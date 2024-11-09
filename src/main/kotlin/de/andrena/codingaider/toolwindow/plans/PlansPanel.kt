@@ -46,7 +46,10 @@ class PlansPanel(private val project: Project) {
                 row {
                     val toolbar = ActionManager.getInstance().createActionToolbar(
                         "AiderPlansToolbar",
-                        DefaultActionGroup().apply { add(planViewer.ContinuePlanAction()) },
+                        DefaultActionGroup().apply { 
+                            add(planViewer.ContinuePlanAction())
+                            add(planViewer.DeletePlanAction())
+                        },
                         true
                     )
                     toolbar.targetComponent = planViewer.plansList

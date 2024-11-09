@@ -149,4 +149,59 @@ class PlanViewer(private val project: Project) {
             e.presentation.isEnabled = selectedPlan != null && !selectedPlan.isPlanComplete()
         }
     }
+
+    inner class DeletePlanAction : AnAction(
+        "Delete Plan",
+        "Delete this plan",
+        AllIcons.Actions.GC
+    ) {
+        override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+        
+        override fun actionPerformed(e: AnActionEvent) {
+            val selectedPlan = plansList.selectedValue ?: return
+            
+            val dialog = object : DialogWrapper(project) {
+                init {
+                    title = "Delete Plan"
+                    init()
+                }
+
+                override fun createCenterPanel(): JComponent {
+                    val markdownViewer = CustomMarkdownViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
+                        setDarkTheme(!JBColor.isBright())
+                        setMarkdownContent(selectedPlan.plan)
+                    }
+
+                    val scrollPane = JBScrollPane(markdownViewer.component).apply {
+                        preferredSize = Dimension(800, 400)
+                    }
+
+                    return panel {
+                        row {
+                            label("Are you sure you want to delete this plan?")
+                        }
+                        row {
+                            cell(scrollPane)
+                                .align(Align.FILL)
+                                .resizableColumn()
+                        }.resizableRow()
+                    }
+                }
+            }
+
+            if (dialog.showAndGet()) {
+                selectedPlan.files.forEach { fileData ->
+                    val file = File(fileData.filePath)
+                    if (file.exists()) {
+                        file.delete()
+                    }
+                }
+                updatePlans(project.getService(AiderPlanService::class.java).getAiderPlans())
+            }
+        }
+
+        override fun update(e: AnActionEvent) {
+            e.presentation.isEnabled = plansList.selectedValue != null
+        }
+    }
 }
