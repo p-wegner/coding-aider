@@ -18,6 +18,7 @@ import com.vladsch.flexmark.ext.gfm.tasklist.TaskListItem
 import com.vladsch.flexmark.html.AttributeProvider
 import com.vladsch.flexmark.html.renderer.LinkResolverContext
 import java.awt.Desktop
+import java.io.File
 import java.net.URI
 import javax.swing.JEditorPane
 import javax.swing.event.HyperlinkEvent
@@ -69,6 +70,7 @@ class CustomMarkdownViewer {
             if (event.eventType == HyperlinkEvent.EventType.ACTIVATED) {
                 try {
                     val url = event.url.toString()
+                    // TODO: support relative paths to files in project without using file: protocol
                     if (url.startsWith("file:")) {
                         // Convert URL to file path
                         val filePath = java.net.URLDecoder.decode(url.removePrefix("file:"), "UTF-8")
