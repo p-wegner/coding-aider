@@ -632,31 +632,23 @@ class AiderInputDialog(
     private fun updateOptionsPanel(wrapper: com.intellij.ui.components.panels.Wrapper, panel: JPanel, collapseButton: ActionButton) {
         val isCollapsed = projectSettings.isOptionsCollapsed
         
-        // Create slide animation
-        val timeline = Timeline(wrapper)
+        val animation = PanelAnimation(wrapper)
         
         if (isCollapsed) {
-            timeline.addPropertyToInterpolate("preferredSize", 
-                Dimension(wrapper.width, panel.preferredSize.height), 
-                Dimension(wrapper.width, 0))
-            timeline.addCallback(object : TimelineCallback {
-                override fun onTimelineStateChanged(state: TimelineState?, timelinePosition: Float, time: Long) {
-                    if (state == TimelineState.DONE) {
-                        wrapper.setContent(null)
-                    }
-                }
-            })
+            animation.animate(
+                startHeight = panel.preferredSize.height,
+                endHeight = 0,
+                onComplete = { wrapper.setContent(null) }
+            )
             collapseButton.presentation.icon = AllIcons.General.ArrowRight
         } else {
             wrapper.setContent(panel)
-            timeline.addPropertyToInterpolate("preferredSize", 
-                Dimension(wrapper.width, 0),
-                Dimension(wrapper.width, panel.preferredSize.height))
+            animation.animate(
+                startHeight = 0,
+                endHeight = panel.preferredSize.height
+            )
             collapseButton.presentation.icon = AllIcons.General.ArrowDown
         }
-        
-        timeline.duration = 200
-        timeline.play()
     }
 
     private fun restoreLastState() {
