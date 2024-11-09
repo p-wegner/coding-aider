@@ -70,24 +70,36 @@ class CustomMarkdownViewer {
             if (event.eventType == HyperlinkEvent.EventType.ACTIVATED) {
                 try {
                     val url = event.url.toString()
-                    // TODO: support relative paths to files in project without using file: protocol
-                    if (url.startsWith("file:")) {
-                        // Convert URL to file path
-                        val filePath = java.net.URLDecoder.decode(url.removePrefix("file:"), "UTF-8")
-                        val file = File(filePath)
-                        
-                        // Get project instance
-                        val project = com.intellij.openapi.project.ProjectManager.getInstance().openProjects.firstOrNull()
-                        if (project != null) {
-                            // Open file in IDE
-                            com.intellij.openapi.fileEditor.OpenFileDescriptor(
-                                project,
-                                com.intellij.openapi.vfs.LocalFileSystem.getInstance().findFileByIoFile(file)
-                                    ?: throw IllegalArgumentException("File not found: $filePath")
-                            ).navigate(true)
+                    val project = com.intellij.openapi.project.ProjectManager.getInstance().openProjects.firstOrNull()
+                    
+                    val file = when {
+                        url.startsWith("file:") -> {
+                            // Handle absolute file paths
+                            val filePath = java.net.URLDecoder.decode(url.removePrefix("file:"), "UTF-8")
+                            File(filePath)
                         }
+                        project != null && !url.contains("://") -> {
+                            // Handle relative paths within project
+                            val basePath = project.basePath
+                            if (basePath != null) {
+                                File(basePath, url)
+                            } else {
+                                throw IllegalArgumentException("Project base path not found")
+                            }
+                        }
+                        else -> null
+                    }
+
+                    if (file != null && project != null) {
+                        
+                        // Open file in IDE
+                        com.intellij.openapi.fileEditor.OpenFileDescriptor(
+                            project,
+                            com.intellij.openapi.vfs.LocalFileSystem.getInstance().findFileByIoFile(file)
+                                ?: throw IllegalArgumentException("File not found: ${file.path}")
+                        ).navigate(true)
                     } else {
-                        // For external URLs, use default browser
+                        // For external URLs or when file/project not found, use default browser
                         Desktop.getDesktop().browse(URI(url))
                     }
                 } catch (e: Exception) {
