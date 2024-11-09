@@ -22,7 +22,13 @@ object FileRefresher {
     }
 
     fun refreshPath(aiderPlansFolder: String) {
-       // TODO: Refresh all files in the folder
-        TODO("Not yet implemented")
+        val virtualFile = VirtualFileManager.getInstance().findFileByUrl("file://$aiderPlansFolder")
+        if (virtualFile != null) {
+            invokeLater {
+                ApplicationManager.getApplication().invokeLater {
+                    RefreshQueue.getInstance().refresh(true, true, null, virtualFile)
+                }
+            }
+        }
     }
 }

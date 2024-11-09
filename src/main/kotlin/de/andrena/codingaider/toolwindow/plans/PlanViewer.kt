@@ -202,10 +202,9 @@ class PlanViewer(private val project: Project) {
                     val file = File(fileData.filePath)
                     if (file.exists()) {
                         file.delete()
-                        FileRefresher.refreshPath(file.parent)
                     }
                 }
-                FileRefresher.refreshPath(AiderPlanService.AIDER_PLANS_FOLDER)
+                FileRefresher.refreshPath(project.basePath + "/${AiderPlanService.AIDER_PLANS_FOLDER}")
                 updatePlans(project.getService(AiderPlanService::class.java).getAiderPlans())
             }
         }
