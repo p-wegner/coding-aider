@@ -79,8 +79,6 @@ private class SelectPlanDialog(private val project: Project) : DialogWrapper(pro
                 cell(JBScrollPane(markdownViewer.component))
                     .resizableColumn()
                     .align(AlignX.FILL)
-                    .constraints(growX, growY, push)
-                    .preferredSize(400, 300)
             }
         }
     }
