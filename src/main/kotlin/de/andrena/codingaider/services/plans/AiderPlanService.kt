@@ -114,10 +114,16 @@ class AiderPlanService(private val project: Project) {
                             it.description.trim() 
                         }
                         
-                        // Include both plan and checklist files in the files list
+                        // Include plan, checklist and context files in the files list
                         val files = mutableListOf(FileData(file.absolutePath, false))
                         if (checklistFile.exists()) {
                             files.add(FileData(checklistFile.absolutePath, false))
+                        }
+                        
+                        // Look for associated context file
+                        val contextFile = File(plansDir, "${file.nameWithoutExtension}_context.yaml")
+                        if (contextFile.exists()) {
+                            files.add(FileData(contextFile.absolutePath, false))
                         }
                         
                         AiderPlan(
@@ -185,13 +191,21 @@ class AiderPlanService(private val project: Project) {
 
         val s = """
             SYSTEM Instead of making changes to the code, markdown files should be used to track progress on the feature.
-            SYSTEM A plan consists of a detailed description of the requested feature and a separate file with a checklist for tracking the progress.
+            SYSTEM A plan consists of three files:
+            SYSTEM 1. A detailed description of the requested feature
+            SYSTEM 2. A separate file with a checklist for tracking the progress
+            SYSTEM 3. A context.yaml file listing all relevant files needed for implementing the plan
             SYSTEM The file should be saved in the $AIDER_PLANS_FOLDER directory in the project.
             SYSTEM Always start plans with the line $AIDER_PLAN_MARKER and checklists with $AIDER_PLAN_CHECKLIST_MARKER at the beginning of the file and use this marker in existing files to identify plans and checklists.
             SYSTEM The plan should focus on high level descriptions of the requested features and major implementation details.
             SYSTEM The checklist should focus on the required implementation steps on a more fine grained level.
-            SYSTEM If a separate checklist exists, it is referenced in the plan using markdown file references.
-            SYSTEM Likewise the plan is referenced in the checklist using markdown file references. Be sure to use correct relative path (same folder) references between the files, so assume the checklist is in the same folder as the plan.
+            SYSTEM The three files should be named consistently:
+            SYSTEM - feature_name.md (plan)
+            SYSTEM - feature_name_checklist.md (checklist)
+            SYSTEM - feature_name_context.yaml (file list)
+            SYSTEM The plan and checklist should reference each other using markdown file references.
+            SYSTEM The context.yaml should list all files that will be needed to implement the plan.
+            SYSTEM Be sure to use correct relative path (same folder) references between the files.
             SYSTEM Never proceed with changes if the plan is not committed yet.
             SYSTEM Once the plan properly describes the changes, start implementing them step by step. Commit each change as you go.
         """
