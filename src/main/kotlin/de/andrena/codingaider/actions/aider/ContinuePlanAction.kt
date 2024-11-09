@@ -11,7 +11,8 @@ import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.services.AiderPlan
 import de.andrena.codingaider.services.AiderPlanService
 import de.andrena.codingaider.toolwindow.PlanViewer
-import com.intellij.ui.EditorTextField
+import com.intellij.ui.JBColor
+import de.andrena.codingaider.outputview.CustomMarkdownViewer
 import com.intellij.ui.components.JBScrollPane
 import java.awt.Dimension
 import javax.swing.*
