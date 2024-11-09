@@ -90,11 +90,21 @@ class CustomMarkdownViewer {
                             }
                         }
                         url.startsWith("./") -> {
-                            // Handle relative paths from project root
-                            // TODO: support list of lookup paths
+                            // Handle relative paths by checking multiple lookup locations
                             val basePath = project?.basePath
                             if (basePath != null) {
-                                File(basePath, url.removePrefix("./"))
+                                val relativePath = url.removePrefix("./")
+                                // First try project root
+                                var file = File(basePath, relativePath)
+                                if (file.exists()) {
+                                    file
+                                } else {
+                                    // Then try each lookup path
+                                    LOOKUP_PATHS.map { lookupPath -> 
+                                        File(basePath, "$lookupPath/$relativePath")
+                                    }.firstOrNull { it.exists() }
+                                        ?: throw IllegalArgumentException("File not found in any lookup path: $relativePath")
+                                }
                             } else {
                                 throw IllegalArgumentException("Project base path not found")
                             }
@@ -125,6 +135,10 @@ class CustomMarkdownViewer {
     private var isDarkTheme = false
 
     companion object {
+        private val LOOKUP_PATHS = listOf(
+            ".coding-aider-plans"  // Default plans folder
+        )
+
         private fun getHtmlTemplate(
             bodyBg: String,
             bodyText: String,
