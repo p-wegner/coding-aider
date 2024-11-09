@@ -324,13 +324,12 @@ class AiderInputDialog(
             isVisible = true
             preferredSize = if (!projectSettings.isContextCollapsed) null else Dimension(0, 0)
         }
-        val contextAnimation = PanelAnimation(contextWrapper)
 
         val contextCollapseButton = ActionButton(
             object : AnAction() {
                 override fun actionPerformed(e: AnActionEvent) {
                     projectSettings.isContextCollapsed = !projectSettings.isContextCollapsed
-                    updateContextPanel(contextWrapper, contextViewPanel, this@apply)
+                    updateContextPanel(contextWrapper, contextViewPanel, this@AiderInputDialog.collapseButton)
                 }
             },
             Presentation().apply {
