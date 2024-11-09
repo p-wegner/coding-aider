@@ -1,7 +1,5 @@
 package de.andrena.codingaider.outputview
 
-import com.intellij.openapi.fileEditor.OpenFileDescriptor
-import com.intellij.openapi.vfs.LocalFileSystem
 import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
 import com.vladsch.flexmark.util.data.MutableDataSet
@@ -20,11 +18,7 @@ import com.vladsch.flexmark.ext.gfm.tasklist.TaskListItem
 import com.vladsch.flexmark.html.AttributeProvider
 import com.vladsch.flexmark.html.renderer.LinkResolverContext
 import de.andrena.codingaider.utils.FilePathConverter
-import java.awt.Desktop
-import java.io.File
-import java.net.URI
 import javax.swing.JEditorPane
-import javax.swing.event.HyperlinkEvent
 
 class CustomMarkdownViewer {
     val component: JEditorPane = JEditorPane().apply {
