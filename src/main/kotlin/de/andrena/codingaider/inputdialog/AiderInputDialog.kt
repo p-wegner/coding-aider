@@ -326,17 +326,11 @@ class AiderInputDialog(
         }
 
         val contextCollapseButton = createCollapseButton(
-            isCollapsed = { projectSettings.isContextCollapsed },
-            onToggle = {
-                projectSettings.isContextCollapsed = !projectSettings.isContextCollapsed
-                updateCollapsiblePanel(
-                    contextWrapper,
-                    contextViewPanel,
-                    contextCollapseButton,
-                    projectSettings.isContextCollapsed
-                ) { if (projectSettings.isContextCollapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown }
-            },
-            getIcon = { if (projectSettings.isContextCollapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown }
+            "Context",
+            projectSettings::isContextCollapsed,
+            contextWrapper,
+            contextViewPanel,
+            PanelAnimation(contextWrapper)
         )
 
         val contextHeader = JPanel(BorderLayout()).apply {
@@ -455,55 +449,41 @@ class AiderInputDialog(
         }
     }
     
-    /**
-     * Updates the options panel visibility state with animation.
-     * The collapsed state is persisted in project settings.
-     * 
-     * @param wrapper The wrapper component containing the options panel
-     * @param panel The options panel to show/hide
-     * @param collapseButton The button that toggles the panel state
-     */
     private fun createCollapseButton(
         name: String,
         isCollapsedProperty: kotlin.reflect.KMutableProperty0<Boolean>,
         wrapper: com.intellij.ui.components.panels.Wrapper,
         panel: JComponent,
         animation: PanelAnimation
-    ) = ActionButton(
-        object : AnAction() {
-            override fun actionPerformed(e: AnActionEvent) {
-                isCollapsedProperty.set(!isCollapsedProperty.get())
-                updateCollapsiblePanel(wrapper, panel, this@ActionButton, isCollapsedProperty.get()) {
-                    if (isCollapsedProperty.get()) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
+    ): ActionButton {
+        return ActionButton(
+            object : AnAction() {
+                override fun actionPerformed(e: AnActionEvent) {
+                    isCollapsedProperty.set(!isCollapsedProperty.get())
+                    val isCollapsed = isCollapsedProperty.get()
+                    
+                    // Update button icon
+                    presentation.icon = if (isCollapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
+                    
+                    // Animate panel
+                    val startHeight = if (isCollapsed) panel.preferredSize.height else 0
+                    val endHeight = if (isCollapsed) 0 else panel.preferredSize.height
+                    
+                    animation.animate(startHeight, endHeight) {
+                        wrapper.preferredSize = if (isCollapsed) Dimension(0, 0) else null
+                        wrapper.revalidate()
+                        wrapper.repaint()
+                    }
                 }
-            }
-        },
-        Presentation().apply {
-            icon = if (isCollapsedProperty.get()) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
-            text = "Toggle $name"
-            description = "Show/hide $name panel"
-        },
-        "Aider${name}Button",
-        ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
-    )
-
-    private fun updateCollapsiblePanel(
-        wrapper: com.intellij.ui.components.panels.Wrapper,
-        panel: JComponent,
-        button: ActionButton,
-        isCollapsed: Boolean,
-        getIcon: () -> Icon
-    ) {
-        button.presentation.icon = getIcon()
-        
-        val startHeight = if (isCollapsed) panel.preferredSize.height else 0
-        val endHeight = if (isCollapsed) 0 else panel.preferredSize.height
-        
-        panelAnimation.animate(startHeight, endHeight) {
-            wrapper.preferredSize = if (isCollapsed) Dimension(0, 0) else null
-            wrapper.revalidate()
-            wrapper.repaint()
-        }
+            },
+            Presentation().apply {
+                icon = if (isCollapsedProperty.get()) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
+                text = "Toggle $name"
+                description = "Show/hide $name panel"
+            },
+            "Aider${name}Button",
+            ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
+        )
     }
 
     private fun restoreLastState() {
