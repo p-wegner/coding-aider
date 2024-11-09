@@ -375,8 +375,6 @@ class AiderInputDialog(
                 border = JBUI.Borders.empty(5)
                 background = UIManager.getColor("Panel.background").brighter()
                 
-                val gbc = GridBagConstraints()
-                
                 // LLM selection
                 val selectLlmLabel = JLabel("LLM:").apply {
                     displayedMnemonic = KeyEvent.VK_L
