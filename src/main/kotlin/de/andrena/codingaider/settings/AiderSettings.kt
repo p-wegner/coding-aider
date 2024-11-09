@@ -34,12 +34,19 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var dockerImageTag: String = AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION,
         var aiderExecutablePath: String = AiderDefaults.AIDER_EXECUTABLE_PATH,
         var documentationLlm: String = AiderDefaults.DOCUMENTATION_LLM,
+        var optionsPanelCollapsed: Boolean = true,
     )
     
     var documentationLlm: String
         get() = myState.documentationLlm
         set(value) {
             myState.documentationLlm = value
+        }
+
+    var optionsPanelCollapsed: Boolean
+        get() = myState.optionsPanelCollapsed
+        set(value) {
+            myState.optionsPanelCollapsed = value
         }
 
     private var myState = State()
