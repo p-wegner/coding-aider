@@ -22,7 +22,7 @@ class MarkdownDialog(
     initialText: String,
     private val onAbort: Abortable? = null
 ) : JDialog(null as Frame?, false) {
-    private val markdownViewer = CustomMarkdownViewer().apply {
+    private val markdownViewer = CustomMarkdownViewer(listOf("src")).apply {
         setDarkTheme(!JBColor.isBright())
     }
     private val scrollPane = JBScrollPane(markdownViewer.component).apply {

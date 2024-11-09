@@ -62,16 +62,12 @@ class CustomMarkdownViewer {
         }
     }
 
-    private var lookupPaths: List<String> = emptyList()
+    private val lookupPaths: List<String>
+    private val hyperlinkHandler: HyperlinkHandler
 
-    fun setLookupPaths(paths: List<String>) {
-        lookupPaths = paths
-        hyperlinkHandler = HyperlinkHandler(paths)
-    }
-
-    private lateinit var hyperlinkHandler: HyperlinkHandler
-
-    init {
+    constructor(lookupPaths: List<String> = emptyList()) {
+        this.lookupPaths = lookupPaths
+        this.hyperlinkHandler = HyperlinkHandler(lookupPaths)
         component.addHyperlinkListener { event ->
             hyperlinkHandler.handleHyperlinkEvent(event)
         }
