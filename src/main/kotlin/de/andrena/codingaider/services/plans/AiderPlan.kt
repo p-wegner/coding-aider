@@ -3,7 +3,7 @@ package de.andrena.codingaider.services.plans
 import de.andrena.codingaider.command.FileData
 
 data class ChecklistItem(val description: String, val checked: Boolean, val children: List<ChecklistItem>)
-data class AiderPlan(val plan: String, val checklist: List<ChecklistItem>, val files: List<FileData>) {
+data class AiderPlan(val plan: String, val checklist: List<ChecklistItem>, val planFiles: List<FileData>, val contextFiles: List<FileData>) {
     fun openChecklistItems(): List<ChecklistItem> {
         return checklist.flatMap { item -> getAllOpenItems(item) }
     }
@@ -28,7 +28,7 @@ data class AiderPlan(val plan: String, val checklist: List<ChecklistItem>, val f
 
     fun createShortTooltip(): String = buildString {
         appendLine("<html><body>")
-        val planFile = files.firstOrNull()
+        val planFile = planFiles.firstOrNull()
         appendLine("<b>Plan:</b> ${planFile?.filePath}<br>")
         appendLine("<b>Status:</b> ${if (isPlanComplete()) "Complete" else "In Progress"}<br>")
         val checkedItems = totalChecklistItems() - openChecklistItems().size
@@ -38,7 +38,7 @@ data class AiderPlan(val plan: String, val checklist: List<ChecklistItem>, val f
 
     fun createTooltip(): String = buildString {
         appendLine("<html><body style='width: 400px'>")
-        val planFile = files.firstOrNull()
+        val planFile = planFiles.firstOrNull()
         appendLine("<b>Plan:</b> ${planFile?.filePath}<br>")
         appendLine("<b>Status:</b> ${if (isPlanComplete()) "Complete" else "In Progress"}<br>")
         val checkedItems = totalChecklistItems() - openChecklistItems().size

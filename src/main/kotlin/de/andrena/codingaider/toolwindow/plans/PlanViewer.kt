@@ -38,7 +38,7 @@ class PlanViewer(private val project: Project) {
                     val index = plansList.locationToIndex(e.point)
                     if (index >= 0 && e.clickCount == 2) {
                         val plan = plansList.model.getElementAt(index)
-                        plan.files.forEach { fileData ->
+                        plan.planFiles.forEach { fileData ->
                             val virtualFile = LocalFileSystem.getInstance().findFileByPath(fileData.filePath)
                             if (virtualFile != null) {
                                 FileEditorManager.getInstance(project).openFile(virtualFile, true)
@@ -91,7 +91,7 @@ class PlanViewer(private val project: Project) {
             label.foreground = if (isSelected) list?.selectionForeground else list?.foreground
             
             if (value != null) {
-                val planFile = value.files.firstOrNull()
+                val planFile = value.planFiles.firstOrNull()
                 val fileName = planFile?.filePath?.let { File(it).nameWithoutExtension } ?: "Unknown Plan"
                 label.text = fileName
                 
@@ -133,7 +133,7 @@ class PlanViewer(private val project: Project) {
             useYesFlag = settings.useYesFlag,
             llm = settings.llm,
             additionalArgs = "",
-            files = selectedPlan.files,
+            files = selectedPlan.planFiles,
             lintCmd = "",
             projectPath = project.basePath ?: "",
             aiderMode = AiderMode.STRUCTURED,
@@ -198,7 +198,7 @@ class PlanViewer(private val project: Project) {
             }
 
             if (dialog.showAndGet()) {
-                selectedPlan.files.forEach { fileData ->
+                selectedPlan.planFiles.forEach { fileData ->
                     val file = File(fileData.filePath)
                     if (file.exists()) {
                         file.delete()
