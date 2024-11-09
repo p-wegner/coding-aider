@@ -380,7 +380,7 @@ class AiderInputDialog(
             Presentation().apply {
                 icon = if (projectSettings.isOptionsCollapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
                 text = "Toggle Options"
-                description = "Show/hide additional options"
+                description = "Show/hide additional options (LLM selection, flags and arguments)"
             },
             "AiderOptionsButton",
             ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
@@ -544,6 +544,10 @@ class AiderInputDialog(
         return "Enter feature description that will be used to create a plan:"
     }
 
+    /**
+     * Creates the collapsible options panel containing LLM selection, yes flag and additional arguments.
+     * The panel's collapsed state is persisted in project settings.
+     */
     private fun createOptionsPanel(): JPanel {
         val panel = JPanel(GridBagLayout())
         val gbc = GridBagConstraints()
@@ -601,6 +605,14 @@ class AiderInputDialog(
         return panel
     }
     
+    /**
+     * Updates the options panel visibility state with animation.
+     * The collapsed state is persisted in project settings.
+     * 
+     * @param wrapper The wrapper component containing the options panel
+     * @param panel The options panel to show/hide
+     * @param collapseButton The button that toggles the panel state
+     */
     private fun updateOptionsPanel(wrapper: com.intellij.ui.components.panels.Wrapper, panel: JPanel, collapseButton: ActionButton) {
         val animator = com.intellij.util.ui.Animator(
             "OptionsPanel",

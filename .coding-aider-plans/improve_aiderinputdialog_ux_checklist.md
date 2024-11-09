@@ -27,6 +27,6 @@ Related: [Plan](improve_aiderinputdialog_ux.md)
 - [ ] Test with different themes and look-and-feels
 
 ## Documentation
-- [ ] Update comments in AiderInputDialog
-- [ ] Document new settings property
-- [ ] Add tooltips for collapse/expand functionality
+- [x] Update comments in AiderInputDialog
+- [x] Document new settings property
+- [x] Add tooltips for collapse/expand functionality
