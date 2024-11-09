@@ -1,25 +1,25 @@
 <html>
 <body>
-Write your description here.
-Start the description with a verb in 3rd person singular, like reports, detects, highlights.
-In the first sentence, briefly explain what exactly the inspection helps you detect.
-Make sure the sentence is not very long and complicated.
+Provides an interactive AI-assisted interface for fixing compile errors.
 <p>
-The first sentence must be in a dedicated paragraph separated from the rest of the text. This will make the description easier to read.
-Make sure the description doesn’t just repeat the inspection title.
-</p>  
-<p>
-See https://plugins.jetbrains.com/docs/intellij/inspections.html#descriptions for more information.
+This intention opens a dialog where you can review and customize how the compilation error should be fixed using AI assistance.
 </p>
 <p>
-Embed code snippets:
+When invoked, this intention will:
 </p>
-<pre><code>
-// automatically highlighted according to inspection registration 'language' attribute
-</code></pre>
+<ul>
+    <li>Display the current compilation error</li>
+    <li>Allow you to provide additional context or requirements</li>
+    <li>Let you customize AI parameters and settings</li>
+    <li>Preview and confirm changes before they are applied</li>
+</ul>
+<p>
+This is ideal for complex compilation errors where you want more control over how the fix is implemented.
+</p>
 <!-- tooltip end -->
-<p>Text after this comment will only be shown in the settings of the inspection.</p>
-
-<p>To open related settings directly from the description, add a link with `settings://$` optionally followed by `?$` to pre-select a UI element.</p>
+<p>
+This intention is part of the Coding Aider plugin and requires a properly configured OpenAI API key to function.
+You can customize the AI model and additional parameters through the dialog interface.
+</p>
 </body>
 </html>
