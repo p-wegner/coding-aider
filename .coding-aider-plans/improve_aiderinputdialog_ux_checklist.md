@@ -8,10 +8,10 @@ Related: [Plan](improve_aiderinputdialog_ux.md)
 - [x] Add collapsed state property to AiderProjectSettings
 
 ## UI Changes
-- [ ] Move LLM selection components to bottom row
-- [ ] Create collapsible panel for options row
-- [ ] Add toggle button with icon for expand/collapse
-- [ ] Update layout constraints for new organization
+- [x] Move LLM selection components to bottom row
+- [x] Create collapsible panel for options row
+- [x] Add toggle button with icon for expand/collapse
+- [x] Update layout constraints for new organization
 - [ ] Implement smooth animation for panel transitions
 
 ## State Management

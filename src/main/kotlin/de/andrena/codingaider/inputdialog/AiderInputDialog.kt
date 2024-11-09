@@ -109,6 +109,7 @@ class AiderInputDialog(
     private val llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
 
     private val projectSettings = AiderProjectSettings.getInstance(project)
+    private val projectSettings = AiderProjectSettings.getInstance(project)
     private val llmComboBox = object : ComboBox<String>(llmOptions) {
         override fun getToolTipText(): String? {
             return null
@@ -296,18 +297,6 @@ class AiderInputDialog(
             labelFor = llmComboBox
             toolTipText = "Select the Language Model to use"
         }
-        firstRowPanel.add(selectLlmLabel, GridBagConstraints().apply {
-            gridx = 2
-            gridy = 0
-            weightx = 0.0
-            insets = JBUI.insets(0, 5)
-        })
-        firstRowPanel.add(llmComboBox, GridBagConstraints().apply {
-            gridx = 3
-            gridy = 0
-            weightx = 0.2
-            fill = GridBagConstraints.HORIZONTAL
-        })
         val historyLabel = JLabel("History:").apply {
             displayedMnemonic = KeyEvent.VK_H
             labelFor = historyComboBox
@@ -384,7 +373,7 @@ class AiderInputDialog(
             object : AnAction() {
                 override fun actionPerformed(e: AnActionEvent) {
                     projectSettings.isOptionsCollapsed = !projectSettings.isOptionsCollapsed
-                    updateOptionsPanel(optionsPanel, flagAndArgsPanel)
+                    updateOptionsPanel(optionsPanel, flagAndArgsPanel, collapseButton)
                 }
             },
             Presentation().apply {
@@ -405,7 +394,7 @@ class AiderInputDialog(
         topPanel.add(optionsHeader, gbc.apply { gridy++ })
         topPanel.add(optionsPanel, gbc.apply { gridy++ })
         
-        updateOptionsPanel(optionsPanel, flagAndArgsPanel)
+        updateOptionsPanel(optionsPanel, flagAndArgsPanel, collapseButton)
 
         // Context view
         val fileActionGroup = DefaultActionGroup().apply {
@@ -611,8 +600,9 @@ class AiderInputDialog(
         return panel
     }
     
-    private fun updateOptionsPanel(wrapper: com.intellij.ui.components.panels.Wrapper, panel: JPanel) {
+    private fun updateOptionsPanel(wrapper: com.intellij.ui.components.panels.Wrapper, panel: JPanel, collapseButton: ActionButton) {
         wrapper.setContent(if (projectSettings.isOptionsCollapsed) null else panel)
+        collapseButton.presentation.icon = if (projectSettings.isOptionsCollapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
         wrapper.parent?.revalidate()
         wrapper.parent?.repaint()
     }
