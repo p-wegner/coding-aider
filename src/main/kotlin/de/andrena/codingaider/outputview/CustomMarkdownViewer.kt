@@ -47,24 +47,18 @@ class CustomMarkdownViewer {
                 return TaskListAttributeProvider()
             }
 
-            override fun getAfterDependents(): MutableSet<Class<*>>? {
-                TODO("Not yet implemented")
-            }
+            override fun getAfterDependents(): MutableSet<Class<*>>? = null
 
-            override fun getBeforeDependents(): MutableSet<Class<*>>? {
-                TODO("Not yet implemented")
-            }
+            override fun getBeforeDependents(): MutableSet<Class<*>>? = null
 
-            override fun affectsGlobalScope(): Boolean {
-                TODO("Not yet implemented")
-            }
+            override fun affectsGlobalScope(): Boolean = false
         })
         .build()
 
     private class TaskListAttributeProvider : AttributeProvider {
         override fun setAttributes(node: Node, part: AttributablePart, attributes: MutableAttributes) {
-            if (node is TaskListItem) {
-                val checked = (node as TaskListItem).isChecked
+            if (node is TaskListItem && part == AttributablePart.NODE) {
+                val checked = node.isItemDoneMarker
                 attributes.replaceValue("data-task-status", if (checked) "[x]" else "[ ]")
             }
         }
