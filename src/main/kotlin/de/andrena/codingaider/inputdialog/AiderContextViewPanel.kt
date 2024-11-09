@@ -4,6 +4,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.project.Project
 import com.intellij.ui.LayeredIcon
+import com.intellij.util.ui.JBUI
 import de.andrena.codingaider.command.FileData
 import java.awt.BorderLayout
 import java.awt.event.InputEvent
@@ -27,11 +28,15 @@ class AiderContextViewPanel(
             addAll(fileStatusActionGroup)
         }
 
-        val toolbar = ActionManager.getInstance().createActionToolbar("AiderContextToolbar", combinedActionGroup, true)
-        toolbar.targetComponent = aiderContextView
+        val toolbar = ActionManager.getInstance().createActionToolbar("AiderContextToolbar", combinedActionGroup, true).apply {
+            targetComponent = aiderContextView
+            component.border = JBUI.Borders.empty(2, 2, 0, 2)
+        }
 
         add(toolbar.component, BorderLayout.NORTH)
-        add(aiderContextView, BorderLayout.CENTER)
+        add(aiderContextView.apply { 
+            border = JBUI.Borders.empty(0, 2, 2, 2)
+        }, BorderLayout.CENTER)
     }
 
     private fun createFileActionGroup() = DefaultActionGroup().apply {

@@ -98,23 +98,8 @@ class AiderContextView(
             }
         }
 
-        val scrollPane = JBScrollPane(tree).apply {
-            border = JBUI.Borders.empty(2)
-        }
-
-        val contentPanel = JPanel(BorderLayout()).apply {
-            add(scrollPane, BorderLayout.CENTER)
-            border = TitledBorder(
-                JBUI.Borders.customLine(JBColor.border(), 1),
-                "Context",
-                TitledBorder.DEFAULT_JUSTIFICATION,
-                TitledBorder.DEFAULT_POSITION,
-                null,
-                JBColor.foreground()
-            )
-        }
-
-        add(contentPanel, BorderLayout.CENTER)
+        val scrollPane = JBScrollPane(tree)
+        add(scrollPane, BorderLayout.CENTER)
         preferredSize = JBUI.size(400, 300)
 
         tree.addMouseListener(object : MouseAdapter() {
