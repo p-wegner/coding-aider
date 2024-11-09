@@ -79,158 +79,21 @@ class CustomMarkdownViewer(private val lookupPaths: List<String> = emptyList()) 
             thBg: String,
             trEvenBg: String,
             content: String
-        ): String = """
-            <html>
-            <head>
-                <style type="text/css">
-                    body { 
-                        font-family: Arial, sans-serif; 
-                        margin: 20px;
-                        line-height: 1.6;
-                        background-color: $bodyBg;
-                        color: $bodyText;
-                    }
-                    pre { 
-                        background-color: $preBg; 
-                        padding: 10px; 
-                        border: 1px solid $preBorder;
-                        color: $preText;
-                    }
-                    code { 
-                        font-family: "JetBrains Mono", "Courier New", Courier, monospace;
-                        color: $codeColor;
-                    }
-                    a { 
-                        color: $linkColor; 
-                        text-decoration: underline;
-                    }
-                    img { 
-                        width: auto;
-                        height: auto;
-                        max-width: 100%;
-                    }
-                    body {
-                        word-wrap: break-word;
-                    }
-                    pre {
-                        white-space: pre;
-                        overflow-x: auto;
-                    }
-                    table {
-                        border-collapse: collapse;
-                        margin: 15px 0;
-                        width: 100%;
-                    }
-                    th, td {
-                        border: 1px solid $tableBorder;
-                        padding: 8px;
-                        text-align: left;
-                    }
-                    th {
-                        background-color: $thBg;
-                    }
-                    tr:nth-child(even) {
-                        background-color: $trEvenBg;
-                    }
-                    /* Headings */
-                    h1, h2, h3, h4, h5, h6 {
-                        margin-top: 24px;
-                        margin-bottom: 16px;
-                        font-weight: bold;
-                        line-height: 1.25;
-                    }
-                    h1 { font-size: 2em; border-bottom: 1px solid $tableBorder; }
-                    h2 { font-size: 1.5em; border-bottom: 1px solid $tableBorder; }
-                    h3 { font-size: 1.25em; }
-                    h4 { font-size: 1em; }
-                    h5 { font-size: 0.875em; }
-                    h6 { font-size: 0.85em; }
-                    
-                    /* Lists */
-                    ul, ol {
-                        padding-left: 2em;
-                        margin: 1em 0;
-                    }
-                    li { margin: 0.25em 0; }
-                    
-                    /* Ordered Lists specific styling */
-                    ol {
-                        counter-reset: item;
-                        list-style-type: none;
-                    }
-                    ol > li {
-                        counter-increment: item;
-                        position: relative;
-                    }
-                    ol > li:before {
-                        content: counter(item) ".";
-                        position: absolute;
-                        left: -2em;
-                        width: 1.5em;
-                        text-align: right;
-                    }
-                    /* Nested lists */
-                    ol ol {
-                        counter-reset: subitem;
-                    }
-                    ol ol > li {
-                        counter-increment: subitem;
-                    }
-                    ol ol > li:before {
-                        content: counter(item) "." counter(subitem);
-                    }
-                    
-                    /* Task Lists */
-                    .task-list {
-                        list-style-type: none;
-                        padding-left: 0;
-                    }
-                    .task-list-item {
-                        margin: 0.5em 0;
-                        padding-left: 1.5em;
-                        position: relative;
-                    }
-                    .task-list-item::before {
-                        content: attr(data-task-status);
-                        position: absolute;
-                        left: 0;
-                        font-family: monospace;
-                        margin-right: 0.5em;
-                    }
-                    
-                    /* Blockquotes */
-                    blockquote {
-                        margin: 1em 0;
-                        padding: 0 1em;
-                        color: #666666;
-                        border-left: 0.25em solid #ddd;
-                    }
-                    
-                    /* Definition Lists */
-                    dl {
-                        margin: 1em 0;
-                    }
-                    dt {
-                        font-weight: bold;
-                        margin-top: 1em;
-                    }
-                    dd {
-                        margin-left: 2em;
-                    }
-                    
-                    /* Footnotes */
-                    .footnotes {
-                        border-top: 1px solid $tableBorder;
-                        margin-top: 2em;
-                        padding-top: 1em;
-                    }
-                </style>
-            </head>
-            <body>
-                $content
-            </body>
-            </html>
-        """
+        ): String {
+            val style =
+                getMarkdownCssStyle(bodyBg, bodyText, preBg, preBorder, preText, codeColor, linkColor, tableBorder, thBg, trEvenBg)
+            return """
+                    <html>
+                    <head>
+                        $style
+                    </head>
+                    <body>
+                        $content
+                    </body>
+                    </html>
+                """
+        }
+
     }
 
     fun setDarkTheme(dark: Boolean) {
@@ -243,7 +106,7 @@ class CustomMarkdownViewer(private val lookupPaths: List<String> = emptyList()) 
     fun setMarkdownContent(markdown: String) {
         if (markdown == currentContent) return
         currentContent = markdown
-        
+
         try {
             // Convert file paths to markdown links
             val project = com.intellij.openapi.project.ProjectManager.getInstance().openProjects.firstOrNull()
@@ -251,7 +114,7 @@ class CustomMarkdownViewer(private val lookupPaths: List<String> = emptyList()) 
             val processedMarkdown = FilePathConverter.convertPathsToMarkdownLinks(markdown, basePath)
             val document = parser.parse(processedMarkdown)
             val html = renderer.render(document)
-            
+
             val colors = if (isDarkTheme) {
                 arrayOf(
                     "#2b2b2b", // body background
@@ -321,6 +184,162 @@ class CustomMarkdownViewer(private val lookupPaths: List<String> = emptyList()) 
             hyperlinkHandler.handleHyperlinkEvent(event)
         }
     }
+
 }
+
+fun getMarkdownCssStyle(
+    bodyBg: String,
+    bodyText: String,
+    preBg: String,
+    preBorder: String,
+    preText: String,
+    codeColor: String,
+    linkColor: String,
+    tableBorder: String,
+    thBg: String,
+    trEvenBg: String
+) = """<style type="text/css">
+                                    body { 
+                                        font-family: Arial, sans-serif; 
+                                        margin: 20px;
+                                        line-height: 1.6;
+                                        background-color: $bodyBg;
+                                        color: $bodyText;
+                                    }
+                                    pre { 
+                                        background-color: $preBg; 
+                                        padding: 10px; 
+                                        border: 1px solid $preBorder;
+                                        color: $preText;
+                                    }
+                                    code { 
+                                        font-family: "JetBrains Mono", "Courier New", Courier, monospace;
+                                        color: $codeColor;
+                                    }
+                                    a { 
+                                        color: $linkColor; 
+                                        text-decoration: underline;
+                                    }
+                                    img { 
+                                        width: auto;
+                                        height: auto;
+                                        max-width: 100%;
+                                    }
+                                    body {
+                                        word-wrap: break-word;
+                                    }
+                                    pre {
+                                        white-space: pre;
+                                        overflow-x: auto;
+                                    }
+                                    table {
+                                        border-collapse: collapse;
+                                        margin: 15px 0;
+                                        width: 100%;
+                                    }
+                                    th, td {
+                                        border: 1px solid $tableBorder;
+                                        padding: 8px;
+                                        text-align: left;
+                                    }
+                                    th {
+                                        background-color: $thBg;
+                                    }
+                                    tr:nth-child(even) {
+                                        background-color: $trEvenBg;
+                                    }
+                                    /* Headings */
+                                    h1, h2, h3, h4, h5, h6 {
+                                        margin-top: 24px;
+                                        margin-bottom: 16px;
+                                        font-weight: bold;
+                                        line-height: 1.25;
+                                    }
+                                    h1 { font-size: 2em; border-bottom: 1px solid $tableBorder; }
+                                    h2 { font-size: 1.5em; border-bottom: 1px solid $tableBorder; }
+                                    h3 { font-size: 1.25em; }
+                                    h4 { font-size: 1em; }
+                                    h5 { font-size: 0.875em; }
+                                    h6 { font-size: 0.85em; }
+                                    
+                                    /* Lists */
+                                    ul, ol {
+                                        padding-left: 2em;
+                                        margin: 1em 0;
+                                    }
+                                    li { margin: 0.25em 0; }
+                                    
+                                    /* Ordered Lists specific styling */
+                                    ol {
+                                        counter-reset: item;
+                                        list-style-type: none;
+                                    }
+                                    ol > li {
+                                        counter-increment: item;
+                                        position: relative;
+                                    }
+                                    ol > li:before {
+                                        content: counter(item) ".";
+                                        position: absolute;
+                                        left: -2em;
+                                        width: 1.5em;
+                                        text-align: right;
+                                    }
+                                    /* Nested lists */
+                                    ol ol {
+                                        counter-reset: subitem;
+                                    }
+                                    ol ol > li {
+                                        counter-increment: subitem;
+                                    }
+                                    ol ol > li:before {
+                                        content: counter(item) "." counter(subitem);
+                                    }
+                                    
+                                    /* Task Lists */
+                                    .task-list {
+                                        list-style-type: none;
+                                        padding-left: 0;
+                                    }
+                                    .task-list-item {
+                                        margin: 0.5em 0;
+                                        padding-left: 1.5em;
+                                        position: relative;
+                                    }
+                                    .task-list-item::before {
+                                        content: attr(data-task-status);
+                                        position: absolute;
+                                        left: 0;
+                                        font-family: monospace;
+                                        margin-right: 0.5em;
+                                    }
+                                    
+                                    /* Blockquotes */
+                                    blockquote {
+                                        margin: 1em 0;
+                                        padding: 0 1em;
+                                        color: #666666;
+                                        border-left: 0.25em solid #ddd;
+                                    }
+                                    
+                                    /* Definition Lists */
+                                    dl {
+                                        margin: 1em 0;
+                                    }
+                                    dt {
+                                        font-weight: bold;
+                                        margin-top: 1em;
+                                    }
+                                    dd {
+                                        margin-left: 2em;
+                                    }
+                                    
+                                    /* Footnotes */
+                                    .footnotes {
+                                        border-top: 1px solid $tableBorder;
+                                        margin-top: 2em;
+                                        padding-top: 1em;
+                                    }
+                                </style>"""
 
 
