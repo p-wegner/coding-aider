@@ -10,7 +10,7 @@ import com.intellij.ui.components.JBList
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.AiderMode
-import de.andrena.codingaider.services.AiderPlan
+import de.andrena.codingaider.services.plans.AiderPlan
 import de.andrena.codingaider.settings.AiderSettings
 import java.awt.*
 import java.awt.event.MouseAdapter

@@ -86,27 +86,15 @@ class CustomMarkdownViewer {
                             val filePath = java.net.URLDecoder.decode(url.removePrefix("file:"), "UTF-8")
                             File(filePath)
                         }
-                        project != null && !url.contains("://") -> {
-                            // Handle relative paths within project
-                            val basePath = project.basePath
-                            if (basePath != null) {
-                                File(basePath, url)
-                            } else {
-                                throw IllegalArgumentException("Project base path not found")
-                            }
-                        }
                         url.startsWith("./") -> {
-                            // Handle relative paths by checking multiple lookup locations
                             val basePath = project?.basePath
                             if (basePath != null) {
                                 val relativePath = url.removePrefix("./")
-                                // First try project root
                                 var file = File(basePath, relativePath)
                                 if (file.exists()) {
                                     file
                                 } else {
-                                    // Then try each lookup path
-                                    lookupPaths.map { lookupPath -> 
+                                    lookupPaths.map { lookupPath ->
                                         File(basePath, "$lookupPath/$relativePath")
                                     }.firstOrNull { it.exists() }
                                         ?: throw IllegalArgumentException("File not found in any lookup path: $relativePath")
