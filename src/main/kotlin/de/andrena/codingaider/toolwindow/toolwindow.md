@@ -6,7 +6,7 @@ The Persistent Files Tool Window is a specialized module in the Coding Aider app
 ## Architecture and Design
 
 ### Key Components
-- **[PersistentFilesToolWindow.kt](./PersistentFilesToolWindow.kt)**: Primary implementation of the tool window
+- **[PersistentFilesToolWindow.kt](./CodingAiderToolWindow.kt)**: Primary implementation of the tool window
 - **PersistentFileService**: Backend service for managing persistent file data
 - **FileData**: Data model representing file metadata
 
