@@ -124,7 +124,11 @@ class AiderInputDialog(
     private val optionsPanel = com.intellij.ui.components.panels.Wrapper().apply {
         setContent(flagAndArgsPanel)
         isVisible = true // Always visible for animation
-        preferredSize = if (!projectSettings.isOptionsCollapsed) null else Dimension(0, 0)
+        if (projectSettings.isOptionsCollapsed) {
+            minimumSize = Dimension(0, 0)
+            maximumSize = Dimension(Int.MAX_VALUE, 0)
+            preferredSize = Dimension(0, 0)
+        }
     }
     private val panelAnimation = PanelAnimation(optionsPanel)
     private fun createCollapseButton(

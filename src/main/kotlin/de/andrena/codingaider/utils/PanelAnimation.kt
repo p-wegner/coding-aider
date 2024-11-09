@@ -20,13 +20,19 @@ class PanelAnimation(private val component: JComponent) {
         timer = Timer(16) { // ~60fps
             progress += 16f / durationMs
             if (progress >= 1f) {
-                component.preferredSize = Dimension(component.width, endHeight)
+                component.minimumSize = null
+                component.maximumSize = null
+                component.preferredSize = if (endHeight > 0) 
+                    Dimension(component.width, endHeight) 
+                else null
                 component.revalidate()
                 component.repaint()
                 timer?.stop()
                 onComplete()
             } else {
                 val currentHeight = lerp(startHeight, endHeight, easeInOut(progress))
+                component.minimumSize = Dimension(component.width, currentHeight)
+                component.maximumSize = Dimension(Int.MAX_VALUE, currentHeight)
                 component.preferredSize = Dimension(component.width, currentHeight)
                 component.revalidate()
                 component.repaint()
