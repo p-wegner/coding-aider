@@ -4,8 +4,8 @@
 Related: [Plan](improve_aiderinputdialog_ux.md)
 
 ## Setup
-- [ ] Create new UI components for collapsible panel using IntelliJ UI.Panels
-- [ ] Add collapsed state property to AiderProjectSettings
+- [x] Create new UI components for collapsible panel using IntelliJ UI.Panels
+- [x] Add collapsed state property to AiderProjectSettings
 
 ## UI Changes
 - [ ] Move LLM selection components to bottom row
