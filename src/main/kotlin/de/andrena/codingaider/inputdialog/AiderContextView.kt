@@ -100,7 +100,7 @@ class AiderContextView(
 
         val scrollPane = JBScrollPane(tree)
         add(scrollPane, BorderLayout.CENTER)
-        preferredSize = JBUI.size(400, 300)
+        preferredSize = JBUI.size(400, 200)
 
         tree.addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {

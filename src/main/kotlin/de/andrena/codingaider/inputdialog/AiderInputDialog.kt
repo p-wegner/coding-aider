@@ -360,7 +360,7 @@ class AiderInputDialog(
         val contextViewPanel = AiderContextViewPanel(project, aiderContextView)
         val contextCollapsible = CollapsiblePanel(
             "Context Files",
-            projectSettings::isContextCollapsed,
+            projectSettings::isContextCollapsed, // Always expanded
             contextViewPanel
         )
 
