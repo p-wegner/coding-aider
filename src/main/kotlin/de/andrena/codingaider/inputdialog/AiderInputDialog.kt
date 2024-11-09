@@ -120,11 +120,12 @@ class AiderInputDialog(
     private val persistentFileService: PersistentFileService
     private var splitPane: OnePixelSplitter
     private val settingsButton: ActionButton
-    private val flagAndArgsPanel = createOptionsPanel()
-    private val optionsPanel = com.intellij.ui.components.panels.Wrapper().apply {
-        setContent(flagAndArgsPanel)
-        isVisible = true // Always visible for animation
-        updatePanelSize(projectSettings.isOptionsCollapsed)
+    private val flagAndArgsPanel by lazy { createOptionsPanel() }
+    private val optionsPanel by lazy {
+        com.intellij.ui.components.panels.Wrapper().apply {
+            setContent(flagAndArgsPanel)
+            isVisible = true // Always visible for animation
+        }
     }
 
     private fun updatePanelSize(collapsed: Boolean) {
@@ -141,6 +142,10 @@ class AiderInputDialog(
             revalidate()
             repaint()
         }
+    }
+
+    init {
+        updatePanelSize(projectSettings.isOptionsCollapsed)
     }
     private val panelAnimation = PanelAnimation(optionsPanel)
     private fun createCollapseButton(
