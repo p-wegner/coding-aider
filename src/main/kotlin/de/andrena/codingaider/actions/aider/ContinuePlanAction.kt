@@ -59,26 +59,25 @@ private class SelectPlanDialog(private val project: Project) : DialogWrapper(pro
             }
         }
 
-        val detailsArea = EditorTextField().apply {
-            isViewer = true
-            setOneLineMode(false)
-            preferredSize = Dimension(400, 200)
+        val markdownViewer = CustomMarkdownViewer().apply {
+            setDarkTheme(!JBColor.isBright())
+            component.preferredSize = Dimension(400, 200)
         }
 
         planComboBox.addActionListener {
             selectedPlan = planComboBox.selectedItem as? AiderPlan
-            detailsArea.text = selectedPlan?.plan?.lines()?.take(10)?.joinToString("\n") ?:""
+            markdownViewer.setMarkdownContent(selectedPlan?.plan ?: "")
         }
 
         // Set initial text
-        detailsArea.text = (planComboBox.selectedItem as? AiderPlan)?.plan?.lines()?.take(10)?.joinToString("\n") ?:""
+        markdownViewer.setMarkdownContent((planComboBox.selectedItem as? AiderPlan)?.plan ?: "")
 
         return panel {
             row("Select a plan to continue:") {
                 cell(planComboBox)
             }
             row("Plan details:") {
-                cell(JBScrollPane(detailsArea))
+                cell(JBScrollPane(markdownViewer.component))
                     .resizableColumn()
                     .align(AlignX.FILL)
             }
