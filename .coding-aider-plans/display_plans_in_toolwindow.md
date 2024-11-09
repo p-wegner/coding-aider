@@ -16,7 +16,7 @@ The plans will be displayed in a list format similar to the persistent files, bu
 - Number of open checklist items
 - Execute button to continue working on the plan
 
-See [display_plans_in_toolwindow_checklist.md](display_plans_in_toolwindow) for implementation steps.
+See [display_plans_in_toolwindow_checklist](display_plans_in_toolwindow_checklist.md) for implementation steps.
 
 Technical Details:
 - Uses existing AiderPlanService to load and parse plans
