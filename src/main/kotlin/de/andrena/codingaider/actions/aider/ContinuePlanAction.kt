@@ -11,6 +11,8 @@ import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.services.AiderPlan
 import de.andrena.codingaider.services.AiderPlanService
 import de.andrena.codingaider.toolwindow.PlanViewer
+import com.intellij.ui.EditorTextField
+import com.intellij.ui.components.JBScrollPane
 import javax.swing.*
 
 class ContinuePlanAction : AnAction() {
@@ -55,17 +57,10 @@ private class SelectPlanDialog(private val project: Project) : DialogWrapper(pro
             }
         }
 
-        val detailsArea = JTextArea().apply {
-            isEditable = false
-            lineWrap = true
-            wrapStyleWord = true
-            rows = 10
-            font = UIManager.getFont("Label.font")
-            background = UIManager.getColor("Panel.background")
-            border = BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(UIManager.getColor("Component.borderColor")),
-                BorderFactory.createEmptyBorder(5, 5, 5, 5)
-            )
+        val detailsArea = EditorTextField().apply {
+            isViewer = true
+            setOneLineMode(false)
+            preferredSize = Dimension(400, 200)
         }
 
         planComboBox.addActionListener {
@@ -81,7 +76,7 @@ private class SelectPlanDialog(private val project: Project) : DialogWrapper(pro
                 cell(planComboBox)
             }
             row("Plan details:") {
-                cell(JScrollPane(detailsArea))
+                cell(JBScrollPane(detailsArea))
                     .resizableColumn()
                     .align(AlignX.FILL)
             }
