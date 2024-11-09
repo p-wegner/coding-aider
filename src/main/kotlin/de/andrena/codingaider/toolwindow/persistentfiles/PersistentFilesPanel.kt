@@ -1,4 +1,4 @@
-package de.andrena.codingaider.toolwindow.components
+package de.andrena.codingaider.toolwindow.persistentfiles
 
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor

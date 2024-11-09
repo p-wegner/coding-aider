@@ -1,4 +1,4 @@
-package de.andrena.codingaider.toolwindow
+package de.andrena.codingaider.toolwindow.plans
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.*
@@ -89,10 +89,6 @@ class PlanViewer(private val project: Project) {
                 
                 val openItems = value.openChecklistItems().size
                 val totalItems = value.totalChecklistItems()
-                val completionStatus = if (value.isPlanComplete()) "Complete" else "In Progress"
-                val planPreview = value.plan.lines().take(3).joinToString("\n").let {
-                    if (it.length > 200) it.take(200) + "..." else it
-                }
                 val tooltip = if (shortTooltip) value.createShortTooltip() else value.createTooltip()
                 toolTipText = tooltip
                 label.toolTipText = tooltip

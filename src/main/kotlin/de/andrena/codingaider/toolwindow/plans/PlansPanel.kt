@@ -1,4 +1,4 @@
-package de.andrena.codingaider.toolwindow.components
+package de.andrena.codingaider.toolwindow.plans
 
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.DefaultActionGroup

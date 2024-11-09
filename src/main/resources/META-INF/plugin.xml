@@ -230,6 +230,6 @@
                     secondary="false"
                     icon="META-INF/pluginIcon_13.svg"
                     anchor="right"
-                    factoryClass="de.andrena.codingaider.toolwindow.PersistentFilesToolWindow"/>
+                    factoryClass="de.andrena.codingaider.toolwindow.CodingAiderToolWindow"/>
     </extensions>
 </idea-plugin>
