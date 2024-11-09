@@ -48,22 +48,43 @@ private class SelectPlanDialog(private val project: Project) : DialogWrapper(pro
     }
 
     override fun createCenterPanel(): JComponent {
+        val planComboBox = JComboBox(DefaultComboBoxModel(unfinishedPlans.toTypedArray())).apply {
+            renderer = PlanViewer.PlanListCellRenderer()
+            if (unfinishedPlans.isNotEmpty()) {
+                selectedIndex = 0
+                selectedPlan = selectedItem as AiderPlan
+            }
+        }
+
+        val detailsArea = JTextArea().apply {
+            isEditable = false
+            lineWrap = true
+            wrapStyleWord = true
+            rows = 10
+            font = UIManager.getFont("Label.font")
+            background = UIManager.getColor("Panel.background")
+            border = BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(UIManager.getColor("Component.borderColor")),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)
+            )
+        }
+
+        planComboBox.addActionListener {
+            selectedPlan = planComboBox.selectedItem as? AiderPlan
+            detailsArea.text = selectedPlan?.plan?.lines()?.take(10)?.joinToString("\n")
+        }
+
+        // Set initial text
+        detailsArea.text = (planComboBox.selectedItem as? AiderPlan)?.plan?.lines()?.take(10)?.joinToString("\n")
+
         return panel {
             row("Select a plan to continue:") {
-                cell(JComboBox(DefaultComboBoxModel(unfinishedPlans.toTypedArray())).apply {
-                    renderer = PlanViewer.PlanListCellRenderer()
-                    addActionListener {
-                        selectedPlan = selectedItem as? AiderPlan
-                    }
-                    if (unfinishedPlans.isNotEmpty()) {
-                        selectedIndex = 0
-                        selectedPlan = selectedItem as AiderPlan
-                    }
-                    toolTipText = (selectedItem as? AiderPlan)?.createTooltip()
-                    addActionListener {
-                        toolTipText = (selectedItem as? AiderPlan)?.createTooltip()
-                    }
-                })
+                cell(planComboBox)
+            }
+            row("Plan details:") {
+                cell(JScrollPane(detailsArea))
+                    .resizableColumn()
+                    .align(AlignX.FILL)
             }
         }
     }

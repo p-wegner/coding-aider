@@ -30,6 +30,16 @@ data class AiderPlan(val plan: String, val checklist: List<ChecklistItem>, val f
 
     fun isPlanComplete() = openChecklistItems().isEmpty()
 
+    fun createShortTooltip(): String = buildString {
+        appendLine("<html><body>")
+        val planFile = files.firstOrNull()
+        appendLine("<b>Plan:</b> ${planFile?.filePath}<br>")
+        appendLine("<b>Status:</b> ${if (isPlanComplete()) "Complete" else "In Progress"}<br>")
+        val checkedItems = totalChecklistItems() - openChecklistItems().size
+        appendLine("<b>Progress:</b> $checkedItems/${totalChecklistItems()} items completed")
+        appendLine("</body></html>")
+    }
+
     fun createTooltip(): String = buildString {
         appendLine("<html><body style='width: 400px'>")
         val planFile = files.firstOrNull()

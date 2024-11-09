@@ -94,7 +94,7 @@ class PlanViewer(private val project: Project) {
                     if (it.length > 200) it.take(200) + "..." else it
                 }
                 
-                val tooltip = value.createTooltip()
+                val tooltip = value.createShortTooltip()
                 toolTipText = tooltip
                 label.toolTipText = tooltip
                 countLabel.toolTipText = tooltip
