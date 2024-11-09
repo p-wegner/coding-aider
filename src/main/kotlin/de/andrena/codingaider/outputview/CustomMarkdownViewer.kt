@@ -1,5 +1,7 @@
 package de.andrena.codingaider.outputview
 
+import com.intellij.openapi.fileEditor.OpenFileDescriptor
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
 import com.vladsch.flexmark.util.data.MutableDataSet
@@ -69,7 +71,7 @@ class CustomMarkdownViewer {
         component.addHyperlinkListener { event ->
             if (event.eventType == HyperlinkEvent.EventType.ACTIVATED) {
                 try {
-                    val url = event.url.toString()
+                    val url = event.url?.toString() ?: event.description
                     val project = com.intellij.openapi.project.ProjectManager.getInstance().openProjects.firstOrNull()
                     
                     val file = when {
@@ -87,15 +89,25 @@ class CustomMarkdownViewer {
                                 throw IllegalArgumentException("Project base path not found")
                             }
                         }
+                        url.startsWith("./") -> {
+                            // Handle relative paths from project root
+                            // TODO: support list of lookup paths
+                            val basePath = project?.basePath
+                            if (basePath != null) {
+                                File(basePath, url.removePrefix("./"))
+                            } else {
+                                throw IllegalArgumentException("Project base path not found")
+                            }
+                        }
                         else -> null
                     }
 
                     if (file != null && project != null) {
                         
                         // Open file in IDE
-                        com.intellij.openapi.fileEditor.OpenFileDescriptor(
+                        OpenFileDescriptor(
                             project,
-                            com.intellij.openapi.vfs.LocalFileSystem.getInstance().findFileByIoFile(file)
+                            LocalFileSystem.getInstance().findFileByIoFile(file)
                                 ?: throw IllegalArgumentException("File not found: ${file.path}")
                         ).navigate(true)
                     } else {
