@@ -311,12 +311,38 @@ class AiderInputDialog(
         topPanel.add(optionsHeader, gbc.apply { gridy++ })
         topPanel.add(optionsPanel, gbc.apply { gridy++ })
 
-        // Context view
+        // Context view with collapsible UI
         val contextViewPanel = AiderContextViewPanel(project, aiderContextView)
+        val contextWrapper = com.intellij.ui.components.panels.Wrapper().apply {
+            setContent(contextViewPanel)
+            isVisible = true
+            preferredSize = if (!projectSettings.isContextCollapsed) null else Dimension(0, 0)
+        }
+        val contextAnimation = PanelAnimation(contextWrapper)
         
-        splitPane.firstComponent = topPanel
-        splitPane.secondComponent = contextViewPanel
-        panel.add(splitPane, BorderLayout.CENTER)
+        val contextCollapseButton = createCollapseButtonFor(
+            "Context",
+            projectSettings::isContextCollapsed,
+            contextWrapper,
+            contextViewPanel,
+            contextAnimation
+        )
+        
+        val contextHeader = JPanel(BorderLayout()).apply {
+            add(contextCollapseButton, BorderLayout.WEST)
+            add(JLabel("Context Files"), BorderLayout.CENTER)
+            border = JBUI.Borders.empty(2)
+        }
+
+        val contextPanel = JPanel(BorderLayout()).apply {
+            add(contextHeader, BorderLayout.NORTH)
+            add(contextWrapper, BorderLayout.CENTER)
+            border = JBUI.Borders.empty(5, 10, 10, 10)
+        }
+
+        // Add all components to main panel
+        panel.add(topPanel, BorderLayout.CENTER)
+        panel.add(contextPanel, BorderLayout.SOUTH)
 
 
         return panel
@@ -426,7 +452,13 @@ class AiderInputDialog(
      * @param panel The options panel to show/hide
      * @param collapseButton The button that toggles the panel state
      */
-    private fun createCollapseButton() = ActionButton(
+    private fun createCollapseButtonFor(
+        name: String,
+        isCollapsedProperty: kotlin.reflect.KMutableProperty0<Boolean>,
+        wrapper: com.intellij.ui.components.panels.Wrapper,
+        panel: JComponent,
+        animation: PanelAnimation
+    ) = ActionButton(
         object : AnAction() {
             override fun actionPerformed(e: AnActionEvent) {
                 projectSettings.isOptionsCollapsed = !projectSettings.isOptionsCollapsed
