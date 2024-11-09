@@ -307,6 +307,8 @@ class CustomMarkdownViewer {
         currentContent = markdown
         
         try {
+            // Convert file paths to markdown links
+            val processedMarkdown = FilePathConverter.convertPathsToMarkdownLinks(markdown)
             val document = parser.parse(markdown)
             val html = renderer.render(document)
             
