@@ -358,57 +358,32 @@ class AiderInputDialog(
         return JPanel(BorderLayout()).apply {
             border = JBUI.Borders.empty(0, 10, 10, 10)
             
-            val contentPanel = JPanel(GridBagLayout()).apply {
+            val contentPanel = JPanel(FlowLayout(FlowLayout.LEFT, 10, 0)).apply {
                 border = JBUI.Borders.empty(5)
                 
                 // LLM selection
-                val selectLlmLabel = JLabel("LLM:").apply {
+                add(JLabel("LLM:").apply {
                     displayedMnemonic = KeyEvent.VK_L
                     labelFor = llmComboBox
                     toolTipText = "Select the Language Model to use"
-                }
-                add(selectLlmLabel, GridBagConstraints().apply {
-                    gridx = 0
-                    gridy = 0
-                    weightx = 0.0
-                    insets = JBUI.insets(5)
                 })
-                add(llmComboBox, GridBagConstraints().apply {
-                    gridx = 1
-                    gridy = 0
-                    weightx = 1.0
-                    fill = GridBagConstraints.HORIZONTAL
-                    insets = JBUI.insets(5)
+                add(llmComboBox.apply {
+                    preferredSize = Dimension(150, preferredSize.height)
                 })
                 
                 // Yes flag
-                yesCheckBox.mnemonic = KeyEvent.VK_Y
-                add(yesCheckBox, GridBagConstraints().apply {
-                    gridx = 0
-                    gridy = 1
-                    weightx = 0.0
-                    gridwidth = 2
-                    insets = JBUI.insets(5)
+                add(yesCheckBox.apply {
+                    mnemonic = KeyEvent.VK_Y
                 })
                 
                 // Additional args
-                val additionalArgsLabel = JLabel("Args:").apply {
+                add(JLabel("Args:").apply {
                     displayedMnemonic = KeyEvent.VK_A
                     labelFor = additionalArgsField
                     toolTipText = "Additional arguments for the Aider command"
-                }
-                add(additionalArgsLabel, GridBagConstraints().apply {
-                    gridx = 0
-                    gridy = 2
-                    weightx = 0.0
-                    insets = JBUI.insets(5)
                 })
-                add(additionalArgsField, GridBagConstraints().apply {
-                    gridx = 1
-                    gridy = 2
-                    weightx = 1.0
-                    fill = GridBagConstraints.HORIZONTAL
-                    insets = JBUI.insets(5)
+                add(additionalArgsField.apply {
+                    preferredSize = Dimension(200, preferredSize.height)
                 })
             }
             
