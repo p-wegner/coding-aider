@@ -14,31 +14,32 @@ class HyperlinkHandler(private val lookupPaths: List<String>) {
             try {
                 val url = event.url?.toString() ?: event.description
                 val project = ProjectManager.getInstance().openProjects.firstOrNull()
-                
+                // log url
+                println("Opening URL: $url")
                 val file = when {
                     url.startsWith("file:") -> {
                         // Handle absolute file paths
                         val filePath = java.net.URLDecoder.decode(url.removePrefix("file:"), "UTF-8")
                         File(filePath)
                     }
-                    url.startsWith("./") -> {
+
+                    else -> {
                         val basePath = project?.basePath
                         if (basePath != null) {
                             val relativePath = url.removePrefix("./")
-                            var file = File(basePath, relativePath)
+                            val file = File(basePath, relativePath)
                             if (file.exists()) {
                                 file
                             } else {
                                 lookupPaths.map { lookupPath ->
                                     File(basePath, "$lookupPath/$relativePath")
                                 }.firstOrNull { it.exists() }
-                                    ?: throw IllegalArgumentException("File not found in any lookup path: $relativePath")
                             }
                         } else {
                             throw IllegalArgumentException("Project base path not found")
                         }
                     }
-                    else -> null
+
                 }
 
                 if (file != null && project != null) {
