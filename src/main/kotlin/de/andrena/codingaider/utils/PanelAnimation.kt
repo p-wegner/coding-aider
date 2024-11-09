@@ -11,7 +11,7 @@ class PanelAnimation(private val component: JComponent) {
     fun animate(
         startHeight: Int,
         endHeight: Int,
-        durationMs: Int = 200,
+        durationMs: Int = 150,
         onComplete: () -> Unit = {}
     ) {
         timer?.stop()

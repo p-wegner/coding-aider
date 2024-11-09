@@ -99,7 +99,7 @@ class AiderContextView(
         }
 
         val scrollPane = JBScrollPane(tree).apply {
-            border = JBUI.Borders.empty(10)
+            border = JBUI.Borders.empty(2)
         }
 
         val contentPanel = JPanel(BorderLayout()).apply {

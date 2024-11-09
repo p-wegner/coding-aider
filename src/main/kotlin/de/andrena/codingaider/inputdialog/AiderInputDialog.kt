@@ -416,7 +416,7 @@ class AiderInputDialog(
      */
     private fun createOptionsPanel(): JPanel {
         return JPanel(BorderLayout()).apply {
-            border = JBUI.Borders.empty(5, 10, 10, 10)
+            border = JBUI.Borders.empty(2, 5, 2, 5)
             
             val contentPanel = JPanel(GridBagLayout()).apply {
                 border = JBUI.Borders.empty(5)
