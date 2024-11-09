@@ -227,9 +227,10 @@
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="Coding Aider"
-                    secondary="false"
+                    secondary="true"
                     icon="META-INF/pluginIcon_13.svg"
                     anchor="right"
-                    factoryClass="de.andrena.codingaider.toolwindow.CodingAiderToolWindow"/>
+                    factoryClass="de.andrena.codingaider.toolwindow.CodingAiderToolWindow"
+                    canCloseContents="false"/>
     </extensions>
 </idea-plugin>

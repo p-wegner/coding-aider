@@ -10,7 +10,10 @@ import de.andrena.codingaider.toolwindow.plans.PlansPanel
 import javax.swing.JComponent
 
 class CodingAiderToolWindow : ToolWindowFactory {
+    override fun shouldBeAvailable(project: Project) = true
+
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
+        toolWindow.setToHideOnEmptyContent(false)
         val toolWindowContent = CodingAiderToolWindowContent(project)
         val content = ContentFactory.getInstance().createContent(toolWindowContent.getContent(), "", false)
         toolWindow.contentManager.addContent(content)
