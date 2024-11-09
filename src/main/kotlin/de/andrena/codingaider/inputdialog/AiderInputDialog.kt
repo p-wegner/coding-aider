@@ -125,6 +125,42 @@ class AiderInputDialog(
         preferredSize = if (!projectSettings.isOptionsCollapsed) null else Dimension(0, 0)
     }
     private val panelAnimation = PanelAnimation(optionsPanel)
+    private fun createCollapseButton(
+        title: String,
+        isCollapsedGetter: () -> Boolean,
+        panel: JComponent,
+        contentPanel: JComponent,
+        animation: PanelAnimation
+    ): ActionButton {
+        val action = object : AnAction() {
+            override fun actionPerformed(e: AnActionEvent) {
+                val isCollapsed = isCollapsedGetter()
+                projectSettings.isOptionsCollapsed = !isCollapsed
+                
+                val startHeight = panel.height
+                val endHeight = if (isCollapsed) contentPanel.preferredSize.height else 0
+                
+                animation.animate(startHeight, endHeight) {
+                    updateCollapseButtonIcon(!isCollapsed)
+                }
+            }
+        }
+        
+        val presentation = Presentation(title).apply {
+            icon = if (isCollapsedGetter()) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
+            description = if (isCollapsedGetter()) "Show $title" else "Hide $title"
+        }
+        
+        return ActionButton(action, presentation, "Aider${title}Button", ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE)
+    }
+    
+    private fun updateCollapseButtonIcon(collapsed: Boolean) {
+        collapseButton.presentation.apply {
+            icon = if (collapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
+            description = if (collapsed) "Show Options" else "Hide Options"
+        }
+    }
+
     private val collapseButton: ActionButton = createCollapseButton(
         "Options",
         projectSettings::isOptionsCollapsed,

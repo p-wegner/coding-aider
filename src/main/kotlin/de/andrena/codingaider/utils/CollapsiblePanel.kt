@@ -28,13 +28,13 @@ class CollapsiblePanel(
     private val animation = PanelAnimation(wrapper)
     
     val headerPanel = JPanel(BorderLayout()).apply {
-        add(createCollapseButton(), BorderLayout.WEST)
+        add(createCollapseButton(name), BorderLayout.WEST)
         add(JLabel(name), BorderLayout.CENTER)
     }
     
     val contentPanel = wrapper
 
-    private fun createCollapseButton(): ActionButton {
+    private fun createCollapseButton(name: String): ActionButton {
         val presentation = Presentation().apply {
             icon = if (isCollapsedProperty.get()) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
             text = "Toggle $name"
