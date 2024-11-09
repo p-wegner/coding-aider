@@ -79,16 +79,14 @@ private class SelectPlanDialog(private val project: Project) : DialogWrapper(pro
             }
             row {
                 label("Details")
-                cell(JBScrollPane(markdownViewer.component).apply {
-                    preferredSize = Dimension(600, 350)
-                    minimumSize = Dimension(300, 150)
-                })
+                cell(JBScrollPane(markdownViewer.component))
                     .resizableColumn()
                     .align(AlignX.FILL)
+                    .growY()
             }
         }.apply {
-            preferredSize = Dimension(600, 400)
-            minimumSize = Dimension(300, 200)
+            preferredSize = Dimension(800, 600)
+            minimumSize = Dimension(600, 400)
         }
 
         return mainPanel
