@@ -122,7 +122,8 @@ class AiderInputDialog(
     private val settingsButton: ActionButton
     private val flagAndArgsPanel = createOptionsPanel()
     private val optionsPanel = com.intellij.ui.components.panels.Wrapper().apply {
-        setContent(if (!projectSettings.isOptionsCollapsed) flagAndArgsPanel else null)
+        setContent(flagAndArgsPanel)
+        isVisible = !projectSettings.isOptionsCollapsed
         preferredSize = if (!projectSettings.isOptionsCollapsed) null else Dimension(0, 0)
     }
     private val collapseButton: ActionButton = createCollapseButton()
@@ -453,11 +454,7 @@ class AiderInputDialog(
         val isCollapsed = projectSettings.isOptionsCollapsed
         button.presentation.icon = if (isCollapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
         
-        if (isCollapsed) {
-            wrapper.setContent(null)
-        } else {
-            wrapper.setContent(flagAndArgsPanel)
-        }
+        wrapper.isVisible = !isCollapsed
         wrapper.revalidate()
         wrapper.repaint()
     }
