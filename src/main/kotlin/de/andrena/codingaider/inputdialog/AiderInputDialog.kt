@@ -13,7 +13,6 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.addKeyboardAction
-import com.intellij.ui.LayeredIcon
 import com.intellij.ui.OnePixelSplitter
 import com.intellij.ui.TextFieldWithAutoCompletion
 import com.intellij.ui.components.JBLabel
@@ -30,11 +29,8 @@ import de.andrena.codingaider.settings.AiderProjectSettings
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
-import de.andrena.codingaider.utils.PanelAnimation
 import java.awt.*
-import java.awt.event.InputEvent
 import java.awt.event.KeyEvent
-import java.io.File
 import javax.swing.*
 
 
