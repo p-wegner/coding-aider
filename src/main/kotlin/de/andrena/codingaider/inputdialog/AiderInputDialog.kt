@@ -108,6 +108,7 @@ class AiderInputDialog(
 
     private val llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
 
+    private val projectSettings = AiderProjectSettings.getInstance(project)
     private val llmComboBox = object : ComboBox<String>(llmOptions) {
         override fun getToolTipText(): String? {
             return null
@@ -371,36 +372,40 @@ class AiderInputDialog(
         gbc.fill = GridBagConstraints.BOTH
         topPanel.add(inputTextField, gbc)
 
-        // Third row: Yes flag and additional arguments
+        // Options panel with collapsible UI
         gbc.gridy++
         gbc.weighty = 0.0
         gbc.fill = GridBagConstraints.HORIZONTAL
-        val flagAndArgsPanel = JPanel(GridBagLayout())
-        yesCheckBox.mnemonic = KeyEvent.VK_Y
-        flagAndArgsPanel.add(yesCheckBox, GridBagConstraints().apply {
-            gridx = 0
-            gridy = 0
-            weightx = 0.0
-            insets = JBUI.insetsRight(10)
-        })
-        val additionalArgsLabel = JLabel("Args:").apply {
-            displayedMnemonic = KeyEvent.VK_A
-            labelFor = additionalArgsField
-            toolTipText = "Additional arguments for the Aider command"
+        
+        val optionsPanel = com.intellij.ui.components.panels.Wrapper()
+        val flagAndArgsPanel = createOptionsPanel()
+        
+        val collapseButton = ActionButton(
+            object : AnAction() {
+                override fun actionPerformed(e: AnActionEvent) {
+                    projectSettings.isOptionsCollapsed = !projectSettings.isOptionsCollapsed
+                    updateOptionsPanel(optionsPanel, flagAndArgsPanel)
+                }
+            },
+            Presentation().apply {
+                icon = if (projectSettings.isOptionsCollapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
+                text = "Toggle Options"
+                description = "Show/hide additional options"
+            },
+            "AiderOptionsButton",
+            ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
+        )
+        
+        val optionsHeader = JPanel(BorderLayout()).apply {
+            add(collapseButton, BorderLayout.WEST)
+            add(JLabel("Additional Options"), BorderLayout.CENTER)
+            border = JBUI.Borders.empty(2)
         }
-        flagAndArgsPanel.add(additionalArgsLabel, GridBagConstraints().apply {
-            gridx = 1
-            gridy = 0
-            weightx = 0.0
-            insets = JBUI.insets(0, 5)
-        })
-        flagAndArgsPanel.add(additionalArgsField, GridBagConstraints().apply {
-            gridx = 2
-            gridy = 0
-            weightx = 1.0
-            fill = GridBagConstraints.HORIZONTAL
-        })
-        topPanel.add(flagAndArgsPanel, gbc)
+        
+        topPanel.add(optionsHeader, gbc.apply { gridy++ })
+        topPanel.add(optionsPanel, gbc.apply { gridy++ })
+        
+        updateOptionsPanel(optionsPanel, flagAndArgsPanel)
 
         // Context view
         val fileActionGroup = DefaultActionGroup().apply {
@@ -547,6 +552,69 @@ class AiderInputDialog(
             return "Continue with the plan $planName (message may be left empty):"
         }
         return "Enter feature description that will be used to create a plan:"
+    }
+
+    private fun createOptionsPanel(): JPanel {
+        val panel = JPanel(GridBagLayout())
+        val gbc = GridBagConstraints()
+        
+        // LLM selection
+        val selectLlmLabel = JLabel("LLM:").apply {
+            displayedMnemonic = KeyEvent.VK_L
+            labelFor = llmComboBox
+            toolTipText = "Select the Language Model to use"
+        }
+        panel.add(selectLlmLabel, GridBagConstraints().apply {
+            gridx = 0
+            gridy = 0
+            weightx = 0.0
+            insets = JBUI.insets(5)
+        })
+        panel.add(llmComboBox, GridBagConstraints().apply {
+            gridx = 1
+            gridy = 0
+            weightx = 1.0
+            fill = GridBagConstraints.HORIZONTAL
+            insets = JBUI.insets(5)
+        })
+        
+        // Yes flag
+        yesCheckBox.mnemonic = KeyEvent.VK_Y
+        panel.add(yesCheckBox, GridBagConstraints().apply {
+            gridx = 0
+            gridy = 1
+            weightx = 0.0
+            gridwidth = 2
+            insets = JBUI.insets(5)
+        })
+        
+        // Additional args
+        val additionalArgsLabel = JLabel("Args:").apply {
+            displayedMnemonic = KeyEvent.VK_A
+            labelFor = additionalArgsField
+            toolTipText = "Additional arguments for the Aider command"
+        }
+        panel.add(additionalArgsLabel, GridBagConstraints().apply {
+            gridx = 0
+            gridy = 2
+            weightx = 0.0
+            insets = JBUI.insets(5)
+        })
+        panel.add(additionalArgsField, GridBagConstraints().apply {
+            gridx = 1
+            gridy = 2
+            weightx = 1.0
+            fill = GridBagConstraints.HORIZONTAL
+            insets = JBUI.insets(5)
+        })
+        
+        return panel
+    }
+    
+    private fun updateOptionsPanel(wrapper: com.intellij.ui.components.panels.Wrapper, panel: JPanel) {
+        wrapper.setContent(if (projectSettings.isOptionsCollapsed) null else panel)
+        wrapper.parent?.revalidate()
+        wrapper.parent?.repaint()
     }
 
     private fun restoreLastState() {
