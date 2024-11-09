@@ -7,8 +7,8 @@ import com.intellij.ui.content.ContentFactory
 
 class PersistentFilesToolWindow : ToolWindowFactory {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
-        val persistentFilesComponent = PersistentFilesComponent(project)
-        val content = ContentFactory.getInstance().createContent(persistentFilesComponent.getContent(), "", false)
+        val toolWindowContent = CodingAiderToolWindowContent(project)
+        val content = ContentFactory.getInstance().createContent(toolWindowContent.getContent(), "", false)
         toolWindow.contentManager.addContent(content)
     }
 }
