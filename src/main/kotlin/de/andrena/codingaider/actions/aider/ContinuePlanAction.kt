@@ -71,7 +71,7 @@ private class SelectPlanDialog(private val project: Project) : DialogWrapper(pro
         // Set initial text
         markdownViewer.setMarkdownContent((planComboBox.selectedItem as? AiderPlan)?.plan ?: "")
 
-        return panel {
+        val mainPanel = panel {
             row("Select a plan to continue:") {
                 cell(planComboBox)
             }
@@ -81,5 +81,13 @@ private class SelectPlanDialog(private val project: Project) : DialogWrapper(pro
                     .align(AlignX.FILL)
             }
         }
+
+        // Make the panel scrollable and set minimum size
+        val scrollPane = JBScrollPane(mainPanel).apply {
+            preferredSize = Dimension(600, 400)
+            minimumSize = Dimension(300, 200)
+        }
+
+        return scrollPane
     }
 }
