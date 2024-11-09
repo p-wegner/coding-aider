@@ -50,8 +50,8 @@ dependencies {
 }
 intellijPlatform {
     pluginVerification {
-//        ide(IntelliJPlatformType.IntellijIdeaCommunity, "2023.3")
-//        ide(IntelliJPlatformType.IntellijIdeaCommunity, "2024.1.3")
+        ide(IntelliJPlatformType.IntellijIdeaCommunity, "2023.3")
+        ide(IntelliJPlatformType.IntellijIdeaCommunity, "2024.1.3")
     }
 
 }
