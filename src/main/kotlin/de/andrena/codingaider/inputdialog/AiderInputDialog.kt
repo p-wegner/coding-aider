@@ -29,13 +29,11 @@ import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.settings.AiderProjectSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
+import de.andrena.codingaider.utils.PanelAnimation
 import java.awt.*
 import java.awt.event.InputEvent
 import java.awt.event.KeyEvent
 import java.io.File
-import org.pushingpixels.trident.Timeline
-import org.pushingpixels.trident.callback.TimelineCallback
-import org.pushingpixels.trident.ease.Spline
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import javax.swing.*
