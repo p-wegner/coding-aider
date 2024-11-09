@@ -301,16 +301,7 @@ class AiderInputDialog(
         gbc.gridy++
         gbc.weighty = 0.0
         gbc.fill = GridBagConstraints.HORIZONTAL
-        
-        val optionsPanel = com.intellij.ui.components.panels.Wrapper()
-        val flagAndArgsPanel = createOptionsPanel()
-        
-        // Initialize panel with content if not collapsed
-        if (!projectSettings.isOptionsCollapsed) {
-            optionsPanel.setContent(flagAndArgsPanel)
-        }
-        
-        
+
         val optionsHeader = JPanel(BorderLayout()).apply {
             add(collapseButton, BorderLayout.WEST)
             add(JLabel("Additional Options"), BorderLayout.CENTER)
@@ -319,8 +310,6 @@ class AiderInputDialog(
         
         topPanel.add(optionsHeader, gbc.apply { gridy++ })
         topPanel.add(optionsPanel, gbc.apply { gridy++ })
-        
-        updateOptionsPanel(optionsPanel, flagAndArgsPanel, collapseButton)
 
         // Context view
         val contextViewPanel = AiderContextViewPanel(project, aiderContextView)
@@ -442,7 +431,7 @@ class AiderInputDialog(
         object : AnAction() {
             override fun actionPerformed(e: AnActionEvent) {
                 projectSettings.isOptionsCollapsed = !projectSettings.isOptionsCollapsed
-                updateOptionsPanel(optionsPanel, flagAndArgsPanel, collapseButton)
+                updateOptionsPanel(optionsPanel, flagAndArgsPanel, this@AiderInputDialog.collapseButton)
             }
         },
         Presentation().apply {
@@ -452,43 +441,24 @@ class AiderInputDialog(
         },
         "AiderOptionsButton",
         ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
-    )
+    ).apply {
+        addActionListener { 
+            projectSettings.isOptionsCollapsed = !projectSettings.isOptionsCollapsed
+            updateOptionsPanel(optionsPanel, flagAndArgsPanel, this)
+        }
+    }
 
     private fun updateOptionsPanel(wrapper: com.intellij.ui.components.panels.Wrapper, panel: JPanel, button: ActionButton) {
         val isCollapsed = projectSettings.isOptionsCollapsed
         button.presentation.icon = if (isCollapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
         
-        // Only animate if this is triggered by a button click (not during initialization)
-        if (wrapper.isShowing) {
-            if (isCollapsed) {
-                if (wrapper.targetComponent != null) {
-                    val animation = PanelAnimation(wrapper)
-                    animation.animate(
-                        startHeight = panel.preferredSize.height,
-                        endHeight = 0,
-                        onComplete = { 
-                            wrapper.setContent(null)
-                            wrapper.revalidate()
-                            wrapper.repaint()
-                        }
-                    )
-                }
-            } else {
-                wrapper.setContent(panel)
-                val animation = PanelAnimation(wrapper)
-                animation.animate(
-                    startHeight = 0,
-                    endHeight = panel.preferredSize.height,
-                    onComplete = {
-                        wrapper.revalidate()
-                        wrapper.repaint()
-                    }
-                )
-            }
+        if (isCollapsed) {
+            wrapper.setContent(null)
         } else {
-            // During initialization, just set the content without animation
-            wrapper.setContent(if (!isCollapsed) panel else null)
+            wrapper.setContent(flagAndArgsPanel)
         }
+        wrapper.revalidate()
+        wrapper.repaint()
     }
 
     private fun restoreLastState() {
