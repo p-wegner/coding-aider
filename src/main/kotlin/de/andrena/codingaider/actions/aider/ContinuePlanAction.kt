@@ -72,11 +72,13 @@ private class SelectPlanDialog(private val project: Project) : DialogWrapper(pro
         markdownViewer.setMarkdownContent((planComboBox.selectedItem as? AiderPlan)?.plan ?: "")
 
         val mainPanel = panel {
-            row("Select a plan to continue:") {
+            row {
+                label("Plan")
                 cell(planComboBox)
                     .align(AlignX.FILL)
             }
-            row("Plan details:") {
+            row {
+                label("Details")
                 cell(JBScrollPane(markdownViewer.component).apply {
                     preferredSize = Dimension(600, 350)
                     minimumSize = Dimension(300, 150)
