@@ -24,7 +24,7 @@ class PlanViewer(private val project: Project) {
 
     init {
         plansList.run {
-            cellRenderer = PlanListCellRenderer()
+            cellRenderer = PlanListCellRenderer(false)
             addMouseListener(object : MouseAdapter() {
                 override fun mouseClicked(e: MouseEvent) {
                     val index = plansList.locationToIndex(e.point)
@@ -49,7 +49,7 @@ class PlanViewer(private val project: Project) {
         }
     }
 
-    class PlanListCellRenderer : JPanel(BorderLayout()), ListCellRenderer<AiderPlan?> {
+    class PlanListCellRenderer(private val shortTooltip:Boolean = true) : JPanel(BorderLayout()), ListCellRenderer<AiderPlan?> {
         private val label = JLabel()
         private val statusIcon = JLabel()
         private val countLabel = JLabel()
@@ -93,8 +93,7 @@ class PlanViewer(private val project: Project) {
                 val planPreview = value.plan.lines().take(3).joinToString("\n").let {
                     if (it.length > 200) it.take(200) + "..." else it
                 }
-                
-                val tooltip = value.createShortTooltip()
+                val tooltip = if (shortTooltip) value.createShortTooltip() else value.createTooltip()
                 toolTipText = tooltip
                 label.toolTipText = tooltip
                 countLabel.toolTipText = tooltip
