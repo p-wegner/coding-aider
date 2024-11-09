@@ -140,6 +140,7 @@ class AiderInputDialog(
     private val persistentFileService: PersistentFileService
     private var splitPane: OnePixelSplitter
     private val settingsButton: ActionButton
+    private lateinit var collapseButton: ActionButton
 
     init {
         title = "Aider Command"
