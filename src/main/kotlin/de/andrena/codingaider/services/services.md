@@ -13,6 +13,10 @@ graph TD
     D[PersistentFileService] --> E[FileExtractorService]
     F[TokenCountService] --> G[AiderHistoryService]
     H[AiderDialogStateService] --> D
+    I[CommandSummaryService] --> J[AiderPlanService]
+    K[FileDataCollectionService] --> L[PersistentFileService]
+    M[MarkdownConversionService] --> N[AiderDialogStateService]
+    O[RunningCommandService] --> P[AiderDialogStateService]
 ```
 
 ## Key Services
@@ -95,6 +99,32 @@ graph TD
   - Dynamic file path handling
   - Supports extraction from compressed archives
 
+### 9. CommandSummaryService
+- **Purpose**: Generates summaries for commands
+- **Key Features**:
+  - Builds summaries based on command data
+  - Supports different modes (architect, structured, shell, normal)
+- **Exceptional Implementation**:
+  - Uses `AiderPlanPromptService` to filter relevant files
+  - Provides abbreviated messages for summaries
+
+### 10. FileDataCollectionService
+- **Purpose**: Collects and manages file data
+- **Key Features**:
+  - Collects files from various sources
+  - Integrates with `PersistentFileService` and `DocumentationFinderService`
+- **Exceptional Implementation**:
+  - Distinct file collection to avoid duplicates
+  - Supports documentation lookup based on settings
+
+### 11. RunningCommandService
+- **Purpose**: Manages running commands
+- **Key Features**:
+  - Tracks running commands using a list model
+  - Provides methods to add and remove running commands
+- **Exceptional Implementation**:
+  - Uses `DefaultListModel` for managing command dialogs
+
 ## Design Patterns
 - **Singleton Pattern**: All services use IntelliJ's service mechanism
 - **Dependency Injection**: Project-scoped service instantiation
@@ -104,6 +134,8 @@ graph TD
 - IntelliJ Platform SDK
 - Jackson (YAML processing)
 - JTokkit (Token counting)
+- JSoup (HTML cleaning)
+- Flexmark (Markdown conversion)
 
 ## File References
 - [AiderPlanService.kt](plans/AiderPlanService.kt)
@@ -113,3 +145,7 @@ graph TD
 - [AiderDialogStateService.kt](./AiderDialogStateService.kt)
 - [AiderHistoryService.kt](./AiderHistoryService.kt)
 - [FileExtractorService.kt](./FileExtractorService.kt)
+- [CommandSummaryService.kt](./CommandSummaryService.kt)
+- [FileDataCollectionService.kt](./FileDataCollectionService.kt)
+- [RunningCommandService.kt](./RunningCommandService.kt)
+- [MarkdownConversionService.kt](./MarkdownConversionService.kt)
