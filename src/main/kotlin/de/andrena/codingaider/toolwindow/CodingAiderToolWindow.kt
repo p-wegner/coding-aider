@@ -5,11 +5,8 @@ import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
 import com.intellij.ui.dsl.builder.panel
-import de.andrena.codingaider.services.RunningCommandService
+import de.andrena.codingaider.toolwindow.runningcommands.RunningCommandsPanel
 import de.andrena.codingaider.toolwindow.persistentfiles.PersistentFilesPanel
-import com.intellij.openapi.components.service
-import com.intellij.ui.components.JBList
-import de.andrena.codingaider.outputview.MarkdownDialog
 import de.andrena.codingaider.toolwindow.plans.PlansPanel
 import javax.swing.*
 import java.awt.event.MouseAdapter
@@ -28,16 +25,7 @@ class CodingAiderToolWindow : ToolWindowFactory {
 }
 
 class CodingAiderToolWindowContent(project: Project) {
-    private val runningCommandsListModel = project.service<RunningCommandService>().getRunningCommandsListModel()
-    private val runningCommandsList = JBList(runningCommandsListModel).apply {
-        addMouseListener(object : MouseAdapter() {
-            override fun mouseClicked(e: MouseEvent) {
-                if (e.clickCount == 2) {
-                    (selectedValue as? MarkdownDialog)?.focus()
-                }
-            }
-        })
-    }
+    private val runningCommandsPanel = RunningCommandsPanel(project)
     private val plansPanel = PlansPanel(project)
     private val persistentFilesPanel = PersistentFilesPanel(project)
 
@@ -54,7 +42,7 @@ class CodingAiderToolWindowContent(project: Project) {
                     .resizableColumn()
             }
             row {
-                scrollCell(runningCommandsList)
+                cell(runningCommandsPanel.getContent())
                     .align(com.intellij.ui.dsl.builder.Align.FILL)
                     .resizableColumn()
             }
