@@ -5,6 +5,7 @@ import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
 import com.intellij.ui.dsl.builder.panel
+import de.andrena.codingaider.outputview.MarkdownDialog
 import de.andrena.codingaider.toolwindow.persistentfiles.PersistentFilesPanel
 import de.andrena.codingaider.toolwindow.plans.PlansPanel
 import javax.swing.*
@@ -42,15 +43,16 @@ class CodingAiderToolWindowContent(project: Project) {
         })
     }
     private val plansPanel = PlansPanel(project)
+    private val persistentFilesPanel = PersistentFilesPanel(project)
 
     fun getContent(): JComponent {
         return panel {
-            row("Running Commands:") {
+            row {
                 scrollCell(runningCommandsList)
                     .align(com.intellij.ui.dsl.builder.Align.FILL)
                     .resizableColumn()
             }
-            row("Persistent Files:") {
+            row {
                 cell(persistentFilesPanel.getContent())
                     .align(com.intellij.ui.dsl.builder.Align.FILL)
                     .resizableColumn()
