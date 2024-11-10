@@ -73,6 +73,34 @@ graph TD
 - `getItems()`: Generate context-specific completion suggestions
 - `extractCompletions()`: Parse project files for completion data
 
+### LlmComboBoxRenderer
+- **Purpose**: Custom renderer for the language model selection combo box
+- **Key Features**:
+  - Displays API key status for each language model
+  - Provides tooltips with detailed API key information
+
+#### Notable Methods
+- `getListCellRendererComponent()`: Customizes the rendering of each item in the combo box
+
+### AiderHistory
+- **Purpose**: Manages and displays command history
+- **Key Features**:
+  - Navigates through command history
+  - Displays command details with timestamps
+
+#### Notable Methods
+- `navigateHistory()`: Navigates through the command history
+
+### AiderContextViewPanel
+- **Purpose**: Provides a toolbar and panel for managing file context
+- **Key Features**:
+  - Toolbar actions for adding, removing, and toggling file status
+  - File context view integration
+
+#### Notable Methods
+- `createFileActionGroup()`: Creates actions for adding files to context
+- `createFileStatusActionGroup()`: Creates actions for toggling file status
+
 ## Design Patterns
 - **Model-View-Controller (MVC)**
 - **Lazy Initialization** (via `LazyCacheDelegate`)
@@ -109,6 +137,9 @@ graph TD
 - [AiderInputDialog.kt](./AiderInputDialog.kt)
 - [AiderContextView.kt](./AiderContextView.kt)
 - [AiderCompletionProvider.kt](./AiderCompletionProvider.kt)
+- [LlmComboBoxRenderer.kt](./LlmComboBoxRenderer.kt)
+- [AiderHistory.kt](./AiderHistory.kt)
+- [AiderContextViewPanel.kt](./AiderContextViewPanel.kt)
 
 ## Usage Scenarios
 1. Code generation with context-aware suggestions
