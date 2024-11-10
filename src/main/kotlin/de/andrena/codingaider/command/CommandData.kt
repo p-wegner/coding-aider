@@ -31,6 +31,24 @@ data class CommandData(
     val options: CommandOptions = CommandOptions.DEFAULT,
     val aiderMode: AiderMode = AiderMode.NORMAL
 ) {
+    val summary: String
+        get() = buildString {
+            val message = this@CommandData.message
+            when (aiderMode) {
+                AiderMode.ARCHITECT -> append("[ARCHITECT]")
+                AiderMode.STRUCTURED -> append("[STRUCTURED]")
+                AiderMode.SHELL -> append("[SHELL]")
+                AiderMode.NORMAL -> append("[NORMAL]")
+            }
+            if (message.length > 20) {
+                append(message.substring(0, 20))
+                append("...")
+            } else {
+                append(message)
+            }
+
+
+        }
     val isShellMode: Boolean get() = aiderMode == AiderMode.SHELL
     val structuredMode: Boolean get() = aiderMode == AiderMode.STRUCTURED
 }

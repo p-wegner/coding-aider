@@ -1,14 +1,17 @@
 package de.andrena.codingaider.outputview
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBScrollPane
+import de.andrena.codingaider.services.RunningCommandService
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import java.awt.BorderLayout
 import java.awt.EventQueue.invokeLater
 import java.awt.Frame
 import java.awt.event.KeyEvent
+import java.awt.event.WindowEvent
 import java.util.*
 import java.util.Timer
 import javax.swing.*
@@ -21,11 +24,12 @@ class MarkdownDialog(
     private val project: Project,
     private val initialTitle: String,
     initialText: String,
-    private val onAbort: Abortable? = null
+    private val onAbort: Abortable? = null,
+    private val displayString: String = initialTitle
 ) : JDialog(null as Frame?, false) {
 
     override fun toString(): String {
-        return "MarkdownDialog: $initialTitle"
+        return displayString
     }
     private val markdownViewer = CustomMarkdownViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
         setDarkTheme(!JBColor.isBright())
@@ -82,8 +86,10 @@ class MarkdownDialog(
 
         defaultCloseOperation = DO_NOTHING_ON_CLOSE
         addWindowListener(object : java.awt.event.WindowAdapter() {
-            override fun windowClosing(windowEvent: java.awt.event.WindowEvent?) {
+            override fun windowClosed(e: WindowEvent?) {
                 project.service<RunningCommandService>().removeRunningCommand(this@MarkdownDialog)
+            }
+            override fun windowClosing(windowEvent: java.awt.event.WindowEvent?) {
                 if (isProcessFinished || onAbort == null) {
                     dispose()
                 } else {

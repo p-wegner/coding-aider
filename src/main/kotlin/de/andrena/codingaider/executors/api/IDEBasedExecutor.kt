@@ -39,7 +39,8 @@ class IDEBasedExecutor(
             project,
             "Aider Command Output",
             "Initializing Aider command...",
-            this
+            this,
+            displayString = commandData.summary
         ).apply {
             isVisible = true
             focus()
