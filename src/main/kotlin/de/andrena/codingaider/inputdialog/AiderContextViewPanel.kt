@@ -58,9 +58,7 @@ class AiderContextViewPanel(
                 })
                 popup.add(JMenuItem("Add Plan Context Files").apply {
                     addActionListener {
-                        val contextFilesForPlans =
-                            project.service<AiderPlanService>().getContextFilesForPlans(aiderContextView.getAllFiles())
-                        aiderContextView.addFilesToContext(contextFilesForPlans)
+                        aiderContextView.addPlanContextFilesToContext()
                     }
                 })
 

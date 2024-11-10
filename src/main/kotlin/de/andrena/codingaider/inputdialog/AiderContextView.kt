@@ -1,6 +1,7 @@
 package de.andrena.codingaider.inputdialog
 
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.components.service
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -14,6 +15,7 @@ import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.services.FileExtractorService
 import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.services.TokenCountService
+import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.settings.AiderSettings
 import java.awt.BorderLayout
 import java.awt.event.KeyEvent
@@ -138,6 +140,9 @@ class AiderContextView(
 
         if (AiderSettings.getInstance().alwaysIncludeOpenFiles) {
             addOpenFilesToContext()
+        }
+        if (AiderSettings.getInstance().alwaysIncludePlanContextFiles) {
+            addPlanContextFilesToContext()
         }
         onFilesChanged()
     }
@@ -323,6 +328,12 @@ class AiderContextView(
     fun setFiles(files: List<FileData>) {
         allFiles = files
         selectedFilesChanged()
+    }
+
+    fun addPlanContextFilesToContext() {
+        val contextFilesForPlans =
+            project.service<AiderPlanService>().getContextFilesForPlans(getAllFiles())
+        addFilesToContext(contextFilesForPlans)
     }
 
 }

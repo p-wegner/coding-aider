@@ -31,12 +31,19 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var dirtyCommits: DirtyCommitSetting = AiderDefaults.DIRTY_COMMITS,
         var useStructuredMode: Boolean = AiderDefaults.USE_STRUCTURED_MODE,
         var alwaysIncludeOpenFiles: Boolean = AiderDefaults.ALWAYS_INCLUDE_OPEN_FILES,
+        var alwaysIncludePlanContextFiles: Boolean = AiderDefaults.ALWAYS_INCLUDE_PLAN_CONTEXT_FILES,
         var dockerImageTag: String = AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION,
         var aiderExecutablePath: String = AiderDefaults.AIDER_EXECUTABLE_PATH,
         var documentationLlm: String = AiderDefaults.DOCUMENTATION_LLM,
         var optionsPanelCollapsed: Boolean = true,
     )
-    
+
+    var alwaysIncludePlanContextFiles: Boolean
+        get() = myState.alwaysIncludePlanContextFiles
+        set(value) {
+            myState.alwaysIncludePlanContextFiles = value
+        }
+
     var documentationLlm: String
         get() = myState.documentationLlm
         set(value) {
