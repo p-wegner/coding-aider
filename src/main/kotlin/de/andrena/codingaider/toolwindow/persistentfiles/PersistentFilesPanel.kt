@@ -26,7 +26,12 @@ class PersistentFilesPanel(private val project: Project) {
                 }
             }
         })
-        addMouseListener(object : java.awt.event.MouseAdapter() {
+    }
+
+    init {
+        loadPersistentFiles()
+        subscribeToChanges()
+        persistentFilesList.addMouseListener(object : java.awt.event.MouseAdapter() {
             override fun mouseClicked(e: java.awt.event.MouseEvent) {
                 if (e.clickCount == 2) {
                     val selectedFile = persistentFilesList.selectedValue
@@ -34,11 +39,7 @@ class PersistentFilesPanel(private val project: Project) {
                 }
             }
         })
-    }
 
-    init {
-        loadPersistentFiles()
-        subscribeToChanges()
     }
 
     private fun subscribeToChanges() {
