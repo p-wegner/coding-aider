@@ -26,6 +26,14 @@ class PersistentFilesPanel(private val project: Project) {
                 }
             }
         })
+        addMouseListener(object : java.awt.event.MouseAdapter() {
+            override fun mouseClicked(e: java.awt.event.MouseEvent) {
+                if (e.clickCount == 2) {
+                    val selectedFile = persistentFilesList.selectedValue
+                    selectedFile?.let { openFileInEditor(it) }
+                }
+            }
+        })
     }
 
     init {
@@ -87,6 +95,14 @@ class PersistentFilesPanel(private val project: Project) {
         val selectedFiles = persistentFilesList.selectedValuesList
         persistentFileService.removePersistentFiles(selectedFiles.map { it.filePath })
         loadPersistentFiles()
+    }
+
+    private fun openFileInEditor(fileData: FileData) {
+        val file = File(fileData.filePath)
+        if (file.exists()) {
+            val virtualFile = com.intellij.openapi.vfs.LocalFileSystem.getInstance().findFileByIoFile(file)
+            virtualFile?.let { FileEditorManager.getInstance(project).openFile(it, true) }
+        }
     }
 
     private fun loadPersistentFiles() {
