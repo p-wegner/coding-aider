@@ -206,78 +206,11 @@ class AiderPlanService(private val project: Project) {
         val nextLine = lines.getOrNull(currentIndex)?.takeIf { it.isNotBlank() } ?: return false
         return nextLine.indentationLevel() > parentIndent && isChecklistItem(nextLine)
     }
-    // TODO: extract prompt related logic to a separate class
+    private val aiderPlanPromptService = AiderPlanPromptService()
+
     fun createAiderPlanSystemPrompt(commandData: CommandData): String {
-        val files = commandData.files
-
-        val existingPlan = filterPlanRelevantFiles(files)
-
-        val s = """
-            SYSTEM Instead of making changes to the code, markdown files should be used to track progress on the feature.
-            SYSTEM A plan consists of three files:
-            SYSTEM 1. A detailed description of the requested feature
-            SYSTEM 2. A separate file with a checklist for tracking the progress
-            SYSTEM 3. A context.yaml file listing all relevant files needed for implementing the plan
-            SYSTEM The file should be saved in the $AIDER_PLANS_FOLDER directory in the project.
-            SYSTEM Always start plans with the line $AIDER_PLAN_MARKER and checklists with $AIDER_PLAN_CHECKLIST_MARKER at the beginning of the file and use this marker in existing files to identify plans and checklists.
-            SYSTEM The plan should focus on high level descriptions of the requested features and major implementation details.
-            SYSTEM The checklist should focus on the required implementation steps on a more fine grained level.
-            SYSTEM The three files should be named consistently:
-            SYSTEM - feature_name.md (plan)
-            SYSTEM - feature_name_checklist.md (checklist)
-            SYSTEM - feature_name_context.yaml (file list)
-            SYSTEM The plan and checklist should reference each other using markdown file references.
-            SYSTEM The context.yaml should list all files that will be needed to implement the plan.
-            SYSTEM The context.yaml must follow this format:
-            SYSTEM ---
-            SYSTEM files:
-            SYSTEM - path: "full/path/to/file"
-            SYSTEM   readOnly: false
-            SYSTEM - path: "full/path/to/another/file"
-            SYSTEM   readOnly: true
-            SYSTEM Be sure to use correct relative path (same folder) references between the files.
-            SYSTEM Once the plan properly describes the changes, start implementing them step by step.
-        """
-        val basePrompt = s.trimStartingWhiteSpaces()
-
-        val firstPlan = existingPlan.firstOrNull()
-        val relativePlanPath = firstPlan?.filePath?.removePrefix(commandData.projectPath) ?: ""
-        val planSpecificPrompt = firstPlan?.let {
-            """
-            SYSTEM A plan already exists. Continue implementing the existing plan $relativePlanPath and its checklist step by step.
-            SYSTEM Start implementing before updating the checklist. If no changes are done, don't update the checklist.
-            SYSTEM In that case inform the user why no changes were made.
-            SYSTEM New files that are not the plan and are not part of the checklist should be created in a suitable location and added to the context.yaml.
-            SYSTEM If no further information is given, use ${commandData.projectPath} as the location.
-            SYSTEM Update the plan, checklist and context.yaml as needed based on the current progress and any new requirements.
-            SYSTEM Important: Always keep the context.yaml up to date with your changes. If files are created or edited, add them to the context.yaml.
-            SYSTEM If the current instruction doesn't align with the existing plan, update the plan accordingly before proceeding.
-            """
-
-        } ?: """
-            SYSTEM No plan exists yet. Write a detailed description of the requested feature and the needed changes.
-            SYSTEM The main plan file should include these sections: ## Overview, ## Problem Description, ## Goals, ## Additional Notes and Constraints, ## References 
-            SYSTEM Save the plan in a new markdown file with a suitable name in the $AIDER_PLANS_FOLDER directory.
-            SYSTEM Create separate checklist and context.yaml files to track the progress of implementing the plan.
-            SYSTEM For the context.yaml, consider all provided files and add relevant files to the context.yaml.
-            SYSTEM Only proceed with changes after creating and committing the plan files.
-            """
-
-        return """
-${basePrompt.trimStartingWhiteSpaces()}
-${planSpecificPrompt.trimStartingWhiteSpaces()}
-$STRUCTURED_MODE_MARKER ${commandData.message}
-            """.trimStartingWhiteSpaces()
+        return aiderPlanPromptService.createAiderPlanSystemPrompt(commandData)
     }
-
-    fun filterPlanRelevantFiles(files: List<FileData>): List<FileData> =
-        files.filter {
-            it.filePath.contains(AIDER_PLANS_FOLDER) && (it.filePath.endsWith(".md") || it.filePath.endsWith(
-                ".yaml"
-            ))
-        }
-
-    private fun String.trimStartingWhiteSpaces() = trimIndent().trimStart { it.isWhitespace() }
 
     private val objectMapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
 
