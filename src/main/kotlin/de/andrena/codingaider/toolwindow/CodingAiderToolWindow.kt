@@ -9,6 +9,7 @@ import de.andrena.codingaider.services.RunningCommandService
 import de.andrena.codingaider.toolwindow.persistentfiles.PersistentFilesPanel
 import com.intellij.openapi.components.service
 import com.intellij.ui.components.JBList
+import de.andrena.codingaider.outputview.MarkdownDialog
 import de.andrena.codingaider.toolwindow.plans.PlansPanel
 import javax.swing.*
 import java.awt.event.MouseAdapter
@@ -43,11 +44,6 @@ class CodingAiderToolWindowContent(project: Project) {
     fun getContent(): JComponent {
         return panel {
             row {
-                scrollCell(runningCommandsList)
-                    .align(com.intellij.ui.dsl.builder.Align.FILL)
-                    .resizableColumn()
-            }
-            row {
                 cell(persistentFilesPanel.getContent())
                     .align(com.intellij.ui.dsl.builder.Align.FILL)
                     .resizableColumn()
@@ -57,6 +53,12 @@ class CodingAiderToolWindowContent(project: Project) {
                     .align(com.intellij.ui.dsl.builder.Align.FILL)
                     .resizableColumn()
             }
+            row {
+                scrollCell(runningCommandsList)
+                    .align(com.intellij.ui.dsl.builder.Align.FILL)
+                    .resizableColumn()
+            }
+
         }
     }
 }
