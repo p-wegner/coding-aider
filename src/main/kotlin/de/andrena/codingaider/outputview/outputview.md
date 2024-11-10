@@ -9,6 +9,7 @@ The Output View module is a critical component of the Coding Aider plugin, respo
 1. **[Abortable.kt](./Abortable.kt)**: Defines an interface for command abortion
 2. **[MarkdownDialog.kt](./MarkdownDialog.kt)**: Primary dialog implementation for markdown content display
 3. **[CustomMarkdownViewer.kt](./CustomMarkdownViewer.kt)**: Utility for creating markdown preview editors
+4. **[HyperlinkHandler.kt](./HyperlinkHandler.kt)**: Handles hyperlink events in the markdown content
 
 ### Project Dependencies and Interactions
 ```mermaid
@@ -17,28 +18,32 @@ graph TD
         A[Abortable.kt]
         B[MarkdownDialog.kt]
         C[CustomMarkdownViewer.kt]
+        D[HyperlinkHandler.kt]
     end
     
     subgraph External Dependencies
-        D[IntelliJ Platform SDK]
-        E[Markdown Plugin]
-        F[Swing UI Toolkit]
-        G[AiderSettings]
+        E[IntelliJ Platform SDK]
+        F[Markdown Plugin]
+        G[Swing UI Toolkit]
+        H[AiderSettings]
     end
     
     subgraph Interaction Flow
-        H[External Process] -->|Trigger Dialog| B
+        I[External Process] -->|Trigger Dialog| B
         B -->|Abort Command| A
-        B -->|Configure Dialog| G
+        B -->|Configure Dialog| H
+        B -->|Handle Hyperlinks| D
     end
     
-    B --> D
     B --> E
     B --> F
+    B --> G
     A --> B
     C --> B
-    C --> D
     C --> E
+    C --> F
+    D --> B
+    D --> E
 ```
 
 ## Key Interfaces and Classes
