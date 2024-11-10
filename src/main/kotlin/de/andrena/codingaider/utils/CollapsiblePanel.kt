@@ -44,24 +44,36 @@ class CollapsiblePanel(
         return ActionButton(
             object : AnAction() {
                 override fun actionPerformed(e: AnActionEvent) {
-                    isCollapsedProperty.set(!isCollapsedProperty.get())
-                    val isCollapsed = isCollapsedProperty.get()
-                    
-                    presentation.icon = if (isCollapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
-                    
-                    val startHeight = if (isCollapsed) content.preferredSize.height else 0
-                    val endHeight = if (isCollapsed) 0 else content.preferredSize.height
-                    
-                    animation.animate(startHeight, endHeight) {
-                        wrapper.preferredSize = if (isCollapsed) Dimension(0, 0) else null
-                        wrapper.revalidate()
-                        wrapper.repaint()
-                    }
+                    toggleCollapse()
                 }
             },
             presentation,
             "Aider${name}Button",
             ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
         )
+    }
+
+    private fun toggleCollapse() {
+        isCollapsedProperty.set(!isCollapsedProperty.get())
+        val isCollapsed = isCollapsedProperty.get()
+        updateCollapseButtonIcon(isCollapsed)
+        animatePanel(isCollapsed)
+    }
+
+    private fun updateCollapseButtonIcon(isCollapsed: Boolean) {
+        headerPanel.components.filterIsInstance<ActionButton>().forEach { button ->
+            button.presentation.icon = if (isCollapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
+        }
+    }
+
+    private fun animatePanel(isCollapsed: Boolean) {
+        val startHeight = if (isCollapsed) content.preferredSize.height else 0
+        val endHeight = if (isCollapsed) 0 else content.preferredSize.height
+        
+        animation.animate(startHeight, endHeight) {
+            wrapper.preferredSize = if (isCollapsed) Dimension(0, 0) else null
+            wrapper.revalidate()
+            wrapper.repaint()
+        }
     }
 }
