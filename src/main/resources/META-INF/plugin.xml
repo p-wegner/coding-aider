@@ -17,22 +17,65 @@
         <p>Seamlessly integrate Aider's AI-powered coding assistance directly into your IDE. This integration boosts your productivity by offering rapid access for precision code generation and refactoring, all while allowing you complete control over the context utilized by the LLM.</p>
 
         <h3>Important Note</h3>
-        <p>To utilize this plugin, you must have a functional Aider installation or be able to run docker containers. Additionally, API keys for the LLM Providers you intend to use are required.</p>
+        <p>To utilize this plugin, you must have a functional Aider installation (version 0.61.0 or higher) or be able to run docker containers. Additionally, API keys for the LLM Providers you intend to use are required.</p>
 
         <h3>Key Features</h3>
         <ul>
             <li><strong>AI-Powered Coding Assistance:</strong> Harness the power of Aider to receive intelligent coding assistance within your IDE.</li>
-            <li><strong>Intuitive Access:</strong> Quickly initiate Aider actions via the "Start Aider Action" option in the Tools menu or Project View popup menu. Use the keyboard shortcut Alt+A for rapid access.</li>
+            <li><strong>Intuitive Access:</strong>
+                <ul>
+                    <li>Quickly initiate Aider actions via the "Start Aider Action" option in the Tools menu or Project View popup menu.</li>
+                    <li>Use the keyboard shortcut Alt+A for rapid access.</li>
+                    <li>Navigate previous commands with Alt+UP and Alt+DOWN in the message field.</li>
+                    <li>Automatically commit all changes with an LLM-generated message using ALT + D</li>
+                </ul>
+            </li>
             <li><strong>Persistent File Management:</strong> Manage frequently used files for persistent context for Aider operations with Alt+Shift+A, within the Aider Command Window or the Aider Settings.</li>
-            <li><strong>Dual Execution Modes:</strong> IDE-based execution for seamless integration. Shell-based execution for users who prefer Aider's rich terminal interaction.</li>
+            <li><strong>Dual Execution Modes:</strong>
+                <ul>
+                    <li>IDE-based execution for seamless integration.</li>
+                    <li>Shell-based execution
+                        <ul>
+                            <li>for users who prefer Aider's rich terminal interaction</li>
+                            <li>useful for easy context setup in the IDE</li>
+                            <li>combinable with docker-based execution to simplify file system mounting</li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
             <li><strong>Git Integration:</strong> Automatically launch a Git comparison tool post-Aider operations for easy change review.</li>
-            <li><strong>Real-time Progress Tracking:</strong> Monitor Aider command progress through Markdown dialog.</li>
+            <li><strong>Real-time Progress Tracking:</strong> Monitor Aider command progress through a custom Markdown viewer.</li>
             <li><strong>Multi-File Support:</strong> Execute Aider actions on multiple files or directories while controlling the context provided to Aider from your IDE.</li>
             <li><strong>Webcrawl (Experimental):</strong> Download and convert pages to markdown stored in a .aider-docs folder to add to context.</li>
             <li><strong>Clipboard Image Support:</strong> Save clipboard images directly to the project and add them to persistent files.</li>
             <li><strong>Refactor to Clean Code Action:</strong> Refactor code to adhere to clean code principles.</li>
             <li><strong>Fix Build and Test Error Action:</strong> Fix build and test errors in the project.</li>
-            <li><strong>Various Specialized Actions:</strong> Including commit, documentation generation, error fixing, and design pattern application.</li>
+            <li><strong>Various Specialized Actions:</strong>
+                <ul>
+                    <li><strong>Commit Action:</strong> Quickly commit changes using Aider.</li>
+                    <li><strong>Document Code Action:</strong> Generate markdown documentation for selected files and directories.</li>
+                    <li><strong>Fix Compile Error Action:</strong> Fix compile errors using Aider's AI capabilities.</li>
+                    <li><strong>Show Last Command Result Action:</strong> Display the result of the last executed Aider command.</li>
+                    <li><strong>Settings Action:</strong> Quickly access Aider Settings.</li>
+                    <li><strong>Apply Design Pattern Action:</strong> Apply predefined design patterns to selected files or directories.</li>
+                    <li><strong>Persistent Files Action:</strong> Manage the list of persistent files for Aider operations.</li>
+                    <li><strong>OpenAiderActionGroup:</strong> Access a popup menu with all available Aider actions.</li>
+                    <li><strong>Document Each Folder Action:</strong> Generate documentation for each folder in the selected files.</li>
+                    <li><strong>Continue Plan Action:</strong> Allow users to select and continue an unfinished plan within the Coding Aider plugin.</li>
+                </ul>
+            </li>
+            <li><strong>Structured Mode:</strong>
+                <ul>
+                    <li>Facilitates a more organized approach to developing features and implementing code changes.</li>
+                    <li>Simply describe a feature briefly, and the plugin will generate a detailed plan and checklist for you.</li>
+                    <li>These plans and checklists are saved in the .coding-aider-plans directory and can be manually adjusted as needed.</li>
+                    <li>Once a plan is created, Aider will automatically update it to reflect current progress and any new requirements.</li>
+                    <li>This mode aids in tracking the implementation progress of features.</li>
+                    <li>If a plan is active (i.e. its files in the context), you can leave the message field empty, and Aider will continue working on the existing plan.</li>
+                    <li>Alternatively, you can use the "Continue Plan" action to continue working on the existing plan.</li>
+                    <li>The Tool Window will display an overview of existing plans and their progress.</li>
+                </ul>
+            </li>
         </ul>
 
         <h3>Feedback and Support</h3>
@@ -41,8 +84,8 @@
         <h3>Advantages Over Other Coding Assistant Plugins</h3>
         <ul>
             <li>Optimized token usage for improved speed (featuring replace edit mode, repo-map, and context control).</li>
-            <li>Feature-rich terminal interface for command-line enthusiasts.</li>
-            <li>Extensive range of commands to automate common development tasks.</li>
+            <li>A feature-rich terminal interface for command-line enthusiasts.</li>
+            <li>An extensive range of commands to automate common development tasks.</li>
             <li>Robust recovery mechanisms with seamless Git integration.</li>
         </ul>
 
