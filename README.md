@@ -69,6 +69,8 @@ Additionally API keys for the LLM Providers you intend to use are required.
     - Once a plan is created, Aider will automatically update it to reflect current progress and any new requirements.
     - This mode aids in tracking the implementation progress of features.
     - If a plan is active (i.e. its files in the context), you can leave the message field empty, and Aider will continue working on the existing plan.
+    - Alternatively, you can use the "Continue Plan" action to continue working on the existing plan.
+    - The Tool Window will display an overview of existing plans and their progress.
 
 For a detailed description of all available actions, please refer to the [Actions Documentation](docs/actions.md).
 
