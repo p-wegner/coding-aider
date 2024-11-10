@@ -133,14 +133,14 @@ class PlanViewer(private val project: Project) {
         val settings = AiderSettings.getInstance()
         val virtualFiles: List<VirtualFile> =
             selectedPlan.allFiles.mapNotNull { VirtualFileManager.getInstance().findFileByUrl(it.filePath) }
-        project.service<FileDataCollectionService>().collectAllFiles(virtualFiles.toTypedArray())
+        val filesToInclude = project.service<FileDataCollectionService>().collectAllFiles(virtualFiles.toTypedArray())
 
         val commandData = CommandData(
             message = "",
             useYesFlag = settings.useYesFlag,
             llm = settings.llm,
             additionalArgs = "",
-            files = selectedPlan.allFiles,
+            files = filesToInclude,
             lintCmd = "",
             projectPath = project.basePath ?: "",
             aiderMode = AiderMode.STRUCTURED,

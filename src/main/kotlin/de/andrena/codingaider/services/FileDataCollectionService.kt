@@ -34,8 +34,7 @@ class FileDataCollectionService(private val project: Project) {
         traversedFiles.addAll(persistentFiles)
         traversedFiles.addAll(documentationFiles)
 
-        val allFiles = traversedFiles.distinctBy { it.filePath }
-        return allFiles
+        return traversedFiles.distinctBy { it.filePath }
     }
 
 }
