@@ -7,7 +7,6 @@ while allowing you complete control over the context utilized by the LLM.
 ## Example Usage
 
 ![Aider Command Action Example](docs/AiderCommandAction.jpg)
-![Aider Command Action Example](docs/settings.jpg)
 
 ## Important Note
 
@@ -35,7 +34,10 @@ Additionally API keys for the LLM Providers you intend to use are required.
 
 4. **Dual Execution Modes**:
     - IDE-based execution for seamless integration.
-    - Shell-based execution for users who prefer Aider's rich terminal interaction.
+    - Shell-based execution
+      - for users who prefer Aider's rich terminal interaction 
+      - useful for easy context setup in the IDE 
+      - combinable with docker-based execution to simplify file system mounting
 
 5. **Git Integration**: Automatically launch a Git comparison tool post-Aider operations for easy change review.
 
@@ -117,7 +119,11 @@ functionalities like Git integration and keyboard shortcuts.
 
 6. Advanced Usage:
     - Use Alt+Shift+Q to quickly access all available Aider actions
-    - Use Alt+D to automatically commit changes to the selected files with an LLM-generated message
     - Use Alt+Shift+A to manage persistent files for context
     - Utilize specialized actions like Document Code, Fix Compile Error, or Web Crawl for specific tasks
     - Access the last command result using the Show Last Command Result action
+
+## Settings Overview
+
+![Aider Command Action Example](docs/settings1.jpg)
+![Aider Command Action Example](docs/settings2.jpg)
