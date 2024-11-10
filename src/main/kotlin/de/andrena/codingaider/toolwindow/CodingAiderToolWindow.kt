@@ -6,7 +6,9 @@ import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.outputview.MarkdownDialog
+import de.andrena.codingaider.services.RunningCommandService
 import de.andrena.codingaider.toolwindow.persistentfiles.PersistentFilesPanel
+import com.intellij.openapi.components.service
 import de.andrena.codingaider.toolwindow.plans.PlansPanel
 import javax.swing.*
 import java.awt.event.MouseAdapter
@@ -22,17 +24,10 @@ class CodingAiderToolWindow : ToolWindowFactory {
         val content = ContentFactory.getInstance().createContent(toolWindowContent.getContent(), "", false)
         toolWindow.contentManager.addContent(content)
     }
-    fun addRunningCommand(dialog: MarkdownDialog) {
-        runningCommandsListModel.addElement(dialog)
-    }
-
-    fun removeRunningCommand(dialog: MarkdownDialog) {
-        runningCommandsListModel.removeElement(dialog)
-    }
 }
 
 class CodingAiderToolWindowContent(project: Project) {
-    private val runningCommandsListModel = DefaultListModel<MarkdownDialog>()
+    private val runningCommandsListModel = project.service<RunningCommandService>().getRunningCommandsListModel()
     private val runningCommandsList = JList(runningCommandsListModel).apply {
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {

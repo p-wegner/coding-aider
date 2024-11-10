@@ -13,7 +13,9 @@ import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.toolwindow.CodingAiderToolWindowContent
+import de.andrena.codingaider.services.RunningCommandService
 import de.andrena.codingaider.utils.GitUtils
+import com.intellij.openapi.components.service
 import java.awt.EventQueue.invokeLater
 import java.io.File
 import java.util.concurrent.CountDownLatch
@@ -33,7 +35,7 @@ class IDEBasedExecutor(
     private var initialPlanFiles: Set<File> = emptySet()
 
     fun execute(): MarkdownDialog {
-        val toolWindowContent = project.getService(CodingAiderToolWindowContent::class.java)
+        val runningCommandService = project.service<RunningCommandService>()
         markdownDialog = MarkdownDialog(
             project,
             "Aider Command Output",
@@ -54,7 +56,7 @@ class IDEBasedExecutor(
                 ?.toSet() ?: emptySet()
         }
 
-        toolWindowContent.addRunningCommand(markdownDialog!!)
+        runningCommandService.addRunningCommand(markdownDialog!!)
         executionThread = thread {
             executeAiderCommand()
             isFinished.countDown()
@@ -139,8 +141,8 @@ class IDEBasedExecutor(
         updateDialogProgress(message, "Aider command in progress ($runningTime seconds)")
 
     override fun onCommandComplete(message: String, exitCode: Int) {
-        val toolWindowContent = project.getService(CodingAiderToolWindowContent::class.java)
-        toolWindowContent.removeRunningCommand(markdownDialog!!)
+        val runningCommandService = project.service<RunningCommandService>()
+        runningCommandService.removeRunningCommand(markdownDialog!!)
         updateDialogProgress(message, "Aider Command ${if (exitCode == 0) "Completed" else "Failed"}")
         markdownDialog?.startAutoCloseTimer(
             commandData.options.autoCloseDelay ?: getInstance().markdownDialogAutocloseDelay
