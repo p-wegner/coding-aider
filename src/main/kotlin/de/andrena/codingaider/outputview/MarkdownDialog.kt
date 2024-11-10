@@ -23,6 +23,10 @@ class MarkdownDialog(
     initialText: String,
     private val onAbort: Abortable? = null
 ) : JDialog(null as Frame?, false) {
+
+    override fun toString(): String {
+        return "MarkdownDialog: $initialTitle"
+    }
     private val markdownViewer = CustomMarkdownViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
         setDarkTheme(!JBColor.isBright())
     }

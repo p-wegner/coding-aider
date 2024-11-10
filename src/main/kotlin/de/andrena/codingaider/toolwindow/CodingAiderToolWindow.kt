@@ -32,7 +32,7 @@ class CodingAiderToolWindowContent(project: Project) {
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
                 if (e.clickCount == 2) {
-                    selectedValue?.focus()
+                    (selectedValue as? MarkdownDialog)?.focus()
                 }
             }
         })
