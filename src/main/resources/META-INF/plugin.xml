@@ -15,6 +15,7 @@
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
         <p>Seamlessly integrate Aider's AI-powered coding assistance directly into your IDE. This integration boosts your productivity by offering rapid access for precision code generation and refactoring, all while allowing you complete control over the context utilized by the LLM.</p>
+        Visit <a href="https://github.com/p-wegner/coding-aider">the plugin github page</a> for more information and to report issues.
 
         <h3>Important Note</h3>
         <p>To utilize this plugin, you</p>
