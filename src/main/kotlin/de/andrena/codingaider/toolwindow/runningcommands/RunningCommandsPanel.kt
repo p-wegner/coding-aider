@@ -25,10 +25,12 @@ class RunningCommandsPanel(project: Project) {
 
     fun getContent(): JComponent {
         return panel {
-            row {
-                scrollCell(runningCommandsList)
-                    .align(Align.FILL)
-                    .resizableColumn()
+            group("Running Commands") {
+                row {
+                    scrollCell(runningCommandsList)
+                        .align(Align.FILL)
+                        .resizableColumn()
+                }
             }
         }
     }

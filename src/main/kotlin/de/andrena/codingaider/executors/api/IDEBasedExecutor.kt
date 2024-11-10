@@ -12,10 +12,9 @@ import de.andrena.codingaider.outputview.MarkdownDialog
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
-import de.andrena.codingaider.toolwindow.CodingAiderToolWindowContent
 import de.andrena.codingaider.services.RunningCommandService
 import de.andrena.codingaider.utils.GitUtils
-import com.intellij.openapi.components.service
+import de.andrena.codingaider.utils.FileRefresher
 import java.awt.EventQueue.invokeLater
 import java.io.File
 import java.util.concurrent.CountDownLatch
