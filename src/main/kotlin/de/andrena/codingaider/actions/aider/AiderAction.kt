@@ -14,10 +14,8 @@ import de.andrena.codingaider.executors.api.ShellExecutor
 import de.andrena.codingaider.inputdialog.AiderInputDialog
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.AiderDialogStateService
-import de.andrena.codingaider.services.DocumentationFinderService
-import de.andrena.codingaider.services.PersistentFileService
+import de.andrena.codingaider.services.FileDataCollectionService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
-import de.andrena.codingaider.utils.FileTraversal
 
 
 class AiderAction : AnAction() {
@@ -39,28 +37,7 @@ class AiderAction : AnAction() {
             val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
 
             if (project != null && !files.isNullOrEmpty()) {
-                val persistentFileService = project.service<PersistentFileService>()
-                val persistentFiles = persistentFileService.getPersistentFiles()
-                val traversedFiles = FileTraversal.traverseFilesOrDirectories(files)
-                    .filterNot { file -> persistentFiles.any { it.filePath == file.filePath } }
-                    .toMutableList()
-
-                val settings = getInstance()
-                val documentationFiles = if (settings.enableDocumentationLookup) {
-                    val documentationFinderService = project.service<DocumentationFinderService>()
-                    documentationFinderService.findDocumentationFiles(files)
-                } else {
-                    emptyList()
-                }
-                    .filterNot { docFile ->
-                        persistentFiles.any { it.filePath == docFile.filePath } ||
-                                traversedFiles.any { it.filePath == docFile.filePath }
-                    }
-
-                traversedFiles.addAll(persistentFiles)
-                traversedFiles.addAll(documentationFiles)
-
-                val allFiles = traversedFiles.distinctBy { it.filePath }
+                val allFiles = project.service<FileDataCollectionService>().collectAllFiles(files)
 
                 if (directShellMode) {
                     val commandData = collectDefaultShellCommandData(allFiles, project)
@@ -89,6 +66,7 @@ class AiderAction : AnAction() {
                 }
             }
         }
+
 
         fun executeAiderActionWithCommandData(project: Project, commandData: CommandData) {
             if (commandData.isShellMode) {

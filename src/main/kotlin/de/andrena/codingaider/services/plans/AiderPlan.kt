@@ -3,7 +3,15 @@ package de.andrena.codingaider.services.plans
 import de.andrena.codingaider.command.FileData
 
 data class ChecklistItem(val description: String, val checked: Boolean, val children: List<ChecklistItem>)
-data class AiderPlan(val plan: String, val checklist: List<ChecklistItem>, val planFiles: List<FileData>, val contextFiles: List<FileData>) {
+data class AiderPlan(
+    val plan: String,
+    val checklist: List<ChecklistItem>,
+    val planFiles: List<FileData>,
+    val contextFiles: List<FileData>
+) {
+    val allFiles: List<FileData>
+        get() = planFiles + contextFiles
+
     fun openChecklistItems(): List<ChecklistItem> {
         return checklist.flatMap { item -> getAllOpenItems(item) }
     }

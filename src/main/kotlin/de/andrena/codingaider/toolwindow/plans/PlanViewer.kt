@@ -2,11 +2,14 @@ package de.andrena.codingaider.toolwindow.plans
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.*
+import com.intellij.openapi.components.service
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBList
 import com.intellij.ui.components.JBScrollPane
@@ -16,6 +19,7 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.outputview.CustomMarkdownViewer
+import de.andrena.codingaider.services.FileDataCollectionService
 import de.andrena.codingaider.services.plans.AiderPlan
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.settings.AiderSettings
@@ -57,7 +61,8 @@ class PlanViewer(private val project: Project) {
         }
     }
 
-    class PlanListCellRenderer(private val shortTooltip:Boolean = true) : JPanel(BorderLayout()), ListCellRenderer<AiderPlan?> {
+    class PlanListCellRenderer(private val shortTooltip: Boolean = true) : JPanel(BorderLayout()),
+        ListCellRenderer<AiderPlan?> {
         private val label = JLabel()
         private val statusIcon = JLabel()
         private val countLabel = JLabel()
@@ -68,13 +73,13 @@ class PlanViewer(private val project: Project) {
             val contentPanel = JPanel(BorderLayout(8, 0))
             contentPanel.isOpaque = false
             leftPanel.isOpaque = false
-            
+
             leftPanel.add(statusIcon)
-            
+
             contentPanel.add(leftPanel, BorderLayout.WEST)
             contentPanel.add(label, BorderLayout.CENTER)
             contentPanel.add(countLabel, BorderLayout.EAST)
-            
+
             add(contentPanel, BorderLayout.CENTER)
             border = BorderFactory.createEmptyBorder(4, 8, 4, 8)
         }
@@ -89,34 +94,34 @@ class PlanViewer(private val project: Project) {
             background = if (isSelected) list?.selectionBackground else list?.background
             label.background = background
             label.foreground = if (isSelected) list?.selectionForeground else list?.foreground
-            
+
             if (value != null) {
                 val planFile = value.planFiles.firstOrNull()
                 val fileName = planFile?.filePath?.let { File(it).nameWithoutExtension } ?: "Unknown Plan"
                 label.text = fileName
-                
+
                 val openItems = value.openChecklistItems().size
                 val totalItems = value.totalChecklistItems()
                 val tooltip = if (shortTooltip) value.createShortTooltip() else value.createTooltip()
                 toolTipText = tooltip
                 label.toolTipText = tooltip
                 countLabel.toolTipText = tooltip
-                
-                statusIcon.icon = if (value.isPlanComplete()) 
-                    AllIcons.Actions.Commit 
-                else 
+
+                statusIcon.icon = if (value.isPlanComplete())
+                    AllIcons.Actions.Commit
+                else
                     AllIcons.General.BalloonInformation
                 statusIcon.toolTipText = tooltip
-                
+
                 val checkedItems = totalItems - openItems
                 countLabel.text = "($checkedItems/$totalItems)"
                 countLabel.foreground = when {
                     openItems == 0 -> UIManager.getColor("Label.foreground")
-                    openItems < totalItems/2 -> UIManager.getColor("Label.infoForeground")
+                    openItems < totalItems / 2 -> UIManager.getColor("Label.infoForeground")
                     else -> Color(255, 140, 0)
                 }
             }
-            
+
             return this
         }
     }
@@ -126,19 +131,23 @@ class PlanViewer(private val project: Project) {
             Messages.showWarningDialog(project, "Please select a plan to execute", "No Plan Selected")
             return
         }
-        
+
         val settings = AiderSettings.getInstance()
+        val virtualFiles: List<VirtualFile> =
+            selectedPlan.allFiles.mapNotNull { VirtualFileManager.getInstance().findFileByUrl(it.filePath) }
+        project.service<FileDataCollectionService>().collectAllFiles(virtualFiles.toTypedArray())
+
         val commandData = CommandData(
             message = "",
             useYesFlag = settings.useYesFlag,
             llm = settings.llm,
             additionalArgs = "",
-            files = selectedPlan.planFiles,
+            files = selectedPlan.allFiles,
             lintCmd = "",
             projectPath = project.basePath ?: "",
             aiderMode = AiderMode.STRUCTURED,
         )
-        
+
         IDEBasedExecutor(project, commandData).execute()
     }
 
@@ -164,10 +173,10 @@ class PlanViewer(private val project: Project) {
         AllIcons.Actions.GC
     ) {
         override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
-        
+
         override fun actionPerformed(e: AnActionEvent) {
             val selectedPlan = plansList.selectedValue ?: return
-            
+
             val dialog = object : DialogWrapper(project) {
                 init {
                     title = "Delete Plan"
