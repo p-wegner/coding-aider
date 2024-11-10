@@ -140,8 +140,6 @@ class IDEBasedExecutor(
         updateDialogProgress(message, "Aider command in progress ($runningTime seconds)")
 
     override fun onCommandComplete(message: String, exitCode: Int) {
-        val runningCommandService = project.service<RunningCommandService>()
-        runningCommandService.removeRunningCommand(markdownDialog!!)
         updateDialogProgress(message, "Aider Command ${if (exitCode == 0) "Completed" else "Failed"}")
         markdownDialog?.startAutoCloseTimer(
             commandData.options.autoCloseDelay ?: getInstance().markdownDialogAutocloseDelay

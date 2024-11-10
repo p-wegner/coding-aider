@@ -83,6 +83,7 @@ class MarkdownDialog(
         defaultCloseOperation = DO_NOTHING_ON_CLOSE
         addWindowListener(object : java.awt.event.WindowAdapter() {
             override fun windowClosing(windowEvent: java.awt.event.WindowEvent?) {
+                project.service<RunningCommandService>().removeRunningCommand(this@MarkdownDialog)
                 if (isProcessFinished || onAbort == null) {
                     dispose()
                 } else {
