@@ -23,6 +23,9 @@
             <li>or be able to run docker containers</li>
         </ul>
 
+        <h3>LLM Provider Configuration</h3>
+        <p>Configure API Keys for LLM Providers for Aider to use in its <code>.env</code> or <code>.yml</code> files or by storing them safely in the plugin settings. Alternatively, you can use custom Ollama models or OpenAI API compatible servers. For detailed configuration instructions, refer to the <a href="https://aider.chat/docs/llms/openai-compat.html">Aider documentation</a> and use the <code>args</code> setting to configure any model with its <code>--model</code> argument, e.g., <code>--model openai/gpt-4o</code>.</p>
+
         <h3>Key Features</h3>
         <ul>
             <li><strong>AI-Powered Coding Assistance:</strong> Harness the power of Aider to receive intelligent coding assistance within your IDE.</li>
