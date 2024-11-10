@@ -55,6 +55,7 @@ class CodingAiderToolWindowContent(project: Project) {
                     .align(com.intellij.ui.dsl.builder.Align.FILL)
                     .resizableColumn()
             }
+            row {
                 cell(plansPanel.getContent())
                     .align(com.intellij.ui.dsl.builder.Align.FILL)
                     .resizableColumn()
