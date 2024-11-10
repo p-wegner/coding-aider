@@ -43,9 +43,21 @@ class PlanViewer(private val project: Project) {
                     if (index >= 0 && e.clickCount == 2) {
                         val plan = plansList.model.getElementAt(index)
                         plan.planFiles.forEach { fileData ->
-                            val virtualFile = LocalFileSystem.getInstance().findFileByPath(fileData.filePath)
+                            val virtualFile = if (fileData.filePath.endsWith(".md") && !fileData.filePath.endsWith("_checklist.md")) {
+                                LocalFileSystem.getInstance().findFileByPath(fileData.filePath)
+                            } else {
+                                null
+                            }
                             if (virtualFile != null) {
                                 FileEditorManager.getInstance(project).openFile(virtualFile, true)
+                            } else {
+                                val mainPlanFile = plan.planFiles.firstOrNull { it.filePath.endsWith(".md") && !it.filePath.endsWith("_checklist.md") }
+                                mainPlanFile?.let {
+                                    val mainVirtualFile = LocalFileSystem.getInstance().findFileByPath(it.filePath)
+                                    if (mainVirtualFile != null) {
+                                        FileEditorManager.getInstance(project).openFile(mainVirtualFile, true)
+                                    }
+                                }
                             }
                         }
                     }
