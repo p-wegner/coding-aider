@@ -18,6 +18,7 @@ This document provides a comprehensive overview of the actions implemented in th
 12. [RefactorToCleanCodeAction](#refactortocleancodeaction)
 13. [DocumentEachFolderAction](#documenteachfolderaction)
 14. [FixBuildAndTestErrorAction](#fixbuildandtesterroraction)
+15. [ContinuePlanAction](#continueplanaction)
 
 ## AiderAction
 
@@ -185,6 +186,17 @@ Key features:
 - Supports both interactive and quick fix modes
 - Detects build and test errors
 - Provides a background task for the interactive mode to prevent UI freezing
+
+## ContinuePlanAction
+
+`ContinuePlanAction` allows users to select and continue an unfinished plan within the Coding Aider plugin.
+
+Key features:
+
+- Displays a dialog for selecting from a list of unfinished plans
+- Utilizes `PlanViewer` to execute the selected plan
+- Integrates with `AiderPlanService` to manage plan data
+- Provides a markdown viewer for plan details
 
 This documentation provides a comprehensive overview of the main actions in the Coding Aider plugin. Each action is
 designed to enhance the development experience by integrating Aider's capabilities into the IDE workflow.
