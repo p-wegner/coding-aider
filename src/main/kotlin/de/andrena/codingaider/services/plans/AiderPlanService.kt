@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
+import com.intellij.openapi.components.service
 import java.io.File
 
 
@@ -83,7 +84,7 @@ class AiderPlanService(private val project: Project) {
     }
 
     fun getContextFilesForPlans(files: List<FileData>): List<FileData> {
-        return filterPlanRelevantFiles(files)
+        return project.service<AiderPlanPromptService>().filterPlanRelevantFiles(files)
             .filter { it.filePath.endsWith("_context.yaml") }
             .flatMap { file ->
                 val contextFile = File(file.filePath)
@@ -206,11 +207,9 @@ class AiderPlanService(private val project: Project) {
         val nextLine = lines.getOrNull(currentIndex)?.takeIf { it.isNotBlank() } ?: return false
         return nextLine.indentationLevel() > parentIndent && isChecklistItem(nextLine)
     }
-    private val aiderPlanPromptService = AiderPlanPromptService()
 
-    fun createAiderPlanSystemPrompt(commandData: CommandData): String {
-        return aiderPlanPromptService.createAiderPlanSystemPrompt(commandData)
-    }
+    fun createAiderPlanSystemPrompt(commandData: CommandData): String =
+        project.service<AiderPlanPromptService>().createAiderPlanSystemPrompt(commandData)
 
     private val objectMapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
 

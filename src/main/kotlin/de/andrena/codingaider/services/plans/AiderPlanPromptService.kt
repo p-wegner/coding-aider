@@ -1,8 +1,12 @@
 package de.andrena.codingaider.services.plans
 
+import com.intellij.openapi.components.Service
+import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
+import de.andrena.codingaider.command.FileData
 
-class AiderPlanPromptService {
+@Service(Service.Level.PROJECT)
+class AiderPlanPromptService(private val project: Project) {
 
     fun createAiderPlanSystemPrompt(commandData: CommandData): String {
         val files = commandData.files
@@ -58,6 +62,7 @@ class AiderPlanPromptService {
             SYSTEM Create separate checklist and context.yaml files to track the progress of implementing the plan.
             SYSTEM For the context.yaml, consider all provided files and add relevant files to the context.yaml.
             SYSTEM Only proceed with changes after creating and committing the plan files.
+            SYSTEM Ensure that you stick to the defined editing format when creating or editing files, e.g. only have the filepath above search blocks.
             """
 
         return """
@@ -67,7 +72,7 @@ $STRUCTURED_MODE_MARKER ${commandData.message}
             """.trimStartingWhiteSpaces()
     }
 
-    private fun filterPlanRelevantFiles(files: List<FileData>): List<FileData> =
+    fun filterPlanRelevantFiles(files: List<FileData>): List<FileData> =
         files.filter {
             it.filePath.contains(AIDER_PLANS_FOLDER) && (it.filePath.endsWith(".md") || it.filePath.endsWith(
                 ".yaml"

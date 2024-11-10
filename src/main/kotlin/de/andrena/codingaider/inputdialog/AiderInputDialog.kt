@@ -23,7 +23,7 @@ import com.intellij.util.ui.JBUI
 import de.andrena.codingaider.actions.ide.SettingsAction
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.services.*
-import de.andrena.codingaider.services.plans.AiderPlanService
+import de.andrena.codingaider.services.plans.AiderPlanPromptService
 import de.andrena.codingaider.settings.AiderProjectSettings
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.ApiKeyChecker
@@ -425,7 +425,7 @@ class AiderInputDialog(
 
     private fun getStructuredModeMessageLabel(): String {
         val existingPlans =
-            project.service<AiderPlanService>().filterPlanRelevantFiles(persistentFileService.getPersistentFiles())
+            project.service<AiderPlanPromptService>().filterPlanRelevantFiles(persistentFileService.getPersistentFiles())
         if (existingPlans.isNotEmpty()) {
             val firstPlan = existingPlans.first()
             val planName = firstPlan.filePath.substringAfterLast("/")
