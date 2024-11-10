@@ -26,7 +26,6 @@
                 <ul>
                     <li>Quickly initiate Aider actions via the "Start Aider Action" option in the Tools menu or Project View popup menu.</li>
                     <li>Use the keyboard shortcut Alt+A for rapid access.</li>
-                    <li>Navigate previous commands with Alt+UP and Alt+DOWN in the message field.</li>
                     <li>Automatically commit all changes with an LLM-generated message using ALT + D</li>
                 </ul>
             </li>

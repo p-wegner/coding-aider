@@ -15,7 +15,10 @@ To utilize this plugin, you
 - must have a functional Aider installation (version 0.61.0 or higher)
 - or be able to run docker containers
 
-Additionally API keys for the LLM Providers you intend to use are required.
+## LLM Provider Configuration
+Configure API Keys for LLM Providers for Aider to use in its [.env](https://aider.chat/docs/config/dotenv.html) or [.yml](https://aider.chat/docs/config/aider_conf.html) files or by storing them safely in the plugin settings.
+Alternatively you can use custom ollama models or openAI API compatible servers. 
+For detailed configuration instructions, refer to the [Aider documentation](https://aider.chat/docs/llms/openai-compat.html) and use the `args` setting to configure to use any model with its `--model` argument, e.g. `--model openai/gpt-4o`.
 
 ## Key Features
 
@@ -25,7 +28,6 @@ Additionally API keys for the LLM Providers you intend to use are required.
 2. **Intuitive Access**:
     - Quickly initiate Aider actions via the "Start Aider Action" option in the Tools menu or Project View popup menu.
     - Use the keyboard shortcut Alt+A for rapid access.
-    - Navigate previous commands with Alt+UP and Alt+DOWN in the message field.
     - Automatically commit all changes with an LLM-generated message using ALT + D
 
 3. **Persistent File Management**: Manage frequently used files for persistent context for Aider operations with
@@ -71,10 +73,13 @@ Additionally API keys for the LLM Providers you intend to use are required.
     - Simply describe a feature briefly, and the plugin will generate a detailed plan and checklist for you.
     - These plans and checklists are saved in the .coding-aider-plans directory and can be manually adjusted as needed.
     - Once a plan is created, Aider will automatically update it to reflect current progress and any new requirements.
-    - This mode aids in tracking the implementation progress of features.
-    - If a plan is active (i.e. its files in the context), you can leave the message field empty, and Aider will continue working on the existing plan.
-    - Alternatively, you can use the "Continue Plan" action to continue working on the existing plan.
+    - This mode aids in tracking the implementation progress of features and avoids time-consuming manual prompting for larger features.
+    - If a plan is active (i.e. its files are contained in the context), you can leave the message field empty, and Aider will continue working on the existing plan.
+    - Alternatively, you can use the [Continue Plan](./docs/actions.md) action to continue working on the existing plan.
     - The Tool Window will display an overview of existing plans and their progress.
+    - Further insights can be gained by reviewing the used system prompt in [AiderPlanPromptService](./src/main/kotlin/de/andrena/codingaider/services/plans/AiderPlanPromptService.kt).
+14. **Aider Commands and Arguments**:
+    - If needed, you can specify additional [arguments](https://aider.chat/docs/config/options.html) for the Aider command in the settings or in the command window.
 
 For a detailed description of all available actions, please refer to the [Actions Documentation](docs/actions.md).
 

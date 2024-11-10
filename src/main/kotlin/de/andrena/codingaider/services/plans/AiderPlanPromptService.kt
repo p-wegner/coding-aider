@@ -13,7 +13,7 @@ class AiderPlanPromptService(private val project: Project) {
 
         val existingPlan = filterPlanRelevantFiles(files)
 
-        val s = """
+        val basePrompt = """
             SYSTEM Instead of making changes to the code, markdown files should be used to track progress on the feature.
             SYSTEM A plan consists of three files:
             SYSTEM 1. A detailed description of the requested feature
@@ -38,8 +38,7 @@ class AiderPlanPromptService(private val project: Project) {
             SYSTEM   readOnly: true
             SYSTEM Be sure to use correct relative path (same folder) references between the files.
             SYSTEM Once the plan properly describes the changes, start implementing them step by step.
-        """
-        val basePrompt = s.trimStartingWhiteSpaces()
+        """.trimStartingWhiteSpaces()
 
         val firstPlan = existingPlan.firstOrNull()
         val relativePlanPath = firstPlan?.filePath?.removePrefix(commandData.projectPath) ?: ""
