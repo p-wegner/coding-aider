@@ -61,6 +61,8 @@ Additionally API keys for the LLM Providers you intend to use are required.
     - **Apply Design Pattern Action**: Apply predefined design patterns to selected files or directories.
     - **Persistent Files Action**: Manage the list of persistent files for Aider operations.
     - **OpenAiderActionGroup**: Access a popup menu with all available Aider actions.
+    - **Document Each Folder Action**: Generate documentation for each folder in the selected files.
+    - **Continue Plan Action**: Allow users to select and continue an unfinished plan within the Coding Aider plugin.
 
 13. **Structured Mode**:
     - Facilitates a more organized approach to developing features and implementing code changes.
