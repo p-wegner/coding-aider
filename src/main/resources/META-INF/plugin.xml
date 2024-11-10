@@ -69,8 +69,8 @@
                     <li>Simply describe a feature briefly, and the plugin will generate a detailed plan and checklist for you.</li>
                     <li>These plans and checklists are saved in the .coding-aider-plans directory and can be manually adjusted as needed.</li>
                     <li>Once a plan is created, Aider will automatically update it to reflect current progress and any new requirements.</li>
-                    <li>This mode aids in tracking the implementation progress of features.</li>
-                    <li>If a plan is active (i.e. its files in the context), you can leave the message field empty, and Aider will continue working on the existing plan.</li>
+                    <li>This mode aids in tracking the implementation progress of features and avoids time-consuming manual prompting for larger features.</li>
+                    <li>If a plan is active (i.e. its files are contained in the context), you can leave the message field empty, and Aider will continue working on the existing plan.</li>
                     <li>Alternatively, you can use the "Continue Plan" action to continue working on the existing plan.</li>
                     <li>The Tool Window will display an overview of existing plans and their progress.</li>
                 </ul>
