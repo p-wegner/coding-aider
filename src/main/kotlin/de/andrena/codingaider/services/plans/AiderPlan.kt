@@ -12,6 +12,14 @@ data class AiderPlan(
     val allFiles: List<FileData>
         get() = planFiles + contextFiles
 
+    val mainPlanFile: FileData?
+        get() = planFiles.firstOrNull { it.filePath.endsWith(".md") && !it.filePath.endsWith("_checklist.md") }
+    val checklistPlanFile: FileData?
+        get() = planFiles.firstOrNull { it.filePath.endsWith("_checklist.md") }
+    val contextYamlFile: FileData?
+        get() = planFiles.firstOrNull { it.filePath.endsWith("_context.yaml") }
+
+
     fun openChecklistItems(): List<ChecklistItem> {
         return checklist.flatMap { item -> getAllOpenItems(item) }
     }
@@ -36,8 +44,7 @@ data class AiderPlan(
 
     fun createShortTooltip(): String = buildString {
         appendLine("<html><body>")
-        val planFile = planFiles.firstOrNull()
-        appendLine("<b>Plan:</b> ${planFile?.filePath}<br>")
+        appendLine("<b>Plan:</b> ${mainPlanFile?.filePath}<br>")
         appendLine("<b>Status:</b> ${if (isPlanComplete()) "Complete" else "In Progress"}<br>")
         val checkedItems = totalChecklistItems() - openChecklistItems().size
         appendLine("<b>Progress:</b> $checkedItems/${totalChecklistItems()} items completed")
@@ -46,8 +53,7 @@ data class AiderPlan(
 
     fun createTooltip(): String = buildString {
         appendLine("<html><body style='width: 400px'>")
-        val planFile = planFiles.firstOrNull()
-        appendLine("<b>Plan:</b> ${planFile?.filePath}<br>")
+        appendLine("<b>Plan:</b> ${mainPlanFile?.filePath}<br>")
         appendLine("<b>Status:</b> ${if (isPlanComplete()) "Complete" else "In Progress"}<br>")
         val checkedItems = totalChecklistItems() - openChecklistItems().size
         appendLine("<b>Progress:</b> $checkedItems/${totalChecklistItems()} items completed<br>")
