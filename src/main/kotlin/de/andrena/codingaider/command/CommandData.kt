@@ -31,8 +31,7 @@ data class CommandData(
     val options: CommandOptions = CommandOptions.DEFAULT,
     val aiderMode: AiderMode = AiderMode.NORMAL
 ) {
-    val summary: String
-        get() = CommandSummaryService().generateSummary(this)
+
     val isShellMode: Boolean get() = aiderMode == AiderMode.SHELL
     val structuredMode: Boolean get() = aiderMode == AiderMode.STRUCTURED
 }

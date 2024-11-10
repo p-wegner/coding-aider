@@ -9,6 +9,7 @@ import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.CommandExecutor
 import de.andrena.codingaider.outputview.Abortable
 import de.andrena.codingaider.outputview.MarkdownDialog
+import de.andrena.codingaider.services.CommandSummaryService
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
@@ -34,13 +35,12 @@ class IDEBasedExecutor(
     private var initialPlanFiles: Set<File> = emptySet()
 
     fun execute(): MarkdownDialog {
-        val runningCommandService = project.service<RunningCommandService>()
         markdownDialog = MarkdownDialog(
             project,
             "Aider Command Output",
             "Initializing Aider command...",
             this,
-            displayString = commandData.summary
+            displayString = project.service<CommandSummaryService>().generateSummary(commandData)
         ).apply {
             isVisible = true
             focus()
@@ -56,7 +56,7 @@ class IDEBasedExecutor(
                 ?.toSet() ?: emptySet()
         }
 
-        runningCommandService.addRunningCommand(markdownDialog!!)
+        project.service<RunningCommandService>().addRunningCommand(markdownDialog!!)
         executionThread = thread {
             executeAiderCommand()
             isFinished.countDown()

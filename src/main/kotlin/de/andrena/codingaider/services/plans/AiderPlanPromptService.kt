@@ -79,6 +79,9 @@ $STRUCTURED_MODE_MARKER ${commandData.message}
             ))
         }
 
+    fun filterPlanMainFiles(files: List<FileData>): List<FileData> =
+        filterPlanRelevantFiles(files).filter { it.filePath.endsWith(".md") && !it.filePath.endsWith("_checklist.md") }
+
     private fun String.trimStartingWhiteSpaces() = trimIndent().trimStart { it.isWhitespace() }
 
     companion object {
