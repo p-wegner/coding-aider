@@ -35,6 +35,8 @@ import java.awt.event.KeyEvent
 import javax.swing.*
 
 
+private const val PROMPT_LABEL = "Enter your prompt:"
+
 class AiderInputDialog(
     val project: Project,
     files: List<FileData>,
@@ -194,7 +196,7 @@ class AiderInputDialog(
 
     init {
         title = "Aider Command"
-        messageLabel = JLabel("Enter your message:")
+        messageLabel = JLabel(PROMPT_LABEL)
 
         persistentFileService = project.service<PersistentFileService>()
         aiderContextView = AiderContextView(project,
@@ -415,9 +417,9 @@ class AiderInputDialog(
     private fun updateModeUI() {
         inputTextField.isEnabled = selectedMode != AiderMode.SHELL
         messageLabel.text = when (selectedMode) {
-            AiderMode.SHELL -> "Shell mode enabled, no message required"
+            AiderMode.SHELL -> "Shell mode enabled, no prompt required"
             AiderMode.STRUCTURED -> getStructuredModeMessageLabel()
-            else -> "Enter your message:"
+            else -> PROMPT_LABEL
         }
     }
 
@@ -432,10 +434,6 @@ class AiderInputDialog(
         return "Enter feature description that will be used to create a plan:"
     }
 
-    /**
-     * Creates the collapsible options panel containing LLM selection, yes flag and additional arguments.
-     * The panel's collapsed state is persisted in project settings.
-     */
     private fun createOptionsPanel(): JPanel {
         return JPanel(GridBagLayout()).apply {
             val gbc = GridBagConstraints().apply {

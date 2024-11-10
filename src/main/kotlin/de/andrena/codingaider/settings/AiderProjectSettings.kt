@@ -11,7 +11,6 @@ import de.andrena.codingaider.command.FileData
 )
 class AiderProjectSettings(private val project: Project) : PersistentStateComponent<AiderProjectSettings.State> {
     data class State(
-        var persistentFiles: List<FileData> = emptyList(),
         var isOptionsCollapsed: Boolean = true,
         var isContextCollapsed: Boolean = false
     )
@@ -23,12 +22,6 @@ class AiderProjectSettings(private val project: Project) : PersistentStateCompon
     override fun loadState(state: State) {
         myState = state
     }
-
-    var persistentFiles: List<FileData>
-        get() = myState.persistentFiles
-        set(value) {
-            myState.persistentFiles = value
-        }
 
     var isOptionsCollapsed: Boolean
         get() = myState.isOptionsCollapsed
