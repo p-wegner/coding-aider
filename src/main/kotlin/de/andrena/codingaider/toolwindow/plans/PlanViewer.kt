@@ -139,9 +139,9 @@ class PlanViewer(private val project: Project) {
             message = "",
             useYesFlag = settings.useYesFlag,
             llm = settings.llm,
-            additionalArgs = "",
+            additionalArgs = settings.additionalArgs,
             files = filesToInclude,
-            lintCmd = "",
+            lintCmd = settings.lintCmd,
             projectPath = project.basePath ?: "",
             aiderMode = AiderMode.STRUCTURED,
         )
