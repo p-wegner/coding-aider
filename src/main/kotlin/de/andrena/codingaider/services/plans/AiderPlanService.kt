@@ -206,7 +206,7 @@ class AiderPlanService(private val project: Project) {
         val nextLine = lines.getOrNull(currentIndex)?.takeIf { it.isNotBlank() } ?: return false
         return nextLine.indentationLevel() > parentIndent && isChecklistItem(nextLine)
     }
-
+    // TODO: extract prompt related logic to a separate class
     fun createAiderPlanSystemPrompt(commandData: CommandData): String {
         val files = commandData.files
 
