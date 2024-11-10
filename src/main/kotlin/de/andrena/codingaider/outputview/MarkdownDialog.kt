@@ -24,13 +24,22 @@ class MarkdownDialog(
     private val project: Project,
     private val initialTitle: String,
     initialText: String,
-    private val onAbort: Abortable? = null,
-    private val displayString: String = initialTitle
+    private val onAbort: Abortable?,
+    private val displayString: String?
 ) : JDialog(null as Frame?, false) {
 
-    override fun toString(): String {
-        return displayString
+    companion object {
+        fun create(
+            project: Project,
+            initialTitle: String,
+            initialText: String
+        ): MarkdownDialog = MarkdownDialog(project, initialTitle, initialText, null, null)
     }
+
+    override fun toString(): String {
+        return displayString ?: initialTitle
+    }
+
     private val markdownViewer = CustomMarkdownViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
         setDarkTheme(!JBColor.isBright())
     }
@@ -54,20 +63,20 @@ class MarkdownDialog(
     init {
         title = initialTitle
         markdownViewer.setMarkdownContent(initialText)
-        
+
         // Add scroll listener to detect when user manually scrolls
         scrollPane.verticalScrollBar.addAdjustmentListener { _ ->
             val scrollBar = scrollPane.verticalScrollBar
             val extent = scrollBar.model.extent
             val maximum = scrollBar.model.maximum
             val current = scrollBar.model.value
-            
+
             // Consider "at bottom" when within 3 pixels of the bottom
             val isAtBottom = (current + extent + 3) >= maximum
-            
+
             autoScroll = isAtBottom
         }
-        
+
         // Start refresh timer
         refreshTimer = Timer().apply {
             scheduleAtFixedRate(0, 1000) {
@@ -91,6 +100,7 @@ class MarkdownDialog(
                 super.windowClosed(e)
 
             }
+
             override fun windowClosing(windowEvent: java.awt.event.WindowEvent?) {
                 if (isProcessFinished || onAbort == null) {
                     dispose()
@@ -143,13 +153,13 @@ class MarkdownDialog(
                 val newContent = output.replace("\r\n", "\n")
                 if (newContent != lastContent) {
                     lastContent = newContent
-                    
+
                     // Store scroll info before update
                     val scrollBar = scrollPane.verticalScrollBar
                     val currentValue = scrollBar.value
-                    val wasAtBottom = autoScroll && 
-                        (currentValue + scrollBar.visibleAmount + 10 >= scrollBar.maximum)
-                    
+                    val wasAtBottom = autoScroll &&
+                            (currentValue + scrollBar.visibleAmount + 10 >= scrollBar.maximum)
+
                     // Update content
                     markdownViewer.setMarkdownContent(newContent)
                     title = message

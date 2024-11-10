@@ -13,7 +13,7 @@ class ShowLastCommandResultAction : AnAction() {
         val historyHandler = project.service<AiderHistoryService>()
         val lastCommandResult = historyHandler.getLastChatHistory()
 
-        val dialog = MarkdownDialog(project, "Last Aider Command Result", lastCommandResult)
+        val dialog = MarkdownDialog.create(project, "Last Aider Command Result", lastCommandResult)
         dialog.isVisible = true
     }
 
