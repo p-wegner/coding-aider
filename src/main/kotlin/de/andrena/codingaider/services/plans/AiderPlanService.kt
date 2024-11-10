@@ -11,8 +11,6 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import java.io.File
 
 
-
-
 @Service(Service.Level.PROJECT)
 class AiderPlanService(private val project: Project) {
     companion object {
@@ -31,13 +29,18 @@ class AiderPlanService(private val project: Project) {
             }
         }
     }
+
     private fun extractChecklistItems(content: String): List<ChecklistItem> {
         val lines = content.lines()
         val (items, _) = parseChecklistItems(lines, 0, -1)
         return items
     }
 
-    private fun parseChecklistItems(lines: List<String>, startIndex: Int, parentIndent: Int): Pair<List<ChecklistItem>, Int> {
+    private fun parseChecklistItems(
+        lines: List<String>,
+        startIndex: Int,
+        parentIndent: Int
+    ): Pair<List<ChecklistItem>, Int> {
         val items = mutableListOf<ChecklistItem>()
         var currentIndex = startIndex
 
@@ -66,8 +69,6 @@ class AiderPlanService(private val project: Project) {
     }
 
 
-
-
     private fun processMarkdownReferences(content: String, plansDir: File): String {
         val referencePattern = Regex("""\[.*?\]\((.*?)(?:\s.*?)?\)""")
         return content.replace(referencePattern) { matchResult ->
@@ -79,6 +80,21 @@ class AiderPlanService(private val project: Project) {
                 matchResult.value
             }
         }
+    }
+
+    fun getContextFilesForPlans(files: List<FileData>): List<FileData> {
+        return filterPlanRelevantFiles(files)
+            .filter { it.filePath.endsWith("_context.yaml") }
+            .flatMap { file ->
+                val contextFile = File(file.filePath)
+                parseContextYaml(contextFile).mapNotNull {
+                    val filePath = File(project.basePath, it.filePath)
+                    if (filePath.exists()) {
+                        FileData(filePath.absolutePath, it.isReadOnly)
+                    } else null
+                }
+
+            }
     }
 
     fun getAiderPlans(): List<AiderPlan> {
@@ -95,13 +111,13 @@ class AiderPlanService(private val project: Project) {
                     if (content.contains(AIDER_PLAN_MARKER)) {
                         // Process markdown references to include referenced content
                         val expandedContent = processMarkdownReferences(content, plansDir)
-                        
+
                         // Extract plan content from the expanded content
                         val planContent = expandedContent.substringAfter(AIDER_PLAN_MARKER).trim()
-                        
+
                         // Get checklist items from expanded content
                         val planChecklist = extractChecklistItems(expandedContent)
-                        
+
                         // Look for associated checklist file
                         val checklistFile = File(plansDir, "${file.nameWithoutExtension}_checklist.md")
                         val checklistItems = if (checklistFile.exists()) {
@@ -112,25 +128,25 @@ class AiderPlanService(private val project: Project) {
                                 extractChecklistItems(expandedChecklistContent)
                             } else emptyList()
                         } else emptyList()
-                        
+
                         // Combine checklist items from both files
-                        val combinedChecklist = (checklistItems + planChecklist).distinctBy { 
-                            it.description.trim() 
+                        val combinedChecklist = (checklistItems + planChecklist).distinctBy {
+                            it.description.trim()
                         }
-                        
+
                         // Include plan, checklist and context files in the files list
                         val files = mutableListOf(FileData(file.absolutePath, false))
                         if (checklistFile.exists()) {
                             files.add(FileData(checklistFile.absolutePath, false))
                         }
-                        
+
                         // Look for associated context file
                         val contextFile = File(plansDir, "${file.nameWithoutExtension}_context.yaml")
                         val contextFiles = if (contextFile.exists()) {
                             files.add(FileData(contextFile.absolutePath, false))
                             parseContextYaml(contextFile)
                         } else emptyList()
-                        
+
                         AiderPlan(
                             plan = planContent,
                             checklist = combinedChecklist,
@@ -146,27 +162,27 @@ class AiderPlanService(private val project: Project) {
     }
 
 
-    private fun String.indentationLevel(): Int = 
+    private fun String.indentationLevel(): Int =
         indexOfFirst { !it.isWhitespace() }.takeIf { it >= 0 } ?: length
-    
+
     private fun isChecklistItem(line: String): Boolean {
         val trimmed = line.trim()
         return trimmed.matches(Regex("""^-?\s*\[([ xX])\].*"""))
     }
-    
+
     private fun parseChecklistItem(
-        lines: List<String>, 
+        lines: List<String>,
         currentIndex: Int
     ): Pair<ChecklistItem, Int> {
         val line = lines[currentIndex].trim()
         val indent = lines[currentIndex].indentationLevel()
-        
+
         // Extract checkbox state and description
         val checkboxMatch = Regex("""^-?\s*\[([ xX])\](.*)""").find(line)
         if (checkboxMatch != null) {
             val (checkState, description) = checkboxMatch.destructured
             val checked = checkState.trim().uppercase() in setOf("X", "✓")
-            
+
             // Look for nested items
             var nextIndex = currentIndex + 1
             val children = if (nextIndex < lines.size && hasNestedItems(lines, nextIndex, indent)) {
@@ -174,26 +190,27 @@ class AiderPlanService(private val project: Project) {
                 nextIndex = newIndex
                 nestedItems
             } else emptyList()
-            
+
             return Pair(ChecklistItem(description.trim(), checked, children), nextIndex)
         }
-        
+
         // Fallback for malformed items
         return Pair(ChecklistItem(line, false, emptyList()), currentIndex + 1)
     }
-    
+
     private fun hasNestedItems(
-        lines: List<String>, 
-        currentIndex: Int, 
+        lines: List<String>,
+        currentIndex: Int,
         parentIndent: Int
     ): Boolean {
         val nextLine = lines.getOrNull(currentIndex)?.takeIf { it.isNotBlank() } ?: return false
         return nextLine.indentationLevel() > parentIndent && isChecklistItem(nextLine)
     }
+
     fun createAiderPlanSystemPrompt(commandData: CommandData): String {
         val files = commandData.files
 
-        val existingPlan = getExistingPlans(files)
+        val existingPlan = filterPlanRelevantFiles(files)
 
         val s = """
             SYSTEM Instead of making changes to the code, markdown files should be used to track progress on the feature.
@@ -252,8 +269,12 @@ $STRUCTURED_MODE_MARKER ${commandData.message}
             """.trimStartingWhiteSpaces()
     }
 
-    fun getExistingPlans(files: List<FileData>) =
-        files.filter { it.filePath.contains(AIDER_PLANS_FOLDER) && it.filePath.endsWith(".md") }
+    fun filterPlanRelevantFiles(files: List<FileData>): List<FileData> =
+        files.filter {
+            it.filePath.contains(AIDER_PLANS_FOLDER) && (it.filePath.endsWith(".md") || it.filePath.endsWith(
+                ".yaml"
+            ))
+        }
 
     private fun String.trimStartingWhiteSpaces() = trimIndent().trimStart { it.isWhitespace() }
 

@@ -2,10 +2,12 @@ package de.andrena.codingaider.inputdialog
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.*
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.LayeredIcon
 import com.intellij.util.ui.JBUI
 import de.andrena.codingaider.command.FileData
+import de.andrena.codingaider.services.plans.AiderPlanService
 import java.awt.BorderLayout
 import java.awt.event.InputEvent
 import java.awt.event.KeyEvent
@@ -28,13 +30,14 @@ class AiderContextViewPanel(
             addAll(fileStatusActionGroup)
         }
 
-        val toolbar = ActionManager.getInstance().createActionToolbar("AiderContextToolbar", combinedActionGroup, true).apply {
-            targetComponent = aiderContextView
-            component.border = JBUI.Borders.empty(2, 2, 0, 2)
-        }
+        val toolbar =
+            ActionManager.getInstance().createActionToolbar("AiderContextToolbar", combinedActionGroup, true).apply {
+                targetComponent = aiderContextView
+                component.border = JBUI.Borders.empty(2, 2, 0, 2)
+            }
 
         add(toolbar.component, BorderLayout.NORTH)
-        add(aiderContextView.apply { 
+        add(aiderContextView.apply {
             border = JBUI.Borders.empty(0, 2, 2, 2)
         }, BorderLayout.CENTER)
     }
@@ -53,6 +56,14 @@ class AiderContextViewPanel(
                         aiderContextView.addOpenFilesToContext()
                     }
                 })
+                popup.add(JMenuItem("Add Plan Context Files").apply {
+                    addActionListener {
+                        val contextFilesForPlans =
+                            project.service<AiderPlanService>().getContextFilesForPlans(aiderContextView.getAllFiles())
+                        aiderContextView.addFilesToContext(contextFilesForPlans)
+                    }
+                })
+
                 val component = e.inputEvent?.component
                 popup.show(component, 0, component?.height ?: 0)
             }
