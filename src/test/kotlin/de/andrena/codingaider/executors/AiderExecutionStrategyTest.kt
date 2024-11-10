@@ -5,6 +5,7 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.docker.DockerContainerManager
 import de.andrena.codingaider.inputdialog.AiderMode
+import de.andrena.codingaider.services.plans.AiderPlanPromptService
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
@@ -27,6 +28,7 @@ class AiderExecutionStrategyTest {
     private lateinit var commandData: CommandData
     private lateinit var aiderSettings: AiderSettings
     private lateinit var aiderPlanService: AiderPlanService
+    private lateinit var aiderPlanPromptService: AiderPlanPromptService
     private lateinit var structuredModeSystemMessage: String
     private lateinit var multiLineMessage: String
 
@@ -40,6 +42,7 @@ class AiderExecutionStrategyTest {
         project = mock()
         aiderSettings = AiderSettings()
         aiderPlanService = AiderPlanService(project)
+        aiderPlanPromptService = AiderPlanPromptService(project)
         nativeStrategy = NativeAiderExecutionStrategy(project, apiKeyChecker, aiderSettings)
         dockerStrategy = DockerAiderExecutionStrategy(project, dockerManager, apiKeyChecker, aiderSettings)
         commandData = CommandData(
@@ -54,6 +57,7 @@ class AiderExecutionStrategyTest {
             deactivateRepoMap = true,
         )
         whenever(project.getService(AiderPlanService::class.java)).thenReturn(aiderPlanService)
+        whenever(project.getService(AiderPlanPromptService::class.java)).thenReturn(aiderPlanPromptService)
     }
 
 
