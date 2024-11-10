@@ -17,7 +17,11 @@
         <p>Seamlessly integrate Aider's AI-powered coding assistance directly into your IDE. This integration boosts your productivity by offering rapid access for precision code generation and refactoring, all while allowing you complete control over the context utilized by the LLM.</p>
 
         <h3>Important Note</h3>
-        <p>To utilize this plugin, you must have a functional Aider installation (version 0.61.0 or higher) or be able to run docker containers. Additionally, API keys for the LLM Providers you intend to use are required.</p>
+        <p>To utilize this plugin, you</p>
+        <ul>
+            <li>must have a functional Aider installation (version 0.61.0 or higher)</li>
+            <li>or be able to run docker containers</li>
+        </ul>
 
         <h3>Key Features</h3>
         <ul>
