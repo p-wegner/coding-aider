@@ -236,8 +236,7 @@ class AiderPlanService(private val project: Project) {
             SYSTEM - path: "full/path/to/another/file"
             SYSTEM   readOnly: true
             SYSTEM Be sure to use correct relative path (same folder) references between the files.
-            SYSTEM Never proceed with changes if the plan is not committed yet.
-            SYSTEM Once the plan properly describes the changes, start implementing them step by step. Commit each change as you go.
+            SYSTEM Once the plan properly describes the changes, start implementing them step by step.
         """
         val basePrompt = s.trimStartingWhiteSpaces()
 
@@ -248,18 +247,20 @@ class AiderPlanService(private val project: Project) {
             SYSTEM A plan already exists. Continue implementing the existing plan $relativePlanPath and its checklist step by step.
             SYSTEM Start implementing before updating the checklist. If no changes are done, don't update the checklist.
             SYSTEM In that case inform the user why no changes were made.
-            SYSTEM New files that are not the plan and are not part of the checklist should be created in a suitable location.
+            SYSTEM New files that are not the plan and are not part of the checklist should be created in a suitable location and added to the context.yaml.
             SYSTEM If no further information is given, use ${commandData.projectPath} as the location.
-            SYSTEM Update the plan, checklist  and context.yaml as needed based on the current progress and any new requirements.
+            SYSTEM Update the plan, checklist and context.yaml as needed based on the current progress and any new requirements.
             SYSTEM Important: Always keep the context.yaml up to date with your changes. If files are created or edited, add them to the context.yaml.
             SYSTEM If the current instruction doesn't align with the existing plan, update the plan accordingly before proceeding.
             """
 
         } ?: """
             SYSTEM No plan exists yet. Write a detailed description of the requested feature and the needed changes.
+            SYSTEM The main plan file should include these sections: ## Overview, ## Problem Description, ## Goals, ## Additional Notes and Constraints, ## References 
             SYSTEM Save the plan in a new markdown file with a suitable name in the $AIDER_PLANS_FOLDER directory.
-            SYSTEM Create a separate checklist file to track the progress of implementing the plan.
-            SYSTEM Only proceed with changes after creating and committing the plan.
+            SYSTEM Create separate checklist and context.yaml files to track the progress of implementing the plan.
+            SYSTEM For the context.yaml, consider all provided files and add relevant files to the context.yaml.
+            SYSTEM Only proceed with changes after creating and committing the plan files.
             """
 
         return """
