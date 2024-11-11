@@ -38,11 +38,6 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var optionsPanelCollapsed: Boolean = true,
     )
 
-    var alwaysIncludePlanContextFiles: Boolean
-        get() = myState.alwaysIncludePlanContextFiles
-        set(value) {
-            myState.alwaysIncludePlanContextFiles = value
-        }
 
     var documentationLlm: String
         get() = myState.documentationLlm
@@ -184,6 +179,13 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.alwaysIncludeOpenFiles
         set(value) {
             myState.alwaysIncludeOpenFiles = value
+        }
+
+    // TODO: include in settings view
+    var alwaysIncludePlanContextFiles: Boolean
+        get() = myState.alwaysIncludePlanContextFiles
+        set(value) {
+            myState.alwaysIncludePlanContextFiles = value
         }
 
     var useStructuredMode: Boolean
