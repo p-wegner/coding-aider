@@ -41,6 +41,7 @@ class PersistentFilesPanel(private val project: Project) {
             override fun mouseClicked(e: java.awt.event.MouseEvent) {
                 if (e.clickCount == 2) {
                     val selectedFile = persistentFilesList.selectedValue
+                    // TODO: if file is already open, focus it
                     selectedFile?.let { openFileInEditor(it) }
                 }
             }
