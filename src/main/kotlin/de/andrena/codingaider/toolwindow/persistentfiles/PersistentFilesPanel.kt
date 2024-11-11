@@ -1,5 +1,6 @@
 package de.andrena.codingaider.toolwindow.persistentfiles
 
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -8,12 +9,10 @@ import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.IconLoader
 import com.intellij.ui.components.JBList
 import com.intellij.ui.components.panels.Wrapper
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
-import com.intellij.ui.icons.AllIcons
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.messages.PersistentFilesChangedTopic
 import de.andrena.codingaider.services.PersistentFileService
@@ -68,10 +67,12 @@ class PersistentFilesPanel(private val project: Project) {
                             add(object : AnAction("Add Files", "Add files to persistent list", AllIcons.General.Add) {
                                 override fun actionPerformed(e: AnActionEvent) = addPersistentFiles()
                             })
-                            add(object : AnAction("Add Open Files", "Add currently open files", AllIcons.Actions.OpenFile) {
+                            add(object :
+                                AnAction("Add Open Files", "Add currently open files", AllIcons.Actions.OpenNewTab) {
                                 override fun actionPerformed(e: AnActionEvent) = addOpenFilesToPersistent()
                             })
-                            add(object : AnAction("Toggle Read-Only", "Toggle read-only status", AllIcons.Actions.Edit) {
+                            add(object :
+                                AnAction("Toggle Read-Only", "Toggle read-only status", AllIcons.Actions.Edit) {
                                 override fun actionPerformed(e: AnActionEvent) = toggleReadOnlyMode()
                             })
                             add(object : AnAction("Remove Files", "Remove selected files", AllIcons.General.Remove) {
