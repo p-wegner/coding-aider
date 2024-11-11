@@ -4,12 +4,17 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.service
+import com.intellij.openapi.project.Project
 import de.andrena.codingaider.outputview.MarkdownDialog
 import de.andrena.codingaider.services.AiderHistoryService
 
 class ShowLastCommandResultAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
+        showLastCommandFor(project)
+    }
+
+    fun showLastCommandFor(project: Project) {
         val historyHandler = project.service<AiderHistoryService>()
         val lastCommandResult = historyHandler.getLastChatHistory()
 
