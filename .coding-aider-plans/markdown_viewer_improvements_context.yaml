@@ -1,10 +1,6 @@
 ---
 files:
-- path: src/main/kotlin/de/andrena/codingaider/outputview/CustomMarkdownViewer.kt
-  readOnly: false
-- path: build.gradle.kts
-  readOnly: false
-- path: src/main/resources/markdown-styles.css
-  readOnly: false
-- path: src/main/resources/code-highlight.js
-  readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/outputview/CustomMarkdownViewer.kt
+    readOnly: false
+  - path: build.gradle.kts
+    readOnly: false
