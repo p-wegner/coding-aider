@@ -31,22 +31,25 @@ class CodingAiderToolWindowContent(project: Project) {
 
     fun getContent(): JComponent {
         return panel {
-            row {
-                cell(persistentFilesPanel.getContent())
-                    .align(com.intellij.ui.dsl.builder.Align.FILL)
-                    .resizableColumn()
+            indent {
+                row {
+                    cell(persistentFilesPanel.getContent())
+                        .align(com.intellij.ui.dsl.builder.Align.FILL)
+                        .resizableColumn()
+                }.topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
+                
+                row {
+                    cell(plansPanel.getContent())
+                        .align(com.intellij.ui.dsl.builder.Align.FILL)
+                        .resizableColumn()
+                }.topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
+                
+                row {
+                    cell(runningCommandsPanel.getContent())
+                        .align(com.intellij.ui.dsl.builder.Align.FILL)
+                        .resizableColumn()
+                }.topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
             }
-            row {
-                cell(plansPanel.getContent())
-                    .align(com.intellij.ui.dsl.builder.Align.FILL)
-                    .resizableColumn()
-            }
-            row {
-                cell(runningCommandsPanel.getContent())
-                    .align(com.intellij.ui.dsl.builder.Align.FILL)
-                    .resizableColumn()
-            }
-
         }
     }
 }
