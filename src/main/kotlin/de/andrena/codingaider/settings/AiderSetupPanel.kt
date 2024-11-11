@@ -3,13 +3,12 @@ package de.andrena.codingaider.settings
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.ui.DialogBuilder
 import com.intellij.openapi.ui.Messages
-import com.intellij.openapi.ui.TextFieldWithHistory
+import com.intellij.ui.TextFieldWithHistory
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.Panel
-import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.executors.api.CommandObserver
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.ApiKeyManager
@@ -28,7 +27,7 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
             createApiKeysGroup()
             createDockerSetup()
             createAiderExecutableGroup()
-            
+
             row {
                 button("Test Aider Installation") {
                     showTestCommandResult()
@@ -203,6 +202,7 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
                 field.toolTipText = "An API key for $keyName is stored. Clear it first to enter a new one."
                 saveButton.isEnabled = false
             }
+
             apiKeyChecker.isApiKeyAvailable(keyName) -> {
                 field.text = "*".repeat(16)
                 field.isEditable = false
@@ -210,6 +210,7 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
                     "An API key for $keyName is available from environment or .env file. You can enter a new one to use after clearing the field. Env files will not be modified."
                 saveButton.isEnabled = false
             }
+
             else -> {
                 field.text = ""
                 field.isEditable = true

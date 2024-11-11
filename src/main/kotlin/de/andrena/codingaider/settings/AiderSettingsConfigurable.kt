@@ -5,7 +5,6 @@ import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogBuilder
-import com.intellij.openapi.ui.Messages
 import com.intellij.ui.TextFieldWithHistory
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBScrollPane
@@ -29,12 +28,13 @@ class AiderSettingsConfigurable() : Configurable {
     private val aiderSetupPanel = AiderSetupPanel(apiKeyChecker)
     private val useYesFlagCheckBox = JBCheckBox("Use --yes flag by default")
     private val llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
-    private val llmComboBox = createLlmComboBox()
+    private val llmComboBox: JComboBox<String>
     private val additionalArgsField = JBTextField()
     private val isShellModeCheckBox = JBCheckBox("Use Shell Mode by default")
     private val lintCmdField = JBTextField()
     private val showGitComparisonToolCheckBox = JBCheckBox("Show git comparison tool after execution")
-    private val activateIdeExecutorAfterWebcrawlCheckBox = JBCheckBox("Activate Post web crawl LLM cleanup (Experimental)")
+    private val activateIdeExecutorAfterWebcrawlCheckBox =
+        JBCheckBox("Activate Post web crawl LLM cleanup (Experimental)")
     private val webCrawlLlmComboBox = ComboBox(apiKeyChecker.getAllLlmOptions().toTypedArray())
     private val deactivateRepoMapCheckBox = JBCheckBox("Deactivate Aider's repo map (--map-tokens 0)")
     private val editFormatComboBox = ComboBox(arrayOf("", "whole", "diff", "whole-func", "diff-func"))
@@ -49,7 +49,12 @@ class AiderSettingsConfigurable() : Configurable {
     private val enableDocumentationLookupCheckBox = JBCheckBox("Enable documentation lookup")
     private val alwaysIncludeOpenFilesCheckBox = JBCheckBox("Always include open files in context")
     private val alwaysIncludePlanContextFilesCheckBox = JBCheckBox("Always include plan context files")
-    private val documentationLlmComboBox = ComboBox(arrayOf("Default") + apiKeyChecker.getAllLlmOptions().toTypedArray())
+    private val useDockerAiderCheckBox: JBCheckBox
+    private val dockerImageTagField: TextFieldWithHistory
+    private val aiderExecutablePathField: TextFieldWithHistory
+    private val documentationLlmComboBox =
+        ComboBox(arrayOf("Default") + apiKeyChecker.getAllLlmOptions().toTypedArray())
+
     override fun getDisplayName(): String = "Aider"
 
     override fun createComponent(): JComponent {
@@ -246,8 +251,8 @@ class AiderSettingsConfigurable() : Configurable {
                 alwaysIncludeOpenFilesCheckBox.isSelected != settings.alwaysIncludeOpenFiles ||
                 alwaysIncludePlanContextFilesCheckBox.isSelected != settings.alwaysIncludePlanContextFiles ||
                 documentationLlmComboBox.selectedItem as String != settings.documentationLlm ||
-                dockerImageTagField.text != settings.dockerImageTag ||
-                aiderExecutablePathField.text != settings.aiderExecutablePath
+                aiderSetupPanel.dockerImageTagField.text != settings.dockerImageTag ||
+                aiderSetupPanel.aiderExecutablePathField.text != settings.aiderExecutablePath
     }
 
     override fun apply() {
@@ -276,8 +281,8 @@ class AiderSettingsConfigurable() : Configurable {
         settings.alwaysIncludeOpenFiles = alwaysIncludeOpenFilesCheckBox.isSelected
         settings.alwaysIncludePlanContextFiles = alwaysIncludePlanContextFilesCheckBox.isSelected
         settings.documentationLlm = documentationLlmComboBox.selectedItem as String
-        settings.dockerImageTag = dockerImageTagField.text
-        settings.aiderExecutablePath = aiderExecutablePathField.text
+        settings.dockerImageTag = aiderSetupPanel.dockerImageTagField.text
+        settings.aiderExecutablePath = aiderSetupPanel.aiderExecutablePathField.text
     }
 
 
@@ -306,12 +311,9 @@ class AiderSettingsConfigurable() : Configurable {
         alwaysIncludeOpenFilesCheckBox.isSelected = settings.alwaysIncludeOpenFiles
         alwaysIncludePlanContextFilesCheckBox.isSelected = settings.alwaysIncludePlanContextFiles
         documentationLlmComboBox.selectedItem = settings.documentationLlm
-        dockerImageTagField.text = settings.dockerImageTag
-        aiderExecutablePathField.text = settings.aiderExecutablePath
-
-        apiKeyFields.forEach { (keyName, field) ->
-            field.text = getApiKeyDisplayValue(keyName)
-        }
+        aiderSetupPanel.dockerImageTagField.text = settings.dockerImageTag
+        aiderSetupPanel.aiderExecutablePathField.text = settings.aiderExecutablePath
+        aiderSetupPanel.updateApiKeyFieldsOnClose()
     }
 
     private fun getApiKeyDisplayValue(keyName: String): String {
@@ -471,13 +473,7 @@ class AiderSettingsConfigurable() : Configurable {
     }
 
     private fun updateApiKeyFieldsOnClose() {
-        apiKeyFields.forEach { (keyName, field) ->
-            val isApiKeyAvailable = apiKeyChecker.isApiKeyAvailable(keyName)
-            field.isEditable = !isApiKeyAvailable
-            if (isApiKeyAvailable) {
-                field.text = getApiKeyDisplayValue(keyName)
-            }
-        }
+        aiderSetupPanel.updateApiKeyFieldsOnClose()
     }
 
     override fun disposeUIResources() {
@@ -490,8 +486,6 @@ class AiderSettingsConfigurable() : Configurable {
     }
 
     init {
-        this.useYesFlagCheckBox = JBCheckBox("Use --yes flag by default")
-        this.llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
         this.llmComboBox = object : JComboBox<String>(llmOptions) {
             override fun getToolTipText(): String? {
                 val selectedItem = selectedItem as? String ?: return null
@@ -502,30 +496,9 @@ class AiderSettingsConfigurable() : Configurable {
                 }
             }
         }
-        this.additionalArgsField = JBTextField()
-        this.isShellModeCheckBox = JBCheckBox("Use Shell Mode by default")
-        this.lintCmdField = JBTextField()
-        this.showGitComparisonToolCheckBox = JBCheckBox("Show git comparison tool after execution")
-        this.activateIdeExecutorAfterWebcrawlCheckBox = JBCheckBox("Activate Post web crawl LLM cleanup (Experimental)")
-        this.webCrawlLlmComboBox = ComboBox(apiKeyChecker.getAllLlmOptions().toTypedArray())
-        this.deactivateRepoMapCheckBox = JBCheckBox("Deactivate Aider's repo map (--map-tokens 0)")
-        this.editFormatComboBox = ComboBox(arrayOf("", "whole", "diff", "whole-func", "diff-func"))
-        this.verboseCommandLoggingCheckBox = JBCheckBox("Enable verbose Aider command logging")
         this.useDockerAiderCheckBox = JBCheckBox("Use aider in Docker")
         this.dockerImageTagField = TextFieldWithHistory()
         this.aiderExecutablePathField = TextFieldWithHistory()
-        this.enableMarkdownDialogAutocloseCheckBox = JBCheckBox("Automatically close Output Dialog")
-        this.markdownDialogAutocloseDelayField = JBTextField()
-        this.mountAiderConfInDockerCheckBox = JBCheckBox("Mount Aider configuration file in Docker")
-        this.includeChangeContextCheckBox = JBCheckBox("Include change context in commit messages")
-        this.autoCommitsComboBox = ComboBox(arrayOf("Default", "On", "Off"))
-        this.dirtyCommitsComboBox = ComboBox(arrayOf("Default", "On", "Off"))
-        this.useStructuredModeCheckBox = JBCheckBox("Use Structured Mode")
-        this.enableDocumentationLookupCheckBox = JBCheckBox("Enable documentation lookup")
-        this.alwaysIncludeOpenFilesCheckBox = JBCheckBox("Always include open files in context")
-        this.alwaysIncludePlanContextFilesCheckBox = JBCheckBox("Always include plan context files")
-        this.apiKeyFields = mutableMapOf<String, JPasswordField>()
-        this.documentationLlmComboBox = ComboBox(arrayOf("Default") + apiKeyChecker.getAllLlmOptions().toTypedArray())
         this.useDockerAiderCheckBox.addItemListener { e ->
             dockerImageTagField.isEnabled = e.stateChange == java.awt.event.ItemEvent.SELECTED
         }
