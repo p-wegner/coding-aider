@@ -24,132 +24,37 @@ import javax.swing.event.DocumentListener
 
 class AiderSettingsConfigurable() : Configurable {
 
-    private var apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker()
+    private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker()
     private var settingsComponent: JPanel? = null
-    private val useYesFlagCheckBox: JBCheckBox
-    private val llmOptions: Array<String>
-    private val llmComboBox: JComboBox<String>
-    private val additionalArgsField: JBTextField
-    private val isShellModeCheckBox: JBCheckBox
-    private val lintCmdField: JBTextField
-    private val showGitComparisonToolCheckBox: JBCheckBox
-    private val activateIdeExecutorAfterWebcrawlCheckBox: JBCheckBox
-    private val webCrawlLlmComboBox: ComboBox<String>
-    private val deactivateRepoMapCheckBox: JBCheckBox
-    private val editFormatComboBox: ComboBox<String>
-    private val verboseCommandLoggingCheckBox: JBCheckBox
-    private val useDockerAiderCheckBox: JBCheckBox
-    private val dockerImageTagField: TextFieldWithHistory
-    private val aiderExecutablePathField: TextFieldWithHistory
-    private val enableMarkdownDialogAutocloseCheckBox: JBCheckBox
-    private val markdownDialogAutocloseDelayField: JBTextField
-    private val mountAiderConfInDockerCheckBox: JBCheckBox
-    private val includeChangeContextCheckBox: JBCheckBox
-    private val autoCommitsComboBox: ComboBox<String>
-    private val dirtyCommitsComboBox: ComboBox<String>
-    private val useStructuredModeCheckBox: JBCheckBox
-    private val enableDocumentationLookupCheckBox: JBCheckBox
-    private val alwaysIncludeOpenFilesCheckBox: JBCheckBox
-    private val alwaysIncludePlanContextFilesCheckBox: JBCheckBox
-    private val apiKeyFields: MutableMap<String, JPasswordField>
-    private val documentationLlmComboBox: ComboBox<String>
+    private val aiderSetupPanel = AiderSetupPanel(apiKeyChecker)
+    private val useYesFlagCheckBox = JBCheckBox("Use --yes flag by default")
+    private val llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
+    private val llmComboBox = createLlmComboBox()
+    private val additionalArgsField = JBTextField()
+    private val isShellModeCheckBox = JBCheckBox("Use Shell Mode by default")
+    private val lintCmdField = JBTextField()
+    private val showGitComparisonToolCheckBox = JBCheckBox("Show git comparison tool after execution")
+    private val activateIdeExecutorAfterWebcrawlCheckBox = JBCheckBox("Activate Post web crawl LLM cleanup (Experimental)")
+    private val webCrawlLlmComboBox = ComboBox(apiKeyChecker.getAllLlmOptions().toTypedArray())
+    private val deactivateRepoMapCheckBox = JBCheckBox("Deactivate Aider's repo map (--map-tokens 0)")
+    private val editFormatComboBox = ComboBox(arrayOf("", "whole", "diff", "whole-func", "diff-func"))
+    private val verboseCommandLoggingCheckBox = JBCheckBox("Enable verbose Aider command logging")
+    private val enableMarkdownDialogAutocloseCheckBox = JBCheckBox("Automatically close Output Dialog")
+    private val markdownDialogAutocloseDelayField = JBTextField()
+    private val mountAiderConfInDockerCheckBox = JBCheckBox("Mount Aider configuration file in Docker")
+    private val includeChangeContextCheckBox = JBCheckBox("Include change context in commit messages")
+    private val autoCommitsComboBox = ComboBox(arrayOf("Default", "On", "Off"))
+    private val dirtyCommitsComboBox = ComboBox(arrayOf("Default", "On", "Off"))
+    private val useStructuredModeCheckBox = JBCheckBox("Use Structured Mode")
+    private val enableDocumentationLookupCheckBox = JBCheckBox("Enable documentation lookup")
+    private val alwaysIncludeOpenFilesCheckBox = JBCheckBox("Always include open files in context")
+    private val alwaysIncludePlanContextFilesCheckBox = JBCheckBox("Always include plan context files")
+    private val documentationLlmComboBox = ComboBox(arrayOf("Default") + apiKeyChecker.getAllLlmOptions().toTypedArray())
     override fun getDisplayName(): String = "Aider"
 
     override fun createComponent(): JComponent {
         settingsComponent = panel {
-            group("Aider Setup") {
-                group("API Keys") {
-                    apiKeyChecker.getAllApiKeyNames().forEach { keyName ->
-                        row(keyName) {
-                            val field = JPasswordField()
-                            apiKeyFields[keyName] = field
-                            cell(field)
-                                .resizableColumn()
-                                .align(Align.FILL)
-                            val saveButton = JButton("Save")
-                            saveButton.addActionListener {
-                                val apiKey = String(field.password)
-                                if (apiKey.isNotEmpty()) {
-                                    ApiKeyManager.saveApiKey(keyName, apiKey)
-                                    Messages.showInfoMessage("API key for $keyName has been saved.", "API Key Saved")
-                                    updateApiKeyField(keyName, field, saveButton)
-                                }
-                            }
-                            cell(saveButton)
-
-                            button("Clear") {
-                                ApiKeyManager.removeApiKey(keyName)
-                                clearApiKeyField(keyName, field, saveButton)
-                                Messages.showInfoMessage(
-                                    "API key for $keyName has been cleared from the credential store (if any has been stored). You can now enter a new key. This will be used if defined, otherwise the key from environment or .env files will be used.",
-                                    "API Key Cleared"
-                                )
-                            }
-                            updateApiKeyField(keyName, field, saveButton)
-
-                            field.document.addDocumentListener(object : DocumentListener {
-                                override fun insertUpdate(e: DocumentEvent) = updateSaveButton()
-                                override fun removeUpdate(e: DocumentEvent) = updateSaveButton()
-                                override fun changedUpdate(e: DocumentEvent) = updateSaveButton()
-
-                                fun updateSaveButton() {
-                                    saveButton.isEnabled = field.password.isNotEmpty() &&
-                                            !apiKeyChecker.isApiKeyAvailable(keyName)
-                                }
-                            })
-                        }
-                    }
-                }
-                row {
-                    cell(useDockerAiderCheckBox)
-                        .component
-                        .apply {
-                            toolTipText =
-                                "If enabled, Aider will be run using the Docker image paulgauthier/aider. Currently a new container will be used for every command, which may delay the execution compared to native aider setup."
-                        }
-                }
-                row("Docker Image Tag:") {
-                    cell(dockerImageTagField)
-                        .resizableColumn()
-                        .align(Align.FILL)
-                        .component
-                        .apply {
-                            toolTipText =
-                                "Enter the Docker image tag for ${AiderDefaults.DOCKER_IMAGE}. Suggestions are provided in the dropdown."
-                            setHistory(listOf(AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION, "latest"))
-                            isEnabled = useDockerAiderCheckBox.isSelected
-                        }
-                }
-                row {
-                    val warningLabel = JLabel().apply {
-                        foreground = UIManager.getColor("Label.errorForeground")
-                        isVisible = false
-                    }
-                    cell(warningLabel)
-                    dockerImageTagField.addDocumentListener(object : DocumentListener {
-                        override fun insertUpdate(e: DocumentEvent) = checkTag()
-                        override fun removeUpdate(e: DocumentEvent) = checkTag()
-                        override fun changedUpdate(e: DocumentEvent) = checkTag()
-
-                        private fun checkTag() {
-                            if (dockerImageTagField.text != AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION) {
-                                warningLabel.text =
-                                    "Warning: Using a different version than ${AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION} " +
-                                            "might not be fully compatibility with the plugin."
-                                warningLabel.isVisible = true
-                            } else {
-                                warningLabel.isVisible = false
-                            }
-                        }
-                    })
-                }
-
-                row {
-                    button("Test Aider Installation") {
-                        showTestCommandResult()
-                    }
-                }
-            }
+            aiderSetupPanel.createPanel(this)
 
             group("General Settings") {
                 row { cell(useYesFlagCheckBox) }
