@@ -296,6 +296,7 @@ class AiderSettingsConfigurable() : Configurable {
                 row { cell(enableDocumentationLookupCheckBox).component.apply {
                     toolTipText = "If enabled, documentation files (*.md) in parent directories will be included in the context"
                 } }
+                row { cell(alwaysIncludePlanContextFilesCheckBox) }
                 row("Documentation LLM Model:") {
                     cell(documentationLlmComboBox).component.apply {
                         renderer = LlmComboBoxRenderer()
