@@ -50,6 +50,7 @@ class AiderSettingsConfigurable() : Configurable {
     private val useStructuredModeCheckBox: JBCheckBox
     private val enableDocumentationLookupCheckBox: JBCheckBox
     private val alwaysIncludeOpenFilesCheckBox: JBCheckBox
+    private val alwaysIncludePlanContextFilesCheckBox: JBCheckBox
     private val apiKeyFields: MutableMap<String, JPasswordField>
     private val documentationLlmComboBox: ComboBox<String>
     override fun getDisplayName(): String = "Aider"
@@ -333,6 +334,7 @@ class AiderSettingsConfigurable() : Configurable {
                 useStructuredModeCheckBox.isSelected != settings.useStructuredMode ||
                 enableDocumentationLookupCheckBox.isSelected != settings.enableDocumentationLookup ||
                 alwaysIncludeOpenFilesCheckBox.isSelected != settings.alwaysIncludeOpenFiles ||
+                alwaysIncludePlanContextFilesCheckBox.isSelected != settings.alwaysIncludePlanContextFiles ||
                 documentationLlmComboBox.selectedItem as String != settings.documentationLlm ||
                 dockerImageTagField.text != settings.dockerImageTag ||
                 aiderExecutablePathField.text != settings.aiderExecutablePath
@@ -362,6 +364,7 @@ class AiderSettingsConfigurable() : Configurable {
         settings.useStructuredMode = useStructuredModeCheckBox.isSelected
         settings.enableDocumentationLookup = enableDocumentationLookupCheckBox.isSelected
         settings.alwaysIncludeOpenFiles = alwaysIncludeOpenFilesCheckBox.isSelected
+        settings.alwaysIncludePlanContextFiles = alwaysIncludePlanContextFilesCheckBox.isSelected
         settings.documentationLlm = documentationLlmComboBox.selectedItem as String
         settings.dockerImageTag = dockerImageTagField.text
         settings.aiderExecutablePath = aiderExecutablePathField.text
@@ -391,6 +394,7 @@ class AiderSettingsConfigurable() : Configurable {
         useStructuredModeCheckBox.isSelected = settings.useStructuredMode
         enableDocumentationLookupCheckBox.isSelected = settings.enableDocumentationLookup
         alwaysIncludeOpenFilesCheckBox.isSelected = settings.alwaysIncludeOpenFiles
+        alwaysIncludePlanContextFilesCheckBox.isSelected = settings.alwaysIncludePlanContextFiles
         documentationLlmComboBox.selectedItem = settings.documentationLlm
         dockerImageTagField.text = settings.dockerImageTag
         aiderExecutablePathField.text = settings.aiderExecutablePath
@@ -610,6 +614,7 @@ class AiderSettingsConfigurable() : Configurable {
         this.useStructuredModeCheckBox = JBCheckBox("Use Structured Mode")
         this.enableDocumentationLookupCheckBox = JBCheckBox("Enable documentation lookup")
         this.alwaysIncludeOpenFilesCheckBox = JBCheckBox("Always include open files in context")
+        this.alwaysIncludePlanContextFilesCheckBox = JBCheckBox("Always include plan context files")
         this.apiKeyFields = mutableMapOf<String, JPasswordField>()
         this.documentationLlmComboBox = ComboBox(arrayOf("Default") + apiKeyChecker.getAllLlmOptions().toTypedArray())
         this.useDockerAiderCheckBox.addItemListener { e ->
