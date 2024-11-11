@@ -41,8 +41,23 @@ class PersistentFilesPanel(private val project: Project) {
             override fun mouseClicked(e: java.awt.event.MouseEvent) {
                 if (e.clickCount == 2) {
                     val selectedFile = persistentFilesList.selectedValue
-                    // TODO: if file is already open, focus it
-                    selectedFile?.let { openFileInEditor(it) }
+                    selectedFile?.let { fileData ->
+                        val virtualFile = com.intellij.openapi.vfs.LocalFileSystem.getInstance().findFileByIoFile(File(fileData.filePath))
+                        virtualFile?.let { file ->
+                            val fileEditorManager = FileEditorManager.getInstance(project)
+                            val editors = fileEditorManager.openFiles
+                            
+                            // Check if file is already open
+                            val isFileOpen = editors.contains(file)
+                            if (isFileOpen) {
+                                // Focus on the already open file
+                                fileEditorManager.openFile(file, true)
+                            } else {
+                                // Open the file if not already open
+                                openFileInEditor(fileData)
+                            }
+                        }
+                    }
                 }
             }
         })
