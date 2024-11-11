@@ -24,7 +24,7 @@ import javax.swing.event.DocumentListener
 
 class AiderSettingsConfigurable() : Configurable {
 
-    private var apiKeyChecker: ApiKeyChecker
+    private var apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker()
     private var settingsComponent: JPanel? = null
     private val useYesFlagCheckBox: JBCheckBox
     private val llmOptions: Array<String>
@@ -293,14 +293,18 @@ class AiderSettingsConfigurable() : Configurable {
                                 "If enabled, the Aider configuration file will be mounted in the Docker container."
                         }
                 }
-                row { cell(enableDocumentationLookupCheckBox).component.apply {
-                    toolTipText = "If enabled, documentation files (*.md) in parent directories will be included in the context"
-                } }
+                row {
+                    cell(enableDocumentationLookupCheckBox).component.apply {
+                        toolTipText =
+                            "If enabled, documentation files (*.md) in parent directories will be included in the context"
+                    }
+                }
                 row { cell(alwaysIncludePlanContextFilesCheckBox) }
                 row("Documentation LLM Model:") {
                     cell(documentationLlmComboBox).component.apply {
                         renderer = LlmComboBoxRenderer()
-                        toolTipText = "Select the LLM model to use for generating documentation. The default is the LLM model specified in the settings."
+                        toolTipText =
+                            "Select the LLM model to use for generating documentation. The default is the LLM model specified in the settings."
                     }
                 }
             }
@@ -581,7 +585,6 @@ class AiderSettingsConfigurable() : Configurable {
     }
 
     init {
-        this.apiKeyChecker = DefaultApiKeyChecker()
         this.useYesFlagCheckBox = JBCheckBox("Use --yes flag by default")
         this.llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
         this.llmComboBox = object : JComboBox<String>(llmOptions) {
