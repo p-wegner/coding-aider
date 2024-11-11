@@ -23,7 +23,9 @@ class RunningCommandsPanel(private val project: Project) {
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
                 if (e.clickCount == 2) {
-                    (selectedValue)?.focus()
+                    selectedValue?.let { command ->
+                        command.focus()
+                    }
                 }
             }
         })
