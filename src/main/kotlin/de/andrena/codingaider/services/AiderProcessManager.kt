@@ -18,7 +18,13 @@ class AiderProcessManager(private val project: Project) : Disposable {
     private var writer: BufferedWriter? = null
     private val isRunning = AtomicBoolean(false)
 
-    fun startProcess(command: List<String>, workingDir: String): Boolean {
+    fun startProcess(
+        command: List<String>, 
+        workingDir: String, 
+        maxIdleTime: Int = 0, 
+        autoRestart: Boolean = false, 
+        verbose: Boolean = false
+    ): Boolean {
         if (isRunning.get()) {
             logger.info("Aider sidecar process already running")
             return true
@@ -33,6 +39,13 @@ class AiderProcessManager(private val project: Project) : Disposable {
             reader = BufferedReader(InputStreamReader(process!!.inputStream))
             writer = BufferedWriter(OutputStreamWriter(process!!.outputStream))
             isRunning.set(true)
+
+            if (verbose) {
+                logger.info("Started Aider sidecar process with command: ${command.joinToString(" ")}")
+                logger.info("Working directory: $workingDir")
+                logger.info("Max idle time: $maxIdleTime")
+                logger.info("Auto restart: $autoRestart")
+            }
 
             logger.info("Started Aider sidecar process")
             true
