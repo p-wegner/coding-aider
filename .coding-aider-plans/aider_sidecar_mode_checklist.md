@@ -16,7 +16,7 @@ See [aider_sidecar_mode.md](./aider_sidecar_mode.md) for full plan details.
 - [x] Implement process startup in plugin initialization
 - [x] Create output parser for Aider terminal patterns
 - [x] Implement input stream management for commands
-- [ ] Add proper process startup/cleanup on settings change
+- [x] Add proper process startup/cleanup on settings change
 - [ ] Add proper process cleanup on IDE/plugin shutdown
 
 ## Integration
