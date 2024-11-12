@@ -4,8 +4,8 @@
 See [aider_sidecar_mode.md](./aider_sidecar_mode.md) for full plan details.
 
 ## Setup & Infrastructure
-- [ ] Create SidecarAiderExecutionStrategy class extending AiderExecutionStrategy
-- [ ] Create AiderProcessManager service for lifecycle management
+- [x] Create SidecarAiderExecutionStrategy class extending AiderExecutionStrategy
+- [x] Create AiderProcessManager service for lifecycle management
 - [ ] Define interfaces for process interaction and output parsing
 - [ ] Add configuration options for sidecar mode
 

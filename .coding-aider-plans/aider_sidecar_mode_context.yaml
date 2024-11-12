@@ -8,3 +8,7 @@ files:
     readOnly: false
   - path: build.gradle.kts
     readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/executors/SidecarAiderExecutionStrategy.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/services/AiderProcessManager.kt
+    readOnly: false
