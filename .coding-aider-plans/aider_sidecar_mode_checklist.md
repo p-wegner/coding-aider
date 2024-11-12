@@ -21,7 +21,7 @@ See [aider_sidecar_mode.md](./aider_sidecar_mode.md) for full plan details.
 
 ## Integration
 
-- [ ] Modify CommandExecutor to support sidecar strategy
+- [x] Modify CommandExecutor to support sidecar strategy
 - [ ] Ensure Docker compatibility
 - [ ] Add error handling and recovery
 - [ ] Update settings to include sidecar mode options
