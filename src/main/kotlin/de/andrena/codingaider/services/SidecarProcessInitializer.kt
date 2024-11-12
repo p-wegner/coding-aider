@@ -35,15 +35,16 @@ class SidecarProcessInitializer(private val project: Project) {
     }
 
     private fun createInitializationCommandData(): CommandData {
-        // TODO: Implement properly
-        return null!!
-//        return CommandData(
-//            message = "Initialize Aider Sidecar Mode",
-//            projectPath = project.basePath ?: "",
-//            files = emptyList(),
-//
-//            aiderMode = AiderMode.NORMAL
-//        )
+        return CommandData(
+            message = "Initialize Aider Sidecar Mode",
+            projectPath = project.basePath ?: System.getProperty("user.home"),
+            files = emptyList(),
+            useYesFlag = false,
+            llm = settings.defaultLlm,
+            additionalArgs = "",
+            lintCmd = "",
+            aiderMode = AiderMode.NORMAL
+        )
     }
 
     fun shutdownSidecarProcess() {
