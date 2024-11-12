@@ -1,10 +1,10 @@
 ---
 files:
-- path: src/main/kotlin/de/andrena/codingaider/executors/AiderExecutionStrategy.kt
-  readOnly: false
-- path: src/main/kotlin/de/andrena/codingaider/executors/CommandExecutor.kt
-  readOnly: false
-- path: src/main/kotlin/de/andrena/codingaider/executors/executors.md
-  readOnly: false
-- path: build.gradle.kts
-  readOnly: true
+  - path: src/main/kotlin/de/andrena/codingaider/executors/AiderExecutionStrategy.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/executors/CommandExecutor.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/executors/executors.md
+    readOnly: false
+  - path: build.gradle.kts
+    readOnly: false
