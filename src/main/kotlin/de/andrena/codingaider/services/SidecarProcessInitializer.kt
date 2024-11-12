@@ -25,13 +25,28 @@ class SidecarProcessInitializer(private val project: Project) {
         val command = strategy.buildCommand(createInitializationCommandData())
 
         val workingDir = project.basePath ?: System.getProperty("user.home")
-        val processStarted = processManager.startProcess(command, workingDir)
+        val processStarted = processManager.startProcess(
+            command, 
+            workingDir, 
+            settings.sidecarModeMaxIdleTime, 
+            settings.sidecarModeAutoRestart,
+            settings.sidecarModeVerbose
+        )
 
         if (processStarted) {
             logger.info("Sidecar Aider process initialized successfully")
+            // Schedule periodic health checks if auto-restart is enabled
+            if (settings.sidecarModeAutoRestart) {
+                scheduleHealthCheck()
+            }
         } else {
             logger.error("Failed to initialize Sidecar Aider process")
         }
+    }
+
+    private fun scheduleHealthCheck() {
+        // TODO: Implement periodic health check for sidecar process
+        // This could involve checking process status and restarting if needed
     }
 
     private fun createInitializationCommandData(): CommandData {
