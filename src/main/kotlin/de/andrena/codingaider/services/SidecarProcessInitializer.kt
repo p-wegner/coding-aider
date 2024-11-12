@@ -4,6 +4,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
+import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.executors.SidecarAiderExecutionStrategy
 import de.andrena.codingaider.settings.AiderSettings
 
@@ -14,10 +15,11 @@ class SidecarProcessInitializer(private val project: Project) {
     private val processManager = project.service<AiderProcessManager>()
 
     fun initializeSidecarProcess() {
-        if (!settings.useSidecarMode) {
-            logger.info("Sidecar mode is disabled")
-            return
-        }
+        // TODO: Add a setting to enable/disable sidecar mode
+//        if (!settings.useSidecarMode) {
+//            logger.info("Sidecar mode is disabled")
+//            return
+//        }
 
         val strategy = SidecarAiderExecutionStrategy(project, settings)
         val command = strategy.buildCommand(createInitializationCommandData())
@@ -32,13 +34,16 @@ class SidecarProcessInitializer(private val project: Project) {
         }
     }
 
-    private fun createInitializationCommandData(): de.andrena.codingaider.command.CommandData {
-        return de.andrena.codingaider.command.CommandData(
-            message = "Initialize Aider Sidecar Mode",
-            projectPath = project.basePath ?: "",
-            files = emptyList(),
-            aiderMode = de.andrena.codingaider.inputdialog.AiderMode.NORMAL
-        )
+    private fun createInitializationCommandData(): CommandData {
+        // TODO: Implement properly
+        return null!!
+//        return CommandData(
+//            message = "Initialize Aider Sidecar Mode",
+//            projectPath = project.basePath ?: "",
+//            files = emptyList(),
+//
+//            aiderMode = AiderMode.NORMAL
+//        )
     }
 
     fun shutdownSidecarProcess() {
