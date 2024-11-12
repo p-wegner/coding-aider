@@ -33,7 +33,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
             reader = BufferedReader(InputStreamReader(process!!.inputStream))
             writer = BufferedWriter(OutputStreamWriter(process!!.outputStream))
             isRunning.set(true)
-            
+
             logger.info("Started Aider sidecar process")
             true
         } catch (e: Exception) {
@@ -50,10 +50,10 @@ class AiderProcessManager(private val project: Project) : Disposable {
         return try {
             writer?.write("$command\n")
             writer?.flush()
-            
+
             // Read response until we get the prompt marker
             val response = StringBuilder()
-            var line: String?
+            var line: String? = null
             while (reader?.readLine()?.also { line = it } != null) {
                 if (line?.contains("🤖>") == true) break
                 response.append(line).append("\n")
