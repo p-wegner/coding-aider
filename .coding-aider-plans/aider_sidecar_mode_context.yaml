@@ -12,3 +12,5 @@ files:
     readOnly: false
   - path: src/main/kotlin/de/andrena/codingaider/services/AiderProcessManager.kt
     readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/executors/api/AiderProcessInteractor.kt
+    readOnly: false
