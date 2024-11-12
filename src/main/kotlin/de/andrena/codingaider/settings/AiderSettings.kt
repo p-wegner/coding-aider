@@ -142,6 +142,30 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
             myState.useDockerAider = value
         }
 
+    var useSidecarMode: Boolean
+        get() = myState.useSidecarMode
+        set(value) {
+            myState.useSidecarMode = value
+        }
+
+    var sidecarModeMaxIdleTime: Int
+        get() = myState.sidecarModeMaxIdleTime
+        set(value) {
+            myState.sidecarModeMaxIdleTime = value
+        }
+
+    var sidecarModeAutoRestart: Boolean
+        get() = myState.sidecarModeAutoRestart
+        set(value) {
+            myState.sidecarModeAutoRestart = value
+        }
+
+    var sidecarModeVerbose: Boolean
+        get() = myState.sidecarModeVerbose
+        set(value) {
+            myState.sidecarModeVerbose = value
+        }
+
     var enableMarkdownDialogAutoclose: Boolean
         get() = myState.enableMarkdownDialogAutoclose
         set(value) {
