@@ -7,12 +7,12 @@ See [aider_sidecar_mode.md](./aider_sidecar_mode.md) for full plan details.
 - [x] Create SidecarAiderExecutionStrategy class extending AiderExecutionStrategy
 - [x] Create AiderProcessManager service for lifecycle management
 - [x] Define interfaces for process interaction and output parsing
-- [ ] Add configuration options for sidecar mode
+- [x] Add configuration options for sidecar mode
 
 ## Core Implementation
 - [x] Implement process startup in plugin initialization
 - [x] Create output parser for Aider terminal patterns
-- [ ] Implement input stream management for commands
+- [x] Implement input stream management for commands
 - [ ] Add proper process cleanup on plugin shutdown
 
 ## Integration
