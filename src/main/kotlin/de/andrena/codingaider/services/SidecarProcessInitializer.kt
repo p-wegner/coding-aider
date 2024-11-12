@@ -1,5 +1,6 @@
 package de.andrena.codingaider.services
 
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
@@ -10,7 +11,7 @@ import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.settings.AiderSettings
 
 @Service(Service.Level.PROJECT)
-class SidecarProcessInitializer(private val project: Project) {
+class SidecarProcessInitializer(private val project: Project) : Disposable {
     private val logger = Logger.getInstance(SidecarProcessInitializer::class.java)
     private val settings = AiderSettings.getInstance()
     private val processManager = project.service<AiderProcessManager>()
@@ -92,5 +93,10 @@ class SidecarProcessInitializer(private val project: Project) {
     fun shutdownSidecarProcess() {
         processManager.dispose()
         currentSidecarMode = null
+    }
+
+    override fun dispose() {
+        // Ensure sidecar process is shut down when the project is closed or plugin is unloaded
+        shutdownSidecarProcess()
     }
 }
