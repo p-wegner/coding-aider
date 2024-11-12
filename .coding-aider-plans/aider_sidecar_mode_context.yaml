@@ -8,8 +8,6 @@ files:
     readOnly: false
   - path: src/main/kotlin/de/andrena/codingaider/services/SidecarProcessInitializer.kt
     readOnly: false
-  - path: .coding-aider-plans/aider_sidecar_mode_checklist.md
-    readOnly: false
   - path: src/main/kotlin/de/andrena/codingaider/executors/CommandExecutor.kt
     readOnly: false
   - path: src/main/kotlin/de/andrena/codingaider/executors/executors.md
