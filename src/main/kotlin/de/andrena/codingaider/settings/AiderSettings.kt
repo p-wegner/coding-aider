@@ -31,6 +31,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var dirtyCommits: DirtyCommitSetting = AiderDefaults.DIRTY_COMMITS,
         var useStructuredMode: Boolean = AiderDefaults.USE_STRUCTURED_MODE,
         var useSidecarMode: Boolean = AiderDefaults.USE_SIDECAR_MODE,
+        var sidecarModeStartupDelay: Int = 500, // Default 500ms startup delay
         var alwaysIncludeOpenFiles: Boolean = AiderDefaults.ALWAYS_INCLUDE_OPEN_FILES,
         var alwaysIncludePlanContextFiles: Boolean = AiderDefaults.ALWAYS_INCLUDE_PLAN_CONTEXT_FILES,
         var dockerImageTag: String = AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION,
@@ -218,6 +219,18 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.dockerImageTag
         set(value) {
             myState.dockerImageTag = value
+        }
+
+    var useSidecarMode: Boolean
+        get() = myState.useSidecarMode
+        set(value) {
+            myState.useSidecarMode = value
+        }
+
+    var sidecarModeStartupDelay: Int
+        get() = myState.sidecarModeStartupDelay
+        set(value) {
+            myState.sidecarModeStartupDelay = value
         }
 
     var aiderExecutablePath: String
