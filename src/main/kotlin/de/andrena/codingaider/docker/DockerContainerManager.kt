@@ -30,19 +30,21 @@ class DockerContainerManager {
     }
 
     fun stopDockerContainer() {
-        getDockerContainerId()?.let { containerId ->
-            try {
-                val processBuilder = ProcessBuilder("docker", "kill", containerId)
-                val stopProcess = processBuilder.start()
-                if (!stopProcess.waitFor(5, TimeUnit.SECONDS)) {
-                    stopProcess.destroyForcibly()
-                    logger.warn("Docker stop command timed out")
-                }
-            } catch (e: Exception) {
-                logger.error("Failed to stop Docker container", e)
-            } finally {
-                removeCidFile()
-            }
+        try {
+            // For sidecar mode, stop and remove the named container
+            ProcessBuilder("docker", "stop", "aider-sidecar")
+                .redirectErrorStream(true)
+                .start()
+                .waitFor()
+            
+            ProcessBuilder("docker", "rm", "aider-sidecar")
+                .redirectErrorStream(true)
+                .start()
+                .waitFor()
+        } catch (e: Exception) {
+            logger.warn("Failed to stop Docker container", e)
+        } finally {
+            removeCidFile()
         }
     }
 
@@ -54,6 +56,20 @@ class DockerContainerManager {
             }
         } catch (e: Exception) {
             logger.error("Failed to remove CID file: ${cidFile.absolutePath}", e)
+        }
+    }
+
+    fun isContainerRunning(): Boolean {
+        return try {
+            val process = ProcessBuilder("docker", "ps", "-q", "-f", "name=aider-sidecar")
+                .redirectErrorStream(true)
+                .start()
+            val output = process.inputStream.bufferedReader().readText().trim()
+            process.waitFor()
+            output.isNotEmpty()
+        } catch (e: Exception) {
+            logger.warn("Failed to check Docker container status", e)
+            false
         }
     }
 }
