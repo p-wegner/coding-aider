@@ -6,6 +6,8 @@ import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.docker.DockerContainerManager
 import de.andrena.codingaider.executors.api.CommandSubject
+import de.andrena.codingaider.executors.api.AiderProcessInteractor
+import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.services.FileExtractorService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
@@ -129,6 +131,7 @@ class CommandExecutor(
             AiderMode.NORMAL -> "edit $fileList -m \"${commandData.message}\""
             AiderMode.STRUCTURED -> "edit $fileList -m \"${project.service<AiderPlanService>().createAiderPlanSystemPrompt(commandData)}\""
             AiderMode.ARCHITECT -> "edit $fileList -m \"/architect ${commandData.message}\""
+            AiderMode.SHELL -> "edit $fileList"
             else -> "edit $fileList"
         }
     }
