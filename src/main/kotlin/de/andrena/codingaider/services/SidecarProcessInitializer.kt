@@ -16,11 +16,10 @@ class SidecarProcessInitializer(private val project: Project) {
     private val processManager = project.service<AiderProcessManager>()
 
     fun initializeSidecarProcess() {
-        // TODO: Add a setting to enable/disable sidecar mode
-//        if (!settings.useSidecarMode) {
-//            logger.info("Sidecar mode is disabled")
-//            return
-//        }
+        if (!settings.useSidecarMode) {
+            logger.info("Sidecar mode is disabled")
+            return
+        }
 
         val strategy = SidecarAiderExecutionStrategy(project, settings)
         val command = strategy.buildCommand(createInitializationCommandData())
