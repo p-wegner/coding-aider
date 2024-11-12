@@ -2,6 +2,12 @@
 files:
   - path: src/main/kotlin/de/andrena/codingaider/executors/AiderExecutionStrategy.kt
     readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/settings/AiderSettings.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/services/AiderProcessManager.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/services/SidecarProcessInitializer.kt
+    readOnly: false
   - path: src/main/kotlin/de/andrena/codingaider/executors/CommandExecutor.kt
     readOnly: false
   - path: src/main/kotlin/de/andrena/codingaider/executors/executors.md
