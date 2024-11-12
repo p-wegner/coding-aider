@@ -32,6 +32,9 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var useStructuredMode: Boolean = AiderDefaults.USE_STRUCTURED_MODE,
         var useSidecarMode: Boolean = AiderDefaults.USE_SIDECAR_MODE,
         var sidecarModeStartupDelay: Int = 500, // Default 500ms startup delay
+        var sidecarModeMaxIdleTime: Int = 3600, // Default 1 hour max idle time
+        var sidecarModeAutoRestart: Boolean = true, // Auto-restart sidecar if it dies
+        var sidecarModeVerbose: Boolean = false, // Enable verbose logging for sidecar
         var alwaysIncludeOpenFiles: Boolean = AiderDefaults.ALWAYS_INCLUDE_OPEN_FILES,
         var alwaysIncludePlanContextFiles: Boolean = AiderDefaults.ALWAYS_INCLUDE_PLAN_CONTEXT_FILES,
         var dockerImageTag: String = AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION,
@@ -231,6 +234,24 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.sidecarModeStartupDelay
         set(value) {
             myState.sidecarModeStartupDelay = value
+        }
+
+    var sidecarModeMaxIdleTime: Int
+        get() = myState.sidecarModeMaxIdleTime
+        set(value) {
+            myState.sidecarModeMaxIdleTime = value
+        }
+
+    var sidecarModeAutoRestart: Boolean
+        get() = myState.sidecarModeAutoRestart
+        set(value) {
+            myState.sidecarModeAutoRestart = value
+        }
+
+    var sidecarModeVerbose: Boolean
+        get() = myState.sidecarModeVerbose
+        set(value) {
+            myState.sidecarModeVerbose = value
         }
 
     var aiderExecutablePath: String
