@@ -18,6 +18,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
     private fun notifySettingsChanged() {
         settingsChangeListeners.forEach { it() }
     }
+
     data class State(
         var enableDocumentationLookup: Boolean = AiderDefaults.ENABLE_DOCUMENTATION_LOOKUP,
         var useYesFlag: Boolean = AiderDefaults.USE_YES_FLAG,
@@ -258,11 +259,6 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
             myState.dockerImageTag = value
         }
 
-    var useSidecarMode: Boolean
-        get() = myState.useSidecarMode
-        set(value) {
-            myState.useSidecarMode = value
-        }
 
     var sidecarModeStartupDelay: Int
         get() = myState.sidecarModeStartupDelay
@@ -270,23 +266,6 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
             myState.sidecarModeStartupDelay = value
         }
 
-    var sidecarModeMaxIdleTime: Int
-        get() = myState.sidecarModeMaxIdleTime
-        set(value) {
-            myState.sidecarModeMaxIdleTime = value
-        }
-
-    var sidecarModeAutoRestart: Boolean
-        get() = myState.sidecarModeAutoRestart
-        set(value) {
-            myState.sidecarModeAutoRestart = value
-        }
-
-    var sidecarModeVerbose: Boolean
-        get() = myState.sidecarModeVerbose
-        set(value) {
-            myState.sidecarModeVerbose = value
-        }
 
     var aiderExecutablePath: String
         get() = myState.aiderExecutablePath

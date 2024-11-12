@@ -22,6 +22,13 @@ class DefaultAiderProcessInteractor(private val project: Project) : AiderProcess
     }
 }
 
+interface AiderProcessInteractor {
+
+    fun sendCommand(command: String): String
+    fun parseOutput(output: String): AiderOutputState
+    fun isReadyForCommand(): Boolean
+}
+
 /**
  * Represents the current state of Aider's output
  */
