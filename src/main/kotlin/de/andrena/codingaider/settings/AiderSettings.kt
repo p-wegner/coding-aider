@@ -9,6 +9,15 @@ import com.intellij.openapi.components.*
     storages = [Storage("AiderSettings.xml", roamingType = RoamingType.DISABLED)]
 )
 class AiderSettings : PersistentStateComponent<AiderSettings.State> {
+    private val settingsChangeListeners = mutableListOf<() -> Unit>()
+
+    fun addSettingsChangeListener(listener: () -> Unit) {
+        settingsChangeListeners.add(listener)
+    }
+
+    private fun notifySettingsChanged() {
+        settingsChangeListeners.forEach { it() }
+    }
     data class State(
         var enableDocumentationLookup: Boolean = AiderDefaults.ENABLE_DOCUMENTATION_LOOKUP,
         var useYesFlag: Boolean = AiderDefaults.USE_YES_FLAG,
@@ -146,6 +155,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.useSidecarMode
         set(value) {
             myState.useSidecarMode = value
+            notifySettingsChanged()
         }
 
     var sidecarModeMaxIdleTime: Int
