@@ -59,6 +59,14 @@ The Aider Executors module is responsible for executing commands related to the 
   - `cleanupAfterExecution()`: Cleans up after command execution.
 - **File**: [AiderExecutionStrategy.kt](./AiderExecutionStrategy.kt)
 
+### SidecarAiderExecutionStrategy
+- **Purpose**: Provides an execution strategy for long-lived Aider sidecar processes.
+- **Key Methods**:
+  - `buildCommand()`: Builds the command with sidecar mode flag.
+  - `prepareEnvironment()`: Minimal environment preparation.
+  - `cleanupAfterExecution()`: Delegates cleanup to AiderProcessManager.
+- **File**: [SidecarAiderExecutionStrategy.kt](./SidecarAiderExecutionStrategy.kt)
+
 ## Design Patterns
 - **Observer Pattern**: Used in `GenericCommandSubject` to notify observers about command execution events.
 - **Strategy Pattern**: Used in `AiderExecutionStrategy` to define different execution strategies (native and Docker).

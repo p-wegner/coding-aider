@@ -10,7 +10,7 @@ See [aider_sidecar_mode.md](./aider_sidecar_mode.md) for full plan details.
 - [ ] Add configuration options for sidecar mode
 
 ## Core Implementation
-- [ ] Implement process startup in plugin initialization
+- [x] Implement process startup in plugin initialization
 - [ ] Create output parser for Aider terminal patterns
 - [ ] Implement input stream management for commands
 - [ ] Add proper process cleanup on plugin shutdown
