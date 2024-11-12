@@ -30,6 +30,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var autoCommits: AutoCommitSetting = AiderDefaults.AUTO_COMMITS,
         var dirtyCommits: DirtyCommitSetting = AiderDefaults.DIRTY_COMMITS,
         var useStructuredMode: Boolean = AiderDefaults.USE_STRUCTURED_MODE,
+        var useSidecarMode: Boolean = AiderDefaults.USE_SIDECAR_MODE,
         var alwaysIncludeOpenFiles: Boolean = AiderDefaults.ALWAYS_INCLUDE_OPEN_FILES,
         var alwaysIncludePlanContextFiles: Boolean = AiderDefaults.ALWAYS_INCLUDE_PLAN_CONTEXT_FILES,
         var dockerImageTag: String = AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION,
