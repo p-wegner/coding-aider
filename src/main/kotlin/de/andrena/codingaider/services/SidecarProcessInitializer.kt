@@ -14,12 +14,39 @@ class SidecarProcessInitializer(private val project: Project) {
     private val logger = Logger.getInstance(SidecarProcessInitializer::class.java)
     private val settings = AiderSettings.getInstance()
     private val processManager = project.service<AiderProcessManager>()
+    private var currentSidecarMode: Boolean? = null
+
+    init {
+        // Listen for settings changes
+        settings.addSettingsChangeListener { 
+            handleSettingsChange() 
+        }
+    }
+
+    private fun handleSettingsChange() {
+        val newSidecarMode = settings.useSidecarMode
+        
+        // Only react if sidecar mode setting has changed
+        if (currentSidecarMode != newSidecarMode) {
+            if (newSidecarMode) {
+                // Sidecar mode enabled, start process
+                initializeSidecarProcess()
+            } else {
+                // Sidecar mode disabled, shutdown process
+                shutdownSidecarProcess()
+            }
+            currentSidecarMode = newSidecarMode
+        }
+    }
 
     fun initializeSidecarProcess() {
         if (!settings.useSidecarMode) {
             logger.info("Sidecar mode is disabled")
             return
         }
+
+        // Ensure any existing process is cleaned up first
+        shutdownSidecarProcess()
 
         val strategy = SidecarAiderExecutionStrategy(project, settings)
         val command = strategy.buildCommand(createInitializationCommandData())
@@ -64,5 +91,6 @@ class SidecarProcessInitializer(private val project: Project) {
 
     fun shutdownSidecarProcess() {
         processManager.dispose()
+        currentSidecarMode = null
     }
 }
