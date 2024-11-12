@@ -132,14 +132,24 @@ class DockerAiderExecutionStrategy(
 
     override fun buildCommand(commandData: CommandData): List<String> {
         val dockerArgs = mutableListOf(
-            "docker", "run", "-i", "--rm", "-w", "/app", "--cidfile", dockerManager.getCidFilePath()
+            "docker", "run", "-i", 
+            // For sidecar mode, we want to keep the container running
+            if (settings.useSidecarMode) "--restart=always" else "--rm", 
+            "-w", "/app", 
+            "--cidfile", dockerManager.getCidFilePath()
         ).apply {
             if (commandData.projectPath.isNotEmpty()) {
                 add("-v")
                 add("${commandData.projectPath}:/app")
             }
-            if (commandData.isShellMode) {
+            if (commandData.isShellMode || settings.useSidecarMode) {
                 add("-t")
+            }
+            
+            // For sidecar mode, add a long-running command to keep container alive
+            if (settings.useSidecarMode) {
+                add("-d")  // Detached mode
+                add("--name", "aider-sidecar")  // Named container for easier management
             }
         }
         if (settings.mountAiderConfInDocker) {

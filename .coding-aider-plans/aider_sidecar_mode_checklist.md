@@ -22,7 +22,10 @@ See [aider_sidecar_mode.md](./aider_sidecar_mode.md) for full plan details.
 ## Integration
 
 - [x] Modify CommandExecutor to support sidecar strategy
-- [ ] Ensure Docker compatibility
+- [x] Ensure Docker compatibility
+  - [x] Add support for long-running Docker containers
+  - [x] Implement container management methods
+  - [x] Update execution strategy for sidecar mode
 - [ ] Add error handling and recovery
 - [ ] Update settings to include sidecar mode options
 
