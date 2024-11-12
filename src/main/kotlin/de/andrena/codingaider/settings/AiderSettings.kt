@@ -227,13 +227,6 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
             myState.useSidecarMode = value
         }
 
-    // Add useSidecarMode to the State class
-    data class State(
-        // ... existing properties
-        var useSidecarMode: Boolean = false, // Default to false
-        // ... other existing properties
-    )
-
     var sidecarModeStartupDelay: Int
         get() = myState.sidecarModeStartupDelay
         set(value) {
