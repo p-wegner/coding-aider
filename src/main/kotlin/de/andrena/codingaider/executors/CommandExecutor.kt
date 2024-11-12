@@ -10,6 +10,8 @@ import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.services.FileExtractorService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.ApiKeyChecker
+import de.andrena.codingaider.executors.api.AiderProcessInteractor
+import de.andrena.codingaider.executors.api.DefaultAiderProcessInteractor
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
 import java.io.File
 import java.util.concurrent.TimeUnit
@@ -36,6 +38,7 @@ class CommandExecutor(
             settings
         ) else NativeAiderExecutionStrategy(project, apiKeyChecker, settings)
     }
+    private val processInteractor: AiderProcessInteractor by lazy { DefaultAiderProcessInteractor(project) }
 
     private val aiderPlanService = project.service<AiderPlanService>()
 
@@ -45,6 +48,11 @@ class CommandExecutor(
         val fileExtractorService = FileExtractorService.getInstance()
         val extractedFiles = fileExtractorService.extractFilesIfNeeded(commandData.files)
         val updatedCommandData = commandData.copy(files = extractedFiles)
+
+        // Check if sidecar mode is enabled
+        if (settings.useSidecarMode) {
+            return executeSidecarCommand(updatedCommandData)
+        }
 
         val commandArgs = executionStrategy.buildCommand(updatedCommandData)
         logger.info("Executing Aider command: ${commandArgs.joinToString(" ")}")
@@ -76,6 +84,52 @@ class CommandExecutor(
             return handleProcessCompletion(process!!, output)
         } finally {
             executionStrategy.cleanupAfterExecution()
+        }
+    }
+
+    private fun executeSidecarCommand(commandData: CommandData): String {
+        val commandString = buildSidecarCommandString(commandData)
+        logger.info("Executing Sidecar Aider command: $commandString")
+
+        notifyObservers {
+            it.onCommandStart(
+                "Starting Sidecar Aider command...\n${
+                    commandLogger.getCommandString(
+                        false,
+                        null
+                    )
+                }"
+            )
+        }
+
+        val output = try {
+            val response = processInteractor.sendCommand(commandString)
+            val outputState = processInteractor.parseOutput(response)
+
+            if (outputState.hasError) {
+                notifyObservers { it.onCommandError(response) }
+                response
+            } else {
+                notifyObservers { it.onCommandComplete(response, 0) }
+                response
+            }
+        } catch (e: Exception) {
+            val errorMessage = "Sidecar command failed: ${e.message}"
+            logger.error(errorMessage, e)
+            notifyObservers { it.onCommandError(errorMessage) }
+            errorMessage
+        }
+
+        return commandLogger.prependCommandToOutput(output)
+    }
+
+    private fun buildSidecarCommandString(commandData: CommandData): String {
+        val fileList = commandData.files.joinToString(" ") { it.filePath }
+        return when (commandData.aiderMode) {
+            AiderMode.NORMAL -> "edit $fileList -m \"${commandData.message}\""
+            AiderMode.STRUCTURED -> "edit $fileList -m \"${project.service<AiderPlanService>().createAiderPlanSystemPrompt(commandData)}\""
+            AiderMode.ARCHITECT -> "edit $fileList -m \"/architect ${commandData.message}\""
+            else -> "edit $fileList"
         }
     }
 
