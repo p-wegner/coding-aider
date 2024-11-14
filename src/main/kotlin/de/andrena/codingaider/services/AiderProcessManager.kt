@@ -78,17 +78,11 @@ class AiderProcessManager(private val project: Project) : Disposable {
             // Read response until we get the prompt marker
             val response = StringBuilder()
             var line: String? = null
-            var promptFound = false
             while (reader?.readLine()?.also { line = it } != null) {
                 if (line?.startsWith(userPromptMarker) == true) {
-                    promptFound = true
                     break
                 }
                 response.append(line).append("\n")
-            }
-
-            if (!promptFound) {
-                logger.warn("No prompt marker found in Aider sidecar process output")
             }
 
             response.toString().trim()
