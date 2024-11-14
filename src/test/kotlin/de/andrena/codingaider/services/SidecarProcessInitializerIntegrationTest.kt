@@ -9,14 +9,16 @@ import de.andrena.codingaider.executors.api.DefaultAiderProcessInteractor
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.settings.AiderSettings
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.mockito.Mockito.*
 import org.mockito.kotlin.whenever
 
-class SidecarProcessInitializerIntegrationTest(@TempDir val tempDir: java.nio.file.Path) : BaseIntegrationTest() {
-
+class SidecarProcessInitializerIntegrationTest() : BaseIntegrationTest() {
+    @TempDir
+    private lateinit var tempDir: java.nio.file.Path
     private lateinit var project: Project
     private lateinit var settings: AiderSettings
     private val settingsService: MySettingsService = mock(MySettingsService::class.java)
@@ -67,8 +69,11 @@ class SidecarProcessInitializerIntegrationTest(@TempDir val tempDir: java.nio.fi
         // Act
         sidecarProcessInitializer.initializeSidecarProcess()
         val response = processInteractor.sendCommand("echo 'Hello, Aider!'")
-
         // Assert
         assertThat(response).contains("Hello, Aider!")
+    }
+    @AfterEach
+    fun tearDown() {
+        sidecarProcessInitializer.shutdownSidecarProcess()
     }
 }

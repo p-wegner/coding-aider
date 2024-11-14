@@ -82,9 +82,9 @@ class SidecarProcessInitializer(private val project: Project) : Disposable {
     private fun createInitializationCommandData(): CommandData {
         return CommandData(
             message = "",
-            projectPath = project.basePath ?: System.getProperty("user.home"),
+            projectPath = project.basePath ?: "",
             files = emptyList(),
-            useYesFlag = false,
+            useYesFlag = true,
             llm = settings.llm,
             additionalArgs = "",
             lintCmd = "",

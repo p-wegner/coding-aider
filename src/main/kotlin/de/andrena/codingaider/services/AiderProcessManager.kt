@@ -19,10 +19,10 @@ class AiderProcessManager(private val project: Project) : Disposable {
     private val isRunning = AtomicBoolean(false)
 
     fun startProcess(
-        command: List<String>, 
-        workingDir: String, 
-        maxIdleTime: Int = 0, 
-        autoRestart: Boolean = false, 
+        command: List<String>,
+        workingDir: String,
+        maxIdleTime: Int = 0,
+        autoRestart: Boolean = false,
         verbose: Boolean = false
     ): Boolean {
         if (isRunning.get()) {
@@ -94,6 +94,15 @@ class AiderProcessManager(private val project: Project) : Disposable {
             process?.destroy()
             isRunning.set(false)
             logger.info("Disposed Aider sidecar process")
+            // poll for process to exit for 5 seconds
+            // if it doesn't exit, forcefully kill it
+            var attempts = 0
+            while (process?.isAlive == true && attempts < 50) {
+                Thread.sleep(100)
+                attempts++
+            }
+            process?.destroyForcibly()
+            Thread.sleep(10)
         } catch (e: Exception) {
             logger.error("Error disposing Aider sidecar process", e)
         }
