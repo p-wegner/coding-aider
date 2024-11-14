@@ -11,10 +11,11 @@ import de.andrena.codingaider.settings.AiderSettings
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 import org.mockito.Mockito.*
 import org.mockito.kotlin.whenever
 
-class SidecarProcessInitializerIntegrationTest : BaseIntegrationTest() {
+class SidecarProcessInitializerIntegrationTest(@TempDir val tempDir: java.nio.file.Path) : BaseIntegrationTest() {
 
     private lateinit var project: Project
     private lateinit var settings: AiderSettings
@@ -39,7 +40,7 @@ class SidecarProcessInitializerIntegrationTest : BaseIntegrationTest() {
         whenever(project.getService(MySettingsService::class.java)).thenReturn(settingsService)
         aiderProcessManager = AiderProcessManager(project)
         whenever(project.getService(AiderProcessManager::class.java)).thenReturn(aiderProcessManager)
-        whenever(project.basePath).thenReturn("")
+        whenever(project.basePath).thenReturn(tempDir.toString())
 
         processInteractor = DefaultAiderProcessInteractor(project)
         sidecarProcessInitializer = SidecarProcessInitializer(project)
