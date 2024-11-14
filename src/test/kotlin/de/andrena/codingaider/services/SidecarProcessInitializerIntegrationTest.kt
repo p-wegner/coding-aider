@@ -1,35 +1,49 @@
 package de.andrena.codingaider.services
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import de.andrena.codingaider.command.CommandData
+import de.andrena.codingaider.command.CommandOptions
 import de.andrena.codingaider.executors.api.AiderProcessInteractor
+import de.andrena.codingaider.executors.api.DefaultAiderProcessInteractor
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.settings.AiderSettings
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
-import org.mockito.Mockito.`when`
+import org.mockito.Mockito.*
+import org.mockito.kotlin.whenever
 
-class SidecarProcessInitializerIntegrationTest : BasePlatformTestCase() {
+class SidecarProcessInitializerIntegrationTest : BaseIntegrationTest() {
 
     private lateinit var project: Project
     private lateinit var settings: AiderSettings
+    private val settingsService: MySettingsService = mock(MySettingsService::class.java)
     private lateinit var processInteractor: AiderProcessInteractor
     private lateinit var sidecarProcessInitializer: SidecarProcessInitializer
+    private lateinit var aiderProcessManager: AiderProcessManager
 
     @BeforeEach
     fun setUp() {
-        project = Mockito.mock(Project::class.java)
-        settings = Mockito.mock(AiderSettings::class.java)
-        processInteractor = Mockito.mock(AiderProcessInteractor::class.java)
+        settings = mock(AiderSettings::class.java)
+        project = mock(Project::class.java)
+        whenever(settingsService.getSettings()).thenReturn(settings)
+        whenever(settings.useSidecarMode).thenReturn(true)
+        whenever(settings.sidecarModeMaxIdleTime).thenReturn(60)
+        whenever(settings.sidecarModeAutoRestart).thenReturn(true)
+        whenever(settings.sidecarModeVerbose).thenReturn(true)
+        whenever(settings.llm).thenReturn("--4o")
+        whenever(settings.aiderExecutablePath).thenReturn("aider")
+        whenever(settings.autoCommits).thenReturn(AiderSettings.AutoCommitSetting.ON)
+        whenever(settings.dirtyCommits).thenReturn(AiderSettings.DirtyCommitSetting.ON)
+        whenever(project.getService(MySettingsService::class.java)).thenReturn(settingsService)
+        aiderProcessManager = AiderProcessManager(project)
+        whenever(project.getService(AiderProcessManager::class.java)).thenReturn(aiderProcessManager)
+        whenever(project.basePath).thenReturn("")
+
+        processInteractor = DefaultAiderProcessInteractor(project)
         sidecarProcessInitializer = SidecarProcessInitializer(project)
 
-        `when`(settings.useSidecarMode).thenReturn(true)
-        `when`(settings.sidecarModeMaxIdleTime).thenReturn(60)
-        `when`(settings.sidecarModeAutoRestart).thenReturn(true)
-        `when`(settings.sidecarModeVerbose).thenReturn(true)
     }
 
     @Test
@@ -38,13 +52,13 @@ class SidecarProcessInitializerIntegrationTest : BasePlatformTestCase() {
         val commandData = CommandData(
             message = "",
             useYesFlag = true,
-            llm = "gpt-4",
+            llm = "gpt-4o",
             additionalArgs = "",
             files = emptyList(),
             lintCmd = "",
             deactivateRepoMap = false,
             editFormat = "",
-            projectPath = project.basePath ?: System.getProperty("user.home"),
+            projectPath = project.basePath ?: "",
             options = CommandOptions.DEFAULT,
             aiderMode = AiderMode.NORMAL
         )

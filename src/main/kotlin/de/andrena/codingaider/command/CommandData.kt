@@ -29,7 +29,7 @@ data class CommandData(
     val editFormat: String = "",
     val projectPath: String,
     val options: CommandOptions = CommandOptions.DEFAULT,
-    val aiderMode: AiderMode = AiderMode.NORMAL
+    val aiderMode: AiderMode = AiderMode.NORMAL,
 ) {
 
     val isShellMode: Boolean get() = aiderMode == AiderMode.SHELL
@@ -52,7 +52,8 @@ data class CommandOptions(
     val commitHashToCompareWith: String? = null,
     val autoCloseDelay: Int? = null,
     val autoCommit: Boolean? = null,
-    val dirtyCommits: Boolean? = null
+    val dirtyCommits: Boolean? = null,
+    val sidebarMode: Boolean = false
 ) {
 
     companion object {

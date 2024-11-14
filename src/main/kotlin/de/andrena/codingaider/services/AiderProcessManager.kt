@@ -66,10 +66,10 @@ class AiderProcessManager(private val project: Project) : Disposable {
 
             // Read response until we get the prompt marker
             val response = StringBuilder()
-            var line: String?
+            var line: String? = null
             var promptFound = false
             while (reader?.readLine()?.also { line = it } != null) {
-                if (line?.contains("🤖>") == true) {
+                if (line?.contains("> ") == true) {
                     promptFound = true
                     break
                 }
