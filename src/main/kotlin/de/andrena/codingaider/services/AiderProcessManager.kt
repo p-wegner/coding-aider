@@ -45,7 +45,6 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 println(line)
                 if (line?.startsWith(userPromptMarker) == true || line?.trim() == "") {
                     isRunning.set(true)
-                    reader?.mark(20000)
                     break
                 }
             }
@@ -73,7 +72,6 @@ class AiderProcessManager(private val project: Project) : Disposable {
         }
 
         return try {
-            reader?.reset()
             writer?.write("$command\n")
             writer?.flush()
 
@@ -82,7 +80,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
             var line: String? = null
             var promptFound = false
             while (reader?.readLine()?.also { line = it } != null) {
-                if (line?.startsWith(userPromptMarker) == true) {
+                if (line?.startsWith(userPromptMarker) == true && reader?.ready() != false) {
                     promptFound = true
                     break
                 }
@@ -93,7 +91,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 logger.warn("No prompt marker found in Aider sidecar process output")
             } else {
                 // Continue reading lines after the prompt marker
-                while (reader?.readLine()?.also { line = it } != null) {
+                while (reader?.readLine()?.also { line = it } != null && line?.trim() != "") {
                     response.append(line).append("\n")
                 }
             }
