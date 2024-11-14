@@ -10,6 +10,8 @@ import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.util.concurrent.atomic.AtomicBoolean
 
+private const val s = "> "
+
 @Service(Service.Level.PROJECT)
 class AiderProcessManager(private val project: Project) : Disposable {
     private val logger = Logger.getInstance(AiderProcessManager::class.java)
@@ -55,6 +57,8 @@ class AiderProcessManager(private val project: Project) : Disposable {
         }
     }
 
+    private val userPromptMarker = "> "
+
     fun sendCommand(command: String): String {
         if (!isRunning.get()) {
             throw IllegalStateException("Aider sidecar process not running")
@@ -69,7 +73,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
             var line: String? = null
             var promptFound = false
             while (reader?.readLine()?.also { line = it } != null) {
-                if (line?.contains("> ") == true) {
+                if (line?.startsWith(userPromptMarker) == true) {
                     promptFound = true
                     break
                 }
