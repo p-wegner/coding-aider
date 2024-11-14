@@ -11,6 +11,7 @@ import de.andrena.codingaider.command.CommandOptions
 import de.andrena.codingaider.executors.SidecarAiderExecutionStrategy
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.settings.AiderSettings
+import java.nio.charset.StandardCharsets
 
 @Service(Service.Level.PROJECT)
 class SidecarProcessInitializer(private val project: Project) : Disposable {
@@ -60,7 +61,8 @@ class SidecarProcessInitializer(private val project: Project) : Disposable {
             workingDir, 
             settings.sidecarModeMaxIdleTime, 
             settings.sidecarModeAutoRestart,
-            settings.sidecarModeVerbose
+            settings.sidecarModeVerbose,
+            StandardCharsets.UTF_8
         )
 
         if (processStarted) {

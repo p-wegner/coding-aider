@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.mockito.Mockito.*
 import org.mockito.kotlin.whenever
+import java.nio.charset.StandardCharsets
 
 class SidecarProcessInitializerIntegrationTest() : BaseIntegrationTest() {
     @TempDir
@@ -69,10 +70,10 @@ class SidecarProcessInitializerIntegrationTest() : BaseIntegrationTest() {
         // Act
         sidecarProcessInitializer.initializeSidecarProcess()
 
-        val response = processInteractor.sendCommand("What is the meaning of life, the universe, and everything?")
+        val response = processInteractor.sendCommand("What is the meaning of life, the universe, and everything?", StandardCharsets.UTF_8)
         // Assert
-        val response2 = processInteractor.sendCommand("What did the fox say?")
-        val response3 = processInteractor.sendCommand("What did the fox say?")
+        val response2 = processInteractor.sendCommand("What did the fox say?", StandardCharsets.UTF_8)
+        val response3 = processInteractor.sendCommand("What did the fox say?", StandardCharsets.UTF_8)
         assertThat( response3).isEqualTo("The fox says")
     }
     @AfterEach
