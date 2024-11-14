@@ -32,6 +32,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
 
         return try {
             val processBuilder = ProcessBuilder(command)
+                .apply { environment().putIfAbsent("PYTHONIOENCODING", "utf-8") }
                 .directory(java.io.File(workingDir))
                 .redirectErrorStream(true)
 
