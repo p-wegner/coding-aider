@@ -40,7 +40,15 @@ class AiderProcessManager(private val project: Project) : Disposable {
             process = processBuilder.start()
             reader = BufferedReader(InputStreamReader(process!!.inputStream))
             writer = BufferedWriter(OutputStreamWriter(process!!.outputStream))
-            isRunning.set(true)
+
+            // Wait for the userPromptMarker before marking the process as running
+            var line: String?
+            while (reader?.readLine()?.also { line = it } != null) {
+                if (line?.startsWith(userPromptMarker) == true) {
+                    isRunning.set(true)
+                    break
+                }
+            }
 
             if (verbose) {
                 logger.info("Started Aider sidecar process with command: ${command.joinToString(" ")}")

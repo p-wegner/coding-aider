@@ -68,6 +68,8 @@ class SidecarProcessInitializerIntegrationTest() : BaseIntegrationTest() {
 
         // Act
         sidecarProcessInitializer.initializeSidecarProcess()
+        // Wait for the process to be fully initialized and the prompt marker to be detected
+        Thread.sleep(1000) // Adjust the sleep time as necessary
         val response = processInteractor.sendCommand("echo 'Hello, Aider!'")
         // Assert
         assertThat(response).contains("Hello, Aider!")
