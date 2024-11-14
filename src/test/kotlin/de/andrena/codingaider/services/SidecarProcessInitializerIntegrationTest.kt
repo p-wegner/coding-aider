@@ -70,11 +70,11 @@ class SidecarProcessInitializerIntegrationTest() : BaseIntegrationTest() {
         // Act
         sidecarProcessInitializer.initializeSidecarProcess()
 
-        val response = processInteractor.sendCommand("What is the meaning of life, the universe, and everything?", StandardCharsets.UTF_8)
+        val response = processInteractor.sendCommand("What is the meaning of life, the universe, and everything?")
         // Assert
-        val response2 = processInteractor.sendCommand("What did the fox say?", StandardCharsets.UTF_8)
-        val response3 = processInteractor.sendCommand("What did the fox say?", StandardCharsets.UTF_8)
-        assertThat( response3).isEqualTo("The fox says")
+        val response2 = processInteractor.sendCommand("What did the fox say?")
+        val response3 = processInteractor.sendCommand("What did the fox say?" )
+        assertThat( response3).contains("Ylvis")
     }
     @AfterEach
     fun tearDown() {

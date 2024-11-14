@@ -22,14 +22,14 @@ class SidecarProcessInitializer(private val project: Project) : Disposable {
 
     init {
         // Listen for settings changes
-        settings.addSettingsChangeListener { 
-            handleSettingsChange() 
+        settings.addSettingsChangeListener {
+            handleSettingsChange()
         }
     }
 
     private fun handleSettingsChange() {
         val newSidecarMode = settings.useSidecarMode
-        
+
         // Only react if sidecar mode setting has changed
         if (currentSidecarMode != newSidecarMode) {
             if (newSidecarMode) {
@@ -57,12 +57,11 @@ class SidecarProcessInitializer(private val project: Project) : Disposable {
 
         val workingDir = project.basePath ?: System.getProperty("user.home")
         val processStarted = processManager.startProcess(
-            command, 
-            workingDir, 
-            settings.sidecarModeMaxIdleTime, 
+            command,
+            workingDir,
+            settings.sidecarModeMaxIdleTime,
             settings.sidecarModeAutoRestart,
             settings.sidecarModeVerbose,
-            StandardCharsets.UTF_8
         )
 
         if (processStarted) {
