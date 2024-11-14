@@ -80,7 +80,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
             var line: String? = null
             var promptFound = false
             while (reader?.readLine()?.also { line = it } != null) {
-                if (line?.startsWith(userPromptMarker) == true && reader?.ready() != false) {
+                if (line?.startsWith(userPromptMarker) == true) {
                     promptFound = true
                     break
                 }
@@ -89,11 +89,6 @@ class AiderProcessManager(private val project: Project) : Disposable {
 
             if (!promptFound) {
                 logger.warn("No prompt marker found in Aider sidecar process output")
-            } else {
-                // Continue reading lines after the prompt marker
-                while (reader?.readLine()?.also { line = it } != null && line?.trim() != "") {
-                    response.append(line).append("\n")
-                }
             }
 
             response.toString().trim()
