@@ -82,7 +82,10 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
                 add("--commit-prompt")
                 add(getCommitPrompt())
             }
-            when (commandData.aiderMode) {
+            if (commandData.options.sidebarMode ) {
+                return@buildList
+            }
+            when (commandData.aiderMode ) {
                 AiderMode.NORMAL -> {
                     add("-m")
                     add(commandData.message)
@@ -149,7 +152,8 @@ class DockerAiderExecutionStrategy(
             // For sidecar mode, add a long-running command to keep container alive
             if (settings.useSidecarMode) {
                 add("-d")  // Detached mode
-                add("--name", "aider-sidecar")  // Named container for easier management
+                add("--name")
+                add("aider-sidecar")  // Named container for easier management
             }
         }
         if (settings.mountAiderConfInDocker) {

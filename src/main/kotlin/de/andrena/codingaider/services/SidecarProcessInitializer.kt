@@ -1,11 +1,13 @@
 package de.andrena.codingaider.services
 
+import com.intellij.ide.startup.importSettings.data.SettingsService
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
+import de.andrena.codingaider.command.CommandOptions
 import de.andrena.codingaider.executors.SidecarAiderExecutionStrategy
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.settings.AiderSettings
@@ -13,7 +15,7 @@ import de.andrena.codingaider.settings.AiderSettings
 @Service(Service.Level.PROJECT)
 class SidecarProcessInitializer(private val project: Project) : Disposable {
     private val logger = Logger.getInstance(SidecarProcessInitializer::class.java)
-    private val settings = AiderSettings.getInstance()
+    private val settings = project.service<MySettingsService>().getSettings()
     private val processManager = project.service<AiderProcessManager>()
     private var currentSidecarMode: Boolean? = null
 
@@ -79,14 +81,16 @@ class SidecarProcessInitializer(private val project: Project) : Disposable {
 
     private fun createInitializationCommandData(): CommandData {
         return CommandData(
-            message = "Initialize Aider Sidecar Mode",
+            message = "",
             projectPath = project.basePath ?: System.getProperty("user.home"),
             files = emptyList(),
             useYesFlag = false,
             llm = settings.llm,
             additionalArgs = "",
             lintCmd = "",
-            aiderMode = AiderMode.NORMAL
+            aiderMode = AiderMode.NORMAL,
+            options = CommandOptions(sidebarMode = true)
+
         )
     }
 
