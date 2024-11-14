@@ -10,8 +10,6 @@ import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.util.concurrent.atomic.AtomicBoolean
 
-private const val s = "> "
-
 @Service(Service.Level.PROJECT)
 class AiderProcessManager(private val project: Project) : Disposable {
     private val logger = Logger.getInstance(AiderProcessManager::class.java)
@@ -42,10 +40,12 @@ class AiderProcessManager(private val project: Project) : Disposable {
             writer = BufferedWriter(OutputStreamWriter(process!!.outputStream))
 
             // Wait for the userPromptMarker before marking the process as running
-            var line: String?
+            var line: String? = null
             while (reader?.readLine()?.also { line = it } != null) {
-                if (line?.startsWith(userPromptMarker) == true) {
+                println(line)
+                if (line?.startsWith(userPromptMarker) == true || line?.trim() == "") {
                     isRunning.set(true)
+                    reader?.mark(20000)
                     break
                 }
             }
@@ -73,6 +73,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
         }
 
         return try {
+            reader?.reset()
             writer?.write("$command\n")
             writer?.flush()
 
@@ -81,7 +82,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
             var line: String? = null
             var promptFound = false
             while (reader?.readLine()?.also { line = it } != null) {
-                if (line?.startsWith(userPromptMarker) == true) {
+                if (line?.startsWith(userPromptMarker) == true && false) {
                     promptFound = true
                     break
                 }
