@@ -119,26 +119,32 @@ class AiderProcessManager(private val project: Project) : Disposable {
             return Mono.error(IllegalStateException("Aider sidecar process not running"))
         }
 
-        // First subscribe to output before sending command
-        val outputMono = outputSink.asFlux()
-//            .skipWhile { it.startsWith(startupMarker) } // Skip initial prompt
-//            .takeUntil { it.startsWith(startupMarker) } // Take until next prompt
-            .reduce(StringBuilder()) { sb, line -> 
-                if (sb.isNotEmpty()) sb.append("\n")
-                sb.append(line)
-            }
-            .map { it.toString() }
-            .doOnError { e ->
-                logger.error("Error sending command to Aider sidecar process", e)
-            }
-            .filter { isRunning.get() }
-            .switchIfEmpty(Mono.error(IllegalStateException("Aider sidecar process stopped unexpectedly")))
-
-        // Then write the command
         return Mono.fromCallable {
+            // Clear any pending output
+            while (reader?.ready() == true) {
+                reader?.readLine()
+            }
+            
+            // Send the command
             writer?.write("$command\n")
             writer?.flush()
-        }.then(outputMono)
+            
+            // Collect response until we see the prompt
+            val response = StringBuilder()
+            var line: String?
+            while (reader?.readLine().also { line = it } != null) {
+                if (line == startupMarker.trim()) {
+                    break
+                }
+                if (response.isNotEmpty()) response.append("\n")
+                response.append(line)
+            }
+            response.toString()
+        }
+        .subscribeOn(Schedulers.boundedElastic())
+        .doOnError { e ->
+            logger.error("Error sending command to Aider sidecar process", e)
+        }
     }
 
     override fun dispose() {
