@@ -55,32 +55,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
             }
 
             // Wait for startup prompt
-            val isReady = Mono.create<Boolean> { sink ->
-                try {
-                    var line: String?
-                    while (reader!!.readLine().also { line = it } != null) {
-                        if (verbose) println(line)
-                        outputBuffer.append(line).append("\n")
-                        outputSink.tryEmitNext(line!!)
-                        
-                        if (line!!.trim() == startupMarker.trim() || line!!.isEmpty()) {
-                            isRunning.set(true)
-                            sink.success(true)
-                            break
-                        }
-                    }
-                } catch (e: Exception) {
-                    sink.error(e)
-                }
-            }
-            .timeout(startupTimeout)
-            .doOnError { error ->
-                logger.error("Aider sidecar process failed to become ready: ${error.message}")
-                logger.error("Output buffer:\n$outputBuffer")
-                dispose()
-            }
-            .onErrorReturn(false)
-            .block() ?: false
+            val isReady = waitForFirstUserPrompt(verbose)
 
             // Start background output processing after startup
             if (isReady) {
@@ -113,6 +88,33 @@ class AiderProcessManager(private val project: Project) : Disposable {
             false
         }
     }
+
+    private fun waitForFirstUserPrompt(verbose: Boolean): Boolean = Mono.create { sink ->
+        try {
+            var line: String?
+            while (reader!!.readLine().also { line = it } != null) {
+                if (verbose) println(line)
+                outputBuffer.append(line).append("\n")
+                outputSink.tryEmitNext(line!!)
+
+                if (line!!.trim() == startupMarker.trim() || line!!.isEmpty()) {
+                    isRunning.set(true)
+                    sink.success(true)
+                    break
+                }
+            }
+        } catch (e: Exception) {
+            sink.error(e)
+        }
+    }
+        .timeout(startupTimeout)
+        .doOnError { error ->
+            logger.error("Aider sidecar process failed to become ready: ${error.message}")
+            logger.error("Output buffer:\n$outputBuffer")
+            dispose()
+        }
+        .onErrorReturn(false)
+        .block() ?: false
 
     fun sendCommand(command: String): Mono<String> {
         if (!isRunning.get()) {
