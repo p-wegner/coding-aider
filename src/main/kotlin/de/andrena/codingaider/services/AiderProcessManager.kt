@@ -43,9 +43,8 @@ class AiderProcessManager(private val project: Project) : Disposable {
             writer = BufferedWriter(OutputStreamWriter(process!!.outputStream))
 
             // Wait for the userPromptMarker before marking the process as running
-            var line: String? = null
             val readThread = Thread {
-                var line: String?
+                var line: String? = null
                 while (reader?.readLine()?.also { line = it } != null) {
                     lineQueue.put(line!!)
                     println(line)
