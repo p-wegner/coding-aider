@@ -77,20 +77,23 @@ class AiderProcessManager(private val project: Project) : Disposable {
             writer?.flush()
 
             // Read response until we get the prompt marker
-            val response = StringBuilder()
-            var line: String? = null
-            while (reader?.readLine()?.also { line = it } != null) {
-                if (line?.startsWith(userPromptMarker) == true) {
-                    break
-                }
-                response.append(line).append("\n")
-            }
-
-            response.toString().trim()
+            readUntilPromptMarker()
         } catch (e: Exception) {
             logger.error("Error sending command to Aider sidecar process", e)
             throw e
         }
+    }
+
+    private fun readUntilPromptMarker(): String {
+        val response = StringBuilder()
+        var line: String? = null
+        while (reader?.readLine()?.also { line = it } != null && reader?.ready() == true) {
+            if (line?.startsWith(userPromptMarker) == true) {
+                break
+            }
+            response.append(line).append("\n")
+        }
+        return response.toString().trim()
     }
 
     override fun dispose() {
