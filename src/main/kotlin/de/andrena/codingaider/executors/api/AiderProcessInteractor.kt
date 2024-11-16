@@ -4,13 +4,12 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.services.AiderOutputParser
 import de.andrena.codingaider.services.AiderProcessManager
+import kotlinx.coroutines.runBlocking
 
 class DefaultAiderProcessInteractor(private val project: Project) : AiderProcessInteractor {
     private val processManager = project.service<AiderProcessManager>()
 
-    override fun sendCommand(command: String): String {
-        return processManager.sendCommand(command)
-    }
+    override fun sendCommand(command: String): String = runBlocking { processManager.sendCommand(command) }
 
     override fun parseOutput(output: String): AiderOutputState {
         return AiderOutputParser.parseOutput(output)
