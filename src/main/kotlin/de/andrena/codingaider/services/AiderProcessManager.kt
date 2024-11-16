@@ -4,7 +4,6 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
-import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.publisher.Sinks
 import reactor.core.scheduler.Schedulers
@@ -25,48 +24,21 @@ class AiderProcessManager(private val project: Project) : Disposable {
     private val isRunning = AtomicBoolean(false)
     private val commandPrompt = "> "
     private val startupTimeout = Duration.ofSeconds(60)
-
-    private fun setupOutputProcessing(verbose: Boolean) {
-        Flux.create<String> { sink ->
-            try {
-                while (isRunning.get() && reader != null) {
-                    val line = reader!!.readLine()
-                    if (line != null) {
-                        if (verbose) println(line)
-                        sink.next(line)
-
-                    } else {
-                        sink.complete()
-                        break
-                    }
-                }
-            } catch (e: Exception) {
-                sink.error(e)
-            }
-        }
-            .publishOn(Schedulers.boundedElastic())
-            .doOnNext { line -> outputSink.tryEmitNext(line) }
-            .doOnError { e -> logger.error("Error reading from Aider process", e) }
-            .subscribe()
-    }
+    private var verbose: Boolean = false
 
     fun startProcess(
         command: List<String>,
         workingDir: String,
-        maxIdleTime: Int = 0,
-        autoRestart: Boolean = false,
         verbose: Boolean = false
     ): Boolean {
         synchronized(this) {
+            this.verbose = verbose
             if (isRunning.get()) {
                 logger.info("Aider sidecar process already running")
                 return true
             }
 
             return try {
-                // Start output processing before anything else
-                setupOutputProcessing(verbose)
-
                 val processBuilder = ProcessBuilder(command)
                     .apply { environment().putIfAbsent("PYTHONIOENCODING", "utf-8") }
                     .directory(java.io.File(workingDir))
@@ -81,11 +53,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
                     logger.info("Working directory: $workingDir")
                 }
 
-                // Wait for startup prompt
-                waitForFirstUserPrompt(verbose).also {
-                    // Clear any pending output
-//                    Thread.sleep(1000)
-                }
+                waitForFirstUserPrompt()
 
             } catch (e: Exception) {
                 logger.error("Failed to start Aider sidecar process", e)
@@ -94,13 +62,13 @@ class AiderProcessManager(private val project: Project) : Disposable {
         }
     }
 
-    private fun waitForFirstUserPrompt(verbose: Boolean): Boolean =
+    private fun waitForFirstUserPrompt(): Boolean =
         Mono.create { sink ->
             try {
                 var line: String?
                 reader?.readLine()
                 while (reader!!.readLine().also { line = it } != null) {
-                    if (verbose) println(line)
+                    if (verbose) logger.info(line)
                     outputSink.tryEmitNext(line!!)
 
                     if (line!!.isEmpty()) {
@@ -121,7 +89,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
             .onErrorReturn(false)
             .block() ?: false
 
-    fun sendCommand(command: String): Mono<String> {
+    fun sendCommand(command: String,firstCommand: Boolean = false): Mono<String> {
         if (!isRunning.get()) {
             return Mono.error(IllegalStateException("Aider sidecar process not running"))
         }
@@ -135,15 +103,24 @@ class AiderProcessManager(private val project: Project) : Disposable {
 
                     // Collect response until we see the prompt
                     val response = StringBuilder()
-//                    reader?.readLine()
-//                    reader?.readLine()
+                    var commandPromptCount = 0
                     var line: String?
                     while (reader?.readLine().also { line = it } != null) {
-                        if (response.isNotEmpty()) response.append("\n")
-                        response.append(line)
-                        if (line == commandPrompt) {
-                            sink.success(response.toString())
-                            return@synchronized
+                        if (verbose) logger.info(line)
+                        if (response.isNotEmpty() && !line!!.isPromptLine()) response.append("\n")
+                        if (!line!!.isPromptLine()) response.append(line)
+
+                        if (line == commandPrompt) commandPromptCount++
+                        if ( firstCommand){
+                            if ( commandPromptCount > 1 &&  line!!.isEmpty()) {
+                                sink.success(response.toString())
+                                return@synchronized
+                            }
+                        } else {
+                            if ( commandPromptCount > 0 &&  line!!.isEmpty()) {
+                                sink.success(response.toString())
+                                return@synchronized
+                            }
                         }
                     }
                     sink.error(IllegalStateException("Process terminated while waiting for response"))
@@ -156,16 +133,6 @@ class AiderProcessManager(private val project: Project) : Disposable {
             .doOnError { e ->
                 logger.error("Error sending command to Aider sidecar process", e)
             }
-    }
-
-    private fun skipToNextPromptMarker() {
-        while (reader?.ready() == true) {
-            val readLine = reader?.readLine()
-            println(readLine)
-            if (readLine != null && readLine == commandPrompt) {
-                break
-            }
-        }
     }
 
     override fun dispose() {
@@ -206,4 +173,5 @@ class AiderProcessManager(private val project: Project) : Disposable {
             }
         }
     }
+    private fun String.isPromptLine() = this == commandPrompt
 }

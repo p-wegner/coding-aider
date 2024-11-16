@@ -1,12 +1,8 @@
 package de.andrena.codingaider.services
 
-import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import de.andrena.codingaider.command.CommandData
-import de.andrena.codingaider.command.CommandOptions
 import de.andrena.codingaider.executors.api.AiderProcessInteractor
 import de.andrena.codingaider.executors.api.DefaultAiderProcessInteractor
-import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.settings.AiderSettings
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -15,7 +11,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.mockito.Mockito.*
 import org.mockito.kotlin.whenever
-import java.nio.charset.StandardCharsets
 
 class SidecarProcessInitializerIntegrationTest() : BaseIntegrationTest() {
     @TempDir
@@ -52,34 +47,14 @@ class SidecarProcessInitializerIntegrationTest() : BaseIntegrationTest() {
 
     @Test
     fun testStartAiderWithoutMessageOptionAndSendCommand() {
-        // Arrange
-        val commandData = CommandData(
-            message = "",
-            useYesFlag = true,
-            llm = "gpt-4o",
-            additionalArgs = "",
-            files = emptyList(),
-            lintCmd = "",
-            deactivateRepoMap = false,
-            editFormat = "",
-            projectPath = project.basePath ?: "",
-            options = CommandOptions.DEFAULT,
-            aiderMode = AiderMode.NORMAL
-        )
-
-        // Act
         sidecarProcessInitializer.initializeSidecarProcess()
 
-        // Wait a bit for process to be fully ready
-        Thread.sleep(2000)
-        
-        // Act - Send first command
-        val response1 = processInteractor.sendCommand("What is the meaning of life, the universe, and everything?")
-        assertThat(response1).isNotEmpty()
-        
-        // Send second command
+        val response1 = processInteractor.sendCommand("What is the meaning of life, the universe, and everything?", true)
+        assertThat(response1).contains("The Hitchhiker's Guide to the Galaxy")
+
         val response2 = processInteractor.sendCommand("What did the fox say?")
-        assertThat(response2).isNotEmpty()
+        assertThat(response2).contains("Ylvis")
+        tearDown()
     }
     @AfterEach
     fun tearDown() {
