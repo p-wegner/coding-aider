@@ -131,20 +131,6 @@ class AiderProcessManager(private val project: Project) : Disposable {
             writer?.write("$command\n")
             writer?.flush()
         }.then(outputMono)
-            outputSink.asFlux()
-                .skipWhile { it.startsWith(userPromptMarker) } // Skip initial prompt
-                .takeUntil { it.startsWith(userPromptMarker) } // Take until next prompt
-                .reduce(StringBuilder()) { sb, line -> 
-                    if (sb.isNotEmpty()) sb.append("\n")
-                    sb.append(line)
-                }
-                .map { it.toString() }
-                .doOnError { e ->
-                    logger.error("Error sending command to Aider sidecar process", e)
-                }
-                .filter { isRunning.get() }
-                .switchIfEmpty(Mono.error(IllegalStateException("Aider sidecar process stopped unexpectedly")))
-        )
     }
 
     override fun dispose() {
