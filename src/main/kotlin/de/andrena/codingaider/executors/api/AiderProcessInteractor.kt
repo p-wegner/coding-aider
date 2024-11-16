@@ -4,13 +4,17 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.services.AiderOutputParser
 import de.andrena.codingaider.services.AiderProcessManager
-import kotlinx.coroutines.runBlocking
+import reactor.core.publisher.Flux
 
 class DefaultAiderProcessInteractor(private val project: Project) : AiderProcessInteractor {
     private val processManager = project.service<AiderProcessManager>()
 
-    override fun sendCommand(command: String, firstCommand: Boolean): String = processManager.sendCommand(command,firstCommand)
+    override fun sendCommandSync(command: String, firstCommand: Boolean): String = processManager.sendCommand(command,firstCommand)
         .block() ?: throw IllegalStateException("No response received from Aider process")
+
+    override fun sendCommandAsync(command: String, firstCommand: Boolean): Flux<String> {
+        return processManager.sendCommandAsync(command,firstCommand)
+    }
 
     override fun parseOutput(output: String): AiderOutputState {
         return AiderOutputParser.parseOutput(output)
@@ -23,7 +27,8 @@ class DefaultAiderProcessInteractor(private val project: Project) : AiderProcess
 
 interface AiderProcessInteractor {
 
-    fun sendCommand(command: String, firstCommand: Boolean = false): String
+    fun sendCommandSync(command: String, firstCommand: Boolean = false): String
+    fun sendCommandAsync(command: String, firstCommand: Boolean = false): Flux<String>
     fun parseOutput(output: String): AiderOutputState
     fun isReadyForCommand(): Boolean
 }
