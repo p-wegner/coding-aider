@@ -51,9 +51,9 @@ class AiderProcessManager(private val project: Project) : Disposable {
             Flux.fromStream { reader!!.lines() }
                 .publishOn(Schedulers.boundedElastic())
                 .doOnNext { line ->
+                    if (verbose) println(line)
                     outputSink.tryEmitNext(line)
-                    println(line)
-                    if (line.startsWith(userPromptMarker) || line.trim().isEmpty()) {
+                    if (line.startsWith(userPromptMarker)) {
                         isRunning.set(true)
                     }
                 }
@@ -96,9 +96,13 @@ class AiderProcessManager(private val project: Project) : Disposable {
             writer?.flush()
         }.then(
             outputSink.asFlux()
-                .takeUntil { it.startsWith(userPromptMarker) }
-                .reduce(StringBuilder()) { sb, line -> sb.append(line).append("\n") }
-                .map { it.toString().trim() }
+                .skipWhile { it.startsWith(userPromptMarker) } // Skip initial prompt
+                .takeUntil { it.startsWith(userPromptMarker) } // Take until next prompt
+                .reduce(StringBuilder()) { sb, line -> 
+                    if (sb.isNotEmpty()) sb.append("\n")
+                    sb.append(line)
+                }
+                .map { it.toString() }
                 .doOnError { e ->
                     logger.error("Error sending command to Aider sidecar process", e)
                 }
