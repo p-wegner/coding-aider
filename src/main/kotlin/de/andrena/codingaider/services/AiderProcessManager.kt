@@ -119,7 +119,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
             return Mono.error(IllegalStateException("Aider sidecar process not running"))
         }
 
-        return Mono.fromCallable {
+       return Mono.fromCallable {
             // Clear any pending output
             while (reader?.ready() == true) {
                 reader?.readLine()
