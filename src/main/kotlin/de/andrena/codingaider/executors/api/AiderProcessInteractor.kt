@@ -17,9 +17,7 @@ class DefaultAiderProcessInteractor(private val project: Project) : AiderProcess
     }
 
     override fun isReadyForCommand(): Boolean {
-        // TODO: Implement actual readiness check
-        processManager.isReadyForCommand()
-        return true
+        return processManager.isReadyForCommand()
     }
 }
 

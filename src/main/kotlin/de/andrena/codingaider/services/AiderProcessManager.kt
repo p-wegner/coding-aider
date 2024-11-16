@@ -23,7 +23,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
     private var writer: BufferedWriter? = null
     private val outputSink = Sinks.many().multicast().onBackpressureBuffer<String>()
     private val isRunning = AtomicBoolean(false)
-    private val startupMarker = "> "
+    private val commandPrompt = "> "
     private val startupTimeout = Duration.ofSeconds(60)
 
     private fun setupOutputProcessing(verbose: Boolean) {
@@ -103,9 +103,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
                     if (verbose) println(line)
                     outputSink.tryEmitNext(line!!)
 
-                    if (line!!.trim() == startupMarker
-                        || line!!.isEmpty()
-                        ) {
+                    if (line!!.isEmpty()) {
                         isRunning.set(true)
                         sink.success(true)
                         break
@@ -143,7 +141,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
                     while (reader?.readLine().also { line = it } != null) {
                         if (response.isNotEmpty()) response.append("\n")
                         response.append(line)
-                        if (line == startupMarker || line?.isEmpty() == true) {
+                        if (line == commandPrompt) {
                             sink.success(response.toString())
                             return@synchronized
                         }
@@ -164,11 +162,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
         while (reader?.ready() == true) {
             val readLine = reader?.readLine()
             println(readLine)
-            if (readLine != null && (
-                        readLine == startupMarker
-                                || readLine.isEmpty()
-                        )
-            ) {
+            if (readLine != null && readLine == commandPrompt) {
                 break
             }
         }
