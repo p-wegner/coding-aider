@@ -9,7 +9,8 @@ import kotlinx.coroutines.runBlocking
 class DefaultAiderProcessInteractor(private val project: Project) : AiderProcessInteractor {
     private val processManager = project.service<AiderProcessManager>()
 
-    override fun sendCommand(command: String): String = runBlocking { processManager.sendCommand(command) }
+    override fun sendCommand(command: String): String = processManager.sendCommand(command)
+        .block() ?: throw IllegalStateException("No response received from Aider process")
 
     override fun parseOutput(output: String): AiderOutputState {
         return AiderOutputParser.parseOutput(output)
