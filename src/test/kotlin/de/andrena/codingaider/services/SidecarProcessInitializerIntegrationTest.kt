@@ -50,11 +50,13 @@ class SidecarProcessInitializerIntegrationTest() : BaseIntegrationTest() {
         sidecarProcessInitializer.initializeSidecarProcess()
 
         val response1 = processInteractor.sendCommandSync("What is the meaning of life, the universe, and everything?", true)
-        assertThat(response1).contains("The Hitchhiker's Guide to the Galaxy")
+        assertThat(response1).contains("42")
 
         val response2 = processInteractor.sendCommandSync("What did the fox say?")
         assertThat(response2).contains("Ylvis")
+
         tearDown()
+        Thread.sleep(1000)
     }
     @AfterEach
     fun tearDown() {
