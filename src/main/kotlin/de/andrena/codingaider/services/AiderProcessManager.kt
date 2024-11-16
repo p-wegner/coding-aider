@@ -136,6 +136,50 @@ class AiderProcessManager(private val project: Project) : Disposable {
             }
     }
 
+    fun sendCommandAsync(command: String, firstCommand: Boolean): Flux<String> {
+        if (!isRunning.get()) {
+            return Flux.error(IllegalStateException("Aider sidecar process not running"))
+        }
+
+        return Flux.create { sink ->
+            synchronized(this) {
+                try {
+                    writer?.write("$command\n")
+                    writer?.flush()
+
+                    var commandPromptCount = 0
+                    var line: String?
+                    while (reader?.readLine().also { line = it } != null) {
+                        if (verbose) logger.info(line)
+                        if (!line!!.isPromptLine() && line!!.isNotEmpty()) {
+                            sink.next(line!!)
+                        }
+
+                        if (line == commandPrompt) commandPromptCount++
+                        if (firstCommand) {
+                            if (commandPromptCount > 0 && line!!.isEmpty()) {
+                                sink.complete()
+                                return@synchronized
+                            }
+                        } else {
+                            if (commandPromptCount > 0 && line!!.isEmpty()) {
+                                sink.complete()
+                                return@synchronized
+                            }
+                        }
+                    }
+                    sink.error(IllegalStateException("Process terminated while waiting for response"))
+                } catch (e: Exception) {
+                    sink.error(e)
+                }
+            }
+        }
+            .subscribeOn(Schedulers.boundedElastic())
+            .doOnError { e ->
+                logger.error("Error sending async command to Aider sidecar process", e)
+            }
+    }
+
     override fun dispose() {
         synchronized(this) {
             try {
@@ -160,62 +204,19 @@ class AiderProcessManager(private val project: Project) : Disposable {
             }
         }
     }
-
     fun isReadyForCommand(): Boolean {
         synchronized(this) {
             if (process?.isAlive != true) return false
             if (!isRunning.get()) return false
-            return try {
-                writer?.let { it.write("\n"); it.flush() }
-                true
-            } catch (e: Exception) {
-                logger.error("Error checking process readiness", e)
-                false
-            }
+            return true
+//            return try {
+//                writer?.let { it.write("\n"); it.flush() }
+//                true
+//            } catch (e: Exception) {
+//                logger.error("Error checking process readiness", e)
+//                false
+//            }
         }
     }
     private fun String.isPromptLine() = this == commandPrompt
-    fun sendCommandAsync(command: String, firstCommand: Boolean): Flux<String> {
-        if (!isRunning.get()) {
-            return Flux.error(IllegalStateException("Aider sidecar process not running"))
-        }
-
-        return Flux.create { sink ->
-            synchronized(this) {
-                try {
-                    writer?.write("$command\n")
-                    writer?.flush()
-
-                    var commandPromptCount = 0
-                    var line: String?
-                    while (reader?.readLine().also { line = it } != null) {
-                        if (verbose) logger.info(line)
-                        if (!line!!.isPromptLine()) {
-                            sink.next(line)
-                        }
-
-                        if (line == commandPrompt) commandPromptCount++
-                        if (firstCommand) {
-                            if (commandPromptCount > 1 && line!!.isEmpty()) {
-                                sink.complete()
-                                return@synchronized
-                            }
-                        } else {
-                            if (commandPromptCount > 0 && line!!.isEmpty()) {
-                                sink.complete()
-                                return@synchronized
-                            }
-                        }
-                    }
-                    sink.error(IllegalStateException("Process terminated while waiting for response"))
-                } catch (e: Exception) {
-                    sink.error(e)
-                }
-            }
-        }
-        .subscribeOn(Schedulers.boundedElastic())
-        .doOnError { e ->
-            logger.error("Error sending async command to Aider sidecar process", e)
-        }
-    }
 }

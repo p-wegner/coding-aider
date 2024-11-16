@@ -9,11 +9,15 @@ import reactor.core.publisher.Flux
 class DefaultAiderProcessInteractor(private val project: Project) : AiderProcessInteractor {
     private val processManager = project.service<AiderProcessManager>()
 
-    override fun sendCommandSync(command: String, firstCommand: Boolean): String = processManager.sendCommand(command,firstCommand)
-        .block() ?: throw IllegalStateException("No response received from Aider process")
+    override fun sendCommandSync(command: String, firstCommand: Boolean): String =
+        processManager.sendCommandAsync(command, firstCommand)
+            .collectList()
+            .block()
+            ?.joinToString("\n") ?: throw IllegalStateException("No response received from Aider process")
+
 
     override fun sendCommandAsync(command: String, firstCommand: Boolean): Flux<String> {
-        return processManager.sendCommandAsync(command,firstCommand)
+        return processManager.sendCommandAsync(command, firstCommand)
     }
 
     override fun parseOutput(output: String): AiderOutputState {
