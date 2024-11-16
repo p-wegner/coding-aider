@@ -86,19 +86,18 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 .repeatWhen { it.delayElements(Duration.ofMillis(100)) }
                 .takeUntil { it }
                 .timeout(startupTimeout)
-                .doOnNext { ready -> 
+                .doOnNext { ready ->
                     if (ready) {
                         isRunning.set(true)
                         logger.info("Aider sidecar process started and ready (found all startup markers)")
                     }
                 }
-                .onErrorResume { error -> 
+                .onErrorResume { error ->
                     logger.error("Aider sidecar process failed to become ready within timeout. Found markers: ${startupMarkersFound.joinToString()}")
                     dispose()
                     Mono.just(false)
                 }
-                .blockOptional()
-                .orElse(false)
+                .blockFirst()?: false
 
             isReady
         } catch (e: Exception) {
