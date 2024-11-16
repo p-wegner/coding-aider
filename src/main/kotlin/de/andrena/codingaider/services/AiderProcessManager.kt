@@ -67,6 +67,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
             }
 
             logger.info("Started Aider sidecar process")
+            // TODO: wait for process to be running, i.e. wait for userPromptMarker
             true
         } catch (e: Exception) {
             logger.error("Failed to start Aider sidecar process", e)
