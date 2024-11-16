@@ -27,6 +27,29 @@ class AiderProcessManager(private val project: Project) : Disposable {
     private val startupTimeout = Duration.ofSeconds(60)
     private val outputBuffer = StringBuilder()
 
+    private fun setupOutputProcessing(verbose: Boolean) {
+        Flux.create<String> { sink ->
+            try {
+                while (isRunning.get() && reader != null) {
+                    val line = reader!!.readLine()
+                    if (line != null) {
+                        if (verbose) println(line)
+                        sink.next(line)
+                    } else {
+                        sink.complete()
+                        break
+                    }
+                }
+            } catch (e: Exception) {
+                sink.error(e)
+            }
+        }
+        .publishOn(Schedulers.boundedElastic())
+        .doOnNext { line -> outputSink.tryEmitNext(line) }
+        .doOnError { e -> logger.error("Error reading from Aider process", e) }
+        .subscribe()
+    }
+
     fun startProcess(
         command: List<String>,
         workingDir: String,
@@ -34,55 +57,32 @@ class AiderProcessManager(private val project: Project) : Disposable {
         autoRestart: Boolean = false,
         verbose: Boolean = false
     ): Boolean {
-        if (isRunning.get()) {
-            logger.info("Aider sidecar process already running")
-            return true
-        }
-
-        return try {
-            val processBuilder = ProcessBuilder(command)
-                .apply { environment().putIfAbsent("PYTHONIOENCODING", "utf-8") }
-                .directory(java.io.File(workingDir))
-                .redirectErrorStream(true)
-
-            process = processBuilder.start()
-            reader = BufferedReader(InputStreamReader(process!!.inputStream))
-            writer = BufferedWriter(OutputStreamWriter(process!!.outputStream))
-
-            if (verbose) {
-                logger.info("Started Aider sidecar process with command: ${command.joinToString(" ")}")
-                logger.info("Working directory: $workingDir")
+        synchronized(this) {
+            if (isRunning.get()) {
+                logger.info("Aider sidecar process already running")
+                return true
             }
 
-            // Wait for startup prompt
-            val isReady = waitForFirstUserPrompt(verbose)
+            return try {
+                // Start output processing before anything else
+                setupOutputProcessing(verbose)
+                
+                val processBuilder = ProcessBuilder(command)
+                    .apply { environment().putIfAbsent("PYTHONIOENCODING", "utf-8") }
+                    .directory(java.io.File(workingDir))
+                    .redirectErrorStream(true)
 
-            // Start background output processing after startup
-            if (isReady) {
-                // Use buffered reading with backpressure
-                Flux.create<String> { sink ->
-                    try {
-                        while (isRunning.get() && reader != null) {
-                            val line = reader!!.readLine()
-                            if (line != null) {
-                                if (verbose) println(line)
-                                sink.next(line)
-                            } else {
-                                sink.complete()
-                                break
-                            }
-                        }
-                    } catch (e: Exception) {
-                        sink.error(e)
-                    }
+                process = processBuilder.start()
+                reader = BufferedReader(InputStreamReader(process!!.inputStream))
+                writer = BufferedWriter(OutputStreamWriter(process!!.outputStream))
+
+                if (verbose) {
+                    logger.info("Started Aider sidecar process with command: ${command.joinToString(" ")}")
+                    logger.info("Working directory: $workingDir")
                 }
-                .publishOn(Schedulers.boundedElastic())
-                .doOnNext { line -> outputSink.tryEmitNext(line) }
-                .doOnError { e -> logger.error("Error reading from Aider process", e) }
-                .subscribe()
-            }
 
-            isReady
+                // Wait for startup prompt
+                waitForFirstUserPrompt(verbose)
         } catch (e: Exception) {
             logger.error("Failed to start Aider sidecar process", e)
             false
@@ -121,28 +121,33 @@ class AiderProcessManager(private val project: Project) : Disposable {
             return Mono.error(IllegalStateException("Aider sidecar process not running"))
         }
 
-       return Mono.fromCallable {
+        return Mono.create<String> { sink ->
             synchronized(this) {
-                // Clear any pending output
-                while (reader?.ready() == true) {
-                    reader?.readLine()
-                }
-                
-                // Send the command
-                writer?.write("$command\n")
-                writer?.flush()
-                
-                // Collect response until we see the prompt
-                val response = StringBuilder()
-                var line: String?
-                while (reader?.readLine().also { line = it } != null) {
-                    if (line?.trim() == startupMarker) {
-                        break
+                try {
+                    // Clear any pending output
+                    while (reader?.ready() == true) {
+                        reader?.readLine()
                     }
-                    if (response.isNotEmpty()) response.append("\n")
-                    response.append(line)
+                    
+                    // Send the command
+                    writer?.write("$command\n")
+                    writer?.flush()
+                    
+                    // Collect response until we see the prompt
+                    val response = StringBuilder()
+                    var line: String?
+                    while (reader?.readLine().also { line = it } != null) {
+                        if (line?.trim() == startupMarker) {
+                            sink.success(response.toString())
+                            return@synchronized
+                        }
+                        if (response.isNotEmpty()) response.append("\n")
+                        response.append(line)
+                    }
+                    sink.error(IllegalStateException("Process terminated while waiting for response"))
+                } catch (e: Exception) {
+                    sink.error(e)
                 }
-                response.toString()
             }
         }
         .subscribeOn(Schedulers.boundedElastic())
@@ -152,30 +157,41 @@ class AiderProcessManager(private val project: Project) : Disposable {
     }
 
     override fun dispose() {
-        try {
-            outputSink.tryEmitComplete()
-            writer?.close()
-            reader?.close()
-            process?.destroy()
-            isRunning.set(false)
-            logger.info("Disposed Aider sidecar process")
+        synchronized(this) {
+            try {
+                isRunning.set(false)
+                outputSink.tryEmitComplete()
+                writer?.close()
+                reader?.close()
+                process?.destroy()
+                logger.info("Disposed Aider sidecar process")
 
-            // Wait for process to terminate
-            Mono.fromCallable { process?.isAlive == true }
-                .repeatWhen { it.delayElements(Duration.ofMillis(100)) }
-                .takeUntil { !it }
-                .timeout(Duration.ofSeconds(5))
-                .doFinally {
-                    process?.destroyForcibly()
-                }
-                .subscribe()
-        } catch (e: Exception) {
-            logger.error("Error disposing Aider sidecar process", e)
+                // Wait for process to terminate
+                Mono.fromCallable { process?.isAlive == true }
+                    .repeatWhen { it.delayElements(Duration.ofMillis(100)) }
+                    .takeUntil { !it }
+                    .timeout(Duration.ofSeconds(5))
+                    .doFinally {
+                        process?.destroyForcibly()
+                    }
+                    .subscribe()
+            } catch (e: Exception) {
+                logger.error("Error disposing Aider sidecar process", e)
+            }
         }
     }
 
     fun isReadyForCommand(): Boolean {
-        if (process?.isAlive != true) return false
-        return isRunning.get()
+        synchronized(this) {
+            if (process?.isAlive != true) return false
+            if (!isRunning.get()) return false
+            return try {
+                writer?.let { it.write("\n"); it.flush() }
+                true
+            } catch (e: Exception) {
+                logger.error("Error checking process readiness", e)
+                false
+            }
+        }
     }
 }
