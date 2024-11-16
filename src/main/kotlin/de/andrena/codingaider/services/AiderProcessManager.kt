@@ -90,7 +90,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
             .onErrorReturn(false)
             .block() ?: false
 
-    fun sendCommand(command: String,firstCommand: Boolean = false): Mono<String> {
+    fun sendCommand(command: String, firstCommand: Boolean = false): Mono<String> {
         if (!isRunning.get()) {
             return Mono.error(IllegalStateException("Aider sidecar process not running"))
         }
@@ -112,13 +112,13 @@ class AiderProcessManager(private val project: Project) : Disposable {
                         if (!line!!.isPromptLine()) response.append(line)
 
                         if (line == commandPrompt) commandPromptCount++
-                        if ( firstCommand){
-                            if ( commandPromptCount > 1 &&  line!!.isEmpty()) {
+                        if (firstCommand) {
+                            if (commandPromptCount > 1 && line!!.isEmpty()) {
                                 sink.success(response.toString())
                                 return@synchronized
                             }
                         } else {
-                            if ( commandPromptCount > 0 &&  line!!.isEmpty()) {
+                            if (commandPromptCount > 0 && line!!.isEmpty()) {
                                 sink.success(response.toString())
                                 return@synchronized
                             }
@@ -136,7 +136,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
             }
     }
 
-    fun sendCommandAsync(command: String, firstCommand: Boolean): Flux<String> {
+    fun sendCommandAsync(command: String): Flux<String> {
         if (!isRunning.get()) {
             return Flux.error(IllegalStateException("Aider sidecar process not running"))
         }
@@ -156,16 +156,9 @@ class AiderProcessManager(private val project: Project) : Disposable {
                         }
 
                         if (line == commandPrompt) commandPromptCount++
-                        if (firstCommand) {
-                            if (commandPromptCount > 0 && line!!.isEmpty()) {
-                                sink.complete()
-                                return@synchronized
-                            }
-                        } else {
-                            if (commandPromptCount > 0 && line!!.isEmpty()) {
-                                sink.complete()
-                                return@synchronized
-                            }
+                        if (commandPromptCount > 0 && line!!.isEmpty()) {
+                            sink.complete()
+                            return@synchronized
                         }
                     }
                     sink.error(IllegalStateException("Process terminated while waiting for response"))
@@ -204,19 +197,14 @@ class AiderProcessManager(private val project: Project) : Disposable {
             }
         }
     }
+
     fun isReadyForCommand(): Boolean {
         synchronized(this) {
             if (process?.isAlive != true) return false
             if (!isRunning.get()) return false
             return true
-//            return try {
-//                writer?.let { it.write("\n"); it.flush() }
-//                true
-//            } catch (e: Exception) {
-//                logger.error("Error checking process readiness", e)
-//                false
-//            }
         }
     }
+
     private fun String.isPromptLine() = this == commandPrompt
 }
