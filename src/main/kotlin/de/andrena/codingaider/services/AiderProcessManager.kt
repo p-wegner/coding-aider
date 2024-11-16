@@ -44,10 +44,10 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 sink.error(e)
             }
         }
-        .publishOn(Schedulers.boundedElastic())
-        .doOnNext { line -> outputSink.tryEmitNext(line) }
-        .doOnError { e -> logger.error("Error reading from Aider process", e) }
-        .subscribe()
+            .publishOn(Schedulers.boundedElastic())
+            .doOnNext { line -> outputSink.tryEmitNext(line) }
+            .doOnError { e -> logger.error("Error reading from Aider process", e) }
+            .subscribe()
     }
 
     fun startProcess(
@@ -66,7 +66,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
             return try {
                 // Start output processing before anything else
                 setupOutputProcessing(verbose)
-                
+
                 val processBuilder = ProcessBuilder(command)
                     .apply { environment().putIfAbsent("PYTHONIOENCODING", "utf-8") }
                     .directory(java.io.File(workingDir))
@@ -83,9 +83,10 @@ class AiderProcessManager(private val project: Project) : Disposable {
 
                 // Wait for startup prompt
                 waitForFirstUserPrompt(verbose)
-        } catch (e: Exception) {
-            logger.error("Failed to start Aider sidecar process", e)
-            false
+            } catch (e: Exception) {
+                logger.error("Failed to start Aider sidecar process", e)
+                false
+            }
         }
     }
 
@@ -97,7 +98,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 outputBuffer.append(line).append("\n")
                 outputSink.tryEmitNext(line!!)
 
-                if (line!!.trim() == startupMarker) {
+                if (line!!.trim() == startupMarker || line!!.isEmpty()) {
                     isRunning.set(true)
                     sink.success(true)
                     break
@@ -126,18 +127,23 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 try {
                     // Clear any pending output
                     while (reader?.ready() == true) {
-                        reader?.readLine()
+                        val readLine = reader?.readLine()
+                        println(readLine)
+                        if (readLine != null && readLine == startupMarker) {
+                            break
+                        }
                     }
-                    
+
                     // Send the command
                     writer?.write("$command\n")
                     writer?.flush()
-                    
+
                     // Collect response until we see the prompt
                     val response = StringBuilder()
                     var line: String?
+
                     while (reader?.readLine().also { line = it } != null) {
-                        if (line?.trim() == startupMarker) {
+                        if (line?.trim() == startupMarker || line?.isEmpty() == true) {
                             sink.success(response.toString())
                             return@synchronized
                         }
@@ -150,10 +156,10 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 }
             }
         }
-        .subscribeOn(Schedulers.boundedElastic())
-        .doOnError { e ->
-            logger.error("Error sending command to Aider sidecar process", e)
-        }
+            .subscribeOn(Schedulers.boundedElastic())
+            .doOnError { e ->
+                logger.error("Error sending command to Aider sidecar process", e)
+            }
     }
 
     override fun dispose() {
