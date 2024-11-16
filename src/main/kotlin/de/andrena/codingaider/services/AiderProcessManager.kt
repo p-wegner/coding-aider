@@ -70,8 +70,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
             val isReady = Mono.fromCallable { isRunning.get() }
                 .repeatWhen { it.delayElements(Duration.ofMillis(100)) }
                 .takeUntil { it }
-                .timeout(Duration.ofSeconds(30))
-                .block() ?: false
+                .blockFirst(Duration.ofSeconds(30)) ?: false
 
             if (isReady) {
                 logger.info("Aider sidecar process started and ready")
