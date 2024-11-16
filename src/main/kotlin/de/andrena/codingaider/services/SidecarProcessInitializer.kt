@@ -1,6 +1,5 @@
 package de.andrena.codingaider.services
 
-import com.intellij.ide.startup.importSettings.data.SettingsService
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
@@ -10,8 +9,6 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.CommandOptions
 import de.andrena.codingaider.executors.SidecarAiderExecutionStrategy
 import de.andrena.codingaider.inputdialog.AiderMode
-import de.andrena.codingaider.settings.AiderSettings
-import java.nio.charset.StandardCharsets
 
 @Service(Service.Level.PROJECT)
 class SidecarProcessInitializer(private val project: Project) : Disposable {
@@ -59,8 +56,6 @@ class SidecarProcessInitializer(private val project: Project) : Disposable {
         val processStarted = processManager.startProcess(
             command,
             workingDir,
-            settings.sidecarModeMaxIdleTime,
-            settings.sidecarModeAutoRestart,
             settings.sidecarModeVerbose,
         )
 
