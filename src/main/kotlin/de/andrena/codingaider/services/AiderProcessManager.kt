@@ -28,6 +28,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
         "Repo-map:",
         "> "
     )
+    private val userPromptMarker = "> "
     private var startupMarkersFound = mutableSetOf<String>()
     private val startupTimeout = Duration.ofSeconds(60)
 
@@ -85,18 +86,19 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 .repeatWhen { it.delayElements(Duration.ofMillis(100)) }
                 .takeUntil { it }
                 .timeout(startupTimeout)
-                .doOnSuccess { 
-                    if (it) {
+                .doOnNext { ready -> 
+                    if (ready) {
                         isRunning.set(true)
                         logger.info("Aider sidecar process started and ready (found all startup markers)")
                     }
                 }
-                .onErrorResume { 
+                .onErrorResume { error -> 
                     logger.error("Aider sidecar process failed to become ready within timeout. Found markers: ${startupMarkersFound.joinToString()}")
                     dispose()
                     Mono.just(false)
                 }
-                .block() ?: false
+                .blockOptional()
+                .orElse(false)
 
             isReady
         } catch (e: Exception) {
