@@ -70,9 +70,9 @@ class SidecarProcessInitializerIntegrationTest() : BaseIntegrationTest() {
         // Act
         sidecarProcessInitializer.initializeSidecarProcess()
 
-        val response1 = processInteractor.sendCommand("What is the meaning of life, the universe, and everything?")
+        val response1 = runBlocking { processInteractor.sendCommand("What is the meaning of life, the universe, and everything?") }
         // Assert
-        val response2 = processInteractor.sendCommand("What did the fox say?")
+        val response2 = runBlocking { processInteractor.sendCommand("What did the fox say?") }
         assertThat( response2).contains("Ylvis")
     }
     @AfterEach
