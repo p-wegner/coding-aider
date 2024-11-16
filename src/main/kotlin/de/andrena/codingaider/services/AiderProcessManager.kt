@@ -24,6 +24,14 @@ class AiderProcessManager(private val project: Project) : Disposable {
     private val outputSink = Sinks.many().multicast().onBackpressureBuffer<String>()
     private val isRunning = AtomicBoolean(false)
     private val userPromptMarker = "> "
+    private val startupMarkers = listOf(
+        "Git repo:",
+        "Using git repo:",
+        "Chat language:",
+        "Edit files:",
+        "> "
+    )
+    private var startupMarkersFound = mutableSetOf<String>()
 
     fun startProcess(
         command: List<String>,
@@ -38,6 +46,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
         }
 
         return try {
+            startupMarkersFound.clear()
             val processBuilder = ProcessBuilder(command)
                 .apply { environment().putIfAbsent("PYTHONIOENCODING", "utf-8") }
                 .directory(java.io.File(workingDir))
@@ -53,8 +62,15 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 .doOnNext { line ->
                     if (verbose) println(line)
                     outputSink.tryEmitNext(line)
-                    if (line.startsWith(userPromptMarker)) {
-                        isRunning.set(true)
+                    
+                    // Check for startup markers
+                    startupMarkers.forEach { marker ->
+                        if (line.contains(marker)) {
+                            startupMarkersFound.add(marker)
+                            if (startupMarkersFound.size == startupMarkers.size) {
+                                isRunning.set(true)
+                            }
+                        }
                     }
                 }
                 .subscribe()
@@ -66,17 +82,17 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 logger.info("Auto restart: $autoRestart")
             }
 
-            // Wait for process to be ready by looking for the prompt marker
+            // Wait for process to be ready by checking startup markers
             val isReady = Mono.fromCallable { isRunning.get() }
                 .repeatWhen { it.delayElements(Duration.ofMillis(100)) }
                 .takeUntil { it }
-                .blockFirst(Duration.ofSeconds(30)) ?: false
+                .blockFirst(Duration.ofSeconds(60)) ?: false
 
             if (isReady) {
-                logger.info("Aider sidecar process started and ready")
+                logger.info("Aider sidecar process started and ready (found all startup markers)")
                 true
             } else {
-                logger.error("Aider sidecar process failed to become ready within timeout")
+                logger.error("Aider sidecar process failed to become ready within timeout. Found markers: ${startupMarkersFound.joinToString()}")
                 dispose()
                 false
             }
