@@ -63,7 +63,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
                         outputBuffer.append(line).append("\n")
                         outputSink.tryEmitNext(line!!)
                         
-                        if (line!!.trim() == startupMarker.trim()) {
+                        if (line!!.trim() == startupMarker.trim() || line!!.isEmpty()) {
                             isRunning.set(true)
                             sink.success(true)
                             break
@@ -84,6 +84,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
 
             // Start background output processing after startup
             if (isReady) {
+                // reader.lines seems to cause issues, try using a stream instead
                 Flux.fromStream { reader!!.lines() }
                     .publishOn(Schedulers.boundedElastic())
                     .doOnNext { line ->
@@ -107,8 +108,8 @@ class AiderProcessManager(private val project: Project) : Disposable {
 
         // First subscribe to output before sending command
         val outputMono = outputSink.asFlux()
-            .skipWhile { it.startsWith(userPromptMarker) } // Skip initial prompt
-            .takeUntil { it.startsWith(userPromptMarker) } // Take until next prompt
+//            .skipWhile { it.startsWith(startupMarker) } // Skip initial prompt
+//            .takeUntil { it.startsWith(startupMarker) } // Take until next prompt
             .reduce(StringBuilder()) { sb, line -> 
                 if (sb.isNotEmpty()) sb.append("\n")
                 sb.append(line)
