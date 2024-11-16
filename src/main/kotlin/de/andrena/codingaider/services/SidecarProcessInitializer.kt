@@ -73,6 +73,11 @@ class SidecarProcessInitializer(private val project: Project) : Disposable {
         } else {
             logger.error("Failed to initialize Sidecar Aider process")
         }
+
+        // Ensure the process is running before returning
+        if (!processManager.isReadyForCommand()) {
+            throw IllegalStateException("Sidecar Aider process failed to start")
+        }
     }
 
     private fun scheduleHealthCheck() {
