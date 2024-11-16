@@ -29,8 +29,6 @@ class SidecarProcessInitializerIntegrationTest() : BaseIntegrationTest() {
         project = mock(Project::class.java)
         whenever(settingsService.getSettings()).thenReturn(settings)
         whenever(settings.useSidecarMode).thenReturn(true)
-        whenever(settings.sidecarModeMaxIdleTime).thenReturn(60)
-        whenever(settings.sidecarModeAutoRestart).thenReturn(true)
         whenever(settings.sidecarModeVerbose).thenReturn(true)
         whenever(settings.llm).thenReturn("--4o")
         whenever(settings.aiderExecutablePath).thenReturn("aider")

@@ -2,7 +2,6 @@ package de.andrena.codingaider.executors.api
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import de.andrena.codingaider.services.AiderOutputParser
 import de.andrena.codingaider.services.AiderProcessManager
 import reactor.core.publisher.Flux
 
@@ -20,10 +19,6 @@ class DefaultAiderProcessInteractor(private val project: Project) : AiderProcess
         return processManager.sendCommandAsync(command)
     }
 
-    override fun parseOutput(output: String): AiderOutputState {
-        return AiderOutputParser.parseOutput(output)
-    }
-
     override fun isReadyForCommand(): Boolean {
         return processManager.isReadyForCommand()
     }
@@ -33,7 +28,6 @@ interface AiderProcessInteractor {
 
     fun sendCommandSync(command: String): String
     fun sendCommandAsync(command: String): Flux<String>
-    fun parseOutput(output: String): AiderOutputState
     fun isReadyForCommand(): Boolean
 }
 

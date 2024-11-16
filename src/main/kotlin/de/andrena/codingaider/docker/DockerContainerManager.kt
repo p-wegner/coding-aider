@@ -56,5 +56,4 @@ class DockerContainerManager {
             logger.error("Failed to remove CID file: ${cidFile.absolutePath}", e)
         }
     }
-
 }

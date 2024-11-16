@@ -62,10 +62,6 @@ class SidecarProcessInitializer(private val project: Project) : Disposable {
 
         if (processStarted) {
             logger.info("Sidecar Aider process initialized successfully")
-            // Schedule periodic health checks if auto-restart is enabled
-            if (settings.sidecarModeAutoRestart) {
-                scheduleHealthCheck()
-            }
         } else {
             logger.error("Failed to initialize Sidecar Aider process")
         }
@@ -91,7 +87,7 @@ class SidecarProcessInitializer(private val project: Project) : Disposable {
             additionalArgs = "",
             lintCmd = "",
             aiderMode = AiderMode.NORMAL,
-            options = CommandOptions(sidebarMode = true)
+            options = CommandOptions(sidecarMode = true)
 
         )
     }

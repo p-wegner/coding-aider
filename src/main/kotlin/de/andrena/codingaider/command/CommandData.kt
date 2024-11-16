@@ -53,7 +53,7 @@ data class CommandOptions(
     val autoCloseDelay: Int? = null,
     val autoCommit: Boolean? = null,
     val dirtyCommits: Boolean? = null,
-    val sidebarMode: Boolean = false
+    val sidecarMode: Boolean = false
 ) {
 
     companion object {

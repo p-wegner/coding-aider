@@ -41,9 +41,6 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var dirtyCommits: DirtyCommitSetting = AiderDefaults.DIRTY_COMMITS,
         var useStructuredMode: Boolean = AiderDefaults.USE_STRUCTURED_MODE,
         var useSidecarMode: Boolean = AiderDefaults.USE_SIDECAR_MODE,
-        var sidecarModeStartupDelay: Int = 500, // Default 500ms startup delay
-        var sidecarModeMaxIdleTime: Int = 3600, // Default 1 hour max idle time
-        var sidecarModeAutoRestart: Boolean = true, // Auto-restart sidecar if it dies
         var sidecarModeVerbose: Boolean = false, // Enable verbose logging for sidecar
         var alwaysIncludeOpenFiles: Boolean = AiderDefaults.ALWAYS_INCLUDE_OPEN_FILES,
         var alwaysIncludePlanContextFiles: Boolean = AiderDefaults.ALWAYS_INCLUDE_PLAN_CONTEXT_FILES,
@@ -60,11 +57,6 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
             myState.documentationLlm = value
         }
 
-    var optionsPanelCollapsed: Boolean
-        get() = myState.optionsPanelCollapsed
-        set(value) {
-            myState.optionsPanelCollapsed = value
-        }
 
     private var myState = State()
 
@@ -159,18 +151,6 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
             notifySettingsChanged()
         }
 
-    var sidecarModeMaxIdleTime: Int
-        get() = myState.sidecarModeMaxIdleTime
-        set(value) {
-            myState.sidecarModeMaxIdleTime = value
-        }
-
-    var sidecarModeAutoRestart: Boolean
-        get() = myState.sidecarModeAutoRestart
-        set(value) {
-            myState.sidecarModeAutoRestart = value
-        }
-
     var sidecarModeVerbose: Boolean
         get() = myState.sidecarModeVerbose
         set(value) {
@@ -259,12 +239,6 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
             myState.dockerImageTag = value
         }
 
-
-    var sidecarModeStartupDelay: Int
-        get() = myState.sidecarModeStartupDelay
-        set(value) {
-            myState.sidecarModeStartupDelay = value
-        }
 
 
     var aiderExecutablePath: String
