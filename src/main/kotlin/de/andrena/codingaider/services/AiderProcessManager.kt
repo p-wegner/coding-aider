@@ -176,8 +176,46 @@ class AiderProcessManager(private val project: Project) : Disposable {
     }
     private fun String.isPromptLine() = this == commandPrompt
     fun sendCommandAsync(command: String, firstCommand: Boolean): Flux<String> {
-        //TODO: Implement this method similar to sendCommand
-        // instead of reading lines from the output stream and combining them, emit them in a Flux one by one
-        return Flux.empty()
+        if (!isRunning.get()) {
+            return Flux.error(IllegalStateException("Aider sidecar process not running"))
+        }
+
+        return Flux.create { sink ->
+            synchronized(this) {
+                try {
+                    writer?.write("$command\n")
+                    writer?.flush()
+
+                    var commandPromptCount = 0
+                    var line: String?
+                    while (reader?.readLine().also { line = it } != null) {
+                        if (verbose) logger.info(line)
+                        if (!line!!.isPromptLine()) {
+                            sink.next(line)
+                        }
+
+                        if (line == commandPrompt) commandPromptCount++
+                        if (firstCommand) {
+                            if (commandPromptCount > 1 && line!!.isEmpty()) {
+                                sink.complete()
+                                return@synchronized
+                            }
+                        } else {
+                            if (commandPromptCount > 0 && line!!.isEmpty()) {
+                                sink.complete()
+                                return@synchronized
+                            }
+                        }
+                    }
+                    sink.error(IllegalStateException("Process terminated while waiting for response"))
+                } catch (e: Exception) {
+                    sink.error(e)
+                }
+            }
+        }
+        .subscribeOn(Schedulers.boundedElastic())
+        .doOnError { e ->
+            logger.error("Error sending async command to Aider sidecar process", e)
+        }
     }
 }
