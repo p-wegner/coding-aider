@@ -71,8 +71,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 .repeatWhen { it.delayElements(Duration.ofMillis(100)) }
                 .takeUntil { it }
                 .timeout(Duration.ofSeconds(30))
-                .blockOptional()
-                .orElse(false)
+                .block() ?: false
 
             if (isReady) {
                 logger.info("Aider sidecar process started and ready")
