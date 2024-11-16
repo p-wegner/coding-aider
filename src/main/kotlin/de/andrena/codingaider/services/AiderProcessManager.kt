@@ -4,11 +4,13 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.*
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
-import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicBoolean
 
 @Service(Service.Level.PROJECT)
@@ -17,7 +19,8 @@ class AiderProcessManager(private val project: Project) : Disposable {
     private var process: Process? = null
     private var reader: BufferedReader? = null
     private var writer: BufferedWriter? = null
-    private val lineQueue = LinkedBlockingQueue<String>()
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private val outputChannel = Channel<String>(Channel.BUFFERED)
     private val isRunning = AtomicBoolean(false)
 
     fun startProcess(
@@ -42,19 +45,18 @@ class AiderProcessManager(private val project: Project) : Disposable {
             reader = BufferedReader(InputStreamReader(process!!.inputStream))
             writer = BufferedWriter(OutputStreamWriter(process!!.outputStream))
 
-            // Wait for the userPromptMarker before marking the process as running
-            val readThread = Thread {
-                var line: String? = null
-                while (reader?.readLine()?.also { line = it } != null) {
-                    lineQueue.put(line!!)
-                    println(line)
-                    if (line?.startsWith(userPromptMarker) == true || line?.trim() == "") {
-                        isRunning.set(true)
-                        break
+            // Start coroutine to handle process output
+            scope.launch {
+                reader?.useLines { lines ->
+                    lines.forEach { line ->
+                        outputChannel.send(line)
+                        println(line)
+                        if (line.startsWith(userPromptMarker) || line.trim().isEmpty()) {
+                            isRunning.set(true)
+                        }
                     }
                 }
             }
-            readThread.start()
 
             if (verbose) {
                 logger.info("Started Aider sidecar process with command: ${command.joinToString(" ")}")
@@ -73,50 +75,51 @@ class AiderProcessManager(private val project: Project) : Disposable {
 
     private val userPromptMarker = "> "
 
-    fun sendCommand(command: String): String {
+    suspend fun sendCommand(command: String): String = withContext(Dispatchers.IO) {
         if (!isRunning.get()) {
             throw IllegalStateException("Aider sidecar process not running")
         }
 
-        return try {
+        try {
             writer?.write("$command\n")
             writer?.flush()
 
-            readUntilPromptMarker()
+            val response = StringBuilder()
+            while (true) {
+                val line = outputChannel.receive()
+                if (line.startsWith(userPromptMarker)) {
+                    break
+                }
+                response.append(line).append("\n")
+            }
+            response.toString().trim()
         } catch (e: Exception) {
             logger.error("Error sending command to Aider sidecar process", e)
             throw e
         }
     }
 
-    private fun readUntilPromptMarker(): String {
-        val response = StringBuilder()
-        while (true) {
-            val line = lineQueue.take()
-            if (line.startsWith(userPromptMarker)) {
-                break
-            }
-            response.append(line).append("\n")
-        }
-        return response.toString().trim()
-    }
-
     override fun dispose() {
-        try {
-            writer?.close()
-            reader?.close()
-            process?.destroy()
-            isRunning.set(false)
-            logger.info("Disposed Aider sidecar process")
-            var attempts = 0
-            while (process?.isAlive == true && attempts < 50) {
-                Thread.sleep(100)
-                attempts++
+        runBlocking {
+            try {
+                scope.cancel()
+                writer?.close()
+                reader?.close()
+                process?.destroy()
+                isRunning.set(false)
+                logger.info("Disposed Aider sidecar process")
+                
+                withTimeout(5000) {
+                    while (process?.isAlive == true) {
+                        delay(100)
+                    }
+                }
+                
+                process?.destroyForcibly()
+                delay(10)
+            } catch (e: Exception) {
+                logger.error("Error disposing Aider sidecar process", e)
             }
-            process?.destroyForcibly()
-            Thread.sleep(10)
-        } catch (e: Exception) {
-            logger.error("Error disposing Aider sidecar process", e)
         }
     }
 
