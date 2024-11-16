@@ -1,7 +1,6 @@
-package de.andrena.codingaider.services
+package de.andrena.codingaider.settings
 
 import com.intellij.openapi.components.Service
-import de.andrena.codingaider.settings.AiderSettings
 
 @Service(Service.Level.PROJECT)
 class MySettingsService {

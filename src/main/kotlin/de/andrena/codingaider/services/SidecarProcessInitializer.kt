@@ -9,6 +9,7 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.CommandOptions
 import de.andrena.codingaider.executors.SidecarAiderExecutionStrategy
 import de.andrena.codingaider.inputdialog.AiderMode
+import de.andrena.codingaider.settings.MySettingsService
 
 @Service(Service.Level.PROJECT)
 class SidecarProcessInitializer(private val project: Project) : Disposable {
