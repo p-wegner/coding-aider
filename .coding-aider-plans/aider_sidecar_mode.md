@@ -23,6 +23,9 @@ Currently, the plugin starts a new Aider process for each command execution, whi
    - Enable future reactive/interactive features
    - Maintain backward compatibility
    - Work with both native and Docker execution
+## Parsing Aider Output
+On Startup: aider is ready as soon as an empty line is received on the output stream
+On Command Execution: aider will finish its command with a "> " line on the output stream
 
 ## Additional Notes and Constraints
 - Must preserve existing CommandExecutor functionality
