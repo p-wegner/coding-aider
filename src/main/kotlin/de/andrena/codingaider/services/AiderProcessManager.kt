@@ -8,6 +8,7 @@ import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
+import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.atomic.AtomicBoolean
 
 @Service(Service.Level.PROJECT)
@@ -16,6 +17,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
     private var process: Process? = null
     private var reader: BufferedReader? = null
     private var writer: BufferedWriter? = null
+    private val lineQueue = LinkedBlockingQueue<String>()
     private val isRunning = AtomicBoolean(false)
 
     fun startProcess(
@@ -42,13 +44,18 @@ class AiderProcessManager(private val project: Project) : Disposable {
 
             // Wait for the userPromptMarker before marking the process as running
             var line: String? = null
-            while (reader?.readLine()?.also { line = it } != null) {
-                println(line)
-                if (line?.startsWith(userPromptMarker) == true || line?.trim() == "") {
-                    isRunning.set(true)
-                    break
+            val readThread = Thread {
+                var line: String?
+                while (reader?.readLine()?.also { line = it } != null) {
+                    lineQueue.put(line!!)
+                    println(line)
+                    if (line?.startsWith(userPromptMarker) == true || line?.trim() == "") {
+                        isRunning.set(true)
+                        break
+                    }
                 }
             }
+            readThread.start()
 
             if (verbose) {
                 logger.info("Started Aider sidecar process with command: ${command.joinToString(" ")}")
@@ -85,9 +92,9 @@ class AiderProcessManager(private val project: Project) : Disposable {
 
     private fun readUntilPromptMarker(): String {
         val response = StringBuilder()
-        var line: String? = null
-        while (reader?.readLine()?.also { line = it } != null && reader?.ready() == true) {
-            if (line?.startsWith(userPromptMarker) == true) {
+        while (true) {
+            val line = lineQueue.take()
+            if (line.startsWith(userPromptMarker)) {
                 break
             }
             response.append(line).append("\n")
