@@ -97,6 +97,11 @@ class AiderProcessManager(private val project: Project) : Disposable {
             logger.error("Error sending command to Aider sidecar process", e)
             throw e
         }
+
+        // Ensure the process is still running after sending the command
+        if (!isRunning.get()) {
+            throw IllegalStateException("Aider sidecar process stopped unexpectedly")
+        }
     }
 
     override fun dispose() {
