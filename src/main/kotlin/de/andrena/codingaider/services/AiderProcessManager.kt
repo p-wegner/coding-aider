@@ -25,8 +25,6 @@ class AiderProcessManager(private val project: Project) : Disposable {
     private val isRunning = AtomicBoolean(false)
     private val startupMarker = "> "
     private val startupTimeout = Duration.ofSeconds(60)
-    private val outputBuffer = StringBuilder()
-    private val processedLines = mutableSetOf<String>()
 
     private fun setupOutputProcessing(verbose: Boolean) {
         Flux.create<String> { sink ->
@@ -34,13 +32,9 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 while (isRunning.get() && reader != null) {
                     val line = reader!!.readLine()
                     if (line != null) {
-                        synchronized(processedLines) {
-                            if (!processedLines.contains(line)) {
-                                if (verbose) println(line)
-                                sink.next(line)
-                                processedLines.add(line)
-                            }
-                        }
+                        if (verbose) println(line)
+                        sink.next(line)
+
                     } else {
                         sink.complete()
                         break
@@ -88,7 +82,11 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 }
 
                 // Wait for startup prompt
-                waitForFirstUserPrompt(verbose)
+                waitForFirstUserPrompt(verbose).also {
+                    // Clear any pending output
+//                    Thread.sleep(1000)
+                }
+
             } catch (e: Exception) {
                 logger.error("Failed to start Aider sidecar process", e)
                 false
@@ -96,32 +94,34 @@ class AiderProcessManager(private val project: Project) : Disposable {
         }
     }
 
-    private fun waitForFirstUserPrompt(verbose: Boolean): Boolean = Mono.create { sink ->
-        try {
-            var line: String?
-            while (reader!!.readLine().also { line = it } != null) {
-                if (verbose) println(line)
-                outputBuffer.append(line).append("\n")
-                outputSink.tryEmitNext(line!!)
+    private fun waitForFirstUserPrompt(verbose: Boolean): Boolean =
+        Mono.create { sink ->
+            try {
+                var line: String?
+                reader?.readLine()
+                while (reader!!.readLine().also { line = it } != null) {
+                    if (verbose) println(line)
+                    outputSink.tryEmitNext(line!!)
 
-                if (line!!.trim() == startupMarker || line!!.isEmpty()) {
-                    isRunning.set(true)
-                    sink.success(true)
-                    break
+                    if (line!!.trim() == startupMarker
+                        || line!!.isEmpty()
+                        ) {
+                        isRunning.set(true)
+                        sink.success(true)
+                        break
+                    }
                 }
+            } catch (e: Exception) {
+                sink.error(e)
             }
-        } catch (e: Exception) {
-            sink.error(e)
         }
-    }
-        .timeout(startupTimeout)
-        .doOnError { error ->
-            logger.error("Aider sidecar process failed to become ready: ${error.message}")
-            logger.error("Output buffer:\n$outputBuffer")
-            dispose()
-        }
-        .onErrorReturn(false)
-        .block() ?: false
+            .timeout(startupTimeout)
+            .doOnError { error ->
+                logger.error("Aider sidecar process failed to become ready: ${error.message}")
+                dispose()
+            }
+            .onErrorReturn(false)
+            .block() ?: false
 
     fun sendCommand(command: String): Mono<String> {
         if (!isRunning.get()) {
@@ -131,30 +131,22 @@ class AiderProcessManager(private val project: Project) : Disposable {
         return Mono.create<String> { sink ->
             synchronized(this) {
                 try {
-                    // Clear any pending output
-                    while (reader?.ready() == true) {
-                        val readLine = reader?.readLine()
-                        println(readLine)
-                        if (readLine != null && readLine == startupMarker) {
-                            break
-                        }
-                    }
-
                     // Send the command
                     writer?.write("$command\n")
                     writer?.flush()
 
                     // Collect response until we see the prompt
                     val response = StringBuilder()
+//                    reader?.readLine()
+//                    reader?.readLine()
                     var line: String?
-
                     while (reader?.readLine().also { line = it } != null) {
-                        if (line?.trim() == startupMarker || line?.isEmpty() == true) {
+                        if (response.isNotEmpty()) response.append("\n")
+                        response.append(line)
+                        if (line == startupMarker || line?.isEmpty() == true) {
                             sink.success(response.toString())
                             return@synchronized
                         }
-                        if (response.isNotEmpty()) response.append("\n")
-                        response.append(line)
                     }
                     sink.error(IllegalStateException("Process terminated while waiting for response"))
                 } catch (e: Exception) {
@@ -168,6 +160,20 @@ class AiderProcessManager(private val project: Project) : Disposable {
             }
     }
 
+    private fun skipToNextPromptMarker() {
+        while (reader?.ready() == true) {
+            val readLine = reader?.readLine()
+            println(readLine)
+            if (readLine != null && (
+                        readLine == startupMarker
+                                || readLine.isEmpty()
+                        )
+            ) {
+                break
+            }
+        }
+    }
+
     override fun dispose() {
         synchronized(this) {
             try {
@@ -176,7 +182,6 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 writer?.close()
                 reader?.close()
                 process?.destroy()
-                processedLines.clear()
                 logger.info("Disposed Aider sidecar process")
 
                 // Wait for process to terminate
