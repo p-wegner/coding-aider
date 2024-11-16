@@ -23,7 +23,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
     private var writer: BufferedWriter? = null
     private val outputSink = Sinks.many().multicast().onBackpressureBuffer<String>()
     private val isRunning = AtomicBoolean(false)
-    private val startupMarker = "> "
+    private val startupMarker = ">"
     private val startupTimeout = Duration.ofSeconds(60)
     private val outputBuffer = StringBuilder()
 
@@ -97,7 +97,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 outputBuffer.append(line).append("\n")
                 outputSink.tryEmitNext(line!!)
 
-                if (line!!.trim() == startupMarker.trim() || line!!.isEmpty()) {
+                if (line!!.trim() == startupMarker) {
                     isRunning.set(true)
                     sink.success(true)
                     break
@@ -122,26 +122,28 @@ class AiderProcessManager(private val project: Project) : Disposable {
         }
 
        return Mono.fromCallable {
-            // Clear any pending output
-            while (reader?.ready() == true) {
-                reader?.readLine()
-            }
-            
-            // Send the command
-            writer?.write("$command\n")
-            writer?.flush()
-            
-            // Collect response until we see the prompt
-            val response = StringBuilder()
-            var line: String?
-            while (reader?.readLine().also { line = it } != null) {
-                if (line == startupMarker.trim()) {
-                    break
+            synchronized(this) {
+                // Clear any pending output
+                while (reader?.ready() == true) {
+                    reader?.readLine()
                 }
-                if (response.isNotEmpty()) response.append("\n")
-                response.append(line)
+                
+                // Send the command
+                writer?.write("$command\n")
+                writer?.flush()
+                
+                // Collect response until we see the prompt
+                val response = StringBuilder()
+                var line: String?
+                while (reader?.readLine().also { line = it } != null) {
+                    if (line?.trim() == startupMarker) {
+                        break
+                    }
+                    if (response.isNotEmpty()) response.append("\n")
+                    response.append(line)
+                }
+                response.toString()
             }
-            response.toString()
         }
         .subscribeOn(Schedulers.boundedElastic())
         .doOnError { e ->
