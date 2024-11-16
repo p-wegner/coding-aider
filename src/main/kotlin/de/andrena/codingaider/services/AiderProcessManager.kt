@@ -66,9 +66,22 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 logger.info("Auto restart: $autoRestart")
             }
 
-            logger.info("Started Aider sidecar process")
-            // TODO: wait for process to be running, i.e. wait for userPromptMarker
-            true
+            // Wait for process to be ready by looking for the prompt marker
+            val isReady = Mono.fromCallable { isRunning.get() }
+                .repeatWhen { it.delayElements(Duration.ofMillis(100)) }
+                .takeUntil { it }
+                .timeout(Duration.ofSeconds(30))
+                .blockOptional()
+                .orElse(false)
+
+            if (isReady) {
+                logger.info("Aider sidecar process started and ready")
+                true
+            } else {
+                logger.error("Aider sidecar process failed to become ready within timeout")
+                dispose()
+                false
+            }
         } catch (e: Exception) {
             logger.error("Failed to start Aider sidecar process", e)
             false
