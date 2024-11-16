@@ -111,10 +111,26 @@ class AiderProcessManager(private val project: Project) : Disposable {
             return Mono.error(IllegalStateException("Aider sidecar process not running"))
         }
 
+        // First subscribe to output before sending command
+        val outputMono = outputSink.asFlux()
+            .skipWhile { it.startsWith(userPromptMarker) } // Skip initial prompt
+            .takeUntil { it.startsWith(userPromptMarker) } // Take until next prompt
+            .reduce(StringBuilder()) { sb, line -> 
+                if (sb.isNotEmpty()) sb.append("\n")
+                sb.append(line)
+            }
+            .map { it.toString() }
+            .doOnError { e ->
+                logger.error("Error sending command to Aider sidecar process", e)
+            }
+            .filter { isRunning.get() }
+            .switchIfEmpty(Mono.error(IllegalStateException("Aider sidecar process stopped unexpectedly")))
+
+        // Then write the command
         return Mono.fromCallable {
             writer?.write("$command\n")
             writer?.flush()
-        }.then(
+        }.then(outputMono)
             outputSink.asFlux()
                 .skipWhile { it.startsWith(userPromptMarker) } // Skip initial prompt
                 .takeUntil { it.startsWith(userPromptMarker) } // Take until next prompt
