@@ -23,7 +23,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
     private var writer: BufferedWriter? = null
     private val outputSink = Sinks.many().multicast().onBackpressureBuffer<String>()
     private val isRunning = AtomicBoolean(false)
-    private val startupMarker = ">"
+    private val startupMarker = "> "
     private val startupTimeout = Duration.ofSeconds(60)
     private val outputBuffer = StringBuilder()
 
