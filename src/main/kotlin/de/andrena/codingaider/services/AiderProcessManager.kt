@@ -23,13 +23,13 @@ class AiderProcessManager(private val project: Project) : Disposable {
     private var writer: BufferedWriter? = null
     private val outputSink = Sinks.many().multicast().onBackpressureBuffer<String>()
     private val isRunning = AtomicBoolean(false)
-    private val userPromptMarker = "> "
     private val startupMarkers = listOf(
         "Git repo:",
         "Repo-map:",
         "> "
     )
     private var startupMarkersFound = mutableSetOf<String>()
+    private val startupTimeout = Duration.ofSeconds(60)
 
     fun startProcess(
         command: List<String>,
@@ -80,20 +80,25 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 logger.info("Auto restart: $autoRestart")
             }
 
-            // Wait for process to be ready by checking startup markers
-            val isReady = Mono.fromCallable { isRunning.get() }
+            // Wait for all startup markers to be found
+            val isReady = Mono.fromCallable { startupMarkersFound.size == startupMarkers.size }
                 .repeatWhen { it.delayElements(Duration.ofMillis(100)) }
                 .takeUntil { it }
-                .blockFirst(Duration.ofSeconds(60)) ?: false
+                .timeout(startupTimeout)
+                .doOnSuccess { 
+                    if (it) {
+                        isRunning.set(true)
+                        logger.info("Aider sidecar process started and ready (found all startup markers)")
+                    }
+                }
+                .onErrorResume { 
+                    logger.error("Aider sidecar process failed to become ready within timeout. Found markers: ${startupMarkersFound.joinToString()}")
+                    dispose()
+                    Mono.just(false)
+                }
+                .block() ?: false
 
-            if (isReady) {
-                logger.info("Aider sidecar process started and ready (found all startup markers)")
-                true
-            } else {
-                logger.error("Aider sidecar process failed to become ready within timeout. Found markers: ${startupMarkersFound.joinToString()}")
-                dispose()
-                false
-            }
+            isReady
         } catch (e: Exception) {
             logger.error("Failed to start Aider sidecar process", e)
             false
