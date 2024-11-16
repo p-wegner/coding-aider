@@ -4,6 +4,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
+import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.core.publisher.Sinks
 import reactor.core.scheduler.Schedulers
@@ -174,4 +175,9 @@ class AiderProcessManager(private val project: Project) : Disposable {
         }
     }
     private fun String.isPromptLine() = this == commandPrompt
+    fun sendCommandAsync(command: String, firstCommand: Boolean): Flux<String> {
+        //TODO: Implement this method similar to sendCommand
+        // instead of reading lines from the output stream and combining them, emit them in a Flux one by one
+        return Flux.empty()
+    }
 }

@@ -104,7 +104,7 @@ class CommandExecutor(
         }
 
         val output = try {
-            val response = processInteractor.sendCommand(commandString)
+            val response = processInteractor.sendCommandSync(commandString)
             val outputState = processInteractor.parseOutput(response)
 
             if (outputState.hasError) {

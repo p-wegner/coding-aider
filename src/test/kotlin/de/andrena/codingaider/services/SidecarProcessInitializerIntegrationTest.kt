@@ -49,10 +49,10 @@ class SidecarProcessInitializerIntegrationTest() : BaseIntegrationTest() {
     fun testStartAiderWithoutMessageOptionAndSendCommand() {
         sidecarProcessInitializer.initializeSidecarProcess()
 
-        val response1 = processInteractor.sendCommand("What is the meaning of life, the universe, and everything?", true)
+        val response1 = processInteractor.sendCommandSync("What is the meaning of life, the universe, and everything?", true)
         assertThat(response1).contains("The Hitchhiker's Guide to the Galaxy")
 
-        val response2 = processInteractor.sendCommand("What did the fox say?")
+        val response2 = processInteractor.sendCommandSync("What did the fox say?")
         assertThat(response2).contains("Ylvis")
         tearDown()
     }
