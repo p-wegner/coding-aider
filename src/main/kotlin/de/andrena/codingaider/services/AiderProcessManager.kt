@@ -26,9 +26,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
     private val userPromptMarker = "> "
     private val startupMarkers = listOf(
         "Git repo:",
-        "Using git repo:",
-        "Chat language:",
-        "Edit files:",
+        "Repo-map:",
         "> "
     )
     private var startupMarkersFound = mutableSetOf<String>()
