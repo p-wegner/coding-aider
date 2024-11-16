@@ -105,15 +105,8 @@ class CommandExecutor(
 
         val output = try {
             val response = processInteractor.sendCommandSync(commandString)
-            val outputState = processInteractor.parseOutput(response)
-
-            if (outputState.hasError) {
-                notifyObservers { it.onCommandError(response) }
-                response
-            } else {
-                notifyObservers { it.onCommandComplete(response, 0) }
-                response
-            }
+            notifyObservers { it.onCommandComplete(response, 0) }
+            response
         } catch (e: Exception) {
             val errorMessage = "Sidecar command failed: ${e.message}"
             logger.error(errorMessage, e)
