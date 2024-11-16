@@ -84,14 +84,27 @@ class AiderProcessManager(private val project: Project) : Disposable {
 
             // Start background output processing after startup
             if (isReady) {
-                // reader.lines seems to cause issues, try using a stream instead
-                Flux.fromStream { reader!!.lines() }
-                    .publishOn(Schedulers.boundedElastic())
-                    .doOnNext { line ->
-                        if (verbose) println(line)
-                        outputSink.tryEmitNext(line)
+                // Use buffered reading with backpressure
+                Flux.create<String> { sink ->
+                    try {
+                        while (isRunning.get() && reader != null) {
+                            val line = reader!!.readLine()
+                            if (line != null) {
+                                if (verbose) println(line)
+                                sink.next(line)
+                            } else {
+                                sink.complete()
+                                break
+                            }
+                        }
+                    } catch (e: Exception) {
+                        sink.error(e)
                     }
-                    .subscribe()
+                }
+                .publishOn(Schedulers.boundedElastic())
+                .doOnNext { line -> outputSink.tryEmitNext(line) }
+                .doOnError { e -> logger.error("Error reading from Aider process", e) }
+                .subscribe()
             }
 
             isReady
