@@ -23,14 +23,9 @@ class AiderProcessManager(private val project: Project) : Disposable {
     private var writer: BufferedWriter? = null
     private val outputSink = Sinks.many().multicast().onBackpressureBuffer<String>()
     private val isRunning = AtomicBoolean(false)
-    private val startupMarkers = listOf(
-        "Git repo:",
-        "Repo-map:",
-        "> "
-    )
-    private val userPromptMarker = "> "
-    private var startupMarkersFound = mutableSetOf<String>()
+    private val startupMarker = "> "
     private val startupTimeout = Duration.ofSeconds(60)
+    private val outputBuffer = StringBuilder()
 
     fun startProcess(
         command: List<String>,
@@ -45,7 +40,6 @@ class AiderProcessManager(private val project: Project) : Disposable {
         }
 
         return try {
-            startupMarkersFound.clear()
             val processBuilder = ProcessBuilder(command)
                 .apply { environment().putIfAbsent("PYTHONIOENCODING", "utf-8") }
                 .directory(java.io.File(workingDir))
@@ -55,49 +49,49 @@ class AiderProcessManager(private val project: Project) : Disposable {
             reader = BufferedReader(InputStreamReader(process!!.inputStream))
             writer = BufferedWriter(OutputStreamWriter(process!!.outputStream))
 
-            // Start processing output lines reactively
-            Flux.fromStream { reader!!.lines() }
-                .publishOn(Schedulers.boundedElastic())
-                .doOnNext { line ->
-                    if (verbose) println(line)
-                    outputSink.tryEmitNext(line)
-                    
-                    // Check for startup markers
-                    startupMarkers.forEach { marker ->
-                        if (line.contains(marker)) {
-                            startupMarkersFound.add(marker)
-                            if (startupMarkersFound.size == startupMarkers.size) {
-                                isRunning.set(true)
-                            }
-                        }
-                    }
-                }
-                .subscribe()
-
             if (verbose) {
                 logger.info("Started Aider sidecar process with command: ${command.joinToString(" ")}")
                 logger.info("Working directory: $workingDir")
-                logger.info("Max idle time: $maxIdleTime")
-                logger.info("Auto restart: $autoRestart")
             }
 
-            // Wait for all startup markers to be found
-            val isReady = Mono.fromCallable { startupMarkersFound.size == startupMarkers.size }
-                .repeatWhen { it.delayElements(Duration.ofMillis(100)) }
-                .takeUntil { it }
-                .timeout(startupTimeout)
-                .doOnNext { ready ->
-                    if (ready) {
-                        isRunning.set(true)
-                        logger.info("Aider sidecar process started and ready (found all startup markers)")
+            // Wait for startup prompt
+            val isReady = Mono.create<Boolean> { sink ->
+                try {
+                    var line: String?
+                    while (reader!!.readLine().also { line = it } != null) {
+                        if (verbose) println(line)
+                        outputBuffer.append(line).append("\n")
+                        outputSink.tryEmitNext(line!!)
+                        
+                        if (line!!.trim() == startupMarker.trim()) {
+                            isRunning.set(true)
+                            sink.success(true)
+                            break
+                        }
                     }
+                } catch (e: Exception) {
+                    sink.error(e)
                 }
-                .onErrorResume { error ->
-                    logger.error("Aider sidecar process failed to become ready within timeout. Found markers: ${startupMarkersFound.joinToString()}")
-                    dispose()
-                    Mono.just(false)
-                }
-                .blockFirst()?: false
+            }
+            .timeout(startupTimeout)
+            .doOnError { error ->
+                logger.error("Aider sidecar process failed to become ready: ${error.message}")
+                logger.error("Output buffer:\n$outputBuffer")
+                dispose()
+            }
+            .onErrorReturn(false)
+            .block() ?: false
+
+            // Start background output processing after startup
+            if (isReady) {
+                Flux.fromStream { reader!!.lines() }
+                    .publishOn(Schedulers.boundedElastic())
+                    .doOnNext { line ->
+                        if (verbose) println(line)
+                        outputSink.tryEmitNext(line)
+                    }
+                    .subscribe()
+            }
 
             isReady
         } catch (e: Exception) {
