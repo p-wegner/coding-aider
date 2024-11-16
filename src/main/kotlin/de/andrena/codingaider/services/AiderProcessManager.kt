@@ -26,6 +26,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
     private val startupMarker = "> "
     private val startupTimeout = Duration.ofSeconds(60)
     private val outputBuffer = StringBuilder()
+    private val processedLines = mutableSetOf<String>()
 
     private fun setupOutputProcessing(verbose: Boolean) {
         Flux.create<String> { sink ->
@@ -33,8 +34,13 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 while (isRunning.get() && reader != null) {
                     val line = reader!!.readLine()
                     if (line != null) {
-                        if (verbose) println(line)
-                        sink.next(line)
+                        synchronized(processedLines) {
+                            if (!processedLines.contains(line)) {
+                                if (verbose) println(line)
+                                sink.next(line)
+                                processedLines.add(line)
+                            }
+                        }
                     } else {
                         sink.complete()
                         break
@@ -170,6 +176,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 writer?.close()
                 reader?.close()
                 process?.destroy()
+                processedLines.clear()
                 logger.info("Disposed Aider sidecar process")
 
                 // Wait for process to terminate
