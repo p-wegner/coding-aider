@@ -10,6 +10,7 @@ import de.andrena.codingaider.executors.api.CommandSubject
 import de.andrena.codingaider.executors.api.DefaultAiderProcessInteractor
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.FileExtractorService
+import de.andrena.codingaider.services.SidecarProcessInitializer
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.ApiKeyChecker
@@ -52,6 +53,7 @@ class CommandExecutor(
 
         // Check if sidecar mode is enabled
         if (settings.useSidecarMode) {
+            project.service<SidecarProcessInitializer>().initializeSidecarProcess()
             return executeSidecarCommand(updatedCommandData)
         }
 
@@ -102,10 +104,10 @@ class CommandExecutor(
                 }"
             )
         }
+
         changeContextFiles(commandData)
         val output = try {
             val startTime = System.currentTimeMillis()
-//            val response = processInteractor.sendCommandSync(commandString)
             val response = processInteractor.sendCommandAsync(commandString)
                 .doOnNext { message -> notifyObservers { it.onCommandProgress(message, secondsSince(startTime)) } }
                 .collectList().block()?.joinToString("\n") ?: ""
@@ -124,6 +126,7 @@ class CommandExecutor(
     private fun changeContextFiles(commandData: CommandData) {
         processInteractor.sendCommandSync("/drop")
         processInteractor.sendCommandSync("/clear")
+        // TODO: Termination of add and read-only commands is not detected correctly
         commandData.files.filter { !it.isReadOnly }
             .takeIf { it.isNotEmpty() }
             ?.joinToString(" ") { it.filePath }

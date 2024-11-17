@@ -30,13 +30,3 @@ interface AiderProcessInteractor {
     fun sendCommandAsync(command: String): Flux<String>
     fun isReadyForCommand(): Boolean
 }
-
-/**
- * Represents the current state of Aider's output
- */
-data class AiderOutputState(
-    val isPrompting: Boolean = false,
-    val hasError: Boolean = false,
-    val isWaitingForConfirmation: Boolean = false,
-    val message: String = ""
-)

@@ -5,8 +5,6 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
-import de.andrena.codingaider.actions.aider.AiderAction
-import de.andrena.codingaider.actions.aider.AiderAction.Companion
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.CommandOptions
 import de.andrena.codingaider.executors.SidecarAiderExecutionStrategy
