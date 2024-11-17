@@ -66,15 +66,16 @@ class MarkdownDialog(
 
         // Add scroll listener to detect when user manually scrolls
         scrollPane.verticalScrollBar.addAdjustmentListener { _ ->
-            val scrollBar = scrollPane.verticalScrollBar
-            val extent = scrollBar.model.extent
-            val maximum = scrollBar.model.maximum
-            val current = scrollBar.model.value
+            // Only update autoScroll if user is actually scrolling
+            if (scrollPane.verticalScrollBar.valueIsAdjusting) {
+                val scrollBar = scrollPane.verticalScrollBar
+                val extent = scrollBar.model.extent
+                val maximum = scrollBar.model.maximum
+                val current = scrollBar.model.value
+                val isAtBottom = (current + extent + 20) >= maximum
 
-            // Consider "at bottom" when within 3 pixels of the bottom
-            val isAtBottom = (current + extent + 3) >= maximum
-
-            autoScroll = isAtBottom
+                autoScroll = isAtBottom
+            }
         }
 
         // Start refresh timer
@@ -157,8 +158,7 @@ class MarkdownDialog(
                     // Store scroll info before update
                     val scrollBar = scrollPane.verticalScrollBar
                     val currentValue = scrollBar.value
-                    val wasAtBottom = autoScroll &&
-                            (currentValue + scrollBar.visibleAmount + 10 >= scrollBar.maximum)
+                    val wasAtBottom = autoScroll
 
                     // Update content
                     markdownViewer.setMarkdownContent(newContent)
@@ -167,12 +167,14 @@ class MarkdownDialog(
                     // Handle scrolling after content update
                     SwingUtilities.invokeLater {
                         if (wasAtBottom) {
-                            // Scroll to bottom if we were at bottom
-                            scrollBar.value = scrollBar.maximum
+                            // Scroll to bottom if auto-scroll is enabled
+                            scrollBar.value = scrollBar.maximum + scrollBar.visibleAmount
                         } else {
                             // Try to maintain previous scroll position
                             scrollBar.value = currentValue
                         }
+                        // Ensure the scroll pane is properly laid out
+                        scrollPane.revalidate()
                     }
                 }
             } catch (e: Exception) {
