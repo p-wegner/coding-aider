@@ -102,9 +102,13 @@ class CommandExecutor(
                 }"
             )
         }
-
+        changeContextFiles(commandData)
         val output = try {
-            val response = processInteractor.sendCommandSync(commandString)
+            val startTime = System.currentTimeMillis()
+//            val response = processInteractor.sendCommandSync(commandString)
+            val response = processInteractor.sendCommandAsync(commandString)
+                .doOnNext { message -> notifyObservers { it.onCommandProgress(message, secondsSince(startTime)) } }
+                .collectList().block()?.joinToString("\n") ?: ""
             notifyObservers { it.onCommandComplete(response, 0) }
             response
         } catch (e: Exception) {
@@ -117,17 +121,20 @@ class CommandExecutor(
         return commandLogger.prependCommandToOutput(output)
     }
 
-    private fun buildSidecarCommandString(commandData: CommandData): String {
-        val fileList = commandData.files.joinToString(" ") { it.filePath }
-        return when (commandData.aiderMode) {
-            AiderMode.NORMAL -> "edit $fileList -m \"${commandData.message}\""
-            AiderMode.STRUCTURED -> "edit $fileList -m \"${
-                project.service<AiderPlanService>().createAiderPlanSystemPrompt(commandData)
-            }\""
+    private fun changeContextFiles(commandData: CommandData) {
+        processInteractor.sendCommandSync("/drop")
+        processInteractor.sendCommandSync("/clear")
+        processInteractor.sendCommandSync("/add ${commandData.files.filter { !it.isReadOnly }.joinToString(" ")}")
+        processInteractor.sendCommandSync("/read-only ${commandData.files.filter { it.isReadOnly }.joinToString(" ")}")
+    }
 
-            AiderMode.ARCHITECT -> "edit $fileList -m \"/architect ${commandData.message}\""
-            AiderMode.SHELL -> "edit $fileList"
-            else -> "edit $fileList"
+    private fun buildSidecarCommandString(commandData: CommandData): String {
+        return when (commandData.aiderMode) {
+            AiderMode.NORMAL -> commandData.message
+            AiderMode.STRUCTURED -> project.service<AiderPlanService>().createAiderPlanSystemPrompt(commandData)
+
+            AiderMode.ARCHITECT -> "/architect ${commandData.message}"
+            else -> ""
         }
     }
 
@@ -161,7 +168,7 @@ class CommandExecutor(
             while (!isAborted) {
                 val line = reader.readLine() ?: break
                 output.append(line).append("\n")
-                val runningTime = (System.currentTimeMillis() - startTime) / 1000
+                val runningTime = secondsSince(startTime)
                 notifyObservers {
                     it.onCommandProgress(
                         commandLogger.prependCommandToOutput(output.toString()),
@@ -173,4 +180,6 @@ class CommandExecutor(
             }
         }
     }
+
+    private fun secondsSince(startTime: Long) = (System.currentTimeMillis() - startTime) / 1000
 }
