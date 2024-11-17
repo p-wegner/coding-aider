@@ -68,6 +68,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
             try {
                 var line: String?
                 reader?.readLine()
+                // make more robust, read until char 62 is encountered and no further characters are read within a timeout
                 while (reader!!.readLine().also { line = it } != null) {
                     if (verbose) logger.info(line)
                     if (line!!.isEmpty()) {

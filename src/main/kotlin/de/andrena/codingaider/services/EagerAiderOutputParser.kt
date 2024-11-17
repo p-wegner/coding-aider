@@ -11,7 +11,7 @@ class EagerAiderOutputParser(
     private val logger: Logger,
     private val reader: BufferedReader?,
     private val writer: BufferedWriter?
-) :AiderOutputParser{
+) : AiderOutputParser {
     private val readTimeout = 300L // milliseconds
     private val commandPrompt = "> "
     private fun String.isPromptLine() = this == commandPrompt
@@ -22,18 +22,18 @@ class EagerAiderOutputParser(
             writer?.flush()
 
             var lastReadTime = System.currentTimeMillis()
-            
+
             while (true) {
                 if (reader?.ready() == true) {
                     reader.mark(1000) // Mark the current position
                     val char = reader.read()
-                    if (char == -1) {
+                    if (char == -1 || char == 62) { // 62 is the char code for ">"
                         // End of stream
                         sink.complete()
                         return
                     }
                     reader.reset() // Go back to marked position
-                    
+
                     val line = reader.readLine()
                     if (verbose) logger.info(line)
                     if (!line.isPromptLine()) {
