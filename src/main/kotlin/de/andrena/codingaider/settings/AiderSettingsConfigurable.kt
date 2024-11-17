@@ -46,6 +46,8 @@ class AiderSettingsConfigurable() : Configurable {
     private val autoCommitsComboBox = ComboBox(arrayOf("Default", "On", "Off"))
     private val dirtyCommitsComboBox = ComboBox(arrayOf("Default", "On", "Off"))
     private val useStructuredModeCheckBox = JBCheckBox("Use Structured Mode")
+    private val useSidecarModeCheckBox = JBCheckBox("Use Sidecar Mode (Experimental)")
+    private val sidecarModeVerboseCheckBox = JBCheckBox("Enable verbose logging for sidecar mode")
     private val enableDocumentationLookupCheckBox = JBCheckBox("Enable documentation lookup")
     private val alwaysIncludeOpenFilesCheckBox = JBCheckBox("Always include open files in context")
     private val alwaysIncludePlanContextFilesCheckBox = JBCheckBox("Always include plan context files")
@@ -149,6 +151,20 @@ class AiderSettingsConfigurable() : Configurable {
                     cell(useStructuredModeCheckBox)
                 }
                 row {
+                    cell(useSidecarModeCheckBox).component.apply {
+                        toolTipText = "Run Aider as a persistent process. This is experimental and may improve performance."
+                        addItemListener { e ->
+                            sidecarModeVerboseCheckBox.isEnabled = e.stateChange == java.awt.event.ItemEvent.SELECTED
+                        }
+                    }
+                }
+                row {
+                    cell(sidecarModeVerboseCheckBox).component.apply {
+                        toolTipText = "Enable detailed logging for sidecar mode operations"
+                        isEnabled = useSidecarModeCheckBox.isSelected
+                    }
+                }
+                row {
                     cell(activateIdeExecutorAfterWebcrawlCheckBox)
                         .component
                         .apply {
@@ -247,6 +263,8 @@ class AiderSettingsConfigurable() : Configurable {
                 autoCommitsComboBox.selectedIndex != settings.autoCommits.toIndex() ||
                 dirtyCommitsComboBox.selectedIndex != settings.dirtyCommits.toIndex() ||
                 useStructuredModeCheckBox.isSelected != settings.useStructuredMode ||
+                useSidecarModeCheckBox.isSelected != settings.useSidecarMode ||
+                sidecarModeVerboseCheckBox.isSelected != settings.sidecarModeVerbose ||
                 enableDocumentationLookupCheckBox.isSelected != settings.enableDocumentationLookup ||
                 alwaysIncludeOpenFilesCheckBox.isSelected != settings.alwaysIncludeOpenFiles ||
                 alwaysIncludePlanContextFilesCheckBox.isSelected != settings.alwaysIncludePlanContextFiles ||
@@ -277,6 +295,8 @@ class AiderSettingsConfigurable() : Configurable {
         settings.autoCommits = AiderSettings.AutoCommitSetting.fromIndex(autoCommitsComboBox.selectedIndex)
         settings.dirtyCommits = AiderSettings.DirtyCommitSetting.fromIndex(dirtyCommitsComboBox.selectedIndex)
         settings.useStructuredMode = useStructuredModeCheckBox.isSelected
+        settings.useSidecarMode = useSidecarModeCheckBox.isSelected
+        settings.sidecarModeVerbose = sidecarModeVerboseCheckBox.isSelected
         settings.enableDocumentationLookup = enableDocumentationLookupCheckBox.isSelected
         settings.alwaysIncludeOpenFiles = alwaysIncludeOpenFilesCheckBox.isSelected
         settings.alwaysIncludePlanContextFiles = alwaysIncludePlanContextFilesCheckBox.isSelected
@@ -307,6 +327,9 @@ class AiderSettingsConfigurable() : Configurable {
         autoCommitsComboBox.selectedIndex = settings.autoCommits.toIndex()
         dirtyCommitsComboBox.selectedIndex = settings.dirtyCommits.toIndex()
         useStructuredModeCheckBox.isSelected = settings.useStructuredMode
+        useSidecarModeCheckBox.isSelected = settings.useSidecarMode
+        sidecarModeVerboseCheckBox.isSelected = settings.sidecarModeVerbose
+        sidecarModeVerboseCheckBox.isEnabled = settings.useSidecarMode
         enableDocumentationLookupCheckBox.isSelected = settings.enableDocumentationLookup
         alwaysIncludeOpenFilesCheckBox.isSelected = settings.alwaysIncludeOpenFiles
         alwaysIncludePlanContextFilesCheckBox.isSelected = settings.alwaysIncludePlanContextFiles
