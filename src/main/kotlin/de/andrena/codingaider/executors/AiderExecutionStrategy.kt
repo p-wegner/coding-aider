@@ -82,7 +82,7 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
                 add("--commit-prompt")
                 add(getCommitPrompt())
             }
-            if (commandData.options.sidecarMode ) {
+            if (commandData.sidecarMode ) {
                 return@buildList
             }
             when (commandData.aiderMode ) {

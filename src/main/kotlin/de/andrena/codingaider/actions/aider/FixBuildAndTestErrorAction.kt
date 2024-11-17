@@ -123,7 +123,8 @@ abstract class BaseFixBuildAndTestErrorAction : AnAction() {
                 lintCmd = settings.lintCmd,
                 deactivateRepoMap = settings.deactivateRepoMap,
                 editFormat = settings.editFormat,
-                projectPath = project.basePath ?: ""
+                projectPath = project.basePath ?: "",
+                sidecarMode = settings.useSidecarMode
             )
         }
     }

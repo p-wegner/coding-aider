@@ -15,6 +15,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
 import de.andrena.codingaider.command.CommandData
+import de.andrena.codingaider.command.CommandOptions
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileTraversal
@@ -70,7 +71,8 @@ class ApplyDesignPatternAction : AnAction() {
                     lintCmd = settings.lintCmd,
                     deactivateRepoMap = settings.deactivateRepoMap,
                     editFormat = settings.editFormat,
-                    projectPath = project.basePath ?: ""
+                    projectPath = project.basePath ?: "",
+                    sidecarMode = settings.useSidecarMode
                 )
                 IDEBasedExecutor(project, commandData).execute()
             }

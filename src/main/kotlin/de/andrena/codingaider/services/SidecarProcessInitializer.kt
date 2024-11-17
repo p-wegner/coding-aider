@@ -92,7 +92,7 @@ class SidecarProcessInitializer(private val project: Project, private val cs: Co
             additionalArgs = settings.additionalArgs ?: "",
             lintCmd = settings.lintCmd ?: "",
             aiderMode = AiderMode.NORMAL,
-            options = CommandOptions(sidecarMode = true)
+            sidecarMode = settings.useSidecarMode
 
         )
     }

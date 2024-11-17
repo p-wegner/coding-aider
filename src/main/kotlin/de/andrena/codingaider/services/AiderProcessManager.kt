@@ -137,7 +137,25 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 logger.error("Error sending async command to Aider sidecar process", e)
             }
     }
-
+    fun interruptCurrentCommand() {
+        synchronized(this) {
+            if (process?.isAlive == true) {
+                if (System.getProperty("os.name").lowercase().contains("windows")) {
+                    // Windows specific handling
+                    Runtime.getRuntime().exec("cmd.exe /C taskkill /F /T /PID ${process!!.pid()}")
+                } else {
+                    // Unix-based systems (Linux, macOS)
+                    process?.descendants()?.forEach { processHandle ->
+                        processHandle.destroyForcibly()
+                    }
+                    process?.pid()?.let { pid ->
+                        Runtime.getRuntime().exec("kill -SIGINT $pid")
+                    }
+                }
+                logger.info("Sent interrupt signal to Aider process")
+            }
+        }
+    }
     override fun dispose() {
         synchronized(this) {
             try {
