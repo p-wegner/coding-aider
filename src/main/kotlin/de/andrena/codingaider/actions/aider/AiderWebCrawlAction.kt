@@ -75,7 +75,6 @@ class AiderWebCrawlAction : AnAction() {
                     editFormat = "whole",
                     aiderMode = AiderMode.NORMAL,
                     options = CommandOptions(autoCommit = false, dirtyCommits = false),
-                    sidecarMode = settings.useSidecarMode
                 )
                 if (settings.activateIdeExecutorAfterWebcrawl) {
                     IDEBasedExecutor(project, commandData).execute()
