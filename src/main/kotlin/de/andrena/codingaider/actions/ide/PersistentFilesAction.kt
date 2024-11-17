@@ -21,7 +21,7 @@ class PersistentFilesAction : AnAction() {
             val persistentFileService = project.getService(PersistentFileService::class.java)
             val persistentFiles = persistentFileService.getPersistentFiles()
 
-            val allFiles = FileTraversal.traverseFilesOrDirectories(files, true)
+            val allFiles = FileTraversal.traverseFilesOrDirectories(files, false)
 
             val allFilesContained = allFiles.all { file ->
                 persistentFiles.any { it.filePath == file.filePath }
