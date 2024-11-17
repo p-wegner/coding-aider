@@ -7,7 +7,6 @@ import com.intellij.openapi.project.Project
 import reactor.core.publisher.Flux
 import reactor.core.publisher.FluxSink
 import reactor.core.publisher.Mono
-import reactor.core.publisher.Sinks
 import reactor.core.scheduler.Schedulers
 import java.io.BufferedReader
 import java.io.BufferedWriter
@@ -48,7 +47,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 process = processBuilder.start()
                 reader = BufferedReader(InputStreamReader(process!!.inputStream))
                 writer = BufferedWriter(OutputStreamWriter(process!!.outputStream))
-                outputParser = AiderOutputParser(verbose, logger, reader, writer)
+                outputParser = EagerAiderOutputParser(verbose, logger, reader, writer)
 
                 if (verbose) {
                     logger.info("Started Aider sidecar process with command: ${command.joinToString(" ")}")
