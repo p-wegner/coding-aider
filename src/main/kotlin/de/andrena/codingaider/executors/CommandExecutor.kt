@@ -118,6 +118,7 @@ class CommandExecutor(
         val output = try {
             val startTime = System.currentTimeMillis()
             val response = processInteractor.sendCommandAsync(commandString)
+                // TODO: accumulate output similar to native executor, see pollProcessAndReadOutput
                 .doOnNext { message -> notifyObservers { it.onCommandProgress(message, secondsSince(startTime)) } }
                 .collectList().block()?.joinToString("\n") ?: ""
             notifyObservers { it.onCommandComplete(response, 0) }
