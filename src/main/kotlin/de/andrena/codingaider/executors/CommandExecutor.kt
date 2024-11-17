@@ -9,6 +9,7 @@ import de.andrena.codingaider.executors.api.AiderProcessInteractor
 import de.andrena.codingaider.executors.api.CommandSubject
 import de.andrena.codingaider.executors.api.DefaultAiderProcessInteractor
 import de.andrena.codingaider.inputdialog.AiderMode
+import de.andrena.codingaider.services.AiderProcessManager
 import de.andrena.codingaider.services.FileExtractorService
 import de.andrena.codingaider.services.SidecarProcessInitializer
 import de.andrena.codingaider.services.plans.AiderPlanService
@@ -54,6 +55,14 @@ class CommandExecutor(
         // Check if sidecar mode is enabled
         if (settings.useSidecarMode) {
             project.service<SidecarProcessInitializer>().initializeSidecarProcess()
+            // wait for sidecar process to be ready with timeout
+            val startTime = System.currentTimeMillis()
+            while (!project.service<AiderProcessManager>().isReadyForCommand()) {
+                Thread.sleep(100)
+                if (System.currentTimeMillis() - startTime > 10000) {
+                    throw IllegalStateException("Sidecar process failed to start")
+                }
+            }
             return executeSidecarCommand(updatedCommandData)
         }
 
