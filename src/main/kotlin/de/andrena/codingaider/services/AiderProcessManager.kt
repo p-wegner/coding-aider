@@ -90,51 +90,8 @@ class AiderProcessManager(private val project: Project) : Disposable {
             .onErrorReturn(false)
             .block() ?: false
 
-    fun sendCommand(command: String, firstCommand: Boolean = false): Mono<String> {
-        if (!isRunning.get()) {
-            return Mono.error(IllegalStateException("Aider sidecar process not running"))
-        }
 
-        return Mono.create<String> { sink ->
-            synchronized(this) {
-                try {
-                    // Send the command
-                    writer?.write("$command\n")
-                    writer?.flush()
-
-                    // Collect response until we see the prompt
-                    val response = StringBuilder()
-                    var commandPromptCount = 0
-                    var line: String?
-                    while (reader?.readLine().also { line = it } != null) {
-                        if (verbose) logger.info(line)
-                        if (response.isNotEmpty() && !line!!.isPromptLine()) response.append("\n")
-                        if (!line!!.isPromptLine()) response.append(line)
-
-                        if (line == commandPrompt) commandPromptCount++
-                        if (firstCommand) {
-                            if (commandPromptCount > 1 && line!!.isEmpty()) {
-                                sink.success(response.toString())
-                                return@synchronized
-                            }
-                        } else {
-                            if (commandPromptCount > 0 && line!!.isEmpty()) {
-                                sink.success(response.toString())
-                                return@synchronized
-                            }
-                        }
-                    }
-                    sink.error(IllegalStateException("Process terminated while waiting for response"))
-                } catch (e: Exception) {
-                    sink.error(e)
-                }
-            }
-        }
-            .subscribeOn(Schedulers.boundedElastic())
-            .doOnError { e ->
-                logger.error("Error sending command to Aider sidecar process", e)
-            }
-    }
+    val terminalPromptPrefix = listOf("Tokens: ", "Dropping all files from the chat session")
 
     fun sendCommandAsync(command: String): Flux<String> {
         if (!isRunning.get()) {
@@ -148,15 +105,17 @@ class AiderProcessManager(private val project: Project) : Disposable {
                     writer?.flush()
 
                     var commandPromptCount = 0
+                    var terminalPromptPrefixHitCount = 0
                     var line: String?
                     while (reader?.readLine().also { line = it } != null) {
                         if (verbose) logger.info(line)
-                        if (!line!!.isPromptLine() ) {
+                        if (!line!!.isPromptLine()) {
                             sink.next(line!!)
                         }
 
                         if (line == commandPrompt) commandPromptCount++
-                        if (commandPromptCount > 0 &&  reader!!.ready()) {
+                        if (terminalPromptPrefix.any { line!!.startsWith(it) }) terminalPromptPrefixHitCount++
+                        if (commandPromptCount > 0 && (terminalPromptPrefixHitCount > 0 || command == "/clear") ) {
                             sink.complete()
                             return@synchronized
                         }
