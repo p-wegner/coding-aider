@@ -5,6 +5,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import reactor.core.publisher.Flux
+import reactor.core.publisher.FluxSink
 import reactor.core.publisher.Mono
 import reactor.core.publisher.Sinks
 import reactor.core.scheduler.Schedulers
@@ -21,12 +22,11 @@ class AiderProcessManager(private val project: Project) : Disposable {
     private var process: Process? = null
     private var reader: BufferedReader? = null
     private var writer: BufferedWriter? = null
-    private val outputSink = Sinks.many().multicast().onBackpressureBuffer<String>()
     private val isRunning = AtomicBoolean(false)
-    private val commandPrompt = "> "
+
     private val startupTimeout = Duration.ofSeconds(60)
     private var verbose: Boolean = false
-
+    private lateinit var outputParser : AiderOutputParser
     fun startProcess(
         command: List<String>,
         workingDir: String,
@@ -48,6 +48,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 process = processBuilder.start()
                 reader = BufferedReader(InputStreamReader(process!!.inputStream))
                 writer = BufferedWriter(OutputStreamWriter(process!!.outputStream))
+                outputParser = AiderOutputParser(verbose, logger, reader, writer)
 
                 if (verbose) {
                     logger.info("Started Aider sidecar process with command: ${command.joinToString(" ")}")
@@ -70,8 +71,6 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 reader?.readLine()
                 while (reader!!.readLine().also { line = it } != null) {
                     if (verbose) logger.info(line)
-                    outputSink.tryEmitNext(line!!)
-
                     if (line!!.isEmpty()) {
                         isRunning.set(true)
                         sink.success(true)
@@ -91,45 +90,15 @@ class AiderProcessManager(private val project: Project) : Disposable {
             .block() ?: false
 
 
-    val terminalPromptPrefix = listOf("Tokens: ", "Dropping all files from the chat session")
 
     fun sendCommandAsync(command: String): Flux<String> {
         if (!isRunning.get()) {
             return Flux.error(IllegalStateException("Aider sidecar process not running"))
         }
 
-        return Flux.create { sink ->
+        return Flux.create { sink: FluxSink<String> ->
             synchronized(this) {
-                try {
-                    writer?.write("$command\n")
-                    writer?.flush()
-
-                    var commandPromptCount = 0
-                    var terminalPromptPrefixHitCount = 0
-                    var line: String?
-                    while (reader?.readLine().also { line = it } != null) {
-                        if (verbose) logger.info(line)
-                        if (!line!!.isPromptLine()) {
-                            sink.next(line!!)
-                        }
-
-                        if (line == commandPrompt) commandPromptCount++
-                        if (terminalPromptPrefix.any { line!!.startsWith(it) }) terminalPromptPrefixHitCount++
-                        if (commandPromptCount > 0 && (
-                                    terminalPromptPrefixHitCount > 0
-                                            || command == "/clear"
-                                            || command.startsWith("/add")
-                                            || command.startsWith("/read-only")
-                                )
-                        ) {
-                            sink.complete()
-                            return@synchronized
-                        }
-                    }
-                    sink.error(IllegalStateException("Process terminated while waiting for response"))
-                } catch (e: Exception) {
-                    sink.error(e)
-                }
+                outputParser.writeCommandAndReadResults(command, sink)
             }
         }
             .subscribeOn(Schedulers.boundedElastic())
@@ -137,6 +106,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 logger.error("Error sending async command to Aider sidecar process", e)
             }
     }
+
     fun interruptCurrentCommand() {
         synchronized(this) {
             if (process?.isAlive == true) {
@@ -156,11 +126,11 @@ class AiderProcessManager(private val project: Project) : Disposable {
             }
         }
     }
+
     override fun dispose() {
         synchronized(this) {
             try {
                 isRunning.set(false)
-                outputSink.tryEmitComplete()
                 writer?.close()
                 reader?.close()
                 process?.destroy()
@@ -189,5 +159,5 @@ class AiderProcessManager(private val project: Project) : Disposable {
         }
     }
 
-    private fun String.isPromptLine() = this == commandPrompt
 }
+
