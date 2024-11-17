@@ -68,7 +68,8 @@ class DocumentEachFolderAction : AnAction() {
                     deactivateRepoMap = settings.deactivateRepoMap,
                     editFormat = settings.editFormat,
                     projectPath = project.basePath ?: "",
-                    options = CommandOptions(disablePresentation = true, autoCloseDelay = 1)
+                    options = CommandOptions(disablePresentation = true, autoCloseDelay = 1),
+//                    sidecarMode = settings.useSidecarMode
                 )
                 val ideBasedExecutor = IDEBasedExecutor(project, commandData)
                 ideBasedExecutor.execute()

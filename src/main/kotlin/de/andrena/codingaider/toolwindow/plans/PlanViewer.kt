@@ -16,6 +16,7 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.command.CommandData
+import de.andrena.codingaider.command.CommandOptions
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.outputview.CustomMarkdownViewer
@@ -144,6 +145,7 @@ class PlanViewer(private val project: Project) {
             lintCmd = settings.lintCmd,
             projectPath = project.basePath ?: "",
             aiderMode = AiderMode.STRUCTURED,
+             sidecarMode = settings.useSidecarMode
         )
 
         IDEBasedExecutor(project, commandData).execute()

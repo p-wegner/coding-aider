@@ -52,8 +52,7 @@ class CommandExecutor(
         val extractedFiles = fileExtractorService.extractFilesIfNeeded(commandData.files)
         val updatedCommandData = commandData.copy(files = extractedFiles)
 
-        // Check if sidecar mode is enabled
-        if (settings.useSidecarMode) {
+        if (commandData.sidecarMode) {
             project.service<SidecarProcessInitializer>().initializeSidecarProcess()
             // wait for sidecar process to be ready with timeout
             val startTime = System.currentTimeMillis()
@@ -167,6 +166,9 @@ class CommandExecutor(
 
     fun abortCommand() {
         isAborted = true
+        if (commandData.sidecarMode) {
+            project.service<AiderProcessManager>().interruptCurrentCommand()
+        }
         if (useDockerAider) {
             dockerManager.stopDockerContainer()
         } else {

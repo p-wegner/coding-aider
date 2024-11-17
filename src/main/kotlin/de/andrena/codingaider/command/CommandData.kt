@@ -30,6 +30,7 @@ data class CommandData(
     val projectPath: String,
     val options: CommandOptions = CommandOptions.DEFAULT,
     val aiderMode: AiderMode = AiderMode.NORMAL,
+    val sidecarMode: Boolean = false
 ) {
 
     val isShellMode: Boolean get() = aiderMode == AiderMode.SHELL
@@ -53,7 +54,6 @@ data class CommandOptions(
     val autoCloseDelay: Int? = null,
     val autoCommit: Boolean? = null,
     val dirtyCommits: Boolean? = null,
-    val sidecarMode: Boolean = false
 ) {
 
     companion object {

@@ -54,6 +54,7 @@ class DocumentCodeAction : AnAction() {
                 deactivateRepoMap = settings.deactivateRepoMap,
                 editFormat = settings.editFormat,
                 projectPath = project.basePath ?: "",
+                sidecarMode = settings.useSidecarMode
             )
             IDEBasedExecutor(project, commandData).execute()
         }

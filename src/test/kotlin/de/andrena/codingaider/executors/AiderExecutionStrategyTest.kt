@@ -55,6 +55,7 @@ class AiderExecutionStrategyTest {
             additionalArgs = "--verbose",
             lintCmd = "lint",
             deactivateRepoMap = true,
+            sidecarMode = false
         )
         whenever(project.getService(AiderPlanService::class.java)).thenReturn(aiderPlanService)
         whenever(project.getService(AiderPlanPromptService::class.java)).thenReturn(aiderPlanPromptService)
