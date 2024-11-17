@@ -53,7 +53,6 @@ class AiderSettingsConfigurable() : Configurable {
     private val alwaysIncludePlanContextFilesCheckBox = JBCheckBox("Always include plan context files")
     private val useDockerAiderCheckBox: JBCheckBox
     private val dockerImageTagField: TextFieldWithHistory
-    private val aiderExecutablePathField: TextFieldWithHistory
     private val documentationLlmComboBox =
         ComboBox(arrayOf("Default") + apiKeyChecker.getAllLlmOptions().toTypedArray())
 
@@ -130,22 +129,6 @@ class AiderSettingsConfigurable() : Configurable {
 
             }
 
-            group("Aider Executable") {
-                row("Aider Executable Path:") {
-                    cell(aiderExecutablePathField)
-                        .resizableColumn()
-                        .align(Align.FILL)
-                        .component
-                        .apply {
-                            toolTipText =
-                                "Only change this if you have a custom aider installation or if aider is not found on your system PATH. Default 'aider' works in most cases."
-                            setHistory(listOf(AiderDefaults.AIDER_EXECUTABLE_PATH))
-                        }
-                    button("Reset to Default") {
-                        aiderExecutablePathField.text = AiderDefaults.AIDER_EXECUTABLE_PATH
-                    }
-                }
-            }
             group("Advanced Settings") {
                 row {
                     cell(useStructuredModeCheckBox)
@@ -523,7 +506,6 @@ class AiderSettingsConfigurable() : Configurable {
         }
         this.useDockerAiderCheckBox = JBCheckBox("Use aider in Docker")
         this.dockerImageTagField = TextFieldWithHistory()
-        this.aiderExecutablePathField = TextFieldWithHistory()
         this.useDockerAiderCheckBox.addItemListener { e ->
             dockerImageTagField.isEnabled = e.stateChange == java.awt.event.ItemEvent.SELECTED
         }
