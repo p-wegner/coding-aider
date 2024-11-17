@@ -132,7 +132,6 @@ class CommandExecutor(
         return when (commandData.aiderMode) {
             AiderMode.NORMAL -> commandData.message
             AiderMode.STRUCTURED -> project.service<AiderPlanService>().createAiderPlanSystemPrompt(commandData)
-
             AiderMode.ARCHITECT -> "/architect ${commandData.message}"
             else -> ""
         }

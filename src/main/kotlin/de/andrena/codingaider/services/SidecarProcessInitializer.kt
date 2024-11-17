@@ -46,9 +46,12 @@ class SidecarProcessInitializer(private val project: Project) : Disposable {
             logger.info("Sidecar mode is disabled")
             return
         }
+        if (processManager.isReadyForCommand()) {
+            logger.info("Sidecar process is already running")
+            return
+        }
 
-        // Ensure any existing process is cleaned up first
-        shutdownSidecarProcess()
+//        shutdownSidecarProcess()
 
         val strategy = SidecarAiderExecutionStrategy(project, settings)
         val command = strategy.buildCommand(createInitializationCommandData())
@@ -84,8 +87,8 @@ class SidecarProcessInitializer(private val project: Project) : Disposable {
             files = emptyList(),
             useYesFlag = true,
             llm = settings.llm,
-            additionalArgs = "",
-            lintCmd = "",
+            additionalArgs = settings.additionalArgs,
+            lintCmd = settings.lintCmd,
             aiderMode = AiderMode.NORMAL,
             options = CommandOptions(sidecarMode = true)
 

@@ -15,7 +15,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         settingsChangeListeners.add(listener)
     }
 
-    private fun notifySettingsChanged() {
+    fun notifySettingsChanged() {
         settingsChangeListeners.forEach { it() }
     }
 
@@ -148,7 +148,6 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.useSidecarMode
         set(value) {
             myState.useSidecarMode = value
-            notifySettingsChanged()
         }
 
     var sidecarModeVerbose: Boolean
