@@ -4,47 +4,46 @@ import com.intellij.openapi.diagnostic.Logger
 import reactor.core.publisher.FluxSink
 import java.io.BufferedReader
 import java.io.BufferedWriter
+import java.util.concurrent.TimeUnit
 
-class AiderOutputParser(
+class EagerAiderOutputParser(
     private val verbose: Boolean,
     private val logger: Logger,
     private val reader: BufferedReader?,
     private val writer: BufferedWriter?
 ) {
-    val terminalPromptPrefix = listOf("Tokens: ", "Dropping all files from the chat session")
+    private val readTimeout = 300L // milliseconds
     private val commandPrompt = "> "
     private fun String.isPromptLine() = this == commandPrompt
+
     fun writeCommandAndReadResults(command: String, sink: FluxSink<String>) {
         try {
             writer?.write("$command\n")
             writer?.flush()
 
-            var commandPromptCount = 0
-            var terminalPromptPrefixHitCount = 0
-            var line: String?
-            while (reader?.readLine().also { line = it } != null) {
-                if (verbose) logger.info(line)
-                if (!line!!.isPromptLine()) {
-                    sink.next(line!!)
-                }
-
-                if (line == commandPrompt) commandPromptCount++
-                if (terminalPromptPrefix.any { line!!.startsWith(it) }) terminalPromptPrefixHitCount++
-                if (commandPromptCount > 0 && (
-                            terminalPromptPrefixHitCount > 0
-                                    || command == "/clear"
-                                    || command.startsWith("/add")
-                                    || command.startsWith("/read-only")
-                            )
-                ) {
-                    sink.complete()
-                    return
+            var lastReadTime = System.currentTimeMillis()
+            
+            while (true) {
+                if (reader?.ready() == true) {
+                    val line = reader.readLine()
+                    if (line != null) {
+                        if (verbose) logger.info(line)
+                        if (!line.isPromptLine()) {
+                            sink.next(line)
+                        }
+                        lastReadTime = System.currentTimeMillis()
+                    }
+                } else {
+                    // Check if we've exceeded the timeout
+                    if (System.currentTimeMillis() - lastReadTime > readTimeout) {
+                        sink.complete()
+                        return
+                    }
+                    TimeUnit.MILLISECONDS.sleep(50) // Small sleep to prevent busy waiting
                 }
             }
-            sink.error(IllegalStateException("Process terminated while waiting for response"))
         } catch (e: Exception) {
             sink.error(e)
         }
     }
-
 }
