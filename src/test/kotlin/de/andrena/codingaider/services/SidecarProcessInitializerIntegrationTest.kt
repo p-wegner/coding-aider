@@ -5,8 +5,9 @@ import de.andrena.codingaider.executors.api.AiderProcessInteractor
 import de.andrena.codingaider.executors.api.DefaultAiderProcessInteractor
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.settings.MySettingsService
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.*
+import kotlinx.coroutines.test.TestScope
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -44,13 +45,15 @@ class SidecarProcessInitializerIntegrationTest() : BaseIntegrationTest() {
         whenever(project.basePath).thenReturn(tempDir.toString())
 
         processInteractor = DefaultAiderProcessInteractor(project)
-        sidecarProcessInitializer = SidecarProcessInitializer(project, CoroutineScope(Dispatchers.Main))
+        val testScope = TestScope(UnconfinedTestDispatcher())
+        sidecarProcessInitializer = SidecarProcessInitializer(project, testScope)
 
     }
 
     @Test
-    fun testStartAiderWithoutMessageOptionAndSendCommand() {
+    fun testStartAiderWithoutMessageOptionAndSendCommand() = runBlocking {
         sidecarProcessInitializer.initializeSidecarProcess()
+        delay(1000) // Give process time to fully initialize
 
         val response1 = processInteractor.sendCommandSync("What is the meaning of life, the universe, and everything?")
         assertThat(response1).contains("42")
