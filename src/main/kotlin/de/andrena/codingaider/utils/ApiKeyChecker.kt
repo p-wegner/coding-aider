@@ -30,7 +30,9 @@ class DefaultApiKeyChecker : ApiKeyChecker {
     }
 
     override fun isApiKeyAvailable(apiKeyName: String): Boolean {
-        return getApiKeyValue(apiKeyName) != null
+        return true;
+        // TODO: Fix performance issue with CredentialStore
+//        return getApiKeyValue(apiKeyName) != null
     }
 
     override fun getApiKeyForLlm(llm: String): String? = llmToApiKeyMap[llm]

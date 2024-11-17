@@ -303,6 +303,7 @@ class AiderSettingsConfigurable() : Configurable {
         settings.documentationLlm = documentationLlmComboBox.selectedItem as String
         settings.dockerImageTag = aiderSetupPanel.dockerImageTagField.text
         settings.aiderExecutablePath = aiderSetupPanel.aiderExecutablePathField.text
+        settings.notifySettingsChanged()
     }
 
 
@@ -337,6 +338,7 @@ class AiderSettingsConfigurable() : Configurable {
         aiderSetupPanel.dockerImageTagField.text = settings.dockerImageTag
         aiderSetupPanel.aiderExecutablePathField.text = settings.aiderExecutablePath
         aiderSetupPanel.updateApiKeyFieldsOnClose()
+        settings.notifySettingsChanged()
     }
 
     private fun getApiKeyDisplayValue(keyName: String): String {
