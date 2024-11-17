@@ -69,7 +69,6 @@ class DocumentEachFolderAction : AnAction() {
                     editFormat = settings.editFormat,
                     projectPath = project.basePath ?: "",
                     options = CommandOptions(disablePresentation = true, autoCloseDelay = 1),
-//                    sidecarMode = settings.useSidecarMode
                 )
                 val ideBasedExecutor = IDEBasedExecutor(project, commandData)
                 ideBasedExecutor.execute()
