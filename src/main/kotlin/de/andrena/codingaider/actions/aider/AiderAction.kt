@@ -38,7 +38,6 @@ class AiderAction : AnAction() {
             val project: Project? = e.project
             val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
             if (project != null && !files.isNullOrEmpty()) {
-                project.service<SidecarProcessInitializer>().initializeSidecarProcess()
                 val allFiles = project.service<FileDataCollectionService>().collectAllFiles(files)
 
                 if (directShellMode) {
