@@ -207,7 +207,7 @@
         <group id="de.andrena.codingaider.actions.aider.FixCompileErrorActionGroup"
                 class="de.andrena.codingaider.actions.aider.FixCompileErrorActionGroup"
                 text="Fix with Aider"
-                icon="META-INF/pluginIcon_13.svg"
+                icon="MyIcons.Tool"
                 description="Group of actions to fix compile errors with Aider"
                 popup="true">
             <action id="de.andrena.codingaider.actions.aider.FixCompileErrorAction"
@@ -229,7 +229,7 @@
             <action id="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorAction"
                     class="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorAction"
                     text="Fix Error with Aider"
-                    icon="META-INF/pluginIcon_13.svg"
+                    icon="MyIcons.Tool"
                     description="Group of actions to fix errors with Aider">
                 <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
                 <add-to-group group-id="RunContextPopupGroup" anchor="first"/>
@@ -237,7 +237,7 @@
             </action>
             <action id="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorInteractive"
                     class="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorInteractive"
-                    icon="META-INF/pluginIcon_13.svg"
+                    icon="MyIcons.Tool"
                     text="Fix Test with Aider"
                     description="Group of actions to fix errors with Aider">
                 <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
@@ -278,7 +278,7 @@
     <extensions defaultExtensionNs="com.intellij">
         <toolWindow id="Coding Aider"
                     secondary="true"
-                    icon="META-INF/pluginIcon_13.svg"
+                    icon="MyIcons.Tool"
                     anchor="right"
                     factoryClass="de.andrena.codingaider.toolwindow.CodingAiderToolWindow"
                     canCloseContents="false"/>
