@@ -47,24 +47,16 @@ class CommandExecutor(
 
     fun executeCommand(): String {
         aiderPlanService.createPlanFolderIfNeeded(commandData)
-
-        val fileExtractorService = FileExtractorService.getInstance()
-        val extractedFiles = fileExtractorService.extractFilesIfNeeded(commandData.files)
-        val updatedCommandData = commandData.copy(files = extractedFiles)
-
+        val updatedCommandData = extractFilesIfNeeded()
         if (commandData.sidecarMode) {
-            project.service<SidecarProcessInitializer>().initializeSidecarProcess()
-            // wait for sidecar process to be ready with timeout
-            val startTime = System.currentTimeMillis()
-            while (!project.service<AiderProcessManager>().isReadyForCommand()) {
-                Thread.sleep(100)
-                if (System.currentTimeMillis() - startTime > 10000) {
-                    throw IllegalStateException("Sidecar process failed to start")
-                }
-            }
-            return executeSidecarCommand(updatedCommandData)
+            return startSideCarAndExecuteCommand(updatedCommandData)
         }
 
+        return executeCommandInNewProcess(updatedCommandData)
+    }
+
+
+    private fun executeCommandInNewProcess(updatedCommandData: CommandData): String {
         val commandArgs = executionStrategy.buildCommand(updatedCommandData)
         logger.info("Executing Aider command: ${commandArgs.joinToString(" ")}")
         notifyObservers {
@@ -77,7 +69,6 @@ class CommandExecutor(
                 }"
             )
         }
-
         val processBuilder = ProcessBuilder(commandArgs)
             .apply {
                 if (commandData.projectPath.isNotEmpty()) directory(File(commandData.projectPath))
@@ -120,7 +111,7 @@ class CommandExecutor(
             val response = processInteractor.sendCommandAsync(commandString)
                 .doOnNext { message ->
                     output.append(message).append("\n")
-                    notifyObservers { 
+                    notifyObservers {
                         it.onCommandProgress(
                             commandLogger.prependCommandToOutput(output.toString()),
                             secondsSince(startTime)
@@ -138,6 +129,29 @@ class CommandExecutor(
         }
 
         return commandLogger.prependCommandToOutput(output)
+    }
+
+    private fun extractFilesIfNeeded(): CommandData {
+        val fileExtractorService = FileExtractorService.getInstance()
+        val extractedFiles = fileExtractorService.extractFilesIfNeeded(commandData.files)
+        val updatedCommandData = commandData.copy(files = extractedFiles)
+        return updatedCommandData
+    }
+
+    private fun startSideCarAndExecuteCommand(updatedCommandData: CommandData): String {
+        startSideCarWithTimeout()
+        return executeSidecarCommand(updatedCommandData)
+    }
+
+    private fun startSideCarWithTimeout() {
+        project.service<SidecarProcessInitializer>().initializeSidecarProcess()
+        val startTime = System.currentTimeMillis()
+        while (!project.service<AiderProcessManager>().isReadyForCommand()) {
+            Thread.sleep(100)
+            if (System.currentTimeMillis() - startTime > 10000) {
+                throw IllegalStateException("Sidecar process failed to start")
+            }
+        }
     }
 
     private fun changeContextFiles(commandData: CommandData) {
