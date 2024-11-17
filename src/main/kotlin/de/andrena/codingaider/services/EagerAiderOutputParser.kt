@@ -25,15 +25,21 @@ class EagerAiderOutputParser(
             
             while (true) {
                 if (reader?.ready() == true) {
-                    // TODO: readline() is blocking, so if there is no more data we block here
-                    val line = reader.readLine()
-                    if (line != null) {
-                        if (verbose) logger.info(line)
-                        if (!line.isPromptLine()) {
-                            sink.next(line)
-                        }
-                        lastReadTime = System.currentTimeMillis()
+                    reader.mark(1000) // Mark the current position
+                    val char = reader.read()
+                    if (char == -1) {
+                        // End of stream
+                        sink.complete()
+                        return
                     }
+                    reader.reset() // Go back to marked position
+                    
+                    val line = reader.readLine()
+                    if (verbose) logger.info(line)
+                    if (!line.isPromptLine()) {
+                        sink.next(line)
+                    }
+                    lastReadTime = System.currentTimeMillis()
                 } else {
                     // Check if we've exceeded the timeout
                     if (System.currentTimeMillis() - lastReadTime > readTimeout) {
