@@ -10,9 +10,9 @@ import de.andrena.codingaider.executors.api.CommandSubject
 import de.andrena.codingaider.executors.api.DefaultAiderProcessInteractor
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.FileExtractorService
-import de.andrena.codingaider.services.SidecarProcessInitializer
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.services.sidecar.AiderProcessManager
+import de.andrena.codingaider.services.sidecar.SidecarProcessInitializer
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker

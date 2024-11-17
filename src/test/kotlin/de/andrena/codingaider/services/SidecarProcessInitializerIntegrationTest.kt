@@ -4,6 +4,7 @@ import com.intellij.openapi.project.Project
 import de.andrena.codingaider.executors.api.AiderProcessInteractor
 import de.andrena.codingaider.executors.api.DefaultAiderProcessInteractor
 import de.andrena.codingaider.services.sidecar.AiderProcessManager
+import de.andrena.codingaider.services.sidecar.SidecarProcessInitializer
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.settings.MySettingsService
 import kotlinx.coroutines.*
