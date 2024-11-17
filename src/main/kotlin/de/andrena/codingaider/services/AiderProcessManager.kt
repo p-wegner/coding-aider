@@ -115,7 +115,13 @@ class AiderProcessManager(private val project: Project) : Disposable {
 
                         if (line == commandPrompt) commandPromptCount++
                         if (terminalPromptPrefix.any { line!!.startsWith(it) }) terminalPromptPrefixHitCount++
-                        if (commandPromptCount > 0 && (terminalPromptPrefixHitCount > 0 || command == "/clear") ) {
+                        if (commandPromptCount > 0 && (
+                                    terminalPromptPrefixHitCount > 0
+                                            || command == "/clear"
+                                            || command.startsWith("/add")
+                                            || command.startsWith("/read-only")
+                                )
+                        ) {
                             sink.complete()
                             return@synchronized
                         }
