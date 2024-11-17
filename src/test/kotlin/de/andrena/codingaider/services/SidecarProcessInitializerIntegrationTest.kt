@@ -5,6 +5,8 @@ import de.andrena.codingaider.executors.api.AiderProcessInteractor
 import de.andrena.codingaider.executors.api.DefaultAiderProcessInteractor
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.settings.MySettingsService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
@@ -42,7 +44,7 @@ class SidecarProcessInitializerIntegrationTest() : BaseIntegrationTest() {
         whenever(project.basePath).thenReturn(tempDir.toString())
 
         processInteractor = DefaultAiderProcessInteractor(project)
-        sidecarProcessInitializer = SidecarProcessInitializer(project)
+        sidecarProcessInitializer = SidecarProcessInitializer(project, CoroutineScope(Dispatchers.Main))
 
     }
 
