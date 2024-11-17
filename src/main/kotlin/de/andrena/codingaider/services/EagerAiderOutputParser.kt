@@ -25,6 +25,7 @@ class EagerAiderOutputParser(
             
             while (true) {
                 if (reader?.ready() == true) {
+                    // TODO: readline() is blocking, so if there is no more data we block here
                     val line = reader.readLine()
                     if (line != null) {
                         if (verbose) logger.info(line)
