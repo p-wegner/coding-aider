@@ -124,8 +124,8 @@ class CommandExecutor(
     private fun changeContextFiles(commandData: CommandData) {
         processInteractor.sendCommandSync("/drop")
         processInteractor.sendCommandSync("/clear")
-        processInteractor.sendCommandSync("/add ${commandData.files.filter { !it.isReadOnly }.joinToString(" ")}")
-        processInteractor.sendCommandSync("/read-only ${commandData.files.filter { it.isReadOnly }.joinToString(" ")}")
+        processInteractor.sendCommandSync("/add ${commandData.files.filter { !it.isReadOnly }.map { it.filePath }.joinToString(" ")}")
+        processInteractor.sendCommandSync("/read-only ${commandData.files.filter { it.isReadOnly }.map { it.filePath }.joinToString(" ")}")
     }
 
     private fun buildSidecarCommandString(commandData: CommandData): String {

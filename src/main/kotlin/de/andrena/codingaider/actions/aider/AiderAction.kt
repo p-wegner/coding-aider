@@ -4,7 +4,9 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.CommandData
@@ -15,6 +17,7 @@ import de.andrena.codingaider.inputdialog.AiderInputDialog
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.AiderDialogStateService
 import de.andrena.codingaider.services.FileDataCollectionService
+import de.andrena.codingaider.services.SidecarProcessInitializer
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 
 
@@ -32,11 +35,18 @@ class AiderAction : AnAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     companion object {
+        private val logger = Logger.getInstance(AiderAction::class.java)
         fun executeAiderAction(e: AnActionEvent, directShellMode: Boolean) {
             val project: Project? = e.project
             val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
-
             if (project != null && !files.isNullOrEmpty()) {
+                ApplicationManager.getApplication().invokeLater {
+                    logger.info("Starting Sidecar process ")
+                    project.service<SidecarProcessInitializer>().initializeSidecarProcess()
+                    logger.info("Sidecar process started")
+                }
+//                thread { project.service<SidecarProcessInitializer>().initializeSidecarProcess() }
+
                 val allFiles = project.service<FileDataCollectionService>().collectAllFiles(files)
 
                 if (directShellMode) {
