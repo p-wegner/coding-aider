@@ -1,4 +1,4 @@
-package de.andrena.codingaider.services
+package de.andrena.codingaider.services.sidecar
 
 import reactor.core.publisher.FluxSink
 

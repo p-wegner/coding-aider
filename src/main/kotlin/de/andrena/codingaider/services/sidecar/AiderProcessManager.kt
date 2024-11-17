@@ -1,4 +1,4 @@
-package de.andrena.codingaider.services
+package de.andrena.codingaider.services.sidecar
 
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
@@ -47,7 +47,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 process = processBuilder.start()
                 reader = BufferedReader(InputStreamReader(process!!.inputStream))
                 writer = BufferedWriter(OutputStreamWriter(process!!.outputStream))
-                outputParser = EagerAiderOutputParser(verbose, logger, reader, writer)
+                outputParser = DefaultAiderOutputParser(verbose, logger, reader, writer)
 
                 if (verbose) {
                     logger.info("Started Aider sidecar process with command: ${command.joinToString(" ")}")
@@ -68,7 +68,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
             try {
                 var line: String?
                 reader?.readLine()
-                // make more robust, read until char 62 is encountered and no further characters are read within a timeout
+                // TODO: make more robust, read until char 62 is encountered and no further characters are read within a timeout
                 while (reader!!.readLine().also { line = it } != null) {
                     if (verbose) logger.info(line)
                     if (line!!.isEmpty()) {

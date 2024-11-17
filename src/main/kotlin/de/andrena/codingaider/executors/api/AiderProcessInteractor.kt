@@ -2,7 +2,7 @@ package de.andrena.codingaider.executors.api
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import de.andrena.codingaider.services.AiderProcessManager
+import de.andrena.codingaider.services.sidecar.AiderProcessManager
 import reactor.core.publisher.Flux
 
 class DefaultAiderProcessInteractor(private val project: Project) : AiderProcessInteractor {
