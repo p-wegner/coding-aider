@@ -11,12 +11,12 @@ class EagerAiderOutputParser(
     private val logger: Logger,
     private val reader: BufferedReader?,
     private val writer: BufferedWriter?
-) {
+) :AiderOutputParser{
     private val readTimeout = 300L // milliseconds
     private val commandPrompt = "> "
     private fun String.isPromptLine() = this == commandPrompt
 
-    fun writeCommandAndReadResults(command: String, sink: FluxSink<String>) {
+    override fun writeCommandAndReadResults(command: String, sink: FluxSink<String>) {
         try {
             writer?.write("$command\n")
             writer?.flush()
