@@ -41,7 +41,7 @@ class PlanViewer(private val project: Project) {
             addMouseListener(object : MouseAdapter() {
                 override fun mouseClicked(e: MouseEvent) {
                     val index = plansList.locationToIndex(e.point)
-                    if (index >= 0 && e.clickCount == 2) {
+                    if (index >= 0 && e.clickCount == 2 && plansList.getCellBounds(index, index)?.contains(e.point) == true) {
                         val plan = plansList.model.getElementAt(index)
                         plan.mainPlanFile?.let { fileData ->
                              LocalFileSystem.getInstance().findFileByPath(fileData.filePath)}?.let {
