@@ -151,12 +151,12 @@ class AiderProcessManager(private val project: Project) : Disposable {
                     var line: String?
                     while (reader?.readLine().also { line = it } != null) {
                         if (verbose) logger.info(line)
-                        if (!line!!.isPromptLine() && line!!.isNotEmpty()) {
+                        if (!line!!.isPromptLine() ) {
                             sink.next(line!!)
                         }
 
                         if (line == commandPrompt) commandPromptCount++
-                        if (commandPromptCount > 0 && line!!.isEmpty()) {
+                        if (commandPromptCount > 0 &&  reader!!.ready()) {
                             sink.complete()
                             return@synchronized
                         }
