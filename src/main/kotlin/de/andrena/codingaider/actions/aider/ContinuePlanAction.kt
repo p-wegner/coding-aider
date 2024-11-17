@@ -3,7 +3,9 @@ package de.andrena.codingaider.actions.aider
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.panel
@@ -12,6 +14,7 @@ import com.intellij.ui.JBColor
 import de.andrena.codingaider.outputview.CustomMarkdownViewer
 import com.intellij.ui.components.JBScrollPane
 import de.andrena.codingaider.services.plans.AiderPlan
+import de.andrena.codingaider.services.plans.ContinuePlanService
 import de.andrena.codingaider.toolwindow.plans.PlanViewer
 import java.awt.Dimension
 import javax.swing.*
@@ -21,12 +24,7 @@ class ContinuePlanAction : AnAction() {
         val project = e.project ?: return
         val dialog = SelectPlanDialog(project)
         if (dialog.showAndGet()) {
-            val selectedPlan = dialog.selectedPlan
-            if (selectedPlan != null) {
-                val planViewer = PlanViewer(project)
-                planViewer.plansList.setSelectedValue(selectedPlan, true)
-                planViewer.executeSelectedPlan()
-            }
+            dialog.selectedPlan?.run { project.service<ContinuePlanService>().continuePlan(this) }
         }
     }
 
@@ -50,7 +48,7 @@ private class SelectPlanDialog(private val project: Project) : DialogWrapper(pro
     }
 
     override fun createCenterPanel(): JComponent {
-        val planComboBox = JComboBox(DefaultComboBoxModel(unfinishedPlans.toTypedArray())).apply {
+        val planComboBox = ComboBox(DefaultComboBoxModel(unfinishedPlans.toTypedArray())).apply {
             renderer = PlanViewer.PlanListCellRenderer()
             if (unfinishedPlans.isNotEmpty()) {
                 selectedIndex = 0

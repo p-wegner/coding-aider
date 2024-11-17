@@ -23,6 +23,7 @@ import de.andrena.codingaider.outputview.CustomMarkdownViewer
 import de.andrena.codingaider.services.FileDataCollectionService
 import de.andrena.codingaider.services.plans.AiderPlan
 import de.andrena.codingaider.services.plans.AiderPlanService
+import de.andrena.codingaider.services.plans.ContinuePlanService
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.FileRefresher
 import java.awt.*
@@ -131,24 +132,7 @@ class PlanViewer(private val project: Project) {
             return
         }
 
-        val settings = AiderSettings.getInstance()
-        val virtualFiles: List<VirtualFile> =
-            selectedPlan.allFiles.mapNotNull { VirtualFileManager.getInstance().findFileByUrl(it.filePath) }
-        val filesToInclude = project.service<FileDataCollectionService>().collectAllFiles(virtualFiles.toTypedArray())
-
-        val commandData = CommandData(
-            message = "",
-            useYesFlag = settings.useYesFlag,
-            llm = settings.llm,
-            additionalArgs = settings.additionalArgs,
-            files = filesToInclude,
-            lintCmd = settings.lintCmd,
-            projectPath = project.basePath ?: "",
-            aiderMode = AiderMode.STRUCTURED,
-             sidecarMode = settings.useSidecarMode
-        )
-
-        IDEBasedExecutor(project, commandData).execute()
+        project.service<ContinuePlanService>().continuePlan(selectedPlan)
     }
 
     inner class ContinuePlanAction : AnAction(
