@@ -324,18 +324,6 @@ class AiderSettingsConfigurable() : Configurable {
         settings.notifySettingsChanged()
     }
 
-    private fun getApiKeyDisplayValue(keyName: String): String {
-        return if (apiKeyChecker.isApiKeyAvailable(keyName)) {
-            if (ApiKeyManager.getApiKey(keyName) != null) {
-                "*".repeat(16) // Censored placeholder for stored API key
-            } else {
-                "*An API key is available from another source*" // Placeholder for key from env or .env file
-            }
-        } else {
-            ""
-        }
-    }
-
     private inner class LlmComboBoxRenderer : DefaultListCellRenderer() {
         override fun getListCellRendererComponent(
             list: JList<*>?,
