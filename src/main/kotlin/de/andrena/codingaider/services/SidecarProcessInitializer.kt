@@ -5,14 +5,18 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
+import de.andrena.codingaider.actions.aider.AiderAction
+import de.andrena.codingaider.actions.aider.AiderAction.Companion
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.CommandOptions
 import de.andrena.codingaider.executors.SidecarAiderExecutionStrategy
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.settings.MySettingsService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @Service(Service.Level.PROJECT)
-class SidecarProcessInitializer(private val project: Project) : Disposable {
+class SidecarProcessInitializer(private val project: Project, private val cs: CoroutineScope) : Disposable {
     private val logger = Logger.getInstance(SidecarProcessInitializer::class.java)
     private val settings = project.service<MySettingsService>().getSettings()
     private val processManager = project.service<AiderProcessManager>()
@@ -50,28 +54,28 @@ class SidecarProcessInitializer(private val project: Project) : Disposable {
             logger.info("Sidecar process is already running")
             return
         }
+        logger.info("Starting Sidecar process ")
+        cs.launch {
+            val strategy = SidecarAiderExecutionStrategy(project, settings)
+            val command = strategy.buildCommand(createInitializationCommandData())
 
-//        shutdownSidecarProcess()
+            val workingDir = project.basePath ?: System.getProperty("user.home")
+            val processStarted = processManager.startProcess(
+                command,
+                workingDir,
+                settings.sidecarModeVerbose,
+            )
 
-        val strategy = SidecarAiderExecutionStrategy(project, settings)
-        val command = strategy.buildCommand(createInitializationCommandData())
+            if (processStarted) {
+                logger.info("Sidecar Aider process initialized successfully")
+            } else {
+                logger.error("Failed to initialize Sidecar Aider process")
+            }
 
-        val workingDir = project.basePath ?: System.getProperty("user.home")
-        val processStarted = processManager.startProcess(
-            command,
-            workingDir,
-            settings.sidecarModeVerbose,
-        )
-
-        if (processStarted) {
-            logger.info("Sidecar Aider process initialized successfully")
-        } else {
-            logger.error("Failed to initialize Sidecar Aider process")
-        }
-
-        // Ensure the process is running before returning
-        if (!processManager.isReadyForCommand()) {
-            throw IllegalStateException("Sidecar Aider process failed to start")
+            // Ensure the process is running before returning
+            if (!processManager.isReadyForCommand()) {
+                throw IllegalStateException("Sidecar Aider process failed to start")
+            }
         }
     }
 
@@ -87,8 +91,8 @@ class SidecarProcessInitializer(private val project: Project) : Disposable {
             files = emptyList(),
             useYesFlag = true,
             llm = settings.llm,
-            additionalArgs = settings.additionalArgs,
-            lintCmd = settings.lintCmd,
+            additionalArgs = settings.additionalArgs ?: "",
+            lintCmd = settings.lintCmd ?: "",
             aiderMode = AiderMode.NORMAL,
             options = CommandOptions(sidecarMode = true)
 

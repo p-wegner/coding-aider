@@ -33,6 +33,8 @@ class SidecarProcessInitializerIntegrationTest() : BaseIntegrationTest() {
         whenever(settings.llm).thenReturn("--4o")
         whenever(settings.aiderExecutablePath).thenReturn("aider")
         whenever(settings.autoCommits).thenReturn(AiderSettings.AutoCommitSetting.ON)
+        whenever(settings.lintCmd).thenReturn("")
+        whenever(settings.additionalArgs).thenReturn("")
         whenever(settings.dirtyCommits).thenReturn(AiderSettings.DirtyCommitSetting.ON)
         whenever(project.getService(MySettingsService::class.java)).thenReturn(settingsService)
         aiderProcessManager = AiderProcessManager(project)
