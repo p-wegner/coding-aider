@@ -4,7 +4,6 @@ import com.intellij.openapi.application.ApplicationManager.getApplication
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.changes.Change
 import com.intellij.openapi.vcs.changes.ui.ChangesViewContentManager
-import com.intellij.openapi.vcs.changes.ui.ChangesViewContentProvider
 import com.intellij.openapi.wm.ToolWindowManager
 import git4idea.GitVcs
 import git4idea.repo.GitRepositoryManager
