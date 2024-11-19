@@ -1,20 +1,13 @@
 package de.andrena.codingaider.settings
 
 import com.intellij.ide.BrowserUtil
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.ui.ComboBox
-import com.intellij.openapi.ui.DialogBuilder
-import com.intellij.ui.TextFieldWithHistory
 import com.intellij.ui.components.JBCheckBox
-import com.intellij.ui.components.JBScrollPane
-import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
-import de.andrena.codingaider.executors.api.CommandObserver
 import de.andrena.codingaider.utils.ApiKeyChecker
-import de.andrena.codingaider.utils.ApiKeyManager
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
 import java.awt.Component
 import javax.swing.*
@@ -51,8 +44,6 @@ class AiderSettingsConfigurable() : Configurable {
     private val enableDocumentationLookupCheckBox = JBCheckBox("Enable documentation lookup")
     private val alwaysIncludeOpenFilesCheckBox = JBCheckBox("Always include open files in context")
     private val alwaysIncludePlanContextFilesCheckBox = JBCheckBox("Always include plan context files")
-    private val useDockerAiderCheckBox: JBCheckBox
-    private val dockerImageTagField: TextFieldWithHistory
     private val documentationLlmComboBox =
         ComboBox(arrayOf("Default") + apiKeyChecker.getAllLlmOptions().toTypedArray())
 
@@ -135,7 +126,8 @@ class AiderSettingsConfigurable() : Configurable {
                 }
                 row {
                     cell(useSidecarModeCheckBox).component.apply {
-                        toolTipText = "Run Aider as a persistent process. This is experimental and may improve performance."
+                        toolTipText =
+                            "Run Aider as a persistent process. This is experimental and may improve performance."
                         addItemListener { e ->
                             sidecarModeVerboseCheckBox.isEnabled = e.stateChange == java.awt.event.ItemEvent.SELECTED
                         }
@@ -238,7 +230,6 @@ class AiderSettingsConfigurable() : Configurable {
                 deactivateRepoMapCheckBox.isSelected != settings.deactivateRepoMap ||
                 editFormatComboBox.selectedItem as String != settings.editFormat ||
                 verboseCommandLoggingCheckBox.isSelected != settings.verboseCommandLogging ||
-                useDockerAiderCheckBox.isSelected != settings.useDockerAider ||
                 enableMarkdownDialogAutocloseCheckBox.isSelected != settings.enableMarkdownDialogAutoclose ||
                 markdownDialogAutocloseDelayField.text.toIntOrNull() != settings.markdownDialogAutocloseDelay ||
                 mountAiderConfInDockerCheckBox.isSelected != settings.mountAiderConfInDocker ||
@@ -269,7 +260,6 @@ class AiderSettingsConfigurable() : Configurable {
         settings.deactivateRepoMap = deactivateRepoMapCheckBox.isSelected
         settings.editFormat = editFormatComboBox.selectedItem as String
         settings.verboseCommandLogging = verboseCommandLoggingCheckBox.isSelected
-        settings.useDockerAider = aiderSetupPanel.useDockerAiderCheckBox.isSelected
         settings.enableMarkdownDialogAutoclose = enableMarkdownDialogAutocloseCheckBox.isSelected
         settings.markdownDialogAutocloseDelay =
             markdownDialogAutocloseDelayField.text.toIntOrNull() ?: AiderDefaults.MARKDOWN_DIALOG_AUTOCLOSE_DELAY_IN_S
@@ -284,8 +274,11 @@ class AiderSettingsConfigurable() : Configurable {
         settings.alwaysIncludeOpenFiles = alwaysIncludeOpenFilesCheckBox.isSelected
         settings.alwaysIncludePlanContextFiles = alwaysIncludePlanContextFilesCheckBox.isSelected
         settings.documentationLlm = documentationLlmComboBox.selectedItem as String
+
+        settings.useDockerAider = aiderSetupPanel.useDockerAiderCheckBox.isSelected
         settings.dockerImageTag = aiderSetupPanel.dockerImageTagField.text
         settings.aiderExecutablePath = aiderSetupPanel.aiderExecutablePathField.text
+
         settings.notifySettingsChanged()
     }
 
@@ -303,7 +296,6 @@ class AiderSettingsConfigurable() : Configurable {
         deactivateRepoMapCheckBox.isSelected = settings.deactivateRepoMap
         editFormatComboBox.selectedItem = settings.editFormat
         verboseCommandLoggingCheckBox.isSelected = settings.verboseCommandLogging
-        useDockerAiderCheckBox.isSelected = settings.useDockerAider
         enableMarkdownDialogAutocloseCheckBox.isSelected = settings.enableMarkdownDialogAutoclose
         markdownDialogAutocloseDelayField.text = settings.markdownDialogAutocloseDelay.toString()
         mountAiderConfInDockerCheckBox.isSelected = settings.mountAiderConfInDocker
@@ -351,106 +343,6 @@ class AiderSettingsConfigurable() : Configurable {
     }
 
 
-    private fun showTestCommandResult() {
-        val textArea = JBTextArea().apply {
-            isEditable = false
-            lineWrap = true
-            wrapStyleWord = true
-        }
-        val scrollPane = JBScrollPane(textArea)
-        scrollPane.preferredSize = java.awt.Dimension(600, 400)
-
-        val dialog = DialogBuilder().apply {
-            setTitle("Aider Test Command Result")
-            setCenterPanel(scrollPane)
-            addOkAction()
-        }
-
-        // Show the dialog immediately
-        ApplicationManager.getApplication().invokeLater {
-            dialog.show()
-        }
-
-        // Use SwingWorker to run the command in the background
-        val worker = object : SwingWorker<String, String>() {
-            override fun doInBackground(): String {
-                val observer = object : CommandObserver {
-                    override fun onCommandStart(message: String) {
-                        publish("Starting command...\n")
-                    }
-
-                    override fun onCommandProgress(message: String, runningTime: Long) {
-                        publish(message)
-                    }
-
-                    override fun onCommandComplete(message: String, exitCode: Int) {
-                        publish("\nCommand completed with exit code: $exitCode\n")
-                    }
-
-                    override fun onCommandError(message: String) {
-                        publish("\nError: $message\n")
-                    }
-                }
-
-                // Pass the current state of the Docker checkbox
-                AiderTestCommand().execute(observer, useDockerAiderCheckBox.isSelected)
-                return "Command execution finished."
-            }
-
-            override fun process(chunks: List<String>) {
-                ApplicationManager.getApplication().invokeLater {
-                    textArea.text = "" // Clear the text area before appending new content
-                    chunks.forEach { textArea.append(it) }
-                    textArea.caretPosition = textArea.document.length
-                }
-            }
-
-            override fun done() {
-                // The dialog is already shown, so we don't need to do anything here
-            }
-        }
-
-        worker.execute()
-    }
-
-    private fun updateApiKeyField(keyName: String, field: JPasswordField, saveButton: JButton) {
-        when {
-            ApiKeyManager.getApiKey(keyName) != null -> {
-                field.text = "*".repeat(16)
-                field.isEditable = false
-                field.toolTipText = "An API key for $keyName is stored. Clear it first to enter a new one."
-                saveButton.isEnabled = false
-            }
-
-            apiKeyChecker.isApiKeyAvailable(keyName) -> {
-                field.text = "*".repeat(16)
-                field.isEditable = false
-                field.toolTipText =
-                    "An API key for $keyName is available from environment or .env file. You can enter a new one to use after clearing the field. Env files will not be modified."
-                saveButton.isEnabled = false
-            }
-
-            else -> {
-                field.text = ""
-                field.isEditable = true
-                field.toolTipText = "Enter an API key for $keyName"
-                saveButton.isEnabled = false
-            }
-        }
-
-        field.document.addDocumentListener(object : DocumentListener {
-            override fun insertUpdate(e: DocumentEvent) = updateSaveButton()
-            override fun removeUpdate(e: DocumentEvent) = updateSaveButton()
-            override fun changedUpdate(e: DocumentEvent) = updateSaveButton()
-
-            fun updateSaveButton() {
-                saveButton.isEnabled = field.password.isNotEmpty() &&
-                        String(field.password) != "*".repeat(16) &&
-                        String(field.password) != "*An API key is available from another source*"
-            }
-        })
-    }
-
     private fun clearApiKeyField(keyName: String, field: JPasswordField, saveButton: JButton) {
         field.text = ""
         field.isEditable = true
@@ -491,11 +383,6 @@ class AiderSettingsConfigurable() : Configurable {
                     "API key not found for $selectedItem"
                 }
             }
-        }
-        this.useDockerAiderCheckBox = JBCheckBox("Use aider in Docker")
-        this.dockerImageTagField = TextFieldWithHistory()
-        this.useDockerAiderCheckBox.addItemListener { e ->
-            dockerImageTagField.isEnabled = e.stateChange == java.awt.event.ItemEvent.SELECTED
         }
     }
 }
