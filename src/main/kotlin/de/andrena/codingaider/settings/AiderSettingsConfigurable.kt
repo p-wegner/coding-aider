@@ -11,8 +11,6 @@ import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
 import java.awt.Component
 import javax.swing.*
-import javax.swing.event.DocumentEvent
-import javax.swing.event.DocumentListener
 
 class AiderSettingsConfigurable() : Configurable {
 
@@ -243,8 +241,8 @@ class AiderSettingsConfigurable() : Configurable {
                 alwaysIncludeOpenFilesCheckBox.isSelected != settings.alwaysIncludeOpenFiles ||
                 alwaysIncludePlanContextFilesCheckBox.isSelected != settings.alwaysIncludePlanContextFiles ||
                 documentationLlmComboBox.selectedItem as String != settings.documentationLlm ||
-                aiderSetupPanel.dockerImageTagField.text != settings.dockerImageTag ||
-                aiderSetupPanel.aiderExecutablePathField.text != settings.aiderExecutablePath
+                aiderSetupPanel.isModified()
+
     }
 
     override fun apply() {
@@ -274,11 +272,7 @@ class AiderSettingsConfigurable() : Configurable {
         settings.alwaysIncludeOpenFiles = alwaysIncludeOpenFilesCheckBox.isSelected
         settings.alwaysIncludePlanContextFiles = alwaysIncludePlanContextFilesCheckBox.isSelected
         settings.documentationLlm = documentationLlmComboBox.selectedItem as String
-
-        settings.useDockerAider = aiderSetupPanel.useDockerAiderCheckBox.isSelected
-        settings.dockerImageTag = aiderSetupPanel.dockerImageTagField.text
-        settings.aiderExecutablePath = aiderSetupPanel.aiderExecutablePathField.text
-
+        aiderSetupPanel.apply()
         settings.notifySettingsChanged()
     }
 
@@ -310,9 +304,7 @@ class AiderSettingsConfigurable() : Configurable {
         alwaysIncludeOpenFilesCheckBox.isSelected = settings.alwaysIncludeOpenFiles
         alwaysIncludePlanContextFilesCheckBox.isSelected = settings.alwaysIncludePlanContextFiles
         documentationLlmComboBox.selectedItem = settings.documentationLlm
-        aiderSetupPanel.dockerImageTagField.text = settings.dockerImageTag
-        aiderSetupPanel.aiderExecutablePathField.text = settings.aiderExecutablePath
-        aiderSetupPanel.updateApiKeyFieldsOnClose()
+        aiderSetupPanel.reset()
         settings.notifySettingsChanged()
     }
 
@@ -343,22 +335,6 @@ class AiderSettingsConfigurable() : Configurable {
     }
 
 
-    private fun clearApiKeyField(keyName: String, field: JPasswordField, saveButton: JButton) {
-        field.text = ""
-        field.isEditable = true
-        field.toolTipText = "Enter a new API key for $keyName"
-        saveButton.isEnabled = false
-
-        field.document.addDocumentListener(object : DocumentListener {
-            override fun insertUpdate(e: DocumentEvent) = updateSaveButton()
-            override fun removeUpdate(e: DocumentEvent) = updateSaveButton()
-            override fun changedUpdate(e: DocumentEvent) = updateSaveButton()
-
-            fun updateSaveButton() {
-                saveButton.isEnabled = field.password.isNotEmpty()
-            }
-        })
-    }
 
     private fun updateApiKeyFieldsOnClose() {
         aiderSetupPanel.updateApiKeyFieldsOnClose()

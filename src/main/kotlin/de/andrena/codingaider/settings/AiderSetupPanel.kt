@@ -270,4 +270,27 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
             ""
         }
     }
+
+    fun isModified(): Boolean {
+        val settings = AiderSettings.getInstance()
+        return useDockerAiderCheckBox.isSelected != settings.useDockerAider ||
+                dockerImageTagField.text != settings.dockerImageTag ||
+                aiderExecutablePathField.text != settings.aiderExecutablePath
+    }
+
+    fun apply() {
+        val settings = AiderSettings.getInstance()
+        settings.useDockerAider = useDockerAiderCheckBox.isSelected
+        settings.dockerImageTag = dockerImageTagField.text
+        settings.aiderExecutablePath = aiderExecutablePathField.text
+    }
+
+    fun reset() {
+        val settings = AiderSettings.getInstance()
+        useDockerAiderCheckBox.isSelected = settings.useDockerAider
+        dockerImageTagField.text = settings.dockerImageTag
+        aiderExecutablePathField.text = settings.aiderExecutablePath
+        updateApiKeyFieldsOnClose()
+
+    }
 }
