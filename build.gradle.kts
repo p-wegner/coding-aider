@@ -1,6 +1,6 @@
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "1.9.25"
+    id("org.jetbrains.kotlin.jvm") version "2.0.21"
     id("org.jetbrains.intellij.platform") version "2.1.0"
 }
 
@@ -50,7 +50,6 @@ dependencies {
         bundledPlugin("org.jetbrains.plugins.terminal")
         bundledPlugin("Git4Idea")
         bundledPlugin("com.intellij.platform.images")
-        bundledPlugin("com.intellij.platform.git")
     }
 }
 intellijPlatform {
@@ -78,12 +77,12 @@ sourceSets {
 
 tasks {
     withType<JavaCompile> {
-        sourceCompatibility = "17"
-        targetCompatibility = "17"
+        sourceCompatibility = "21"
+        targetCompatibility = "21"
     }
 
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions.jvmTarget = "17"
+        kotlinOptions.jvmTarget = "21"
     }
 
     buildSearchableOptions {
