@@ -13,7 +13,7 @@ object GitUtils {
     fun getCurrentCommitHash(project: Project): String? {
         return getApplication().executeOnPooledThread<String?> {
             val repository = getGitRepository(project)
-            repository?.currentRevision
+            repository?.currentRevision ?: ""
         }.get()
     }
 
@@ -21,7 +21,7 @@ object GitUtils {
         getApplication().executeOnPooledThread<Unit> {
             val repository = getGitRepository(project)
             val changes: List<Change> = if (repository != null) {
-                getChanges(project, repository.root, commitHash)
+                getChanges(project, repository.root.toFile(), commitHash)
             } else {
                 emptyList()
             }
