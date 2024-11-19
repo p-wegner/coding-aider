@@ -44,7 +44,7 @@ dependencies {
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
     intellijPlatform {
-        intellijIdeaCommunity("2024.1.7")
+        intellijIdeaCommunity("2024.3")
         pluginVerifier()
         instrumentationTools()
         bundledPlugin("org.jetbrains.plugins.terminal")
