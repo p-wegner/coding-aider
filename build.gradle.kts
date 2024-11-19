@@ -50,6 +50,7 @@ dependencies {
         bundledPlugin("org.jetbrains.plugins.terminal")
         bundledPlugin("Git4Idea")
         bundledPlugin("com.intellij.platform.images")
+        bundledPlugin("com.intellij.platform.git")
     }
 }
 intellijPlatform {
