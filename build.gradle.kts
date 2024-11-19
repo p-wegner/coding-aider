@@ -49,6 +49,7 @@ dependencies {
         instrumentationTools()
         bundledPlugin("org.jetbrains.plugins.terminal")
         bundledPlugin("Git4Idea")
+        bundledPlugin("com.intellij.platform.images")
     }
 }
 intellijPlatform {
