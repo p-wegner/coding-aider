@@ -269,7 +269,7 @@ class AiderSettingsConfigurable() : Configurable {
         settings.deactivateRepoMap = deactivateRepoMapCheckBox.isSelected
         settings.editFormat = editFormatComboBox.selectedItem as String
         settings.verboseCommandLogging = verboseCommandLoggingCheckBox.isSelected
-        settings.useDockerAider = useDockerAiderCheckBox.isSelected
+        settings.useDockerAider = aiderSetupPanel.useDockerAiderCheckBox.isSelected
         settings.enableMarkdownDialogAutoclose = enableMarkdownDialogAutocloseCheckBox.isSelected
         settings.markdownDialogAutocloseDelay =
             markdownDialogAutocloseDelayField.text.toIntOrNull() ?: AiderDefaults.MARKDOWN_DIALOG_AUTOCLOSE_DELAY_IN_S
