@@ -7,20 +7,22 @@ import com.intellij.openapi.vcs.changes.ui.ChangesViewContentManager
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.wm.ToolWindowManager
 import git4idea.GitVcs
+import git4idea.repo.GitRepository
+import git4idea.repo.GitRepositoryManager
 import java.io.File
 
 object GitUtils {
     fun getCurrentCommitHash(project: Project): String? {
         return getApplication().executeOnPooledThread<String?> {
-            ""
+            val repository = getGitRepository(project)
+            repository?.currentRevision
         }.get()
     }
 
     fun openGitComparisonTool(project: Project, commitHash: String, afterAction: () -> Unit) {
         getApplication().executeOnPooledThread<Unit> {
             val repository = getGitRepository(project)
-            val changes: List<Change> = if (false) {
-
+            val changes: List<Change> = if (repository != null) {
                 getChanges(project, repository.root, commitHash)
             } else {
                 emptyList()
@@ -35,6 +37,8 @@ object GitUtils {
                         ChangesViewContentManager.getInstance(project).selectContent("Local Changes")
                         afterAction()
                     }
+                } else {
+                    afterAction()
                 }
             }
         }
@@ -50,14 +54,12 @@ object GitUtils {
         }
     }
 
-    // TODO
-    private fun getGitRepository(project: Project): Repository = TODO("Implement")
+    private fun getGitRepository(project: Project): GitRepository? {
+        val manager = GitRepositoryManager.getInstance(project)
+        return manager.repositories.firstOrNull()
+    }
 
     fun findGitRoot(directory: File): File? =
         generateSequence(directory) { it.parentFile }
             .find { File(it, ".git").exists() }
-}
-
-interface Repository {
-    val root: VirtualFile
 }
