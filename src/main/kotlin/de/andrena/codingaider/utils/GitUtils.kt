@@ -48,9 +48,11 @@ object GitUtils {
         }
     }
 
-    private fun getChanges(repository: GitRepository) {
-        // TODO: Implement this
-        TODO("Not yet implemented")
+    private fun getChanges(repository: GitRepository): List<File> {
+        val root = repository.root
+        return repository.changingFiles.map { 
+            File(root.path, it)
+        }
     }
 
     private fun getGitRepository(project: Project): GitRepository? {
