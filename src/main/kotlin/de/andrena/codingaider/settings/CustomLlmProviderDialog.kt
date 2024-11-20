@@ -20,7 +20,7 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
     init {
         title = "Manage Custom LLM Providers"
         init()
-        setSize(1200, 600)
+        setSize(800, 600)
     }
 
     override fun show() {
@@ -30,23 +30,13 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
     }
 
     private fun adjustColumnWidths() {
-        val totalWidth = providersTable.width
-        if (totalWidth > 0 && providersTable.columnModel.columnCount >= 4) {
-            providersTable.columnModel.apply {
-                val columns = (0 until columnCount).mapNotNull { i -> 
-                    try { getColumn(i) } catch (_: Exception) { null }
-                }
-                columns.forEachIndexed { i, column ->
-                    val width = when (i) {
-                        0 -> totalWidth * 0.25 // Name
-                        1 -> totalWidth * 0.15 // Type
-                        2 -> totalWidth * 0.20 // Model
-                        3 -> totalWidth * 0.40 // Base URL
-                        else -> totalWidth * 0.25
-                    }
-                    column.preferredWidth = width.toInt()
-                    column.minWidth = (width * 0.5).toInt() // Set minimum width
-                }
+        providersTable.columnModel.apply {
+            val totalWidth = providersTable.width
+            if (totalWidth > 0 && columnCount >= 4) {
+                getColumn(0).preferredWidth = (totalWidth * 0.25).toInt() // Name
+                getColumn(1).preferredWidth = (totalWidth * 0.15).toInt() // Type
+                getColumn(2).preferredWidth = (totalWidth * 0.20).toInt() // Model
+                getColumn(3).preferredWidth = (totalWidth * 0.40).toInt() // Base URL
             }
         }
     }
@@ -57,7 +47,7 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
                 .resizableColumn()
                 .comment("Configure and manage your custom LLM providers")
                 .apply {
-                    component.preferredSize = java.awt.Dimension(1180, 500)
+                    component.preferredSize = java.awt.Dimension(780, 500)
                 }
         }
         row {
