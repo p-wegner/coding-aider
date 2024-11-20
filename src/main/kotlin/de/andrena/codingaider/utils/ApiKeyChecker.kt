@@ -28,6 +28,14 @@ class DefaultApiKeyChecker : ApiKeyChecker {
         return project.service<CustomLlmProviderService>().getProvider(llm)
     }
 
+    private fun getProviderApiKeyName(provider: CustomLlmProvider): String {
+        return when (provider.type) {
+            LlmProviderType.OPENAI -> "OPENAI_API_KEY"
+            LlmProviderType.OPENROUTER -> "OPENROUTER_API_KEY"
+            LlmProviderType.OLLAMA -> "" // Ollama doesn't require an API key
+        }
+    }
+
     override fun isApiKeyAvailableForLlm(llm: String): Boolean {
         // Check standard providers first
         val standardApiKey = llmToApiKeyMap[llm]
@@ -105,8 +113,18 @@ class DefaultApiKeyChecker : ApiKeyChecker {
     }
 
     override fun getApiKeysForDocker(): Map<String, String> {
-        return llmToApiKeyMap.values.distinct().mapNotNull { apiKeyName ->
-            getApiKeyValue(apiKeyName)?.let { apiKeyName to it }
-        }.toMap()
+        val standardKeys = llmToApiKeyMap.values.distinct()
+            .mapNotNull { apiKeyName -> 
+                getApiKeyValue(apiKeyName)?.let { apiKeyName to it }
+            }
+            
+        val customKeys = project.service<CustomLlmProviderService>().getAllProviders()
+            .filter { it.type.requiresApiKey }
+            .mapNotNull { provider ->
+                val keyName = getProviderApiKeyName(provider)
+                ApiKeyManager.getCustomModelKey(provider.name)?.let { keyName to it }
+            }
+            
+        return (standardKeys + customKeys).toMap()
     }
 }
