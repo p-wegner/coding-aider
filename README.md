@@ -23,6 +23,16 @@ You can use:
 - Custom OpenAI-compatible API endpoints (like Azure, Anthropic, or local servers)
 - Ollama models
 
+### Custom Model Configuration
+To configure a custom OpenAI-compatible model:
+
+1. Open Settings > Tools > Aider Settings
+2. In the "Custom Model" section:
+   - Enter the API Base URL (e.g., http://localhost:8000/v1)
+   - Enter the Model Name with "openai/" prefix (e.g., openai/gpt-4)
+   - Enter your API Key
+3. The custom model will appear in model selection dropdowns once configured
+
 For custom OpenAI-compatible APIs, you can configure:
 - Custom API base URL (e.g., http://localhost:8000/v1)
 - Custom API key
