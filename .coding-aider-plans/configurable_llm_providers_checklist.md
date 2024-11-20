@@ -26,10 +26,10 @@ See plan: [configurable_llm_providers.md](configurable_llm_providers.md)
 - [ ] Add migration for existing custom OpenAI settings
 
 ## Provider Support
-- [ ] Implement OpenAI provider configuration
-- [ ] Add Ollama provider support
-- [ ] Add OpenRouter provider support
-- [ ] Create provider-specific validation rules
+- [x] Implement OpenAI provider configuration
+- [x] Add Ollama provider support
+- [x] Add OpenRouter provider support
+- [x] Create provider-specific validation rules
 
 ## Execution Strategy Implementation
 - [ ] Create provider-specific environment variable handlers

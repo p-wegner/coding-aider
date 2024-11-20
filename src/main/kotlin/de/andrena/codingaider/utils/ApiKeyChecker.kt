@@ -24,28 +24,55 @@ class DefaultApiKeyChecker : ApiKeyChecker {
         "--deepseek" to "DEEPSEEK_API_KEY"
     )
 
-    private fun getCustomProviderApiKey(llm: String): String? {
-        return ApiKeyManager.getCustomModelKey(llm)
+    private fun getCustomProvider(llm: String): CustomLlmProvider? {
+        return project.service<CustomLlmProviderService>().getProvider(llm)
     }
 
     override fun isApiKeyAvailableForLlm(llm: String): Boolean {
+        // Check standard providers first
         val standardApiKey = llmToApiKeyMap[llm]
         if (standardApiKey != null) {
             return isApiKeyAvailable(standardApiKey)
         }
         
-        // Check for custom provider API key
-        val customApiKey = getCustomProviderApiKey(llm)
-        return customApiKey != null || true // If no API key is needed, consider it available
+        // Check custom providers
+        val customProvider = getCustomProvider(llm)
+        if (customProvider != null) {
+            // Check if provider requires API key
+            if (!customProvider.type.requiresApiKey) {
+                return true
+            }
+            
+            // Check for API key
+            val apiKeyName = customProvider.type.getApiKeyName(customProvider.name)
+            return isApiKeyAvailable(apiKeyName)
+        }
+        
+        return true // If no provider found, assume no API key needed
     }
 
     override fun isApiKeyAvailable(apiKeyName: String): Boolean {
         return getApiKeyValue(apiKeyName) != null
     }
 
-    override fun getApiKeyForLlm(llm: String): String? = llmToApiKeyMap[llm]
+    override fun getApiKeyForLlm(llm: String): String? {
+        // Check standard providers
+        llmToApiKeyMap[llm]?.let { return it }
+        
+        // Check custom providers
+        val customProvider = getCustomProvider(llm)
+        if (customProvider != null) {
+            return customProvider.type.getApiKeyName(customProvider.name)
+        }
+        
+        return null
+    }
 
-    override fun getAllLlmOptions(): List<String> = llmToApiKeyMap.keys.toList() + ""
+    override fun getAllLlmOptions(): List<String> {
+        val standardOptions = llmToApiKeyMap.keys.toList()
+        val customOptions = project.service<CustomLlmProviderService>().getAllProviders().map { it.name }
+        return standardOptions + customOptions
+    }
 
     override fun getAllApiKeyNames(): List<String> = llmToApiKeyMap.values.distinct()
 
