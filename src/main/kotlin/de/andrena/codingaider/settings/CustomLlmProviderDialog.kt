@@ -33,7 +33,10 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
         val totalWidth = providersTable.width
         if (totalWidth > 0 && providersTable.columnModel.columnCount >= 4) {
             providersTable.columnModel.apply {
-                for (i in 0 until columnCount) {
+                val columns = (0 until columnCount).mapNotNull { i -> 
+                    try { getColumn(i) } catch (e: Exception) { null }
+                }
+                columns.forEachIndexed { i, column ->
                     val width = when (i) {
                         0 -> totalWidth * 0.25 // Name
                         1 -> totalWidth * 0.15 // Type
@@ -41,7 +44,7 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
                         3 -> totalWidth * 0.35 // Base URL
                         else -> totalWidth * 0.25
                     }
-                    getColumn(i).preferredWidth = width.toInt()
+                    column.preferredWidth = width.toInt()
                 }
             }
         }
