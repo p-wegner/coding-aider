@@ -32,10 +32,12 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
     private fun adjustColumnWidths() {
         val totalWidth = providersTable.width
         providersTable.columnModel.apply {
-            getColumn(0).preferredWidth = (totalWidth * 0.25).toInt() // Name
-            getColumn(1).preferredWidth = (totalWidth * 0.15).toInt() // Type
-            getColumn(2).preferredWidth = (totalWidth * 0.25).toInt() // Model
-            getColumn(3).preferredWidth = (totalWidth * 0.35).toInt() // Base URL
+            if (columnCount >= 4) {
+                getColumn(0).preferredWidth = (totalWidth * 0.25).toInt() // Name
+                getColumn(1).preferredWidth = (totalWidth * 0.15).toInt() // Type
+                getColumn(2).preferredWidth = (totalWidth * 0.25).toInt() // Model
+                getColumn(3).preferredWidth = (totalWidth * 0.35).toInt() // Base URL
+            }
         }
     }
 
