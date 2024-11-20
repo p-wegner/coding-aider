@@ -15,6 +15,7 @@ import de.andrena.codingaider.command.CommandOptions
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.AiderMode
+import de.andrena.codingaider.services.AiderDocsService.Companion.AIDER_DOCS_FOLDER
 import de.andrena.codingaider.services.MarkdownConversionService
 import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
@@ -25,6 +26,8 @@ import java.net.URI
 import java.security.MessageDigest
 
 class AiderWebCrawlAction : AnAction() {
+
+
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val settings = getInstance()
@@ -33,7 +36,7 @@ class AiderWebCrawlAction : AnAction() {
         if (!url.isNullOrEmpty()) {
             val projectRoot = project.basePath ?: "."
             val domain = URI(url).host
-            val docsPath = "$projectRoot/.aider-docs/$domain"
+            val docsPath = "$projectRoot/$AIDER_DOCS_FOLDER/$domain"
             File(docsPath).mkdirs()
 
             val combinedHash = MessageDigest.getInstance("MD5").digest(url.toByteArray()).let {
@@ -50,7 +53,7 @@ class AiderWebCrawlAction : AnAction() {
 
                 val commandData = CommandData(
                     message = """
-                        Clean up and simplify the provided file $fileName using whole file edit format. Follow these guidelines:
+                        Clean up and simplify the provided file $fileName. Follow these guidelines:
                         1. Remove all navigation elements, headers, footers, and sidebars.
                         2. Delete any advertisements, banners, or promotional content.
                         3. Remove or simplify the table of contents, keeping only if it's essential for understanding the structure.

@@ -12,6 +12,7 @@ import com.intellij.ui.treeStructure.Tree
 import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.tree.TreeUtil
 import de.andrena.codingaider.command.FileData
+import de.andrena.codingaider.services.AiderDocsService.Companion.AIDER_DOCS_FOLDER
 import de.andrena.codingaider.services.FileExtractorService
 import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.services.TokenCountService
@@ -23,7 +24,6 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.io.File
 import javax.swing.*
-import javax.swing.border.TitledBorder
 import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeCellRenderer
 import javax.swing.tree.DefaultTreeModel
@@ -156,7 +156,7 @@ class AiderContextView(
 
         allUniqueFiles.forEach { fileData ->
             val node = DefaultMutableTreeNode(fileData)
-            if (fileData.filePath.endsWith(".md") && fileData.filePath.contains(".aider-docs")) {
+            if (fileData.filePath.endsWith(".md") && fileData.filePath.contains(AIDER_DOCS_FOLDER)) {
                 markdownFilesNode.add(node)
             } else {
                 filesNode.add(node)

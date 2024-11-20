@@ -11,6 +11,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.util.ui.ImageUtil
 import de.andrena.codingaider.command.FileData
+import de.andrena.codingaider.services.AiderDocsService.Companion.AIDER_DOCS_FOLDER
 import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.utils.FileRefresher
 import java.awt.Image
@@ -39,7 +40,7 @@ class AiderClipboardImageAction : AnAction() {
 
     private fun saveImageToFile(project: Project, image: Image) {
         val projectRoot = project.basePath ?: "."
-        val imagesPath = "$projectRoot/.aider-docs/images"
+        val imagesPath = "$projectRoot/$AIDER_DOCS_FOLDER/images"
         File(imagesPath).mkdirs()
 
         val bufferedImage = toBufferedImage(image)

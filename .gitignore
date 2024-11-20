@@ -47,3 +47,4 @@ bin/
 .aider.*
 .env
 /.intellijPlatform/*
+.aider*
