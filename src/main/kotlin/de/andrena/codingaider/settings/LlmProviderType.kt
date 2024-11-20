@@ -5,9 +5,9 @@ enum class LlmProviderType(
     val requiresApiKey: Boolean = true,
     val requiresBaseUrl: Boolean = false
 ) {
-    OPENAI("OpenAI", requiresBaseUrl = true),
+    OPENAI("OpenAI", requiresApiKey = true, requiresBaseUrl = true),
     OLLAMA("Ollama", requiresApiKey = false, requiresBaseUrl = true),
-    OPENROUTER("OpenRouter");
+    OPENROUTER("OpenRouter", requiresApiKey = true, requiresBaseUrl = false);
 
     fun getApiKeyName(providerName: String): String {
         return when (this) {
