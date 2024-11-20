@@ -103,78 +103,7 @@ class AiderInputDialog(
     private val persistentFileService: PersistentFileService
     private var splitPane: OnePixelSplitter
     private val settingsButton: ActionButton
-    private val flagAndArgsPanel by lazy { optionsPanel }
-    private val optionsPanel by lazy {
-        com.intellij.ui.components.panels.Wrapper().apply {
-            setContent(flagAndArgsPanel)
-            isVisible = true // Always visible for animation
-        }
-    }
-
-    private fun updatePanelSize(collapsed: Boolean) {
-        optionsPanel.apply {
-            if (collapsed) {
-                minimumSize = Dimension(0, 0)
-                maximumSize = Dimension(Int.MAX_VALUE, 0)
-                preferredSize = Dimension(0, 0)
-            } else {
-                minimumSize = null
-                maximumSize = null
-                preferredSize = null
-            }
-            revalidate()
-            repaint()
-        }
-    }
-
-    init {
-        updatePanelSize(projectSettings.isOptionsCollapsed)
-    }
-    private val panelAnimation = PanelAnimation(optionsPanel)
-    private fun createCollapseButton(
-        title: String,
-        isCollapsedGetter: () -> Boolean,
-        panel: JComponent,
-        contentPanel: JComponent,
-        animation: PanelAnimation
-    ): ActionButton {
-        val action = object : AnAction() {
-            override fun actionPerformed(e: AnActionEvent) {
-                val isCollapsed = isCollapsedGetter()
-                projectSettings.isOptionsCollapsed = !isCollapsed
-                
-                val startHeight = panel.height
-                val endHeight = if (isCollapsed) contentPanel.preferredSize.height else 0
-                
-                animation.animate(startHeight, endHeight) {
-                    updateCollapseButtonIcon(!isCollapsed)
-                    updatePanelSize(!isCollapsed)
-                }
-            }
-        }
-        
-        val presentation = Presentation(title).apply {
-            icon = if (isCollapsedGetter()) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
-            description = if (isCollapsedGetter()) "Show $title" else "Hide $title"
-        }
-        
-        return ActionButton(action, presentation, "Aider${title}Button", ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE)
-    }
-    
-    private fun updateCollapseButtonIcon(collapsed: Boolean) {
-        collapseButton.presentation.apply {
-            icon = if (collapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
-            description = if (collapsed) "Show Options" else "Hide Options"
-        }
-    }
-
-    private val collapseButton: ActionButton = createCollapseButton(
-        "Options",
-        projectSettings::isOptionsCollapsed,
-        optionsPanel,
-        flagAndArgsPanel,
-        panelAnimation
-    )
+    private val optionsManager = AiderOptionsManager(project, apiKeyChecker) { updateTokenCount() }
 
     init {
         title = "Aider Command"
@@ -211,10 +140,10 @@ class AiderInputDialog(
         setOKButtonText("OK")
         setCancelButtonText("Cancel")
         setupKeyBindings()
-        optionsPanel.llmComboBox.selectedItem = settings.llm
-        optionsPanel.llmComboBox.renderer = LlmComboBoxRenderer(apiKeyChecker, optionsPanel.llmComboBox, optionsPanel.llmOptions)
-        optionsPanel.yesCheckBox.isSelected = settings.useYesFlag
-        optionsPanel.additionalArgsField.text = settings.additionalArgs
+        optionsManager.llmComboBox.selectedItem = settings.llm
+        optionsManager.llmComboBox.renderer = LlmComboBoxRenderer(apiKeyChecker, optionsManager.llmComboBox, optionsPanel.llmOptions)
+        optionsManager.yesCheckBox.isSelected = settings.useYesFlag
+        optionsManager.additionalArgsField.text = settings.additionalArgs
 
         // Set minimum size for the dialog and its components
         inputTextField.minimumSize = Dimension(300, 100)
@@ -353,16 +282,10 @@ class AiderInputDialog(
         gbc.weighty = 0.0
         gbc.fill = GridBagConstraints.HORIZONTAL
 
-        val optionsCollapsible = CollapsiblePanel(
-            "Additional Options",
-            projectSettings::isOptionsCollapsed,
-            flagAndArgsPanel
-        )
-        
-        topPanel.add(optionsCollapsible.headerPanel.apply { 
+        topPanel.add(optionsManager.collapseButton.apply { 
             border = JBUI.Borders.empty(2) 
         }, gbc.apply { gridy++ })
-        topPanel.add(optionsCollapsible.contentPanel, gbc.apply { gridy++ })
+        topPanel.add(optionsManager.panel, gbc.apply { gridy++ })
 
         // Context view with collapsible UI
         val contextViewPanel = AiderContextViewPanel(project, aiderContextView)
@@ -390,9 +313,9 @@ class AiderInputDialog(
 
     fun getInputText(): String = inputTextField.text
 
-    fun isYesFlagChecked(): Boolean = optionsPanel.yesCheckBox.isSelected
-    fun getLlm(): String = optionsPanel.llmComboBox.selectedItem as String
-    fun getAdditionalArgs(): String = optionsPanel.additionalArgsField.text
+    fun isYesFlagChecked(): Boolean = optionsManager.yesCheckBox.isSelected
+    fun getLlm(): String = optionsManager.llmComboBox.selectedItem as String
+    fun getAdditionalArgs(): String = optionsManager.additionalArgsField.text
     fun getAllFiles(): List<FileData> = aiderContextView?.getAllFiles() ?: emptyList()
     val selectedMode get() = modeSegmentedButton?.selectedItem ?: initialMode
     fun isShellMode(): Boolean = selectedMode == AiderMode.SHELL
