@@ -31,9 +31,10 @@ class GitDiffPresenter {
                     DiffManager.getInstance().showDiff(project, request)
                 }
             }
-            fun presentChanges(project: Project, changes: List<Change>) {
-                ShowDiffAction.showDiffForChange(project, changes)
-            }
         }
+        fun presentChanges(project: Project, changes: List<Change>) {
+            ShowDiffAction.showDiffForChange(project, changes)
+        }
+
     }
 }
