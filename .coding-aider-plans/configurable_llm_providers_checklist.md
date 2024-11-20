@@ -38,16 +38,6 @@ See plan: [configurable_llm_providers.md](configurable_llm_providers.md)
 - [ ] Implement provider-specific API key management
 - [ ] Add validation and error handling per provider
 
-## Testing
-- [ ] Unit tests for data model
-- [ ] UI tests for provider dialog
-- [ ] Integration tests for settings storage
-- [ ] Validation tests for each provider type
-- [ ] Test provider-specific execution strategies
-- [ ] Test Docker configurations for each provider
-
 ## Documentation
 - [ ] Update settings documentation
 - [ ] Add provider configuration guide
-- [ ] Document migration path
-- [ ] Document provider-specific requirements and limitations
