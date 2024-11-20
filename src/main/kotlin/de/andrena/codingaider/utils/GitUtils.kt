@@ -3,10 +3,12 @@ package de.andrena.codingaider.utils
 import com.intellij.openapi.application.ApplicationManager.getApplication
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.changes.Change
+import com.intellij.openapi.vcs.FilePath
+import com.intellij.openapi.vcs.LocalFilePath
 import com.intellij.openapi.vcs.changes.ContentRevision
 import com.intellij.openapi.vcs.changes.CurrentContentRevision
+import com.intellij.openapi.vcs.changes.actions.ShowDiffAction
 import com.intellij.openapi.vcs.history.VcsRevisionNumber
-import com.intellij.openapi.vcs.impl.SimpleContentRevision
 import com.intellij.openapi.vfs.LocalFileSystem
 import git4idea.GitUtil
 import git4idea.repo.GitRepository
@@ -28,17 +30,18 @@ object GitUtils {
                     val changes = getChanges(repository).map { file ->
                         val virtualFile = LocalFileSystem.getInstance().findFileByIoFile(file)
                         if (virtualFile != null) {
-                            val beforeRevision = SimpleContentRevision(
-                                "",
-                                virtualFile.path,
-                                VcsRevisionNumber.before()
-                            )
-                            val afterRevision = CurrentContentRevision(virtualFile)
+                            val filePath = LocalFilePath(virtualFile.path, virtualFile.isDirectory)
+                            val beforeRevision = object : ContentRevision {
+                                override fun getContent() = ""
+                                override fun getFile() = filePath
+                                override fun getRevisionNumber() = VcsRevisionNumber.NULL
+                            }
+                            val afterRevision = CurrentContentRevision(filePath)
                             Change(beforeRevision as ContentRevision, afterRevision)
                         } else null
                     }.filterNotNull()
 
-                    com.intellij.openapi.vcs.changes.actions.ShowDiffAction.showDiffForChange(
+                    ShowDiffAction.showDiffForChange(
                         project,
                         changes
                     )
@@ -50,8 +53,8 @@ object GitUtils {
 
     private fun getChanges(repository: GitRepository): List<File> {
         val root = repository.root
-        return repository.changingFiles.map { 
-            File(root.path, it)
+        return repository.untrackedFilesHolder.retrieveUntrackedFilePaths().map { filePath ->
+            File(root.path, filePath.path)
         }
     }
 
