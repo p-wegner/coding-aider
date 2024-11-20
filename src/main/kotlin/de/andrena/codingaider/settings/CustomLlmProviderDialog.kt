@@ -15,12 +15,11 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
         rowHeight = 30
         intercellSpacing = java.awt.Dimension(10, 5)
         tableHeader.preferredSize = java.awt.Dimension(0, 32)
-        columnModel.apply {
-            getColumn(0).minWidth = 150  // Name
-            getColumn(1).minWidth = 100  // Type
-            getColumn(2).minWidth = 120  // Model
-            getColumn(3).minWidth = 200  // Base URL
-        }
+        addComponentListener(object : java.awt.event.ComponentAdapter() {
+            override fun componentResized(e: java.awt.event.ComponentEvent) {
+                adjustColumnWidths()
+            }
+        })
     }
 
     init {
@@ -32,7 +31,17 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
     override fun show() {
         super.show()
         providersTableModel.fireTableStructureChanged()
+        initializeColumns()
         adjustColumnWidths()
+    }
+
+    private fun initializeColumns() {
+        providersTable.columnModel.apply {
+            getColumn(0).minWidth = 150  // Name
+            getColumn(1).minWidth = 100  // Type
+            getColumn(2).minWidth = 120  // Model
+            getColumn(3).minWidth = 200  // Base URL
+        }
     }
 
     private fun adjustColumnWidths() {
