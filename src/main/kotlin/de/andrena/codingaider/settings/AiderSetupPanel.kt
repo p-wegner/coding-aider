@@ -42,7 +42,15 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
     private val customApiKeyField = JPasswordField()
 
     private fun Panel.createApiKeysGroup() {
-        group("Custom Model") {
+        group("Custom Providers") {
+            row {
+                button("Manage Providers...") {
+                    CustomLlmProviderDialog(project).show()
+                }
+            }
+        }
+        
+        group("Legacy Custom Model") {
             row("API Base URL:") {
                 cell(baseUrlField)
                     .resizableColumn()

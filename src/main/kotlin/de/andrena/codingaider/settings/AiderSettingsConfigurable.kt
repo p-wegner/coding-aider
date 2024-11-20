@@ -327,13 +327,13 @@ class AiderSettingsConfigurable() : Configurable {
                 // Check if it's a custom provider
                 val customProvider = project.service<CustomLlmProviderService>().getProvider(value)
                 if (customProvider != null) {
-                    text = customProvider.getEffectiveDisplayName()
+                    text = customProvider.displayName.ifEmpty { customProvider.name }
                     when (customProvider.type) {
-                        ProviderType.OPENAI -> icon = AllIcons.Providers.OpenAI
-                        ProviderType.OLLAMA -> icon = AllIcons.Providers.Ollama
-                        ProviderType.OPENROUTER -> icon = AllIcons.Providers.OpenRouter
+                        LlmProviderType.OPENAI -> icon = AllIcons.General.Web // Replace with actual OpenAI icon
+                        LlmProviderType.OLLAMA -> icon = AllIcons.Actions.Execute // Replace with actual Ollama icon
+                        LlmProviderType.OPENROUTER -> icon = AllIcons.General.Web // Replace with actual OpenRouter icon
                     }
-                    toolTipText = "Custom ${customProvider.type.name.lowercase()} provider"
+                    toolTipText = "Custom ${customProvider.type.displayName} provider: ${customProvider.name}"
                 } else {
                     // Handle built-in providers
                     val apiKey = apiKeyChecker.getApiKeyForLlm(value)
