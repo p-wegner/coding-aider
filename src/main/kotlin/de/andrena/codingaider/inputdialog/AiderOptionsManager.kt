@@ -5,11 +5,15 @@ import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.panels.Wrapper
+import com.intellij.util.ui.JBUI
 import de.andrena.codingaider.settings.AiderProjectSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.PanelAnimation
+import java.awt.BorderLayout
 import java.awt.Dimension
 import javax.swing.JComponent
+import javax.swing.JPanel
+import javax.swing.UIManager
 
 class AiderOptionsManager(
     private val project: Project,
