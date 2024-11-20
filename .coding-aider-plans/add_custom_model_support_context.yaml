@@ -1,0 +1,10 @@
+---
+files:
+  - path: README.md
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/settings/AiderProjectSettingsConfigurable.kt
+    readOnly: true
+  - path: src/main/kotlin/de/andrena/codingaider/utils/ApiKeyManager.kt
+    readOnly: true
+  - path: src/main/kotlin/de/andrena/codingaider/inputdialog/LlmComboBoxRenderer.kt
+    readOnly: true

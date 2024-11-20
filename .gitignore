@@ -44,6 +44,6 @@ bin/
 
 ### Mac OS ###
 .DS_Store
-.aider*
+.aider.*
 .env
 /.intellijPlatform/*

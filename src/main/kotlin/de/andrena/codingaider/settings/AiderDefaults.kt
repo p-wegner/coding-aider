@@ -28,6 +28,4 @@ object AiderDefaults {
     const val DOCKER_IMAGE: String = "paulgauthier/aider"
     const val DOCKER_IMAGE_TAG_SUGGESTION: String = "v0.63.1"
     const val AIDER_EXECUTABLE_PATH: String = "aider"
-    const val CUSTOM_OPENAI_API_BASE: String = ""
-    const val CUSTOM_OPENAI_API_KEY: String = ""
 }
