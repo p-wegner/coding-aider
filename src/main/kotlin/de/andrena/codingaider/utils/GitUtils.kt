@@ -2,10 +2,7 @@ package de.andrena.codingaider.utils
 
 import com.intellij.openapi.application.ApplicationManager.getApplication
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vcs.changes.Change
-import com.intellij.diff.DiffContentFactory
-import com.intellij.diff.DiffManager
-import com.intellij.diff.requests.SimpleDiffRequest
+import com.intellij.openapi.vcs.changes.ChangesViewManager
 import git4idea.GitUtil
 import git4idea.repo.GitRepository
 
@@ -24,8 +21,8 @@ object GitUtils {
             val repository = getGitRepository(project)
             if (repository != null) {
                 getApplication().invokeLater {
-                    val changesViewManager = com.intellij.openapi.vcs.changes.ui.ChangesViewManager.getInstance(project)
-                    changesViewManager.selectChanges(listOf())  // Show current changes
+                    val changesViewManager = ChangesViewManager.getInstance(project)
+                    changesViewManager.selectChanges(listOf())
                     afterAction()
                 }
             }
