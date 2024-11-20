@@ -20,6 +20,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
     }
 
     data class State(
+        var customModelSettings: CustomModelSettings = CustomModelSettings(),
         var enableDocumentationLookup: Boolean = AiderDefaults.ENABLE_DOCUMENTATION_LOOKUP,
         var useYesFlag: Boolean = AiderDefaults.USE_YES_FLAG,
         var llm: String = AiderDefaults.LLM,
@@ -50,6 +51,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var optionsPanelCollapsed: Boolean = true,
     )
 
+
+    var customModelSettings: CustomModelSettings
+        get() = myState.customModelSettings
+        set(value) {
+            myState.customModelSettings = value
+        }
 
     var documentationLlm: String
         get() = myState.documentationLlm

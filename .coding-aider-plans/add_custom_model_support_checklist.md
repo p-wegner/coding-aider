@@ -13,11 +13,11 @@ Reference: [Main Plan](add_custom_model_support.md)
 - [ ] Add help text/tooltips explaining custom model configuration
 
 ## Settings Management
-- [ ] Create data class for custom model settings
-- [ ] Implement settings persistence
-- [ ] Add secure storage for custom API key
-- [ ] Implement settings validation
-- [ ] Add default values handling
+- [x] Create data class for custom model settings
+- [x] Implement settings persistence
+- [x] Add secure storage for custom API key
+- [x] Implement settings validation
+- [x] Add default values handling
 
 ## Integration
 - [ ] Update LLM provider configuration to include custom model

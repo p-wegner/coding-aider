@@ -37,33 +37,52 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
         }
     }
 
+    private val baseUrlField = JBTextField()
+    private val modelNameField = JBTextField()
+    private val customApiKeyField = JPasswordField()
+
     private fun Panel.createApiKeysGroup() {
         group("Custom Model") {
             row("API Base URL:") {
-                val baseUrlField = JBTextField()
                 cell(baseUrlField)
                     .resizableColumn()
                     .align(Align.FILL)
                     .component
                     .apply {
                         toolTipText = "Enter the base URL for your custom OpenAI-compatible API (e.g., http://localhost:8000/v1)"
+                        document.addDocumentListener(object : DocumentListener {
+                            override fun insertUpdate(e: DocumentEvent) = validateCustomModel()
+                            override fun removeUpdate(e: DocumentEvent) = validateCustomModel()
+                            override fun changedUpdate(e: DocumentEvent) = validateCustomModel()
+                        })
                     }
             }
             row("Model Name:") {
-                val modelNameField = JBTextField()
                 cell(modelNameField)
                     .resizableColumn()
                     .align(Align.FILL)
                     .component
                     .apply {
                         toolTipText = "Enter the model name with 'openai/' prefix (e.g., openai/gpt-4)"
+                        document.addDocumentListener(object : DocumentListener {
+                            override fun insertUpdate(e: DocumentEvent) = validateCustomModel()
+                            override fun removeUpdate(e: DocumentEvent) = validateCustomModel()
+                            override fun changedUpdate(e: DocumentEvent) = validateCustomModel()
+                        })
                     }
             }
             row("API Key:") {
-                val apiKeyField = JPasswordField()
-                cell(apiKeyField)
+                cell(customApiKeyField)
                     .resizableColumn()
                     .align(Align.FILL)
+                    .component
+                    .apply {
+                        document.addDocumentListener(object : DocumentListener {
+                            override fun insertUpdate(e: DocumentEvent) = validateCustomModel()
+                            override fun removeUpdate(e: DocumentEvent) = validateCustomModel()
+                            override fun changedUpdate(e: DocumentEvent) = validateCustomModel()
+                        })
+                    }
             }
         }
         
@@ -301,11 +320,33 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
         }
     }
 
+    private fun validateCustomModel() {
+        val settings = CustomModelSettings(
+            apiBaseUrl = baseUrlField.text,
+            modelName = modelNameField.text,
+            apiKey = String(customApiKeyField.password)
+        )
+        
+        if (!settings.modelName.startsWith("openai/") && settings.modelName.isNotBlank()) {
+            modelNameField.foreground = UIManager.getColor("Label.errorForeground")
+            modelNameField.toolTipText = "Model name must start with 'openai/'"
+        } else {
+            modelNameField.foreground = UIManager.getColor("TextField.foreground")
+            modelNameField.toolTipText = "Enter the model name with 'openai/' prefix (e.g., openai/gpt-4)"
+        }
+    }
+
     fun isModified(): Boolean {
         val settings = AiderSettings.getInstance()
+        val currentCustomSettings = CustomModelSettings(
+            apiBaseUrl = baseUrlField.text,
+            modelName = modelNameField.text,
+            apiKey = String(customApiKeyField.password)
+        )
         return useDockerAiderCheckBox.isSelected != settings.useDockerAider ||
                 dockerImageTagField.text != settings.dockerImageTag ||
-                aiderExecutablePathField.text != settings.aiderExecutablePath
+                aiderExecutablePathField.text != settings.aiderExecutablePath ||
+                currentCustomSettings != settings.customModelSettings
     }
 
     fun apply() {
@@ -313,6 +354,11 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
         settings.useDockerAider = useDockerAiderCheckBox.isSelected
         settings.dockerImageTag = dockerImageTagField.text
         settings.aiderExecutablePath = aiderExecutablePathField.text
+        settings.customModelSettings = CustomModelSettings(
+            apiBaseUrl = baseUrlField.text,
+            modelName = modelNameField.text,
+            apiKey = String(customApiKeyField.password)
+        )
     }
 
     fun reset() {
@@ -320,6 +366,9 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
         useDockerAiderCheckBox.isSelected = settings.useDockerAider
         dockerImageTagField.text = settings.dockerImageTag
         aiderExecutablePathField.text = settings.aiderExecutablePath
+        baseUrlField.text = settings.customModelSettings.apiBaseUrl
+        modelNameField.text = settings.customModelSettings.modelName
+        customApiKeyField.text = settings.customModelSettings.apiKey
         updateApiKeyFieldsOnClose()
 
     }
