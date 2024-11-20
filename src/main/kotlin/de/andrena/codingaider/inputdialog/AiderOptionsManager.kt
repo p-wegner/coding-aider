@@ -40,6 +40,8 @@ class AiderOptionsManager(
         updatePanelSize(projectSettings.isOptionsCollapsed)
     }
 
+    private lateinit var collapseButtonPresentation: Presentation
+    
     fun createCollapseButton(): JPanel {
         val action = object : AnAction() {
             override fun actionPerformed(e: AnActionEvent) {
@@ -56,12 +58,12 @@ class AiderOptionsManager(
             }
         }
         
-        val presentation = Presentation("Additional Options").apply {
+        collapseButtonPresentation = Presentation("Additional Options").apply {
             icon = if (projectSettings.isOptionsCollapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
             description = if (projectSettings.isOptionsCollapsed) "Show additional options" else "Hide additional options"
         }
         
-        val button = ActionButton(action, presentation, "AiderOptionsButton", Dimension(Int.MAX_VALUE, 28))
+        val button = ActionButton(action, collapseButtonPresentation, "AiderOptionsButton", Dimension(Int.MAX_VALUE, 28))
         
         return JPanel(BorderLayout()).apply {
             add(button, BorderLayout.CENTER)
@@ -88,7 +90,7 @@ class AiderOptionsManager(
     }
 
     private fun updateCollapseButtonIcon(collapsed: Boolean) {
-        collapseButton.presentation.apply {
+        collapseButtonPresentation.apply {
             icon = if (collapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
             description = if (collapsed) "Show Options" else "Hide Options"
         }
