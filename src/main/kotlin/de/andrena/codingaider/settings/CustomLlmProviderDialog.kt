@@ -37,10 +37,27 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
 
     private fun initializeColumns() {
         providersTable.columnModel.apply {
-            getColumn(0).minWidth = 150  // Name
-            getColumn(1).minWidth = 100  // Type
-            getColumn(2).minWidth = 120  // Model
-            getColumn(3).minWidth = 200  // Base URL
+            for (i in 0 until columnCount) {
+                val column = getColumn(i)
+                when (i) {
+                    0 -> { // Name
+                        column.minWidth = 150
+                        column.preferredWidth = 200
+                    }
+                    1 -> { // Type
+                        column.minWidth = 100
+                        column.preferredWidth = 120
+                    }
+                    2 -> { // Model
+                        column.minWidth = 120
+                        column.preferredWidth = 160
+                    }
+                    3 -> { // Base URL
+                        column.minWidth = 200
+                        column.preferredWidth = 320
+                    }
+                }
+            }
         }
     }
 
@@ -48,10 +65,14 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
         providersTable.columnModel.apply {
             val totalWidth = providersTable.width
             if (totalWidth > 0 && columnCount >= 4) {
-                getColumn(0).width = (totalWidth * 0.25).toInt() // Name
-                getColumn(1).width = (totalWidth * 0.15).toInt() // Type
-                getColumn(2).width = (totalWidth * 0.20).toInt() // Model
-                getColumn(3).width = (totalWidth * 0.40).toInt() // Base URL
+                val widths = listOf(0.25, 0.15, 0.20, 0.40)
+                for (i in 0 until minOf(columnCount, widths.size)) {
+                    val calculatedWidth = (totalWidth * widths[i]).toInt()
+                    val column = getColumn(i)
+                    if (calculatedWidth >= column.minWidth) {
+                        column.width = calculatedWidth
+                    }
+                }
             }
         }
     }
