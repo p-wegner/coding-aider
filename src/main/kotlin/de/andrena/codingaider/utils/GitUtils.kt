@@ -29,6 +29,7 @@ object GitUtils {
                     afterAction()
                 }
             }
+        }
     }
 
     private fun getGitRepository(project: Project): GitRepository? {
