@@ -34,8 +34,21 @@ object GitUtils {
     }
 
     private fun getChangesSince(repository: GitRepository, commitHash: String): List<Change> {
-        // TODO: implement this
-        throw NotImplementedError()
+        val vcsManager = repository.vcs.vcsHistoryProvider
+        val root = repository.root
+        val changes = mutableListOf<Change>()
+        
+        repository.currentBranch?.let { branch ->
+            val gitVcs = repository.vcs
+            val changeListManager = gitVcs.changeListManager
+            
+            // Get all changes between current state and specified commit
+            changeListManager.getChangesIn(root)?.forEach { change ->
+                changes.add(change)
+            }
+        }
+        
+        return changes
     }
 
     private fun getGitRepository(project: Project): GitRepository? {
