@@ -200,6 +200,19 @@ class DockerAiderExecutionStrategy(
             dockerArgs.addAll(listOf("-e", "$keyName=$value"))
         }
 
+        // Add provider-specific Docker configurations
+        val customProvider = project.service<CustomLlmProviderService>().getProvider(commandData.llm)
+        when (customProvider?.type) {
+            LlmProviderType.OLLAMA -> {
+                // For Ollama, we need to ensure network access to the host
+                dockerArgs.addAll(listOf("--network", "host"))
+            }
+            LlmProviderType.OPENAI, LlmProviderType.OPENROUTER -> {
+                // These providers need internet access but no special Docker config
+            }
+            null -> {} // No special configuration needed
+        }
+
         // Mount files outside the project
         commandData.files.forEach { fileData ->
             if (!fileData.filePath.startsWith(commandData.projectPath)) {
