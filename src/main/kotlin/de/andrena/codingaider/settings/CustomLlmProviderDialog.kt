@@ -13,16 +13,19 @@ import com.intellij.openapi.components.service
 class CustomLlmProviderDialog : DialogWrapper(null) {
     private val providerService = service<CustomLlmProviderService>()
     private val providersTableModel = ProvidersTableModel()
-    private val providersTable = JBTable(providersTableModel)
+    private val providersTable = JBTable(providersTableModel).apply {
+        setShowGrid(true)
+        autoResizeMode = JBTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS
+    }
 
     init {
         title = "Manage Custom LLM Providers"
         init()
-        providersTable.setShowGrid(true)
     }
 
     override fun show() {
         super.show()
+        providersTableModel.fireTableStructureChanged()
         if (providersTable.columnModel.columnCount >= 3) {
             providersTable.columnModel.getColumn(0).preferredWidth = 150
             providersTable.columnModel.getColumn(1).preferredWidth = 100
@@ -74,28 +77,4 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
         }
     }
 
-    override fun doValidate(): ValidationInfo? {
-        if (nameField.text.isBlank()) {
-            return ValidationInfo("Provider name is required", nameField)
-        }
-        if (modelNameField.text.isBlank()) {
-            return ValidationInfo("Model name is required", modelNameField)
-        }
-        val selectedType = providerTypeComboBox.selectedItem as LlmProviderType
-        if (selectedType.requiresBaseUrl && baseUrlField.text.isBlank()) {
-            return ValidationInfo("Base URL is required for ${selectedType.name}", baseUrlField)
-        }
-        return null
-    }
-
-    fun getProvider(): CustomLlmProvider {
-        val type: LlmProviderType = providerTypeComboBox.selectedItem as LlmProviderType
-        return CustomLlmProvider(
-            name = nameField.text,
-            displayName = displayNameField.text.takeIf { it.isNotBlank() },
-            type = type,
-            baseUrl = baseUrlField.text?:"",
-            modelName = modelNameField?.text ?:"",
-        )
-    }
 }
