@@ -28,3 +28,7 @@ files:
   readOnly: false
 - path: src/main/kotlin/de/andrena/codingaider/settings/LlmProviderType.kt
   readOnly: false
+- path: .coding-aider-docs/settings.md
+  readOnly: false
+- path: .coding-aider-docs/provider_configuration.md
+  readOnly: false

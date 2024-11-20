@@ -38,5 +38,5 @@ See plan: [configurable_llm_providers.md](configurable_llm_providers.md)
 - [x] Add validation and error handling per provider
 
 ## Documentation
-- [ ] Update settings documentation
-- [ ] Add provider configuration guide
+- [x] Update settings documentation
+- [x] Add provider configuration guide
