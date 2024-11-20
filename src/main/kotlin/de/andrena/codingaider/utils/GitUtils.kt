@@ -41,8 +41,15 @@ object GitUtils {
         repository.currentBranch?.let { branch ->
             val gitVcs = repository.vcs
             
-            // Get all changes between current state and specified commit
-            // TODO: implement this
+            val gitVcsRoot = gitVcs.findGitVcsRoot(root) ?: return@let
+            val currentState = repository.currentRevision ?: return@let
+
+            val diffProvider = gitVcs.diffProvider
+            changes.addAll(diffProvider.compare(
+                gitVcsRoot.path,
+                commitHash,
+                currentState
+            ))
         }
         
         return changes
