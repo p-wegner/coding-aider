@@ -24,9 +24,19 @@ class DefaultApiKeyChecker : ApiKeyChecker {
         "--deepseek" to "DEEPSEEK_API_KEY"
     )
 
+    private fun getCustomProviderApiKey(llm: String): String? {
+        return ApiKeyManager.getCustomModelKey(llm)
+    }
+
     override fun isApiKeyAvailableForLlm(llm: String): Boolean {
-        val apiKey = llmToApiKeyMap[llm] ?: return true // If no API key is needed, consider it available
-        return isApiKeyAvailable(apiKey)
+        val standardApiKey = llmToApiKeyMap[llm]
+        if (standardApiKey != null) {
+            return isApiKeyAvailable(standardApiKey)
+        }
+        
+        // Check for custom provider API key
+        val customApiKey = getCustomProviderApiKey(llm)
+        return customApiKey != null || true // If no API key is needed, consider it available
     }
 
     override fun isApiKeyAvailable(apiKeyName: String): Boolean {

@@ -7,8 +7,8 @@ See plan: [configurable_llm_providers.md](configurable_llm_providers.md)
 ## Data Model
 - [x] Create CustomLlmProvider data class to store provider configurations
 - [x] Add provider type enum (OPENAI, OLLAMA, OPENROUTER)
-- [ ] Create storage service for custom providers
-- [ ] Implement secure credential storage for API keys
+- [x] Create storage service for custom providers
+- [x] Implement secure credential storage for API keys
 
 ## UI Components
 - [ ] Create "Manage Custom Providers" dialog

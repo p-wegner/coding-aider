@@ -20,3 +20,5 @@ files:
   readOnly: false
 - path: src/main/kotlin/de/andrena/codingaider/settings/CustomLlmProvider.kt
   readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/settings/CustomLlmProviderService.kt
+  readOnly: false
