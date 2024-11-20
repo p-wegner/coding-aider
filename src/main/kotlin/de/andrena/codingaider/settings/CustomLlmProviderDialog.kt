@@ -34,7 +34,7 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
         if (totalWidth > 0 && providersTable.columnModel.columnCount >= 4) {
             providersTable.columnModel.apply {
                 val columns = (0 until columnCount).mapNotNull { i -> 
-                    try { getColumn(i) } catch (e: Exception) { null }
+                    try { getColumn(i) } catch (_: Exception) { null }
                 }
                 columns.forEachIndexed { i, column ->
                     val width = when (i) {
@@ -55,7 +55,6 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
             scrollCell(providersTable)
                 .resizableColumn()
                 .comment("Configure and manage your custom LLM providers")
-                .preferredSize(java.awt.Dimension(750, 300))
         }
         row {
             panel {
