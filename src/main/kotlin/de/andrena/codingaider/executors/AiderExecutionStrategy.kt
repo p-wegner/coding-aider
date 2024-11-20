@@ -18,10 +18,7 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
     abstract fun cleanupAfterExecution()
     fun buildCommonArgs(commandData: CommandData, settings: AiderSettings): List<String> {
         return buildList {
-            // Handle custom model settings first
             if (settings.customModelSettings.isConfigured()) {
-                add("--openai-api-base")
-                add(settings.customModelSettings.apiBaseUrl)
                 add("--model")
                 add(settings.customModelSettings.modelName)
             } else if (commandData.llm.isNotEmpty()) {
