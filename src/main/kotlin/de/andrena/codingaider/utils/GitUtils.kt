@@ -3,7 +3,6 @@ package de.andrena.codingaider.utils
 import com.intellij.openapi.application.ApplicationManager.getApplication
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.changes.Change
-import com.intellij.openapi.vcs.changes.actions.diff.ShowDiffAction
 import git4idea.GitUtil
 import git4idea.repo.GitRepository
 import java.io.File
@@ -23,10 +22,7 @@ object GitUtils {
                 getApplication().invokeLater {
                     val changes = getChangesSince(repository,commitHash)
 
-                    ShowDiffAction.showDiffForChange(
-                        project,
-                        changes
-                    )
+                    GitDiffPresenter.presentChangesSimple(project, changes)
                     afterAction()
                 }
             }
@@ -34,22 +30,14 @@ object GitUtils {
     }
 
     private fun getChangesSince(repository: GitRepository, commitHash: String): List<Change> {
-        val vcsManager = repository.vcs.vcsHistoryProvider
         val root = repository.root
         val changes = mutableListOf<Change>()
         
         repository.currentBranch?.let { branch ->
             val gitVcs = repository.vcs
-            
-            val gitVcsRoot = gitVcs.findGitVcsRoot(root) ?: return@let
-            val currentState = repository.currentRevision ?: return@let
-
-            val diffProvider = gitVcs.diffProvider
-            changes.addAll(diffProvider.compare(
-                gitVcsRoot.path,
-                commitHash,
-                currentState
-            ))
+            val revNum = gitVcs.parseRevisionNumber(commitHash) ?: return@let
+            val changes = gitVcs.diffProvider.compareWithWorkingDir(root, revNum)
+            changes
         }
         
         return changes
@@ -63,3 +51,4 @@ object GitUtils {
         generateSequence(directory) { it.parentFile }
             .find { File(it, ".git").exists() }
 }
+
