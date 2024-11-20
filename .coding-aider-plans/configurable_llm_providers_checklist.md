@@ -23,7 +23,6 @@ See plan: [configurable_llm_providers.md](configurable_llm_providers.md)
 ## Settings Integration  
 - [ ] Extend AiderSettings to store custom provider list
 - [ ] Update settings UI to show custom providers
-- [ ] Add migration for existing custom OpenAI settings
 
 ## Provider Support
 - [x] Implement OpenAI provider configuration
