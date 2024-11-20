@@ -11,6 +11,7 @@ import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.settings.CustomLlmProviderService
 import de.andrena.codingaider.settings.LlmProviderType
 import de.andrena.codingaider.utils.ApiKeyChecker
+import de.andrena.codingaider.utils.ApiKeyManager
 import de.andrena.codingaider.utils.GitUtils.findGitRoot
 import java.io.File
 
@@ -259,16 +260,20 @@ private fun setApiKeyEnvironmentVariables(
             // Set provider-specific environment variables
             when (customProvider.type) {
                 LlmProviderType.OPENAI -> {
-                    environment["OPENAI_API_KEY"] = customProvider.apiKey
-                    if (customProvider.baseUrl.isNotEmpty()) {
-                        environment["OPENAI_API_BASE"] = customProvider.baseUrl
+                    ApiKeyManager.getCustomModelKey(customProvider.name)?.let { apiKey ->
+                        environment["OPENAI_API_KEY"] = apiKey
+                        if (customProvider.baseUrl.isNotEmpty()) {
+                            environment["OPENAI_API_BASE"] = customProvider.baseUrl
+                        }
                     }
                 }
                 LlmProviderType.OLLAMA -> {
                     environment["OLLAMA_HOST"] = customProvider.baseUrl
                 }
                 LlmProviderType.OPENROUTER -> {
-                    environment["OPENROUTER_API_KEY"] = customProvider.apiKey
+                    ApiKeyManager.getCustomModelKey(customProvider.name)?.let { apiKey ->
+                        environment["OPENROUTER_API_KEY"] = apiKey
+                    }
                 }
             }
         }
