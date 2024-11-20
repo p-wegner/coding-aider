@@ -19,8 +19,13 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         settingsChangeListeners.forEach { it() }
     }
 
+    data class CustomProviderSettings(
+        var providers: List<CustomLlmProvider> = emptyList()
+    )
+
     data class State(
         var customModelSettings: CustomModelSettings = CustomModelSettings(),
+        var customProviderSettings: CustomProviderSettings = CustomProviderSettings(),
         var enableDocumentationLookup: Boolean = AiderDefaults.ENABLE_DOCUMENTATION_LOOKUP,
         var useYesFlag: Boolean = AiderDefaults.USE_YES_FLAG,
         var llm: String = AiderDefaults.LLM,
@@ -56,6 +61,13 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.customModelSettings
         set(value) {
             myState.customModelSettings = value
+        }
+
+    var customProviderSettings: CustomProviderSettings
+        get() = myState.customProviderSettings
+        set(value) {
+            myState.customProviderSettings = value
+            notifySettingsChanged()
         }
 
     var documentationLlm: String
