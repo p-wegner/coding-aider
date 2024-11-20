@@ -20,7 +20,7 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
     init {
         title = "Manage Custom LLM Providers"
         init()
-        setSize(800, 400)
+        setSize(1000, 500)
     }
 
     override fun show() {
@@ -38,8 +38,8 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
                 }
                 columns.forEachIndexed { i, column ->
                     val width = when (i) {
-                        0 -> totalWidth * 0.25 // Name
-                        1 -> totalWidth * 0.15 // Type
+                        0 -> totalWidth * 0.20 // Name
+                        1 -> totalWidth * 0.20 // Type
                         2 -> totalWidth * 0.25 // Model
                         3 -> totalWidth * 0.35 // Base URL
                         else -> totalWidth * 0.25
@@ -55,6 +55,9 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
             scrollCell(providersTable)
                 .resizableColumn()
                 .comment("Configure and manage your custom LLM providers")
+                .apply {
+                    component.preferredSize = java.awt.Dimension(980, 400)
+                }
         }
         row {
             panel {
