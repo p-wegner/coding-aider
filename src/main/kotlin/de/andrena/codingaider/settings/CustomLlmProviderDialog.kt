@@ -22,10 +22,12 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
     }
 
     override fun show() {
-        providersTable.columnModel.getColumn(0).preferredWidth = 150
-        providersTable.columnModel.getColumn(1).preferredWidth = 100
-        providersTable.columnModel.getColumn(2).preferredWidth = 200
         super.show()
+        if (providersTable.columnModel.columnCount >= 3) {
+            providersTable.columnModel.getColumn(0).preferredWidth = 150
+            providersTable.columnModel.getColumn(1).preferredWidth = 100
+            providersTable.columnModel.getColumn(2).preferredWidth = 200
+        }
     }
 
     override fun createCenterPanel(): JComponent = panel {
