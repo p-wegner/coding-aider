@@ -20,6 +20,11 @@ class AiderSettingsConfigurable() : Configurable {
     private val useYesFlagCheckBox = JBCheckBox("Use --yes flag by default")
     private val llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
     private val llmComboBox: JComboBox<String>
+    private val manageProvidersButton = JButton("Manage Providers...").apply {
+        addActionListener {
+            CustomLlmProviderDialog(project).show()
+        }
+    }
     private val additionalArgsField = JBTextField()
     private val isShellModeCheckBox = JBCheckBox("Use Shell Mode by default")
     private val lintCmdField = JBTextField()
@@ -57,6 +62,7 @@ class AiderSettingsConfigurable() : Configurable {
                     cell(llmComboBox).component.apply {
                         renderer = LlmComboBoxRenderer()
                     }
+                    cell(manageProvidersButton)
                 }
                 row("Default Additional Arguments:") {
                     cell(additionalArgsField)
@@ -318,14 +324,27 @@ class AiderSettingsConfigurable() : Configurable {
         ): Component {
             val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
             if (component is JLabel && value is String) {
-                val apiKey = apiKeyChecker.getApiKeyForLlm(value)
-                if (apiKey != null && !apiKeyChecker.isApiKeyAvailableForLlm(value)) {
-                    icon = UIManager.getIcon("OptionPane.errorIcon")
-                    toolTipText =
-                        "API key not found in default locations for $value. This may not be an error if you're using an alternative method to provide the key."
+                // Check if it's a custom provider
+                val customProvider = project.service<CustomLlmProviderService>().getProvider(value)
+                if (customProvider != null) {
+                    text = customProvider.getEffectiveDisplayName()
+                    when (customProvider.type) {
+                        ProviderType.OPENAI -> icon = AllIcons.Providers.OpenAI
+                        ProviderType.OLLAMA -> icon = AllIcons.Providers.Ollama
+                        ProviderType.OPENROUTER -> icon = AllIcons.Providers.OpenRouter
+                    }
+                    toolTipText = "Custom ${customProvider.type.name.lowercase()} provider"
                 } else {
-                    icon = null
-                    toolTipText = null
+                    // Handle built-in providers
+                    val apiKey = apiKeyChecker.getApiKeyForLlm(value)
+                    if (apiKey != null && !apiKeyChecker.isApiKeyAvailableForLlm(value)) {
+                        icon = UIManager.getIcon("OptionPane.errorIcon")
+                        toolTipText =
+                            "API key not found in default locations for $value. This may not be an error if you're using an alternative method to provide the key."
+                    } else {
+                        icon = null
+                        toolTipText = null
+                    }
                 }
             }
             return component

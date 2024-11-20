@@ -16,9 +16,9 @@ See plan: [configurable_llm_providers.md](configurable_llm_providers.md)
   - [x] Provider-specific input fields
   - [x] Validation for required fields
   - [x] Optional display name field
-- [ ] Add "Manage Providers" button to settings
-- [ ] Update LLM dropdown renderer to show custom providers
-- [ ] Add tooltips and validation feedback
+- [x] Add "Manage Providers" button to settings
+- [x] Update LLM dropdown renderer to show custom providers
+- [x] Add tooltips and validation feedback
 
 ## Settings Integration  
 - [ ] Extend AiderSettings to store custom provider list
