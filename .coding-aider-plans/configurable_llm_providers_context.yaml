@@ -1,5 +1,7 @@
 ---
 files:
+- path: src/main/kotlin/de/andrena/codingaider/settings/AiderSettings.kt
+  readOnly: false
 - path: src/main/kotlin/de/andrena/codingaider/inputdialog/AiderInputDialog.kt
   readOnly: false
 - path: src/main/kotlin/de/andrena/codingaider/inputdialog/AiderOptionsPanel.kt
