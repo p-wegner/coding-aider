@@ -3,7 +3,9 @@ package de.andrena.codingaider.utils
 import com.intellij.openapi.application.ApplicationManager.getApplication
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.changes.Change
-import com.intellij.openapi.vcs.changes.actions.diff.ShowCombinedDiffAction
+import com.intellij.diff.DiffContentFactory
+import com.intellij.diff.DiffManager
+import com.intellij.diff.requests.SimpleDiffRequest
 import git4idea.GitUtil
 import git4idea.repo.GitRepository
 
@@ -27,10 +29,25 @@ object GitUtils {
             }
             getApplication().invokeLater {
                 if (changes.isNotEmpty()) {
-                    ShowCombinedDiffAction.showDiff(
-                        project,
-                        changes
-                    )
+                    val diffContentFactory = DiffContentFactory.getInstance()
+                    val requests = changes.map { change ->
+                        val beforeContent = change.beforeRevision?.content?.let { diffContentFactory.create(project, it) }
+                            ?: diffContentFactory.createEmpty()
+                        val afterContent = change.afterRevision?.content?.let { diffContentFactory.create(project, it) }
+                            ?: diffContentFactory.createEmpty()
+                        
+                        SimpleDiffRequest(
+                            "Changes",
+                            beforeContent,
+                            afterContent,
+                            "Before",
+                            "After"
+                        )
+                    }
+                    
+                    requests.forEach { request ->
+                        DiffManager.getInstance().showDiff(project, request)
+                    }
                     afterAction()
                 }
             }
