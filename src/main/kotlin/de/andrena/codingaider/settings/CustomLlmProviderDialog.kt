@@ -1,13 +1,9 @@
 package de.andrena.codingaider.settings
 
 import com.intellij.openapi.ui.DialogWrapper
-import com.intellij.openapi.ui.ValidationInfo
-import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.table.JBTable
 import javax.swing.JComponent
-import javax.swing.JPanel
-import javax.swing.table.AbstractTableModel
 import com.intellij.openapi.components.service
 
 class CustomLlmProviderDialog : DialogWrapper(null) {
