@@ -25,7 +25,7 @@ class DefaultApiKeyChecker : ApiKeyChecker {
     )
 
     private fun getCustomProvider(llm: String): CustomLlmProvider? {
-        return project.service<CustomLlmProviderService>().getProvider(llm)
+        return service<CustomLlmProviderService>().getProvider(llm)
     }
 
     private fun getProviderApiKeyName(provider: CustomLlmProvider): String {
@@ -78,7 +78,7 @@ class DefaultApiKeyChecker : ApiKeyChecker {
 
     override fun getAllLlmOptions(): List<String> {
         val standardOptions = llmToApiKeyMap.keys.toList()
-        val customOptions = project.service<CustomLlmProviderService>().getAllProviders().map { it.name }
+        val customOptions = service<CustomLlmProviderService>().getAllProviders().map { it.name }
         return standardOptions + customOptions
     }
 
@@ -118,7 +118,7 @@ class DefaultApiKeyChecker : ApiKeyChecker {
                 getApiKeyValue(apiKeyName)?.let { apiKeyName to it }
             }
             
-        val customKeys = project.service<CustomLlmProviderService>().getAllProviders()
+        val customKeys = service<CustomLlmProviderService>().getAllProviders()
             .filter { it.type.requiresApiKey }
             .mapNotNull { provider ->
                 val keyName = getProviderApiKeyName(provider)

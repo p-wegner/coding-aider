@@ -39,10 +39,4 @@ class CustomLlmProviderService : PersistentStateComponent<CustomLlmProviderServi
 
     fun getAllProviders(): List<CustomLlmProvider> = myState.providers.toList()
 
-    companion object {
-        @JvmStatic
-        fun getInstance(project: Project): CustomLlmProviderService {
-            return project.service<CustomLlmProviderService>()
-        }
-    }
 }
