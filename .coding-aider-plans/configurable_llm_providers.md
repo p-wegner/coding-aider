@@ -27,6 +27,14 @@ Currently, the plugin only supports adding custom OpenAI-compatible models throu
   - Ollama: Base URL + model name
   - OpenRouter: API key + model name
 
+## Execution Strategy Changes
+The AiderExecutionStrategy needs to be updated to:
+1. Handle different provider-specific environment variables and settings
+2. Support provider-specific command line arguments
+3. Manage different API key patterns for each provider
+4. Handle provider-specific Docker configurations
+5. Support provider-specific validation and error handling
+
 ## References
 - [OpenAI Compatible APIs](openai-compat.md)
 - [Ollama Integration](ollama.md) 

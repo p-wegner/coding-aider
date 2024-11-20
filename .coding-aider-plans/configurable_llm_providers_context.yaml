@@ -14,3 +14,6 @@ files:
   readOnly: true
 - path: .coding-aider-docs/aider.chat/openai-compat.md
   readOnly: true
+- path: "C:/andrena/coding-aider/src/main/kotlin/de/andrena/codingaider/settings/AiderSetupPanel.kt"
+  readOnly: false
+- path: "C:/andrena/coding-aider/src/main/kotlin/de/andrena/codingaider/settings/AiderSettingsConfigurable.kt"
