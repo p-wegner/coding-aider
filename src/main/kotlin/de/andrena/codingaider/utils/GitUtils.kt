@@ -19,28 +19,26 @@ object GitUtils {
         getApplication().executeOnPooledThread<Unit> {
             val repository = getGitRepository(project)
             if (repository != null) {
-                getApplication().invokeLater {
-                    val changes = getChangesSince(repository,commitHash)
-
-                    GitDiffPresenter.presentChangesSimple(project, changes)
-                    afterAction()
+                getApplication().runReadAction {
+                    val changes = getChangesSince(repository, commitHash)
+                    getApplication().invokeLater {
+                        GitDiffPresenter.presentChangesSimple(project, changes)
+                        afterAction()
+                    }
                 }
             }
         }
     }
 
     private fun getChangesSince(repository: GitRepository, commitHash: String): List<Change> {
-        val root = repository.root
-        val changes = mutableListOf<Change>()
-        
-        repository.currentBranch?.let { branch ->
-            val gitVcs = repository.vcs
-            val revNum = gitVcs.parseRevisionNumber(commitHash) ?: return@let
-            val changes = gitVcs.diffProvider.compareWithWorkingDir(root, revNum)
-            changes
+        return getApplication().runReadAction<List<Change>> {
+            val root = repository.root
+            repository.currentBranch?.let { branch ->
+                val gitVcs = repository.vcs
+                val revNum = gitVcs.parseRevisionNumber(commitHash) ?: return@runReadAction emptyList()
+                gitVcs.diffProvider.compareWithWorkingDir(root, revNum)
+            } ?: emptyList()
         }
-        
-        return changes
     }
 
     private fun getGitRepository(project: Project): GitRepository? {
