@@ -17,8 +17,18 @@ To utilize this plugin, you
 
 ## LLM Provider Configuration
 Configure API Keys for LLM Providers for Aider to use in its [.env](https://aider.chat/docs/config/dotenv.html) or [.yml](https://aider.chat/docs/config/aider_conf.html) files or by storing them safely in the plugin settings.
-Alternatively you can use custom ollama models or openAI API compatible servers. 
-For detailed configuration instructions, refer to the [Aider documentation](https://aider.chat/docs/llms/openai-compat.html) and use the `args` setting to configure to use any model with its `--model` argument, e.g. `--model openai/gpt-4o`.
+
+You can use:
+- Standard OpenAI models
+- Custom OpenAI-compatible API endpoints (like Azure, Anthropic, or local servers)
+- Ollama models
+
+For custom OpenAI-compatible APIs, you can configure:
+- Custom API base URL (e.g., http://localhost:8000/v1)
+- Custom API key
+- Model name prefixed with "openai/" (e.g., openai/gpt-4)
+
+For detailed configuration instructions, refer to the [Aider documentation](https://aider.chat/docs/llms/openai-compat.html).
 
 ## Key Features
 
