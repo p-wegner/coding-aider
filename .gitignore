@@ -9,6 +9,7 @@ build/
 .idea/jarRepositories.xml
 .idea/compiler.xml
 .idea/libraries/
+.idea/AiderProjectSettings.xml
 .intellijPlatform/*
 *.iws
 *.iml
@@ -17,6 +18,7 @@ out/
 !**/src/main/**/out/
 !**/src/test/**/out/
 .idea/gradle.xml
+.kotlin/*
 
 ### Eclipse ###
 .apt_generated
