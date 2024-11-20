@@ -5,10 +5,10 @@
 Reference: [Main Plan](add_custom_model_support.md)
 
 ## UI Components
-- [ ] Add custom model section to settings UI
-- [ ] Create input field for API base URL
-- [ ] Create input field for API key
-- [ ] Create input field for model name
+- [x] Add custom model section to settings UI
+- [x] Create input field for API base URL
+- [x] Create input field for API key
+- [x] Create input field for model name
 - [ ] Add validation for "openai/" prefix in model name
 - [ ] Add help text/tooltips explaining custom model configuration
 

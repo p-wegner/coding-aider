@@ -37,6 +37,35 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
     }
 
     private fun Panel.createApiKeysGroup() {
+        group("Custom Model") {
+            row("API Base URL:") {
+                val baseUrlField = JBTextField()
+                cell(baseUrlField)
+                    .resizableColumn()
+                    .align(Align.FILL)
+                    .component
+                    .apply {
+                        toolTipText = "Enter the base URL for your custom OpenAI-compatible API (e.g., http://localhost:8000/v1)"
+                    }
+            }
+            row("Model Name:") {
+                val modelNameField = JBTextField()
+                cell(modelNameField)
+                    .resizableColumn()
+                    .align(Align.FILL)
+                    .component
+                    .apply {
+                        toolTipText = "Enter the model name with 'openai/' prefix (e.g., openai/gpt-4)"
+                    }
+            }
+            row("API Key:") {
+                val apiKeyField = JPasswordField()
+                cell(apiKeyField)
+                    .resizableColumn()
+                    .align(Align.FILL)
+            }
+        }
+        
         group("API Keys") {
             apiKeyChecker.getAllApiKeyNames().forEach { keyName ->
                 row(keyName) {
