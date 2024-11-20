@@ -2,10 +2,14 @@ package de.andrena.codingaider.utils
 
 import com.intellij.openapi.application.ApplicationManager.getApplication
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vcs.changes.ChangesViewManager
+import com.intellij.openapi.vcs.changes.Change
+import com.intellij.openapi.vcs.changes.ContentRevision
+import com.intellij.openapi.vcs.changes.CurrentContentRevision
+import com.intellij.openapi.vcs.history.VcsRevisionNumber
+import com.intellij.openapi.vcs.impl.SimpleContentRevision
+import com.intellij.openapi.vfs.LocalFileSystem
 import git4idea.GitUtil
 import git4idea.repo.GitRepository
-
 import java.io.File
 
 object GitUtils {
@@ -21,8 +25,23 @@ object GitUtils {
             val repository = getGitRepository(project)
             if (repository != null) {
                 getApplication().invokeLater {
-                    val changesViewManager = ChangesViewManager.getInstance(project)
-                    changesViewManager.selectChanges(listOf())
+                    val changes = repository.status.allChanges.map { file ->
+                        val virtualFile = LocalFileSystem.getInstance().findFileByIoFile(file)
+                        if (virtualFile != null) {
+                            val beforeRevision = SimpleContentRevision(
+                                "",
+                                virtualFile.path,
+                                VcsRevisionNumber.before()
+                            )
+                            val afterRevision = CurrentContentRevision(virtualFile)
+                            Change(beforeRevision as ContentRevision, afterRevision)
+                        } else null
+                    }.filterNotNull()
+
+                    com.intellij.openapi.vcs.changes.actions.ShowDiffAction.showDiffForChange(
+                        project,
+                        changes
+                    )
                     afterAction()
                 }
             }
