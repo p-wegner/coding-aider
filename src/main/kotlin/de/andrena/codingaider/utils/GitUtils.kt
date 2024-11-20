@@ -22,47 +22,13 @@ object GitUtils {
     fun openGitComparisonTool(project: Project, commitHash: String, afterAction: () -> Unit) {
         getApplication().executeOnPooledThread<Unit> {
             val repository = getGitRepository(project)
-            val changes: List<Change> = if (repository != null) {
-                getChanges(project, repository, commitHash)
-            } else {
-                emptyList()
-            }
-            getApplication().invokeLater {
-                if (changes.isNotEmpty()) {
-                    val diffContentFactory = DiffContentFactory.getInstance()
-                    val requests = changes.map { change ->
-                        val beforeContent = change.beforeRevision?.content?.let { diffContentFactory.create(project, it) }
-                            ?: diffContentFactory.createEmpty()
-                        val afterContent = change.afterRevision?.content?.let { diffContentFactory.create(project, it) }
-                            ?: diffContentFactory.createEmpty()
-                        
-                        SimpleDiffRequest(
-                            "Changes",
-                            beforeContent,
-                            afterContent,
-                            "Before",
-                            "After"
-                        )
-                    }
-                    
-                    requests.forEach { request ->
-                        DiffManager.getInstance().showDiff(project, request)
-                    }
+            if (repository != null) {
+                getApplication().invokeLater {
+                    val changesViewManager = com.intellij.openapi.vcs.changes.ui.ChangesViewManager.getInstance(project)
+                    changesViewManager.selectAndShowChangesFromCommit(commitHash)
                     afterAction()
                 }
             }
-        }
-    }
-
-    private fun getChanges(project: Project, repository: GitRepository, commitHash: String): List<Change> {
-        val gitVcs = GitUtil.getRepositoryManager(project).getRepositoryForRoot(repository.root)?.vcs
-        val root = repository.root
-        return if (gitVcs != null) {
-            val revision = gitVcs.parseRevisionNumber(commitHash) ?: return emptyList()
-            gitVcs.diffProvider.compareWithWorkingDir(root, revision)?.toList() ?: emptyList()
-        } else {
-            emptyList()
-        }
     }
 
     private fun getGitRepository(project: Project): GitRepository? {
