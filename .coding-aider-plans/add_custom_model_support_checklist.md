@@ -9,8 +9,8 @@ Reference: [Main Plan](add_custom_model_support.md)
 - [x] Create input field for API base URL
 - [x] Create input field for API key
 - [x] Create input field for model name
-- [ ] Add validation for "openai/" prefix in model name
-- [ ] Add help text/tooltips explaining custom model configuration
+- [x] Add validation for "openai/" prefix in model name
+- [x] Add help text/tooltips explaining custom model configuration
 
 ## Settings Management
 - [x] Create data class for custom model settings

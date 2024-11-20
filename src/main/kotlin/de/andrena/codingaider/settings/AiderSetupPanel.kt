@@ -327,12 +327,31 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
             apiKey = String(customApiKeyField.password)
         )
         
+        // Validate model name prefix
         if (!settings.modelName.startsWith("openai/") && settings.modelName.isNotBlank()) {
             modelNameField.foreground = UIManager.getColor("Label.errorForeground")
             modelNameField.toolTipText = "Model name must start with 'openai/'"
         } else {
             modelNameField.foreground = UIManager.getColor("TextField.foreground")
             modelNameField.toolTipText = "Enter the model name with 'openai/' prefix (e.g., openai/gpt-4)"
+        }
+
+        // Validate API base URL
+        if (settings.apiBaseUrl.isNotBlank() && !settings.apiBaseUrl.matches(Regex("https?://.*"))) {
+            baseUrlField.foreground = UIManager.getColor("Label.errorForeground")
+            baseUrlField.toolTipText = "API base URL must start with http:// or https://"
+        } else {
+            baseUrlField.foreground = UIManager.getColor("TextField.foreground")
+            baseUrlField.toolTipText = "Enter the base URL for your custom OpenAI-compatible API (e.g., http://localhost:8000/v1)"
+        }
+
+        // Validate API key
+        if (settings.apiKey.isBlank() && (settings.apiBaseUrl.isNotBlank() || settings.modelName.isNotBlank())) {
+            customApiKeyField.foreground = UIManager.getColor("Label.errorForeground")
+            customApiKeyField.toolTipText = "API key is required when using a custom model"
+        } else {
+            customApiKeyField.foreground = UIManager.getColor("TextField.foreground")
+            customApiKeyField.toolTipText = "Enter your API key for the custom model"
         }
     }
 
