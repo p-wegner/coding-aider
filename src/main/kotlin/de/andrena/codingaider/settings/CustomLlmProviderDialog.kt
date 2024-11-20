@@ -11,21 +11,31 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
     private val providersTableModel = ProvidersTableModel()
     private val providersTable = JBTable(providersTableModel).apply {
         setShowGrid(true)
-        autoResizeMode = JBTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS
+        autoResizeMode = JBTable.AUTO_RESIZE_ALL_COLUMNS
+        rowHeight = 30
+        intercellSpacing = java.awt.Dimension(10, 5)
+        tableHeader.preferredSize = java.awt.Dimension(0, 32)
     }
 
     init {
         title = "Manage Custom LLM Providers"
         init()
+        setSize(800, 400)
     }
 
     override fun show() {
         super.show()
         providersTableModel.fireTableStructureChanged()
-        if (providersTable.columnModel.columnCount >= 3) {
-            providersTable.columnModel.getColumn(0).preferredWidth = 150
-            providersTable.columnModel.getColumn(1).preferredWidth = 100
-            providersTable.columnModel.getColumn(2).preferredWidth = 200
+        adjustColumnWidths()
+    }
+
+    private fun adjustColumnWidths() {
+        val totalWidth = providersTable.width
+        providersTable.columnModel.apply {
+            getColumn(0).preferredWidth = (totalWidth * 0.25).toInt() // Name
+            getColumn(1).preferredWidth = (totalWidth * 0.15).toInt() // Type
+            getColumn(2).preferredWidth = (totalWidth * 0.25).toInt() // Model
+            getColumn(3).preferredWidth = (totalWidth * 0.35).toInt() // Base URL
         }
     }
 
@@ -33,12 +43,26 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
         row {
             scrollCell(providersTable)
                 .resizableColumn()
-                .comment("List of configured LLM providers")
+                .comment("Configure and manage your custom LLM providers")
+                .preferredSize(java.awt.Dimension(750, 300))
         }
         row {
-            button("Add Provider") { addProvider() }
-            button("Edit Provider") { editProvider() }
-            button("Remove Provider") { removeProvider() }
+            panel {
+                row {
+                    button("Add Provider") { addProvider() }
+                        .applyToComponent { preferredSize = java.awt.Dimension(120, 35) }
+                    button("Edit Provider") { editProvider() }
+                        .applyToComponent { 
+                            preferredSize = java.awt.Dimension(120, 35)
+                            isEnabled = providersTable.selectedRow >= 0 
+                        }
+                    button("Remove Provider") { removeProvider() }
+                        .applyToComponent { 
+                            preferredSize = java.awt.Dimension(120, 35)
+                            isEnabled = providersTable.selectedRow >= 0 
+                        }
+                }
+            }
         }
     }
 
