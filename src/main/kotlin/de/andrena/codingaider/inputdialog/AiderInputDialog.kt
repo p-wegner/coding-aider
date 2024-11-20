@@ -282,9 +282,11 @@ class AiderInputDialog(
         gbc.weighty = 0.0
         gbc.fill = GridBagConstraints.HORIZONTAL
 
-        topPanel.add(optionsManager.collapseButton.apply { 
-            border = JBUI.Borders.empty(2) 
-        }, gbc.apply { gridy++ })
+        topPanel.add(optionsManager.collapseButton, gbc.apply { 
+            gridy++
+            fill = GridBagConstraints.HORIZONTAL
+            weightx = 1.0
+        })
         topPanel.add(optionsManager.panel, gbc.apply { gridy++ })
 
         // Context view with collapsible UI
