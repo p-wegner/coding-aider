@@ -1,6 +1,10 @@
 package de.andrena.codingaider.utils
 
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
+import de.andrena.codingaider.settings.CustomLlmProvider
+import de.andrena.codingaider.settings.CustomLlmProviderService
+import de.andrena.codingaider.settings.LlmProviderType
 import java.io.File
 
 interface ApiKeyChecker {

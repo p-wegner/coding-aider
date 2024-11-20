@@ -1,6 +1,8 @@
 package de.andrena.codingaider.settings
 
+import com.intellij.icons.AllIcons
 import com.intellij.ide.BrowserUtil
+import com.intellij.openapi.components.service
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.components.JBCheckBox
@@ -22,7 +24,7 @@ class AiderSettingsConfigurable() : Configurable {
     private val llmComboBox: JComboBox<String>
     private val manageProvidersButton = JButton("Manage Providers...").apply {
         addActionListener {
-            CustomLlmProviderDialog(project).show()
+            CustomLlmProviderDialog().show()
         }
     }
     private val additionalArgsField = JBTextField()
@@ -325,9 +327,9 @@ class AiderSettingsConfigurable() : Configurable {
             val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
             if (component is JLabel && value is String) {
                 // Check if it's a custom provider
-                val customProvider = project.service<CustomLlmProviderService>().getProvider(value)
+                val customProvider = service<CustomLlmProviderService>().getProvider(value)
                 if (customProvider != null) {
-                    text = customProvider.displayName.ifEmpty { customProvider.name }
+                    text = customProvider.displayName?.ifEmpty { customProvider.name } ?: customProvider.name
                     when (customProvider.type) {
                         LlmProviderType.OPENAI -> icon = AllIcons.General.Web // Replace with actual OpenAI icon
                         LlmProviderType.OLLAMA -> icon = AllIcons.Actions.Execute // Replace with actual Ollama icon

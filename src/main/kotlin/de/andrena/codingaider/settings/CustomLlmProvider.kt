@@ -4,7 +4,7 @@ data class CustomLlmProvider(
     val name: String,
     val displayName: String?,
     val type: LlmProviderType,
-    val baseUrl: String?,
+    val baseUrl: String,
     val modelName: String
 ) {
     fun validate(): List<String> {

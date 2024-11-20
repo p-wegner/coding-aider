@@ -45,7 +45,7 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
         group("Custom Providers") {
             row {
                 button("Manage Providers...") {
-                    CustomLlmProviderDialog(project).show()
+                    CustomLlmProviderDialog().show()
                 }
             }
         }
