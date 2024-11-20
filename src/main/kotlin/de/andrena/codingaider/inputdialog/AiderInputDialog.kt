@@ -85,15 +85,14 @@ class AiderInputDialog(
     val allFileTokens by lazyCacheDelegate
 
 
-    private fun addOpenFilesToContext() = aiderContextView.addOpenFilesToContext()
 
     private val llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
 
     private val projectSettings = AiderProjectSettings.getInstance(project)
     private val llmComboBox = object : ComboBox<String>(llmOptions) {
         override fun getToolTipText(): String? {
-            return null
             // TODO: Enable this tooltip when slow thread error is fixed
+            return null
 //            val selectedItem = selectedItem as? String ?: return null
 //            return if (apiKeyChecker.isApiKeyAvailableForLlm(selectedItem)) {
 //                "API key found for $selectedItem"
