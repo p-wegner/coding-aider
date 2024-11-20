@@ -80,19 +80,36 @@ abstract class BaseFixBuildAndTestErrorAction : AnAction() {
         }
 
         private fun extractBuildViewContent(buildView: BuildView): String? {
-            // Try to get build tree view first
-            val buildTreeView: BuildTreeConsoleView? = (buildView.component as BuildView).getView(
-                BuildTreeConsoleView::class.java.getName(),
-                BuildTreeConsoleView::class.java
+            // Try to get build tree view first using reflection
+            val getComponentMethod = ReflectionUtils.findMethod(buildView::class.java, "getComponent")
+            val buildViewComponent = getComponentMethod?.invoke(buildView) as? BuildView ?: return null
+            
+            val getViewMethod = ReflectionUtils.findMethod(
+                buildViewComponent::class.java,
+                "getView",
+                String::class.java,
+                Class::class.java
             )
+
+            val buildTreeView = getViewMethod?.invoke(
+                buildViewComponent,
+                BuildTreeConsoleView::class.java.name,
+                BuildTreeConsoleView::class.java
+            ) as? BuildTreeConsoleView
 
             if (buildTreeView != null) {
                 val entries = ReflectionUtils.getNodesMapFromBuildView(buildTreeView)?.entries
                 return entries?.joinToString("\n") { it.value.toString() }
             }
 
-            // Fall back to test runner view
-            val testRunnerView = buildView.getView("consoleView") as? SMTRunnerConsoleView ?: return null
+            // Fall back to test runner view using reflection
+            val consoleViewMethod = ReflectionUtils.findMethod(
+                buildViewComponent::class.java,
+                "getView",
+                String::class.java
+            )
+            val testRunnerView = consoleViewMethod?.invoke(buildViewComponent, "consoleView") as? SMTRunnerConsoleView
+                ?: return null
             val testsMap = ReflectionUtils.getTestsMapFromConsoleView(testRunnerView)
 
             val stackTraceAndLocations = testsMap?.entries?.mapNotNull { entry ->
