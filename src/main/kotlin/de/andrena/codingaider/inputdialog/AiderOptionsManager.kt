@@ -12,6 +12,7 @@ import de.andrena.codingaider.utils.PanelAnimation
 import java.awt.BorderLayout
 import java.awt.Dimension
 import javax.swing.JComponent
+import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.UIManager
 
@@ -63,13 +64,20 @@ class AiderOptionsManager(
             description = if (projectSettings.isOptionsCollapsed) "Show additional options" else "Hide additional options"
         }
         
-        val button = ActionButton(action, collapseButtonPresentation, "AiderOptionsButton", Dimension(Int.MAX_VALUE, 28))
-        
-        return JPanel(BorderLayout()).apply {
-            add(button, BorderLayout.CENTER)
+        val headerPanel = JPanel(BorderLayout()).apply {
             background = UIManager.getColor("Tree.background")
             border = JBUI.Borders.empty(2)
         }
+        
+        val button = ActionButton(action, collapseButtonPresentation, "AiderOptionsButton", Dimension(20, 20))
+        val label = JLabel("Additional Options").apply {
+            border = JBUI.Borders.emptyLeft(5)
+        }
+        
+        headerPanel.add(button, BorderLayout.WEST)
+        headerPanel.add(label, BorderLayout.CENTER)
+        
+        return headerPanel
     }
 
     private fun updatePanelSize(collapsed: Boolean) {

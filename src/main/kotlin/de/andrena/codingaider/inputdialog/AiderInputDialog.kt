@@ -146,8 +146,8 @@ class AiderInputDialog(
         optionsManager.additionalArgsField.text = settings.additionalArgs
 
         // Set minimum size for the dialog and its components
-        inputTextField.minimumSize = Dimension(300, 100)
-        aiderContextView.minimumSize = Dimension(300, 200)
+        inputTextField.minimumSize = Dimension(600, 100)
+        aiderContextView.minimumSize = Dimension(600, 200)
         modeSegmentedButton?.selectedItem = initialMode
         updateModeUI()
     }
