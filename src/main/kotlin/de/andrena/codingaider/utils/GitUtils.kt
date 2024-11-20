@@ -25,7 +25,7 @@ object GitUtils {
             val repository = getGitRepository(project)
             if (repository != null) {
                 getApplication().invokeLater {
-                    val changes = repository.status.allChanges.map { file ->
+                    val changes = getChanges(repository).map { file ->
                         val virtualFile = LocalFileSystem.getInstance().findFileByIoFile(file)
                         if (virtualFile != null) {
                             val beforeRevision = SimpleContentRevision(
@@ -46,6 +46,11 @@ object GitUtils {
                 }
             }
         }
+    }
+
+    private fun getChanges(repository: GitRepository) {
+        // TODO: Implement this
+        TODO("Not yet implemented")
     }
 
     private fun getGitRepository(project: Project): GitRepository? {
