@@ -8,6 +8,8 @@ import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.settings.AiderDefaults
 import de.andrena.codingaider.settings.AiderSettings
+import de.andrena.codingaider.settings.CustomLlmProviderService
+import de.andrena.codingaider.settings.LlmProviderType
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.GitUtils.findGitRoot
 import java.io.File
