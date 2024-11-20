@@ -22,17 +22,17 @@ Reference: [Main Plan](add_custom_model_support.md)
 ## Integration
 - [x] Update LLM provider configuration to include custom model
 - [x] Modify command execution to use custom model settings
-- [ ] Add custom model to available models list
-- [ ] Update model selection UI to show custom model
+- [x] Add custom model to available models list
+- [x] Update model selection UI to show custom model
 
 ## Testing
-- [ ] Test settings persistence
-- [ ] Test API key secure storage
-- [ ] Test validation logic
-- [ ] Test integration with Aider commands
-- [ ] Test UI responsiveness
+- [x] Test settings persistence
+- [x] Test API key secure storage
+- [x] Test validation logic
+- [x] Test integration with Aider commands
+- [x] Test UI responsiveness
 
 ## Documentation
-- [ ] Update README with custom model configuration instructions
-- [ ] Add tooltips and help text in UI
-- [ ] Document new settings in plugin documentation
+- [x] Update README with custom model configuration instructions
+- [x] Add tooltips and help text in UI
+- [x] Document new settings in plugin documentation
