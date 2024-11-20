@@ -55,7 +55,7 @@ intellijPlatform {
     pluginVerification {
         ides {
             recommended()
-            ide("IC-2024.1.7")
+//            ide("IC-2024.1.7")
             ide("IC-2024.2.4")
             ide("IC-2024.3")
         }
@@ -90,7 +90,7 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("241.*")
+        sinceBuild.set("242")
         untilBuild.set("243.*")
         version = project.version.toString()
     }

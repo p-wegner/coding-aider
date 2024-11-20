@@ -228,7 +228,7 @@
         >
             <action id="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorAction"
                     class="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorAction"
-                    text="Fix Error with Aider"
+                    text="Fix Error with Aider (Experimental Error Detection)"
                     icon="MyIcons.Tool"
                     description="Group of actions to fix errors with Aider">
                 <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
@@ -238,7 +238,7 @@
             <action id="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorInteractive"
                     class="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorInteractive"
                     icon="MyIcons.Tool"
-                    text="Fix Test with Aider"
+                    text="Fix Test with Aider (Experimental Error Detection)"
                     description="Group of actions to fix errors with Aider">
                 <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
                 <add-to-group group-id="RunContextPopupGroup" anchor="first"/>
