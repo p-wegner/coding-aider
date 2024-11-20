@@ -18,7 +18,13 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
     abstract fun cleanupAfterExecution()
     fun buildCommonArgs(commandData: CommandData, settings: AiderSettings): List<String> {
         return buildList {
-            if (commandData.llm.isNotEmpty()) {
+            // Handle custom model settings first
+            if (settings.customModelSettings.isConfigured()) {
+                add("--openai-api-base")
+                add(settings.customModelSettings.apiBaseUrl)
+                add("--model")
+                add(settings.customModelSettings.modelName)
+            } else if (commandData.llm.isNotEmpty()) {
                 if (commandData.llm.startsWith("--")) {
                     add(commandData.llm)
                 } else {
@@ -212,9 +218,17 @@ class DockerAiderExecutionStrategy(
 
 private fun setApiKeyEnvironmentVariables(processBuilder: ProcessBuilder, apiKeyChecker: ApiKeyChecker) {
     val environment = processBuilder.environment()
-    apiKeyChecker.getAllApiKeyNames().forEach { keyName ->
-        apiKeyChecker.getApiKeyValue(keyName)?.let { value ->
-            environment[keyName] = value
+    val settings = AiderSettings.getInstance()
+        
+    // Set custom model API key if configured
+    if (settings.customModelSettings.isConfigured()) {
+        environment["OPENAI_API_KEY"] = settings.customModelSettings.apiKey
+    } else {
+        // Set standard API keys
+        apiKeyChecker.getAllApiKeyNames().forEach { keyName ->
+            apiKeyChecker.getApiKeyValue(keyName)?.let { value ->
+                environment[keyName] = value
+            }
         }
     }
 }
