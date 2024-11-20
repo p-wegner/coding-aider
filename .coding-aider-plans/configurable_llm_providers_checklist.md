@@ -19,6 +19,8 @@ See plan: [configurable_llm_providers.md](configurable_llm_providers.md)
 - [x] Add "Manage Providers" button to settings
 - [x] Update LLM dropdown renderer to show custom providers
 - [x] Add tooltips and validation feedback
+- [ ] Display list of custom providers in settings
+- [ ] Add buttons to edit and remove custom providers
 
 ## Settings Integration  
 - [x] Extend AiderSettings to store custom provider list
