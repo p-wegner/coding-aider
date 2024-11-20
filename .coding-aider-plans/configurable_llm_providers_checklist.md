@@ -11,11 +11,11 @@ See plan: [configurable_llm_providers.md](configurable_llm_providers.md)
 - [x] Implement secure credential storage for API keys
 
 ## UI Components
-- [ ] Create "Manage Custom Providers" dialog
-  - [ ] Provider type selection
-  - [ ] Provider-specific input fields
-  - [ ] Validation for required fields
-  - [ ] Optional display name field
+- [x] Create "Manage Custom Providers" dialog
+  - [x] Provider type selection
+  - [x] Provider-specific input fields
+  - [x] Validation for required fields
+  - [x] Optional display name field
 - [ ] Add "Manage Providers" button to settings
 - [ ] Update LLM dropdown renderer to show custom providers
 - [ ] Add tooltips and validation feedback

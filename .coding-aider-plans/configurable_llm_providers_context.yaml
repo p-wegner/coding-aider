@@ -22,3 +22,5 @@ files:
   readOnly: false
 - path: src/main/kotlin/de/andrena/codingaider/settings/CustomLlmProviderService.kt
   readOnly: false
+- path: "C:/andrena/coding-aider/src/main/kotlin/de/andrena/codingaider/settings/CustomLlmProviderDialog.kt"
+  readOnly: false
