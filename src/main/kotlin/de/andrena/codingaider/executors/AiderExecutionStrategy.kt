@@ -18,15 +18,42 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
     abstract fun cleanupAfterExecution()
     fun buildCommonArgs(commandData: CommandData, settings: AiderSettings): List<String> {
         return buildList {
-            if (settings.customModelSettings.isConfigured()) {
-                add("--model")
-                add(settings.customModelSettings.modelName)
-            } else if (commandData.llm.isNotEmpty()) {
-                if (commandData.llm.startsWith("--")) {
-                    add(commandData.llm)
-                } else {
-                    add("--model")
-                    add(commandData.llm)
+            // Handle model selection based on provider type
+            if (commandData.llm.isNotEmpty()) {
+                val customProvider = project.service<CustomLlmProviderService>().getProvider(commandData.llm)
+                when (customProvider?.type) {
+                    LlmProviderType.OPENAI -> {
+                        add("--model")
+                        add(customProvider.modelName)
+                        if (customProvider.baseUrl.isNotEmpty()) {
+                            add("--api-base")
+                            add(customProvider.baseUrl)
+                        }
+                    }
+                    LlmProviderType.OLLAMA -> {
+                        add("--ollama")
+                        add("--api-base")
+                        add(customProvider.baseUrl)
+                        add("--model")
+                        add(customProvider.modelName)
+                    }
+                    LlmProviderType.OPENROUTER -> {
+                        add("--openrouter")
+                        add("--model")
+                        add(customProvider.modelName)
+                    }
+                    null -> {
+                        // Handle legacy/default model selection
+                        if (settings.customModelSettings.isConfigured()) {
+                            add("--model")
+                            add(settings.customModelSettings.modelName)
+                        } else if (commandData.llm.startsWith("--")) {
+                            add(commandData.llm)
+                        } else {
+                            add("--model")
+                            add(commandData.llm)
+                        }
+                    }
                 }
             }
             commandData.files.forEach { fileData ->
@@ -216,15 +243,40 @@ class DockerAiderExecutionStrategy(
 private fun setApiKeyEnvironmentVariables(processBuilder: ProcessBuilder, apiKeyChecker: ApiKeyChecker) {
     val environment = processBuilder.environment()
     val settings = AiderSettings.getInstance()
-        
-    // Set custom model API key if configured
-    if (settings.customModelSettings.isConfigured()) {
-        environment["OPENAI_API_KEY"] = settings.customModelSettings.apiKey
-    } else {
-        // Set standard API keys
-        apiKeyChecker.getAllApiKeyNames().forEach { keyName ->
-            apiKeyChecker.getApiKeyValue(keyName)?.let { value ->
-                environment[keyName] = value
+    
+    // Get LLM from command data
+    val llm = commandData.llm
+    
+    // Check for custom provider
+    val customProvider = project.service<CustomLlmProviderService>().getProvider(llm)
+    
+    when {
+        customProvider != null -> {
+            // Set provider-specific environment variables
+            when (customProvider.type) {
+                LlmProviderType.OPENAI -> {
+                    environment["OPENAI_API_KEY"] = customProvider.apiKey
+                    if (customProvider.baseUrl.isNotEmpty()) {
+                        environment["OPENAI_API_BASE"] = customProvider.baseUrl
+                    }
+                }
+                LlmProviderType.OLLAMA -> {
+                    environment["OLLAMA_HOST"] = customProvider.baseUrl
+                }
+                LlmProviderType.OPENROUTER -> {
+                    environment["OPENROUTER_API_KEY"] = customProvider.apiKey
+                }
+            }
+        }
+        settings.customModelSettings.isConfigured() -> {
+            environment["OPENAI_API_KEY"] = settings.customModelSettings.apiKey
+        }
+        else -> {
+            // Set standard API keys
+            apiKeyChecker.getAllApiKeyNames().forEach { keyName ->
+                apiKeyChecker.getApiKeyValue(keyName)?.let { value ->
+                    environment[keyName] = value
+                }
             }
         }
     }

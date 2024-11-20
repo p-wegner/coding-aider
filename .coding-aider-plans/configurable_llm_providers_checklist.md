@@ -32,8 +32,8 @@ See plan: [configurable_llm_providers.md](configurable_llm_providers.md)
 - [x] Create provider-specific validation rules
 
 ## Execution Strategy Implementation
-- [ ] Create provider-specific environment variable handlers
-- [ ] Implement provider-specific command line argument builders
+- [x] Create provider-specific environment variable handlers
+- [x] Implement provider-specific command line argument builders
 - [ ] Add Docker configuration support for each provider
 - [ ] Implement provider-specific API key management
 - [ ] Add validation and error handling per provider
