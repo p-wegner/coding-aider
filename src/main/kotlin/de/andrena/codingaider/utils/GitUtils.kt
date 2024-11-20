@@ -25,7 +25,7 @@ object GitUtils {
             if (repository != null) {
                 getApplication().invokeLater {
                     val changesViewManager = com.intellij.openapi.vcs.changes.ui.ChangesViewManager.getInstance(project)
-                    changesViewManager.selectAndShowChangesFromCommit(commitHash)
+                    changesViewManager.selectChanges(listOf())  // Show current changes
                     afterAction()
                 }
             }
