@@ -148,7 +148,7 @@ class NativeAiderExecutionStrategy(
     }
 
     override fun prepareEnvironment(processBuilder: ProcessBuilder, commandData: CommandData) {
-        setApiKeyEnvironmentVariables(processBuilder, apiKeyChecker)
+        setApiKeyEnvironmentVariables(processBuilder, apiKeyChecker, commandData, project)
     }
 
     override fun cleanupAfterExecution() {
@@ -240,15 +240,17 @@ class DockerAiderExecutionStrategy(
 }
 
 
-private fun setApiKeyEnvironmentVariables(processBuilder: ProcessBuilder, apiKeyChecker: ApiKeyChecker) {
+private fun setApiKeyEnvironmentVariables(
+    processBuilder: ProcessBuilder, 
+    apiKeyChecker: ApiKeyChecker,
+    commandData: CommandData,
+    project: Project
+) {
     val environment = processBuilder.environment()
     val settings = AiderSettings.getInstance()
     
-    // Get LLM from command data
-    val llm = commandData.llm
-    
     // Check for custom provider
-    val customProvider = project.service<CustomLlmProviderService>().getProvider(llm)
+    val customProvider = project.service<CustomLlmProviderService>().getProvider(commandData.llm)
     
     when {
         customProvider != null -> {
