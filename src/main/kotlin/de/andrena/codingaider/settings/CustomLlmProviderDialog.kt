@@ -11,10 +11,16 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
     private val providersTableModel = ProvidersTableModel()
     private val providersTable = JBTable(providersTableModel).apply {
         setShowGrid(true)
-        autoResizeMode = JBTable.AUTO_RESIZE_ALL_COLUMNS
+        autoResizeMode = JBTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS
         rowHeight = 30
         intercellSpacing = java.awt.Dimension(10, 5)
         tableHeader.preferredSize = java.awt.Dimension(0, 32)
+        columnModel.apply {
+            getColumn(0).minWidth = 150  // Name
+            getColumn(1).minWidth = 100  // Type
+            getColumn(2).minWidth = 120  // Model
+            getColumn(3).minWidth = 200  // Base URL
+        }
     }
 
     init {
@@ -33,10 +39,10 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
         providersTable.columnModel.apply {
             val totalWidth = providersTable.width
             if (totalWidth > 0 && columnCount >= 4) {
-                getColumn(0).preferredWidth = (totalWidth * 0.25).toInt() // Name
-                getColumn(1).preferredWidth = (totalWidth * 0.15).toInt() // Type
-                getColumn(2).preferredWidth = (totalWidth * 0.20).toInt() // Model
-                getColumn(3).preferredWidth = (totalWidth * 0.40).toInt() // Base URL
+                getColumn(0).width = (totalWidth * 0.25).toInt() // Name
+                getColumn(1).width = (totalWidth * 0.15).toInt() // Type
+                getColumn(2).width = (totalWidth * 0.20).toInt() // Model
+                getColumn(3).width = (totalWidth * 0.40).toInt() // Base URL
             }
         }
     }
