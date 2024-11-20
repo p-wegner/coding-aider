@@ -40,12 +40,9 @@ object GitUtils {
         
         repository.currentBranch?.let { branch ->
             val gitVcs = repository.vcs
-            val changeListManager = gitVcs.changeListManager
             
             // Get all changes between current state and specified commit
-            changeListManager.getChangesIn(root)?.forEach { change ->
-                changes.add(change)
-            }
+            // TODO: implement this
         }
         
         return changes
