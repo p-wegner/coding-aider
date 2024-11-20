@@ -4,51 +4,67 @@ import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.panel
+import com.intellij.ui.table.JBTable
 import javax.swing.JComponent
+import javax.swing.JPanel
+import javax.swing.table.AbstractTableModel
+import com.intellij.openapi.components.service
 
-class CustomLlmProviderDialog(
-    private val existingProvider: CustomLlmProvider? = null
-) : DialogWrapper(null) {
-
-    private val nameField = JBTextField()
-    private val baseUrlField = JBTextField()
-    private val modelNameField = JBTextField()
-    private val displayNameField = JBTextField()
-    private val providerTypeComboBox = com.intellij.openapi.ui.ComboBox(LlmProviderType.values())
+class CustomLlmProviderDialog : DialogWrapper(null) {
+    private val providerService = service<CustomLlmProviderService>()
+    private val providersTableModel = ProvidersTableModel()
+    private val providersTable = JBTable(providersTableModel)
 
     init {
-        title = if (existingProvider == null) "Add Custom LLM Provider" else "Edit Custom LLM Provider"
+        title = "Manage Custom LLM Providers"
         init()
-        existingProvider?.let { provider ->
-            nameField.text = provider.name
-            baseUrlField.text = provider.baseUrl ?: ""
-            modelNameField.text = provider.modelName
-            displayNameField.text = provider.displayName ?: ""
-            providerTypeComboBox.selectedItem = provider.type
-        }
+        providersTable.setShowGrid(true)
+        providersTable.columnModel.getColumn(0).preferredWidth = 150
+        providersTable.columnModel.getColumn(1).preferredWidth = 100
+        providersTable.columnModel.getColumn(2).preferredWidth = 200
     }
 
     override fun createCenterPanel(): JComponent = panel {
-        row("Provider Name:") {
-            cell(nameField)
-                .comment("A unique identifier for this provider")
-                .focused()
+        row {
+            scrollCell(providersTable)
+                .resizableColumn()
+                .comment("List of configured LLM providers")
         }
-        row("Provider Type:") {
-            cell(providerTypeComboBox)
-                .comment("Select the type of LLM provider")
+        row {
+            button("Add Provider") { addProvider() }
+            button("Edit Provider") { editProvider() }
+            button("Remove Provider") { removeProvider() }
         }
-        row("Base URL:") {
-            cell(baseUrlField)
-                .comment("The API endpoint URL (required for OpenAI and Ollama)")
+    }
+
+    private fun addProvider() {
+        val dialog = CustomLlmProviderEditorDialog()
+        if (dialog.showAndGet()) {
+            val provider = dialog.getProvider()
+            providerService.addProvider(provider)
+            providersTableModel.fireTableDataChanged()
         }
-        row("Model Name:") {
-            cell(modelNameField)
-                .comment("The name of the model to use")
+    }
+
+    private fun editProvider() {
+        val selectedRow = providersTable.selectedRow
+        if (selectedRow >= 0) {
+            val provider = providerService.getAllProviders()[selectedRow]
+            val dialog = CustomLlmProviderEditorDialog(provider)
+            if (dialog.showAndGet()) {
+                providerService.removeProvider(provider.name)
+                providerService.addProvider(dialog.getProvider())
+                providersTableModel.fireTableDataChanged()
+            }
         }
-        row("Display Name:") {
-            cell(displayNameField)
-                .comment("Optional: A friendly name to show in the UI")
+    }
+
+    private fun removeProvider() {
+        val selectedRow = providersTable.selectedRow
+        if (selectedRow >= 0) {
+            val provider = providerService.getAllProviders()[selectedRow]
+            providerService.removeProvider(provider.name)
+            providersTableModel.fireTableDataChanged()
         }
     }
 
