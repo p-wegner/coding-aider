@@ -19,9 +19,13 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
         title = "Manage Custom LLM Providers"
         init()
         providersTable.setShowGrid(true)
+    }
+
+    override fun show() {
         providersTable.columnModel.getColumn(0).preferredWidth = 150
         providersTable.columnModel.getColumn(1).preferredWidth = 100
         providersTable.columnModel.getColumn(2).preferredWidth = 200
+        super.show()
     }
 
     override fun createCenterPanel(): JComponent = panel {
