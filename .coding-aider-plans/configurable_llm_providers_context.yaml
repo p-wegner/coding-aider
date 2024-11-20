@@ -1,0 +1,16 @@
+---
+files:
+- path: src/main/kotlin/de/andrena/codingaider/inputdialog/AiderInputDialog.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/inputdialog/AiderOptionsPanel.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/inputdialog/AiderOptionsManager.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/settings/AiderSettingsConfigurable.kt
+  readOnly: false
+- path: .coding-aider-docs/aider.chat/openrouter.md
+  readOnly: true
+- path: .coding-aider-docs/aider.chat/ollama.md
+  readOnly: true
+- path: .coding-aider-docs/aider.chat/openai-compat.md
+  readOnly: true
