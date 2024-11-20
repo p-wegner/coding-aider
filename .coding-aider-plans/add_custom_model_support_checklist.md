@@ -20,7 +20,7 @@ Reference: [Main Plan](add_custom_model_support.md)
 - [x] Add default values handling
 
 ## Integration
-- [ ] Update LLM provider configuration to include custom model
+- [x] Update LLM provider configuration to include custom model
 - [ ] Modify command execution to use custom model settings
 - [ ] Add custom model to available models list
 - [ ] Update model selection UI to show custom model
