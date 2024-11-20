@@ -1,11 +1,11 @@
 package de.andrena.codingaider.settings
 
 data class CustomLlmProvider(
-    val name: String,
-    val displayName: String?,
-    val type: LlmProviderType,
-    val baseUrl: String,
-    val modelName: String
+    var name: String = "",
+    var displayName: String? = null,
+    var type: LlmProviderType = LlmProviderType.OPENAI,
+    var baseUrl: String = "",
+    var modelName: String = ""
 ) {
     fun validate(): List<String> {
         val errors = mutableListOf<String>()

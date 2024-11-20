@@ -11,9 +11,9 @@ import de.andrena.codingaider.utils.ApiKeyManager
 )
 class CustomLlmProviderService : PersistentStateComponent<CustomLlmProviderService.State> {
     
-    data class State(
+    class State {
         var providers: MutableList<CustomLlmProvider> = mutableListOf()
-    )
+    }
 
     private var myState = State()
 
