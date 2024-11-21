@@ -3,11 +3,12 @@ package de.andrena.codingaider.settings
 enum class LlmProviderType(
     val displayName: String,
     val requiresApiKey: Boolean = true,
-    val requiresBaseUrl: Boolean = false
+    val requiresBaseUrl: Boolean = false,
+    val modelNamePrefix: String
 ) {
-    OPENAI("OpenAI", requiresApiKey = true, requiresBaseUrl = true),
-    OLLAMA("Ollama", requiresApiKey = false, requiresBaseUrl = true),
-    OPENROUTER("OpenRouter", requiresApiKey = true, requiresBaseUrl = false);
+    OPENAI("OpenAI", requiresApiKey = true, requiresBaseUrl = true, "openai"),
+    OLLAMA("Ollama", requiresApiKey = false, requiresBaseUrl = true, "ollama"),
+    OPENROUTER("OpenRouter", requiresApiKey = true, requiresBaseUrl = false, "openrouter");
 
     fun getApiKeyName(): String {
         return when (this) {
@@ -17,11 +18,4 @@ enum class LlmProviderType(
         }
     }
 
-    fun getBaseUrlName(): String {
-        return when (this) {
-            OPENAI -> "OPENAI_API_BASE"
-            OLLAMA -> "OLLAMA_API_BASE"
-            OPENROUTER -> "OPENROUTER_API_BASE"
-        }
-    }
 }

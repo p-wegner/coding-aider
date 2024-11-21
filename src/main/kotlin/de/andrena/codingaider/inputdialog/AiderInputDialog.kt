@@ -25,6 +25,7 @@ import de.andrena.codingaider.services.*
 import de.andrena.codingaider.services.plans.AiderPlanPromptService
 import de.andrena.codingaider.settings.AiderProjectSettings
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
+import de.andrena.codingaider.settings.LlmSelection
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.CollapsiblePanel
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
@@ -314,7 +315,7 @@ class AiderInputDialog(
     fun getInputText(): String = inputTextField.text
 
     fun isYesFlagChecked(): Boolean = optionsManager.yesCheckBox.isSelected
-    fun getLlm(): String = optionsManager.llmComboBox.selectedItem as String
+    fun getLlm(): LlmSelection = optionsManager.llmComboBox.selectedItem as LlmSelection
     fun getAdditionalArgs(): String = optionsManager.additionalArgsField.text
     fun getAllFiles(): List<FileData> = aiderContextView?.getAllFiles() ?: emptyList()
     val selectedMode get() = modeSegmentedButton?.selectedItem ?: initialMode
