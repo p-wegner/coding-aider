@@ -47,21 +47,33 @@ class CustomLlmProviderEditorDialog(
     private fun updateProviderTypeUI() {
         val selectedType = providerTypeComboBox.selectedItem as LlmProviderType
         
-        // Update base URL field visibility and requirement
+        // Reset visibility of all fields
+        baseUrlField.isVisible = true
         baseUrlField.isEnabled = selectedType.requiresBaseUrl
+        apiKeyField.isVisible = selectedType.requiresApiKey
         
-        // Update API key row visibility
-        if (selectedType == LlmProviderType.OLLAMA) {
-            // Remove API key row if it exists
-            createCenterPanel()
+        // Update tooltips based on provider type
+        when (selectedType) {
+            LlmProviderType.OLLAMA -> {
+                baseUrlField.toolTipText = "Ollama server URL (default: http://127.0.0.1:11434)"
+                apiKeyField.isVisible = false
+            }
+            LlmProviderType.OPENROUTER -> {
+                baseUrlField.toolTipText = "Optional: OpenRouter API base URL"
+                baseUrlField.isEnabled = false
+            }
+            LlmProviderType.OPENAI -> {
+                baseUrlField.toolTipText = "OpenAI API base URL (default: https://api.openai.com/v1)"
+                apiKeyField.toolTipText = "OpenAI API key (required)"
+            }
+            else -> {
+                baseUrlField.toolTipText = "API endpoint URL"
+                apiKeyField.toolTipText = "API key"
+            }
         }
         
-        // Validate base URL requirement
-        if (selectedType.requiresBaseUrl) {
-            baseUrlField.toolTipText = "The API endpoint URL is required for ${selectedType.name}"
-        } else {
-            baseUrlField.toolTipText = "Optional base URL for ${selectedType.name}"
-        }
+        // Recreate the panel to reflect changes
+        createCenterPanel()
     }
 
     override fun createCenterPanel(): JComponent = panel {
@@ -108,20 +120,39 @@ class CustomLlmProviderEditorDialog(
         if (modelNameField.text.isBlank()) {
             return ValidationInfo("Model name is required", modelNameField)
         }
+        
         val selectedType = providerTypeComboBox.selectedItem as LlmProviderType
-        if (selectedType.requiresBaseUrl && baseUrlField.text.isBlank()) {
-            return ValidationInfo("Base URL is required for ${selectedType.name}", baseUrlField)
+        
+        // Validate base URL for providers that require it
+        if (selectedType.requiresBaseUrl) {
+            val baseUrl = baseUrlField.text.trim()
+            if (baseUrl.isBlank()) {
+                return ValidationInfo("Base URL is required for ${selectedType.name}", baseUrlField)
+            }
+            
+            // Optional: Add URL validation
+            if (!isValidUrl(baseUrl)) {
+                return ValidationInfo("Invalid URL format", baseUrlField)
+            }
         }
         
-        // Validate API key if it's a new entry or a new key is provided, except for Ollama
+        // Validate API key for providers that require it
         if (selectedType.requiresApiKey) {
             val apiKeyText = String(apiKeyField.password)
-            if (existingProvider == null && apiKeyText.isBlank()) {
-                return ValidationInfo("API key is required for ${selectedType.name}", apiKeyField)
+            
+            // For new providers or when a new key is being set
+            if (existingProvider == null || apiKeyText != "*".repeat(16)) {
+                if (apiKeyText.isBlank()) {
+                    return ValidationInfo("API key is required for ${selectedType.name}", apiKeyField)
+                }
             }
         }
         
         return null
+    }
+
+    private fun isValidUrl(url: String): Boolean {
+        return url.matches(Regex("^https?://[^\\s/$.?#].[^\\s]*$"))
     }
 
     fun getProvider(): CustomLlmProvider {
