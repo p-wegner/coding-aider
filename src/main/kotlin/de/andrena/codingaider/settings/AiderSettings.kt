@@ -24,7 +24,6 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
     )
 
     data class State(
-        var customModelSettings: CustomModelSettings = CustomModelSettings(),
         var customProviderSettings: CustomProviderSettings = CustomProviderSettings(),
         var enableDocumentationLookup: Boolean = AiderDefaults.ENABLE_DOCUMENTATION_LOOKUP,
         var useYesFlag: Boolean = AiderDefaults.USE_YES_FLAG,
@@ -57,11 +56,6 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
     )
 
 
-    var customModelSettings: CustomModelSettings
-        get() = myState.customModelSettings
-        set(value) {
-            myState.customModelSettings = value
-        }
 
     var customProviderSettings: CustomProviderSettings
         get() = myState.customProviderSettings

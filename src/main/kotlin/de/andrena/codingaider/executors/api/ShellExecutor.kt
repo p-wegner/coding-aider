@@ -5,8 +5,8 @@ import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.docker.DockerContainerManager
 import de.andrena.codingaider.executors.AiderExecutionStrategy
-import de.andrena.codingaider.executors.DockerAiderExecutionStrategy
 import de.andrena.codingaider.executors.NativeAiderExecutionStrategy
+import de.andrena.codingaider.executors.DockerAiderExecutionStrategy
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker

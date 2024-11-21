@@ -5,8 +5,6 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.docker.DockerContainerManager
-import de.andrena.codingaider.executors.AiderExecutionStrategy.DockerAiderExecutionStrategy
-import de.andrena.codingaider.executors.AiderExecutionStrategy.NativeAiderExecutionStrategy
 import de.andrena.codingaider.executors.api.AiderProcessInteractor
 import de.andrena.codingaider.executors.api.CommandSubject
 import de.andrena.codingaider.executors.api.DefaultAiderProcessInteractor

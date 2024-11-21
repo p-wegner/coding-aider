@@ -118,177 +118,179 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
 
     }
 
-    class NativeAiderExecutionStrategy(
-        project: Project,
-        private val apiKeyChecker: ApiKeyChecker,
-        private val settings: AiderSettings
-    ) : AiderExecutionStrategy(project) {
+}
+class NativeAiderExecutionStrategy(
+    project: Project,
+    private val apiKeyChecker: ApiKeyChecker,
+    private val settings: AiderSettings
+) : AiderExecutionStrategy(project) {
 
-        override fun buildCommand(commandData: CommandData): List<String> {
-            return listOf(settings.aiderExecutablePath) + buildCommonArgs(commandData, settings)
-        }
-
-        override fun prepareEnvironment(processBuilder: ProcessBuilder, commandData: CommandData) {
-            setApiKeyEnvironmentVariables(processBuilder, apiKeyChecker, commandData, project)
-        }
-
-        override fun cleanupAfterExecution() {
-            // No specific cleanup needed for native execution
-        }
+    override fun buildCommand(commandData: CommandData): List<String> {
+        return listOf(settings.aiderExecutablePath) + buildCommonArgs(commandData, settings)
     }
 
-    class DockerAiderExecutionStrategy(
-        project: Project,
-        private val dockerManager: DockerContainerManager,
-        private val apiKeyChecker: ApiKeyChecker,
-        private val settings: AiderSettings
-    ) : AiderExecutionStrategy(project) {
-
-        override fun buildCommand(commandData: CommandData): List<String> {
-            val dockerArgs = mutableListOf(
-                "docker", "run", "-i",
-                // For sidecar mode, we want to keep the container running
-                if (settings.useSidecarMode) "--restart=always" else "--rm",
-                "-w", "/app",
-                "--cidfile", dockerManager.getCidFilePath()
-            ).apply {
-                if (commandData.projectPath.isNotEmpty()) {
-                    add("-v")
-                    add("${commandData.projectPath}:/app")
-                }
-                if (commandData.isShellMode || settings.useSidecarMode) {
-                    add("-t")
-                }
-
-                // For sidecar mode, add a long-running command to keep container alive
-                if (settings.useSidecarMode) {
-                    add("-d")  // Detached mode
-                    add("--name")
-                    add("aider-sidecar")  // Named container for easier management
-                }
-            }
-            if (settings.mountAiderConfInDocker) {
-                findAiderConfFile(commandData.projectPath)?.let { confFile ->
-                    dockerArgs.addAll(listOf("-v", "${confFile.absolutePath}:/app/.aider.conf.yml"))
-                }
-            }
-
-            // Add API key environment variables to Docker run command
-            apiKeyChecker.getApiKeysForDocker().forEach { (keyName, value) ->
-                dockerArgs.addAll(listOf("-e", "$keyName=$value"))
-            }
-
-            // Add provider-specific Docker configurations
-            val customProvider = project.service<CustomLlmProviderService>().getProvider(commandData.llm)
-            when (customProvider?.type) {
-                LlmProviderType.OLLAMA -> {
-                    // For Ollama, we need to ensure network access to the host
-                    // TODO: set env like in setApiKeyEnvironmentVariables
-                    dockerArgs.addAll(listOf("--network", "host"))
-                }
-
-                LlmProviderType.OPENAI ->{
-                    // TODO: set env like in setApiKeyEnvironmentVariables
-                }
-                LlmProviderType.OPENROUTER -> {
-                    // TODO: set env like in setApiKeyEnvironmentVariables
-                }
-
-                null -> {} // No special configuration needed
-            }
-
-            // Mount files outside the project
-            commandData.files.forEach { fileData ->
-                if (!fileData.filePath.startsWith(commandData.projectPath)) {
-                    val containerPath = "/extra/${File(fileData.filePath).name}"
-                    dockerArgs.addAll(listOf("-v", "${fileData.filePath}:$containerPath"))
-                }
-            }
-
-            dockerArgs.add("${AiderDefaults.DOCKER_IMAGE}:${settings.dockerImageTag}")
-
-            return dockerArgs + buildCommonArgs(commandData, settings).map { arg ->
-                commandData.files.fold(arg) { acc, fileData ->
-                    if (!fileData.filePath.startsWith(commandData.projectPath)) {
-                        acc.replace(fileData.filePath, "/extra/${File(fileData.filePath).name}")
-                    } else {
-                        acc.replace(fileData.filePath, "/app${fileData.filePath.removePrefix(commandData.projectPath)}")
-                    }
-                }
-            }
-        }
-
-        override fun prepareEnvironment(processBuilder: ProcessBuilder, commandData: CommandData) {
-            // Remove DOCKER_HOST to use the default Docker host
-            processBuilder.environment().remove("DOCKER_HOST")
-        }
-
-        override fun cleanupAfterExecution() {
-            dockerManager.removeCidFile()
-        }
-
-        fun findAiderConfFile(projectPath: String): File? {
-            val gitRoot = findGitRoot(File(projectPath))
-            val locations = listOfNotNull(
-                gitRoot?.let { File(it, ".aider.conf.yml") },
-                File(projectPath, ".aider.conf.yml"),
-                File(System.getProperty("user.home"), ".aider.conf.yml")
-            )
-
-            return locations.firstOrNull { it.exists() }
-        }
+    override fun prepareEnvironment(processBuilder: ProcessBuilder, commandData: CommandData) {
+        setApiKeyEnvironmentVariables(processBuilder, apiKeyChecker, commandData, project)
     }
 
+    override fun cleanupAfterExecution() {
+        // No specific cleanup needed for native execution
+    }
+}
 
-    fun setApiKeyEnvironmentVariables(
-        processBuilder: ProcessBuilder,
-        apiKeyChecker: ApiKeyChecker,
-        commandData: CommandData,
-        project: Project
-    ) {
-        val environment = processBuilder.environment()
+class DockerAiderExecutionStrategy(
+    project: Project,
+    private val dockerManager: DockerContainerManager,
+    private val apiKeyChecker: ApiKeyChecker,
+    private val settings: AiderSettings
+) : AiderExecutionStrategy(project) {
 
+    override fun buildCommand(commandData: CommandData): List<String> {
+        val dockerArgs = mutableListOf(
+            "docker", "run", "-i",
+            // For sidecar mode, we want to keep the container running
+            if (settings.useSidecarMode) "--restart=always" else "--rm",
+            "-w", "/app",
+            "--cidfile", dockerManager.getCidFilePath()
+        ).apply {
+            if (commandData.projectPath.isNotEmpty()) {
+                add("-v")
+                add("${commandData.projectPath}:/app")
+            }
+            if (commandData.isShellMode || settings.useSidecarMode) {
+                add("-t")
+            }
+
+            // For sidecar mode, add a long-running command to keep container alive
+            if (settings.useSidecarMode) {
+                add("-d")  // Detached mode
+                add("--name")
+                add("aider-sidecar")  // Named container for easier management
+            }
+        }
+        if (settings.mountAiderConfInDocker) {
+            findAiderConfFile(commandData.projectPath)?.let { confFile ->
+                dockerArgs.addAll(listOf("-v", "${confFile.absolutePath}:/app/.aider.conf.yml"))
+            }
+        }
+
+        // Add API key environment variables to Docker run command
+        apiKeyChecker.getApiKeysForDocker().forEach { (keyName, value) ->
+            dockerArgs.addAll(listOf("-e", "$keyName=$value"))
+        }
+
+        // Add provider-specific Docker configurations
         val customProvider = project.service<CustomLlmProviderService>().getProvider(commandData.llm)
-        when {
-            customProvider != null -> {
-                // Set provider-specific environment variables
-                when (customProvider.type) {
-                    LlmProviderType.OPENAI -> {
-                        ApiKeyManager.getCustomModelKey(customProvider.name)?.let { apiKey ->
-                            environment["OPENAI_API_KEY"] = apiKey
-                            if (customProvider.baseUrl.isNotEmpty()) {
-                                environment["OPENAI_API_BASE"] = customProvider.baseUrl
-                            }
-                        }
-                    }
+        when (customProvider?.type) {
+            LlmProviderType.OLLAMA -> {
+                // For Ollama, we need to ensure network access to the host
+                // TODO: set env like in setApiKeyEnvironmentVariables
+                dockerArgs.addAll(listOf("--network", "host"))
+            }
 
-                    LlmProviderType.OLLAMA -> {
-                        environment["OLLAMA_HOST"] = customProvider.baseUrl
-                    }
+            LlmProviderType.OPENAI -> {
+                // TODO: set env like in setApiKeyEnvironmentVariables
+            }
 
-                    LlmProviderType.OPENROUTER -> {
-                        ApiKeyManager.getCustomModelKey(customProvider.name)?.let { apiKey ->
-                            environment["OPENROUTER_API_KEY"] = apiKey
+            LlmProviderType.OPENROUTER -> {
+                // TODO: set env like in setApiKeyEnvironmentVariables
+            }
+
+            null -> {} // No special configuration needed
+        }
+
+        // Mount files outside the project
+        commandData.files.forEach { fileData ->
+            if (!fileData.filePath.startsWith(commandData.projectPath)) {
+                val containerPath = "/extra/${File(fileData.filePath).name}"
+                dockerArgs.addAll(listOf("-v", "${fileData.filePath}:$containerPath"))
+            }
+        }
+
+        dockerArgs.add("${AiderDefaults.DOCKER_IMAGE}:${settings.dockerImageTag}")
+
+        return dockerArgs + buildCommonArgs(commandData, settings).map { arg ->
+            commandData.files.fold(arg) { acc, fileData ->
+                if (!fileData.filePath.startsWith(commandData.projectPath)) {
+                    acc.replace(fileData.filePath, "/extra/${File(fileData.filePath).name}")
+                } else {
+                    acc.replace(fileData.filePath, "/app${fileData.filePath.removePrefix(commandData.projectPath)}")
+                }
+            }
+        }
+    }
+
+    override fun prepareEnvironment(processBuilder: ProcessBuilder, commandData: CommandData) {
+        // Remove DOCKER_HOST to use the default Docker host
+        processBuilder.environment().remove("DOCKER_HOST")
+    }
+
+    override fun cleanupAfterExecution() {
+        dockerManager.removeCidFile()
+    }
+
+    fun findAiderConfFile(projectPath: String): File? {
+        val gitRoot = findGitRoot(File(projectPath))
+        val locations = listOfNotNull(
+            gitRoot?.let { File(it, ".aider.conf.yml") },
+            File(projectPath, ".aider.conf.yml"),
+            File(System.getProperty("user.home"), ".aider.conf.yml")
+        )
+
+        return locations.firstOrNull { it.exists() }
+    }
+}
+
+
+fun setApiKeyEnvironmentVariables(
+    processBuilder: ProcessBuilder,
+    apiKeyChecker: ApiKeyChecker,
+    commandData: CommandData,
+    project: Project
+) {
+    val environment = processBuilder.environment()
+
+    val customProvider = project.service<CustomLlmProviderService>().getProvider(commandData.llm)
+    when {
+        customProvider != null -> {
+            // Set provider-specific environment variables
+            when (customProvider.type) {
+                LlmProviderType.OPENAI -> {
+                    ApiKeyManager.getCustomModelKey(customProvider.name)?.let { apiKey ->
+                        environment["OPENAI_API_KEY"] = apiKey
+                        if (customProvider.baseUrl.isNotEmpty()) {
+                            environment["OPENAI_API_BASE"] = customProvider.baseUrl
                         }
                     }
                 }
-            }
 
-            else -> {
-                // Set standard API keys
-                apiKeyChecker.getAllApiKeyNames().forEach { keyName ->
-                    apiKeyChecker.getApiKeyValue(keyName)?.let { value ->
-                        environment[keyName] = value
+                LlmProviderType.OLLAMA -> {
+                    environment["OLLAMA_HOST"] = customProvider.baseUrl
+                }
+
+                LlmProviderType.OPENROUTER -> {
+                    ApiKeyManager.getCustomModelKey(customProvider.name)?.let { apiKey ->
+                        environment["OPENROUTER_API_KEY"] = apiKey
                     }
                 }
             }
         }
 
+        else -> {
+            // Set standard API keys
+            apiKeyChecker.getAllApiKeyNames().forEach { keyName ->
+                apiKeyChecker.getApiKeyValue(keyName)?.let { value ->
+                    environment[keyName] = value
+                }
+            }
+        }
     }
 
-    private fun getCommitPrompt(): String {
-        // the prompt in the Aider CLI https://github.com/paul-gauthier/aider/blob/main/aider/prompts.py extended with prompt context
-        val basePrompt = """
+}
+
+private fun getCommitPrompt(): String {
+    // the prompt in the Aider CLI https://github.com/paul-gauthier/aider/blob/main/aider/prompts.py extended with prompt context
+    val basePrompt = """
         You are an expert software engineer.
         Review the provided context and diffs which are about to be committed to a git repo.
         Review the diffs carefully.
@@ -299,7 +301,7 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
         Reply with JUST the commit message, without quotes, comments, questions, etc!
     """.trimIndent()
 
-        val extendedPrompt = """
+    val extendedPrompt = """
         Additional to this commit message, the next lines after the message should include the prompt of the USER that led to the change 
         and the files (without content) that were given as context. Make sure the compact commit message is clearly separated from the additional information. Example:
         feat: Add a button to the login page
@@ -308,6 +310,5 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
         FILES: login.html, login.css
     """.trimIndent()
 
-        return "$basePrompt\n$extendedPrompt"
-    }
+    return "$basePrompt\n$extendedPrompt"
 }
