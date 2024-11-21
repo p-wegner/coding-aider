@@ -19,7 +19,6 @@ class CustomLlmProviderEditorDialog(
     private val nameField = JBTextField()
     private val baseUrlField = JBTextField()
     private val modelNameField = JBTextField()
-    private val displayNameField = JBTextField()
     private val apiKeyField = JBPasswordField()
     private lateinit var baseUrlRow: Row
     private lateinit var apiKeyRow: Row
@@ -44,7 +43,6 @@ class CustomLlmProviderEditorDialog(
             nameField.text = existingProvider.name
             baseUrlField.text = existingProvider.baseUrl
             modelNameField.text = existingProvider.modelName
-            displayNameField.text = existingProvider.displayName ?: ""
             providerTypeComboBox.selectedItem = existingProvider.type
             
             // Retrieve and mask existing API key
@@ -126,11 +124,6 @@ class CustomLlmProviderEditorDialog(
                 .columns(30)
                 .comment("The name of the model to use")
         }
-        row("Display Name:") {
-            cell(displayNameField)
-                .columns(30)
-                .comment("Optional: A friendly name to show in the UI")
-        }
         apiKeyRow = row("API Key:") {
             cell(apiKeyField)
                 .columns(30)
@@ -211,7 +204,6 @@ class CustomLlmProviderEditorDialog(
         val type: LlmProviderType = providerTypeComboBox.selectedItem as LlmProviderType
         val provider = CustomLlmProvider(
             name = nameField.text,
-            displayName = displayNameField.text.takeIf { it.isNotBlank() },
             type = type,
             baseUrl = baseUrlField.text,
             modelName = modelNameField.text,

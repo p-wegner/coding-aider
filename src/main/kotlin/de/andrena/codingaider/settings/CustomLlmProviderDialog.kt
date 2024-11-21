@@ -6,7 +6,6 @@ import com.intellij.ui.dsl.builder.panel
 import javax.swing.DefaultListModel
 import javax.swing.JComponent
 import javax.swing.ListSelectionModel
-import com.intellij.openapi.components.service
 import com.intellij.ui.components.JBScrollPane
 
 class CustomLlmProviderDialog : DialogWrapper(null) {
@@ -104,7 +103,6 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
             val provider = providerService.getAllProviders()[selectedIndex]
             val copiedProvider = provider.copy(
                 name = "${provider.name} (Copy)",
-                displayName = provider.displayName?.let { "$it (Copy)" }
             )
             val dialog = CustomLlmProviderEditorDialog(copiedProvider)
             if (dialog.showAndGet()) {

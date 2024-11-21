@@ -1,8 +1,7 @@
 package de.andrena.codingaider.settings
 
 data class CustomLlmProvider(
-    var name: String ="",
-    var displayName: String? = null,
+    var name: String = "",
     var type: LlmProviderType = LlmProviderType.OPENAI,
     var baseUrl: String = "",
     var modelName: String = ""

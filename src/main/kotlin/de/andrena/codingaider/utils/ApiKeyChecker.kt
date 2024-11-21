@@ -101,7 +101,9 @@ class DefaultApiKeyChecker : ApiKeyChecker {
         return standardOptions + customOptions
     }
 
-    private fun getStandardOptions(): List<LlmSelection> = listOf(LlmSelection("")) + llmToApiKeyMap.keys.map { LlmSelection(it) }
+    private fun getStandardOptions(): List<LlmSelection> = listOf(LlmSelection("")) + llmToApiKeyMap.keys.map { LlmSelection(
+        it
+    ) }
 
     override fun getAllApiKeyNames(): List<String> = llmToApiKeyMap.values.distinct()
     
