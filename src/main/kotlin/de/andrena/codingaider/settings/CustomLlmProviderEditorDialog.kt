@@ -125,11 +125,11 @@ class CustomLlmProviderEditorDialog(
         setOKActionEnabled(true)
 
         if (nameField.text.isBlank()) {
-            setOKActionEnabled(false)
+            isOKActionEnabled = false
             return ValidationInfo("Provider name is required", nameField)
         }
         if (modelNameField.text.isBlank()) {
-            setOKActionEnabled(false)
+            isOKActionEnabled = false
             return ValidationInfo("Model name is required", modelNameField)
         }
         
@@ -139,13 +139,13 @@ class CustomLlmProviderEditorDialog(
         if (selectedType.requiresBaseUrl) {
             val baseUrl = baseUrlField.text.trim()
             if (baseUrl.isBlank()) {
-                setOKActionEnabled(false)
+                isOKActionEnabled = false
                 return ValidationInfo("Base URL is required for ${selectedType.name}", baseUrlField)
             }
             
             // Optional: Add URL validation
             if (!isValidUrl(baseUrl)) {
-                setOKActionEnabled(false)
+                isOKActionEnabled = false
                 return ValidationInfo("Invalid URL format", baseUrlField)
             }
         }
