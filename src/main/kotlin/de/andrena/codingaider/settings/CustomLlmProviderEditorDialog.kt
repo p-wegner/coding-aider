@@ -70,39 +70,41 @@ class CustomLlmProviderEditorDialog(
     private fun updateProviderTypeUI() {
         val selectedType = providerTypeComboBox.selectedItem as LlmProviderType
         
-        when (selectedType) {
-            LlmProviderType.OLLAMA -> {
-                baseUrlField.text = "http://127.0.0.1:11434"
-                baseUrlField.isEnabled = true
-                baseUrlField.toolTipText = "Ollama server URL (default: http://127.0.0.1:11434)"
-                apiKeyField.isEnabled = false
-                apiKeyField.text = ""
+        javax.swing.SwingUtilities.invokeLater {
+            when (selectedType) {
+                LlmProviderType.OLLAMA -> {
+                    baseUrlField.text = "http://127.0.0.1:11434"
+                    baseUrlField.isEnabled = true
+                    baseUrlField.toolTipText = "Ollama server URL (default: http://127.0.0.1:11434)"
+                    apiKeyField.isEnabled = false
+                    apiKeyField.text = ""
+                }
+                LlmProviderType.OPENROUTER -> {
+                    baseUrlField.text = "https://openrouter.ai/api/v1"
+                    baseUrlField.isEnabled = false
+                    baseUrlField.toolTipText = "OpenRouter API base URL"
+                    apiKeyField.isEnabled = true
+                    apiKeyField.toolTipText = "OpenRouter API key (required)"
+                }
+                LlmProviderType.OPENAI -> {
+                    baseUrlField.text = "https://api.openai.com/v1"
+                    baseUrlField.isEnabled = true
+                    baseUrlField.toolTipText = "OpenAI API base URL"
+                    apiKeyField.isEnabled = true
+                    apiKeyField.toolTipText = "OpenAI API key (required)"
+                }
+                else -> {
+                    baseUrlField.isEnabled = true
+                    baseUrlField.toolTipText = "API endpoint URL"
+                    apiKeyField.isEnabled = true
+                    apiKeyField.toolTipText = "API key"
+                }
             }
-            LlmProviderType.OPENROUTER -> {
-                baseUrlField.text = "https://openrouter.ai/api/v1"
-                baseUrlField.isEnabled = false
-                baseUrlField.toolTipText = "OpenRouter API base URL"
-                apiKeyField.isEnabled = true
-                apiKeyField.toolTipText = "OpenRouter API key (required)"
-            }
-            LlmProviderType.OPENAI -> {
-                baseUrlField.text = "https://api.openai.com/v1"
-                baseUrlField.isEnabled = true
-                baseUrlField.toolTipText = "OpenAI API base URL"
-                apiKeyField.isEnabled = true
-                apiKeyField.toolTipText = "OpenAI API key (required)"
-            }
-            else -> {
-                baseUrlField.isEnabled = true
-                baseUrlField.toolTipText = "API endpoint URL"
-                apiKeyField.isEnabled = true
-                apiKeyField.toolTipText = "API key"
-            }
-        }
 
-        // Update row visibility based on provider requirements
-        baseUrlRow.visible(selectedType.requiresBaseUrl)
-        apiKeyRow.visible(selectedType.requiresApiKey)
+            // Update row visibility based on provider requirements
+            baseUrlRow.visible(selectedType.requiresBaseUrl)
+            apiKeyRow.visible(selectedType.requiresApiKey)
+        }
     }
 
     override fun createCenterPanel(): JComponent = panel {
