@@ -104,6 +104,8 @@ class DefaultApiKeyChecker : ApiKeyChecker {
     private fun getStandardOptions(): List<LlmSelection> = listOf(LlmSelection("")) + llmToApiKeyMap.keys.map { LlmSelection(it) }
 
     override fun getAllApiKeyNames(): List<String> = llmToApiKeyMap.values.distinct()
+    
+    fun getAllStandardLlmKeys(): List<String> = llmToApiKeyMap.keys.toList()
 
     override fun getApiKeyValue(apiKeyName: String): String? {
         // Check cache first

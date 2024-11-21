@@ -14,13 +14,13 @@ object ApiKeyManager {
         PasswordSafe.instance.set(credentialAttributes, credentials)
     }
 
-    fun saveCustomModelKey(modelName: String, apiKey: String) {
-        saveApiKey("$CUSTOM_MODEL_PREFIX$modelName", apiKey)
-    }
-
     fun getApiKey(keyName: String): String? {
         val credentialAttributes = createCredentialAttributes(keyName)
         return PasswordSafe.instance.getPassword(credentialAttributes)
+    }
+
+    fun saveCustomModelKey(modelName: String, apiKey: String) {
+        saveApiKey("$CUSTOM_MODEL_PREFIX$modelName", apiKey)
     }
 
     fun getCustomModelKey(modelName: String): String? {

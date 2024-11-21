@@ -1,5 +1,6 @@
 package de.andrena.codingaider.settings
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.components.JBPasswordField
@@ -8,6 +9,7 @@ import com.intellij.ui.dsl.builder.Row
 import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.utils.ApiKeyManager
+import de.andrena.codingaider.utils.DefaultApiKeyChecker
 import javax.swing.JComponent
 
 class CustomLlmProviderEditorDialog(
@@ -47,8 +49,6 @@ class CustomLlmProviderEditorDialog(
             
             // Retrieve and mask existing API key
             ApiKeyManager.getCustomModelKey(existingProvider.name)?.let {
-//                apiKeyField.password = it.toCharArray()
-//                apiKeyField.text = "*".repeat(16)
                 apiKeyField.text = it
             }
         }
@@ -147,6 +147,26 @@ class CustomLlmProviderEditorDialog(
         }
         
         val selectedType = providerTypeComboBox.selectedItem as LlmProviderType
+        
+        // Validate provider name uniqueness
+        val service = service<CustomLlmProviderService>()
+        val apiKeyChecker = service<DefaultApiKeyChecker>()
+        val normalizedName = nameField.text.trim()
+        
+        // Check against existing custom providers
+        val existingCustomProvider = service.getAllProviders().find { 
+            it.name.trim().equals(normalizedName, ignoreCase = true) && 
+            it != existingProvider 
+        }
+        if (existingCustomProvider != null) {
+            return ValidationInfo("Provider name must be unique", nameField)
+        }
+        
+        // Check against standard LLM keys
+        val standardKeys = apiKeyChecker.getAllStandardLlmKeys()
+        if (standardKeys.contains(normalizedName)) {
+            return ValidationInfo("Provider name cannot match standard LLM keys", nameField)
+        }
         
         // Validate base URL for providers that require it
         if (selectedType.requiresBaseUrl) {
