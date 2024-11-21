@@ -9,7 +9,7 @@ enum class LlmProviderType(
     OLLAMA("Ollama", requiresApiKey = false, requiresBaseUrl = true),
     OPENROUTER("OpenRouter", requiresApiKey = true, requiresBaseUrl = false);
 
-    fun getApiKeyName(providerName: String): String {
+    fun getApiKeyName(): String {
         return when (this) {
             OPENAI -> "OPENAI_API_KEY"
             OLLAMA -> "" // Ollama doesn't require an API key
@@ -17,7 +17,7 @@ enum class LlmProviderType(
         }
     }
 
-    fun getBaseUrlName(providerName: String): String {
+    fun getBaseUrlName(): String {
         return when (this) {
             OPENAI -> "OPENAI_API_BASE"
             OLLAMA -> "OLLAMA_API_BASE"

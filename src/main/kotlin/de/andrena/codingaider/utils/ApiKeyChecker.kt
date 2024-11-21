@@ -34,7 +34,7 @@ class DefaultApiKeyChecker : ApiKeyChecker {
 
     // API Key Cache
     private val apiKeyCache = ConcurrentHashMap<String, CachedApiKey>()
-    private val CACHE_DURATION = Duration.ofMinutes(30) // 30-minute cache
+    private val CACHE_DURATION = Duration.ofMinutes(5)
 
     // Cached API Key data class
     private data class CachedApiKey(
@@ -70,7 +70,7 @@ class DefaultApiKeyChecker : ApiKeyChecker {
             }
             
             // Check for API key
-            val apiKeyName = customProvider.type.getApiKeyName(customProvider.name)
+            val apiKeyName = customProvider.type.getApiKeyName()
             return isApiKeyAvailable(apiKeyName)
         }
         
@@ -88,7 +88,7 @@ class DefaultApiKeyChecker : ApiKeyChecker {
         // Check custom providers
         val customProvider = getCustomProvider(llm)
         if (customProvider != null) {
-            return customProvider.type.getApiKeyName(customProvider.name)
+            return customProvider.type.getApiKeyName()
         }
         
         return null
