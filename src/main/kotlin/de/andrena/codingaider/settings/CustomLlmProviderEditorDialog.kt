@@ -121,10 +121,15 @@ class CustomLlmProviderEditorDialog(
     }
 
     override fun doValidate(): ValidationInfo? {
+        // Reset OK button state
+        setOKActionEnabled(true)
+
         if (nameField.text.isBlank()) {
+            setOKActionEnabled(false)
             return ValidationInfo("Provider name is required", nameField)
         }
         if (modelNameField.text.isBlank()) {
+            setOKActionEnabled(false)
             return ValidationInfo("Model name is required", modelNameField)
         }
         
@@ -134,11 +139,13 @@ class CustomLlmProviderEditorDialog(
         if (selectedType.requiresBaseUrl) {
             val baseUrl = baseUrlField.text.trim()
             if (baseUrl.isBlank()) {
+                setOKActionEnabled(false)
                 return ValidationInfo("Base URL is required for ${selectedType.name}", baseUrlField)
             }
             
             // Optional: Add URL validation
             if (!isValidUrl(baseUrl)) {
+                setOKActionEnabled(false)
                 return ValidationInfo("Invalid URL format", baseUrlField)
             }
         }
@@ -150,6 +157,7 @@ class CustomLlmProviderEditorDialog(
             // For new providers or when a new key is being set
             if (existingProvider == null || apiKeyText != "*".repeat(16)) {
                 if (apiKeyText.isBlank()) {
+                    setOKActionEnabled(false)
                     return ValidationInfo("API key is required for ${selectedType.name}", apiKeyField)
                 }
             }
