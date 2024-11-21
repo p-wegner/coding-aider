@@ -254,7 +254,10 @@ class AiderSettingsConfigurable() : Configurable {
 
     }
 
-    private fun Any?.asSelectedItemName(): String = (this as LlmSelection).name
+    private fun Any?.asSelectedItemName(): String {
+        val selection = this as LlmSelection
+        return selection.name.ifBlank { "" }
+    }
 
     override fun apply() {
         val settings = AiderSettings.getInstance()
@@ -330,7 +333,7 @@ class AiderSettingsConfigurable() : Configurable {
         ): Component {
             val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
             if (component is JLabel && value is LlmSelection) {
-                text = value.getDisplayText()
+                text = value.getDisplayText().ifBlank { "Default Aider Model" }
                 
                 when {
                     value.provider != null -> {

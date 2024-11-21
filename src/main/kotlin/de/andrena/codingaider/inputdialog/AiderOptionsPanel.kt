@@ -20,7 +20,9 @@ class AiderOptionsPanel(
     apiKeyChecker: ApiKeyChecker = service<DefaultApiKeyChecker>()
 ) : JPanel(GridBagLayout()) {
     
-    val llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
+    val llmOptions = apiKeyChecker.getAllLlmOptions().toMutableList().apply { 
+        add(0, LlmSelection("")) 
+    }.toTypedArray()
     val llmComboBox = object : ComboBox<LlmSelection>(llmOptions) {
         override fun getToolTipText(): String? {
             return null // TODO: Enable this tooltip when slow thread error is fixed

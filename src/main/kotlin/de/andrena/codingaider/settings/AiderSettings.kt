@@ -28,7 +28,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var customProviderSettings: CustomProviderSettings = CustomProviderSettings(),
         var enableDocumentationLookup: Boolean = AiderDefaults.ENABLE_DOCUMENTATION_LOOKUP,
         var useYesFlag: Boolean = AiderDefaults.USE_YES_FLAG,
-        var llm: String = AiderDefaults.LLM,
+        var llm: String = "",
         var additionalArgs: String = AiderDefaults.ADDITIONAL_ARGS,
         var isShellMode: Boolean = AiderDefaults.IS_SHELL_MODE,
         var lintCmd: String = AiderDefaults.LINT_CMD,
