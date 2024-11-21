@@ -172,7 +172,6 @@ class CustomLlmProviderEditorDialog(
         
         private fun revalidate() {
             isOKActionEnabled = true  // Reset OK button state
-            validateCallback?.run()    // Trigger dialog validation
         }
     }
 
