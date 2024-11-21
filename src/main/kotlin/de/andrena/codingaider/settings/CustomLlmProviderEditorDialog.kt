@@ -86,22 +86,30 @@ class CustomLlmProviderEditorDialog(
         baseUrlLabel.isVisible = baseUrlVisible
         
         // Find and hide the comment component more robustly
-        baseUrlField.parent?.components?.filterIsInstance<JComponent>()?.find { 
-            it.getClientProperty("JComponent.nameValue") == "baseUrlComment" 
-        }?.isVisible = baseUrlVisible
+        baseUrlField.parent?.let { parent ->
+            parent.components
+                ?.filterIsInstance<JComponent>()
+                ?.find { it.getClientProperty("JComponent.nameValue") == "baseUrlComment" }
+                ?.apply { isVisible = baseUrlVisible }
+        }
 
         val apiKeyVisible = selectedType.requiresApiKey
         apiKeyField.isVisible = apiKeyVisible
         apiKeyLabel.isVisible = apiKeyVisible
         
         // Find and hide the comment component more robustly
-        apiKeyField.parent?.components?.filterIsInstance<JComponent>()?.find { 
-            it.getClientProperty("JComponent.nameValue") == "apiKeyComment" 
-        }?.isVisible = apiKeyVisible
+        apiKeyField.parent?.let { parent ->
+            parent.components
+                ?.filterIsInstance<JComponent>()
+                ?.find { it.getClientProperty("JComponent.nameValue") == "apiKeyComment" }
+                ?.apply { isVisible = apiKeyVisible }
+        }
         
         // Force UI refresh
-        baseUrlField.parent?.revalidate()
-        baseUrlField.parent?.repaint()
+        baseUrlField.parent?.apply {
+            revalidate()
+            repaint()
+        }
     }
 
     override fun createCenterPanel(): JComponent = panel {
