@@ -87,7 +87,7 @@ class DefaultApiKeyChecker : ApiKeyChecker {
     }
 
     override fun getAllApiKeyNames(): List<String> = llmToApiKeyMap.values.distinct()
-
+    // TODO: is slow, use api caching to avoid repeated calls
     override fun getApiKeyValue(apiKeyName: String): String? {
         // Check CredentialStore first
         ApiKeyManager.getApiKey(apiKeyName)?.let { return it }
