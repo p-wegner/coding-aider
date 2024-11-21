@@ -27,6 +27,12 @@ class CustomLlmProviderEditorDialog(
         title = if (existingProvider == null) "Add Custom LLM Provider" else "Edit Custom LLM Provider"
         init()
         
+        // Add document listeners to trigger validation on input changes
+        nameField.document.addDocumentListener(createValidationListener())
+        baseUrlField.document.addDocumentListener(createValidationListener())
+        modelNameField.document.addDocumentListener(createValidationListener())
+        apiKeyField.document.addDocumentListener(createValidationListener())
+        
         providerTypeComboBox.addActionListener {
             updateProviderTypeUI()
         }
@@ -157,6 +163,12 @@ class CustomLlmProviderEditorDialog(
 
     private fun isValidUrl(url: String): Boolean {
         return url.matches(Regex("^https?://[^\\s/$.?#].[^\\s]*$"))
+    }
+    
+    private fun createValidationListener() = object : javax.swing.event.DocumentListener {
+        override fun insertUpdate(e: javax.swing.event.DocumentEvent) = validate()
+        override fun removeUpdate(e: javax.swing.event.DocumentEvent) = validate()
+        override fun changedUpdate(e: javax.swing.event.DocumentEvent) = validate()
     }
 
     fun getProvider(): CustomLlmProvider {
