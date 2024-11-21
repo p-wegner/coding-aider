@@ -84,12 +84,20 @@ class CustomLlmProviderEditorDialog(
         val baseUrlVisible = selectedType.requiresBaseUrl
         baseUrlField.isVisible = baseUrlVisible
         baseUrlLabel.isVisible = baseUrlVisible
-        baseUrlField.parent?.components?.find { it.name == "baseUrlComment" }?.isVisible = baseUrlVisible
+        
+        // Find and hide the comment component more robustly
+        baseUrlField.parent?.components?.filterIsInstance<JComponent>()?.find { 
+            it.getClientProperty("JComponent.nameValue") == "baseUrlComment" 
+        }?.isVisible = baseUrlVisible
 
         val apiKeyVisible = selectedType.requiresApiKey
         apiKeyField.isVisible = apiKeyVisible
         apiKeyLabel.isVisible = apiKeyVisible
-        apiKeyField.parent?.components?.find { it.name == "apiKeyComment" }?.isVisible = apiKeyVisible
+        
+        // Find and hide the comment component more robustly
+        apiKeyField.parent?.components?.filterIsInstance<JComponent>()?.find { 
+            it.getClientProperty("JComponent.nameValue") == "apiKeyComment" 
+        }?.isVisible = apiKeyVisible
         
         // Force UI refresh
         baseUrlField.parent?.revalidate()
@@ -112,7 +120,7 @@ class CustomLlmProviderEditorDialog(
             cell(baseUrlField)
                 .columns(30)
                 .comment("The API endpoint URL (required for OpenAI and Ollama)")
-                .name("baseUrlComment")
+                .applyToComponent { putClientProperty("JComponent.nameValue", "baseUrlComment") }
         }
         row("Model Name:") {
             cell(modelNameField)
@@ -128,7 +136,7 @@ class CustomLlmProviderEditorDialog(
             cell(apiKeyField)
                 .columns(30)
                 .comment("Optional: Secure API key for the provider")
-                .name("apiKeyComment")
+                .applyToComponent { putClientProperty("JComponent.nameValue", "apiKeyComment") }
         }
     }
 
