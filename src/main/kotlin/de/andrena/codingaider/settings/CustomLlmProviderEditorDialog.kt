@@ -80,14 +80,16 @@ class CustomLlmProviderEditorDialog(
             }
         }
 
-        // Update field and label visibility based on provider requirements
+        // Update field, label, and comment visibility based on provider requirements
         val baseUrlVisible = selectedType.requiresBaseUrl
         baseUrlField.isVisible = baseUrlVisible
         baseUrlLabel.isVisible = baseUrlVisible
+        baseUrlField.parent?.components?.find { it.name == "baseUrlComment" }?.isVisible = baseUrlVisible
 
         val apiKeyVisible = selectedType.requiresApiKey
         apiKeyField.isVisible = apiKeyVisible
         apiKeyLabel.isVisible = apiKeyVisible
+        apiKeyField.parent?.components?.find { it.name == "apiKeyComment" }?.isVisible = apiKeyVisible
         
         // Force UI refresh
         baseUrlField.parent?.revalidate()
@@ -110,6 +112,7 @@ class CustomLlmProviderEditorDialog(
             cell(baseUrlField)
                 .columns(30)
                 .comment("The API endpoint URL (required for OpenAI and Ollama)")
+                .name("baseUrlComment")
         }
         row("Model Name:") {
             cell(modelNameField)
@@ -125,6 +128,7 @@ class CustomLlmProviderEditorDialog(
             cell(apiKeyField)
                 .columns(30)
                 .comment("Optional: Secure API key for the provider")
+                .name("apiKeyComment")
         }
     }
 
