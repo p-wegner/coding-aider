@@ -9,7 +9,6 @@ import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.utils.ApiKeyManager
 import javax.swing.JComponent
-import javax.swing.JLabel
 
 class CustomLlmProviderEditorDialog(
     private val existingProvider: CustomLlmProvider? = null
