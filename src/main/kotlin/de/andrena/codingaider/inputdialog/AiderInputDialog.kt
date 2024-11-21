@@ -41,7 +41,7 @@ class AiderInputDialog(
     val project: Project,
     files: List<FileData>,
     initialText: String = "",
-    private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker()
+    private val apiKeyChecker: ApiKeyChecker = service<DefaultApiKeyChecker>()
 ) : DialogWrapper(project) {
     private val tokenCountService = project.getService(TokenCountService::class.java)
     private val settings = getInstance()

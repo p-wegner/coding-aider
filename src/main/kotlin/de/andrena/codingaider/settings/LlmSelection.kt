@@ -16,18 +16,4 @@ data class LlmSelection(
 
     override fun toString(): String = name
 
-    companion object {
-        fun fromString(value: String, customProviderService: CustomLlmProviderService): LlmSelection {
-            val customProvider = customProviderService.getProvider(value)
-            return if (customProvider != null) {
-                LlmSelection(
-                    name = value,
-                    provider = customProvider,
-                    isBuiltIn = false
-                )
-            } else {
-                LlmSelection(name = value)
-            }
-        }
-    }
 }

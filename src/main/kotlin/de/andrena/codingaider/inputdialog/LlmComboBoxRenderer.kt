@@ -1,19 +1,20 @@
 package de.andrena.codingaider.inputdialog
 
 import com.intellij.openapi.ui.ComboBox
+import de.andrena.codingaider.settings.LlmSelection
 import de.andrena.codingaider.utils.ApiKeyChecker
 import java.awt.Component
 import javax.swing.*
 
-class LlmComboBoxRenderer(private val apiKeyChecker: ApiKeyChecker, private val llmComboBox: ComboBox<String>, private val llmOptions: Array<String>) : DefaultListCellRenderer() {
+class LlmComboBoxRenderer(private val apiKeyChecker: ApiKeyChecker, private val llmComboBox: ComboBox<LlmSelection>, private val llmOptions: Array<LlmSelection>) : DefaultListCellRenderer() {
     private val apiKeyStatus = mutableMapOf<String, Boolean>()
 
     init {
         // Initialize status checking in background
         com.intellij.openapi.application.ApplicationManager.getApplication().executeOnPooledThread {
             llmOptions.forEach { llm ->
-                apiKeyStatus[llm] = apiKeyChecker.getApiKeyForLlm(llm)?.let {
-                    apiKeyChecker.isApiKeyAvailableForLlm(llm)
+                apiKeyStatus[llm.name] = apiKeyChecker.getApiKeyForLlm(llm.name)?.let {
+                    apiKeyChecker.isApiKeyAvailableForLlm(llm.name)
                 } ?: true
             }
             // Trigger UI update

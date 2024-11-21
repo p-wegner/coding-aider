@@ -1,9 +1,11 @@
 package de.andrena.codingaider.inputdialog
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.JBUI
+import de.andrena.codingaider.settings.LlmSelection
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
 import java.awt.Dimension
@@ -11,17 +13,16 @@ import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import java.awt.event.KeyEvent
 import javax.swing.JCheckBox
-import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JTextField
 
 class AiderOptionsPanel(
     private val project: Project,
-    private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker()
+    private val apiKeyChecker: ApiKeyChecker = service<DefaultApiKeyChecker>()
 ) : JPanel(GridBagLayout()) {
     
     val llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
-    val llmComboBox = object : ComboBox<String>(llmOptions) {
+    val llmComboBox = object : ComboBox<LlmSelection>(llmOptions) {
         override fun getToolTipText(): String? {
             return null // TODO: Enable this tooltip when slow thread error is fixed
         }

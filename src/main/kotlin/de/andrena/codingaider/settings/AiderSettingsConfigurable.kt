@@ -16,7 +16,7 @@ import javax.swing.*
 
 class AiderSettingsConfigurable() : Configurable {
 
-    private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker()
+    private val apiKeyChecker: ApiKeyChecker = service<DefaultApiKeyChecker>()
     private var settingsComponent: JPanel? = null
     private val aiderSetupPanel = AiderSetupPanel(apiKeyChecker)
     private val useYesFlagCheckBox = JBCheckBox("Use --yes flag by default")
@@ -51,7 +51,7 @@ class AiderSettingsConfigurable() : Configurable {
     private val alwaysIncludeOpenFilesCheckBox = JBCheckBox("Always include open files in context")
     private val alwaysIncludePlanContextFilesCheckBox = JBCheckBox("Always include plan context files")
     private val documentationLlmComboBox =
-        ComboBox(arrayOf("Default") + apiKeyChecker.getAllLlmOptions().toTypedArray())
+        ComboBox( apiKeyChecker.getAllLlmOptions().toTypedArray())
 
     override fun getDisplayName(): String = "Aider"
 
@@ -227,13 +227,13 @@ class AiderSettingsConfigurable() : Configurable {
     override fun isModified(): Boolean {
         val settings = AiderSettings.getInstance()
         return useYesFlagCheckBox.isSelected != settings.useYesFlag ||
-                llmComboBox.selectedItem as String != settings.llm ||
+                llmComboBox.selectedItem.asSelectedItemName() != settings.llm ||
                 additionalArgsField.text != settings.additionalArgs ||
                 isShellModeCheckBox.isSelected != settings.isShellMode ||
                 lintCmdField.text != settings.lintCmd ||
                 showGitComparisonToolCheckBox.isSelected != settings.showGitComparisonTool ||
                 activateIdeExecutorAfterWebcrawlCheckBox.isSelected != settings.activateIdeExecutorAfterWebcrawl ||
-                webCrawlLlmComboBox.selectedItem as String != settings.webCrawlLlm ||
+                webCrawlLlmComboBox.selectedItem.asSelectedItemName()  != settings.webCrawlLlm ||
                 deactivateRepoMapCheckBox.isSelected != settings.deactivateRepoMap ||
                 editFormatComboBox.selectedItem as String != settings.editFormat ||
                 verboseCommandLoggingCheckBox.isSelected != settings.verboseCommandLogging ||
@@ -249,21 +249,23 @@ class AiderSettingsConfigurable() : Configurable {
                 enableDocumentationLookupCheckBox.isSelected != settings.enableDocumentationLookup ||
                 alwaysIncludeOpenFilesCheckBox.isSelected != settings.alwaysIncludeOpenFiles ||
                 alwaysIncludePlanContextFilesCheckBox.isSelected != settings.alwaysIncludePlanContextFiles ||
-                documentationLlmComboBox.selectedItem as String != settings.documentationLlm ||
+                documentationLlmComboBox.selectedItem.asSelectedItemName()  != settings.documentationLlm ||
                 aiderSetupPanel.isModified()
 
     }
 
+    private fun Any?.asSelectedItemName(): String = (this as LlmSelection).name
+
     override fun apply() {
         val settings = AiderSettings.getInstance()
         settings.useYesFlag = useYesFlagCheckBox.isSelected
-        settings.llm = llmComboBox.selectedItem as String
+        settings.llm = llmComboBox.selectedItem.asSelectedItemName()
         settings.additionalArgs = additionalArgsField.text
         settings.isShellMode = isShellModeCheckBox.isSelected
         settings.lintCmd = lintCmdField.text
         settings.showGitComparisonTool = showGitComparisonToolCheckBox.isSelected
         settings.activateIdeExecutorAfterWebcrawl = activateIdeExecutorAfterWebcrawlCheckBox.isSelected
-        settings.webCrawlLlm = webCrawlLlmComboBox.selectedItem as String
+        settings.webCrawlLlm = webCrawlLlmComboBox.selectedItem.asSelectedItemName()
         settings.deactivateRepoMap = deactivateRepoMapCheckBox.isSelected
         settings.editFormat = editFormatComboBox.selectedItem as String
         settings.verboseCommandLogging = verboseCommandLoggingCheckBox.isSelected
@@ -280,7 +282,7 @@ class AiderSettingsConfigurable() : Configurable {
         settings.enableDocumentationLookup = enableDocumentationLookupCheckBox.isSelected
         settings.alwaysIncludeOpenFiles = alwaysIncludeOpenFilesCheckBox.isSelected
         settings.alwaysIncludePlanContextFiles = alwaysIncludePlanContextFilesCheckBox.isSelected
-        settings.documentationLlm = documentationLlmComboBox.selectedItem as String
+        settings.documentationLlm = documentationLlmComboBox.selectedItem.asSelectedItemName()
         aiderSetupPanel.apply()
         settings.notifySettingsChanged()
     }
@@ -288,14 +290,15 @@ class AiderSettingsConfigurable() : Configurable {
 
     override fun reset() {
         val settings = AiderSettings.getInstance()
+        val apiKeyChecker = service<DefaultApiKeyChecker>();
         useYesFlagCheckBox.isSelected = settings.useYesFlag
-        llmComboBox.selectedItem = settings.llm
+        llmComboBox.selectedItem = apiKeyChecker.getLlmSelectionForName(settings.llm)
         additionalArgsField.text = settings.additionalArgs
         isShellModeCheckBox.isSelected = settings.isShellMode
         lintCmdField.text = settings.lintCmd
         showGitComparisonToolCheckBox.isSelected = settings.showGitComparisonTool
         activateIdeExecutorAfterWebcrawlCheckBox.isSelected = settings.activateIdeExecutorAfterWebcrawl
-        webCrawlLlmComboBox.selectedItem = settings.webCrawlLlm
+        webCrawlLlmComboBox.selectedItem = apiKeyChecker.getLlmSelectionForName(settings.webCrawlLlm)
         deactivateRepoMapCheckBox.isSelected = settings.deactivateRepoMap
         editFormatComboBox.selectedItem = settings.editFormat
         verboseCommandLoggingCheckBox.isSelected = settings.verboseCommandLogging
@@ -312,7 +315,7 @@ class AiderSettingsConfigurable() : Configurable {
         enableDocumentationLookupCheckBox.isSelected = settings.enableDocumentationLookup
         alwaysIncludeOpenFilesCheckBox.isSelected = settings.alwaysIncludeOpenFiles
         alwaysIncludePlanContextFilesCheckBox.isSelected = settings.alwaysIncludePlanContextFiles
-        documentationLlmComboBox.selectedItem = settings.documentationLlm
+        documentationLlmComboBox.selectedItem = apiKeyChecker.getLlmSelectionForName(settings.documentationLlm)
         aiderSetupPanel.reset()
         settings.notifySettingsChanged()
     }
@@ -378,8 +381,8 @@ class AiderSettingsConfigurable() : Configurable {
         updateOptions(documentationLlmComboBox)
     }
 
-    private fun updateOptions(llmSelectionWidget: JComboBox<String>) {
-        val currentSelection = llmSelectionWidget.selectedItem as? String
+    private fun updateOptions(llmSelectionWidget: JComboBox<LlmSelection>) {
+        val currentSelection = llmSelectionWidget.selectedItem as? LlmSelection
         llmSelectionWidget.model = DefaultComboBoxModel(llmOptions)
         if (currentSelection != null && llmOptions.contains(currentSelection)) {
             llmSelectionWidget.selectedItem = currentSelection
@@ -393,7 +396,7 @@ class AiderSettingsConfigurable() : Configurable {
         }
     }
 
-    private fun llmComboBox(llmOptions: Array<String>): JComboBox<String> = object : JComboBox<String>(llmOptions) {
+    private fun llmComboBox(llmOptions: Array<LlmSelection>): JComboBox<LlmSelection> = object : JComboBox<LlmSelection>(llmOptions) {
         override fun getToolTipText(): String? {
             val selectedItem = selectedItem as? String ?: return null
             return if (apiKeyChecker.isApiKeyAvailableForLlm(selectedItem)) {

@@ -5,6 +5,7 @@ import com.intellij.openapi.components.service
 import de.andrena.codingaider.settings.CustomLlmProvider
 import de.andrena.codingaider.settings.CustomLlmProviderService
 import de.andrena.codingaider.settings.LlmProviderType
+import de.andrena.codingaider.settings.LlmSelection
 import java.io.File
 import java.time.Duration
 import java.time.Instant
@@ -19,7 +20,7 @@ interface ApiKeyChecker {
     fun getApiKeyValue(apiKeyName: String): String?
     fun getApiKeysForDocker(): Map<String, String>
 }
-@Service(Service.Level.PROJECT)
+@Service(Service.Level.APP)
 class DefaultApiKeyChecker : ApiKeyChecker {
     private val llmToApiKeyMap = mapOf(
         "--sonnet" to "ANTHROPIC_API_KEY",
@@ -94,11 +95,13 @@ class DefaultApiKeyChecker : ApiKeyChecker {
     }
 
     override fun getAllLlmOptions(): List<LlmSelection> {
-        val standardOptions = llmToApiKeyMap.keys.map { LlmSelection(it) }
+        val standardOptions = getStandardOptions()
         val customOptions = service<CustomLlmProviderService>().getAllProviders()
             .map { LlmSelection(it.name, provider = it, isBuiltIn = false) }
         return standardOptions + customOptions
     }
+
+    private fun getStandardOptions(): List<LlmSelection> = llmToApiKeyMap.keys.map { LlmSelection(it) }
 
     override fun getAllApiKeyNames(): List<String> = llmToApiKeyMap.values.distinct()
 
@@ -163,5 +166,14 @@ class DefaultApiKeyChecker : ApiKeyChecker {
             }
             
         return (standardKeys + customKeys).toMap()
+    }
+
+    fun getLlmSelectionForName(string: String): LlmSelection {
+        return getStandardOptions().find { it.name == string } ?:
+        service<CustomLlmProviderService>().getProvider(string).let {
+            LlmSelection(string, provider = it, isBuiltIn = false)
+        }
+
+
     }
 }
