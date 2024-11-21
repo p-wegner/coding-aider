@@ -1,108 +1,71 @@
 package de.andrena.codingaider.settings
 
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.ui.components.JBList
 import com.intellij.ui.dsl.builder.panel
-import com.intellij.ui.table.JBTable
+import javax.swing.DefaultListModel
 import javax.swing.JComponent
+import javax.swing.ListSelectionModel
 import com.intellij.openapi.components.service
+import com.intellij.ui.components.JBScrollPane
 
 class CustomLlmProviderDialog : DialogWrapper(null) {
     private val providerService = service<CustomLlmProviderService>()
-    private val providersTableModel = ProvidersTableModel()
-    private val providersTable = JBTable(providersTableModel).apply {
-        setShowGrid(true)
-        autoResizeMode = JBTable.AUTO_RESIZE_SUBSEQUENT_COLUMNS
-        rowHeight = 30
-        intercellSpacing = java.awt.Dimension(10, 5)
-        tableHeader.preferredSize = java.awt.Dimension(0, 32)
-        addComponentListener(object : java.awt.event.ComponentAdapter() {
-            override fun componentResized(e: java.awt.event.ComponentEvent) {
-                adjustColumnWidths()
-            }
-        })
+    private val providersListModel = DefaultListModel<String>()
+    private val providersList = JBList(providersListModel).apply {
+        selectionMode = ListSelectionModel.SINGLE_SELECTION
+    }
+
+    private val addButton = javax.swing.JButton("Add Provider").apply {
+        addActionListener { addProvider() }
+    }
+
+    private val editButton = javax.swing.JButton("Edit Provider").apply {
+        addActionListener { editProvider() }
+        isEnabled = false
+    }
+
+    private val removeButton = javax.swing.JButton("Remove Provider").apply {
+        addActionListener { removeProvider() }
+        isEnabled = false
     }
 
     init {
         title = "Manage Custom LLM Providers"
         init()
-        setSize(800, 600)
-    }
+        setSize(600, 400)
+        updateProvidersList()
 
-    override fun show() {
-        super.show()
-        providersTableModel.fireTableStructureChanged()
-        initializeColumns()
-        adjustColumnWidths()
-    }
-
-    private fun initializeColumns() {
-        providersTable.columnModel.apply {
-            for (i in 0 until columnCount) {
-                val column = getColumn(i)
-                when (i) {
-                    0 -> { // Name
-                        column.minWidth = 150
-                        column.preferredWidth = 200
-                    }
-                    1 -> { // Type
-                        column.minWidth = 100
-                        column.preferredWidth = 120
-                    }
-                    2 -> { // Model
-                        column.minWidth = 120
-                        column.preferredWidth = 160
-                    }
-                    3 -> { // Base URL
-                        column.minWidth = 200
-                        column.preferredWidth = 320
-                    }
-                }
+        providersList.addListSelectionListener { event ->
+            if (!event.valueIsAdjusting) {
+                val hasSelection = providersList.selectedIndex != -1
+                editButton.isEnabled = hasSelection
+                removeButton.isEnabled = hasSelection
             }
         }
     }
 
-    private fun adjustColumnWidths() {
-        providersTable.columnModel.apply {
-            val totalWidth = providersTable.width
-            if (totalWidth > 0 && columnCount >= 4) {
-                val widths = listOf(0.25, 0.15, 0.20, 0.40)
-                for (i in 0 until minOf(columnCount, widths.size)) {
-                    val calculatedWidth = (totalWidth * widths[i]).toInt()
-                    val column = getColumn(i)
-                    if (calculatedWidth >= column.minWidth) {
-                        column.width = calculatedWidth
-                    }
-                }
-            }
+    private fun updateProvidersList() {
+        providersListModel.clear()
+        providerService.getAllProviders().forEach { provider ->
+            providersListModel.addElement(
+                "${provider.name} (${provider.type}) - ${provider.modelName}"
+            )
         }
     }
 
     override fun createCenterPanel(): JComponent = panel {
         row {
-            scrollCell(providersTable)
-                .resizableColumn()
+            cell(JBScrollPane(providersList))
                 .comment("Configure and manage your custom LLM providers")
                 .apply {
-                    component.preferredSize = java.awt.Dimension(780, 500)
+                    component.preferredSize = java.awt.Dimension(580, 300)
                 }
         }
         row {
-            panel {
-                row {
-                    button("Add Provider") { addProvider() }
-                        .applyToComponent { preferredSize = java.awt.Dimension(120, 35) }
-                    button("Edit Provider") { editProvider() }
-                        .applyToComponent { 
-                            preferredSize = java.awt.Dimension(120, 35)
-                            isEnabled = providersTable.selectedRow >= 0 
-                        }
-                    button("Remove Provider") { removeProvider() }
-                        .applyToComponent { 
-                            preferredSize = java.awt.Dimension(120, 35)
-                            isEnabled = providersTable.selectedRow >= 0 
-                        }
-                }
-            }
+            cell(addButton)
+            cell(editButton)
+            cell(removeButton)
         }
     }
 
@@ -111,30 +74,29 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
         if (dialog.showAndGet()) {
             val provider = dialog.getProvider()
             providerService.addProvider(provider)
-            providersTableModel.fireTableDataChanged()
+            updateProvidersList()
         }
     }
 
     private fun editProvider() {
-        val selectedRow = providersTable.selectedRow
-        if (selectedRow >= 0) {
-            val provider = providerService.getAllProviders()[selectedRow]
+        val selectedIndex = providersList.selectedIndex
+        if (selectedIndex >= 0) {
+            val provider = providerService.getAllProviders()[selectedIndex]
             val dialog = CustomLlmProviderEditorDialog(provider)
             if (dialog.showAndGet()) {
                 providerService.removeProvider(provider.name)
                 providerService.addProvider(dialog.getProvider())
-                providersTableModel.fireTableDataChanged()
+                updateProvidersList()
             }
         }
     }
 
     private fun removeProvider() {
-        val selectedRow = providersTable.selectedRow
-        if (selectedRow >= 0) {
-            val provider = providerService.getAllProviders()[selectedRow]
+        val selectedIndex = providersList.selectedIndex
+        if (selectedIndex >= 0) {
+            val provider = providerService.getAllProviders()[selectedIndex]
             providerService.removeProvider(provider.name)
-            providersTableModel.fireTableDataChanged()
+            updateProvidersList()
         }
     }
-
 }
