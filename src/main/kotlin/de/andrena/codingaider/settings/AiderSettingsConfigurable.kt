@@ -373,26 +373,34 @@ class AiderSettingsConfigurable() : Configurable {
 
     private fun updateLlmOptions() {
         llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
-        val currentSelection = llmComboBox.selectedItem as? String
-        llmComboBox.model = DefaultComboBoxModel(llmOptions)
+        updateOptions(llmComboBox)
+        updateOptions(webCrawlLlmComboBox)
+        updateOptions(documentationLlmComboBox)
+    }
+
+    private fun updateOptions(llmSelectionWidget: JComboBox<String>) {
+        val currentSelection = llmSelectionWidget.selectedItem as? String
+        llmSelectionWidget.model = DefaultComboBoxModel(llmOptions)
         if (currentSelection != null && llmOptions.contains(currentSelection)) {
-            llmComboBox.selectedItem = currentSelection
+            llmSelectionWidget.selectedItem = currentSelection
         }
     }
 
     init {
-        this.llmComboBox = object : JComboBox<String>(llmOptions) {
-            override fun getToolTipText(): String? {
-                val selectedItem = selectedItem as? String ?: return null
-                return if (apiKeyChecker.isApiKeyAvailableForLlm(selectedItem)) {
-                    "API key found for $selectedItem"
-                } else {
-                    "API key not found for $selectedItem"
-                }
-            }
-        }
+        this.llmComboBox = llmComboBox(llmOptions)
         customProviderService.addSettingsChangeListener {
             updateLlmOptions()
+        }
+    }
+
+    private fun llmComboBox(llmOptions: Array<String>): JComboBox<String> = object : JComboBox<String>(llmOptions) {
+        override fun getToolTipText(): String? {
+            val selectedItem = selectedItem as? String ?: return null
+            return if (apiKeyChecker.isApiKeyAvailableForLlm(selectedItem)) {
+                "API key found for $selectedItem"
+            } else {
+                "API key not found for $selectedItem"
+            }
         }
     }
 }

@@ -64,7 +64,7 @@ class CustomLlmProviderEditorDialog(
 
     private fun resetValidation() {
         updateProviderTypeUI()
-        setOKActionEnabled(true)  // Re-enable the OK button
+        isOKActionEnabled = true
         doValidate()
     }
 

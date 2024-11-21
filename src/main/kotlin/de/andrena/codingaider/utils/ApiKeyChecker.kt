@@ -95,7 +95,7 @@ class DefaultApiKeyChecker : ApiKeyChecker {
 
     override fun getAllLlmOptions(): List<String> {
         val standardOptions = llmToApiKeyMap.keys.toList()
-        val customOptions = service<CustomLlmProviderService>().getAllProviders().map { it.name }
+        val customOptions = service<CustomLlmProviderService>().getAllProviders().map { it.displayName ?: it.name }
         return standardOptions + customOptions
     }
 
