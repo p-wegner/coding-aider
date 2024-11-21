@@ -22,7 +22,7 @@ class AiderSettingsConfigurable() : Configurable {
     private val useYesFlagCheckBox = JBCheckBox("Use --yes flag by default")
     private var llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
     private val llmComboBox: JComboBox<LlmSelection>
-    private val customProviderService = service<CustomLlmProviderService>()
+    private val customProviderService = CustomLlmProviderService.getInstance()
     private val manageProvidersButton = JButton("Manage Providers...").apply {
         addActionListener {
             CustomLlmProviderDialog().show()

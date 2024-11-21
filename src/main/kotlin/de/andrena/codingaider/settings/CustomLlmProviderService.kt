@@ -1,12 +1,13 @@
 package de.andrena.codingaider.settings
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.*
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.utils.ApiKeyManager
 
 @Service(Service.Level.APP)
 @State(
-    name = "CustomLlmProviderService",
+    name = "de.andrena.codingaider.settings.CustomLlmProviderService",
     storages = [Storage("customLlmProviders.xml")]
 )
 class CustomLlmProviderService : PersistentStateComponent<CustomLlmProviderService.State> {
@@ -51,4 +52,9 @@ class CustomLlmProviderService : PersistentStateComponent<CustomLlmProviderServi
 
     fun getAllProviders(): List<CustomLlmProvider> = myState.providers.toList()
 
+    companion object {
+        fun getInstance(): CustomLlmProviderService =
+            ApplicationManager.getApplication().getService(CustomLlmProviderService::class.java)
+
+    }
 }

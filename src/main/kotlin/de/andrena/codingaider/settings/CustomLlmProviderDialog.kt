@@ -10,7 +10,7 @@ import com.intellij.openapi.components.service
 import com.intellij.ui.components.JBScrollPane
 
 class CustomLlmProviderDialog : DialogWrapper(null) {
-    private val providerService = service<CustomLlmProviderService>()
+    private val providerService = CustomLlmProviderService.getInstance()
     private val providersListModel = DefaultListModel<String>()
     private val providersList = JBList(providersListModel).apply {
         selectionMode = ListSelectionModel.SINGLE_SELECTION

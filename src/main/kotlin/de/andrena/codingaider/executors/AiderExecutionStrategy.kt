@@ -23,7 +23,7 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
         return buildList {
             // Handle model selection based on provider type
             if (commandData.llm.isNotEmpty()) {
-                val customProvider = project.service<CustomLlmProviderService>().getProvider(commandData.llm)
+                val customProvider = CustomLlmProviderService.getInstance().getProvider(commandData.llm)
                 if (customProvider != null) {
                     add("--model")
                     add(customProvider.prefixedModelName)
@@ -130,7 +130,7 @@ class NativeAiderExecutionStrategy(
     }
 
     override fun prepareEnvironment(processBuilder: ProcessBuilder, commandData: CommandData) {
-        setApiKeyEnvironmentVariables(processBuilder, apiKeyChecker, commandData, project)
+        setApiKeyEnvironmentVariables(processBuilder, apiKeyChecker, commandData)
     }
 
     override fun cleanupAfterExecution() {
@@ -245,12 +245,11 @@ class DockerAiderExecutionStrategy(
 fun setApiKeyEnvironmentVariables(
     processBuilder: ProcessBuilder,
     apiKeyChecker: ApiKeyChecker,
-    commandData: CommandData,
-    project: Project
+    commandData: CommandData
 ) {
     val environment = processBuilder.environment()
 
-    val customProvider = project.service<CustomLlmProviderService>().getProvider(commandData.llm)
+    val customProvider = CustomLlmProviderService.getInstance().getProvider(commandData.llm)
     when {
         customProvider != null -> {
             // Set provider-specific environment variables
