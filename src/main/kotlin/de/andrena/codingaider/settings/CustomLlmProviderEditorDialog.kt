@@ -24,7 +24,6 @@ class CustomLlmProviderEditorDialog(
         title = if (existingProvider == null) "Add Custom LLM Provider" else "Edit Custom LLM Provider"
         init()
         
-        // Add listener to dynamically update UI based on provider type
         providerTypeComboBox.addActionListener {
             updateProviderTypeUI()
         }
@@ -36,7 +35,6 @@ class CustomLlmProviderEditorDialog(
             displayNameField.text = provider.displayName ?: ""
             providerTypeComboBox.selectedItem = provider.type
             
-            // Trigger initial UI update
             updateProviderTypeUI()
             
             // Retrieve and mask existing API key
