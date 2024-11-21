@@ -27,16 +27,8 @@ class CustomLlmProviderEditorDialog(
         title = if (existingProvider == null) "Add Custom LLM Provider" else "Edit Custom LLM Provider"
         init()
         
-        // Reset validation when fields are modified
-        nameField.document.addDocumentListener(createValidationResetListener())
-        baseUrlField.document.addDocumentListener(createValidationResetListener())
-        modelNameField.document.addDocumentListener(createValidationResetListener())
-        displayNameField.document.addDocumentListener(createValidationResetListener())
-        apiKeyField.document.addDocumentListener(createValidationResetListener())
-        
         providerTypeComboBox.addActionListener {
             updateProviderTypeUI()
-            resetValidation()
         }
         
         existingProvider?.let { provider ->
@@ -55,30 +47,18 @@ class CustomLlmProviderEditorDialog(
         }
     }
 
-    private fun createValidationResetListener() = object : javax.swing.event.DocumentListener {
-        override fun insertUpdate(e: javax.swing.event.DocumentEvent?) = resetValidation()
-        override fun removeUpdate(e: javax.swing.event.DocumentEvent?) = resetValidation()
-        override fun changedUpdate(e: javax.swing.event.DocumentEvent?) = resetValidation()
-    }
-
-    private fun resetValidation() {
-        updateProviderTypeUI()
-        isOKActionEnabled = true
-        doValidate()
-    }
 
     private fun updateProviderTypeUI() {
         val selectedType = providerTypeComboBox.selectedItem as LlmProviderType
         
-        javax.swing.SwingUtilities.invokeLater {
-            when (selectedType) {
-                LlmProviderType.OLLAMA -> {
-                    baseUrlField.text = "http://127.0.0.1:11434"
-                    baseUrlField.isEnabled = true
-                    baseUrlField.toolTipText = "Ollama server URL (default: http://127.0.0.1:11434)"
-                    apiKeyField.isEnabled = false
-                    apiKeyField.text = ""
-                }
+        when (selectedType) {
+            LlmProviderType.OLLAMA -> {
+                baseUrlField.text = "http://127.0.0.1:11434"
+                baseUrlField.isEnabled = true
+                baseUrlField.toolTipText = "Ollama server URL (default: http://127.0.0.1:11434)"
+                apiKeyField.isEnabled = false
+                apiKeyField.text = ""
+            }
                 LlmProviderType.OPENROUTER -> {
                     baseUrlField.text = "https://openrouter.ai/api/v1"
                     baseUrlField.isEnabled = true
@@ -101,10 +81,9 @@ class CustomLlmProviderEditorDialog(
                 }
             }
 
-            // Update row visibility based on provider requirements
-            baseUrlRow.visible(selectedType.requiresBaseUrl)
-            apiKeyRow.visible(selectedType.requiresApiKey)
-        }
+        // Update row visibility based on provider requirements
+        baseUrlRow.visible(selectedType.requiresBaseUrl)
+        apiKeyRow.visible(selectedType.requiresApiKey)
     }
 
     override fun createCenterPanel(): JComponent = panel {
