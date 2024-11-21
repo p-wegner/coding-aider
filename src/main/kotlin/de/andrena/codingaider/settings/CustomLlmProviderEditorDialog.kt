@@ -203,8 +203,10 @@ class CustomLlmProviderEditorDialog(
                 ApiKeyManager.saveCustomModelKey(provider.name, apiKeyText)
             } else if (existingProvider != null) {
                 // Preserve existing key if no new key is entered
-                ApiKeyManager.getCustomModelKey(existingProvider.name)?.let { 
-                    ApiKeyManager.saveCustomModelKey(provider.name, it)
+                val existingKey = ApiKeyManager.getCustomModelKey(existingProvider.name)
+                if (existingKey != null) {
+                    // If the existing provider had a key, save it for the new provider
+                    ApiKeyManager.saveCustomModelKey(provider.name, existingKey)
                 }
             }
         }
