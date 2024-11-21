@@ -20,8 +20,9 @@ class AiderSettingsConfigurable() : Configurable {
     private var settingsComponent: JPanel? = null
     private val aiderSetupPanel = AiderSetupPanel(apiKeyChecker)
     private val useYesFlagCheckBox = JBCheckBox("Use --yes flag by default")
-    private val llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
+    private var llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
     private val llmComboBox: JComboBox<String>
+    private val customProviderService = service<CustomLlmProviderService>()
     private val manageProvidersButton = JButton("Manage Providers...").apply {
         addActionListener {
             CustomLlmProviderDialog().show()
@@ -370,6 +371,15 @@ class AiderSettingsConfigurable() : Configurable {
         }
     }
 
+    private fun updateLlmOptions() {
+        llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
+        val currentSelection = llmComboBox.selectedItem as? String
+        llmComboBox.model = DefaultComboBoxModel(llmOptions)
+        if (currentSelection != null && llmOptions.contains(currentSelection)) {
+            llmComboBox.selectedItem = currentSelection
+        }
+    }
+
     init {
         this.llmComboBox = object : JComboBox<String>(llmOptions) {
             override fun getToolTipText(): String? {
@@ -380,6 +390,9 @@ class AiderSettingsConfigurable() : Configurable {
                     "API key not found for $selectedItem"
                 }
             }
+        }
+        customProviderService.addSettingsChangeListener {
+            updateLlmOptions()
         }
     }
 }

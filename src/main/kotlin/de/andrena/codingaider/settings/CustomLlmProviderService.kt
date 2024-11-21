@@ -23,14 +23,26 @@ class CustomLlmProviderService : PersistentStateComponent<CustomLlmProviderServi
         myState = state
     }
 
+    private val settingsChangeListeners = mutableListOf<() -> Unit>()
+
+    fun addSettingsChangeListener(listener: () -> Unit) {
+        settingsChangeListeners.add(listener)
+    }
+
+    private fun notifySettingsChanged() {
+        settingsChangeListeners.forEach { it() }
+    }
+
     fun addProvider(provider: CustomLlmProvider) {
         myState.providers.add(provider)
+        notifySettingsChanged()
     }
 
     fun removeProvider(name: String) {
         myState.providers.removeIf { it.name == name }
         // Also remove the API key when provider is removed
         ApiKeyManager.removeCustomModelKey(name)
+        notifySettingsChanged()
     }
 
     fun getProvider(name: String): CustomLlmProvider? {
