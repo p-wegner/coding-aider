@@ -64,10 +64,13 @@ class CustomLlmProviderEditorDialog(
                 .columns(30)
                 .comment("Optional: A friendly name to show in the UI")
         }
-        row("API Key:") {
-            cell(apiKeyField)
-                .columns(30)
-                .comment("Optional: Secure API key for the provider")
+        // Only show API key row for providers that require it
+        if ((providerTypeComboBox.selectedItem as LlmProviderType) != LlmProviderType.OLLAMA) {
+            row("API Key:") {
+                cell(apiKeyField)
+                    .columns(30)
+                    .comment("Optional: Secure API key for the provider")
+            }
         }
     }
 
@@ -83,8 +86,8 @@ class CustomLlmProviderEditorDialog(
             return ValidationInfo("Base URL is required for ${selectedType.name}", baseUrlField)
         }
         
-        // Validate API key if it's a new entry or a new key is provided
-        if (selectedType.requiresApiKey) {
+        // Validate API key if it's a new entry or a new key is provided, except for Ollama
+        if (selectedType.requiresApiKey && selectedType != LlmProviderType.OLLAMA) {
             val apiKeyText = String(apiKeyField.password)
             if (existingProvider == null && apiKeyText.isBlank()) {
                 return ValidationInfo("API key is required for ${selectedType.name}", apiKeyField)
@@ -104,10 +107,12 @@ class CustomLlmProviderEditorDialog(
             modelName = modelNameField.text,
         )
         
-        // Save API key if provided and not masked
-        val apiKeyText = String(apiKeyField.password)
-        if (apiKeyText.isNotBlank() && apiKeyText != "*".repeat(16)) {
-            ApiKeyManager.saveCustomModelKey(provider.name, apiKeyText)
+        // Save API key if provided and not masked, except for Ollama
+        if (type != LlmProviderType.OLLAMA) {
+            val apiKeyText = String(apiKeyField.password)
+            if (apiKeyText.isNotBlank() && apiKeyText != "*".repeat(16)) {
+                ApiKeyManager.saveCustomModelKey(provider.name, apiKeyText)
+            }
         }
         
         return provider
