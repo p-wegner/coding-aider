@@ -46,8 +46,10 @@ class CustomLlmProviderEditorDialog(
             providerTypeComboBox.selectedItem = existingProvider.type
             
             // Retrieve and mask existing API key
-            ApiKeyManager.getCustomModelKey(existingProvider.name)?.let { 
-                apiKeyField.text = "*".repeat(16)
+            ApiKeyManager.getCustomModelKey(existingProvider.name)?.let {
+//                apiKeyField.password = it.toCharArray()
+//                apiKeyField.text = "*".repeat(16)
+                apiKeyField.text = it
             }
         }
         
