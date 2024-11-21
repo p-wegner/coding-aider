@@ -25,6 +25,11 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
         isEnabled = false
     }
 
+    private val copyButton = javax.swing.JButton("Copy Provider").apply {
+        addActionListener { copyProvider() }
+        isEnabled = false
+    }
+
     private val removeButton = javax.swing.JButton("Remove Provider").apply {
         addActionListener { removeProvider() }
         isEnabled = false
@@ -40,6 +45,7 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
             if (!event.valueIsAdjusting) {
                 val hasSelection = providersList.selectedIndex != -1
                 editButton.isEnabled = hasSelection
+                copyButton.isEnabled = hasSelection
                 removeButton.isEnabled = hasSelection
             }
         }
@@ -65,6 +71,7 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
         row {
             cell(addButton)
             cell(editButton)
+            cell(copyButton)
             cell(removeButton)
         }
     }
@@ -85,6 +92,22 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
             val dialog = CustomLlmProviderEditorDialog(provider)
             if (dialog.showAndGet()) {
                 providerService.removeProvider(provider.name)
+                providerService.addProvider(dialog.getProvider())
+                updateProvidersList()
+            }
+        }
+    }
+
+    private fun copyProvider() {
+        val selectedIndex = providersList.selectedIndex
+        if (selectedIndex >= 0) {
+            val provider = providerService.getAllProviders()[selectedIndex]
+            val copiedProvider = provider.copy(
+                name = "${provider.name} (Copy)",
+                displayName = provider.displayName?.let { "$it (Copy)" }
+            )
+            val dialog = CustomLlmProviderEditorDialog(copiedProvider)
+            if (dialog.showAndGet()) {
                 providerService.addProvider(dialog.getProvider())
                 updateProvidersList()
             }
