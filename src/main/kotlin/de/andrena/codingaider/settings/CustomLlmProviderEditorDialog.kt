@@ -64,6 +64,9 @@ class CustomLlmProviderEditorDialog(
 
     private fun resetValidation() {
         clearErrorInfo()
+        // Reset all fields to their initial state
+        providerTypeComboBox.selectedItem = existingProvider?.type ?: LlmProviderType.OPENAI
+        updateProviderTypeUI()
     }
 
     private fun updateProviderTypeUI() {
