@@ -199,7 +199,13 @@ class CustomLlmProviderEditorDialog(
         if (type.requiresApiKey) {
             val apiKeyText = String(apiKeyField.password)
             if (apiKeyText.isNotBlank() && apiKeyText != "*".repeat(16)) {
+                // New key entered
                 ApiKeyManager.saveCustomModelKey(provider.name, apiKeyText)
+            } else if (existingProvider != null) {
+                // Preserve existing key if no new key is entered
+                ApiKeyManager.getCustomModelKey(existingProvider.name)?.let { 
+                    ApiKeyManager.saveCustomModelKey(provider.name, it)
+                }
             }
         }
         
