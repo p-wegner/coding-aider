@@ -6,6 +6,9 @@ import de.andrena.codingaider.settings.CustomLlmProvider
 import de.andrena.codingaider.settings.CustomLlmProviderService
 import de.andrena.codingaider.settings.LlmProviderType
 import java.io.File
+import java.time.Duration
+import java.time.Instant
+import java.util.concurrent.ConcurrentHashMap
 
 interface ApiKeyChecker {
     fun isApiKeyAvailableForLlm(llm: String): Boolean
@@ -26,6 +29,16 @@ class DefaultApiKeyChecker : ApiKeyChecker {
         "o1-mini" to "OPENAI_API_KEY",
         "o1-preview" to "OPENAI_API_KEY",
         "--deepseek" to "DEEPSEEK_API_KEY"
+    )
+
+    // API Key Cache
+    private val apiKeyCache = ConcurrentHashMap<String, CachedApiKey>()
+    private val CACHE_DURATION = Duration.ofMinutes(30) // 30-minute cache
+
+    // Cached API Key data class
+    private data class CachedApiKey(
+        val value: String,
+        val timestamp: Instant = Instant.now()
     )
 
     private fun getCustomProvider(llm: String): CustomLlmProvider? {
@@ -87,8 +100,27 @@ class DefaultApiKeyChecker : ApiKeyChecker {
     }
 
     override fun getAllApiKeyNames(): List<String> = llmToApiKeyMap.values.distinct()
-    // TODO: is slow, use api caching to avoid repeated calls
+
     override fun getApiKeyValue(apiKeyName: String): String? {
+        // Check cache first
+        apiKeyCache[apiKeyName]?.let { cachedKey ->
+            if (Duration.between(cachedKey.timestamp, Instant.now()) < CACHE_DURATION) {
+                return cachedKey.value
+            }
+        }
+
+        // Retrieve API key
+        val apiKey = retrieveApiKey(apiKeyName)
+
+        // Cache the result if found
+        apiKey?.let {
+            apiKeyCache[apiKeyName] = CachedApiKey(it)
+        }
+
+        return apiKey
+    }
+
+    private fun retrieveApiKey(apiKeyName: String): String? {
         // Check CredentialStore first
         ApiKeyManager.getApiKey(apiKeyName)?.let { return it }
 
