@@ -23,6 +23,12 @@ class CustomLlmProviderEditorDialog(
     init {
         title = if (existingProvider == null) "Add Custom LLM Provider" else "Edit Custom LLM Provider"
         init()
+        
+        // Add listener to dynamically update UI based on provider type
+        providerTypeComboBox.addActionListener {
+            updateProviderTypeUI()
+        }
+        
         existingProvider?.let { provider ->
             nameField.text = provider.name
             baseUrlField.text = provider.baseUrl
@@ -30,10 +36,33 @@ class CustomLlmProviderEditorDialog(
             displayNameField.text = provider.displayName ?: ""
             providerTypeComboBox.selectedItem = provider.type
             
+            // Trigger initial UI update
+            updateProviderTypeUI()
+            
             // Retrieve and mask existing API key
             ApiKeyManager.getCustomModelKey(provider.name)?.let { 
                 apiKeyField.text = "*".repeat(16)
             }
+        }
+    }
+
+    private fun updateProviderTypeUI() {
+        val selectedType = providerTypeComboBox.selectedItem as LlmProviderType
+        
+        // Update base URL field visibility and requirement
+        baseUrlField.isEnabled = selectedType.requiresBaseUrl
+        
+        // Update API key row visibility
+        if (selectedType == LlmProviderType.OLLAMA) {
+            // Remove API key row if it exists
+            createCenterPanel()
+        }
+        
+        // Validate base URL requirement
+        if (selectedType.requiresBaseUrl) {
+            baseUrlField.toolTipText = "The API endpoint URL is required for ${selectedType.name}"
+        } else {
+            baseUrlField.toolTipText = "Optional base URL for ${selectedType.name}"
         }
     }
 
@@ -108,7 +137,7 @@ class CustomLlmProviderEditorDialog(
         )
         
         // Save API key if provided and not masked, except for Ollama
-        if (type != LlmProviderType.OLLAMA) {
+        if (type.requiresApiKey) {
             val apiKeyText = String(apiKeyField.password)
             if (apiKeyText.isNotBlank() && apiKeyText != "*".repeat(16)) {
                 ApiKeyManager.saveCustomModelKey(provider.name, apiKeyText)
