@@ -2,9 +2,11 @@ package de.andrena.codingaider.settings
 
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.ValidationInfo
+import com.intellij.ui.components.JBPasswordField
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
+import de.andrena.codingaider.utils.ApiKeyManager
 import javax.swing.JComponent
 
 class CustomLlmProviderEditorDialog(
@@ -15,6 +17,7 @@ class CustomLlmProviderEditorDialog(
     private val baseUrlField = JBTextField()
     private val modelNameField = JBTextField()
     private val displayNameField = JBTextField()
+    private val apiKeyField = JBPasswordField()
     private val providerTypeComboBox = com.intellij.openapi.ui.ComboBox(LlmProviderType.values())
 
     init {
@@ -26,6 +29,11 @@ class CustomLlmProviderEditorDialog(
             modelNameField.text = provider.modelName
             displayNameField.text = provider.displayName ?: ""
             providerTypeComboBox.selectedItem = provider.type
+            
+            // Retrieve and mask existing API key
+            ApiKeyManager.getCustomModelKey(provider.name)?.let { 
+                apiKeyField.text = "*".repeat(16)
+            }
         }
     }
 
@@ -56,6 +64,11 @@ class CustomLlmProviderEditorDialog(
                 .columns(30)
                 .comment("Optional: A friendly name to show in the UI")
         }
+        row("API Key:") {
+            cell(apiKeyField)
+                .columns(30)
+                .comment("Optional: Secure API key for the provider")
+        }
     }
 
     override fun doValidate(): ValidationInfo? {
@@ -69,17 +82,34 @@ class CustomLlmProviderEditorDialog(
         if (selectedType.requiresBaseUrl && baseUrlField.text.isBlank()) {
             return ValidationInfo("Base URL is required for ${selectedType.name}", baseUrlField)
         }
+        
+        // Validate API key if it's a new entry or a new key is provided
+        if (selectedType.requiresApiKey) {
+            val apiKeyText = String(apiKeyField.password)
+            if (existingProvider == null && apiKeyText.isBlank()) {
+                return ValidationInfo("API key is required for ${selectedType.name}", apiKeyField)
+            }
+        }
+        
         return null
     }
 
     fun getProvider(): CustomLlmProvider {
         val type: LlmProviderType = providerTypeComboBox.selectedItem as LlmProviderType
-        return CustomLlmProvider(
+        val provider = CustomLlmProvider(
             name = nameField.text,
             displayName = displayNameField.text.takeIf { it.isNotBlank() },
             type = type,
             baseUrl = baseUrlField.text,
             modelName = modelNameField.text,
         )
+        
+        // Save API key if provided and not masked
+        val apiKeyText = String(apiKeyField.password)
+        if (apiKeyText.isNotBlank() && apiKeyText != "*".repeat(16)) {
+            ApiKeyManager.saveCustomModelKey(provider.name, apiKeyText)
+        }
+        
+        return provider
     }
 }
