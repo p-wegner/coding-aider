@@ -82,7 +82,7 @@ class CustomLlmProviderEditorDialog(
                 }
                 LlmProviderType.OPENROUTER -> {
                     baseUrlField.text = "https://openrouter.ai/api/v1"
-                    baseUrlField.isEnabled = false
+                    baseUrlField.isEnabled = true
                     baseUrlField.toolTipText = "OpenRouter API base URL"
                     apiKeyField.isEnabled = true
                     apiKeyField.toolTipText = "OpenRouter API key (required)"
