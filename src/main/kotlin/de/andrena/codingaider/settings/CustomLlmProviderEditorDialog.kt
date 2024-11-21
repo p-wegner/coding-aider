@@ -28,8 +28,16 @@ class CustomLlmProviderEditorDialog(
         title = if (existingProvider == null) "Add Custom LLM Provider" else "Edit Custom LLM Provider"
         init()
         
+        // Reset validation when fields are modified
+        nameField.document.addDocumentListener(createValidationResetListener())
+        baseUrlField.document.addDocumentListener(createValidationResetListener())
+        modelNameField.document.addDocumentListener(createValidationResetListener())
+        displayNameField.document.addDocumentListener(createValidationResetListener())
+        apiKeyField.document.addDocumentListener(createValidationResetListener())
+        
         providerTypeComboBox.addActionListener {
             updateProviderTypeUI()
+            resetValidation()
         }
         
         existingProvider?.let { provider ->
@@ -46,6 +54,16 @@ class CustomLlmProviderEditorDialog(
                 apiKeyField.text = "*".repeat(16)
             }
         }
+    }
+
+    private fun createValidationResetListener() = object : javax.swing.event.DocumentListener {
+        override fun insertUpdate(e: javax.swing.event.DocumentEvent?) = resetValidation()
+        override fun removeUpdate(e: javax.swing.event.DocumentEvent?) = resetValidation()
+        override fun changedUpdate(e: javax.swing.event.DocumentEvent?) = resetValidation()
+    }
+
+    private fun resetValidation() {
+        clearErrorInfo()
     }
 
     private fun updateProviderTypeUI() {
@@ -181,5 +199,10 @@ class CustomLlmProviderEditorDialog(
         }
         
         return provider
+    }
+
+    // Override to add ability to clear validation errors
+    override fun clearErrorInfo() {
+        super.clearErrorInfo()
     }
 }
