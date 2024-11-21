@@ -87,7 +87,7 @@ class CustomLlmProviderEditorDialog(
         }
         
         // Validate API key if it's a new entry or a new key is provided, except for Ollama
-        if (selectedType.requiresApiKey && selectedType != LlmProviderType.OLLAMA) {
+        if (selectedType.requiresApiKey) {
             val apiKeyText = String(apiKeyField.password)
             if (existingProvider == null && apiKeyText.isBlank()) {
                 return ValidationInfo("API key is required for ${selectedType.name}", apiKeyField)
