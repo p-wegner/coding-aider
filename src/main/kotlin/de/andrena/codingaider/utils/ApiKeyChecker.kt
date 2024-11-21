@@ -101,12 +101,13 @@ class DefaultApiKeyChecker : ApiKeyChecker {
         return standardOptions + customOptions
     }
 
-    private fun getStandardOptions(): List<LlmSelection> = llmToApiKeyMap.keys.map { LlmSelection(it) }
+    private fun getStandardOptions(): List<LlmSelection> = listOf(LlmSelection("")) + llmToApiKeyMap.keys.map { LlmSelection(it) }
 
     override fun getAllApiKeyNames(): List<String> = llmToApiKeyMap.values.distinct()
 
     override fun getApiKeyValue(apiKeyName: String): String? {
         // Check cache first
+        if (apiKeyName.isBlank()) return null
         apiKeyCache[apiKeyName]?.let { cachedKey ->
             if (Duration.between(cachedKey.timestamp, Instant.now()) < CACHE_DURATION) {
                 return cachedKey.value

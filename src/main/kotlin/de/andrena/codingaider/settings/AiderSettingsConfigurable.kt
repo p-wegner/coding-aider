@@ -333,7 +333,7 @@ class AiderSettingsConfigurable() : Configurable {
         ): Component {
             val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
             if (component is JLabel && value is LlmSelection) {
-                text = value.getDisplayText().ifBlank { "Default Aider Model" }
+                text = value.getDisplayText().ifBlank { "" }
                 
                 when {
                     value.provider != null -> {
