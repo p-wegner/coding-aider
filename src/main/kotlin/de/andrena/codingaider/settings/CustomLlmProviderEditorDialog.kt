@@ -37,20 +37,22 @@ class CustomLlmProviderEditorDialog(
             updateProviderTypeUI()
         }
         
-        existingProvider?.let { provider ->
-            nameField.text = provider.name
-            baseUrlField.text = provider.baseUrl
-            modelNameField.text = provider.modelName
-            displayNameField.text = provider.displayName ?: ""
-            providerTypeComboBox.selectedItem = provider.type
-            
-            updateProviderTypeUI()
+        // Set initial values
+        if (existingProvider != null) {
+            nameField.text = existingProvider.name
+            baseUrlField.text = existingProvider.baseUrl
+            modelNameField.text = existingProvider.modelName
+            displayNameField.text = existingProvider.displayName ?: ""
+            providerTypeComboBox.selectedItem = existingProvider.type
             
             // Retrieve and mask existing API key
-            ApiKeyManager.getCustomModelKey(provider.name)?.let { 
+            ApiKeyManager.getCustomModelKey(existingProvider.name)?.let { 
                 apiKeyField.text = "*".repeat(16)
             }
         }
+        
+        // Update UI after setting initial values
+        updateProviderTypeUI()
     }
 
 
@@ -59,21 +61,29 @@ class CustomLlmProviderEditorDialog(
         
         when (selectedType) {
             LlmProviderType.OLLAMA -> {
-                baseUrlField.text = "http://127.0.0.1:11434"
+                if (existingProvider == null) {
+                    baseUrlField.text = "http://127.0.0.1:11434"
+                }
                 baseUrlField.isEnabled = true
                 baseUrlField.toolTipText = "Ollama server URL (default: http://127.0.0.1:11434)"
                 apiKeyField.isEnabled = false
-                apiKeyField.text = ""
+                if (existingProvider == null) {
+                    apiKeyField.text = ""
+                }
             }
                 LlmProviderType.OPENROUTER -> {
-                    baseUrlField.text = "https://openrouter.ai/api/v1"
+                    if (existingProvider == null) {
+                        baseUrlField.text = "https://openrouter.ai/api/v1"
+                    }
                     baseUrlField.isEnabled = true
                     baseUrlField.toolTipText = "OpenRouter API base URL"
                     apiKeyField.isEnabled = true
                     apiKeyField.toolTipText = "OpenRouter API key (required)"
                 }
                 LlmProviderType.OPENAI -> {
-                    baseUrlField.text = "https://api.openai.com/v1"
+                    if (existingProvider == null) {
+                        baseUrlField.text = "https://api.openai.com/v1"
+                    }
                     baseUrlField.isEnabled = true
                     baseUrlField.toolTipText = "OpenAI API base URL"
                     apiKeyField.isEnabled = true
