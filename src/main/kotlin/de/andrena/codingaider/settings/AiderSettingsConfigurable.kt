@@ -21,7 +21,7 @@ class AiderSettingsConfigurable() : Configurable {
     private val aiderSetupPanel = AiderSetupPanel(apiKeyChecker)
     private val useYesFlagCheckBox = JBCheckBox("Use --yes flag by default")
     private var llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
-    private val llmComboBox: JComboBox<String>
+    private val llmComboBox: JComboBox<LlmSelection>
     private val customProviderService = service<CustomLlmProviderService>()
     private val manageProvidersButton = JButton("Manage Providers...").apply {
         addActionListener {
@@ -326,27 +326,27 @@ class AiderSettingsConfigurable() : Configurable {
             cellHasFocus: Boolean
         ): Component {
             val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
-            if (component is JLabel && value is String) {
-                // Check if it's a custom provider
-                val customProvider = service<CustomLlmProviderService>().getProvider(value)
-                if (customProvider != null) {
-                    text = customProvider.displayName?.ifEmpty { customProvider.name } ?: customProvider.name
-                    when (customProvider.type) {
-                        LlmProviderType.OPENAI -> icon = AllIcons.General.Web // Replace with actual OpenAI icon
-                        LlmProviderType.OLLAMA -> icon = AllIcons.Actions.Execute // Replace with actual Ollama icon
-                        LlmProviderType.OPENROUTER -> icon = AllIcons.General.Web // Replace with actual OpenRouter icon
+            if (component is JLabel && value is LlmSelection) {
+                text = value.getDisplayText()
+                
+                when {
+                    value.provider != null -> {
+                        when (value.provider.type) {
+                            LlmProviderType.OPENAI -> icon = AllIcons.General.Web
+                            LlmProviderType.OLLAMA -> icon = AllIcons.Actions.Execute
+                            LlmProviderType.OPENROUTER -> icon = AllIcons.General.Web
+                        }
+                        toolTipText = "Custom ${value.provider.type.displayName} provider: ${value.provider.name}"
                     }
-                    toolTipText = "Custom ${customProvider.type.displayName} provider: ${customProvider.name}"
-                } else {
-                    // Handle built-in providers
-                    val apiKey = apiKeyChecker.getApiKeyForLlm(value)
-                    if (apiKey != null && !apiKeyChecker.isApiKeyAvailableForLlm(value)) {
-                        icon = UIManager.getIcon("OptionPane.errorIcon")
-                        toolTipText =
-                            "API key not found in default locations for $value. This may not be an error if you're using an alternative method to provide the key."
-                    } else {
-                        icon = null
-                        toolTipText = null
+                    !value.isBuiltIn -> {
+                        val apiKey = apiKeyChecker.getApiKeyForLlm(value.name)
+                        if (apiKey != null && !apiKeyChecker.isApiKeyAvailableForLlm(value.name)) {
+                            icon = UIManager.getIcon("OptionPane.errorIcon")
+                            toolTipText = "API key not found in default locations for ${value.name}"
+                        } else {
+                            icon = null
+                            toolTipText = null
+                        }
                     }
                 }
             }

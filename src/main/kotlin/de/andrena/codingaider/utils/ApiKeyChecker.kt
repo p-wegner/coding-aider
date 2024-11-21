@@ -14,7 +14,7 @@ interface ApiKeyChecker {
     fun isApiKeyAvailableForLlm(llm: String): Boolean
     fun isApiKeyAvailable(apiKeyName: String): Boolean
     fun getApiKeyForLlm(llm: String): String?
-    fun getAllLlmOptions(): List<String>
+    fun getAllLlmOptions(): List<LlmSelection>
     fun getAllApiKeyNames(): List<String>
     fun getApiKeyValue(apiKeyName: String): String?
     fun getApiKeysForDocker(): Map<String, String>
@@ -93,9 +93,10 @@ class DefaultApiKeyChecker : ApiKeyChecker {
         return null
     }
 
-    override fun getAllLlmOptions(): List<String> {
-        val standardOptions = llmToApiKeyMap.keys.toList()
-        val customOptions = service<CustomLlmProviderService>().getAllProviders().map { it.displayName ?: it.name }
+    override fun getAllLlmOptions(): List<LlmSelection> {
+        val standardOptions = llmToApiKeyMap.keys.map { LlmSelection(it) }
+        val customOptions = service<CustomLlmProviderService>().getAllProviders()
+            .map { LlmSelection(it.name, provider = it, isBuiltIn = false) }
         return standardOptions + customOptions
     }
 
