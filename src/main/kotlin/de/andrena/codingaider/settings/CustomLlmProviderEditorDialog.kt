@@ -63,10 +63,8 @@ class CustomLlmProviderEditorDialog(
     }
 
     private fun resetValidation() {
-        clearErrorInfo()
-        // Reset all fields to their initial state
-        providerTypeComboBox.selectedItem = existingProvider?.type ?: LlmProviderType.OPENAI
         updateProviderTypeUI()
+        doValidate()
     }
 
     private fun updateProviderTypeUI() {
@@ -204,8 +202,4 @@ class CustomLlmProviderEditorDialog(
         return provider
     }
 
-    // Override to add ability to clear validation errors
-    override fun clearErrorInfo() {
-        super.clearErrorInfo()
-    }
 }
