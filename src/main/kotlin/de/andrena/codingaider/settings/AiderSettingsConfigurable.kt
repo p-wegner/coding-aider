@@ -290,7 +290,7 @@ class AiderSettingsConfigurable() : Configurable {
 
     override fun reset() {
         val settings = AiderSettings.getInstance()
-        val apiKeyChecker = service<DefaultApiKeyChecker>();
+        val apiKeyChecker = service<DefaultApiKeyChecker>()
         useYesFlagCheckBox.isSelected = settings.useYesFlag
         llmComboBox.selectedItem = apiKeyChecker.getLlmSelectionForName(settings.llm)
         additionalArgsField.text = settings.additionalArgs

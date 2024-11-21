@@ -22,7 +22,7 @@ class AiderOptionsManager(
     private val onOptionsChanged: () -> Unit
 ) {
     private val projectSettings = AiderProjectSettings.getInstance(project)
-    private val optionsPanel = AiderOptionsPanel(project, apiKeyChecker)
+    private val optionsPanel = AiderOptionsPanel(apiKeyChecker)
     private val flagAndArgsPanel by lazy { optionsPanel }
     private val wrappedOptionsPanel by lazy {
         Wrapper().apply {

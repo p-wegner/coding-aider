@@ -9,7 +9,6 @@ import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.addKeyboardAction
@@ -29,7 +28,6 @@ import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.CollapsiblePanel
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
-import de.andrena.codingaider.utils.PanelAnimation
 import java.awt.*
 import java.awt.event.KeyEvent
 import javax.swing.*
@@ -84,7 +82,7 @@ class AiderInputDialog(
 
 
     private val projectSettings = AiderProjectSettings.getInstance(project)
-    private val optionsPanel = AiderOptionsPanel(project, apiKeyChecker)
+    private val optionsPanel = AiderOptionsPanel(apiKeyChecker)
     private var initialMode = if (settings.isShellMode) AiderMode.SHELL
     else if (settings.useStructuredMode) AiderMode.STRUCTURED
     else AiderMode.NORMAL

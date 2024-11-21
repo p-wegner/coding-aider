@@ -17,8 +17,7 @@ import javax.swing.JPanel
 import javax.swing.JTextField
 
 class AiderOptionsPanel(
-    private val project: Project,
-    private val apiKeyChecker: ApiKeyChecker = service<DefaultApiKeyChecker>()
+    apiKeyChecker: ApiKeyChecker = service<DefaultApiKeyChecker>()
 ) : JPanel(GridBagLayout()) {
     
     val llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
