@@ -166,9 +166,14 @@ class CustomLlmProviderEditorDialog(
     }
     
     private fun createValidationListener() = object : javax.swing.event.DocumentListener {
-        override fun insertUpdate(e: javax.swing.event.DocumentEvent) = validate()
-        override fun removeUpdate(e: javax.swing.event.DocumentEvent) = validate()
-        override fun changedUpdate(e: javax.swing.event.DocumentEvent) = validate()
+        override fun insertUpdate(e: javax.swing.event.DocumentEvent) = revalidate()
+        override fun removeUpdate(e: javax.swing.event.DocumentEvent) = revalidate()
+        override fun changedUpdate(e: javax.swing.event.DocumentEvent) = revalidate()
+        
+        private fun revalidate() {
+            isOKActionEnabled = true  // Reset OK button state
+            validateCallback?.run()    // Trigger dialog validation
+        }
     }
 
     fun getProvider(): CustomLlmProvider {
