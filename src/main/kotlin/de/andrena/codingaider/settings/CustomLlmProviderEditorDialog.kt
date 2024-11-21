@@ -16,11 +16,11 @@ class CustomLlmProviderEditorDialog(
 
     private val nameField = JBTextField()
     private val baseUrlField = JBTextField()
-    private val baseUrlLabel = JLabel("Base URL:")
     private val modelNameField = JBTextField()
     private val displayNameField = JBTextField()
     private val apiKeyField = JBPasswordField()
-    private val apiKeyLabel = JLabel("API Key:")
+    private lateinit var baseUrlRow: Row
+    private lateinit var apiKeyRow: Row
     private val providerTypeComboBox = com.intellij.openapi.ui.ComboBox(LlmProviderType.values())
 
     init {
@@ -80,36 +80,9 @@ class CustomLlmProviderEditorDialog(
             }
         }
 
-        // Update field, label, and comment visibility based on provider requirements
-        val baseUrlVisible = selectedType.requiresBaseUrl
-        baseUrlField.isVisible = baseUrlVisible
-        baseUrlLabel.isVisible = baseUrlVisible
-        
-        // Find and hide the comment component more robustly
-        baseUrlField.parent?.let { parent ->
-            parent.components
-                ?.filterIsInstance<JComponent>()
-                ?.find { it.getClientProperty("JComponent.nameValue") == "baseUrlComment" }
-                ?.apply { isVisible = baseUrlVisible }
-        }
-
-        val apiKeyVisible = selectedType.requiresApiKey
-        apiKeyField.isVisible = apiKeyVisible
-        apiKeyLabel.isVisible = apiKeyVisible
-        
-        // Find and hide the comment component more robustly
-        apiKeyField.parent?.let { parent ->
-            parent.components
-                ?.filterIsInstance<JComponent>()
-                ?.find { it.getClientProperty("JComponent.nameValue") == "apiKeyComment" }
-                ?.apply { isVisible = apiKeyVisible }
-        }
-        
-        // Force UI refresh
-        baseUrlField.parent?.apply {
-            revalidate()
-            repaint()
-        }
+        // Update row visibility based on provider requirements
+        baseUrlRow.visible(selectedType.requiresBaseUrl)
+        apiKeyRow.visible(selectedType.requiresApiKey)
     }
 
     override fun createCenterPanel(): JComponent = panel {
@@ -124,11 +97,10 @@ class CustomLlmProviderEditorDialog(
                 .columns(30)
                 .comment("Select the type of LLM provider")
         }
-        row(baseUrlLabel) {
+        baseUrlRow = row("Base URL:") {
             cell(baseUrlField)
                 .columns(30)
                 .comment("The API endpoint URL (required for OpenAI and Ollama)")
-                .applyToComponent { putClientProperty("JComponent.nameValue", "baseUrlComment") }
         }
         row("Model Name:") {
             cell(modelNameField)
@@ -140,11 +112,10 @@ class CustomLlmProviderEditorDialog(
                 .columns(30)
                 .comment("Optional: A friendly name to show in the UI")
         }
-        row(apiKeyLabel) {
+        apiKeyRow = row("API Key:") {
             cell(apiKeyField)
                 .columns(30)
                 .comment("Optional: Secure API key for the provider")
-                .applyToComponent { putClientProperty("JComponent.nameValue", "apiKeyComment") }
         }
     }
 
