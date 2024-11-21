@@ -47,33 +47,44 @@ class CustomLlmProviderEditorDialog(
     private fun updateProviderTypeUI() {
         val selectedType = providerTypeComboBox.selectedItem as LlmProviderType
         
-        // Reset visibility of all fields
-        baseUrlField.isVisible = true
-        baseUrlField.isEnabled = selectedType.requiresBaseUrl
-        apiKeyField.isVisible = selectedType.requiresApiKey
-        
-        // Update tooltips based on provider type
+        // Set default values based on provider type
         when (selectedType) {
             LlmProviderType.OLLAMA -> {
+                baseUrlField.text = "http://127.0.0.1:11434"
+                baseUrlField.isEnabled = true
                 baseUrlField.toolTipText = "Ollama server URL (default: http://127.0.0.1:11434)"
-                apiKeyField.isVisible = false
+                apiKeyField.isEnabled = false
+                apiKeyField.text = ""
             }
             LlmProviderType.OPENROUTER -> {
-                baseUrlField.toolTipText = "Optional: OpenRouter API base URL"
+                baseUrlField.text = "https://openrouter.ai/api/v1"
                 baseUrlField.isEnabled = false
+                baseUrlField.toolTipText = "OpenRouter API base URL"
+                apiKeyField.isEnabled = true
+                apiKeyField.toolTipText = "OpenRouter API key (required)"
             }
             LlmProviderType.OPENAI -> {
-                baseUrlField.toolTipText = "OpenAI API base URL (default: https://api.openai.com/v1)"
+                baseUrlField.text = "https://api.openai.com/v1"
+                baseUrlField.isEnabled = true
+                baseUrlField.toolTipText = "OpenAI API base URL"
+                apiKeyField.isEnabled = true
                 apiKeyField.toolTipText = "OpenAI API key (required)"
             }
             else -> {
+                baseUrlField.isEnabled = true
                 baseUrlField.toolTipText = "API endpoint URL"
+                apiKeyField.isEnabled = true
                 apiKeyField.toolTipText = "API key"
             }
         }
+
+        // Update field visibility based on provider requirements
+        baseUrlField.isVisible = selectedType.requiresBaseUrl
+        apiKeyField.isVisible = selectedType.requiresApiKey
         
-        // Recreate the panel to reflect changes
-        createCenterPanel()
+        // Force UI refresh
+        baseUrlField.parent?.revalidate()
+        baseUrlField.parent?.repaint()
     }
 
     override fun createCenterPanel(): JComponent = panel {
