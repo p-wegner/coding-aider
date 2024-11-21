@@ -15,9 +15,11 @@ class CustomLlmProviderEditorDialog(
 
     private val nameField = JBTextField()
     private val baseUrlField = JBTextField()
+    private val baseUrlLabel = JLabel("Base URL:")
     private val modelNameField = JBTextField()
     private val displayNameField = JBTextField()
     private val apiKeyField = JBPasswordField()
+    private val apiKeyLabel = JLabel("API Key:")
     private val providerTypeComboBox = com.intellij.openapi.ui.ComboBox(LlmProviderType.values())
 
     init {
@@ -77,9 +79,14 @@ class CustomLlmProviderEditorDialog(
             }
         }
 
-        // Update field visibility based on provider requirements
-        baseUrlField.isVisible = selectedType.requiresBaseUrl
-        apiKeyField.isVisible = selectedType.requiresApiKey
+        // Update field and label visibility based on provider requirements
+        val baseUrlVisible = selectedType.requiresBaseUrl
+        baseUrlField.isVisible = baseUrlVisible
+        baseUrlLabel.isVisible = baseUrlVisible
+
+        val apiKeyVisible = selectedType.requiresApiKey
+        apiKeyField.isVisible = apiKeyVisible
+        apiKeyLabel.isVisible = apiKeyVisible
         
         // Force UI refresh
         baseUrlField.parent?.revalidate()
@@ -98,7 +105,7 @@ class CustomLlmProviderEditorDialog(
                 .columns(30)
                 .comment("Select the type of LLM provider")
         }
-        row("Base URL:") {
+        row(baseUrlLabel) {
             cell(baseUrlField)
                 .columns(30)
                 .comment("The API endpoint URL (required for OpenAI and Ollama)")
@@ -113,13 +120,10 @@ class CustomLlmProviderEditorDialog(
                 .columns(30)
                 .comment("Optional: A friendly name to show in the UI")
         }
-        // Only show API key row for providers that require it
-        if ((providerTypeComboBox.selectedItem as LlmProviderType) != LlmProviderType.OLLAMA) {
-            row("API Key:") {
-                cell(apiKeyField)
-                    .columns(30)
-                    .comment("Optional: Secure API key for the provider")
-            }
+        row(apiKeyLabel) {
+            cell(apiKeyField)
+                .columns(30)
+                .comment("Optional: Secure API key for the provider")
         }
     }
 
