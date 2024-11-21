@@ -47,7 +47,6 @@ class CustomLlmProviderEditorDialog(
     private fun updateProviderTypeUI() {
         val selectedType = providerTypeComboBox.selectedItem as LlmProviderType
         
-        // Set default values based on provider type
         when (selectedType) {
             LlmProviderType.OLLAMA -> {
                 baseUrlField.text = "http://127.0.0.1:11434"
