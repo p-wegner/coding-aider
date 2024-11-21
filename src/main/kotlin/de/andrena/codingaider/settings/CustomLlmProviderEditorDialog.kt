@@ -3,6 +3,7 @@ package de.andrena.codingaider.settings
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.components.JBTextField
+import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
 import javax.swing.JComponent
 
@@ -31,23 +32,28 @@ class CustomLlmProviderEditorDialog(
     override fun createCenterPanel(): JComponent = panel {
         row("Provider Name:") {
             cell(nameField)
+                .columns(30)
                 .comment("A unique identifier for this provider")
                 .focused()
         }
         row("Provider Type:") {
             cell(providerTypeComboBox)
+                .columns(30)
                 .comment("Select the type of LLM provider")
         }
         row("Base URL:") {
             cell(baseUrlField)
+                .columns(30)
                 .comment("The API endpoint URL (required for OpenAI and Ollama)")
         }
         row("Model Name:") {
             cell(modelNameField)
+                .columns(30)
                 .comment("The name of the model to use")
         }
         row("Display Name:") {
             cell(displayNameField)
+                .columns(30)
                 .comment("Optional: A friendly name to show in the UI")
         }
     }
