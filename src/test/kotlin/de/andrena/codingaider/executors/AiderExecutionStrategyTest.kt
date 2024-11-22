@@ -1,13 +1,17 @@
 package de.andrena.codingaider.executors
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
+import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory
+import com.intellij.testFramework.registerServiceInstance
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.docker.DockerContainerManager
 import de.andrena.codingaider.inputdialog.AiderMode
-import de.andrena.codingaider.services.plans.AiderPlanPromptService
-import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.settings.AiderSettings
+import de.andrena.codingaider.settings.CustomLlmProviderService
 import de.andrena.codingaider.utils.ApiKeyChecker
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -18,33 +22,32 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.io.File
 
-class AiderExecutionStrategyTest {
+class AiderExecutionStrategyTest : BasePlatformTestCase() {
 
     private lateinit var nativeStrategy: NativeAiderExecutionStrategy
     private lateinit var dockerStrategy: DockerAiderExecutionStrategy
-    private lateinit var dockerManager: DockerContainerManager
-    private lateinit var project: Project
-    private lateinit var apiKeyChecker: ApiKeyChecker
     private lateinit var commandData: CommandData
-    private lateinit var aiderSettings: AiderSettings
-    private lateinit var aiderPlanService: AiderPlanService
-    private lateinit var aiderPlanPromptService: AiderPlanPromptService
+    private val aiderSettings: AiderSettings get() = myProject.service()
+
     private lateinit var structuredModeSystemMessage: String
     private lateinit var multiLineMessage: String
+    private lateinit var myProjectFixture: IdeaProjectTestFixture
+    private val dockerManager: DockerContainerManager get() = myProject.service()
+    private val apiKeyChecker: ApiKeyChecker get() = myProject.service()
+    private val myProject: Project get() = myProjectFixture.project
 
     @BeforeEach
-    fun setup() {
+    fun mySetup() {
+        myProjectFixture = IdeaTestFixtureFactory.getFixtureFactory().createFixtureBuilder(getTestName(false)).fixture;
+        myProjectFixture.setUp();
+        myProject.registerServiceInstance(CustomLlmProviderService::class.java, mock())
+        myProject.registerServiceInstance(ApiKeyChecker::class.java, mock())
+        myProject.registerServiceInstance(DockerContainerManager::class.java, mock())
         val resourcesPath = "src/test/resources"
         structuredModeSystemMessage = File("$resourcesPath/structured_mode_system_message.txt").readText().trimIndent()
         multiLineMessage = File("$resourcesPath/multi_line_message.txt").readText().trimIndent()
-        apiKeyChecker = mock()
-        dockerManager = mock()
-        project = mock()
-        aiderSettings = AiderSettings()
-        aiderPlanService = AiderPlanService(project)
-        aiderPlanPromptService = AiderPlanPromptService(project)
-        nativeStrategy = NativeAiderExecutionStrategy(project, apiKeyChecker, aiderSettings)
-        dockerStrategy = DockerAiderExecutionStrategy(project, dockerManager, apiKeyChecker, aiderSettings)
+        dockerStrategy = DockerAiderExecutionStrategy(myProject, dockerManager, apiKeyChecker, aiderSettings)
+        nativeStrategy = NativeAiderExecutionStrategy(myProject, apiKeyChecker, aiderSettings)
         commandData = CommandData(
             projectPath = "/project",
             files = listOf(FileData("/project/file1.txt", false)),
@@ -57,8 +60,6 @@ class AiderExecutionStrategyTest {
             deactivateRepoMap = true,
             sidecarMode = false
         )
-        whenever(project.getService(AiderPlanService::class.java)).thenReturn(aiderPlanService)
-        whenever(project.getService(AiderPlanPromptService::class.java)).thenReturn(aiderPlanPromptService)
     }
 
 
@@ -125,7 +126,7 @@ class AiderExecutionStrategyTest {
             "-w", "/app",
             "--cidfile", "/tmp/docker.cid",
             "-v", "/project:/app",
-            "paulgauthier/aider:v0.62.0",
+            "paulgauthier/aider:v0.64.1",
             "--4o", "--file", "/app/file1.txt", "--yes", "--edit-format", "diff",
             "--no-suggest-shell-commands", "--no-pretty",
             "--no-fancy-input", "--verbose", "--lint-cmd", "lint",

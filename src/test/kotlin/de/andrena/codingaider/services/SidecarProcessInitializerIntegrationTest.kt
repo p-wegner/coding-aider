@@ -7,15 +7,17 @@ import de.andrena.codingaider.services.sidecar.AiderProcessManager
 import de.andrena.codingaider.services.sidecar.SidecarProcessInitializer
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.settings.MySettingsService
-import kotlinx.coroutines.*
-import kotlinx.coroutines.test.TestScope
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+//import kotlinx.coroutines.test.TestScope
+//import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
-import org.mockito.Mockito.*
+import org.mockito.Mockito.mock
 import org.mockito.kotlin.whenever
 
 class SidecarProcessInitializerIntegrationTest() : BaseIntegrationTest() {
@@ -28,6 +30,7 @@ class SidecarProcessInitializerIntegrationTest() : BaseIntegrationTest() {
     private lateinit var sidecarProcessInitializer: SidecarProcessInitializer
     private lateinit var aiderProcessManager: AiderProcessManager
 
+    @OptIn(ExperimentalCoroutinesApi::class)
     @BeforeEach
     fun setUp() {
         settings = mock(AiderSettings::class.java)
@@ -47,8 +50,12 @@ class SidecarProcessInitializerIntegrationTest() : BaseIntegrationTest() {
         whenever(project.basePath).thenReturn(tempDir.toString())
 
         processInteractor = DefaultAiderProcessInteractor(project)
-        val testScope = TestScope(UnconfinedTestDispatcher())
-        sidecarProcessInitializer = SidecarProcessInitializer(project, testScope)
+        // TODO: would need testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
+        //  but depending on coroutines causes problems with the test framework
+        // https://plugins.jetbrains.com/docs/intellij/using-kotlin.html#coroutinesLibraries
+        // https://youtrack.jetbrains.com/issue/IJPL-164276
+//        val testScope = TestScope(UnconfinedTestDispatcher())
+//        sidecarProcessInitializer = SidecarProcessInitializer(project, testScope)
 
     }
 
@@ -66,6 +73,7 @@ class SidecarProcessInitializerIntegrationTest() : BaseIntegrationTest() {
         tearDown()
         Thread.sleep(1000)
     }
+
     @AfterEach
     fun tearDown() {
         sidecarProcessInitializer.shutdownSidecarProcess()

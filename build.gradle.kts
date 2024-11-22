@@ -39,18 +39,19 @@ dependencies {
     implementation("com.knuddels:jtokkit:1.1.0")
     implementation("io.projectreactor:reactor-core:3.7.0")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:1.2.3")
-
+    testImplementation("junit:junit:4.13.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.3")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.3")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.11.3")
     testImplementation("org.assertj:assertj-core:3.25.3")
     testImplementation("org.mockito:mockito-core:5.14.2")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
-    testImplementation("com.jetbrains.intellij.platform:test-framework:243.21565.193")
+//    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
+//    testImplementation("com.jetbrains.intellij.platform:test-framework:243.21565.193")
 
     intellijPlatform {
-        testFramework(TestFrameworkType.Plugin.Java)
+//        testFramework(TestFrameworkType.Plugin.Java)
+        testFramework(TestFrameworkType.Platform)
         intellijIdeaCommunity("2024.2.4")
         pluginVerifier()
         instrumentationTools()
