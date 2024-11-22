@@ -1,10 +1,10 @@
 package de.andrena.codingaider.inputdialog
 
 import com.intellij.openapi.components.service
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.JBUI
+import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.settings.LlmSelection
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
@@ -17,6 +17,7 @@ import javax.swing.JPanel
 import javax.swing.JTextField
 
 class AiderOptionsPanel(
+    private val settings: AiderSettings = AiderSettings.getInstance(),
     apiKeyChecker: ApiKeyChecker = service<DefaultApiKeyChecker>()
 ) : JPanel(GridBagLayout()) {
     
@@ -40,6 +41,12 @@ class AiderOptionsPanel(
 
     init {
         setupUI()
+        // Set initial selection from settings
+        llmComboBox.selectedItem = llmOptions.find { it.name == settings.llm }
+        llmComboBox.addActionListener {
+            val selected = llmComboBox.selectedItem as? LlmSelection
+            selected?.let { settings.llm = it.name }
+        }
     }
 
     private fun setupUI() {

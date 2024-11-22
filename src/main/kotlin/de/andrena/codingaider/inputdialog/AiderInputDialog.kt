@@ -83,7 +83,7 @@ class AiderInputDialog(
 
 
     private val projectSettings = AiderProjectSettings.getInstance(project)
-    private val optionsPanel = AiderOptionsPanel(apiKeyChecker)
+    private val optionsPanel = AiderOptionsPanel(apiKeyChecker =  apiKeyChecker)
     private var initialMode = if (settings.isShellMode) AiderMode.SHELL
     else if (settings.useStructuredMode) AiderMode.STRUCTURED
     else AiderMode.NORMAL
