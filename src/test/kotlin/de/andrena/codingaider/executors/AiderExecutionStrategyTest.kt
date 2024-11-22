@@ -34,8 +34,6 @@ class AiderExecutionStrategyTest {
 
     @BeforeEach
     fun setup() {
-        ServiceContainerUtil.registerServiceInstance(CustomLlmProviderService)
-
         val resourcesPath = "src/test/resources"
         structuredModeSystemMessage = File("$resourcesPath/structured_mode_system_message.txt").readText().trimIndent()
         multiLineMessage = File("$resourcesPath/multi_line_message.txt").readText().trimIndent()
