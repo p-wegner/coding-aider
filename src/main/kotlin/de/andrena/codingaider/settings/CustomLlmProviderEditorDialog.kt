@@ -120,7 +120,7 @@ class CustomLlmProviderEditorDialog(
         baseUrlRow = row("Base URL:") {
             cell(baseUrlField)
                 .columns(30)
-                .comment("The API endpoint URL (required for OpenAI and Ollama)")
+                .comment("The API endpoint URL")
         }
         row("Model Name:") {
             cell(modelNameField)
@@ -131,7 +131,7 @@ class CustomLlmProviderEditorDialog(
         apiKeyRow = row("API Key:") {
             cell(apiKeyField)
                 .columns(30)
-                .comment("Optional: Secure API key for the provider")
+                .comment("Secure API key for the provider")
         }
     }
 

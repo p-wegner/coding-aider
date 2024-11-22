@@ -8,11 +8,11 @@ enum class LlmProviderType(
     val exampleModels: String
 ) {
     OPENAI("OpenAI", requiresApiKey = true, requiresBaseUrl = true, "openai", 
-        "Examples: gpt-4-turbo-preview, gpt-3.5-turbo"),
+        "Examples: o1-preview, gpt-4o"),
     OLLAMA("Ollama", requiresApiKey = false, requiresBaseUrl = true, "ollama",
-        "Examples: llama2, codellama, mistral"),
+        "Examples: llama3:70b, qwen2.5-coder:32b"),
     OPENROUTER("OpenRouter", requiresApiKey = true, requiresBaseUrl = false, "openrouter",
-        "Examples: anthropic/claude-3-opus, google/gemini-pro, meta-llama/llama-2-70b");
+        "Examples: anthropic/claude-3.5-sonnet, openai/gpt-4o, qwen/qwen-2.5-coder-32b-instruct");
 
     fun getApiKeyName(): String {
         return when (this) {
