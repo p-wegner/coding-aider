@@ -28,4 +28,4 @@ shown in the provided image, with an entry to add currently open files.
 - Handling of unsaved changes in open files.
 - Ensuring performance with a large number of open files.
 
-For the detailed implementation steps, refer to the [checklist](./extend_aidercontextview_add_open_files_checklist.md).
+For the detailed implementation steps, refer to the [checklist](extend_aidercontextview_add_open_files_checklist.md).

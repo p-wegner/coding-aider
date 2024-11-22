@@ -1,4 +1,5 @@
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("java")
@@ -52,6 +53,7 @@ dependencies {
         instrumentationTools()
         bundledPlugin("org.jetbrains.plugins.terminal")
         bundledPlugin("Git4Idea")
+
     }
 }
 intellijPlatform {
@@ -85,7 +87,9 @@ tasks {
     }
 
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions.jvmTarget = "21"
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_21)
+        }
     }
 
     buildSearchableOptions {

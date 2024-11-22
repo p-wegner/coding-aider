@@ -3,7 +3,7 @@
 # Checklist: Extend AiderContextView to Add Currently Open Files
 
 This checklist is part of the plan described
-in [extend_aidercontextview_add_open_files.md](./extend_aidercontextview_add_open_files.md).
+in [extend_aidercontextview_add_open_files.md](extend_aidercontextview_add_open_files.md).
 
 ## Implementation Steps
 
