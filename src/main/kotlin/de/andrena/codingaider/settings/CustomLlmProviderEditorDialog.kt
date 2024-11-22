@@ -97,9 +97,12 @@ class CustomLlmProviderEditorDialog(
                 }
             }
 
-        // Update row visibility based on provider requirements
+        // Update row visibility and tooltips based on provider requirements
         baseUrlRow.visible(selectedType.requiresBaseUrl)
         apiKeyRow.visible(selectedType.requiresApiKey)
+        
+        // Update model name tooltip with examples
+        modelNameField.toolTipText = selectedType.exampleModels
     }
 
     override fun createCenterPanel(): JComponent = panel {
@@ -123,6 +126,7 @@ class CustomLlmProviderEditorDialog(
             cell(modelNameField)
                 .columns(30)
                 .comment("The name of the model to use")
+                .comment((providerTypeComboBox.selectedItem as LlmProviderType).exampleModels)
         }
         apiKeyRow = row("API Key:") {
             cell(apiKeyField)
