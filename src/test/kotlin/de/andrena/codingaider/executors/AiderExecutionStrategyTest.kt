@@ -8,6 +8,7 @@ import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.plans.AiderPlanPromptService
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.settings.AiderSettings
+import de.andrena.codingaider.settings.CustomLlmProviderService
 import de.andrena.codingaider.utils.ApiKeyChecker
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -34,6 +35,7 @@ class AiderExecutionStrategyTest {
 
     @BeforeEach
     fun setup() {
+//        ServiceContainerUtil.registerServiceInstance(CustomLlmProviderService)
         val resourcesPath = "src/test/resources"
         structuredModeSystemMessage = File("$resourcesPath/structured_mode_system_message.txt").readText().trimIndent()
         multiLineMessage = File("$resourcesPath/multi_line_message.txt").readText().trimIndent()
