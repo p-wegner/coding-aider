@@ -1,3 +1,4 @@
+import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -46,8 +47,12 @@ dependencies {
     testImplementation("org.mockito:mockito-core:5.14.2")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
+//    testImplementation("com.jetbrains.intellij.platform:test-framework:243.21565.193")
+
     intellijPlatform {
-//        testFramework(TestFrameworkType.Platform)
+        testFramework(TestFrameworkType.JUnit5)
+//        testFramework(TestFrameworkType.Plugin.Java)
+        testFramework(TestFrameworkType.Platform)
         intellijIdeaCommunity("2024.2.4")
         pluginVerifier()
         instrumentationTools()
