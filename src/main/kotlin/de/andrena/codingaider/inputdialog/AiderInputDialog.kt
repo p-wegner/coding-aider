@@ -9,7 +9,6 @@ import com.intellij.openapi.editor.EditorFactory
 import com.intellij.openapi.editor.event.DocumentEvent
 import com.intellij.openapi.editor.event.DocumentListener
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogPanel
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.addKeyboardAction
@@ -26,10 +25,10 @@ import de.andrena.codingaider.services.*
 import de.andrena.codingaider.services.plans.AiderPlanPromptService
 import de.andrena.codingaider.settings.AiderProjectSettings
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
+import de.andrena.codingaider.settings.LlmSelection
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.CollapsiblePanel
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
-import de.andrena.codingaider.utils.PanelAnimation
 import java.awt.*
 import java.awt.event.KeyEvent
 import javax.swing.*
@@ -41,7 +40,7 @@ class AiderInputDialog(
     val project: Project,
     files: List<FileData>,
     initialText: String = "",
-    private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker()
+    private val apiKeyChecker: ApiKeyChecker = service<DefaultApiKeyChecker>()
 ) : DialogWrapper(project) {
     private val tokenCountService = project.getService(TokenCountService::class.java)
     private val settings = getInstance()
@@ -72,9 +71,6 @@ class AiderInputDialog(
             }
             document.addDocumentListener(value)
         }
-    private val yesCheckBox = JCheckBox("Add --yes flag", settings.useYesFlag).apply {
-        toolTipText = "Automatically answer 'yes' to prompts"
-    }
 
     private fun updateTokenCount() {
         val totalTokens = tokenCountService.countTokensInText(getInputText()) + allFileTokens
@@ -85,24 +81,9 @@ class AiderInputDialog(
     val allFileTokens by lazyCacheDelegate
 
 
-    private fun addOpenFilesToContext() = aiderContextView.addOpenFilesToContext()
-
-    private val llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
 
     private val projectSettings = AiderProjectSettings.getInstance(project)
-    private val llmComboBox = object : ComboBox<String>(llmOptions) {
-        override fun getToolTipText(): String? {
-            return null
-            // TODO: Enable this tooltip when slow thread error is fixed
-//            val selectedItem = selectedItem as? String ?: return null
-//            return if (apiKeyChecker.isApiKeyAvailableForLlm(selectedItem)) {
-//                "API key found for $selectedItem"
-//            } else {
-//                "API key not found for $selectedItem"
-//            }
-        }
-    }
-    private val additionalArgsField = JTextField(settings.additionalArgs, 20)
+    private val optionsPanel = AiderOptionsPanel(apiKeyChecker =  apiKeyChecker)
     private var initialMode = if (settings.isShellMode) AiderMode.SHELL
     else if (settings.useStructuredMode) AiderMode.STRUCTURED
     else AiderMode.NORMAL
@@ -121,78 +102,7 @@ class AiderInputDialog(
     private val persistentFileService: PersistentFileService
     private var splitPane: OnePixelSplitter
     private val settingsButton: ActionButton
-    private val flagAndArgsPanel by lazy { createOptionsPanel() }
-    private val optionsPanel by lazy {
-        com.intellij.ui.components.panels.Wrapper().apply {
-            setContent(flagAndArgsPanel)
-            isVisible = true // Always visible for animation
-        }
-    }
-
-    private fun updatePanelSize(collapsed: Boolean) {
-        optionsPanel.apply {
-            if (collapsed) {
-                minimumSize = Dimension(0, 0)
-                maximumSize = Dimension(Int.MAX_VALUE, 0)
-                preferredSize = Dimension(0, 0)
-            } else {
-                minimumSize = null
-                maximumSize = null
-                preferredSize = null
-            }
-            revalidate()
-            repaint()
-        }
-    }
-
-    init {
-        updatePanelSize(projectSettings.isOptionsCollapsed)
-    }
-    private val panelAnimation = PanelAnimation(optionsPanel)
-    private fun createCollapseButton(
-        title: String,
-        isCollapsedGetter: () -> Boolean,
-        panel: JComponent,
-        contentPanel: JComponent,
-        animation: PanelAnimation
-    ): ActionButton {
-        val action = object : AnAction() {
-            override fun actionPerformed(e: AnActionEvent) {
-                val isCollapsed = isCollapsedGetter()
-                projectSettings.isOptionsCollapsed = !isCollapsed
-                
-                val startHeight = panel.height
-                val endHeight = if (isCollapsed) contentPanel.preferredSize.height else 0
-                
-                animation.animate(startHeight, endHeight) {
-                    updateCollapseButtonIcon(!isCollapsed)
-                    updatePanelSize(!isCollapsed)
-                }
-            }
-        }
-        
-        val presentation = Presentation(title).apply {
-            icon = if (isCollapsedGetter()) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
-            description = if (isCollapsedGetter()) "Show $title" else "Hide $title"
-        }
-        
-        return ActionButton(action, presentation, "Aider${title}Button", ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE)
-    }
-    
-    private fun updateCollapseButtonIcon(collapsed: Boolean) {
-        collapseButton.presentation.apply {
-            icon = if (collapsed) AllIcons.General.ArrowRight else AllIcons.General.ArrowDown
-            description = if (collapsed) "Show Options" else "Hide Options"
-        }
-    }
-
-    private val collapseButton: ActionButton = createCollapseButton(
-        "Options",
-        projectSettings::isOptionsCollapsed,
-        optionsPanel,
-        flagAndArgsPanel,
-        panelAnimation
-    )
+    private val optionsManager = AiderOptionsManager(project, apiKeyChecker) { updateTokenCount() }
 
     init {
         title = "Aider Command"
@@ -229,12 +139,14 @@ class AiderInputDialog(
         setOKButtonText("OK")
         setCancelButtonText("Cancel")
         setupKeyBindings()
-        llmComboBox.selectedItem = settings.llm
-        llmComboBox.renderer = LlmComboBoxRenderer(apiKeyChecker, llmComboBox, llmOptions)
+        optionsManager.llmComboBox.selectedItem = settings.llm
+        optionsManager.llmComboBox.renderer = LlmComboBoxRenderer(apiKeyChecker, optionsManager.llmComboBox, optionsPanel.llmOptions)
+        optionsManager.yesCheckBox.isSelected = settings.useYesFlag
+        optionsManager.additionalArgsField.text = settings.additionalArgs
 
         // Set minimum size for the dialog and its components
-        inputTextField.minimumSize = Dimension(300, 100)
-        aiderContextView.minimumSize = Dimension(300, 200)
+        inputTextField.minimumSize = Dimension(600, 100)
+        aiderContextView.minimumSize = Dimension(600, 200)
         modeSegmentedButton?.selectedItem = initialMode
         updateModeUI()
     }
@@ -369,16 +281,12 @@ class AiderInputDialog(
         gbc.weighty = 0.0
         gbc.fill = GridBagConstraints.HORIZONTAL
 
-        val optionsCollapsible = CollapsiblePanel(
-            "Additional Options",
-            projectSettings::isOptionsCollapsed,
-            flagAndArgsPanel
-        )
-        
-        topPanel.add(optionsCollapsible.headerPanel.apply { 
-            border = JBUI.Borders.empty(2) 
-        }, gbc.apply { gridy++ })
-        topPanel.add(optionsCollapsible.contentPanel, gbc.apply { gridy++ })
+        topPanel.add(optionsManager.collapseButton, gbc.apply { 
+            gridy++
+            fill = GridBagConstraints.HORIZONTAL
+            weightx = 1.0
+        })
+        topPanel.add(optionsManager.panel, gbc.apply { gridy++ })
 
         // Context view with collapsible UI
         val contextViewPanel = AiderContextViewPanel(project, aiderContextView)
@@ -406,9 +314,9 @@ class AiderInputDialog(
 
     fun getInputText(): String = inputTextField.text
 
-    fun isYesFlagChecked(): Boolean = yesCheckBox.isSelected
-    fun getLlm(): String = llmComboBox.selectedItem as String
-    fun getAdditionalArgs(): String = additionalArgsField.text
+    fun isYesFlagChecked(): Boolean = optionsManager.yesCheckBox.isSelected
+    fun getLlm(): LlmSelection = optionsManager.llmComboBox.selectedItem as LlmSelection
+    fun getAdditionalArgs(): String = optionsManager.additionalArgsField.text
     fun getAllFiles(): List<FileData> = aiderContextView?.getAllFiles() ?: emptyList()
     val selectedMode get() = modeSegmentedButton?.selectedItem ?: initialMode
     fun isShellMode(): Boolean = selectedMode == AiderMode.SHELL
@@ -434,68 +342,14 @@ class AiderInputDialog(
         return "Enter feature description that will be used to create a plan:"
     }
 
-    private fun createOptionsPanel(): JPanel {
-        return JPanel(GridBagLayout()).apply {
-            val gbc = GridBagConstraints().apply {
-                fill = GridBagConstraints.NONE
-                anchor = GridBagConstraints.WEST
-                insets = JBUI.insets(0, 2)
-            }
-            
-            // LLM selection
-            add(JLabel("LLM:").apply {
-                displayedMnemonic = KeyEvent.VK_L
-                labelFor = llmComboBox
-                toolTipText = "Select the Language Model to use"
-            }, gbc.apply {
-                gridx = 0
-                gridy = 0
-            })
-            add(llmComboBox.apply {
-                preferredSize = Dimension(150, preferredSize.height)
-            }, gbc.apply {
-                gridx = 1
-                gridy = 0
-                weightx = 0.3
-            })
-            
-            // Yes flag
-            add(yesCheckBox.apply {
-                mnemonic = KeyEvent.VK_Y
-            }, gbc.apply {
-                gridx = 2
-                gridy = 0
-                insets.left = 10
-            })
-            
-            // Additional args
-            add(JLabel("Args:").apply {
-                displayedMnemonic = KeyEvent.VK_A
-                labelFor = additionalArgsField
-                toolTipText = "Additional arguments for the Aider command"
-            }, gbc.apply {
-                gridx = 3
-                gridy = 0
-                insets.left = 10
-            })
-            add(additionalArgsField.apply {
-                preferredSize = Dimension(200, preferredSize.height)
-            }, gbc.apply {
-                gridx = 4
-                gridy = 0
-                weightx = 0.7
-                fill = GridBagConstraints.HORIZONTAL
-            })
-        }
-    }
     
 
     private fun restoreLastState() {
         AiderDialogStateService.getInstance(project).getLastState()?.let { state ->
             inputTextField.text = state.message
-            yesCheckBox.isSelected = state.useYesFlag
-            llmComboBox.selectedItem = state.llm
-            additionalArgsField.text = state.additionalArgs
+            optionsPanel.yesCheckBox.isSelected = state.useYesFlag
+            optionsPanel.llmComboBox.selectedItem = state.llm
+            optionsPanel.additionalArgsField.text = state.additionalArgs
             initialMode = if (state.isShellMode) AiderMode.SHELL
             else if (state.isStructuredMode) AiderMode.STRUCTURED
             else AiderMode.NORMAL

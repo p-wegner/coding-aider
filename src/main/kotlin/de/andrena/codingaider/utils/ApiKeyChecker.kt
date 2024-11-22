@@ -1,18 +1,26 @@
 package de.andrena.codingaider.utils
 
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
+import de.andrena.codingaider.settings.CustomLlmProvider
+import de.andrena.codingaider.settings.CustomLlmProviderService
+import de.andrena.codingaider.settings.LlmProviderType
+import de.andrena.codingaider.settings.LlmSelection
 import java.io.File
+import java.time.Duration
+import java.time.Instant
+import java.util.concurrent.ConcurrentHashMap
 
 interface ApiKeyChecker {
     fun isApiKeyAvailableForLlm(llm: String): Boolean
     fun isApiKeyAvailable(apiKeyName: String): Boolean
     fun getApiKeyForLlm(llm: String): String?
-    fun getAllLlmOptions(): List<String>
+    fun getAllLlmOptions(): List<LlmSelection>
     fun getAllApiKeyNames(): List<String>
     fun getApiKeyValue(apiKeyName: String): String?
     fun getApiKeysForDocker(): Map<String, String>
 }
-@Service(Service.Level.PROJECT)
+@Service(Service.Level.APP)
 class DefaultApiKeyChecker : ApiKeyChecker {
     private val llmToApiKeyMap = mapOf(
         "--sonnet" to "ANTHROPIC_API_KEY",
@@ -24,22 +32,104 @@ class DefaultApiKeyChecker : ApiKeyChecker {
         "--deepseek" to "DEEPSEEK_API_KEY"
     )
 
+    // API Key Cache
+    private val apiKeyCache = ConcurrentHashMap<String, CachedApiKey>()
+    private val CACHE_DURATION = Duration.ofMinutes(5)
+
+    // Cached API Key data class
+    private data class CachedApiKey(
+        val value: String,
+        val timestamp: Instant = Instant.now()
+    )
+
+    private fun getCustomProvider(llm: String): CustomLlmProvider? {
+        return service<CustomLlmProviderService>().getProvider(llm)
+    }
+
+    private fun getProviderApiKeyName(provider: CustomLlmProvider): String {
+        return when (provider.type) {
+            LlmProviderType.OPENAI -> "OPENAI_API_KEY"
+            LlmProviderType.OPENROUTER -> "OPENROUTER_API_KEY"
+            LlmProviderType.OLLAMA -> "" // Ollama doesn't require an API key
+        }
+    }
+
     override fun isApiKeyAvailableForLlm(llm: String): Boolean {
-        val apiKey = llmToApiKeyMap[llm] ?: return true // If no API key is needed, consider it available
-        return isApiKeyAvailable(apiKey)
+        // Check standard providers first
+        val standardApiKey = llmToApiKeyMap[llm]
+        if (standardApiKey != null) {
+            return isApiKeyAvailable(standardApiKey)
+        }
+        
+        // Check custom providers
+        val customProvider = getCustomProvider(llm)
+        if (customProvider != null) {
+            // Check if provider requires API key
+            if (!customProvider.type.requiresApiKey) {
+                return true
+            }
+            
+            // Check for API key
+            val apiKeyName = customProvider.type.getApiKeyName()
+            return isApiKeyAvailable(apiKeyName)
+        }
+        
+        return true // If no provider found, assume no API key needed
     }
 
     override fun isApiKeyAvailable(apiKeyName: String): Boolean {
         return getApiKeyValue(apiKeyName) != null
     }
 
-    override fun getApiKeyForLlm(llm: String): String? = llmToApiKeyMap[llm]
+    override fun getApiKeyForLlm(llm: String): String? {
+        // Check standard providers
+        llmToApiKeyMap[llm]?.let { return it }
+        
+        // Check custom providers
+        val customProvider = getCustomProvider(llm)
+        if (customProvider != null) {
+            return customProvider.type.getApiKeyName()
+        }
+        
+        return null
+    }
 
-    override fun getAllLlmOptions(): List<String> = llmToApiKeyMap.keys.toList() + ""
+    override fun getAllLlmOptions(): List<LlmSelection> {
+        val standardOptions = getStandardOptions()
+        val customOptions = service<CustomLlmProviderService>().getAllProviders()
+            .map { LlmSelection(it.name, provider = it, isBuiltIn = false) }
+        return standardOptions + customOptions
+    }
+
+    private fun getStandardOptions(): List<LlmSelection> = listOf(LlmSelection("")) + llmToApiKeyMap.keys.map { LlmSelection(
+        it
+    ) }
 
     override fun getAllApiKeyNames(): List<String> = llmToApiKeyMap.values.distinct()
+    
+    fun getAllStandardLlmKeys(): List<String> = llmToApiKeyMap.keys.toList()
 
     override fun getApiKeyValue(apiKeyName: String): String? {
+        // Check cache first
+        if (apiKeyName.isBlank()) return null
+        apiKeyCache[apiKeyName]?.let { cachedKey ->
+            if (Duration.between(cachedKey.timestamp, Instant.now()) < CACHE_DURATION) {
+                return cachedKey.value
+            }
+        }
+
+        // Retrieve API key
+        val apiKey = retrieveApiKey(apiKeyName)
+
+        // Cache the result if found
+        apiKey?.let {
+            apiKeyCache[apiKeyName] = CachedApiKey(it)
+        }
+
+        return apiKey
+    }
+
+    private fun retrieveApiKey(apiKeyName: String): String? {
         // Check CredentialStore first
         ApiKeyManager.getApiKey(apiKeyName)?.let { return it }
 
@@ -68,8 +158,27 @@ class DefaultApiKeyChecker : ApiKeyChecker {
     }
 
     override fun getApiKeysForDocker(): Map<String, String> {
-        return llmToApiKeyMap.values.distinct().mapNotNull { apiKeyName ->
-            getApiKeyValue(apiKeyName)?.let { apiKeyName to it }
-        }.toMap()
+        val standardKeys = llmToApiKeyMap.values.distinct()
+            .mapNotNull { apiKeyName -> 
+                getApiKeyValue(apiKeyName)?.let { apiKeyName to it }
+            }
+            
+        val customKeys = service<CustomLlmProviderService>().getAllProviders()
+            .filter { it.type.requiresApiKey }
+            .mapNotNull { provider ->
+                val keyName = getProviderApiKeyName(provider)
+                ApiKeyManager.getCustomModelKey(provider.name)?.let { keyName to it }
+            }
+            
+        return (standardKeys + customKeys).toMap()
+    }
+
+    fun getLlmSelectionForName(string: String): LlmSelection {
+        return getStandardOptions().find { it.name == string } ?:
+        service<CustomLlmProviderService>().getProvider(string).let {
+            LlmSelection(string, provider = it, isBuiltIn = false)
+        }
+
+
     }
 }

@@ -1,5 +1,6 @@
 package de.andrena.codingaider.executors
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.docker.DockerContainerManager
@@ -11,7 +12,7 @@ class CommandLogger(
     private val project: Project,
     private val settings: AiderSettings,
     private val commandData: CommandData,
-    private val apiKeyChecker: ApiKeyChecker = DefaultApiKeyChecker()
+    private val apiKeyChecker: ApiKeyChecker = service<DefaultApiKeyChecker>()
 ) {
     fun getCommandString(includeNewlines: Boolean = true, dockerManager: DockerContainerManager? = null): String =
         if (settings.verboseCommandLogging) {

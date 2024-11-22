@@ -19,8 +19,8 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         settingsChangeListeners.forEach { it() }
     }
 
+
     data class State(
-        var customModelSettings: CustomModelSettings = CustomModelSettings(),
         var enableDocumentationLookup: Boolean = AiderDefaults.ENABLE_DOCUMENTATION_LOOKUP,
         var useYesFlag: Boolean = AiderDefaults.USE_YES_FLAG,
         var llm: String = AiderDefaults.LLM,
@@ -52,11 +52,6 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
     )
 
 
-    var customModelSettings: CustomModelSettings
-        get() = myState.customModelSettings
-        set(value) {
-            myState.customModelSettings = value
-        }
 
     var documentationLlm: String
         get() = myState.documentationLlm
@@ -207,7 +202,6 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
             myState.alwaysIncludeOpenFiles = value
         }
 
-    // TODO: include in settings view
     var alwaysIncludePlanContextFiles: Boolean
         get() = myState.alwaysIncludePlanContextFiles
         set(value) {

@@ -65,15 +65,19 @@ class MarkdownDialog(
         markdownViewer.setMarkdownContent(initialText)
 
         // Add scroll listener to detect when user manually scrolls
-        scrollPane.verticalScrollBar.addAdjustmentListener { _ ->
-            // Only update autoScroll if user is actually scrolling
-            if (scrollPane.verticalScrollBar.valueIsAdjusting) {
-                val scrollBar = scrollPane.verticalScrollBar
-                val extent = scrollBar.model.extent
-                val maximum = scrollBar.model.maximum
-                val current = scrollBar.model.value
-                val isAtBottom = (current + extent + 20) >= maximum
-
+        scrollPane.verticalScrollBar.addAdjustmentListener { e ->
+            val scrollBar = scrollPane.verticalScrollBar
+            val extent = scrollBar.model.extent
+            val maximum = scrollBar.model.maximum
+            val current = scrollBar.model.value
+            
+            // Check if we're within 20 pixels of the bottom
+            val isAtBottom = (current + extent + 20) >= maximum
+            
+            // Update autoScroll when:
+            // 1. User is manually scrolling (valueIsAdjusting is true)
+            // 2. Or when they've scrolled to the bottom
+            if (scrollBar.valueIsAdjusting || isAtBottom) {
                 autoScroll = isAtBottom
             }
         }
@@ -166,15 +170,16 @@ class MarkdownDialog(
 
                     // Handle scrolling after content update
                     SwingUtilities.invokeLater {
-                        if (wasAtBottom) {
-                            // Scroll to bottom if auto-scroll is enabled
-                            scrollBar.value = scrollBar.maximum + scrollBar.visibleAmount
+                        if (wasAtBottom || autoScroll) {
+                            // Scroll to bottom if auto-scroll is enabled or was at bottom
+                            scrollBar.value = scrollBar.maximum
                         } else {
                             // Try to maintain previous scroll position
                             scrollBar.value = currentValue
                         }
                         // Ensure the scroll pane is properly laid out
                         scrollPane.revalidate()
+                        scrollPane.repaint()
                     }
                 }
             } catch (e: Exception) {

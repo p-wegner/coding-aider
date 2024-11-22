@@ -16,6 +16,7 @@ import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.AiderDocsService.Companion.AIDER_DOCS_FOLDER
+import de.andrena.codingaider.services.AiderEditFormat
 import de.andrena.codingaider.services.MarkdownConversionService
 import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
@@ -75,7 +76,7 @@ class AiderWebCrawlAction : AnAction() {
                     files = listOf(FileData(filePath, false)),
                     lintCmd = "",
                     projectPath = project.basePath ?: "",
-                    editFormat = "whole",
+                    editFormat = AiderEditFormat.DIFF_FENCED.value,
                     aiderMode = AiderMode.NORMAL,
                     options = CommandOptions(autoCommit = false, dirtyCommits = false),
                 )
@@ -122,7 +123,7 @@ class AiderWebCrawlAction : AnAction() {
         file.writeText(markdown)
     }
 
-    private fun refreshAndAddFile(project: com.intellij.openapi.project.Project, filePath: String) {
+    private fun refreshAndAddFile(project: Project, filePath: String) {
         val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(File(filePath))
         val persistentFileService = project.getService(PersistentFileService::class.java)
         persistentFileService.addFile(FileData(filePath, true))
@@ -132,7 +133,7 @@ class AiderWebCrawlAction : AnAction() {
     }
 
     private fun showNotification(
-        project: com.intellij.openapi.project.Project,
+        project: Project,
         content: String,
         type: NotificationType
     ) {
@@ -142,3 +143,4 @@ class AiderWebCrawlAction : AnAction() {
             .notify(project)
     }
 }
+

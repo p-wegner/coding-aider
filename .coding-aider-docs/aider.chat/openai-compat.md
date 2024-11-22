@@ -10,20 +10,14 @@ To install Aider, run the following command:
 python -m pip install -U aider-chat
 ```
 
-## Configuration
-
-### Mac/Linux
-
-Set the following environment variables:
+### Mac/Linux:
 
 ```bash
 export OPENAI_API_BASE=<endpoint>
 export OPENAI_API_KEY=<key>
 ```
 
-### Windows
-
-Set the following environment variables:
+### Windows:
 
 ```bash
 setx OPENAI_API_BASE <endpoint>
@@ -34,10 +28,10 @@ setx OPENAI_API_KEY <key>
 
 ## Usage
 
-Prefix the model name with `openai/` when using Aider:
+Prefix the model name with `openai/`:
 
 ```bash
 aider --model openai/<model-name>
 ```
 
-For more information on model warnings, refer to the [model warnings](https://aider.chat/docs/llms/warnings.html) section.
+See the [model warnings](https://aider.chat/docs/llms/warnings.html) section for information on warnings which will occur when working with models that Aider is not familiar with.

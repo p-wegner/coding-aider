@@ -49,7 +49,7 @@ class AiderAction : AnAction() {
                         AiderDialogStateService.getInstance(project).saveState(
                             dialog.getInputText(),
                             dialog.isYesFlagChecked(),
-                            dialog.getLlm(),
+                            dialog.getLlm().name,
                             dialog.getAdditionalArgs(),
                             dialog.getAllFiles(),
                             dialog.isShellMode(),
@@ -80,7 +80,7 @@ class AiderAction : AnAction() {
             return CommandData(
                 message = dialog.getInputText(),
                 useYesFlag = dialog.isYesFlagChecked(),
-                llm = dialog.getLlm(),
+                llm = dialog.getLlm().name,
                 additionalArgs = dialog.getAdditionalArgs(),
                 files = dialog.getAllFiles(),
                 lintCmd = settings.lintCmd,

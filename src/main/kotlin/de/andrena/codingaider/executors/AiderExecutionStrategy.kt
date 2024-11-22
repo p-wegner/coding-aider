@@ -8,7 +8,10 @@ import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.settings.AiderDefaults
 import de.andrena.codingaider.settings.AiderSettings
+import de.andrena.codingaider.settings.CustomLlmProviderService
+import de.andrena.codingaider.settings.LlmProviderType
 import de.andrena.codingaider.utils.ApiKeyChecker
+import de.andrena.codingaider.utils.ApiKeyManager
 import de.andrena.codingaider.utils.GitUtils.findGitRoot
 import java.io.File
 
@@ -18,98 +21,104 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
     abstract fun cleanupAfterExecution()
     fun buildCommonArgs(commandData: CommandData, settings: AiderSettings): List<String> {
         return buildList {
-            if (settings.customModelSettings.isConfigured()) {
-                add("--model")
-                add(settings.customModelSettings.modelName)
-            } else if (commandData.llm.isNotEmpty()) {
-                if (commandData.llm.startsWith("--")) {
-                    add(commandData.llm)
-                } else {
+            // Handle model selection based on provider type
+            if (commandData.llm.isNotEmpty()) {
+                val customProvider = CustomLlmProviderService.getInstance().getProvider(commandData.llm)
+                if (customProvider != null) {
                     add("--model")
-                    add(commandData.llm)
-                }
-            }
-            commandData.files.forEach { fileData ->
-                val fileArgument = if (fileData.isReadOnly) "--read" else "--file"
-                add(fileArgument)
-                add(fileData.filePath)
-            }
-            if (commandData.useYesFlag) add("--yes")
-            if (commandData.editFormat.isNotEmpty()) {
-                add("--edit-format")
-                add(commandData.editFormat)
-            }
-            if (!commandData.isShellMode) {
-                add("--no-suggest-shell-commands")
-                add("--no-pretty")
-                add("--no-fancy-input")
-            }
-            if (commandData.additionalArgs.isNotEmpty()) {
-                addAll(commandData.additionalArgs.split(" "))
-            }
-            if (commandData.lintCmd.isNotEmpty()) {
-                add("--lint-cmd")
-                add(commandData.lintCmd)
-            }
-            if (commandData.deactivateRepoMap) {
-                add("--map-tokens")
-                add("0")
-            }
-            if (commandData.options.autoCommit != null) {
-                if (commandData.options.autoCommit) {
-                    add("--auto-commits")
+                    add(customProvider.prefixedModelName)
                 } else {
-                    add("--no-auto-commits")
+                    if (commandData.llm.startsWith("--")) {
+                        add(commandData.llm)
+                    } else {
+                        add("--model")
+                        add(commandData.llm)
+
+                    }
                 }
-            } else {
-                when (settings.autoCommits) {
-                    AiderSettings.AutoCommitSetting.ON -> add("--auto-commits")
-                    AiderSettings.AutoCommitSetting.OFF -> add("--no-auto-commits")
-                    AiderSettings.AutoCommitSetting.DEFAULT -> {} // Do nothing, use Aider's default
+                commandData.files.forEach { fileData ->
+                    val fileArgument = if (fileData.isReadOnly) "--read" else "--file"
+                    add(fileArgument)
+                    add(fileData.filePath)
                 }
-            }
-            if (commandData.options.dirtyCommits != null) {
-                if (commandData.options.dirtyCommits) {
-                    add("--dirty-commits")
+                if (commandData.useYesFlag) add("--yes")
+                if (commandData.editFormat.isNotEmpty()) {
+                    add("--edit-format")
+                    add(commandData.editFormat)
+                }
+                if (!commandData.isShellMode) {
+                    add("--no-suggest-shell-commands")
+                    add("--no-pretty")
+                    add("--no-fancy-input")
+                }
+                if (commandData.additionalArgs.isNotEmpty()) {
+                    addAll(commandData.additionalArgs.split(" "))
+                }
+                if (commandData.lintCmd.isNotEmpty()) {
+                    add("--lint-cmd")
+                    add(commandData.lintCmd)
+                }
+                if (commandData.deactivateRepoMap) {
+                    add("--map-tokens")
+                    add("0")
+                }
+                if (commandData.options.autoCommit != null) {
+                    if (commandData.options.autoCommit) {
+                        add("--auto-commits")
+                    } else {
+                        add("--no-auto-commits")
+                    }
                 } else {
-                    add("--no-dirty-commits")
+                    when (settings.autoCommits) {
+                        AiderSettings.AutoCommitSetting.ON -> add("--auto-commits")
+                        AiderSettings.AutoCommitSetting.OFF -> add("--no-auto-commits")
+                        AiderSettings.AutoCommitSetting.DEFAULT -> {} // Do nothing, use Aider's default
+                    }
                 }
-            } else {
-                when (settings.dirtyCommits) {
-                    AiderSettings.DirtyCommitSetting.ON -> add("--dirty-commits")
-                    AiderSettings.DirtyCommitSetting.OFF -> add("--no-dirty-commits")
-                    AiderSettings.DirtyCommitSetting.DEFAULT -> {} // Do nothing, use Aider's default
+                if (commandData.options.dirtyCommits != null) {
+                    if (commandData.options.dirtyCommits) {
+                        add("--dirty-commits")
+                    } else {
+                        add("--no-dirty-commits")
+                    }
+                } else {
+                    when (settings.dirtyCommits) {
+                        AiderSettings.DirtyCommitSetting.ON -> add("--dirty-commits")
+                        AiderSettings.DirtyCommitSetting.OFF -> add("--no-dirty-commits")
+                        AiderSettings.DirtyCommitSetting.DEFAULT -> {} // Do nothing, use Aider's default
+                    }
                 }
-            }
-            if (settings.includeChangeContext) {
-                add("--commit-prompt")
-                add(getCommitPrompt())
-            }
-            if (commandData.sidecarMode ) {
-                return@buildList
-            }
-            when (commandData.aiderMode ) {
-                AiderMode.NORMAL -> {
-                    add("-m")
-                    add(commandData.message)
+                if (settings.includeChangeContext) {
+                    add("--commit-prompt")
+                    add(getCommitPrompt())
                 }
+                if (commandData.sidecarMode) {
+                    return@buildList
+                }
+                when (commandData.aiderMode) {
+                    AiderMode.NORMAL -> {
+                        add("-m")
+                        add(commandData.message)
+                    }
 
-                AiderMode.STRUCTURED -> {
-                    add("-m")
-                    add(project.service<AiderPlanService>().createAiderPlanSystemPrompt(commandData))
-                }
+                    AiderMode.STRUCTURED -> {
+                        add("-m")
+                        add(project.service<AiderPlanService>().createAiderPlanSystemPrompt(commandData))
+                    }
 
-                AiderMode.ARCHITECT -> {
-                    add("-m")
-                    add("/architect ${commandData.message}")
+                    AiderMode.ARCHITECT -> {
+                        add("-m")
+                        add("/architect ${commandData.message}")
+                    }
+
+                    else -> {}
                 }
-                else -> {}
             }
         }
+
     }
 
 }
-
 class NativeAiderExecutionStrategy(
     project: Project,
     private val apiKeyChecker: ApiKeyChecker,
@@ -121,7 +130,7 @@ class NativeAiderExecutionStrategy(
     }
 
     override fun prepareEnvironment(processBuilder: ProcessBuilder, commandData: CommandData) {
-        setApiKeyEnvironmentVariables(processBuilder, apiKeyChecker)
+        setApiKeyEnvironmentVariables(processBuilder, apiKeyChecker, commandData)
     }
 
     override fun cleanupAfterExecution() {
@@ -138,10 +147,10 @@ class DockerAiderExecutionStrategy(
 
     override fun buildCommand(commandData: CommandData): List<String> {
         val dockerArgs = mutableListOf(
-            "docker", "run", "-i", 
+            "docker", "run", "-i",
             // For sidecar mode, we want to keep the container running
-            if (settings.useSidecarMode) "--restart=always" else "--rm", 
-            "-w", "/app", 
+            if (settings.useSidecarMode) "--restart=always" else "--rm",
+            "-w", "/app",
             "--cidfile", dockerManager.getCidFilePath()
         ).apply {
             if (commandData.projectPath.isNotEmpty()) {
@@ -151,7 +160,7 @@ class DockerAiderExecutionStrategy(
             if (commandData.isShellMode || settings.useSidecarMode) {
                 add("-t")
             }
-            
+
             // For sidecar mode, add a long-running command to keep container alive
             if (settings.useSidecarMode) {
                 add("-d")  // Detached mode
@@ -168,6 +177,26 @@ class DockerAiderExecutionStrategy(
         // Add API key environment variables to Docker run command
         apiKeyChecker.getApiKeysForDocker().forEach { (keyName, value) ->
             dockerArgs.addAll(listOf("-e", "$keyName=$value"))
+        }
+
+        // Add provider-specific Docker configurations
+        val customProvider = project.service<CustomLlmProviderService>().getProvider(commandData.llm)
+        when (customProvider?.type) {
+            LlmProviderType.OLLAMA -> {
+                // For Ollama, we need to ensure network access to the host
+                // TODO: set env like in setApiKeyEnvironmentVariables
+                dockerArgs.addAll(listOf("--network", "host"))
+            }
+
+            LlmProviderType.OPENAI -> {
+                // TODO: set env like in setApiKeyEnvironmentVariables
+            }
+
+            LlmProviderType.OPENROUTER -> {
+                // TODO: set env like in setApiKeyEnvironmentVariables
+            }
+
+            null -> {} // No special configuration needed
         }
 
         // Mount files outside the project
@@ -213,21 +242,49 @@ class DockerAiderExecutionStrategy(
 }
 
 
-private fun setApiKeyEnvironmentVariables(processBuilder: ProcessBuilder, apiKeyChecker: ApiKeyChecker) {
+fun setApiKeyEnvironmentVariables(
+    processBuilder: ProcessBuilder,
+    apiKeyChecker: ApiKeyChecker,
+    commandData: CommandData
+) {
     val environment = processBuilder.environment()
-    val settings = AiderSettings.getInstance()
-        
-    // Set custom model API key if configured
-    if (settings.customModelSettings.isConfigured()) {
-        environment["OPENAI_API_KEY"] = settings.customModelSettings.apiKey
-    } else {
-        // Set standard API keys
-        apiKeyChecker.getAllApiKeyNames().forEach { keyName ->
-            apiKeyChecker.getApiKeyValue(keyName)?.let { value ->
-                environment[keyName] = value
+
+    val customProvider = CustomLlmProviderService.getInstance().getProvider(commandData.llm)
+    when {
+        customProvider != null -> {
+            // Set provider-specific environment variables
+            when (customProvider.type) {
+                LlmProviderType.OPENAI -> {
+                    ApiKeyManager.getCustomModelKey(customProvider.name)?.let { apiKey ->
+                        environment["OPENAI_API_KEY"] = apiKey
+                        if (customProvider.baseUrl.isNotEmpty()) {
+                            environment["OPENAI_API_BASE"] = customProvider.baseUrl
+                        }
+                    }
+                }
+
+                LlmProviderType.OLLAMA -> {
+                    environment["OLLAMA_HOST"] = customProvider.baseUrl
+                }
+
+                LlmProviderType.OPENROUTER -> {
+                    ApiKeyManager.getCustomModelKey(customProvider.name)?.let { apiKey ->
+                        environment["OPENROUTER_API_KEY"] = apiKey
+                    }
+                }
+            }
+        }
+
+        else -> {
+            // Set standard API keys
+            apiKeyChecker.getAllApiKeyNames().forEach { keyName ->
+                apiKeyChecker.getApiKeyValue(keyName)?.let { value ->
+                    environment[keyName] = value
+                }
             }
         }
     }
+
 }
 
 private fun getCommitPrompt(): String {

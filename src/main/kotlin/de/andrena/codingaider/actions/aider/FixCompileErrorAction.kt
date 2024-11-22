@@ -175,7 +175,7 @@ class FixCompileErrorInteractive : BaseFixCompileErrorAction() {
                     dialog.isYesFlagChecked(),
                     dialog.isShellMode()
                 ).copy(
-                    llm = dialog.getLlm(),
+                    llm = dialog.getLlm().name,
                     additionalArgs = dialog.getAdditionalArgs(),
                     files = dialog.getAllFiles()
                 )

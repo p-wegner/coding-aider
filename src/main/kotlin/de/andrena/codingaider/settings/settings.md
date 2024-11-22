@@ -1,7 +1,7 @@
 # Aider Settings Module Documentation
 
 ## Overview
-The Aider Settings module provides a comprehensive configuration management system for the Aider IDE plugin, enabling flexible and persistent settings across application and project levels.
+The Aider Settings module provides a comprehensive configuration management system for the Aider IDE plugin, enabling flexible and persistent settings across application and project levels, including support for custom LLM providers.
 
 ## Module Structure
 
@@ -12,6 +12,8 @@ The Aider Settings module provides a comprehensive configuration management syst
 - [AiderSettingsConfigurable.kt](./AiderSettingsConfigurable.kt): Global settings UI configuration
 - [AiderProjectSettingsConfigurable.kt](./AiderProjectSettingsConfigurable.kt): Project-level settings UI configuration
 - [AiderTestCommand.kt](./AiderTestCommand.kt): Utility for testing Aider command execution
+- [CustomLlmProvider.kt](./CustomLlmProvider.kt): Custom LLM provider configuration
+- [CustomLlmProviderService.kt](./CustomLlmProviderService.kt): Service managing custom LLM providers
 
 ## Design Patterns and Architectural Principles
 - **Singleton Pattern**: Ensures single, consistent settings instances
@@ -19,6 +21,8 @@ The Aider Settings module provides a comprehensive configuration management syst
 - **Separation of Concerns**: Distinct classes for defaults, global, and project-level settings
 - **Dependency Injection**: Uses IntelliJ Platform's service locator pattern
 - **Observer Pattern**: Implemented in command execution and settings management
+- **Factory Pattern**: Used in custom LLM provider creation and management
+- **Strategy Pattern**: Applied for different LLM provider types (OpenAI, Ollama, OpenRouter)
 
 ## Module Responsibilities
 
@@ -26,6 +30,16 @@ The Aider Settings module provides a comprehensive configuration management syst
 - Defines default configuration values for the entire Aider plugin
 - Provides centralized constant management
 - Ensures consistent default behavior across the application
+
+### [CustomLlmProvider.kt](./CustomLlmProvider.kt)
+- Defines the data structure for custom LLM providers
+- Supports multiple provider types (OpenAI, Ollama, OpenRouter)
+- Handles provider-specific configuration requirements
+
+### [CustomLlmProviderService.kt](./CustomLlmProviderService.kt)
+- Manages persistence of custom LLM providers
+- Handles provider lifecycle (add, remove, update)
+- Provides centralized access to provider configurations
 
 ### [AiderSettings.kt](./AiderSettings.kt)
 - Application-level persistent settings management
@@ -90,6 +104,8 @@ graph TD
 - Environment and file-based key support
 - Masked API key display
 - Controlled API key management
+- Provider-specific API key handling
+- Secure storage of custom provider credentials
 
 ## Performance Optimization
 - Minimal overhead for settings management
@@ -113,13 +129,6 @@ graph TD
 2. Override project-specific settings when needed
 3. Use test command to validate configuration
 4. Refer to tooltips for detailed option explanations
-
-## Future Roadmap
-- Enhanced LLM model support
-- More granular configuration options
-- Improved error handling and validation
-- Advanced file tracking mechanisms
-- Cross-platform configuration synchronization
 
 ## Contribution Guidelines
 When adding new settings:
