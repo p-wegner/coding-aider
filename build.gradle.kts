@@ -5,6 +5,7 @@ plugins {
     id("java")
     id("org.jetbrains.kotlin.jvm") version "2.0.21"
     id("org.jetbrains.intellij.platform") version "2.0.1"
+    id("com.github.ben-manes.versions") version "0.51.0"
 }
 
 group = "de.andrena"
@@ -18,8 +19,8 @@ repositories {
 }
 
 dependencies {
-    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.17.2")
-    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.17.2")
+    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.18.1")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.18.1")
     implementation("net.sourceforge.htmlunit:htmlunit:2.70.0")
     implementation("com.vladsch.flexmark:flexmark:0.64.8")
     implementation("com.vladsch.flexmark:flexmark-util:0.64.8")
@@ -36,15 +37,15 @@ dependencies {
     implementation("com.vladsch.flexmark:flexmark-ext-footnotes:0.64.8")
     implementation("com.vladsch.flexmark:flexmark-ext-toc:0.64.8")
     implementation("com.knuddels:jtokkit:1.1.0")
-    implementation("io.projectreactor:reactor-core:3.6.2")
-    implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:1.2.2")
+    implementation("io.projectreactor:reactor-core:3.7.0")
+    implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:1.2.3")
 
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.10.2")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.10.2")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.2")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.3")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.3")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.11.3")
     testImplementation("org.assertj:assertj-core:3.25.3")
-    testImplementation("org.mockito:mockito-core:5.11.0")
-    testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
+    testImplementation("org.mockito:mockito-core:5.14.2")
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
     intellijPlatform {
         testFramework(TestFrameworkType.Platform)
