@@ -1,6 +1,7 @@
 package de.andrena.codingaider.outputview
 
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.project.ProjectManager
 import com.intellij.openapi.vfs.LocalFileSystem
 import java.awt.Desktop
@@ -14,44 +15,50 @@ class HyperlinkHandler(private val lookupPaths: List<String>) {
             try {
                 val url = event.url?.toString() ?: event.description
                 val project = ProjectManager.getInstance().openProjects.firstOrNull()
-                // log url
-                println("Opening URL: $url")
-                val file = when {
-                    url.startsWith("file:") -> {
-                        // Handle absolute file paths
-                        val filePath = java.net.URLDecoder.decode(url.removePrefix("file:"), "UTF-8")
-                        File(filePath)
+                
+                when {
+                    // Handle HTTP(S) URLs
+                    url.matches(Regex("^https?://.*")) -> {
+                        Desktop.getDesktop().browse(URI(url))
                     }
-
+                    
+                    // Handle absolute file paths
+                    url.startsWith("file:") -> {
+                        openFileInIde(java.net.URLDecoder.decode(url.removePrefix("file:"), "UTF-8"), project)
+                    }
+                    
+                    File(url).isAbsolute -> {
+                        openFileInIde(url, project)
+                    }
+                    
+                    // Handle relative paths
                     else -> {
-                        val basePath = project?.basePath
-                        if (basePath != null) {
-                            val relativePath = url.removePrefix("./")
-                            val file = File(basePath, relativePath)
-                            if (file.exists()) {
-                                file
-                            } else {
-                                lookupPaths.map { lookupPath ->
-                                    File(basePath, "$lookupPath/$relativePath")
-                                }.firstOrNull { it.exists() }
+                        val basePath = project?.basePath ?: throw IllegalArgumentException("Project base path not found")
+                        val relativePath = url.removePrefix("./")
+                        
+                        // Try direct path first
+                        val directFile = File(basePath, relativePath)
+                        if (directFile.exists()) {
+                            openFileInIde(directFile.absolutePath, project)
+                            return
+                        }
+                        
+                        // Try lookup paths
+                        for (lookupPath in lookupPaths) {
+                            val lookupFile = File(basePath, "$lookupPath/$relativePath")
+                            if (lookupFile.exists()) {
+                                openFileInIde(lookupFile.absolutePath, project)
+                                return
                             }
-                        } else {
-                            throw IllegalArgumentException("Project base path not found")
+                        }
+                        
+                        // If no file found, try as URL
+                        try {
+                            Desktop.getDesktop().browse(URI(url))
+                        } catch (e: Exception) {
+                            throw IllegalArgumentException("Unable to open: $url")
                         }
                     }
-
-                }
-
-                if (file != null && project != null) {
-                    // Open file in IDE
-                    OpenFileDescriptor(
-                        project,
-                        LocalFileSystem.getInstance().findFileByIoFile(file)
-                            ?: throw IllegalArgumentException("File not found: ${file.path}")
-                    ).navigate(true)
-                } else {
-                    // For external URLs or when file/project not found, use default browser
-                    Desktop.getDesktop().browse(URI(url))
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -59,3 +66,14 @@ class HyperlinkHandler(private val lookupPaths: List<String>) {
         }
     }
 }
+    private fun openFileInIde(filePath: String, project: Project?) {
+        if (project == null) throw IllegalArgumentException("No active project found")
+        
+        val file = File(filePath)
+        if (!file.exists()) throw IllegalArgumentException("File not found: $filePath")
+        
+        val virtualFile = LocalFileSystem.getInstance().findFileByIoFile(file)
+            ?: throw IllegalArgumentException("Cannot find virtual file for: $filePath")
+            
+        OpenFileDescriptor(project, virtualFile).navigate(true)
+    }
