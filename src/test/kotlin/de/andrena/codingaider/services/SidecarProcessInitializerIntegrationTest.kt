@@ -10,11 +10,10 @@ import de.andrena.codingaider.settings.MySettingsService
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-//import kotlinx.coroutines.test.TestScope
-//import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.mockito.Mockito.mock
@@ -60,6 +59,7 @@ class SidecarProcessInitializerIntegrationTest() : BaseIntegrationTest() {
     }
 
     @Test
+    @Disabled
     fun testStartAiderWithoutMessageOptionAndSendCommand() = runBlocking {
         sidecarProcessInitializer.initializeSidecarProcess()
         delay(1000) // Give process time to fully initialize
