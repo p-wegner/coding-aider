@@ -36,6 +36,11 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
         isEnabled = false
     }
 
+    private val hideButton = javax.swing.JButton("Hide Provider").apply {
+        addActionListener { toggleProviderVisibility() }
+        isEnabled = false
+    }
+
     init {
         title = "Manage Custom LLM Providers"
         init()
@@ -48,9 +53,12 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
                 val isBuiltIn = selectedValue?.startsWith("[Built-in]") ?: false
                 val hasSelection = providersList.selectedIndex != -1
 
+                val provider = getSelectedProvider()
                 editButton.isEnabled = hasSelection && !isBuiltIn
                 copyButton.isEnabled = hasSelection
                 removeButton.isEnabled = hasSelection && !isBuiltIn
+                hideButton.isEnabled = hasSelection && !isBuiltIn
+                hideButton.text = if (provider?.hidden == true) "Show Provider" else "Hide Provider"
             }
         }
     }
@@ -64,9 +72,25 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
         // Add custom providers
         providerService.getAllProviders().forEach { provider ->
             providersListModel.addElement(
-                "${provider.name} (${provider.type}) - ${provider.modelName}"
+                "${if (provider.hidden) "[Hidden] " else ""}${provider.name} (${provider.type}) - ${provider.modelName}"
             )
         }
+    }
+
+    private fun getSelectedProvider(): CustomLlmProvider? {
+        val selectedIndex = providersList.selectedIndex
+        if (selectedIndex < 0) return null
+
+        val builtInCount = service<DefaultApiKeyChecker>().getAllStandardLlmKeys().size
+        if (selectedIndex < builtInCount) return null
+
+        return providerService.getAllProviders()[selectedIndex - builtInCount]
+    }
+
+    private fun toggleProviderVisibility() {
+        val provider = getSelectedProvider() ?: return
+        providerService.toggleProviderVisibility(provider.name)
+        updateProvidersList()
     }
 
     override fun createCenterPanel(): JComponent = panel {
@@ -82,6 +106,7 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
             cell(editButton)
             cell(copyButton)
             cell(removeButton)
+            cell(hideButton)
         }
     }
 

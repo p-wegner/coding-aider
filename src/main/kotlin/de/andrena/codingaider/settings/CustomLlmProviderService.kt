@@ -51,6 +51,17 @@ class CustomLlmProviderService : PersistentStateComponent<CustomLlmProviderServi
     }
 
     fun getAllProviders(): List<CustomLlmProvider> = myState.providers.toList()
+    
+    fun getVisibleProviders(): List<CustomLlmProvider> = myState.providers.filter { !it.hidden }
+
+    fun toggleProviderVisibility(name: String) {
+        val provider = getProvider(name) ?: return
+        val index = myState.providers.indexOfFirst { it.name == name }
+        if (index >= 0) {
+            myState.providers[index] = provider.copy(hidden = !provider.hidden)
+            notifySettingsChanged()
+        }
+    }
 
     companion object {
         fun getInstance(): CustomLlmProviderService =
