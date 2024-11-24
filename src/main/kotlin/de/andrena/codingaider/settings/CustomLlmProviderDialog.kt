@@ -106,7 +106,6 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
                 providerService.addProvider(dialog.getProvider())
                 updateProvidersList()
             }
-        }
     }
 
     private fun copyProvider() {
@@ -148,6 +147,5 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
         val provider = providerService.getAllProviders()[selectedIndex - builtInCount]
             providerService.removeProvider(provider.name)
             updateProvidersList()
-        }
     }
 }
