@@ -147,5 +147,5 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
         val provider = providerService.getAllProviders()[selectedIndex - builtInCount]
             providerService.removeProvider(provider.name)
             updateProvidersList()
-    }
+        }
 }
