@@ -1,6 +1,5 @@
 package de.andrena.codingaider.settings
 
-import com.intellij.icons.AllIcons
 import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.Configurable
@@ -337,11 +336,11 @@ class AiderSettingsConfigurable() : Configurable {
                 
                 when {
                     value.provider != null -> {
-                        when (value.provider.type) {
-                            LlmProviderType.OPENAI -> icon = AllIcons.General.Web
-                            LlmProviderType.OLLAMA -> icon = AllIcons.Actions.Execute
-                            LlmProviderType.OPENROUTER -> icon = AllIcons.General.Web
-                        }
+//                        icon = when (value.provider.type) {
+//                            LlmProviderType.OPENAI -> MyIcons.OpenAi
+//                            LlmProviderType.OLLAMA -> MyIcons.Ollama
+//                            LlmProviderType.OPENROUTER -> MyIcons.OpenRouter
+//                        }
                         toolTipText = "Custom ${value.provider.type.displayName} provider: ${value.provider.name}"
                     }
                     !value.isBuiltIn -> {
