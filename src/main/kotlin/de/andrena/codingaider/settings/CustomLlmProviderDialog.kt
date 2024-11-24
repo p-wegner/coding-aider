@@ -42,16 +42,24 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
 
         providersList.addListSelectionListener { event ->
             if (!event.valueIsAdjusting) {
+                val selectedValue = providersList.selectedValue
+                val isBuiltIn = selectedValue?.startsWith("[Built-in]") ?: false
                 val hasSelection = providersList.selectedIndex != -1
-                editButton.isEnabled = hasSelection
+                
+                editButton.isEnabled = hasSelection && !isBuiltIn
                 copyButton.isEnabled = hasSelection
-                removeButton.isEnabled = hasSelection
+                removeButton.isEnabled = hasSelection && !isBuiltIn
             }
         }
     }
 
     private fun updateProvidersList() {
         providersListModel.clear()
+        // Add built-in providers
+        service<DefaultApiKeyChecker>().getAllStandardLlmKeys().forEach { llm ->
+            providersListModel.addElement("[Built-in] $llm")
+        }
+        // Add custom providers
         providerService.getAllProviders().forEach { provider ->
             providersListModel.addElement(
                 "${provider.name} (${provider.type}) - ${provider.modelName}"
@@ -86,8 +94,12 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
 
     private fun editProvider() {
         val selectedIndex = providersList.selectedIndex
-        if (selectedIndex >= 0) {
-            val provider = providerService.getAllProviders()[selectedIndex]
+        if (selectedIndex < 0) return
+        
+        val builtInCount = service<DefaultApiKeyChecker>().getAllStandardLlmKeys().size
+        if (selectedIndex < builtInCount) return // Built-in provider
+        
+        val provider = providerService.getAllProviders()[selectedIndex - builtInCount]
             val dialog = CustomLlmProviderEditorDialog(provider)
             if (dialog.showAndGet()) {
                 providerService.removeProvider(provider.name)
@@ -99,8 +111,22 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
 
     private fun copyProvider() {
         val selectedIndex = providersList.selectedIndex
-        if (selectedIndex >= 0) {
-            val provider = providerService.getAllProviders()[selectedIndex]
+        if (selectedIndex < 0) return
+        
+        val builtInCount = service<DefaultApiKeyChecker>().getAllStandardLlmKeys().size
+        val provider = if (selectedIndex < builtInCount) {
+            // Create a dummy provider for built-in LLM
+            val llmName = service<DefaultApiKeyChecker>().getAllStandardLlmKeys()[selectedIndex]
+            CustomLlmProvider(
+                name = llmName,
+                type = LlmProviderType.OPENAI, // Default to OpenAI for built-in
+                modelName = llmName,
+                baseUrl = "",
+                apiKeyName = ""
+            )
+        } else {
+            providerService.getAllProviders()[selectedIndex - builtInCount]
+        }
             val copiedProvider = provider.copy(
                 name = "${provider.name} (Copy)",
             )
@@ -114,8 +140,12 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
 
     private fun removeProvider() {
         val selectedIndex = providersList.selectedIndex
-        if (selectedIndex >= 0) {
-            val provider = providerService.getAllProviders()[selectedIndex]
+        if (selectedIndex < 0) return
+        
+        val builtInCount = service<DefaultApiKeyChecker>().getAllStandardLlmKeys().size
+        if (selectedIndex < builtInCount) return // Can't remove built-in provider
+        
+        val provider = providerService.getAllProviders()[selectedIndex - builtInCount]
             providerService.removeProvider(provider.name)
             updateProvidersList()
         }
