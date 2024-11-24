@@ -139,6 +139,7 @@ class AiderInputDialog(
         setOKButtonText("OK")
         setCancelButtonText("Cancel")
         setupKeyBindings()
+        // TODO: introduce proper encapsulation for this
         optionsManager.llmComboBox.selectedItem = settings.llm
         optionsManager.llmComboBox.renderer = LlmComboBoxRenderer(apiKeyChecker, optionsManager.llmComboBox, optionsPanel.llmOptions)
         optionsManager.yesCheckBox.isSelected = settings.useYesFlag

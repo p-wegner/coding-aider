@@ -5,6 +5,7 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.JBUI
 import de.andrena.codingaider.settings.AiderSettings
+import de.andrena.codingaider.settings.CustomLlmProviderService
 import de.andrena.codingaider.settings.LlmSelection
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
@@ -18,10 +19,10 @@ import javax.swing.JTextField
 
 class AiderOptionsPanel(
     private val settings: AiderSettings = AiderSettings.getInstance(),
-    apiKeyChecker: ApiKeyChecker = service<DefaultApiKeyChecker>()
+    private val apiKeyChecker: ApiKeyChecker = service<DefaultApiKeyChecker>()
 ) : JPanel(GridBagLayout()) {
     
-    val llmOptions = apiKeyChecker.getAllLlmOptions().toMutableList().toTypedArray()
+    var llmOptions = apiKeyChecker.getAllLlmOptions().toMutableList().toTypedArray()
     val llmComboBox = object : ComboBox<LlmSelection>(llmOptions) {
         override fun getToolTipText(): String? {
             return null // TODO: Enable this tooltip when slow thread error is fixed
@@ -40,6 +41,9 @@ class AiderOptionsPanel(
     }
 
     init {
+        CustomLlmProviderService.getInstance().addSettingsChangeListener {
+            updateLlmOptions()
+        }
         setupUI()
         // Set initial selection from settings
         llmComboBox.selectedItem = llmOptions.find { it.name == settings.llm }
@@ -47,6 +51,14 @@ class AiderOptionsPanel(
             val selected = llmComboBox.selectedItem as? LlmSelection
             selected?.let { settings.llm = it.name }
         }
+    }
+
+    private fun updateLlmOptions() {
+        llmOptions = apiKeyChecker.getAllLlmOptions().toMutableList().toTypedArray()
+        val currentSelection = llmComboBox.selectedItem as? LlmSelection
+        llmComboBox.removeAllItems()
+        llmOptions.forEach { llmComboBox.addItem(it) }
+        llmComboBox.selectedItem = llmOptions.find { it.name == currentSelection?.name } ?: llmOptions.firstOrNull()
     }
 
     private fun setupUI() {
