@@ -1,5 +1,6 @@
 package de.andrena.codingaider.settings
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.components.JBList
 import com.intellij.ui.dsl.builder.panel
@@ -7,6 +8,7 @@ import javax.swing.DefaultListModel
 import javax.swing.JComponent
 import javax.swing.ListSelectionModel
 import com.intellij.ui.components.JBScrollPane
+import de.andrena.codingaider.utils.DefaultApiKeyChecker
 
 class CustomLlmProviderDialog : DialogWrapper(null) {
     private val providerService = CustomLlmProviderService.getInstance()
@@ -45,7 +47,7 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
                 val selectedValue = providersList.selectedValue
                 val isBuiltIn = selectedValue?.startsWith("[Built-in]") ?: false
                 val hasSelection = providersList.selectedIndex != -1
-                
+
                 editButton.isEnabled = hasSelection && !isBuiltIn
                 copyButton.isEnabled = hasSelection
                 removeButton.isEnabled = hasSelection && !isBuiltIn
@@ -95,23 +97,23 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
     private fun editProvider() {
         val selectedIndex = providersList.selectedIndex
         if (selectedIndex < 0) return
-        
+
         val builtInCount = service<DefaultApiKeyChecker>().getAllStandardLlmKeys().size
         if (selectedIndex < builtInCount) return // Built-in provider
-        
+
         val provider = providerService.getAllProviders()[selectedIndex - builtInCount]
-            val dialog = CustomLlmProviderEditorDialog(provider)
-            if (dialog.showAndGet()) {
-                providerService.removeProvider(provider.name)
-                providerService.addProvider(dialog.getProvider())
-                updateProvidersList()
-            }
+        val dialog = CustomLlmProviderEditorDialog(provider)
+        if (dialog.showAndGet()) {
+            providerService.removeProvider(provider.name)
+            providerService.addProvider(dialog.getProvider())
+            updateProvidersList()
+        }
     }
 
     private fun copyProvider() {
         val selectedIndex = providersList.selectedIndex
         if (selectedIndex < 0) return
-        
+
         val builtInCount = service<DefaultApiKeyChecker>().getAllStandardLlmKeys().size
         val provider = if (selectedIndex < builtInCount) {
             // Create a dummy provider for built-in LLM
@@ -121,31 +123,29 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
                 type = LlmProviderType.OPENAI, // Default to OpenAI for built-in
                 modelName = llmName,
                 baseUrl = "",
-                apiKeyName = ""
             )
         } else {
             providerService.getAllProviders()[selectedIndex - builtInCount]
         }
-            val copiedProvider = provider.copy(
-                name = "${provider.name} (Copy)",
-            )
-            val dialog = CustomLlmProviderEditorDialog(copiedProvider)
-            if (dialog.showAndGet()) {
-                providerService.addProvider(dialog.getProvider())
-                updateProvidersList()
-            }
+        val copiedProvider = provider.copy(
+            name = "${provider.name} (Copy)",
+        )
+        val dialog = CustomLlmProviderEditorDialog(copiedProvider)
+        if (dialog.showAndGet()) {
+            providerService.addProvider(dialog.getProvider())
+            updateProvidersList()
         }
     }
 
     private fun removeProvider() {
         val selectedIndex = providersList.selectedIndex
         if (selectedIndex < 0) return
-        
+
         val builtInCount = service<DefaultApiKeyChecker>().getAllStandardLlmKeys().size
         if (selectedIndex < builtInCount) return // Can't remove built-in provider
-        
+
         val provider = providerService.getAllProviders()[selectedIndex - builtInCount]
-            providerService.removeProvider(provider.name)
-            updateProvidersList()
-        }
+        providerService.removeProvider(provider.name)
+        updateProvidersList()
+    }
 }
