@@ -6,7 +6,7 @@
 
 - [x] Add hidden state storage for default providers
 - [x] Create persistence mechanism for hidden state
-- [ ] Update DefaultApiKeyChecker to track hidden providers
+- [x] Update DefaultApiKeyChecker to track hidden providers
 
 ## UI Updates
 

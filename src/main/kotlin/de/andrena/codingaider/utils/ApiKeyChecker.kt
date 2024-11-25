@@ -95,15 +95,17 @@ class DefaultApiKeyChecker : ApiKeyChecker {
     }
 
     override fun getAllLlmOptions(): List<LlmSelection> {
-        val standardOptions = getStandardOptions()
+        val defaultSettings = service<DefaultProviderSettings>()
+        val standardOptions = getStandardOptions(defaultSettings)
         val customOptions = service<CustomLlmProviderService>().getVisibleProviders()
             .map { LlmSelection(it.name, provider = it, isBuiltIn = false) }
         return standardOptions + customOptions
     }
 
-    private fun getStandardOptions(): List<LlmSelection> = listOf(LlmSelection("")) + llmToApiKeyMap.keys.map { 
-        LlmSelection(it, isBuiltIn = true)
-    }
+    private fun getStandardOptions(defaultSettings: DefaultProviderSettings): List<LlmSelection> = 
+        listOf(LlmSelection("")) + llmToApiKeyMap.keys
+            .filterNot { defaultSettings.hiddenProviders.contains(it) }
+            .map { LlmSelection(it, isBuiltIn = true) }
 
     override fun getAllApiKeyNames(): List<String> = llmToApiKeyMap.values.distinct()
     
