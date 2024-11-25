@@ -5,7 +5,7 @@
 ## Data Model Changes
 
 - [x] Add hidden state storage for default providers
-- [ ] Create persistence mechanism for hidden state
+- [x] Create persistence mechanism for hidden state
 - [ ] Update DefaultApiKeyChecker to track hidden providers
 
 ## UI Updates
