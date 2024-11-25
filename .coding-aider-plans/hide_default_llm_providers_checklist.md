@@ -18,7 +18,7 @@
 ## Service Layer
 
 - [x] Add methods to toggle default provider visibility
-- [ ] Implement visibility check for default providers
+- [x] Implement visibility check for default providers
 - [ ] Update provider filtering logic
 
 Related: [Main Plan](hide_default_llm_providers.md)

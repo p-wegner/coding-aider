@@ -100,9 +100,9 @@ class DefaultApiKeyChecker : ApiKeyChecker {
         return standardOptions + customOptions
     }
 
-    private fun getStandardOptions(defaultSettings: DefaultProviderSettings): List<LlmSelection> =
+    private fun getStandardOptions(defaultSettings: DefaultProviderSettings = service<DefaultProviderSettings>()): List<LlmSelection> =
         listOf(LlmSelection("")) + llmToApiKeyMap.keys
-            .filterNot { defaultSettings.hiddenProviders.contains(it) }
+            .filterNot { defaultSettings.isProviderHidden(it) }
             .map { LlmSelection(it, isBuiltIn = true) }
 
     override fun getAllApiKeyNames(): List<String> = llmToApiKeyMap.values.distinct()
