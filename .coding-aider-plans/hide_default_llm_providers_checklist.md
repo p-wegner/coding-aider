@@ -17,7 +17,7 @@
 
 ## Service Layer
 
-- [ ] Add methods to toggle default provider visibility
+- [x] Add methods to toggle default provider visibility
 - [ ] Implement visibility check for default providers
 - [ ] Update provider filtering logic
 
