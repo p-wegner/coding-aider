@@ -6,6 +6,7 @@ import com.intellij.ui.components.JBLabel
 import com.intellij.util.ui.JBUI
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.settings.CustomLlmProviderService
+import de.andrena.codingaider.settings.DefaultProviderSettings
 import de.andrena.codingaider.settings.LlmSelection
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
@@ -21,7 +22,7 @@ class AiderOptionsPanel(
     private val settings: AiderSettings = AiderSettings.getInstance(),
     private val apiKeyChecker: ApiKeyChecker = service<DefaultApiKeyChecker>()
 ) : JPanel(GridBagLayout()) {
-    
+
     var llmOptions = apiKeyChecker.getAllLlmOptions().toMutableList().toTypedArray()
     val llmComboBox = object : ComboBox<LlmSelection>(llmOptions) {
         override fun getToolTipText(): String? {
@@ -42,6 +43,9 @@ class AiderOptionsPanel(
 
     init {
         CustomLlmProviderService.getInstance().addSettingsChangeListener {
+            updateLlmOptions()
+        }
+        service<DefaultProviderSettings>().addChangeListener {
             updateLlmOptions()
         }
         setupUI()
@@ -67,7 +71,7 @@ class AiderOptionsPanel(
             anchor = GridBagConstraints.WEST
             insets = JBUI.insets(0, 2)
         }
-        
+
         // LLM selection
         add(JBLabel("LLM:").apply {
             displayedMnemonic = KeyEvent.VK_L
@@ -77,20 +81,20 @@ class AiderOptionsPanel(
             gridx = 0
             gridy = 0
         })
-        
+
         add(llmComboBox, gbc.apply {
             gridx = 1
             gridy = 0
             weightx = 0.3
         })
-        
+
         // Yes flag
         add(yesCheckBox, gbc.apply {
             gridx = 2
             gridy = 0
             insets.left = 10
         })
-        
+
         // Additional args
         add(JBLabel("Args:").apply {
             displayedMnemonic = KeyEvent.VK_A
@@ -101,7 +105,7 @@ class AiderOptionsPanel(
             gridy = 0
             insets.left = 10
         })
-        
+
         add(additionalArgsField, gbc.apply {
             gridx = 4
             gridy = 0
