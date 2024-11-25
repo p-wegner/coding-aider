@@ -22,6 +22,7 @@ class AiderSettingsConfigurable() : Configurable {
     private var llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
     private val llmComboBox: JComboBox<LlmSelection>
     private val customProviderService = CustomLlmProviderService.getInstance()
+    private val customProviderListener: () -> Unit = { updateLlmOptions() }
     private val manageProvidersButton = JButton("Manage Providers...").apply {
         addActionListener {
             CustomLlmProviderDialog().show()
@@ -369,6 +370,7 @@ class AiderSettingsConfigurable() : Configurable {
 
     override fun disposeUIResources() {
         updateApiKeyFieldsOnClose()
+        customProviderService.removeSettingsChangeListener(customProviderListener)
         settingsComponent = null
         // Ensure that any pending changes are saved
         if (isModified) {
@@ -393,9 +395,7 @@ class AiderSettingsConfigurable() : Configurable {
 
     init {
         this.llmComboBox = llmComboBox(llmOptions)
-        customProviderService.addSettingsChangeListener {
-            updateLlmOptions()
-        }
+        customProviderService.addSettingsChangeListener(customProviderListener)
     }
 
     private fun llmComboBox(llmOptions: Array<LlmSelection>): JComboBox<LlmSelection> = object : JComboBox<LlmSelection>(llmOptions) {
