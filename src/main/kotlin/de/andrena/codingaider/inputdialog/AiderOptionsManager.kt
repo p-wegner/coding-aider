@@ -19,10 +19,11 @@ import javax.swing.UIManager
 class AiderOptionsManager(
     private val project: Project,
     private val apiKeyChecker: ApiKeyChecker,
-    private val onOptionsChanged: () -> Unit
+    private val onOptionsChanged: () -> Unit,
+    private val sharedOptionsPanel: AiderOptionsPanel? = null
 ) {
     private val projectSettings = AiderProjectSettings.getInstance(project)
-    private val optionsPanel = AiderOptionsPanel(apiKeyChecker = apiKeyChecker)
+    private val optionsPanel = sharedOptionsPanel ?: AiderOptionsPanel(apiKeyChecker = apiKeyChecker)
     private val flagAndArgsPanel by lazy { optionsPanel }
     private val wrappedOptionsPanel by lazy {
         Wrapper().apply {

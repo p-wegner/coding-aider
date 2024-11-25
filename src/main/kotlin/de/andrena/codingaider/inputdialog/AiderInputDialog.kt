@@ -102,7 +102,7 @@ class AiderInputDialog(
     private val persistentFileService: PersistentFileService
     private var splitPane: OnePixelSplitter
     private val settingsButton: ActionButton
-    private val optionsManager = AiderOptionsManager(project, apiKeyChecker) { updateTokenCount() }
+    private val optionsManager = AiderOptionsManager(project, apiKeyChecker, { updateTokenCount() }, optionsPanel)
 
     init {
         title = "Aider Command"
