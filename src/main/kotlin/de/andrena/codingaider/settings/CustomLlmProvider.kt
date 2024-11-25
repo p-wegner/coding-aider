@@ -5,7 +5,8 @@ data class CustomLlmProvider(
     var type: LlmProviderType = LlmProviderType.OPENAI,
     var baseUrl: String = "",
     var modelName: String = "",
-    var hidden: Boolean = false
+    var hidden: Boolean = false,
+    var isBuiltIn: Boolean = false
 ) {
     val prefixedModelName: String
         get() {
