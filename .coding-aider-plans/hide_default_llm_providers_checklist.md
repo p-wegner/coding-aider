@@ -10,10 +10,10 @@
 
 ## UI Updates
 
-- [ ] Modify CustomLlmProviderDialog to handle default provider visibility
-- [ ] Update provider list display to show hidden state for default providers
-- [ ] Enable hide/show button for default providers
-- [ ] Update button states based on provider type
+- [x] Modify CustomLlmProviderDialog to handle default provider visibility
+- [x] Update provider list display to show hidden state for default providers
+- [x] Enable hide/show button for default providers
+- [x] Update button states based on provider type
 
 ## Service Layer
 

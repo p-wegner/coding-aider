@@ -52,13 +52,20 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
                 val selectedValue = providersList.selectedValue
                 val isBuiltIn = selectedValue?.startsWith("[Built-in]") ?: false
                 val hasSelection = providersList.selectedIndex != -1
+                val defaultSettings = service<DefaultProviderSettings>()
 
                 val provider = getSelectedProvider()
+                val selectedLlm = if (isBuiltIn) getSelectedBuiltInProvider() else null
+                
                 editButton.isEnabled = hasSelection && !isBuiltIn
                 copyButton.isEnabled = hasSelection
                 removeButton.isEnabled = hasSelection && !isBuiltIn
-                hideButton.isEnabled = hasSelection && !isBuiltIn
-                hideButton.text = if (provider?.hidden == true) "Show Provider" else "Hide Provider"
+                hideButton.isEnabled = hasSelection
+                hideButton.text = when {
+                    provider?.hidden == true -> "Show Provider"
+                    selectedLlm?.let { defaultSettings.hiddenProviders.contains(it) } == true -> "Show Provider"
+                    else -> "Hide Provider"
+                }
             }
         }
     }
@@ -66,8 +73,10 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
     private fun updateProvidersList() {
         providersListModel.clear()
         // Add built-in providers
+        val defaultSettings = service<DefaultProviderSettings>()
         service<DefaultApiKeyChecker>().getAllStandardLlmKeys().forEach { llm ->
-            providersListModel.addElement("[Built-in] $llm")
+            val prefix = if (defaultSettings.hiddenProviders.contains(llm)) "[Built-in] [Hidden]" else "[Built-in]"
+            providersListModel.addElement("$prefix $llm")
         }
         // Add custom providers
         providerService.getAllProviders().forEach { provider ->
@@ -87,9 +96,31 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
         return providerService.getAllProviders()[selectedIndex - builtInCount]
     }
 
+    private fun getSelectedBuiltInProvider(): String? {
+        val selectedIndex = providersList.selectedIndex
+        if (selectedIndex < 0) return null
+        
+        val builtInProviders = service<DefaultApiKeyChecker>().getAllStandardLlmKeys()
+        return if (selectedIndex < builtInProviders.size) builtInProviders[selectedIndex] else null
+    }
+
     private fun toggleProviderVisibility() {
-        val provider = getSelectedProvider() ?: return
-        providerService.toggleProviderVisibility(provider.name)
+        val selectedIndex = providersList.selectedIndex
+        if (selectedIndex < 0) return
+
+        val defaultSettings = service<DefaultProviderSettings>()
+        val builtInProvider = getSelectedBuiltInProvider()
+        
+        if (builtInProvider != null) {
+            if (defaultSettings.hiddenProviders.contains(builtInProvider)) {
+                defaultSettings.hiddenProviders.remove(builtInProvider)
+            } else {
+                defaultSettings.hiddenProviders.add(builtInProvider)
+            }
+        } else {
+            val provider = getSelectedProvider() ?: return
+            providerService.toggleProviderVisibility(provider.name)
+        }
         updateProvidersList()
     }
 
