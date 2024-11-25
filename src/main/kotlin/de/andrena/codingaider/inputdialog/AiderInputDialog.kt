@@ -1,7 +1,10 @@
 package de.andrena.codingaider.inputdialog
 
 import com.intellij.icons.AllIcons
-import com.intellij.openapi.actionSystem.*
+import com.intellij.openapi.actionSystem.ActionToolbar
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.components.service
@@ -21,7 +24,9 @@ import com.intellij.util.textCompletion.TextCompletionUtil
 import com.intellij.util.ui.JBUI
 import de.andrena.codingaider.actions.ide.SettingsAction
 import de.andrena.codingaider.command.FileData
-import de.andrena.codingaider.services.*
+import de.andrena.codingaider.services.AiderDialogStateService
+import de.andrena.codingaider.services.PersistentFileService
+import de.andrena.codingaider.services.TokenCountService
 import de.andrena.codingaider.services.plans.AiderPlanPromptService
 import de.andrena.codingaider.settings.AiderProjectSettings
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
@@ -29,7 +34,10 @@ import de.andrena.codingaider.settings.LlmSelection
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.CollapsiblePanel
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
-import java.awt.*
+import java.awt.BorderLayout
+import java.awt.Dimension
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
 import java.awt.event.KeyEvent
 import javax.swing.*
 
@@ -81,9 +89,8 @@ class AiderInputDialog(
     val allFileTokens by lazyCacheDelegate
 
 
-
     private val projectSettings = AiderProjectSettings.getInstance(project)
-    private val optionsPanel = AiderOptionsPanel(apiKeyChecker =  apiKeyChecker)
+    private val optionsPanel = AiderOptionsPanel(apiKeyChecker = apiKeyChecker)
     private var initialMode = if (settings.isShellMode) AiderMode.SHELL
     else if (settings.useStructuredMode) AiderMode.STRUCTURED
     else AiderMode.NORMAL
@@ -92,7 +99,8 @@ class AiderInputDialog(
     private val modeSegmentedButtonPanel: DialogPanel
     private val messageLabel: JLabel
     private val tokenCountLabel = JLabel("0 tokens").apply {
-        toolTipText = "The actual token count may vary depending on the model. The displayed number uses GPT-4O encoding as a heuristic."
+        toolTipText =
+            "The actual token count may vary depending on the model. The displayed number uses GPT-4O encoding as a heuristic."
         foreground = UIManager.getColor("Label.disabledForeground")
         border = JBUI.Borders.empty(2, 5)
         horizontalAlignment = SwingConstants.RIGHT
@@ -102,14 +110,15 @@ class AiderInputDialog(
     private val persistentFileService: PersistentFileService
     private var splitPane: OnePixelSplitter
     private val settingsButton: ActionButton
-    private val optionsManager = AiderOptionsManager(project, apiKeyChecker, { updateTokenCount() }, optionsPanel)
+    private val optionsManager = AiderOptionsManager(project, optionsPanel) { updateTokenCount() }
 
     init {
         title = "Aider Command"
         messageLabel = JLabel(PROMPT_LABEL)
 
         persistentFileService = project.service<PersistentFileService>()
-        aiderContextView = AiderContextView(project,
+        aiderContextView = AiderContextView(
+            project,
             files + persistentFileService.getPersistentFiles(),
             { fileName -> insertTextAtCursor(fileName) },
             {
@@ -141,7 +150,8 @@ class AiderInputDialog(
         setupKeyBindings()
         // TODO: introduce proper encapsulation for this
         optionsManager.llmComboBox.selectedItem = settings.llm
-        optionsManager.llmComboBox.renderer = LlmComboBoxRenderer(apiKeyChecker, optionsManager.llmComboBox, optionsPanel.llmOptions)
+        optionsManager.llmComboBox.renderer =
+            LlmComboBoxRenderer(apiKeyChecker, optionsManager.llmComboBox, optionsPanel.llmOptions)
         optionsManager.yesCheckBox.isSelected = settings.useYesFlag
         optionsManager.additionalArgsField.text = settings.additionalArgs
 
@@ -232,14 +242,15 @@ class AiderInputDialog(
             weightx = 0.7
             fill = GridBagConstraints.HORIZONTAL
         })
-        val restoreButton = ActionButton(object : AnAction() {
-            override fun actionPerformed(e: AnActionEvent) {
-                restoreLastState()
-            }
-        }, Presentation("Restore To Last Executed Command").apply {
-            icon = AllIcons.Actions.Rollback
-            description = "Restore dialog to last used state"
-        }, "AiderRestoreButton", ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
+        val restoreButton = ActionButton(
+            object : AnAction() {
+                override fun actionPerformed(e: AnActionEvent) {
+                    restoreLastState()
+                }
+            }, Presentation("Restore To Last Executed Command").apply {
+                icon = AllIcons.Actions.Rollback
+                description = "Restore dialog to last used state"
+            }, "AiderRestoreButton", ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
         )
 
         firstRowPanel.add(restoreButton, GridBagConstraints().apply {
@@ -270,7 +281,7 @@ class AiderInputDialog(
         gbc.gridy++
         gbc.weighty = 1.0
         gbc.fill = GridBagConstraints.BOTH
-        
+
         // Create a panel to hold input field and token count
         val inputPanel = JPanel(BorderLayout())
         inputPanel.add(inputTextField, BorderLayout.CENTER)
@@ -282,7 +293,7 @@ class AiderInputDialog(
         gbc.weighty = 0.0
         gbc.fill = GridBagConstraints.HORIZONTAL
 
-        topPanel.add(optionsManager.collapseButton, gbc.apply { 
+        topPanel.add(optionsManager.collapseButton, gbc.apply {
             gridy++
             fill = GridBagConstraints.HORIZONTAL
             weightx = 1.0
@@ -298,8 +309,8 @@ class AiderInputDialog(
         )
 
         val contextPanel = JPanel(BorderLayout()).apply {
-            add(contextCollapsible.headerPanel.apply { 
-                border = JBUI.Borders.empty(2) 
+            add(contextCollapsible.headerPanel.apply {
+                border = JBUI.Borders.empty(2)
             }, BorderLayout.NORTH)
             add(contextCollapsible.contentPanel, BorderLayout.CENTER)
             border = JBUI.Borders.empty(5)
@@ -334,7 +345,8 @@ class AiderInputDialog(
 
     private fun getStructuredModeMessageLabel(): String {
         val existingPlans =
-            project.service<AiderPlanPromptService>().filterPlanRelevantFiles(persistentFileService.getPersistentFiles())
+            project.service<AiderPlanPromptService>()
+                .filterPlanRelevantFiles(persistentFileService.getPersistentFiles())
         if (existingPlans.isNotEmpty()) {
             val firstPlan = existingPlans.first()
             val planName = firstPlan.filePath.substringAfterLast("/")
@@ -343,7 +355,6 @@ class AiderInputDialog(
         return "Enter feature description that will be used to create a plan:"
     }
 
-    
 
     private fun restoreLastState() {
         AiderDialogStateService.getInstance(project).getLastState()?.let { state ->

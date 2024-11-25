@@ -1,8 +1,10 @@
 package de.andrena.codingaider.settings
 
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.components.*
-import com.intellij.openapi.project.Project
+import com.intellij.openapi.components.PersistentStateComponent
+import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.State
+import com.intellij.openapi.components.Storage
 import de.andrena.codingaider.utils.ApiKeyManager
 
 @Service(Service.Level.APP)
@@ -11,7 +13,7 @@ import de.andrena.codingaider.utils.ApiKeyManager
     storages = [Storage("customLlmProviders.xml")]
 )
 class CustomLlmProviderService : PersistentStateComponent<CustomLlmProviderService.State> {
-    
+
     class State {
         var providers: MutableList<CustomLlmProvider> = mutableListOf()
     }
@@ -28,6 +30,10 @@ class CustomLlmProviderService : PersistentStateComponent<CustomLlmProviderServi
 
     fun addSettingsChangeListener(listener: () -> Unit) {
         settingsChangeListeners.add(listener)
+    }
+
+    fun removeSettingsChangeListener(listener: () -> Unit) {
+        settingsChangeListeners.remove(listener)
     }
 
     private fun notifySettingsChanged() {
@@ -51,7 +57,7 @@ class CustomLlmProviderService : PersistentStateComponent<CustomLlmProviderServi
     }
 
     fun getAllProviders(): List<CustomLlmProvider> = myState.providers.toList()
-    
+
     fun getVisibleProviders(): List<CustomLlmProvider> = myState.providers.filter { !it.hidden }
 
     fun toggleProviderVisibility(name: String) {
@@ -62,6 +68,7 @@ class CustomLlmProviderService : PersistentStateComponent<CustomLlmProviderServi
             notifySettingsChanged()
         }
     }
+
 
     companion object {
         fun getInstance(): CustomLlmProviderService =
