@@ -2,10 +2,7 @@ package de.andrena.codingaider.utils
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
-import de.andrena.codingaider.settings.CustomLlmProvider
-import de.andrena.codingaider.settings.CustomLlmProviderService
-import de.andrena.codingaider.settings.LlmProviderType
-import de.andrena.codingaider.settings.LlmSelection
+import de.andrena.codingaider.settings.*
 import java.io.File
 import java.time.Duration
 import java.time.Instant
@@ -20,6 +17,7 @@ interface ApiKeyChecker {
     fun getApiKeyValue(apiKeyName: String): String?
     fun getApiKeysForDocker(): Map<String, String>
 }
+
 @Service(Service.Level.APP)
 class DefaultApiKeyChecker : ApiKeyChecker {
     private val llmToApiKeyMap = mapOf(
@@ -60,7 +58,7 @@ class DefaultApiKeyChecker : ApiKeyChecker {
         if (standardApiKey != null) {
             return isApiKeyAvailable(standardApiKey)
         }
-        
+
         // Check custom providers
         val customProvider = getCustomProvider(llm)
         if (customProvider != null) {
@@ -68,12 +66,12 @@ class DefaultApiKeyChecker : ApiKeyChecker {
             if (!customProvider.type.requiresApiKey) {
                 return true
             }
-            
+
             // Check for API key
             val apiKeyName = customProvider.type.getApiKeyName()
             return isApiKeyAvailable(apiKeyName)
         }
-        
+
         return true // If no provider found, assume no API key needed
     }
 
@@ -84,13 +82,13 @@ class DefaultApiKeyChecker : ApiKeyChecker {
     override fun getApiKeyForLlm(llm: String): String? {
         // Check standard providers
         llmToApiKeyMap[llm]?.let { return it }
-        
+
         // Check custom providers
         val customProvider = getCustomProvider(llm)
         if (customProvider != null) {
             return customProvider.type.getApiKeyName()
         }
-        
+
         return null
     }
 
@@ -102,13 +100,13 @@ class DefaultApiKeyChecker : ApiKeyChecker {
         return standardOptions + customOptions
     }
 
-    private fun getStandardOptions(defaultSettings: DefaultProviderSettings): List<LlmSelection> = 
+    private fun getStandardOptions(defaultSettings: DefaultProviderSettings): List<LlmSelection> =
         listOf(LlmSelection("")) + llmToApiKeyMap.keys
             .filterNot { defaultSettings.hiddenProviders.contains(it) }
             .map { LlmSelection(it, isBuiltIn = true) }
 
     override fun getAllApiKeyNames(): List<String> = llmToApiKeyMap.values.distinct()
-    
+
     fun getAllStandardLlmKeys(): List<String> = llmToApiKeyMap.keys.toList()
 
     override fun getApiKeyValue(apiKeyName: String): String? {
@@ -161,25 +159,25 @@ class DefaultApiKeyChecker : ApiKeyChecker {
 
     override fun getApiKeysForDocker(): Map<String, String> {
         val standardKeys = llmToApiKeyMap.values.distinct()
-            .mapNotNull { apiKeyName -> 
+            .mapNotNull { apiKeyName ->
                 getApiKeyValue(apiKeyName)?.let { apiKeyName to it }
             }
-            
+
         val customKeys = service<CustomLlmProviderService>().getAllProviders()
             .filter { it.type.requiresApiKey }
             .mapNotNull { provider ->
                 val keyName = getProviderApiKeyName(provider)
                 ApiKeyManager.getCustomModelKey(provider.name)?.let { keyName to it }
             }
-            
+
         return (standardKeys + customKeys).toMap()
     }
 
     fun getLlmSelectionForName(string: String): LlmSelection {
-        return getStandardOptions().find { it.name == string } ?:
-        service<CustomLlmProviderService>().getProvider(string).let {
-            LlmSelection(string, provider = it, isBuiltIn = false)
-        }
+        return getStandardOptions().find { it.name == string }
+            ?: service<CustomLlmProviderService>().getProvider(string).let {
+                LlmSelection(string, provider = it, isBuiltIn = false)
+            }
 
 
     }
