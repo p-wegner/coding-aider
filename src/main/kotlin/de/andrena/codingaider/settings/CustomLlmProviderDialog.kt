@@ -19,25 +19,30 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
 
     private val addButton = javax.swing.JButton("Add Provider").apply {
         addActionListener { addProvider() }
+        mnemonic = java.awt.event.KeyEvent.VK_A
     }
 
     private val editButton = javax.swing.JButton("Edit Provider").apply {
         addActionListener { editProvider() }
+        mnemonic = java.awt.event.KeyEvent.VK_E
         isEnabled = false
     }
 
     private val copyButton = javax.swing.JButton("Copy Provider").apply {
         addActionListener { copyProvider() }
+        mnemonic = java.awt.event.KeyEvent.VK_C
         isEnabled = false
     }
 
     private val removeButton = javax.swing.JButton("Remove Provider").apply {
         addActionListener { removeProvider() }
+        mnemonic = java.awt.event.KeyEvent.VK_R
         isEnabled = false
     }
 
     private val hideButton = javax.swing.JButton("Hide Provider").apply {
         addActionListener { toggleProviderVisibility() }
+        mnemonic = java.awt.event.KeyEvent.VK_H
         isEnabled = false
     }
 
