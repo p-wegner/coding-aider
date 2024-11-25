@@ -41,13 +41,12 @@ class AiderOptionsPanel(
         preferredSize = Dimension(200, preferredSize.height)
     }
 
+    private val customProviderListener: () -> Unit = { updateLlmOptions() }
+    private val defaultProviderListener: () -> Unit = { updateLlmOptions() }
+
     init {
-        CustomLlmProviderService.getInstance().addSettingsChangeListener {
-            updateLlmOptions()
-        }
-        service<DefaultProviderSettings>().addChangeListener {
-            updateLlmOptions()
-        }
+        CustomLlmProviderService.getInstance().addSettingsChangeListener(customProviderListener)
+        service<DefaultProviderSettings>().addChangeListener(defaultProviderListener)
         setupUI()
         // Set initial selection from settings
         llmComboBox.selectedItem = llmOptions.find { it.name == settings.llm }
@@ -55,6 +54,11 @@ class AiderOptionsPanel(
             val selected = llmComboBox.selectedItem as? LlmSelection
             selected?.let { settings.llm = it.name }
         }
+    }
+
+    fun dispose() {
+        CustomLlmProviderService.getInstance().removeSettingsChangeListener(customProviderListener)
+        service<DefaultProviderSettings>().removeChangeListener(defaultProviderListener)
     }
 
     private fun updateLlmOptions() {

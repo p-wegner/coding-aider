@@ -46,10 +46,16 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
         isEnabled = false
     }
 
+    private val defaultSettingsListener: () -> Unit = { updateProvidersList() }
+
     init {
         title = "Manage Custom LLM Providers"
         init()
         setSize(600, 400)
+        
+        val defaultSettings = service<DefaultProviderSettings>()
+        defaultSettings.addChangeListener(defaultSettingsListener)
+
         updateProvidersList()
 
         providersList.addListSelectionListener { event ->
@@ -57,7 +63,6 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
                 val selectedValue = providersList.selectedValue
                 val isBuiltIn = selectedValue?.startsWith("[Built-in]") ?: false
                 val hasSelection = providersList.selectedIndex != -1
-                val defaultSettings = service<DefaultProviderSettings>()
 
                 val provider = getSelectedProvider()
                 val selectedLlm = if (isBuiltIn) getSelectedBuiltInProvider() else null
@@ -73,6 +78,12 @@ class CustomLlmProviderDialog : DialogWrapper(null) {
                 }
             }
         }
+    }
+
+    override fun dispose() {
+        val defaultSettings = service<DefaultProviderSettings>()
+        defaultSettings.removeChangeListener(defaultSettingsListener)
+        super.dispose()
     }
 
     private fun updateProvidersList() {
