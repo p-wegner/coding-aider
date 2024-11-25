@@ -1,7 +1,12 @@
 package de.andrena.codingaider.settings
 
-import com.intellij.openapi.components.*
+import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.components.PersistentStateComponent
+import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.State
+import com.intellij.openapi.components.Storage
 
+@Service(Service.Level.APP)
 @State(
     name = "DefaultProviderSettings",
     storages = [Storage("codingAiderDefaultProviders.xml")]
@@ -17,6 +22,8 @@ data class DefaultProviderSettings(
     }
 
     companion object {
-        fun getInstance(): DefaultProviderSettings = service()
+        fun getInstance(): DefaultProviderSettings =
+            ApplicationManager.getApplication().getService(DefaultProviderSettings::class.java)
+
     }
 }
