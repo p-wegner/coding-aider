@@ -15,13 +15,6 @@ data class DefaultProviderSettings(
     var hiddenProviders: MutableSet<String> = mutableSetOf()
 ) : PersistentStateComponent<DefaultProviderSettings> {
 
-    fun toggleProviderVisibility(providerName: String) {
-        if (hiddenProviders.contains(providerName)) {
-            hiddenProviders.remove(providerName)
-        } else {
-            hiddenProviders.add(providerName)
-        }
-    }
 
     fun isProviderHidden(providerName: String): Boolean {
         return hiddenProviders.contains(providerName)
