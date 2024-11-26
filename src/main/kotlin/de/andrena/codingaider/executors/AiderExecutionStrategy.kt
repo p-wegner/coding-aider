@@ -185,16 +185,25 @@ class DockerAiderExecutionStrategy(
         when (customProvider?.type) {
             LlmProviderType.OLLAMA -> {
                 // For Ollama, we need to ensure network access to the host
-                // TODO: set env like in setApiKeyEnvironmentVariables
                 dockerArgs.addAll(listOf("--network", "host"))
+                customProvider.baseUrl.takeIf { it.isNotEmpty() }?.let { baseUrl ->
+                    dockerArgs.addAll(listOf("-e", "OLLAMA_HOST=$baseUrl"))
+                }
             }
 
             LlmProviderType.OPENAI -> {
-                // TODO: set env like in setApiKeyEnvironmentVariables
+                ApiKeyManager.getCustomModelKey(customProvider.name)?.let { apiKey ->
+                    dockerArgs.addAll(listOf("-e", "OPENAI_API_KEY=$apiKey"))
+                    if (customProvider.baseUrl.isNotEmpty()) {
+                        dockerArgs.addAll(listOf("-e", "OPENAI_API_BASE=${customProvider.baseUrl}"))
+                    }
+                }
             }
 
             LlmProviderType.OPENROUTER -> {
-                // TODO: set env like in setApiKeyEnvironmentVariables
+                ApiKeyManager.getCustomModelKey(customProvider.name)?.let { apiKey ->
+                    dockerArgs.addAll(listOf("-e", "OPENROUTER_API_KEY=$apiKey"))
+                }
             }
 
             null -> {} // No special configuration needed
