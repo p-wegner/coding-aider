@@ -76,11 +76,6 @@ class SidecarProcessInitializer(private val project: Project, private val cs: Co
         }
     }
 
-    private fun scheduleHealthCheck() {
-        // TODO: Implement periodic health check for sidecar process
-        // This could involve checking process status and restarting if needed
-    }
-
     private fun createInitializationCommandData(): CommandData {
         return CommandData(
             message = "",
