@@ -15,6 +15,7 @@ object GitUtils {
         }.get()
     }
 
+    // TODO: why does this slow down the editor when the action is no even called?
     fun openGitComparisonTool(project: Project, commitHash: String, afterAction: () -> Unit) {
         getApplication().executeOnPooledThread<Unit> {
             val repository = getGitRepository(project)
@@ -30,6 +31,7 @@ object GitUtils {
         }
     }
 
+    //
     private fun getChangesSince(repository: GitRepository, commitHash: String): List<Change> {
         return getApplication().runReadAction<List<Change>> {
             val root = repository.root

@@ -376,6 +376,10 @@ class AiderInputDialog(
         }
     }
 
+    override fun dispose() {
+        optionsPanel.dispose()
+        super.dispose()
+    }
 
 }
 

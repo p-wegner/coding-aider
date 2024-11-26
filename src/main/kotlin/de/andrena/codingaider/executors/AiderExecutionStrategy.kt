@@ -119,6 +119,7 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
     }
 
 }
+
 class NativeAiderExecutionStrategy(
     project: Project,
     private val apiKeyChecker: ApiKeyChecker,
@@ -180,7 +181,7 @@ class DockerAiderExecutionStrategy(
         }
 
         // Add provider-specific Docker configurations
-        val customProvider = project.service<CustomLlmProviderService>().getProvider(commandData.llm)
+        val customProvider = service<CustomLlmProviderService>().getProvider(commandData.llm)
         when (customProvider?.type) {
             LlmProviderType.OLLAMA -> {
                 // For Ollama, we need to ensure network access to the host
