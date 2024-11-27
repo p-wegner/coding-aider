@@ -12,33 +12,39 @@ while allowing you complete control over the context utilized by the LLM.
 
 To utilize this plugin, you
 
-- must have a functional Aider installation (version 0.61.0 or higher)
+- must have a functional Aider installation (version 0.65.0 or higher)
 - or be able to run docker containers
 
 ## LLM Provider Configuration
-Configure API Keys for LLM Providers for Aider to use in its [.env](https://aider.chat/docs/config/dotenv.html) or [.yml](https://aider.chat/docs/config/aider_conf.html) files or by storing them safely in the plugin settings.
+
+Configure API Keys for LLM Providers for Aider to use in its [.env](https://aider.chat/docs/config/dotenv.html)
+or [.yml](https://aider.chat/docs/config/aider_conf.html) files or by storing them safely in the plugin settings.
 
 You can use:
+
 - Standard OpenAI models
 - Custom OpenAI-compatible API endpoints (like Azure, Anthropic, or local servers)
 - Ollama models
 
 ### Custom Model Configuration
+
 To configure a custom OpenAI-compatible model:
 
 1. Open Settings > Tools > Aider Settings
 2. In the "Custom Model" section:
-   - Enter the API Base URL (e.g., http://localhost:8000/v1)
-   - Enter the Model Name with "openai/" prefix (e.g., openai/gpt-4)
-   - Enter your API Key
+    - Enter the API Base URL (e.g., http://localhost:8000/v1)
+    - Enter the Model Name with "openai/" prefix (e.g., openai/gpt-4)
+    - Enter your API Key
 3. The custom model will appear in model selection dropdowns once configured
 
 For custom OpenAI-compatible APIs, you can configure:
+
 - Custom API base URL (e.g., http://localhost:8000/v1)
 - Custom API key
 - Model name prefixed with "openai/" (e.g., openai/gpt-4)
 
-For detailed configuration instructions, refer to the [Aider documentation](https://aider.chat/docs/llms/openai-compat.html).
+For detailed configuration instructions, refer to
+the [Aider documentation](https://aider.chat/docs/llms/openai-compat.html).
 
 ## Key Features
 
@@ -57,9 +63,9 @@ For detailed configuration instructions, refer to the [Aider documentation](http
 4. **Dual Execution Modes**:
     - IDE-based execution for seamless integration.
     - Shell-based execution
-      - for users who prefer Aider's rich terminal interaction 
-      - useful for easy context setup in the IDE 
-      - combinable with docker-based execution to simplify file system mounting
+        - for users who prefer Aider's rich terminal interaction
+        - useful for easy context setup in the IDE
+        - combinable with docker-based execution to simplify file system mounting
 
 5. **Git Integration**: Automatically launch a Git comparison tool post-Aider operations for easy change review.
 
@@ -93,13 +99,17 @@ For detailed configuration instructions, refer to the [Aider documentation](http
     - Simply describe a feature briefly, and the plugin will generate a detailed plan and checklist for you.
     - These plans and checklists are saved in the .coding-aider-plans directory and can be manually adjusted as needed.
     - Once a plan is created, Aider will automatically update it to reflect current progress and any new requirements.
-    - This mode aids in tracking the implementation progress of features and avoids time-consuming manual prompting for larger features.
-    - If a plan is active (i.e. its files are contained in the context), you can leave the message field empty, and Aider will continue working on the existing plan.
+    - This mode aids in tracking the implementation progress of features and avoids time-consuming manual prompting for
+      larger features.
+    - If a plan is active (i.e. its files are contained in the context), you can leave the message field empty, and
+      Aider will continue working on the existing plan.
     - Alternatively, you can use the [Continue Plan](./docs/actions.md) action to continue working on the existing plan.
     - The Tool Window will display an overview of existing plans and their progress.
-    - Further insights can be gained by reviewing the used system prompt in [AiderPlanPromptService](./src/main/kotlin/de/andrena/codingaider/services/plans/AiderPlanPromptService.kt).
+    - Further insights can be gained by reviewing the used system prompt
+      in [AiderPlanPromptService](./src/main/kotlin/de/andrena/codingaider/services/plans/AiderPlanPromptService.kt).
 14. **Aider Commands and Arguments**:
-    - If needed, you can specify additional [arguments](https://aider.chat/docs/config/options.html) for the Aider command in the settings or in the command window.
+    - If needed, you can specify additional [arguments](https://aider.chat/docs/config/options.html) for the Aider
+      command in the settings or in the command window.
 
 For a detailed description of all available actions, please refer to the [Actions Documentation](docs/actions.md).
 

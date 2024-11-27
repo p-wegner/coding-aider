@@ -20,7 +20,7 @@
         <h3>Important Note</h3>
         <p>To utilize this plugin, you</p>
         <ul>
-            <li>must have a functional Aider installation (version 0.61.0 or higher)</li>
+            <li>must have a functional Aider installation (version 0.65.0 or higher)</li>
             <li>or be able to run docker containers</li>
         </ul>
 
@@ -205,17 +205,17 @@
         </group>
 
         <group id="de.andrena.codingaider.actions.aider.FixCompileErrorActionGroup"
-                class="de.andrena.codingaider.actions.aider.FixCompileErrorActionGroup"
-                text="Fix with Aider"
-                icon="MyIcons.Tool"
-                description="Group of actions to fix compile errors with Aider"
-                popup="true">
+               class="de.andrena.codingaider.actions.aider.FixCompileErrorActionGroup"
+               text="Fix with Aider"
+               icon="MyIcons.Tool"
+               description="Group of actions to fix compile errors with Aider"
+               popup="true">
             <action id="de.andrena.codingaider.actions.aider.FixCompileErrorAction"
                     class="de.andrena.codingaider.actions.aider.FixCompileErrorAction"
                     text="Quick Fix Compile Error"
                     description="Fix compile error with Aider"/>
             <action id="de.andrena.codingaider.actions.aider.FixCompileErrorInteractive"
-                    class="de.andrena.codingaider.actions.aider.FixCompileErrorInteractive" 
+                    class="de.andrena.codingaider.actions.aider.FixCompileErrorInteractive"
                     text="Fix Compile Error (Interactive)"
                     description="Fix compile error with Aider interactively"/>
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>

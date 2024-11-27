@@ -50,6 +50,7 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
                     add("--no-suggest-shell-commands")
                     add("--no-pretty")
                     add("--no-fancy-input")
+                    add("--no-detect-urls")
                 }
                 if (commandData.additionalArgs.isNotEmpty()) {
                     addAll(commandData.additionalArgs.split(" "))
