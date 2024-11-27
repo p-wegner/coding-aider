@@ -38,6 +38,7 @@ class AiderContextView(
     private val rootNode = DefaultMutableTreeNode("Context")
     private val filesNode = DefaultMutableTreeNode("Files")
     private val markdownFilesNode = DefaultMutableTreeNode("Docs")
+    private val planFilesNode = DefaultMutableTreeNode("Plan Files")
     private val tree: Tree = Tree(rootNode)
     private val persistentFileService = project.getService(PersistentFileService::class.java)
     private val tokenCountService = project.getService(TokenCountService::class.java)
@@ -46,6 +47,7 @@ class AiderContextView(
     init {
         rootNode.add(filesNode)
         rootNode.add(markdownFilesNode)
+        rootNode.add(planFilesNode)
         selectedFilesChanged()
         tree.apply {
             isRootVisible = true
@@ -151,15 +153,22 @@ class AiderContextView(
         val expandedPaths = getExpandedPaths()
         filesNode.removeAllChildren()
         markdownFilesNode.removeAllChildren()
+        planFilesNode.removeAllChildren()
 
         val allUniqueFiles = (allFiles + persistentFiles).distinctBy { it.filePath }
 
         allUniqueFiles.forEach { fileData ->
             val node = DefaultMutableTreeNode(fileData)
-            if (fileData.filePath.endsWith(".md") && fileData.filePath.contains(AIDER_DOCS_FOLDER)) {
-                markdownFilesNode.add(node)
-            } else {
-                filesNode.add(node)
+            when {
+                fileData.filePath.contains(AiderPlanService.AIDER_PLANS_FOLDER) -> {
+                    planFilesNode.add(node)
+                }
+                fileData.filePath.endsWith(".md") && fileData.filePath.contains(AIDER_DOCS_FOLDER) -> {
+                    markdownFilesNode.add(node)
+                }
+                else -> {
+                    filesNode.add(node)
+                }
             }
         }
 
