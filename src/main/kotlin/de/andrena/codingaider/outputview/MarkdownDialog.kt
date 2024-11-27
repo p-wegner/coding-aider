@@ -257,21 +257,17 @@ class MarkdownDialog(
                                 val currentPlan = plans.firstOrNull { plan -> !plan.isPlanComplete() }
                                 // TODO: this is called multiple times, when the dialog closes
                                 if (currentPlan != null && getInstance().enableAutoPlanContinue) {
-                                    dispose()
                                     project.service<ContinuePlanService>().continuePlan(currentPlan)
-                                } else {
-                                    dispose()
                                 }
                             } catch (e: Exception) {
                                 println("Error during autoclose continuation: ${e.message}")
-                                dispose()
                             }
-                        } else {
-                            dispose()
                         }
                     } catch (e: Exception) {
                         println("Error during autoclose continuation: ${e.message}")
+                    } finally {
                         dispose()
+                        autoCloseTimer?.cancel()
                     }
                 }
             }

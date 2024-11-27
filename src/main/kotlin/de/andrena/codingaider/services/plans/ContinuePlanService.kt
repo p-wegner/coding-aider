@@ -13,9 +13,10 @@ import de.andrena.codingaider.settings.AiderSettings
 
 @Service(Service.Level.PROJECT)
 class ContinuePlanService(private val project: Project) {
+    var currentRunningPlan: AiderPlan? = null
     fun continuePlan(selectedPlan: AiderPlan) {
         try {
-            if (selectedPlan.isPlanComplete()) {
+            if (selectedPlan.isPlanComplete() || currentRunningPlan == selectedPlan) {
                 return
             }
             val fileSystem = LocalFileSystem.getInstance()
@@ -54,11 +55,14 @@ class ContinuePlanService(private val project: Project) {
                 aiderMode = AiderMode.STRUCTURED,
                 sidecarMode = settings.useSidecarMode
             )
+            // TODO: when to clear the field
+            currentRunningPlan = selectedPlan
 
             IDEBasedExecutor(project, commandData).execute()
         } catch (e: Exception) {
             println("Error during plan continuation: ${e.message}")
             throw e
+        } finally {
         }
     }
 }
