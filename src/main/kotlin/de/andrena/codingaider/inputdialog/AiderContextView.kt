@@ -163,9 +163,11 @@ class AiderContextView(
                 fileData.filePath.contains(AiderPlanService.AIDER_PLANS_FOLDER) -> {
                     planFilesNode.add(node)
                 }
-                fileData.filePath.endsWith(".md") && fileData.filePath.contains(AIDER_DOCS_FOLDER) -> {
+
+                fileData.filePath.contains(AIDER_DOCS_FOLDER) -> {
                     markdownFilesNode.add(node)
                 }
+
                 else -> {
                     filesNode.add(node)
                 }
