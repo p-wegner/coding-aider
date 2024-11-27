@@ -79,17 +79,20 @@ class AiderCompletionProvider(
     }
 
     private fun isClassLike(element: PsiElement): Boolean {
-        val type = element.node.elementType.toString().uppercase()
+        val node = element.node ?: return false
+        val type = node.elementType.toString().uppercase()
         return type.contains("CLASS") || type.contains("OBJECT") || type.contains("INTERFACE")
     }
 
     private fun isFunctionLike(element: PsiElement): Boolean {
-        val type = element.node.elementType.toString().uppercase()
+        val node = element.node ?: return false
+        val type = node.elementType.toString().uppercase()
         return type.contains("METHOD") || type.contains("FUNCTION") || type.contains("FUN") || type.contains("SCRIPT")
     }
 
     private fun isFieldLike(element: PsiElement): Boolean {
-        val type = element.node.elementType.toString().uppercase()
+        val node = element.node ?: return false
+        val type = node.elementType.toString().uppercase()
         return type.contains("FIELD") || type.contains("PROPERTY")
     }
 
