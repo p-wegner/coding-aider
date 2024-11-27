@@ -33,12 +33,16 @@ class ActivePlanService(private val project: Project) {
         return checked && children.all { it.isComplete() }
     }
 
-    fun handlePlanCompletion() {
+    fun handlePlanCompletion(success: Boolean = true) {
         activePlan?.let { plan ->
-            if (plan.isPlanComplete()) {
+            if (!success || plan.isPlanComplete()) {
                 clearActivePlan()
             }
         }
+    }
+
+    fun handlePlanError() {
+        clearActivePlan()
     }
 
     fun continuePlan() {
@@ -91,11 +95,7 @@ class ActivePlanService(private val project: Project) {
 
             setActivePlan(selectedPlan)
             IDEBasedExecutor(project, commandData) { success ->
-                if (success) {
-                    handlePlanCompletion()
-                } else {
-                    clearActivePlan() // Clear on failure to prevent stuck state
-                }
+                handlePlanCompletion(success)
             }.execute()
 
         } catch (e: Exception) {
