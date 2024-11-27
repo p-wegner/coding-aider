@@ -10,14 +10,16 @@ import de.andrena.codingaider.utils.FileTraversal
 
 @Service(Service.Level.PROJECT)
 class FileDataCollectionService(private val project: Project) {
-    // TODO: normalize paths before comparing them to ensure no duplicates
+    private fun normalizePath(path: String): String {
+        return path.replace('\\', '/').toLowerCase()
+    }
     fun collectAllFiles(
         files: Array<VirtualFile>
     ): List<FileData> {
         val persistentFileService = project.service<PersistentFileService>()
         val persistentFiles = persistentFileService.getPersistentFiles()
         val traversedFiles = FileTraversal.traverseFilesOrDirectories(files)
-            .filterNot { file -> persistentFiles.any { it.filePath == file.filePath } }
+            .filterNot { file -> persistentFiles.any { normalizePath(it.filePath) == normalizePath(file.filePath) } }
             .toMutableList()
 
         val settings = getInstance()
@@ -28,14 +30,14 @@ class FileDataCollectionService(private val project: Project) {
             emptyList()
         }
             .filterNot { docFile ->
-                persistentFiles.any { it.filePath == docFile.filePath } ||
-                        traversedFiles.any { it.filePath == docFile.filePath }
+                persistentFiles.any { normalizePath(it.filePath) == normalizePath(docFile.filePath) } ||
+                        traversedFiles.any { normalizePath(it.filePath) == normalizePath(docFile.filePath) }
             }
 
         traversedFiles.addAll(persistentFiles)
         traversedFiles.addAll(documentationFiles)
 
-        return traversedFiles.distinctBy { it.filePath }
+        return traversedFiles.distinctBy { normalizePath(it.filePath) }
     }
 
 }
