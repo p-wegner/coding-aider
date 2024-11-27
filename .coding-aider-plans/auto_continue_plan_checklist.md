@@ -2,26 +2,27 @@
 
 # Implementation Checklist
 
-- [ ] Add "Close and Continue" button to MarkdownDialog
-    - [ ] Create button with proper styling and mnemonics
-    - [ ] Position button in button panel
-    - [ ] Add visibility logic for structured mode (only show button if structured mode is used)
+- [x] Add "Close and Continue" button to MarkdownDialog
+    - [x] Create button with proper styling and mnemonics
+    - [x] Position button in button panel
+    - [x] Add visibility logic for structured mode
 
-- [ ] Implement continuation logic
-    - [ ] Create ContinuePlanService
-    - [ ] Add method to check for open checklist items
-    - [ ] Implement plan continuation trigger
+- [x] Implement continuation logic
+    - [x] Create ContinuePlanService
+    - [x] Add method to check for open checklist items
+    - [x] Implement plan continuation trigger
 
 - [ ] Add autoclose continuation
-    - [ ] Modify autoclose timer to check for continuation
+    - [ ] Modify autoclose timer to check for plan continuation
     - [ ] Add continuation logic to disposal process
+    - [ ] Handle edge cases during autoclose
 
-- [ ] Update UI components
-    - [ ] Modify button panel layout
-    - [ ] Update button states based on process status
-    - [ ] Add proper event handlers
+- [ ] Enhance UI behavior
+    - [ ] Improve button state management during continuation
+    - [ ] Add proper error handling for continuation failures
+    - [ ] Add progress indication during continuation
 
 - [ ] Testing and cleanup
-    - [ ] Test continuation scenarios
-    - [ ] Verify resource cleanup
-    - [ ] Check edge cases
+    - [ ] Test all continuation scenarios
+    - [ ] Verify proper resource cleanup
+    - [ ] Test error handling paths
