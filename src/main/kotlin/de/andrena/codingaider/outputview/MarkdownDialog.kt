@@ -60,6 +60,19 @@ class MarkdownDialog(
     private var closeAndContinueButton = JButton("Close & Continue").apply {
         mnemonic = KeyEvent.VK_N
         isVisible = false
+        addActionListener {
+            if (isProcessFinished) {
+                val runningService = project.service<RunningCommandService>()
+                val planService = project.service<AiderPlanService>()
+                val plans = planService.getAiderPlans()
+                val currentPlan = plans.firstOrNull { plan -> !plan.isPlanComplete() }
+                
+                if (currentPlan != null) {
+                    project.service<ContinuePlanService>().continuePlan(currentPlan)
+                }
+                dispose()
+            }
+        }
     }
     private var isProcessFinished = false
     private var autoScroll = true
@@ -222,6 +235,7 @@ class MarkdownDialog(
         invokeLater {
             closeButton.text = "Close"
             closeButton.mnemonic = KeyEvent.VK_C
+            closeAndContinueButton.isVisible = true
         }
     }
 
