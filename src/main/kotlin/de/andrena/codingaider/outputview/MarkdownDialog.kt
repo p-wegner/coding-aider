@@ -70,7 +70,7 @@ class MarkdownDialog(
                     val plans = planService.getAiderPlans()
                     val currentPlan = plans.firstOrNull { plan -> !plan.isPlanComplete() }
 
-                    if (currentPlan != null) {
+                    if (currentPlan != null && getInstance().enableAutoPlanContinue) {
                         dispose()
                         project.service<ContinuePlanService>().continuePlan(currentPlan)
                     } else {
@@ -255,7 +255,7 @@ class MarkdownDialog(
                                 val plans = planService.getAiderPlans()
                                 val currentPlan = plans.firstOrNull { plan -> !plan.isPlanComplete() }
 
-                                if (currentPlan != null) {
+                                if (currentPlan != null && getInstance().enableAutoPlanContinue) {
                                     dispose()
                                     project.service<ContinuePlanService>().continuePlan(currentPlan)
                                 } else {

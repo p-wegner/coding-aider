@@ -48,6 +48,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var dockerImageTag: String = AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION,
         var aiderExecutablePath: String = AiderDefaults.AIDER_EXECUTABLE_PATH,
         var documentationLlm: String = AiderDefaults.DOCUMENTATION_LLM,
+        var enableAutoPlanContinue: Boolean = AiderDefaults.ENABLE_AUTO_PLAN_CONTINUE,
         var optionsPanelCollapsed: Boolean = true,
     )
 
@@ -57,6 +58,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.documentationLlm
         set(value) {
             myState.documentationLlm = value
+        }
+
+    var enableAutoPlanContinue: Boolean
+        get() = myState.enableAutoPlanContinue
+        set(value) {
+            myState.enableAutoPlanContinue = value
         }
 
 
