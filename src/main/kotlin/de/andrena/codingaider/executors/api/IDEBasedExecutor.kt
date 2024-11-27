@@ -10,21 +10,26 @@ import de.andrena.codingaider.executors.CommandExecutor
 import de.andrena.codingaider.outputview.Abortable
 import de.andrena.codingaider.outputview.MarkdownDialog
 import de.andrena.codingaider.services.CommandSummaryService
-import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.services.PersistentFileService
-import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.services.RunningCommandService
-import de.andrena.codingaider.utils.GitUtils
+import de.andrena.codingaider.services.plans.AiderPlanService
+import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileRefresher
+import de.andrena.codingaider.utils.GitUtils
 import java.awt.EventQueue.invokeLater
 import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.concurrent.thread
 
+interface CommandFinishedCallback {
+    fun onCommandFinished(success: Boolean)
+}
+
 class IDEBasedExecutor(
     private val project: Project,
     private val commandData: CommandData,
+    private val commandFinishedCallback: CommandFinishedCallback? = null
 ) : CommandObserver, Abortable {
     private val log = Logger.getInstance(IDEBasedExecutor::class.java)
     private var markdownDialog: MarkdownDialog? = null
@@ -150,6 +155,7 @@ class IDEBasedExecutor(
         if (!commandData.options.disablePresentation) {
             presentChanges()
         }
+        commandFinishedCallback?.onCommandFinished(exitCode == 0)
     }
 
     private fun presentChanges() {

@@ -13,15 +13,15 @@ import de.andrena.codingaider.settings.AiderSettings
 
 @Service(Service.Level.PROJECT)
 class ContinuePlanService(private val project: Project) {
-    var currentRunningPlan: AiderPlan? = null
+    private var _currentRunningPlan: AiderPlan? = null
+
     fun continuePlan(selectedPlan: AiderPlan) {
         try {
-            if (selectedPlan.isPlanComplete() || currentRunningPlan == selectedPlan) {
+            if (selectedPlan.isPlanComplete() || _currentRunningPlan == selectedPlan) {
                 return
             }
             val fileSystem = LocalFileSystem.getInstance()
             val settings = AiderSettings.getInstance()
-            // TODO: this needs to support absolute paths and relative paths from the project root
 
             val virtualFiles: List<VirtualFile> =
                 selectedPlan.allFiles.mapNotNull {
@@ -56,9 +56,10 @@ class ContinuePlanService(private val project: Project) {
                 sidecarMode = settings.useSidecarMode
             )
             // TODO: when to clear the field
-            currentRunningPlan = selectedPlan
+            _currentRunningPlan = selectedPlan
 
             IDEBasedExecutor(project, commandData).execute()
+
         } catch (e: Exception) {
             println("Error during plan continuation: ${e.message}")
             throw e

@@ -253,6 +253,7 @@ class MarkdownDialog(
                             try {
                                 val planService = project.service<AiderPlanService>()
                                 val plans = planService.getAiderPlans()
+
                                 // TODO: continue the current plan instead of the first incomplete plan
                                 val currentPlan = plans.firstOrNull { plan -> !plan.isPlanComplete() }
                                 // TODO: this is called multiple times, when the dialog closes
