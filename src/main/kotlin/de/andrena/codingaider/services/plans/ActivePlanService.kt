@@ -25,6 +25,22 @@ class ActivePlanService(private val project: Project) {
         activePlan = null
     }
 
+    private fun AiderPlan.isPlanComplete(): Boolean {
+        return checklist.all { item -> item.isComplete() }
+    }
+
+    private fun ChecklistItem.isComplete(): Boolean {
+        return checked && children.all { it.isComplete() }
+    }
+
+    fun handlePlanCompletion() {
+        activePlan?.let { plan ->
+            if (plan.isPlanComplete()) {
+                clearActivePlan()
+            }
+        }
+    }
+
     fun continuePlan() {
         activePlan?.let { plan ->
             executePlanContinuation(plan)
@@ -74,7 +90,13 @@ class ActivePlanService(private val project: Project) {
             )
 
             setActivePlan(selectedPlan)
-            IDEBasedExecutor(project, commandData).execute()
+            IDEBasedExecutor(project, commandData) { success ->
+                if (success) {
+                    handlePlanCompletion()
+                } else {
+                    clearActivePlan() // Clear on failure to prevent stuck state
+                }
+            }.execute()
 
         } catch (e: Exception) {
             println("Error during plan continuation: ${e.message}")
