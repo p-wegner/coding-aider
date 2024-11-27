@@ -218,16 +218,21 @@ class MarkdownDialog(
                     title = "$initialTitle - Closing in $remainingSeconds seconds"
                     remainingSeconds--
                 } else {
-                    if (isProcessFinished) {
-                        val planService = project.service<AiderPlanService>()
-                        val plans = planService.getAiderPlans()
-                        val currentPlan = plans.firstOrNull { plan -> !plan.isPlanComplete() }
+                    try {
+                        if (isProcessFinished) {
+                            val planService = project.service<AiderPlanService>()
+                            val plans = planService.getAiderPlans()
+                            val currentPlan = plans.firstOrNull { plan -> !plan.isPlanComplete() }
 
-                        dispose()
-                        if (currentPlan != null) {
-                            project.service<ContinuePlanService>().continuePlan(currentPlan)
+                            dispose()
+                            if (currentPlan != null) {
+                                project.service<ContinuePlanService>().continuePlan(currentPlan)
+                            }
+                        } else {
+                            dispose()
                         }
-                    } else {
+                    } catch (e: Exception) {
+                        println("Error during autoclose continuation: ${e.message}")
                         dispose()
                     }
                 }

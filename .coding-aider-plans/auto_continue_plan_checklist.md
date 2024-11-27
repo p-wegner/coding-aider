@@ -12,10 +12,10 @@
     - [x] Add method to check for open checklist items
     - [x] Implement plan continuation trigger
 
-- [ ] Add autoclose continuation
-    - [ ] Modify autoclose timer to check for plan continuation
-    - [ ] Add continuation logic to disposal process
-    - [ ] Handle edge cases during autoclose
+- [x] Add autoclose continuation
+    - [x] Modify autoclose timer to check for plan continuation
+    - [x] Add continuation logic to disposal process
+    - [x] Handle edge cases during autoclose
 
 - [ ] Enhance UI behavior
     - [ ] Improve button state management during continuation
