@@ -63,27 +63,13 @@ class MarkdownDialog(
         isVisible = false
         addActionListener {
             if (isProcessFinished) {
-                val runningService = project.service<RunningCommandService>()
                 val planService = project.service<AiderPlanService>()
                 val plans = planService.getAiderPlans()
                 val currentPlan = plans.firstOrNull { plan -> !plan.isPlanComplete() }
 
+                dispose()
                 if (currentPlan != null) {
-                    if (isProcessFinished) {
-                        val planService = project.service<AiderPlanService>()
-                        val plans = planService.getAiderPlans()
-                        val currentPlan = plans.firstOrNull { plan -> !plan.isPlanComplete() }
-
-                        dispose()
-                        if (currentPlan != null) {
-                            project.service<ContinuePlanService>().continuePlan(currentPlan)
-                        }
-                    } else {
-                        dispose()
-                    }
                     project.service<ContinuePlanService>().continuePlan(currentPlan)
-                } else {
-                    dispose()
                 }
             }
         }
@@ -232,7 +218,18 @@ class MarkdownDialog(
                     title = "$initialTitle - Closing in $remainingSeconds seconds"
                     remainingSeconds--
                 } else {
-                    dispose()
+                    if (isProcessFinished) {
+                        val planService = project.service<AiderPlanService>()
+                        val plans = planService.getAiderPlans()
+                        val currentPlan = plans.firstOrNull { plan -> !plan.isPlanComplete() }
+
+                        dispose()
+                        if (currentPlan != null) {
+                            project.service<ContinuePlanService>().continuePlan(currentPlan)
+                        }
+                    } else {
+                        dispose()
+                    }
                 }
             }
         }
