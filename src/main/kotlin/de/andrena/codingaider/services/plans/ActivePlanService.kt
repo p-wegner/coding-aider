@@ -46,40 +46,33 @@ class ActivePlanService(private val project: Project) {
     }
 
     fun continuePlan() {
-        activePlan?.let { plan ->
+        try {
+            val plan = activePlan ?: throw IllegalStateException("No active plan found to continue")
+            if (plan.isPlanComplete()) {
+                clearActivePlan()
+                throw IllegalStateException("Plan is already complete - no further actions needed")
+            }
             executePlanContinuation(plan)
+        } catch (e: Exception) {
+            handlePlanError()
+            throw IllegalStateException("Failed to continue plan: ${e.message}", e)
         }
     }
 
     private fun executePlanContinuation(selectedPlan: AiderPlan) {
         try {
-            if (selectedPlan.isPlanComplete()) {
-                return
-            }
-
+            validatePlanState(selectedPlan)
+            
             val fileSystem = LocalFileSystem.getInstance()
             val settings = AiderSettings.getInstance()
+            val projectBasePath = project.basePath ?: throw IllegalStateException("Project base path not found")
 
-            val virtualFiles: List<VirtualFile> =
-                selectedPlan.allFiles.mapNotNull {
-                    fileSystem.findFileByPath(it.filePath) ?: fileSystem.findFileByPath(
-                        project.basePath + "/" + it.filePath
-                    )
-                }
-
-            if (virtualFiles.isEmpty()) {
-                throw IllegalStateException("No valid files found for plan continuation")
-            }
-
-            val filesToInclude =
-                project.service<FileDataCollectionService>().collectAllFiles(virtualFiles.toTypedArray())
-            if (filesToInclude.isEmpty()) {
-                throw IllegalStateException("No files collected for plan continuation")
-            }
-
-            val openItems = selectedPlan.openChecklistItems()
-            val nextItem = openItems.firstOrNull()?.description
-                ?: throw IllegalStateException("No open items found in checklist")
+            // Validate and collect files
+            val virtualFiles = collectVirtualFiles(selectedPlan, fileSystem, projectBasePath)
+            val filesToInclude = collectFilesToInclude(virtualFiles)
+            
+            // Get next checklist item
+            val nextItem = getNextChecklistItem(selectedPlan)
 
             val commandData = CommandData(
                 message = "Continue implementing the plan. Next item: $nextItem",
@@ -88,7 +81,7 @@ class ActivePlanService(private val project: Project) {
                 additionalArgs = settings.additionalArgs,
                 files = filesToInclude,
                 lintCmd = settings.lintCmd,
-                projectPath = project.basePath ?: throw IllegalStateException("Project base path not found"),
+                projectPath = projectBasePath,
                 aiderMode = AiderMode.STRUCTURED,
                 sidecarMode = settings.useSidecarMode
             )
@@ -99,9 +92,55 @@ class ActivePlanService(private val project: Project) {
             }.execute()
 
         } catch (e: Exception) {
-            println("Error during plan continuation: ${e.message}")
+            val errorMessage = when (e) {
+                is IllegalStateException -> "Plan continuation failed: ${e.message}"
+                is SecurityException -> "Security error during plan continuation: ${e.message}"
+                else -> "Unexpected error during plan continuation: ${e.message}"
+            }
+            println(errorMessage)
             clearActivePlan()
-            throw e
+            throw IllegalStateException(errorMessage, e)
         }
+    }
+
+    private fun validatePlanState(plan: AiderPlan) {
+        if (plan.isPlanComplete()) {
+            throw IllegalStateException("Plan is already complete")
+        }
+        if (plan.checklist.isEmpty()) {
+            throw IllegalStateException("Plan has no checklist items")
+        }
+    }
+
+    private fun collectVirtualFiles(plan: AiderPlan, fileSystem: LocalFileSystem, projectBasePath: String): List<VirtualFile> {
+        val virtualFiles = plan.allFiles.mapNotNull { fileData ->
+            fileSystem.findFileByPath(fileData.filePath)
+                ?: fileSystem.findFileByPath("$projectBasePath/${fileData.filePath}")
+                ?: run {
+                    println("Warning: Could not find file: ${fileData.filePath}")
+                    null
+                }
+        }
+
+        if (virtualFiles.isEmpty()) {
+            throw IllegalStateException("No valid files found for plan continuation. Check if files exist and are accessible.")
+        }
+        return virtualFiles
+    }
+
+    private fun collectFilesToInclude(virtualFiles: List<VirtualFile>): List<FileData> {
+        val filesToInclude = project.service<FileDataCollectionService>()
+            .collectAllFiles(virtualFiles.toTypedArray())
+
+        if (filesToInclude.isEmpty()) {
+            throw IllegalStateException("No files could be collected for plan continuation. Check file permissions and accessibility.")
+        }
+        return filesToInclude
+    }
+
+    private fun getNextChecklistItem(plan: AiderPlan): String {
+        val openItems = plan.openChecklistItems()
+        return openItems.firstOrNull()?.description
+            ?: throw IllegalStateException("No open items found in checklist. The plan may need to be updated.")
     }
 }
