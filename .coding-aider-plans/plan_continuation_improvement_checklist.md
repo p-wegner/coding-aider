@@ -1,6 +1,6 @@
 [Coding Aider Plan - Checklist]
 
-- [ ] Create new ActivePlanService to track current plan
+- [x] Create new ActivePlanService to track current plan
 - [ ] Move plan tracking logic from ContinuePlanService to ActivePlanService
 - [ ] Update MarkdownDialog to use ActivePlanService
 - [ ] Update autoclose continuation to use ActivePlanService
