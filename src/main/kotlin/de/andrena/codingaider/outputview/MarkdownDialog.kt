@@ -66,13 +66,9 @@ class MarkdownDialog(
                 try {
                     isEnabled = false
                     text = "Continuing..."
-                    val planService = project.service<AiderPlanService>()
-                    val plans = planService.getAiderPlans()
-                    val currentPlan = plans.firstOrNull { plan -> !plan.isPlanComplete() }
-
-                    if (currentPlan != null && getInstance().enableAutoPlanContinue) {
+                    if (getInstance().enableAutoPlanContinue) {
                         dispose()
-                        project.service<ContinuePlanService>().continuePlan(currentPlan)
+                        project.service<ContinuePlanService>().continuePlan()
                     } else {
                         isEnabled = true
                         text = "Close & Continue"
@@ -251,14 +247,8 @@ class MarkdownDialog(
                     try {
                         if (isProcessFinished) {
                             try {
-                                val planService = project.service<AiderPlanService>()
-                                val plans = planService.getAiderPlans()
-
-                                // TODO: continue the current plan instead of the first incomplete plan
-                                val currentPlan = plans.firstOrNull { plan -> !plan.isPlanComplete() }
-                                // TODO: this is called multiple times, when the dialog closes
-                                if (currentPlan != null && getInstance().enableAutoPlanContinue) {
-                                    project.service<ContinuePlanService>().continuePlan(currentPlan)
+                                if (getInstance().enableAutoPlanContinue) {
+                                    project.service<ContinuePlanService>().continuePlan()
                                 }
                             } catch (e: Exception) {
                                 println("Error during autoclose continuation: ${e.message}")
