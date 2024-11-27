@@ -140,9 +140,17 @@ class MarkdownDialog(
         defaultCloseOperation = DO_NOTHING_ON_CLOSE
         addWindowListener(object : java.awt.event.WindowAdapter() {
             override fun windowClosed(e: WindowEvent?) {
-                project.service<RunningCommandService>().removeRunningCommand(this@MarkdownDialog)
-                super.windowClosed(e)
-
+                try {
+                    refreshTimer?.cancel()
+                    refreshTimer = null
+                    autoCloseTimer?.cancel()
+                    autoCloseTimer = null
+                    project.service<RunningCommandService>().removeRunningCommand(this@MarkdownDialog)
+                } catch (ex: Exception) {
+                    println("Error during dialog cleanup: ${ex.message}")
+                } finally {
+                    super.windowClosed(e)
+                }
             }
 
             override fun windowClosing(windowEvent: java.awt.event.WindowEvent?) {
@@ -271,6 +279,7 @@ class MarkdownDialog(
 
     private fun cancelAutoClose() {
         autoCloseTimer?.cancel()
+        autoCloseTimer = null
         keepOpenButton.isVisible = false
         title = initialTitle
     }

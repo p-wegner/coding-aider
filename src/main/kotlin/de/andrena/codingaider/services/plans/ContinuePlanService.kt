@@ -14,30 +14,44 @@ import de.andrena.codingaider.settings.AiderSettings
 @Service(Service.Level.PROJECT)
 class ContinuePlanService(private val project: Project) {
     fun continuePlan(selectedPlan: AiderPlan) {
-        if (selectedPlan.isPlanComplete()) {
-            return
+        try {
+            if (selectedPlan.isPlanComplete()) {
+                return
+            }
+
+            val settings = AiderSettings.getInstance()
+            val virtualFiles: List<VirtualFile> =
+                selectedPlan.allFiles.mapNotNull { VirtualFileManager.getInstance().findFileByUrl(it.filePath) }
+            
+            if (virtualFiles.isEmpty()) {
+                throw IllegalStateException("No valid files found for plan continuation")
+            }
+
+            val filesToInclude = project.service<FileDataCollectionService>().collectAllFiles(virtualFiles.toTypedArray())
+            if (filesToInclude.isEmpty()) {
+                throw IllegalStateException("No files collected for plan continuation")
+            }
+
+            val openItems = selectedPlan.openChecklistItems()
+            val nextItem = openItems.firstOrNull()?.description 
+                ?: throw IllegalStateException("No open items found in checklist")
+            
+            val commandData = CommandData(
+                message = "Continue implementing the plan. Next item: $nextItem",
+                useYesFlag = settings.useYesFlag,
+                llm = settings.llm,
+                additionalArgs = settings.additionalArgs,
+                files = filesToInclude,
+                lintCmd = settings.lintCmd,
+                projectPath = project.basePath ?: throw IllegalStateException("Project base path not found"),
+                aiderMode = AiderMode.STRUCTURED,
+                sidecarMode = settings.useSidecarMode
+            )
+
+            IDEBasedExecutor(project, commandData).execute()
+        } catch (e: Exception) {
+            println("Error during plan continuation: ${e.message}")
+            throw e
         }
-
-        val settings = AiderSettings.getInstance()
-        val virtualFiles: List<VirtualFile> =
-            selectedPlan.allFiles.mapNotNull { VirtualFileManager.getInstance().findFileByUrl(it.filePath) }
-        val filesToInclude = project.service<FileDataCollectionService>().collectAllFiles(virtualFiles.toTypedArray())
-
-        val openItems = selectedPlan.openChecklistItems()
-        val nextItem = openItems.firstOrNull()?.description ?: ""
-        
-        val commandData = CommandData(
-            message = "Continue implementing the plan. Next item: $nextItem",
-            useYesFlag = settings.useYesFlag,
-            llm = settings.llm,
-            additionalArgs = settings.additionalArgs,
-            files = filesToInclude,
-            lintCmd = settings.lintCmd,
-            projectPath = project.basePath ?: "",
-            aiderMode = AiderMode.STRUCTURED,
-            sidecarMode = settings.useSidecarMode
-        )
-
-        IDEBasedExecutor(project, commandData).execute()
     }
 }
