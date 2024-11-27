@@ -63,13 +63,35 @@ class MarkdownDialog(
         isVisible = false
         addActionListener {
             if (isProcessFinished) {
-                val planService = project.service<AiderPlanService>()
-                val plans = planService.getAiderPlans()
-                val currentPlan = plans.firstOrNull { plan -> !plan.isPlanComplete() }
+                try {
+                    isEnabled = false
+                    text = "Continuing..."
+                    val planService = project.service<AiderPlanService>()
+                    val plans = planService.getAiderPlans()
+                    val currentPlan = plans.firstOrNull { plan -> !plan.isPlanComplete() }
 
-                dispose()
-                if (currentPlan != null) {
-                    project.service<ContinuePlanService>().continuePlan(currentPlan)
+                    if (currentPlan != null) {
+                        dispose()
+                        project.service<ContinuePlanService>().continuePlan(currentPlan)
+                    } else {
+                        isEnabled = true
+                        text = "Close & Continue"
+                        JOptionPane.showMessageDialog(
+                            this@MarkdownDialog,
+                            "No incomplete plans found to continue.",
+                            "Continuation Error",
+                            JOptionPane.INFORMATION_MESSAGE
+                        )
+                    }
+                } catch (e: Exception) {
+                    isEnabled = true
+                    text = "Close & Continue"
+                    JOptionPane.showMessageDialog(
+                        this@MarkdownDialog,
+                        "Error during plan continuation: ${e.message}",
+                        "Continuation Error",
+                        JOptionPane.ERROR_MESSAGE
+                    )
                 }
             }
         }
@@ -220,13 +242,20 @@ class MarkdownDialog(
                 } else {
                     try {
                         if (isProcessFinished) {
-                            val planService = project.service<AiderPlanService>()
-                            val plans = planService.getAiderPlans()
-                            val currentPlan = plans.firstOrNull { plan -> !plan.isPlanComplete() }
+                            try {
+                                val planService = project.service<AiderPlanService>()
+                                val plans = planService.getAiderPlans()
+                                val currentPlan = plans.firstOrNull { plan -> !plan.isPlanComplete() }
 
-                            dispose()
-                            if (currentPlan != null) {
-                                project.service<ContinuePlanService>().continuePlan(currentPlan)
+                                if (currentPlan != null) {
+                                    dispose()
+                                    project.service<ContinuePlanService>().continuePlan(currentPlan)
+                                } else {
+                                    dispose()
+                                }
+                            } catch (e: Exception) {
+                                println("Error during autoclose continuation: ${e.message}")
+                                dispose()
                             }
                         } else {
                             dispose()

@@ -17,10 +17,10 @@
     - [x] Add continuation logic to disposal process
     - [x] Handle edge cases during autoclose
 
-- [ ] Enhance UI behavior
-    - [ ] Improve button state management during continuation
-    - [ ] Add proper error handling for continuation failures
-    - [ ] Add progress indication during continuation
+- [x] Enhance UI behavior
+    - [x] Improve button state management during continuation
+    - [x] Add proper error handling for continuation failures
+    - [x] Add progress indication during continuation
 
 - [ ] Testing and cleanup
     - [ ] Test all continuation scenarios
