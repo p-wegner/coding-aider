@@ -1,0 +1,10 @@
+---
+files:
+- path: "src/main/kotlin/de/andrena/codingaider/services/plans/ContinuePlanService.kt"
+  readOnly: false
+- path: "src/main/kotlin/de/andrena/codingaider/outputview/MarkdownDialog.kt"
+  readOnly: false
+- path: "src/main/kotlin/de/andrena/codingaider/actions/aider/AiderAction.kt"
+  readOnly: false
+- path: "src/main/kotlin/de/andrena/codingaider/services/plans/AiderPlanService.kt"
+  readOnly: false
