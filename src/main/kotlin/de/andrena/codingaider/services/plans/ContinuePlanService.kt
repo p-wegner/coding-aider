@@ -3,8 +3,8 @@ package de.andrena.codingaider.services.plans
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileManager
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.AiderMode
@@ -18,24 +18,31 @@ class ContinuePlanService(private val project: Project) {
             if (selectedPlan.isPlanComplete()) {
                 return
             }
-
+            val fileSystem = LocalFileSystem.getInstance()
             val settings = AiderSettings.getInstance()
+            // TODO: this needs to support absolute paths and relative paths from the project root
+
             val virtualFiles: List<VirtualFile> =
-                selectedPlan.allFiles.mapNotNull { VirtualFileManager.getInstance().findFileByUrl(it.filePath) }
-            
+                selectedPlan.allFiles.mapNotNull {
+                    fileSystem.findFileByPath(it.filePath) ?: fileSystem.findFileByPath(
+                        project.basePath + "/" + it.filePath
+                    )
+                }
+
             if (virtualFiles.isEmpty()) {
                 throw IllegalStateException("No valid files found for plan continuation")
             }
 
-            val filesToInclude = project.service<FileDataCollectionService>().collectAllFiles(virtualFiles.toTypedArray())
+            val filesToInclude =
+                project.service<FileDataCollectionService>().collectAllFiles(virtualFiles.toTypedArray())
             if (filesToInclude.isEmpty()) {
                 throw IllegalStateException("No files collected for plan continuation")
             }
 
             val openItems = selectedPlan.openChecklistItems()
-            val nextItem = openItems.firstOrNull()?.description 
+            val nextItem = openItems.firstOrNull()?.description
                 ?: throw IllegalStateException("No open items found in checklist")
-            
+
             val commandData = CommandData(
                 message = "Continue implementing the plan. Next item: $nextItem",
                 useYesFlag = settings.useYesFlag,

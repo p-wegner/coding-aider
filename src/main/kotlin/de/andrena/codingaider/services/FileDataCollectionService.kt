@@ -10,9 +10,6 @@ import de.andrena.codingaider.utils.FileTraversal
 
 @Service(Service.Level.PROJECT)
 class FileDataCollectionService(private val project: Project) {
-    private fun normalizePath(path: String): String {
-        return path.replace('\\', '/').toLowerCase()
-    }
     fun collectAllFiles(
         files: Array<VirtualFile>
     ): List<FileData> {
@@ -39,5 +36,7 @@ class FileDataCollectionService(private val project: Project) {
 
         return traversedFiles.distinctBy { normalizePath(it.filePath) }
     }
+
+    private fun normalizePath(path: String): String = path.replace('\\', '/')
 
 }
