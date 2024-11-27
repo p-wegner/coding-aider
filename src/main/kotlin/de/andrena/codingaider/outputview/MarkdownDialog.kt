@@ -68,9 +68,22 @@ class MarkdownDialog(
                 val currentPlan = plans.firstOrNull { plan -> !plan.isPlanComplete() }
                 
                 if (currentPlan != null) {
+                    if (isProcessFinished) {
+                        val planService = project.service<AiderPlanService>()
+                        val plans = planService.getAiderPlans()
+                        val currentPlan = plans.firstOrNull { plan -> !plan.isPlanComplete() }
+                        
+                        dispose()
+                        if (currentPlan != null) {
+                            project.service<ContinuePlanService>().continuePlan(currentPlan)
+                        }
+                    } else {
+                        dispose()
+                    }
                     project.service<ContinuePlanService>().continuePlan(currentPlan)
+                } else {
+                    dispose()
                 }
-                dispose()
             }
         }
     }
