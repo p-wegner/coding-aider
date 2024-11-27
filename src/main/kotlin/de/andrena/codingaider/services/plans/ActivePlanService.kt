@@ -41,27 +41,50 @@ class ActivePlanService(private val project: Project) {
         }
     }
 
-    fun handlePlanError() {
+    fun handlePlanError(error: Throwable? = null) {
+        error?.let {
+            println("Plan execution error: ${it.message}")
+            it.printStackTrace()
+        }
         clearActivePlan()
     }
 
     fun continuePlan() {
         try {
+            validatePlanState()
             val plan = activePlan ?: throw IllegalStateException("No active plan found to continue")
-            if (plan.isPlanComplete()) {
-                clearActivePlan()
-                throw IllegalStateException("Plan is already complete - no further actions needed")
-            }
             executePlanContinuation(plan)
         } catch (e: Exception) {
-            handlePlanError()
-            throw IllegalStateException("Failed to continue plan: ${e.message}", e)
+            handlePlanError(e)
+            when (e) {
+                is IllegalStateException -> throw e
+                is SecurityException -> throw IllegalStateException("Security error during plan continuation: ${e.message}", e)
+                else -> throw IllegalStateException("Unexpected error during plan continuation: ${e.message}", e)
+            }
+        }
+    }
+
+    private fun validatePlanState() {
+        val plan = activePlan ?: throw IllegalStateException("No active plan found to continue")
+        
+        if (plan.isPlanComplete()) {
+            clearActivePlan()
+            throw IllegalStateException("Plan is already complete - no further actions needed")
+        }
+
+        if (plan.checklist.isEmpty()) {
+            throw IllegalStateException("Plan has no checklist items")
+        }
+
+        val openItems = plan.openChecklistItems()
+        if (openItems.isEmpty()) {
+            throw IllegalStateException("No open items found in checklist. The plan may need to be updated.")
         }
     }
 
     private fun executePlanContinuation(selectedPlan: AiderPlan) {
         try {
-            validatePlanState(selectedPlan)
+            validatePlanFiles(selectedPlan)
             
             val fileSystem = LocalFileSystem.getInstance()
             val settings = AiderSettings.getInstance()
@@ -103,12 +126,14 @@ class ActivePlanService(private val project: Project) {
         }
     }
 
-    private fun validatePlanState(plan: AiderPlan) {
-        if (plan.isPlanComplete()) {
-            throw IllegalStateException("Plan is already complete")
+    private fun validatePlanFiles(plan: AiderPlan) {
+        if (plan.planFiles.isEmpty()) {
+            throw IllegalStateException("Plan has no associated files")
         }
-        if (plan.checklist.isEmpty()) {
-            throw IllegalStateException("Plan has no checklist items")
+
+        val invalidFiles = plan.planFiles.filter { !File(it.filePath).exists() }
+        if (invalidFiles.isNotEmpty()) {
+            throw IllegalStateException("Some plan files are missing or inaccessible: ${invalidFiles.joinToString { it.filePath }}")
         }
     }
 
