@@ -57,6 +57,10 @@ class MarkdownDialog(
     private var closeButton = JButton(onAbort?.let { "Abort" } ?: "Close").apply {
         mnemonic = onAbort?.let { KeyEvent.VK_A } ?: KeyEvent.VK_C
     }
+    private var closeAndContinueButton = JButton("Close & Continue").apply {
+        mnemonic = KeyEvent.VK_N
+        isVisible = false
+    }
     private var isProcessFinished = false
     private var autoScroll = true
 
@@ -133,6 +137,7 @@ class MarkdownDialog(
             isVisible = false
         }
         buttonPanel.add(closeButton)
+        buttonPanel.add(closeAndContinueButton)
         buttonPanel.add(keepOpenButton)
         add(buttonPanel, BorderLayout.SOUTH)
 
