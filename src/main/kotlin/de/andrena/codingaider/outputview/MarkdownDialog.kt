@@ -6,6 +6,7 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBScrollPane
 import de.andrena.codingaider.services.RunningCommandService
 import de.andrena.codingaider.services.plans.AiderPlanService
+import de.andrena.codingaider.services.plans.ContinuePlanService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import java.awt.BorderLayout
 import java.awt.EventQueue.invokeLater
@@ -66,13 +67,13 @@ class MarkdownDialog(
                 val planService = project.service<AiderPlanService>()
                 val plans = planService.getAiderPlans()
                 val currentPlan = plans.firstOrNull { plan -> !plan.isPlanComplete() }
-                
+
                 if (currentPlan != null) {
                     if (isProcessFinished) {
                         val planService = project.service<AiderPlanService>()
                         val plans = planService.getAiderPlans()
                         val currentPlan = plans.firstOrNull { plan -> !plan.isPlanComplete() }
-                        
+
                         dispose()
                         if (currentPlan != null) {
                             project.service<ContinuePlanService>().continuePlan(currentPlan)
@@ -100,10 +101,10 @@ class MarkdownDialog(
             val extent = scrollBar.model.extent
             val maximum = scrollBar.model.maximum
             val current = scrollBar.model.value
-            
+
             // Check if we're within 20 pixels of the bottom
             val isAtBottom = (current + extent + 20) >= maximum
-            
+
             // Update autoScroll when:
             // 1. User is manually scrolling (valueIsAdjusting is true)
             // 2. Or when they've scrolled to the bottom
