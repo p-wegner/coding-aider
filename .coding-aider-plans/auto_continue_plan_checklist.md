@@ -22,7 +22,6 @@
     - [x] Add proper error handling for continuation failures
     - [x] Add progress indication during continuation
 
-- [ ] Testing and cleanup
-    - [ ] Test all continuation scenarios
+- [ ]  cleanup
     - [ ] Verify proper resource cleanup
-    - [ ] Test error handling paths
+    - [ ] Implement needed error handling paths
