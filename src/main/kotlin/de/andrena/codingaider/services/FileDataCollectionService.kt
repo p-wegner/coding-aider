@@ -10,6 +10,7 @@ import de.andrena.codingaider.utils.FileTraversal
 
 @Service(Service.Level.PROJECT)
 class FileDataCollectionService(private val project: Project) {
+    // TODO: normalize paths before comparing them to ensure no duplicates
     fun collectAllFiles(
         files: Array<VirtualFile>
     ): List<FileData> {
