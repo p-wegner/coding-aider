@@ -14,13 +14,20 @@ import de.andrena.codingaider.settings.AiderSettings
 @Service(Service.Level.PROJECT)
 class ContinuePlanService(private val project: Project) {
     fun continuePlan(selectedPlan: AiderPlan) {
+        if (selectedPlan.isPlanComplete()) {
+            return
+        }
+
         val settings = AiderSettings.getInstance()
         val virtualFiles: List<VirtualFile> =
             selectedPlan.allFiles.mapNotNull { VirtualFileManager.getInstance().findFileByUrl(it.filePath) }
         val filesToInclude = project.service<FileDataCollectionService>().collectAllFiles(virtualFiles.toTypedArray())
 
+        val openItems = selectedPlan.openChecklistItems()
+        val nextItem = openItems.firstOrNull()?.description ?: ""
+        
         val commandData = CommandData(
-            message = "",
+            message = "Continue implementing the plan. Next item: $nextItem",
             useYesFlag = settings.useYesFlag,
             llm = settings.llm,
             additionalArgs = settings.additionalArgs,
