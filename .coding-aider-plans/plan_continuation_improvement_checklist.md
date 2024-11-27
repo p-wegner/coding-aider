@@ -4,7 +4,7 @@
 - [x] Move plan tracking logic from ContinuePlanService to ActivePlanService
 - [x] Update MarkdownDialog to use ActivePlanService
 - [x] Update autoclose continuation to use ActivePlanService
-- [ ] Update AiderAction to use ActivePlanService for structured mode
+- [x] Update AiderAction to use ActivePlanService for structured mode
 - [ ] Add proper cleanup of active plan when execution completes
 - [ ] Add error handling for edge cases
 - [ ] Update tests and documentation

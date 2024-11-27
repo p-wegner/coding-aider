@@ -56,11 +56,7 @@ class AiderAction : AnAction() {
                             dialog.isStructuredMode(),
                             dialog.selectedMode
                         )
-                        if (commandData.isShellMode) {
-                            ShellExecutor(project, commandData).execute()
-                        } else {
-                            IDEBasedExecutor(project, commandData).execute()
-                        }
+                        executeAiderActionWithCommandData(project, commandData)
                     }
                 }
             }
@@ -71,6 +67,10 @@ class AiderAction : AnAction() {
             if (commandData.isShellMode) {
                 ShellExecutor(project, commandData).execute()
             } else {
+                // Clear any active plan when starting a new command in structured mode
+                if (commandData.structuredMode) {
+                    project.service<ActivePlanService>().clearActivePlan()
+                }
                 IDEBasedExecutor(project, commandData).execute()
             }
         }
