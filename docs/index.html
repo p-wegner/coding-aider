@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coding-Aider Plugin - AI-Powered Coding Assistant</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css">
+    <style>
+        .feature-card {
+            transition: transform 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #16213E 0%, #0F3460 100%);
+        }
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Hero Section -->
+    <header class="gradient-bg text-white">
+        <div class="container mx-auto px-6 py-16">
+            <div class="flex flex-col md:flex-row items-center">
+                <div class="md:w-1/2" data-aos="fade-right">
+                    <h1 class="text-4xl md:text-6xl font-bold mb-4">Coding-Aider Plugin</h1>
+                    <p class="text-xl mb-8">Seamlessly integrate AI-powered coding assistance into your IntelliJ IDEA</p>
+                    <a href="https://plugins.jetbrains.com/plugin/YOUR-PLUGIN-ID" class="bg-[#E94560] text-white px-6 py-3 rounded-lg hover:bg-opacity-90 transition duration-300">
+                        Install Plugin
+                    </a>
+                </div>
+                <div class="md:w-1/2 mt-8 md:mt-0" data-aos="fade-left">
+                    <img src="AiderCommandAction.jpg" alt="Aider Command Interface" class="rounded-lg shadow-xl pulse-animation">
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Key Features Section -->
+    <section class="py-20 bg-white">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center mb-16">Key Features</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="feature-card p-6 bg-white rounded-lg shadow-lg" data-aos="fade-up">
+                    <div class="text-[#E94560] text-4xl mb-4">🤖</div>
+                    <h3 class="text-xl font-semibold mb-2">AI-Powered Assistance</h3>
+                    <p class="text-gray-600">Intelligent coding assistance powered by advanced language models</p>
+                </div>
+                <div class="feature-card p-6 bg-white rounded-lg shadow-lg" data-aos="fade-up" data-aos-delay="100">
+                    <div class="text-[#E94560] text-4xl mb-4">⚡</div>
+                    <h3 class="text-xl font-semibold mb-2">Quick Access</h3>
+                    <p class="text-gray-600">Rapid access via keyboard shortcuts (Alt+A) and context menus</p>
+                </div>
+                <div class="feature-card p-6 bg-white rounded-lg shadow-lg" data-aos="fade-up" data-aos-delay="200">
+                    <div class="text-[#E94560] text-4xl mb-4">📁</div>
+                    <h3 class="text-xl font-semibold mb-2">Multi-File Support</h3>
+                    <p class="text-gray-600">Handle multiple files and directories with smart context management</p>
+                </div>
+                <div class="feature-card p-6 bg-white rounded-lg shadow-lg" data-aos="fade-up" data-aos-delay="300">
+                    <div class="text-[#E94560] text-4xl mb-4">🔄</div>
+                    <h3 class="text-xl font-semibold mb-2">Git Integration</h3>
+                    <p class="text-gray-600">Automatic Git comparison and change management</p>
+                </div>
+                <div class="feature-card p-6 bg-white rounded-lg shadow-lg" data-aos="fade-up" data-aos-delay="400">
+                    <div class="text-[#E94560] text-4xl mb-4">📊</div>
+                    <h3 class="text-xl font-semibold mb-2">Progress Tracking</h3>
+                    <p class="text-gray-600">Real-time progress monitoring with custom Markdown viewer</p>
+                </div>
+                <div class="feature-card p-6 bg-white rounded-lg shadow-lg" data-aos="fade-up" data-aos-delay="500">
+                    <div class="text-[#E94560] text-4xl mb-4">🎯</div>
+                    <h3 class="text-xl font-semibold mb-2">Structured Mode</h3>
+                    <p class="text-gray-600">Organized approach to feature development with detailed planning</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section class="py-20 gradient-bg text-white">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center mb-16">See It In Action</h2>
+            <div class="max-w-4xl mx-auto">
+                <div class="aspect-w-16 aspect-h-9 rounded-lg overflow-hidden shadow-2xl">
+                    <img src="AiderCommandAction.jpg" alt="Plugin Demo" class="w-full h-full object-cover">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Getting Started Section -->
+    <section class="py-20 bg-white">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center mb-16">Getting Started</h2>
+            <div class="max-w-3xl mx-auto">
+                <div class="space-y-6">
+                    <div class="flex items-center space-x-4" data-aos="fade-right">
+                        <div class="w-10 h-10 rounded-full bg-[#E94560] text-white flex items-center justify-center font-bold">1</div>
+                        <p class="flex-1">Install the Coding-Aider plugin in your JetBrains IDE</p>
+                    </div>
+                    <div class="flex items-center space-x-4" data-aos="fade-right" data-aos-delay="100">
+                        <div class="w-10 h-10 rounded-full bg-[#E94560] text-white flex items-center justify-center font-bold">2</div>
+                        <p class="flex-1">Configure your preferred LLM provider in the settings</p>
+                    </div>
+                    <div class="flex items-center space-x-4" data-aos="fade-right" data-aos-delay="200">
+                        <div class="w-10 h-10 rounded-full bg-[#E94560] text-white flex items-center justify-center font-bold">3</div>
+                        <p class="flex-1">Start using Alt+A or right-click menu to access Aider actions</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="gradient-bg text-white py-8">
+        <div class="container mx-auto px-6 text-center">
+            <p>© 2024 Coding-Aider Plugin. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 800,
+            once: true
+        });
+    </script>
+</body>
+</html>
