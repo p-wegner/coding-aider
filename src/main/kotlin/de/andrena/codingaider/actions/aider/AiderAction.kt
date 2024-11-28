@@ -15,6 +15,7 @@ import de.andrena.codingaider.inputdialog.AiderInputDialog
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.AiderDialogStateService
 import de.andrena.codingaider.services.FileDataCollectionService
+import de.andrena.codingaider.services.plans.ActivePlanService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 
 

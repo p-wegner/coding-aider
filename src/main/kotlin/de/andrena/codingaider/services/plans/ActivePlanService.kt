@@ -6,10 +6,13 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.CommandData
+import de.andrena.codingaider.command.FileData
+import de.andrena.codingaider.executors.api.CommandFinishedCallback
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.FileDataCollectionService
 import de.andrena.codingaider.settings.AiderSettings
+import java.io.File
 
 @Service(Service.Level.PROJECT)
 class ActivePlanService(private val project: Project) {
@@ -58,7 +61,11 @@ class ActivePlanService(private val project: Project) {
             handlePlanError(e)
             when (e) {
                 is IllegalStateException -> throw e
-                is SecurityException -> throw IllegalStateException("Security error during plan continuation: ${e.message}", e)
+                is SecurityException -> throw IllegalStateException(
+                    "Security error during plan continuation: ${e.message}",
+                    e
+                )
+
                 else -> throw IllegalStateException("Unexpected error during plan continuation: ${e.message}", e)
             }
         }
@@ -66,7 +73,7 @@ class ActivePlanService(private val project: Project) {
 
     private fun validatePlanState() {
         val plan = activePlan ?: throw IllegalStateException("No active plan found to continue")
-        
+
         if (plan.isPlanComplete()) {
             clearActivePlan()
             throw IllegalStateException("Plan is already complete - no further actions needed")
@@ -85,7 +92,7 @@ class ActivePlanService(private val project: Project) {
     private fun executePlanContinuation(selectedPlan: AiderPlan) {
         try {
             validatePlanFiles(selectedPlan)
-            
+
             val fileSystem = LocalFileSystem.getInstance()
             val settings = AiderSettings.getInstance()
             val projectBasePath = project.basePath ?: throw IllegalStateException("Project base path not found")
@@ -93,7 +100,7 @@ class ActivePlanService(private val project: Project) {
             // Validate and collect files
             val virtualFiles = collectVirtualFiles(selectedPlan, fileSystem, projectBasePath)
             val filesToInclude = collectFilesToInclude(virtualFiles)
-            
+
             // Get next checklist item
             val nextItem = getNextChecklistItem(selectedPlan)
 
@@ -110,9 +117,12 @@ class ActivePlanService(private val project: Project) {
             )
 
             setActivePlan(selectedPlan)
-            IDEBasedExecutor(project, commandData) { success ->
-                handlePlanCompletion(success)
-            }.execute()
+            val commandFinishedCallback: CommandFinishedCallback = object : CommandFinishedCallback {
+                override fun onCommandFinished(success: Boolean) {
+                    handlePlanCompletion(success)
+                }
+            }
+            IDEBasedExecutor(project, commandData, commandFinishedCallback).execute()
 
         } catch (e: Exception) {
             val errorMessage = when (e) {
@@ -137,7 +147,11 @@ class ActivePlanService(private val project: Project) {
         }
     }
 
-    private fun collectVirtualFiles(plan: AiderPlan, fileSystem: LocalFileSystem, projectBasePath: String): List<VirtualFile> {
+    private fun collectVirtualFiles(
+        plan: AiderPlan,
+        fileSystem: LocalFileSystem,
+        projectBasePath: String
+    ): List<VirtualFile> {
         val virtualFiles = plan.allFiles.mapNotNull { fileData ->
             fileSystem.findFileByPath(fileData.filePath)
                 ?: fileSystem.findFileByPath("$projectBasePath/${fileData.filePath}")
