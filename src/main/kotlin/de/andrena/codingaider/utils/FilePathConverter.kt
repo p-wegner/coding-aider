@@ -103,11 +103,7 @@ class FilePathConverter {
 
         // TODO: causes performance issues in the markdownviewer when files are created, e.g. multi turn aider commands
         private fun isLikelyValidPath(path: String): Boolean {
-            val file = File(path)
-            if (file.exists()) return true
-
-            val extension = file.extension.lowercase()
-            return extension in commonExtensions
+           return false
         }
     }
 }
