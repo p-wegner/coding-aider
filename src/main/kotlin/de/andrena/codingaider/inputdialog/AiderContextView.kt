@@ -81,7 +81,10 @@ class AiderContextView(
 
                                     else -> AllIcons.Actions.Edit
                                 }
-                                val fileContent = file?.let { File(it.filePath).readText() } ?: ""
+                                val fileContent = file
+                                    ?.takeIf { !tokenCountService.shouldSkipTokenCount(it.filePath) }
+                                    ?.let { File(it.filePath).readText() } ?: ""
+
                                 val tokenCount = tokenCountService.countTokensInText(fileContent)
                                 text = "$name (Tokens: $tokenCount)"
                                 toolTipText = buildString {
