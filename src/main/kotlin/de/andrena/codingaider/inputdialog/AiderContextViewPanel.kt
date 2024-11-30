@@ -2,12 +2,10 @@ package de.andrena.codingaider.inputdialog
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.*
-import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.LayeredIcon
 import com.intellij.util.ui.JBUI
 import de.andrena.codingaider.command.FileData
-import de.andrena.codingaider.services.plans.AiderPlanService
 import java.awt.BorderLayout
 import java.awt.event.InputEvent
 import java.awt.event.KeyEvent

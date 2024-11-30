@@ -1,0 +1,32 @@
+/* Additional custom styles can be added here if needed */
+.gradient-text {
+    background: linear-gradient(135deg, #16213E 0%, #E94560 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hover-scale {
+    transition: transform 0.3s ease;
+}
+
+.hover-scale:hover {
+    transform: scale(1.05);
+}
+
+.custom-shadow {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 
+                0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.feature-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+    .feature-icon {
+        width: 36px;
+        height: 36px;
+    }
+}
