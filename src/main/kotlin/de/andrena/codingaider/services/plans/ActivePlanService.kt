@@ -28,10 +28,6 @@ class ActivePlanService(private val project: Project) {
         activePlan = null
     }
 
-    private fun AiderPlan.isPlanComplete(): Boolean {
-        return checklist.all { item -> item.isComplete() }
-    }
-
     private fun ChecklistItem.isComplete(): Boolean {
         return checked && children.all { it.isComplete() }
     }
