@@ -9,11 +9,11 @@ class FilePathConverter {
         private val COMBINED_PATH_PATTERN = Pattern.compile(
             """(?:[A-Za-z]:\\[^<>:"|?*\n\r]+)|(?:/[^<>:"|?*\n\r]+)+|(?:\.{0,2}[/\\][^<>:"|?*\n\r]+)|(?:src\\[^<>:"|?*\n\r]+)"""
         )
-        
+
         private const val CHUNK_SIZE = 8192
-        
+
         private val commonExtensions = setOf(
-            "md", "txt", "java", "kt", "py", "js", "html", "css", "xml", "json", 
+            "md", "txt", "java", "kt", "py", "js", "html", "css", "xml", "json",
             "yaml", "yml", "properties", "gradle", "kts", "bat", "sh", "pdf"
         )
 
@@ -25,22 +25,22 @@ class FilePathConverter {
             // Process larger texts in chunks
             val result = StringBuilder(text.length + (text.length / 10))  // Estimate capacity
             var lastEnd = 0
-            
+
             // Find safe chunk boundaries (at newlines) and process chunks
             while (lastEnd < text.length) {
                 var nextEnd = minOf(lastEnd + CHUNK_SIZE, text.length)
-                
+
                 // Find the next newline if we're not at the end
                 if (nextEnd < text.length) {
                     val newlinePos = text.indexOf('\n', nextEnd)
                     nextEnd = if (newlinePos != -1) newlinePos + 1 else text.length
                 }
-                
+
                 val chunk = text.substring(lastEnd, nextEnd)
                 result.append(processChunk(chunk, basePath))
                 lastEnd = nextEnd
             }
-            
+
             return result.toString()
         }
 
@@ -63,12 +63,15 @@ class FilePathConverter {
                         val normalized = path.replace("\\", "/")
                         convertPathToLink(normalized, isRelative = true)
                     }
+
                     path.matches("""[A-Za-z]:\\.*""".toRegex()) -> {
                         convertPathToLink(path)
                     }
+
                     path.startsWith("/") -> {
                         convertPathToLink(path)
                     }
+
                     basePath != null -> {
                         val normalized = path.replace("\\", "/")
                         val absolutePath = File(basePath, normalized).absolutePath
@@ -78,6 +81,7 @@ class FilePathConverter {
                             normalized
                         }
                     }
+
                     else -> path
                 }
 
@@ -97,12 +101,9 @@ class FilePathConverter {
             return path
         }
 
+        // TODO: causes performance issues in the markdownviewer when files are created, e.g. multi turn aider commands
         private fun isLikelyValidPath(path: String): Boolean {
-            val file = File(path)
-            if (file.exists()) return true
-            
-            val extension = file.extension.lowercase()
-            return extension in commonExtensions
+           return false
         }
     }
 }

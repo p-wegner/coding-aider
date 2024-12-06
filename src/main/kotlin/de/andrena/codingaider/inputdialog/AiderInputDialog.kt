@@ -84,8 +84,10 @@ class AiderInputDialog(
         val totalTokens = tokenCountService.countTokensInText(getInputText()) + allFileTokens
         tokenCountLabel.text = "$totalTokens tokens"
     }
-
-    val lazyCacheDelegate = LazyCacheDelegate { tokenCountService.countTokensInFiles(getAllFiles()) }
+    // TODO: avoid counting token in large files or images
+    val lazyCacheDelegate = LazyCacheDelegate { 
+        tokenCountService.countTokensInFiles(getAllFiles().filterNot { tokenCountService.shouldSkipTokenCount(it.filePath) })
+    }
     val allFileTokens by lazyCacheDelegate
 
 
