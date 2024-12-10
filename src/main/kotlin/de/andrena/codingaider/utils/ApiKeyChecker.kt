@@ -49,6 +49,8 @@ class DefaultApiKeyChecker : ApiKeyChecker {
             LlmProviderType.OPENAI -> "OPENAI_API_KEY"
             LlmProviderType.OPENROUTER -> "OPENROUTER_API_KEY"
             LlmProviderType.OLLAMA -> "" // Ollama doesn't require an API key
+            // TODO: implement as described in docs, possibly multiple API keys needed, extend method to support this case if needed
+            LlmProviderType.VERTEX -> TODO()
         }
     }
 
