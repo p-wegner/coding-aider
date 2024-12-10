@@ -9,7 +9,7 @@ See [Plan](./vertex_ai_provider.md) for full feature description.
 - [ ] Update example models and documentation
 
 ## Provider Configuration
-- [ ] Add Vertex AI specific fields to CustomLlmProvider
+- [x] Add Vertex AI specific fields to CustomLlmProvider
 - [ ] Extend CustomLlmProviderEditorDialog for Vertex settings
 - [ ] Implement validation for Vertex AI configuration
 
