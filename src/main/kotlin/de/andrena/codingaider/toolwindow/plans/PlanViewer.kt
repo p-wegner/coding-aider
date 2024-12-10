@@ -151,6 +151,23 @@ class PlanViewer(private val project: Project) {
         }
     }
 
+    inner class EditContextAction : AnAction(
+        "Edit Context",
+        "Edit context files for this plan",
+        AllIcons.Actions.Edit
+    ) {
+        override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+
+        override fun actionPerformed(e: AnActionEvent) {
+            val selectedPlan = plansList.selectedValue ?: return
+            EditContextDialog(project, selectedPlan).show()
+        }
+
+        override fun update(e: AnActionEvent) {
+            e.presentation.isEnabled = plansList.selectedValue != null
+        }
+    }
+
     inner class DeletePlanAction : AnAction(
         "Delete Plan",
         "Delete this plan",

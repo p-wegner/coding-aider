@@ -48,6 +48,7 @@ class PlansPanel(private val project: Project) {
                         "AiderPlansToolbar",
                         DefaultActionGroup().apply { 
                             add(planViewer.ContinuePlanAction())
+                            add(planViewer.EditContextAction())
                             add(planViewer.DeletePlanAction())
                         },
                         true
