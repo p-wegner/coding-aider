@@ -23,19 +23,43 @@ class CommandPlanExecutionHandler(private val project: Project, private val comm
             newPlanFiles.forEach { file ->
                 project.service<PersistentFileService>().addFile(FileData(file.absolutePath, false))
             }
-        }
-        // TODO: Set Active Plan when plan file is created in plan folder
 
+            // Set active plan when new plan files are created
+            if (newPlanFiles.isNotEmpty()) {
+                val planService = project.service<AiderPlanService>()
+                val plans = planService.getAiderPlans()
+                // Find the newest plan based on the new files
+                val newestPlan = plans.firstOrNull { plan ->
+                    plan.mainPlanFile?.let { mainFile ->
+                        newPlanFiles.any { it.absolutePath == mainFile.filePath }
+                    } ?: false
+                }
+                // Add all files from the plan to the persistent service
+                newestPlan?.allFiles?.forEach { file ->
+                    project.service<PersistentFileService>().addFile(file)
+                }
+            }
+        }
     }
 
     fun beforeCommandStarted() {
-        // TODO: Set Active Plan depending on plan file in plan folder
-
         val plansFolder = File(project.basePath, AiderPlanService.AIDER_PLANS_FOLDER)
         if (plansFolder.exists() && plansFolder.isDirectory) {
             initialPlanFiles = plansFolder.listFiles { file -> file.isFile && file.extension == "md" }
                 ?.toSet() ?: emptySet()
+
+            // Set active plan based on existing plan files
+            val planService = project.service<AiderPlanService>()
+            val plans = planService.getAiderPlans()
+            
+            // Find incomplete plans first
+            val activePlan = plans.firstOrNull { !it.isPlanComplete() }
+                ?: plans.lastOrNull() // If all plans are complete, take the last one
+
+            // Add all files from the active plan to the persistent service
+            activePlan?.allFiles?.forEach { file ->
+                project.service<PersistentFileService>().addFile(file)
+            }
         }
     }
-
 }
