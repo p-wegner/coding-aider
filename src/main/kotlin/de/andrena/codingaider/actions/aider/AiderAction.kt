@@ -15,7 +15,6 @@ import de.andrena.codingaider.inputdialog.AiderInputDialog
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.AiderDialogStateService
 import de.andrena.codingaider.services.FileDataCollectionService
-import de.andrena.codingaider.services.plans.ActivePlanService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 
 
@@ -68,10 +67,6 @@ class AiderAction : AnAction() {
             if (commandData.isShellMode) {
                 ShellExecutor(project, commandData).execute()
             } else {
-                // Clear any active plan when starting a new command in structured mode
-                if (commandData.structuredMode) {
-                    project.service<ActivePlanService>().clearActivePlan()
-                }
                 IDEBasedExecutor(project, commandData).execute()
             }
         }
