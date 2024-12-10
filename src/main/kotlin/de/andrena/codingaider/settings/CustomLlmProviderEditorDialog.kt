@@ -20,8 +20,12 @@ class CustomLlmProviderEditorDialog(
     private val baseUrlField = JBTextField()
     private val modelNameField = JBTextField()
     private val apiKeyField = JBPasswordField()
+    private val projectIdField = JBTextField()
+    private val locationField = JBTextField()
     private lateinit var baseUrlRow: Row
     private lateinit var apiKeyRow: Row
+    private lateinit var projectIdRow: Row
+    private lateinit var locationRow: Row
     private val providerTypeComboBox = com.intellij.openapi.ui.ComboBox(LlmProviderType.values())
 
     init {
@@ -44,6 +48,8 @@ class CustomLlmProviderEditorDialog(
             baseUrlField.text = existingProvider.baseUrl
             modelNameField.text = existingProvider.modelName
             providerTypeComboBox.selectedItem = existingProvider.type
+            projectIdField.text = existingProvider.projectId
+            locationField.text = existingProvider.location
             
             // Retrieve and mask existing API key
             ApiKeyManager.getCustomModelKey(existingProvider.name)?.let {
@@ -89,17 +95,28 @@ class CustomLlmProviderEditorDialog(
                     apiKeyField.isEnabled = true
                     apiKeyField.toolTipText = "OpenAI API key (required)"
                 }
+                LlmProviderType.VERTEX -> {
+                    baseUrlField.isEnabled = false
+                    apiKeyField.isEnabled = true
+                    apiKeyField.toolTipText = "Google Cloud API key or service account credentials"
+                    projectIdField.isEnabled = true
+                    locationField.isEnabled = true
+                }
                 else -> {
                     baseUrlField.isEnabled = true
                     baseUrlField.toolTipText = "API endpoint URL"
                     apiKeyField.isEnabled = true
                     apiKeyField.toolTipText = "API key"
+                    projectIdField.isEnabled = false
+                    locationField.isEnabled = false
                 }
             }
 
         // Update row visibility and tooltips based on provider requirements
         baseUrlRow.visible(selectedType.requiresBaseUrl)
         apiKeyRow.visible(selectedType.requiresApiKey)
+        projectIdRow.visible(selectedType == LlmProviderType.VERTEX)
+        locationRow.visible(selectedType == LlmProviderType.VERTEX)
         
         // Update model name tooltip with examples
         modelNameField.toolTipText = selectedType.exampleModels
@@ -132,6 +149,16 @@ class CustomLlmProviderEditorDialog(
             cell(apiKeyField)
                 .columns(30)
                 .comment("Secure API key for the provider")
+        }
+        projectIdRow = row("Project ID:") {
+            cell(projectIdField)
+                .columns(30)
+                .comment("Google Cloud project ID for Vertex AI")
+        }
+        locationRow = row("Location:") {
+            cell(locationField)
+                .columns(30)
+                .comment("Google Cloud region for Vertex AI (e.g. us-east5)")
         }
     }
 
@@ -211,6 +238,8 @@ class CustomLlmProviderEditorDialog(
             type = type,
             baseUrl = baseUrlField.text,
             modelName = modelNameField.text,
+            projectId = projectIdField.text.trim(),
+            location = locationField.text.trim(),
         )
         
         // Save API key if provided and not masked, except for Ollama
