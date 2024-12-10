@@ -97,11 +97,8 @@ class ActivePlanService(private val project: Project) {
             val virtualFiles = collectVirtualFiles(selectedPlan, fileSystem, projectBasePath)
             val filesToInclude = collectFilesToInclude(virtualFiles)
 
-            // Get next checklist item
-            val nextItem = getNextChecklistItem(selectedPlan)
-
             val commandData = CommandData(
-                message = "Continue implementing the plan. Next item: $nextItem",
+                message = "",
                 useYesFlag = settings.useYesFlag,
                 llm = settings.llm,
                 additionalArgs = settings.additionalArgs,
@@ -114,9 +111,7 @@ class ActivePlanService(private val project: Project) {
 
             setActivePlan(selectedPlan)
             val commandFinishedCallback: CommandFinishedCallback = object : CommandFinishedCallback {
-                override fun onCommandFinished(success: Boolean) {
-                    handlePlanCompletion(success)
-                }
+                override fun onCommandFinished(success: Boolean) = handlePlanCompletion(success)
             }
             IDEBasedExecutor(project, commandData, commandFinishedCallback).execute()
 
@@ -173,9 +168,4 @@ class ActivePlanService(private val project: Project) {
         return filesToInclude
     }
 
-    private fun getNextChecklistItem(plan: AiderPlan): String {
-        val openItems = plan.openChecklistItems()
-        return openItems.firstOrNull()?.description
-            ?: throw IllegalStateException("No open items found in checklist. The plan may need to be updated.")
-    }
 }
