@@ -98,7 +98,6 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
                     toolTipText =
                         "Enter the Docker image tag for ${AiderDefaults.DOCKER_IMAGE}. Suggestions are provided in the dropdown."
                     setHistory(listOf(AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION, "latest"))
-                    isEnabled = useDockerAiderCheckBox.isSelected
                 }
 
             // Add listener to dynamically enable/disable docker image tag field
@@ -304,6 +303,7 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
         val settings = AiderSettings.getInstance()
         useDockerAiderCheckBox.isSelected = settings.useDockerAider
         dockerImageTagField.text = settings.dockerImageTag
+        dockerImageTagField.isEnabled = settings.useDockerAider
         aiderExecutablePathField.text = settings.aiderExecutablePath
         updateApiKeyFieldsOnClose()
 
