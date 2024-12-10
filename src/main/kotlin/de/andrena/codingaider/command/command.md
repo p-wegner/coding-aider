@@ -1,18 +1,24 @@
 # Command Module Documentation
 
 ## Overview
-The Command module provides a robust and flexible data structure for managing command execution within the Coding Aider application. It encapsulates complex command configurations, supporting various scenarios of code interaction and AI-assisted development.
+
+The Command module provides a robust and flexible data structure for managing command execution within the Coding Aider
+application. It encapsulates complex command configurations, supporting various scenarios of code interaction and
+AI-assisted development.
 
 ## Architecture and Design Patterns
 
 ### Design Principles
-- **Data Transfer Object (DTO) Pattern**: Utilizes lightweight data classes to transfer command configuration between application components.
+
+- **Data Transfer Object (DTO) Pattern**: Utilizes lightweight data classes to transfer command configuration between
+  application components.
 - **Immutability**: Leverages Kotlin's `data class` for immutable, thread-safe configuration objects.
 - **Flexible Configuration**: Supports extensive customization through optional parameters and flags.
 
 ## Key Components
 
 ### FileData
+
 A lightweight data class representing file metadata for command processing.
 
 ```kotlin
@@ -23,11 +29,13 @@ data class FileData(
 ```
 
 #### Key Features
+
 - Tracks individual file properties
 - Supports read-only file handling
 - Used in multi-file command scenarios
 
 ### CommandData
+
 Comprehensive configuration for executing Aider commands with extensive customization options.
 
 ```kotlin
@@ -48,6 +56,7 @@ data class CommandData(
 ```
 
 #### Advanced Configuration Options
+
 - Language model selection
 - Shell mode toggling
 - Linting integration
@@ -56,6 +65,7 @@ data class CommandData(
 - Structured and unstructured modes
 
 ### CommandOptions
+
 Provides granular control over command execution and presentation.
 
 ```kotlin
@@ -80,6 +90,7 @@ graph TD
 ```
 
 ## Exceptional Implementation Details
+
 - Supports structured and unstructured command modes
 - Flexible LLM model specification
 - Optional Docker container execution
@@ -89,10 +100,12 @@ graph TD
 - Comprehensive command options with default values
 
 ## Module Dependencies
+
 - Kotlin Standard Library
 - Aider Application Framework
 
 ## Potential Use Cases
+
 1. AI-assisted code refactoring
 2. Multi-file code generation
 3. Automated code review and linting
@@ -100,10 +113,11 @@ graph TD
 5. Configurable AI command execution
 
 ## Related Files
-- [FileData.kt](./FileData.kt)
+
 - [CommandData.kt](./CommandData.kt)
 
 ## Best Practices
+
 - Use immutable configuration objects
 - Leverage optional parameters for flexibility
 - Prefer composition over complex inheritance
