@@ -42,12 +42,13 @@ class PlansPanel(private val project: Project) {
 
     fun getContent(): JComponent {
         return panel {
-            group("Aider Plans") {
+            group("Plans") {
                 row {
                     val toolbar = ActionManager.getInstance().createActionToolbar(
                         "AiderPlansToolbar",
-                        DefaultActionGroup().apply { 
+                        DefaultActionGroup().apply {
                             add(planViewer.ContinuePlanAction())
+                            add(planViewer.EditContextAction())
                             add(planViewer.DeletePlanAction())
                         },
                         true

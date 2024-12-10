@@ -4,8 +4,10 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBScrollPane
+import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.services.RunningCommandService
 import de.andrena.codingaider.services.plans.AiderPlanService
+import de.andrena.codingaider.services.plans.ContinuePlanService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import java.awt.BorderLayout
 import java.awt.EventQueue.invokeLater
@@ -25,7 +27,8 @@ class MarkdownDialog(
     private val initialTitle: String,
     initialText: String,
     private val onAbort: Abortable?,
-    private val displayString: String?
+    private val displayString: String?,
+    private val commandData: CommandData? = null
 ) : JDialog(null as Frame?, false) {
 
     companion object {
@@ -57,6 +60,40 @@ class MarkdownDialog(
     private var closeButton = JButton(onAbort?.let { "Abort" } ?: "Close").apply {
         mnemonic = onAbort?.let { KeyEvent.VK_A } ?: KeyEvent.VK_C
     }
+    private var closeAndContinueButton = JButton("Close & Continue").apply {
+        mnemonic = KeyEvent.VK_N
+        isVisible = false
+        addActionListener {
+            if (isProcessFinished) {
+                try {
+                    isEnabled = false
+                    text = "Continuing..."
+                    if (getInstance().enableAutoPlanContinue) {
+                        dispose()
+                        project.service<ContinuePlanService>().continuePlan()
+                    } else {
+                        isEnabled = true
+                        text = "Close & Continue"
+                        JOptionPane.showMessageDialog(
+                            this@MarkdownDialog,
+                            "No incomplete plans found to continue.",
+                            "Continuation Error",
+                            JOptionPane.INFORMATION_MESSAGE
+                        )
+                    }
+                } catch (e: Exception) {
+                    isEnabled = true
+                    text = "Close & Continue"
+                    JOptionPane.showMessageDialog(
+                        this@MarkdownDialog,
+                        "Error during plan continuation: ${e.message}",
+                        "Continuation Error",
+                        JOptionPane.ERROR_MESSAGE
+                    )
+                }
+            }
+        }
+    }
     private var isProcessFinished = false
     private var autoScroll = true
 
@@ -70,10 +107,10 @@ class MarkdownDialog(
             val extent = scrollBar.model.extent
             val maximum = scrollBar.model.maximum
             val current = scrollBar.model.value
-            
+
             // Check if we're within 20 pixels of the bottom
             val isAtBottom = (current + extent + 20) >= maximum
-            
+
             // Update autoScroll when:
             // 1. User is manually scrolling (valueIsAdjusting is true)
             // 2. Or when they've scrolled to the bottom
@@ -101,9 +138,17 @@ class MarkdownDialog(
         defaultCloseOperation = DO_NOTHING_ON_CLOSE
         addWindowListener(object : java.awt.event.WindowAdapter() {
             override fun windowClosed(e: WindowEvent?) {
-                project.service<RunningCommandService>().removeRunningCommand(this@MarkdownDialog)
-                super.windowClosed(e)
-
+                try {
+                    refreshTimer?.cancel()
+                    refreshTimer = null
+                    autoCloseTimer?.cancel()
+                    autoCloseTimer = null
+                    project.service<RunningCommandService>().removeRunningCommand(this@MarkdownDialog)
+                } catch (ex: Exception) {
+                    println("Error during dialog cleanup: ${ex.message}")
+                } finally {
+                    super.windowClosed(e)
+                }
             }
 
             override fun windowClosing(windowEvent: java.awt.event.WindowEvent?) {
@@ -133,6 +178,7 @@ class MarkdownDialog(
             isVisible = false
         }
         buttonPanel.add(closeButton)
+        buttonPanel.add(closeAndContinueButton)
         buttonPanel.add(keepOpenButton)
         add(buttonPanel, BorderLayout.SOUTH)
 
@@ -200,7 +246,22 @@ class MarkdownDialog(
                     title = "$initialTitle - Closing in $remainingSeconds seconds"
                     remainingSeconds--
                 } else {
-                    dispose()
+                    try {
+                        if (isProcessFinished) {
+                            try {
+                                if (getInstance().enableAutoPlanContinue) {
+                                    project.service<ContinuePlanService>().continuePlan()
+                                }
+                            } catch (e: Exception) {
+                                println("Error during autoclose continuation: ${e.message}")
+                            }
+                        }
+                    } catch (e: Exception) {
+                        println("Error during autoclose continuation: ${e.message}")
+                    } finally {
+                        dispose()
+                        autoCloseTimer?.cancel()
+                    }
                 }
             }
         }
@@ -208,6 +269,7 @@ class MarkdownDialog(
 
     private fun cancelAutoClose() {
         autoCloseTimer?.cancel()
+        autoCloseTimer = null
         keepOpenButton.isVisible = false
         title = initialTitle
     }
@@ -217,6 +279,7 @@ class MarkdownDialog(
         invokeLater {
             closeButton.text = "Close"
             closeButton.mnemonic = KeyEvent.VK_C
+            closeAndContinueButton.isVisible = commandData?.structuredMode == true
         }
     }
 

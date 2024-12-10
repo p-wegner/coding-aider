@@ -56,11 +56,7 @@ class AiderAction : AnAction() {
                             dialog.isStructuredMode(),
                             dialog.selectedMode
                         )
-                        if (commandData.isShellMode) {
-                            ShellExecutor(project, commandData).execute()
-                        } else {
-                            IDEBasedExecutor(project, commandData).execute()
-                        }
+                        executeAiderActionWithCommandData(project, commandData)
                     }
                 }
             }

@@ -50,6 +50,7 @@ class AiderSettingsConfigurable() : Configurable {
     private val enableDocumentationLookupCheckBox = JBCheckBox("Enable documentation lookup")
     private val alwaysIncludeOpenFilesCheckBox = JBCheckBox("Always include open files in context")
     private val alwaysIncludePlanContextFilesCheckBox = JBCheckBox("Always include plan context files")
+    private val enableAutoPlanContinueCheckBox = JBCheckBox("Enable automatic plan continuation")
     private val documentationLlmComboBox =
         ComboBox( apiKeyChecker.getAllLlmOptions().toTypedArray())
 
@@ -208,6 +209,11 @@ class AiderSettingsConfigurable() : Configurable {
                     }
                 }
                 row { cell(alwaysIncludePlanContextFilesCheckBox) }
+                row { 
+                    cell(enableAutoPlanContinueCheckBox).component.apply {
+                        toolTipText = "If enabled, plans will automatically continue when there are open checklist items"
+                    }
+                }
                 row("Documentation LLM Model:") {
                     cell(documentationLlmComboBox).component.apply {
                         renderer = LlmComboBoxRenderer()
@@ -249,6 +255,7 @@ class AiderSettingsConfigurable() : Configurable {
                 enableDocumentationLookupCheckBox.isSelected != settings.enableDocumentationLookup ||
                 alwaysIncludeOpenFilesCheckBox.isSelected != settings.alwaysIncludeOpenFiles ||
                 alwaysIncludePlanContextFilesCheckBox.isSelected != settings.alwaysIncludePlanContextFiles ||
+                enableAutoPlanContinueCheckBox.isSelected != settings.enableAutoPlanContinue ||
                 documentationLlmComboBox.selectedItem.asSelectedItemName()  != settings.documentationLlm ||
                 aiderSetupPanel.isModified()
 
@@ -318,6 +325,7 @@ class AiderSettingsConfigurable() : Configurable {
         enableDocumentationLookupCheckBox.isSelected = settings.enableDocumentationLookup
         alwaysIncludeOpenFilesCheckBox.isSelected = settings.alwaysIncludeOpenFiles
         alwaysIncludePlanContextFilesCheckBox.isSelected = settings.alwaysIncludePlanContextFiles
+        enableAutoPlanContinueCheckBox.isSelected = settings.enableAutoPlanContinue
         documentationLlmComboBox.selectedItem = apiKeyChecker.getLlmSelectionForName(settings.documentationLlm)
         aiderSetupPanel.reset()
         settings.notifySettingsChanged()

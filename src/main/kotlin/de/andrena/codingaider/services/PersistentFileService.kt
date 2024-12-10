@@ -1,9 +1,5 @@
 package de.andrena.codingaider.services
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
-import com.fasterxml.jackson.module.kotlin.KotlinModule
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
@@ -11,6 +7,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.messages.PersistentFilesChangedTopic
+import de.andrena.codingaider.model.ContextFileHandler
 import java.io.File
 import java.io.IOException
 
@@ -18,7 +15,6 @@ import java.io.IOException
 class PersistentFileService(private val project: Project) {
     private val contextFile = File(project.basePath ?: "", ".aider.context.yaml")
     private val persistentFiles: MutableList<FileData> = mutableListOf()
-    private val objectMapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
     private val filesChanged: PersistentFilesChangedTopic by lazy {
         project.messageBus.syncPublisher(PersistentFilesChangedTopic.PERSISTENT_FILES_CHANGED_TOPIC)
     }
@@ -37,14 +33,7 @@ class PersistentFileService(private val project: Project) {
         if (contextFile.exists()) {
             try {
                 persistentFiles.clear()
-                val yamlData: Map<String, List<Map<String, Any>>> = objectMapper.readValue(contextFile)
-                yamlData["files"]?.forEach { fileMap ->
-                    val filePath = fileMap["path"] as? String
-                    val isReadOnly = fileMap["readOnly"] as? Boolean ?: false
-                    if (filePath != null) {
-                        persistentFiles.add(FileData(filePath, isReadOnly))
-                    }
-                }
+                persistentFiles.addAll(ContextFileHandler.readContextFile(contextFile, project.basePath ?: ""))
             } catch (e: IOException) {
                 e.printStackTrace()
             }
@@ -54,15 +43,7 @@ class PersistentFileService(private val project: Project) {
 
     fun savePersistentFilesToContextFile() {
         try {
-            val data = mapOf(
-                "files" to persistentFiles.map { file ->
-                    mapOf(
-                        "path" to file.filePath,
-                        "readOnly" to file.isReadOnly
-                    )
-                }
-            )
-            objectMapper.writeValue(contextFile, data)
+            ContextFileHandler.writeContextFile(contextFile, persistentFiles)
             refreshContextFile()
             notifyPersistentFilesChanged()
         } catch (e: IOException) {
@@ -111,7 +92,7 @@ class PersistentFileService(private val project: Project) {
     fun updateFile(updatedFile: FileData) {
         val index = persistentFiles.indexOfFirst { it.filePath == updatedFile.filePath }
         val virtualFile = LocalFileSystem.getInstance().findFileByPath(updatedFile.filePath)
-        
+
         if (index != -1 && virtualFile?.exists() == true) {
             persistentFiles[index] = updatedFile
             savePersistentFilesToContextFile()

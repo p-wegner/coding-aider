@@ -60,3 +60,8 @@ data class CommandOptions(
         val DEFAULT = CommandOptions()
     }
 }
+
+data class FileData(
+    val filePath: String,
+    val isReadOnly: Boolean
+)

@@ -123,6 +123,7 @@ class DocumentEachFolderAction : AnAction() {
 |Make sure files are linked using relative paths.
 |Store the results in the root folder of the project in the file "overview.md".
 |To calculate the dependencies, use the existing mermaid diagrams in the documentation files.
+|If an overview documentation file is already available, update it instead of creating a new one.
 |""".trimMargin()
 
         private fun getIndividualDocumentationPrompt(

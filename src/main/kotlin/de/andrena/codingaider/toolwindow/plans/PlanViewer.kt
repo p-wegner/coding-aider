@@ -61,8 +61,8 @@ class PlanViewer(private val project: Project) {
         }
     }
 
-    class PlanListCellRenderer(private val shortTooltip: Boolean = true) : JPanel(BorderLayout()),
-        ListCellRenderer<AiderPlan?> {
+    class PlanListCellRenderer(private val shortTooltip: Boolean = true) : JPanel(BorderLayout()), 
+        ListCellRenderer<AiderPlan> {
         private val label = JLabel()
         private val statusIcon = JLabel()
         private val countLabel = JLabel()
@@ -85,8 +85,8 @@ class PlanViewer(private val project: Project) {
         }
 
         override fun getListCellRendererComponent(
-            list: JList<out AiderPlan>?,
-            value: AiderPlan?,
+            list: JList<out AiderPlan>,
+            value: AiderPlan,
             index: Int,
             isSelected: Boolean,
             cellHasFocus: Boolean
@@ -148,6 +148,30 @@ class PlanViewer(private val project: Project) {
         override fun update(e: AnActionEvent) {
             val selectedPlan = plansList.selectedValue
             e.presentation.isEnabled = selectedPlan != null && !selectedPlan.isPlanComplete()
+        }
+    }
+
+    inner class EditContextAction : AnAction(
+        "Edit Context",
+        "Edit context files for this plan",
+        AllIcons.Actions.Edit
+    ) {
+        override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+
+        override fun actionPerformed(e: AnActionEvent) {
+            val selectedPlan = plansList.selectedValue ?: return
+            if (selectedPlan.contextYamlFile == null) {
+                val contextFilePath = selectedPlan.mainPlanFile?.filePath?.replace(".md", "_context.yaml")
+                if (contextFilePath != null) {
+                    File(contextFilePath).createNewFile()
+                }
+            }
+            EditContextDialog(project, selectedPlan).show()
+        }
+
+        override fun update(e: AnActionEvent) {
+            val selectedPlan = plansList.selectedValue
+            e.presentation.isEnabled = selectedPlan != null && selectedPlan.mainPlanFile != null
         }
     }
 
