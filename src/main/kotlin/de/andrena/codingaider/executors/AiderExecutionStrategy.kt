@@ -206,7 +206,7 @@ class DockerAiderExecutionStrategy(
                 }
             }
 
-            LlmProviderType.VERTEX -> {
+            LlmProviderType.VERTEX_EXPERIMENTAL -> {
                 // Pass Google Cloud credentials if available
                 ApiKeyManager.getCustomModelKey(customProvider.name)?.let { credentials ->
                     dockerArgs.addAll(listOf("-e", "GOOGLE_APPLICATION_CREDENTIALS=/tmp/google_credentials.json"))
@@ -298,7 +298,7 @@ fun setApiKeyEnvironmentVariables(
                     }
                 }
 
-                LlmProviderType.VERTEX -> {
+                LlmProviderType.VERTEX_EXPERIMENTAL -> {
                     ApiKeyManager.getCustomModelKey(customProvider.name)?.let { credentials ->
                         environment["GOOGLE_APPLICATION_CREDENTIALS"] = credentials
                     }

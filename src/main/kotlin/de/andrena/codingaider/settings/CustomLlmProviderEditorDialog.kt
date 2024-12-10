@@ -31,17 +31,17 @@ class CustomLlmProviderEditorDialog(
     init {
         title = if (existingProvider == null) "Add Custom LLM Provider" else "Edit Custom LLM Provider"
         init()
-        
+
         // Add document listeners to trigger validation on input changes
         nameField.document.addDocumentListener(createValidationListener())
         baseUrlField.document.addDocumentListener(createValidationListener())
         modelNameField.document.addDocumentListener(createValidationListener())
         apiKeyField.document.addDocumentListener(createValidationListener())
-        
+
         providerTypeComboBox.addActionListener {
             updateProviderTypeUI()
         }
-        
+
         // Set initial values
         if (existingProvider != null) {
             nameField.text = existingProvider.name
@@ -50,13 +50,13 @@ class CustomLlmProviderEditorDialog(
             providerTypeComboBox.selectedItem = existingProvider.type
             projectIdField.text = existingProvider.projectId
             locationField.text = existingProvider.location
-            
+
             // Retrieve and mask existing API key
             ApiKeyManager.getCustomModelKey(existingProvider.name)?.let {
                 apiKeyField.text = it
             }
         }
-        
+
         // Update UI after setting initial values
         updateProviderTypeUI()
     }
@@ -64,7 +64,7 @@ class CustomLlmProviderEditorDialog(
 
     private fun updateProviderTypeUI() {
         val selectedType = providerTypeComboBox.selectedItem as LlmProviderType
-        
+
         when (selectedType) {
             LlmProviderType.OLLAMA -> {
                 if (existingProvider == null) {
@@ -77,47 +77,51 @@ class CustomLlmProviderEditorDialog(
                     apiKeyField.text = ""
                 }
             }
-                LlmProviderType.OPENROUTER -> {
-                    if (existingProvider == null) {
-                        baseUrlField.text = "https://openrouter.ai/api/v1"
-                    }
-                    baseUrlField.isEnabled = true
-                    baseUrlField.toolTipText = "OpenRouter API base URL"
-                    apiKeyField.isEnabled = true
-                    apiKeyField.toolTipText = "OpenRouter API key (required)"
+
+            LlmProviderType.OPENROUTER -> {
+                if (existingProvider == null) {
+                    baseUrlField.text = "https://openrouter.ai/api/v1"
                 }
-                LlmProviderType.OPENAI -> {
-                    if (existingProvider == null) {
-                        baseUrlField.text = "https://api.openai.com/v1"
-                    }
-                    baseUrlField.isEnabled = true
-                    baseUrlField.toolTipText = "OpenAI API base URL"
-                    apiKeyField.isEnabled = true
-                    apiKeyField.toolTipText = "OpenAI API key (required)"
-                }
-                LlmProviderType.VERTEX -> {
-                    baseUrlField.isEnabled = false
-                    apiKeyField.isEnabled = true
-                    apiKeyField.toolTipText = "Google Cloud API key or service account credentials"
-                    projectIdField.isEnabled = true
-                    locationField.isEnabled = true
-                }
-                else -> {
-                    baseUrlField.isEnabled = true
-                    baseUrlField.toolTipText = "API endpoint URL"
-                    apiKeyField.isEnabled = true
-                    apiKeyField.toolTipText = "API key"
-                    projectIdField.isEnabled = false
-                    locationField.isEnabled = false
-                }
+                baseUrlField.isEnabled = true
+                baseUrlField.toolTipText = "OpenRouter API base URL"
+                apiKeyField.isEnabled = true
+                apiKeyField.toolTipText = "OpenRouter API key (required)"
             }
+
+            LlmProviderType.OPENAI -> {
+                if (existingProvider == null) {
+                    baseUrlField.text = "https://api.openai.com/v1"
+                }
+                baseUrlField.isEnabled = true
+                baseUrlField.toolTipText = "OpenAI API base URL"
+                apiKeyField.isEnabled = true
+                apiKeyField.toolTipText = "OpenAI API key (required)"
+            }
+
+            LlmProviderType.VERTEX_EXPERIMENTAL -> {
+                baseUrlField.isEnabled = false
+                apiKeyField.isEnabled = true
+                apiKeyField.toolTipText = "Google Cloud API key or service account credentials"
+                projectIdField.isEnabled = true
+                locationField.isEnabled = true
+            }
+
+            else -> {
+                baseUrlField.isEnabled = true
+                baseUrlField.toolTipText = "API endpoint URL"
+                apiKeyField.isEnabled = true
+                apiKeyField.toolTipText = "API key"
+                projectIdField.isEnabled = false
+                locationField.isEnabled = false
+            }
+        }
 
         // Update row visibility and tooltips based on provider requirements
         baseUrlRow.visible(selectedType.requiresBaseUrl)
         apiKeyRow.visible(selectedType.requiresApiKey)
-        projectIdRow.visible(selectedType == LlmProviderType.VERTEX)
-        locationRow.visible(selectedType == LlmProviderType.VERTEX)
-        
+        projectIdRow.visible(selectedType == LlmProviderType.VERTEX_EXPERIMENTAL)
+        locationRow.visible(selectedType == LlmProviderType.VERTEX_EXPERIMENTAL)
+
         // Update model name tooltip with examples
         modelNameField.toolTipText = selectedType.exampleModels
     }
@@ -169,29 +173,29 @@ class CustomLlmProviderEditorDialog(
         if (modelNameField.text.isBlank()) {
             return ValidationInfo("Model name is required", modelNameField)
         }
-        
+
         val selectedType = providerTypeComboBox.selectedItem as LlmProviderType
-        
+
         // Validate provider name uniqueness
         val service = service<CustomLlmProviderService>()
         val apiKeyChecker = service<DefaultApiKeyChecker>()
         val normalizedName = nameField.text.trim()
-        
+
         // Check against existing custom providers
-        val existingCustomProvider = service.getAllProviders().find { 
-            it.name.trim().equals(normalizedName, ignoreCase = true) && 
-            it != existingProvider 
+        val existingCustomProvider = service.getAllProviders().find {
+            it.name.trim().equals(normalizedName, ignoreCase = true) &&
+                    it != existingProvider
         }
         if (existingCustomProvider != null) {
             return ValidationInfo("Provider name must be unique", nameField)
         }
-        
+
         // Check against standard LLM keys
         val standardKeys = apiKeyChecker.getAllStandardLlmKeys()
         if (standardKeys.contains(normalizedName)) {
             return ValidationInfo("Provider name cannot match standard LLM keys", nameField)
         }
-        
+
         // Validate base URL for providers that require it
         if (selectedType.requiresBaseUrl) {
             val baseUrl = baseUrlField.text.trim()
@@ -202,7 +206,7 @@ class CustomLlmProviderEditorDialog(
                 return ValidationInfo("Invalid URL format", baseUrlField)
             }
         }
-        
+
         // Validate API key for providers that require it
         if (selectedType.requiresApiKey) {
             val apiKeyText = String(apiKeyField.password)
@@ -215,12 +219,15 @@ class CustomLlmProviderEditorDialog(
         }
 
         // Validate Vertex AI specific fields
-        if (selectedType == LlmProviderType.VERTEX) {
+        if (selectedType == LlmProviderType.VERTEX_EXPERIMENTAL) {
             if (projectIdField.text.trim().isEmpty()) {
                 return ValidationInfo("Project ID is required for Vertex AI", projectIdField)
             }
             if (!projectIdField.text.trim().matches(Regex("^[a-z][a-z0-9-]*[a-z0-9]$"))) {
-                return ValidationInfo("Invalid project ID format. Must start with letter, contain only lowercase letters, numbers, and hyphens", projectIdField)
+                return ValidationInfo(
+                    "Invalid project ID format. Must start with letter, contain only lowercase letters, numbers, and hyphens",
+                    projectIdField
+                )
             }
             if (locationField.text.trim().isEmpty()) {
                 return ValidationInfo("Location is required for Vertex AI", locationField)
@@ -231,22 +238,25 @@ class CustomLlmProviderEditorDialog(
             // Validate model name format for Vertex AI
             val modelName = modelNameField.text.trim()
             if (!modelName.matches(Regex("^[\\w-]+(@latest|@\\d{8})?$"))) {
-                return ValidationInfo("Invalid model name format. Examples: claude-3-sonnet@latest, gemini-pro@20240620", modelNameField)
+                return ValidationInfo(
+                    "Invalid model name format. Examples: claude-3-sonnet@latest, gemini-pro@20240620",
+                    modelNameField
+                )
             }
         }
-        
+
         return null
     }
 
     private fun isValidUrl(url: String): Boolean {
         return url.matches(Regex("^https?://[^\\s/$.?#].[^\\s]*$"))
     }
-    
+
     private fun createValidationListener() = object : javax.swing.event.DocumentListener {
         override fun insertUpdate(e: javax.swing.event.DocumentEvent) = revalidate()
         override fun removeUpdate(e: javax.swing.event.DocumentEvent) = revalidate()
         override fun changedUpdate(e: javax.swing.event.DocumentEvent) = revalidate()
-        
+
         private fun revalidate() {
             isOKActionEnabled = true  // Reset OK button state
         }
@@ -262,7 +272,7 @@ class CustomLlmProviderEditorDialog(
             projectId = projectIdField.text.trim(),
             location = locationField.text.trim(),
         )
-        
+
         // Save API key if provided and not masked, except for Ollama
         if (type.requiresApiKey) {
             val apiKeyText = String(apiKeyField.password)
@@ -278,7 +288,7 @@ class CustomLlmProviderEditorDialog(
                 }
             }
         }
-        
+
         return provider
     }
 

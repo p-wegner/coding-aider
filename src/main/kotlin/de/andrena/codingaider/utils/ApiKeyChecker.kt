@@ -49,9 +49,9 @@ class DefaultApiKeyChecker : ApiKeyChecker {
             LlmProviderType.OPENAI -> listOf("OPENAI_API_KEY")
             LlmProviderType.OPENROUTER -> listOf("OPENROUTER_API_KEY")
             LlmProviderType.OLLAMA -> emptyList() // Ollama doesn't require an API key
-            LlmProviderType.VERTEX -> listOf(
-                "GOOGLE_APPLICATION_CREDENTIALS", 
-                "VERTEXAI_PROJECT", 
+            LlmProviderType.VERTEX_EXPERIMENTAL -> listOf(
+                "GOOGLE_APPLICATION_CREDENTIALS",
+                "VERTEXAI_PROJECT",
                 "VERTEXAI_LOCATION"
             )
         }
@@ -174,12 +174,15 @@ class DefaultApiKeyChecker : ApiKeyChecker {
                 val keyNames = getProviderApiKeyName(provider)
                 keyNames.mapNotNull { keyName ->
                     when (keyName) {
-                        "GOOGLE_APPLICATION_CREDENTIALS" -> 
+                        "GOOGLE_APPLICATION_CREDENTIALS" ->
                             ApiKeyManager.getCustomModelKey(provider.name)?.let { keyName to it }
-                        "VERTEXAI_PROJECT" -> 
+
+                        "VERTEXAI_PROJECT" ->
                             provider.projectId.takeIf { it.isNotEmpty() }?.let { keyName to it }
-                        "VERTEXAI_LOCATION" -> 
+
+                        "VERTEXAI_LOCATION" ->
                             provider.location.takeIf { it.isNotEmpty() }?.let { keyName to it }
+
                         else -> null
                     }
                 }
