@@ -109,62 +109,64 @@ class AiderPlanService(private val project: Project) {
         return getAiderPlans(filesToConsider)
     }
 
+    fun loadPlanFromFile(file: File): AiderPlan? {
+        return try {
+            val content = file.readText()
+            if (!content.contains(AIDER_PLAN_MARKER)) return null
+            
+            // Process markdown references to include referenced content
+            val expandedContent = processMarkdownReferences(content, plansDir)
+
+            // Extract plan content from the expanded content
+            val planContent = expandedContent.substringAfter(AIDER_PLAN_MARKER).trim()
+
+            // Get checklist items from expanded content
+            val planChecklist = extractChecklistItems(expandedContent)
+
+            // Look for associated checklist file
+            val checklistFile = File(plansDir, "${file.nameWithoutExtension}_checklist.md")
+            val checklistItems = if (checklistFile.exists()) {
+                val checklistContent = checklistFile.readText()
+                if (checklistContent.contains(AIDER_PLAN_CHECKLIST_MARKER)) {
+                    // Process references in checklist file too
+                    val expandedChecklistContent = processMarkdownReferences(checklistContent, plansDir)
+                    extractChecklistItems(expandedChecklistContent)
+                } else emptyList()
+            } else emptyList()
+
+            // Combine checklist items from both files
+            val combinedChecklist = (checklistItems + planChecklist).distinctBy {
+                it.description.trim()
+            }
+
+            // Include plan, checklist and context files in the files list
+            val files = mutableListOf(FileData(file.absolutePath, false))
+            if (checklistFile.exists()) {
+                files.add(FileData(checklistFile.absolutePath, false))
+            }
+
+            // Look for associated context file
+            val contextFile = File(plansDir, "${file.nameWithoutExtension}_context.yaml")
+            val contextFiles = if (contextFile.exists()) {
+                files.add(FileData(contextFile.absolutePath, false))
+                parseContextYaml(contextFile)
+            } else emptyList()
+
+            AiderPlan(
+                plan = planContent,
+                checklist = combinedChecklist,
+                planFiles = files,
+                contextFiles = contextFiles
+            )
+        } catch (e: Exception) {
+            println("Error processing plan file ${file.name}: ${e.message}")
+            null
+        }
+    }
+
     fun getAiderPlans(filesInPlanFolder: List<File>): List<AiderPlan> = filesInPlanFolder
         .filter { file -> file.extension == "md" && !file.nameWithoutExtension.endsWith("_checklist") }
-        .mapNotNull { file ->
-            try {
-                val content = file.readText()
-                if (content.contains(AIDER_PLAN_MARKER)) {
-                    // Process markdown references to include referenced content
-                    val expandedContent = processMarkdownReferences(content, plansDir)
-
-                    // Extract plan content from the expanded content
-                    val planContent = expandedContent.substringAfter(AIDER_PLAN_MARKER).trim()
-
-                    // Get checklist items from expanded content
-                    val planChecklist = extractChecklistItems(expandedContent)
-
-                    // Look for associated checklist file
-                    val checklistFile = File(plansDir, "${file.nameWithoutExtension}_checklist.md")
-                    val checklistItems = if (checklistFile.exists()) {
-                        val checklistContent = checklistFile.readText()
-                        if (checklistContent.contains(AIDER_PLAN_CHECKLIST_MARKER)) {
-                            // Process references in checklist file too
-                            val expandedChecklistContent = processMarkdownReferences(checklistContent, plansDir)
-                            extractChecklistItems(expandedChecklistContent)
-                        } else emptyList()
-                    } else emptyList()
-
-                    // Combine checklist items from both files
-                    val combinedChecklist = (checklistItems + planChecklist).distinctBy {
-                        it.description.trim()
-                    }
-
-                    // Include plan, checklist and context files in the files list
-                    val files = mutableListOf(FileData(file.absolutePath, false))
-                    if (checklistFile.exists()) {
-                        files.add(FileData(checklistFile.absolutePath, false))
-                    }
-
-                    // Look for associated context file
-                    val contextFile = File(plansDir, "${file.nameWithoutExtension}_context.yaml")
-                    val contextFiles = if (contextFile.exists()) {
-                        files.add(FileData(contextFile.absolutePath, false))
-                        parseContextYaml(contextFile)
-                    } else emptyList()
-
-                    AiderPlan(
-                        plan = planContent,
-                        checklist = combinedChecklist,
-                        planFiles = files,
-                        contextFiles = contextFiles
-                    )
-                } else null
-            } catch (e: Exception) {
-                println("Error processing plan file ${file.name}: ${e.message}")
-                null
-            }
-        }
+        .mapNotNull { file -> loadPlanFromFile(file) }
 
 
     private fun String.indentationLevel(): Int =
