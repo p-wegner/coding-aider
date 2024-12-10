@@ -19,9 +19,9 @@ See [Plan](./vertex_ai_provider.md) for full feature description.
 - [x] Handle both service account and user credentials
 
 ## UI Updates
-- [ ] Add Vertex AI specific input fields
-- [ ] Update provider type dropdown
-- [ ] Add tooltips and validation messages
+- [x] Add Vertex AI specific input fields
+- [x] Update provider type dropdown
+- [x] Add tooltips and validation messages
 
 ## Testing
 - [ ] Test provider creation

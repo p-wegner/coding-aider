@@ -21,6 +21,7 @@ enum class LlmProviderType(
             OPENAI -> "OPENAI_API_KEY"
             OLLAMA -> "" // Ollama doesn't require an API key
             OPENROUTER -> "OPENROUTER_API_KEY"
+            VERTEX -> "GOOGLE_APPLICATION_CREDENTIALS"
         }
     }
 

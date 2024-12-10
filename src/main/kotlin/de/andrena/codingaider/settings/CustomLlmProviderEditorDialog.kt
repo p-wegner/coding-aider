@@ -219,13 +219,19 @@ class CustomLlmProviderEditorDialog(
             if (projectIdField.text.trim().isEmpty()) {
                 return ValidationInfo("Project ID is required for Vertex AI", projectIdField)
             }
+            if (!projectIdField.text.trim().matches(Regex("^[a-z][a-z0-9-]*[a-z0-9]$"))) {
+                return ValidationInfo("Invalid project ID format. Must start with letter, contain only lowercase letters, numbers, and hyphens", projectIdField)
+            }
             if (locationField.text.trim().isEmpty()) {
                 return ValidationInfo("Location is required for Vertex AI", locationField)
+            }
+            if (!locationField.text.trim().matches(Regex("^[a-z]+-[a-z]+\\d+$"))) {
+                return ValidationInfo("Invalid location format. Example: us-central1", locationField)
             }
             // Validate model name format for Vertex AI
             val modelName = modelNameField.text.trim()
             if (!modelName.matches(Regex("^[\\w-]+(@latest|@\\d{8})?$"))) {
-                return ValidationInfo("Invalid model name format. Examples: model-name@latest, model-name@20240620", modelNameField)
+                return ValidationInfo("Invalid model name format. Examples: claude-3-sonnet@latest, gemini-pro@20240620", modelNameField)
             }
         }
         
