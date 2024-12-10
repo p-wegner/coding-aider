@@ -55,18 +55,10 @@ class EditContextDialog(
         // Load from context file if it exists
         val contextFile = File(plan.contextYamlFile?.filePath ?: return)
         if (contextFile.exists()) {
-            try {
-                val yamlMapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
-                val contextData: ContextYamlData = yamlMapper.readValue(contextFile)
-                contextData.files.forEach { fileData ->
-                    if (File(fileData.path).exists()) {
-                        contextFilesListModel.addElement(FileData(fileData.path, fileData.readOnly))
-                    }
-                }
-            } catch (e: Exception) {
-                // Fallback to plan's context files if yaml parsing fails
-                plan.contextFiles.forEach { file ->
-                    contextFilesListModel.addElement(file)
+            val files = ContextFileHandler.readContextFile(contextFile)
+            files.forEach { fileData ->
+                if (File(fileData.filePath).exists()) {
+                    contextFilesListModel.addElement(fileData)
                 }
             }
         } else {
