@@ -298,8 +298,17 @@ fun setApiKeyEnvironmentVariables(
                         environment["OPENROUTER_API_KEY"] = apiKey
                     }
                 }
-                // TODO: implement as described in the docs
-                LlmProviderType.VERTEX -> TODO()
+                LlmProviderType.VERTEX -> {
+                    ApiKeyManager.getCustomModelKey(customProvider.name)?.let { credentials ->
+                        environment["GOOGLE_APPLICATION_CREDENTIALS"] = credentials
+                    }
+                    if (customProvider.projectId.isNotEmpty()) {
+                        environment["VERTEXAI_PROJECT"] = customProvider.projectId
+                    }
+                    if (customProvider.location.isNotEmpty()) {
+                        environment["VERTEXAI_LOCATION"] = customProvider.location
+                    }
+                }
             }
         }
 
