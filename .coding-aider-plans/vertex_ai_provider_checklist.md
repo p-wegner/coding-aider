@@ -4,7 +4,7 @@
 See [Plan](./vertex_ai_provider.md) for full feature description.
 
 ## Setup
-- [ ] Add VERTEX enum value to LlmProviderType
+- [x] Add VERTEX enum value to LlmProviderType
 - [ ] Define required configuration fields (project ID, location)
 - [ ] Update example models and documentation
 

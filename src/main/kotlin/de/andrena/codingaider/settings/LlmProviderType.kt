@@ -12,7 +12,9 @@ enum class LlmProviderType(
     OLLAMA("Ollama", requiresApiKey = false, requiresBaseUrl = true, "ollama",
         "Examples: llama3:70b, qwen2.5-coder:32b"),
     OPENROUTER("OpenRouter", requiresApiKey = true, requiresBaseUrl = false, "openrouter",
-        "Examples: anthropic/claude-3.5-sonnet, openai/gpt-4o, qwen/qwen-2.5-coder-32b-instruct");
+        "Examples: anthropic/claude-3.5-sonnet, openai/gpt-4o, qwen/qwen-2.5-coder-32b-instruct"),
+    VERTEX("Vertex AI", requiresApiKey = true, requiresBaseUrl = false, "vertex_ai",
+        "Examples: claude-3-5-sonnet@20240620, gemini-pro@20240620");
 
     fun getApiKeyName(): String {
         return when (this) {
