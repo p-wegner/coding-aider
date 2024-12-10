@@ -3,7 +3,6 @@ package de.andrena.codingaider.executors.api
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
-import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.services.plans.ActivePlanService
 import de.andrena.codingaider.services.plans.AiderPlanService
@@ -21,11 +20,6 @@ class CommandPlanExecutionHandler(private val project: Project, private val comm
                 ?.toSet() ?: emptySet()
 
             val newPlanFiles = currentPlanFiles.subtract(initialPlanFiles)
-            newPlanFiles.forEach { file ->
-                project.service<PersistentFileService>().addFile(FileData(file.absolutePath, false))
-            }
-
-            // Set active plan when new plan files are created
             if (newPlanFiles.isNotEmpty()) {
                 val plans = project.service<AiderPlanService>().getAiderPlans(newPlanFiles.toList())
                 plans.firstOrNull()?.let {
