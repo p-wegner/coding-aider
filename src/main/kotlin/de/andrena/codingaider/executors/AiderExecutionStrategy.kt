@@ -33,91 +33,90 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
                     } else {
                         add("--model")
                         add(commandData.llm)
-
                     }
-                }
-                commandData.files.forEach { fileData ->
-                    val fileArgument = if (fileData.isReadOnly) "--read" else "--file"
-                    add(fileArgument)
-                    add(fileData.filePath)
-                }
-                if (commandData.useYesFlag) add("--yes")
-                if (commandData.editFormat.isNotEmpty()) {
-                    add("--edit-format")
-                    add(commandData.editFormat)
-                }
-                if (!commandData.isShellMode) {
-                    add("--no-suggest-shell-commands")
-                    add("--no-pretty")
-                    add("--no-fancy-input")
-                    add("--no-detect-urls")
-                }
-                if (commandData.additionalArgs.isNotEmpty()) {
-                    addAll(commandData.additionalArgs.split(" "))
-                }
-                if (commandData.lintCmd.isNotEmpty()) {
-                    add("--lint-cmd")
-                    add(commandData.lintCmd)
-                }
-                if (commandData.deactivateRepoMap) {
-                    add("--map-tokens")
-                    add("0")
-                }
-                if (commandData.options.autoCommit != null) {
-                    if (commandData.options.autoCommit) {
-                        add("--auto-commits")
-                    } else {
-                        add("--no-auto-commits")
-                    }
-                } else {
-                    when (settings.autoCommits) {
-                        AiderSettings.AutoCommitSetting.ON -> add("--auto-commits")
-                        AiderSettings.AutoCommitSetting.OFF -> add("--no-auto-commits")
-                        AiderSettings.AutoCommitSetting.DEFAULT -> {} // Do nothing, use Aider's default
-                    }
-                }
-                if (commandData.options.dirtyCommits != null) {
-                    if (commandData.options.dirtyCommits) {
-                        add("--dirty-commits")
-                    } else {
-                        add("--no-dirty-commits")
-                    }
-                } else {
-                    when (settings.dirtyCommits) {
-                        AiderSettings.DirtyCommitSetting.ON -> add("--dirty-commits")
-                        AiderSettings.DirtyCommitSetting.OFF -> add("--no-dirty-commits")
-                        AiderSettings.DirtyCommitSetting.DEFAULT -> {} // Do nothing, use Aider's default
-                    }
-                }
-                if (settings.includeChangeContext) {
-                    add("--commit-prompt")
-                    add(getCommitPrompt())
-                }
-                if (commandData.sidecarMode) {
-                    return@buildList
-                }
-                when (commandData.aiderMode) {
-                    AiderMode.NORMAL -> {
-                        add("-m")
-                        add(commandData.message)
-                    }
-
-                    AiderMode.STRUCTURED -> {
-                        add("-m")
-                        add(project.service<AiderPlanService>().createAiderPlanSystemPrompt(commandData))
-                    }
-
-                    AiderMode.ARCHITECT -> {
-                        add("-m")
-                        add("/architect ${commandData.message}")
-                    }
-
-                    else -> {}
                 }
             }
-        }
+            commandData.files.forEach { fileData ->
+                val fileArgument = if (fileData.isReadOnly) "--read" else "--file"
+                add(fileArgument)
+                add(fileData.filePath)
+            }
+            if (commandData.useYesFlag) add("--yes")
+            if (commandData.editFormat.isNotEmpty()) {
+                add("--edit-format")
+                add(commandData.editFormat)
+            }
+            if (!commandData.isShellMode) {
+                add("--no-suggest-shell-commands")
+                add("--no-pretty")
+                add("--no-fancy-input")
+                add("--no-detect-urls")
+            }
+            if (commandData.additionalArgs.isNotEmpty()) {
+                addAll(commandData.additionalArgs.split(" "))
+            }
+            if (commandData.lintCmd.isNotEmpty()) {
+                add("--lint-cmd")
+                add(commandData.lintCmd)
+            }
+            if (commandData.deactivateRepoMap) {
+                add("--map-tokens")
+                add("0")
+            }
+            if (commandData.options.autoCommit != null) {
+                if (commandData.options.autoCommit) {
+                    add("--auto-commits")
+                } else {
+                    add("--no-auto-commits")
+                }
+            } else {
+                when (settings.autoCommits) {
+                    AiderSettings.AutoCommitSetting.ON -> add("--auto-commits")
+                    AiderSettings.AutoCommitSetting.OFF -> add("--no-auto-commits")
+                    AiderSettings.AutoCommitSetting.DEFAULT -> {} // Do nothing, use Aider's default
+                }
+            }
+            if (commandData.options.dirtyCommits != null) {
+                if (commandData.options.dirtyCommits) {
+                    add("--dirty-commits")
+                } else {
+                    add("--no-dirty-commits")
+                }
+            } else {
+                when (settings.dirtyCommits) {
+                    AiderSettings.DirtyCommitSetting.ON -> add("--dirty-commits")
+                    AiderSettings.DirtyCommitSetting.OFF -> add("--no-dirty-commits")
+                    AiderSettings.DirtyCommitSetting.DEFAULT -> {} // Do nothing, use Aider's default
+                }
+            }
+            if (settings.includeChangeContext) {
+                add("--commit-prompt")
+                add(getCommitPrompt())
+            }
+            if (commandData.sidecarMode) {
+                return@buildList
+            }
+            when (commandData.aiderMode) {
+                AiderMode.NORMAL -> {
+                    add("-m")
+                    add(commandData.message)
+                }
 
+                AiderMode.STRUCTURED -> {
+                    add("-m")
+                    add(project.service<AiderPlanService>().createAiderPlanSystemPrompt(commandData))
+                }
+
+                AiderMode.ARCHITECT -> {
+                    add("-m")
+                    add("/architect ${commandData.message}")
+                }
+
+                else -> {}
+            }
+        }
     }
+
 
 }
 
@@ -298,6 +297,7 @@ fun setApiKeyEnvironmentVariables(
                         environment["OPENROUTER_API_KEY"] = apiKey
                     }
                 }
+
                 LlmProviderType.VERTEX -> {
                     ApiKeyManager.getCustomModelKey(customProvider.name)?.let { credentials ->
                         environment["GOOGLE_APPLICATION_CREDENTIALS"] = credentials
