@@ -298,6 +298,8 @@ fun setApiKeyEnvironmentVariables(
                         environment["OPENROUTER_API_KEY"] = apiKey
                     }
                 }
+                // TODO: implement as described in the docs
+                LlmProviderType.VERTEX -> TODO()
             }
         }
 
