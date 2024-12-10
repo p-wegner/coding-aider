@@ -5,19 +5,15 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFileManager
 import de.andrena.codingaider.command.CommandData
-import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.CommandExecutor
 import de.andrena.codingaider.outputview.Abortable
 import de.andrena.codingaider.outputview.MarkdownDialog
 import de.andrena.codingaider.services.CommandSummaryService
-import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.services.RunningCommandService
-import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileRefresher
 import de.andrena.codingaider.utils.GitUtils
 import java.awt.EventQueue.invokeLater
-import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.concurrent.thread
@@ -32,12 +28,13 @@ class IDEBasedExecutor(
     private val commandFinishedCallback: CommandFinishedCallback? = null
 ) : CommandObserver, Abortable {
     private val log = Logger.getInstance(IDEBasedExecutor::class.java)
+    private val planExecutionActions = CommandPlanExecutionHandler(project, commandData)
     private var markdownDialog: MarkdownDialog? = null
     private var currentCommitHash: String? = commandData.options.commitHashToCompareWith
     private val commandExecutor = AtomicReference<CommandExecutor?>(null)
     private var executionThread: Thread? = null
     private var isFinished: CountDownLatch = CountDownLatch(1)
-    private var initialPlanFiles: Set<File> = emptySet()
+
 
     fun execute(): MarkdownDialog {
         markdownDialog = MarkdownDialog(
@@ -55,12 +52,8 @@ class IDEBasedExecutor(
             currentCommitHash = GitUtils.getCurrentCommitHash(project)
         }
 
-        val plansFolder = File(project.basePath, AiderPlanService.AIDER_PLANS_FOLDER)
-        if (plansFolder.exists() && plansFolder.isDirectory) {
-            initialPlanFiles = plansFolder.listFiles { file -> file.isFile && file.extension == "md" }
-                ?.toSet() ?: emptySet()
-        }
 
+        planExecutionActions.beforeCommandStarted()
         project.service<RunningCommandService>().addRunningCommand(markdownDialog!!)
         executionThread = thread {
             executeAiderCommand()
@@ -124,21 +117,6 @@ class IDEBasedExecutor(
         }
     }
 
-    private fun addNewPlanFilesToPersistentFiles() {
-        if (commandData.structuredMode) {
-            val plansFolder = File(project.basePath, AiderPlanService.AIDER_PLANS_FOLDER)
-            if (plansFolder.exists() && plansFolder.isDirectory) {
-                val currentPlanFiles = plansFolder.listFiles { file -> file.isFile && file.extension == "md" }
-                    ?.toSet() ?: emptySet()
-
-                val newPlanFiles = currentPlanFiles.subtract(initialPlanFiles)
-                newPlanFiles.forEach { file ->
-                    project.service<PersistentFileService>().addFile(FileData(file.absolutePath, false))
-                }
-            }
-        }
-    }
-
     override fun onCommandStart(message: String) =
         updateDialogProgress(message, "Aider Command Started")
 
@@ -151,7 +129,7 @@ class IDEBasedExecutor(
             commandData.options.autoCloseDelay ?: getInstance().markdownDialogAutocloseDelay
         )
         refreshFiles()
-        addNewPlanFilesToPersistentFiles()
+        planExecutionActions.commandCompleted()
         if (!commandData.options.disablePresentation) {
             presentChanges()
         }
