@@ -208,6 +208,12 @@ class DockerAiderExecutionStrategy(
             }
 
             LlmProviderType.VERTEX -> {
+                // Pass Google Cloud credentials if available
+                ApiKeyManager.getCustomModelKey(customProvider.name)?.let { credentials ->
+                    dockerArgs.addAll(listOf("-e", "GOOGLE_APPLICATION_CREDENTIALS=/tmp/google_credentials.json"))
+                    // Mount credentials file into container
+                    dockerArgs.addAll(listOf("-v", "$credentials:/tmp/google_credentials.json:ro"))
+                }
                 if (customProvider.projectId.isNotEmpty()) {
                     dockerArgs.addAll(listOf("-e", "VERTEXAI_PROJECT=${customProvider.projectId}"))
                 }

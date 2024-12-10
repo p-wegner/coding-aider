@@ -14,9 +14,9 @@ See [Plan](./vertex_ai_provider.md) for full feature description.
 - [x] Implement validation for Vertex AI configuration
 
 ## Authentication
-- [ ] Add support for Google Cloud credentials
-- [ ] Integrate with existing ApiKeyManager
-- [ ] Handle both service account and user credentials
+- [x] Add support for Google Cloud credentials
+- [x] Integrate with existing ApiKeyManager
+- [x] Handle both service account and user credentials
 
 ## UI Updates
 - [ ] Add Vertex AI specific input fields
