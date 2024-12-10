@@ -45,7 +45,7 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
                 }
             }
         }
-        
+
 
         group("API Keys") {
             apiKeyChecker.getAllApiKeyNames().forEach { keyName ->
@@ -100,7 +100,7 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
                     setHistory(listOf(AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION, "latest"))
                     isEnabled = useDockerAiderCheckBox.isSelected
                 }
-            
+
             // Add listener to dynamically enable/disable docker image tag field
             useDockerAiderCheckBox.addActionListener {
                 dockerImageTagField.isEnabled = useDockerAiderCheckBox.isSelected
@@ -181,7 +181,7 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
                     }
 
                     override fun onCommandComplete(message: String, exitCode: Int) {
-                        publish("\nCommand completed with exit code: $exitCode\n")
+                        publish("$message\nCommand completed with exit code: $exitCode\n")
                     }
 
                     override fun onCommandError(message: String) {
