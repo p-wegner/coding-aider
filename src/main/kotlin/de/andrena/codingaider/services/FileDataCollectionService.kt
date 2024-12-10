@@ -5,34 +5,27 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.FileData
+import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileTraversal
 
 @Service(Service.Level.PROJECT)
 class FileDataCollectionService(private val project: Project) {
+
+    private val settings: AiderSettings = getInstance()
+
     fun collectAllFiles(
-        files: Array<VirtualFile>
+        files: Array<VirtualFile>,
+        includePersistentFiles: Boolean = true
+
     ): List<FileData> {
-        val persistentFileService = project.service<PersistentFileService>()
-        val persistentFiles = persistentFileService.getPersistentFiles()
-        val traversedFiles = FileTraversal.traverseFilesOrDirectories(files)
-            .filterNot { file -> persistentFiles.any { normalizePath(it.filePath) == normalizePath(file.filePath) } }
-            .toMutableList()
-
-        val settings = getInstance()
-        val documentationFiles = if (settings.enableDocumentationLookup) {
-            val documentationFinderService = project.service<DocumentationFinderService>()
-            documentationFinderService.findDocumentationFiles(files)
-        } else {
-            emptyList()
+        val traversedFiles = FileTraversal.traverseFilesOrDirectories(files).toMutableList()
+        if (includePersistentFiles) {
+            traversedFiles.addAll(project.service<PersistentFileService>().getPersistentFiles())
         }
-            .filterNot { docFile ->
-                persistentFiles.any { normalizePath(it.filePath) == normalizePath(docFile.filePath) } ||
-                        traversedFiles.any { normalizePath(it.filePath) == normalizePath(docFile.filePath) }
-            }
-
-        traversedFiles.addAll(persistentFiles)
-        traversedFiles.addAll(documentationFiles)
+        if (this.settings.enableDocumentationLookup) {
+            traversedFiles.addAll(project.service<DocumentationFinderService>().findDocumentationFiles(files))
+        }
 
         return traversedFiles.distinctBy { normalizePath(it.filePath) }
     }
