@@ -19,7 +19,9 @@ import com.intellij.ui.components.panels.Wrapper
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.command.FileData
+import de.andrena.codingaider.services.plans.AiderPlan
 import de.andrena.codingaider.services.plans.AiderPlanService
+import java.awt.Component
 import java.io.File
 import javax.swing.*
 
@@ -29,7 +31,7 @@ class EditContextDialog(
 ) : DialogWrapper(project) {
     private val contextFilesListModel = DefaultListModel<FileData>()
     private val contextFilesList = JBList(contextFilesListModel).apply {
-        cellRenderer = PlanViewer.PlanListCellRenderer(true)
+        cellRenderer = ContextFileRenderer()
         addKeyListener(object : java.awt.event.KeyAdapter() {
             override fun keyPressed(e: java.awt.event.KeyEvent) {
                 if (e.keyCode == java.awt.event.KeyEvent.VK_DELETE) {
@@ -47,7 +49,7 @@ class EditContextDialog(
 
     private fun loadContextFiles() {
         contextFilesListModel.clear()
-        
+
         // Load from context file if it exists
         val contextFile = File(plan.contextYamlFile?.filePath ?: return)
         if (contextFile.exists()) {
@@ -133,10 +135,10 @@ class EditContextDialog(
             }
         }
         contextFile.writeText(yamlContent)
-        
+
         // Ensure parent directory exists
         contextFile.parentFile?.mkdirs()
-        
+
         // Refresh plan viewer and update plan service
         VirtualFileManager.getInstance().refreshWithoutFileWatcher(true)
         project.getService(AiderPlanService::class.java).getAiderPlans()
@@ -152,7 +154,8 @@ class EditContextDialog(
                             add(object : AnAction("Add Files", "Add files to context", AllIcons.General.Add) {
                                 override fun actionPerformed(e: AnActionEvent) = addContextFiles()
                             })
-                            add(object : AnAction("Toggle Read-Only", "Toggle read-only status", AllIcons.Actions.Edit) {
+                            add(object :
+                                AnAction("Toggle Read-Only", "Toggle read-only status", AllIcons.Actions.Edit) {
                                 override fun actionPerformed(e: AnActionEvent) = toggleReadOnlyMode()
                             })
                             add(object : AnAction("Remove Files", "Remove selected files", AllIcons.General.Remove) {
@@ -172,4 +175,23 @@ class EditContextDialog(
             }.resizableRow()
         }
     }
+
+    private inner class ContextFileRenderer : DefaultListCellRenderer() {
+        override fun getListCellRendererComponent(
+            list: JList<*>?,
+            value: Any?,
+            index: Int,
+            isSelected: Boolean,
+            cellHasFocus: Boolean
+        ): Component {
+            val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
+            if (component is JLabel && value is FileData) {
+                val file = File(value.filePath)
+                component.text = "${file.nameWithoutExtension} ${if (value.isReadOnly) "(Read-Only)" else ""}"
+                component.toolTipText = value.filePath
+            }
+            return component
+        }
+    }
+
 }
