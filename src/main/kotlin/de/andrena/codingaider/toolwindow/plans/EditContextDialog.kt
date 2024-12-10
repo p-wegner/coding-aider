@@ -57,7 +57,7 @@ class EditContextDialog(
                 contextData["files"]?.forEach { fileMap ->
                     val path = fileMap["path"] as? String
                     val readOnly = fileMap["readOnly"] as? Boolean ?: false
-                    if (path != null) {
+                    if (path != null && File(path).exists()) {
                         contextFilesListModel.addElement(FileData(path, readOnly))
                     }
                 }
@@ -125,8 +125,11 @@ class EditContextDialog(
                 }
             }
             files.forEach { file ->
-                appendLine("- path: \"${file.filePath}\"")
-                appendLine("  readOnly: ${file.isReadOnly}")
+                // Only include files that actually exist
+                if (File(file.filePath).exists()) {
+                    appendLine("- path: \"${file.filePath}\"")
+                    appendLine("  readOnly: ${file.isReadOnly}")
+                }
             }
         }
         contextFile.writeText(yamlContent)
