@@ -25,6 +25,7 @@ You can use:
 - Standard OpenAI models
 - Custom OpenAI-compatible API endpoints (like Azure, Anthropic, or local servers)
 - Ollama models
+- Vertex AI models (experimental)
 
 ### Custom Model Configuration
 
