@@ -154,10 +154,8 @@ class EditContextDialog(
                     scrollCell(contextFilesList)
                         .align(Align.FILL)
                         .resizableColumn()
-                        .constraints(growY = true)
                 }.resizableRow()
             }.resizableRow()
-                .constraints(growY = true)
         }
     }
 
