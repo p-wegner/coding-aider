@@ -6,12 +6,12 @@ See [Plan](./vertex_ai_provider.md) for full feature description.
 ## Setup
 - [x] Add VERTEX enum value to LlmProviderType
 - [x] Define required configuration fields (project ID, location)
-- [ ] Update example models and documentation
+- [x] Update example models and documentation
 
 ## Provider Configuration
 - [x] Add Vertex AI specific fields to CustomLlmProvider
 - [x] Extend CustomLlmProviderEditorDialog for Vertex settings
-- [ ] Implement validation for Vertex AI configuration
+- [x] Implement validation for Vertex AI configuration
 
 ## Authentication
 - [ ] Add support for Google Cloud credentials
