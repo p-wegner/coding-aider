@@ -33,7 +33,7 @@ class PersistentFileService(private val project: Project) {
         if (contextFile.exists()) {
             try {
                 persistentFiles.clear()
-                persistentFiles.addAll(ContextFileHandler.readContextFile(contextFile))
+                persistentFiles.addAll(ContextFileHandler.readContextFile(contextFile, project.basePath ?: ""))
             } catch (e: IOException) {
                 e.printStackTrace()
             }

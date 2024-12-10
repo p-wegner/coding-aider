@@ -13,10 +13,17 @@ data class ContextYamlData(val files: List<ContextYamlFile> = emptyList())
 object ContextFileHandler {
     private val objectMapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
 
-    fun readContextFile(contextFile: File): List<FileData> {
+    fun readContextFile(contextFile: File, projectBasePath: String): List<FileData> {
         return try {
             val yamlData: ContextYamlData = objectMapper.readValue(contextFile)
-            yamlData.files.map { FileData(it.path, it.readOnly) }
+            yamlData.files.map { 
+                val absolutePath = if (File(it.path).isAbsolute) {
+                    it.path
+                } else {
+                    File(projectBasePath, it.path).canonicalPath
+                }
+                FileData(absolutePath, it.readOnly)
+            }
         } catch (e: Exception) {
             println("Error parsing context yaml ${contextFile.name}: ${e.message}")
             emptyList()

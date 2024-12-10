@@ -55,7 +55,7 @@ class EditContextDialog(
         // Load from context file if it exists
         val contextFile = File(plan.contextYamlFile?.filePath ?: return)
         if (contextFile.exists()) {
-            val files = ContextFileHandler.readContextFile(contextFile)
+            val files = ContextFileHandler.readContextFile(contextFile, project.basePath ?: "")
             files.forEach { fileData ->
                 if (File(fileData.filePath).exists()) {
                     contextFilesListModel.addElement(fileData)
