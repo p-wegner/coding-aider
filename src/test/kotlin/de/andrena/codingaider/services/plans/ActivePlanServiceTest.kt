@@ -4,6 +4,9 @@ import com.intellij.testFramework.LightPlatformTestCase
 import org.junit.Test
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
+import junit.framework.TestCase.assertEquals
+import junit.framework.TestCase.assertNull
+import junit.framework.TestCase.assertFalse
 
 class ActivePlanServiceTest : LightPlatformTestCase() {
 
@@ -20,7 +23,7 @@ class ActivePlanServiceTest : LightPlatformTestCase() {
     fun testSetAndGetActivePlan() {
         val mockPlan = AiderPlan(
             plan = "Test Plan",
-            checklist = listOf(ChecklistItem("Test Item", false)),
+            checklist = listOf(ChecklistItem("Test Item", false, emptyList())),
             planFiles = emptyList(),
             contextFiles = emptyList()
         )
@@ -33,7 +36,7 @@ class ActivePlanServiceTest : LightPlatformTestCase() {
     fun testClearActivePlan() {
         val mockPlan = AiderPlan(
             plan = "Test Plan",
-            checklist = listOf(ChecklistItem("Test Item", false)),
+            checklist = listOf(ChecklistItem("Test Item", false, emptyList())),
             planFiles = emptyList(),
             contextFiles = emptyList()
         )
