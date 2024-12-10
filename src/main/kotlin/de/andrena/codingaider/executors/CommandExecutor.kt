@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.docker.DockerContainerManager
 import de.andrena.codingaider.executors.api.AiderProcessInteractor
+import de.andrena.codingaider.executors.api.CommandObserver
 import de.andrena.codingaider.executors.api.CommandSubject
 import de.andrena.codingaider.executors.api.DefaultAiderProcessInteractor
 import de.andrena.codingaider.inputdialog.AiderMode
@@ -206,9 +207,23 @@ class CommandExecutor(
     }
 
     private fun pollProcessAndReadOutput(process: Process, output: StringBuilder) {
-        val startTime = System.currentTimeMillis()
+        val startTime: Long = System.currentTimeMillis()
+        ProcessOutputReader(process, output, commandLogger, startTime, { isAborted }, this::notifyObservers).start()
+    }
+
+}
+
+class ProcessOutputReader(
+    private val process: Process,
+    private val output: StringBuilder,
+    private val commandLogger: CommandLogger,
+    private val startTime: Long,
+    private val isAbortedCallback: () -> Boolean,
+    private val notifyObservers: ((CommandObserver) -> Unit) -> Unit
+) {
+    fun start() {
         process.inputStream.bufferedReader().use { reader ->
-            while (!isAborted) {
+            while (!isAbortedCallback()) {
                 val line = reader.readLine() ?: break
                 output.append(line).append("\n")
                 val runningTime = secondsSince(startTime)
@@ -224,5 +239,6 @@ class CommandExecutor(
         }
     }
 
-    private fun secondsSince(startTime: Long) = (System.currentTimeMillis() - startTime) / 1000
 }
+
+private fun secondsSince(startTime: Long) = (System.currentTimeMillis() - startTime) / 1000
