@@ -5,9 +5,9 @@
 ## UI Components
 - [ ] Create EditContextAction class in PlanViewer
 - [ ] Add "Edit Context" button to toolbar with icon
-- [ ] Create EditContextDialog class
-- [ ] Implement file list component with add/remove capabilities
-- [ ] Add toolbar with file management actions
+- [x] Create EditContextDialog class
+- [x] Implement file list component with add/remove capabilities
+- [x] Add toolbar with file management actions
 
 ## Core Functionality
 - [x] Create method to load context from yaml file
