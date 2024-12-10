@@ -18,13 +18,9 @@ import java.io.IOException
 class PersistentFileService(private val project: Project) {
     private val contextFile = File(project.basePath ?: "", ".aider.context.yaml")
     private val persistentFiles: MutableList<FileData> = mutableListOf()
-    private val objectMapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
     private val filesChanged: PersistentFilesChangedTopic by lazy {
         project.messageBus.syncPublisher(PersistentFilesChangedTopic.PERSISTENT_FILES_CHANGED_TOPIC)
     }
-
-    data class ContextYamlFile(val path: String, val readOnly: Boolean = false)
-    data class ContextYamlData(val files: List<ContextYamlFile> = emptyList())
 
     init {
         loadPersistentFiles()
@@ -40,10 +36,7 @@ class PersistentFileService(private val project: Project) {
         if (contextFile.exists()) {
             try {
                 persistentFiles.clear()
-                val yamlData: ContextYamlData = objectMapper.readValue(contextFile)
-                persistentFiles.addAll(yamlData.files.map { file ->
-                    FileData(file.path, file.readOnly)
-                })
+                persistentFiles.addAll(ContextFileHandler.readContextFile(contextFile))
             } catch (e: IOException) {
                 e.printStackTrace()
             }
@@ -53,15 +46,7 @@ class PersistentFileService(private val project: Project) {
 
     fun savePersistentFilesToContextFile() {
         try {
-            val yamlData = ContextYamlData(
-                files = persistentFiles.map { file ->
-                    ContextYamlFile(
-                        path = file.filePath,
-                        readOnly = file.isReadOnly
-                    )
-                }
-            )
-            objectMapper.writeValue(contextFile, yamlData)
+            ContextFileHandler.writeContextFile(contextFile, persistentFiles)
             refreshContextFile()
             notifyPersistentFilesChanged()
         } catch (e: IOException) {

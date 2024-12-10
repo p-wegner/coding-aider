@@ -217,19 +217,7 @@ class AiderPlanService(private val project: Project) {
     fun createAiderPlanSystemPrompt(commandData: CommandData): String =
         project.service<AiderPlanPromptService>().createAiderPlanSystemPrompt(commandData)
 
-    private val objectMapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
-
-    private data class ContextYamlFile(val path: String, val readOnly: Boolean = false)
-    private data class ContextYamlData(val files: List<ContextYamlFile> = emptyList())
-
-    private fun parseContextYaml(contextFile: File): List<FileData> {
-        return try {
-            val yamlData: ContextYamlData = objectMapper.readValue(contextFile)
-            yamlData.files.map { FileData(it.path, it.readOnly) }
-        } catch (e: Exception) {
-            println("Error parsing context yaml ${contextFile.name}: ${e.message}")
-            emptyList()
-        }
-    }
+    private fun parseContextYaml(contextFile: File): List<FileData> = 
+        ContextFileHandler.readContextFile(contextFile)
 
 }
