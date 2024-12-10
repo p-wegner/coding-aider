@@ -160,11 +160,18 @@ class PlanViewer(private val project: Project) {
 
         override fun actionPerformed(e: AnActionEvent) {
             val selectedPlan = plansList.selectedValue ?: return
+            if (selectedPlan.contextYamlFile == null) {
+                val contextFilePath = selectedPlan.mainPlanFile?.filePath?.replace(".md", "_context.yaml")
+                if (contextFilePath != null) {
+                    File(contextFilePath).createNewFile()
+                }
+            }
             EditContextDialog(project, selectedPlan).show()
         }
 
         override fun update(e: AnActionEvent) {
-            e.presentation.isEnabled = plansList.selectedValue != null
+            val selectedPlan = plansList.selectedValue
+            e.presentation.isEnabled = selectedPlan != null && selectedPlan.mainPlanFile != null
         }
     }
 

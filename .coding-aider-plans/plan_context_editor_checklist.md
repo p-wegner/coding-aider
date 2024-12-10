@@ -3,8 +3,8 @@
 # Plan Context Editor Implementation Checklist
 
 ## UI Components
-- [ ] Create EditContextAction class in PlanViewer
-- [ ] Add "Edit Context" button to toolbar with icon
+- [x] Create EditContextAction class in PlanViewer
+- [x] Add "Edit Context" button to toolbar with icon
 - [x] Create EditContextDialog class
 - [x] Implement file list component with add/remove capabilities
 - [x] Add toolbar with file management actions
