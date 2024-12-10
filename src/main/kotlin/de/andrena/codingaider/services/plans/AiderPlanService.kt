@@ -100,19 +100,16 @@ class AiderPlanService(private val project: Project) {
 
     private val plansDir = File(project.basePath, AIDER_PLANS_FOLDER)
 
-    fun getAiderPlans(files: List<File>? = null): List<AiderPlan> {
+    fun getAiderPlans(): List<AiderPlan> {
         if (!this.plansDir.exists()) {
             this.plansDir.mkdir()
         }
 
-        val filesToConsider: List<File> =
-            files ?: this.plansDir.listFiles()?.toList() ?: listOf<File>()
+        val filesToConsider: List<File> = this.plansDir.listFiles()?.toList() ?: listOf<File>()
         return getAiderPlans(filesToConsider)
     }
 
-    private fun getAiderPlans(
-        filesInPlanFolder: List<File>
-    ): List<AiderPlan> = filesInPlanFolder
+    fun getAiderPlans(filesInPlanFolder: List<File>): List<AiderPlan> = filesInPlanFolder
         .filter { file -> file.extension == "md" && !file.nameWithoutExtension.endsWith("_checklist") }
         .mapNotNull { file ->
             try {
