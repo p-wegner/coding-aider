@@ -207,6 +207,15 @@ class DockerAiderExecutionStrategy(
                 }
             }
 
+            LlmProviderType.VERTEX -> {
+                if (customProvider.projectId.isNotEmpty()) {
+                    dockerArgs.addAll(listOf("-e", "VERTEXAI_PROJECT=${customProvider.projectId}"))
+                }
+                if (customProvider.location.isNotEmpty()) {
+                    dockerArgs.addAll(listOf("-e", "VERTEXAI_LOCATION=${customProvider.location}"))
+                }
+            }
+
             null -> {} // No special configuration needed
         }
 
