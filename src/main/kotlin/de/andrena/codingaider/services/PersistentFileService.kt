@@ -23,8 +23,8 @@ class PersistentFileService(private val project: Project) {
         project.messageBus.syncPublisher(PersistentFilesChangedTopic.PERSISTENT_FILES_CHANGED_TOPIC)
     }
 
-    private data class ContextYamlFile(val path: String, val readOnly: Boolean = false)
-    private data class ContextYamlData(val files: List<ContextYamlFile> = emptyList())
+    data class ContextYamlFile(val path: String, val readOnly: Boolean = false)
+    data class ContextYamlData(val files: List<ContextYamlFile> = emptyList())
 
     init {
         loadPersistentFiles()

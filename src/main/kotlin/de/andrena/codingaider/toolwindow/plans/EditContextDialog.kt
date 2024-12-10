@@ -1,6 +1,7 @@
 package de.andrena.codingaider.toolwindow.plans
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import de.andrena.codingaider.services.PersistentFileService
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -55,12 +56,10 @@ class EditContextDialog(
         if (contextFile.exists()) {
             try {
                 val yamlMapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
-                val contextData: Map<String, List<Map<String, Any>>> = yamlMapper.readValue(contextFile)
-                contextData["files"]?.forEach { fileMap ->
-                    val path = fileMap["path"] as? String
-                    val readOnly = fileMap["readOnly"] as? Boolean ?: false
-                    if (path != null && File(path).exists()) {
-                        contextFilesListModel.addElement(FileData(path, readOnly))
+                val contextData: PersistentFileService.ContextYamlData = yamlMapper.readValue(contextFile)
+                contextData.files.forEach { fileData ->
+                    if (File(fileData.path).exists()) {
+                        contextFilesListModel.addElement(FileData(fileData.path, fileData.readOnly))
                     }
                 }
             } catch (e: Exception) {
@@ -116,25 +115,16 @@ class EditContextDialog(
 
     private fun saveContextFiles() {
         val contextFile = File(plan.contextYamlFile?.filePath ?: return)
-        val yamlContent = buildString {
-            appendLine("---")
-            appendLine("files:")
-            val files = mutableListOf<FileData>()
-            for (i in 0 until contextFilesListModel.size()) {
-                val file = contextFilesListModel.getElementAt(i)
-                if (File(file.filePath).exists()) {
-                    files.add(file)
-                }
-            }
-            files.forEach { file ->
-                // Only include files that actually exist
-                if (File(file.filePath).exists()) {
-                    appendLine("- path: \"${file.filePath}\"")
-                    appendLine("  readOnly: ${file.isReadOnly}")
-                }
+        val files = mutableListOf<PersistentFileService.ContextYamlFile>()
+        for (i in 0 until contextFilesListModel.size()) {
+            val file = contextFilesListModel.getElementAt(i)
+            if (File(file.filePath).exists()) {
+                files.add(PersistentFileService.ContextYamlFile(file.filePath, file.isReadOnly))
             }
         }
-        contextFile.writeText(yamlContent)
+        val contextData = PersistentFileService.ContextYamlData(files)
+        val yamlMapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
+        yamlMapper.writeValue(contextFile, contextData)
 
         // Ensure parent directory exists
         contextFile.parentFile?.mkdirs()
