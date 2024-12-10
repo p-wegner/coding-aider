@@ -10,3 +10,5 @@ files:
   readOnly: false
 - path: "src/main/kotlin/de/andrena/codingaider/toolwindow/persistentfiles/PersistentFilesPanel.kt"
   readOnly: false
+- path: "src/main/kotlin/de/andrena/codingaider/toolwindow/plans/EditContextDialog.kt"
+  readOnly: false
