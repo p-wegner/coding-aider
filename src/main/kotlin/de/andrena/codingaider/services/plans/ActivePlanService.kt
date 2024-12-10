@@ -33,6 +33,7 @@ class ActivePlanService(private val project: Project) {
     }
 
     fun handlePlanCompletion(success: Boolean = true) {
+        // TODO: refresh the plan since it might have changed
         activePlan?.let { plan ->
             if (!success || plan.isPlanComplete()) {
                 clearActivePlan()
