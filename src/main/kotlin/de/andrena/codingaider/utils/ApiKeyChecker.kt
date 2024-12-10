@@ -44,13 +44,16 @@ class DefaultApiKeyChecker : ApiKeyChecker {
         return service<CustomLlmProviderService>().getProvider(llm)
     }
 
-    private fun getProviderApiKeyName(provider: CustomLlmProvider): String {
+    private fun getProviderApiKeyName(provider: CustomLlmProvider): List<String> {
         return when (provider.type) {
-            LlmProviderType.OPENAI -> "OPENAI_API_KEY"
-            LlmProviderType.OPENROUTER -> "OPENROUTER_API_KEY"
-            LlmProviderType.OLLAMA -> "" // Ollama doesn't require an API key
-            // TODO: implement as described in docs, possibly multiple API keys needed, extend method to support this case if needed
-            LlmProviderType.VERTEX -> TODO()
+            LlmProviderType.OPENAI -> listOf("OPENAI_API_KEY")
+            LlmProviderType.OPENROUTER -> listOf("OPENROUTER_API_KEY")
+            LlmProviderType.OLLAMA -> emptyList() // Ollama doesn't require an API key
+            LlmProviderType.VERTEX -> listOf(
+                "GOOGLE_APPLICATION_CREDENTIALS", 
+                "VERTEXAI_PROJECT", 
+                "VERTEXAI_LOCATION"
+            )
         }
     }
 
@@ -167,9 +170,19 @@ class DefaultApiKeyChecker : ApiKeyChecker {
 
         val customKeys = service<CustomLlmProviderService>().getAllProviders()
             .filter { it.type.requiresApiKey }
-            .mapNotNull { provider ->
-                val keyName = getProviderApiKeyName(provider)
-                ApiKeyManager.getCustomModelKey(provider.name)?.let { keyName to it }
+            .flatMap { provider ->
+                val keyNames = getProviderApiKeyName(provider)
+                keyNames.mapNotNull { keyName ->
+                    when (keyName) {
+                        "GOOGLE_APPLICATION_CREDENTIALS" -> 
+                            ApiKeyManager.getCustomModelKey(provider.name)?.let { keyName to it }
+                        "VERTEXAI_PROJECT" -> 
+                            provider.projectId.takeIf { it.isNotEmpty() }?.let { keyName to it }
+                        "VERTEXAI_LOCATION" -> 
+                            provider.location.takeIf { it.isNotEmpty() }?.let { keyName to it }
+                        else -> null
+                    }
+                }
             }
 
         return (standardKeys + customKeys).toMap()
