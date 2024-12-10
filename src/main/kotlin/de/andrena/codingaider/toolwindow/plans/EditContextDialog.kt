@@ -1,7 +1,6 @@
 package de.andrena.codingaider.toolwindow.plans
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import de.andrena.codingaider.services.PersistentFileService
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -20,6 +19,8 @@ import com.intellij.ui.components.panels.Wrapper
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.command.FileData
+import de.andrena.codingaider.model.ContextYamlData
+import de.andrena.codingaider.model.ContextYamlFile
 import de.andrena.codingaider.services.plans.AiderPlan
 import de.andrena.codingaider.services.plans.AiderPlanService
 import java.awt.Component
@@ -56,7 +57,7 @@ class EditContextDialog(
         if (contextFile.exists()) {
             try {
                 val yamlMapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
-                val contextData: PersistentFileService.ContextYamlData = yamlMapper.readValue(contextFile)
+                val contextData: ContextYamlData = yamlMapper.readValue(contextFile)
                 contextData.files.forEach { fileData ->
                     if (File(fileData.path).exists()) {
                         contextFilesListModel.addElement(FileData(fileData.path, fileData.readOnly))
@@ -115,14 +116,14 @@ class EditContextDialog(
 
     private fun saveContextFiles() {
         val contextFile = File(plan.contextYamlFile?.filePath ?: return)
-        val files = mutableListOf<PersistentFileService.ContextYamlFile>()
+        val files = mutableListOf<ContextYamlFile>()
         for (i in 0 until contextFilesListModel.size()) {
             val file = contextFilesListModel.getElementAt(i)
             if (File(file.filePath).exists()) {
-                files.add(PersistentFileService.ContextYamlFile(file.filePath, file.isReadOnly))
+                files.add(ContextYamlFile(file.filePath, file.isReadOnly))
             }
         }
-        val contextData = PersistentFileService.ContextYamlData(files)
+        val contextData = ContextYamlData(files)
         val yamlMapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
         yamlMapper.writeValue(contextFile, contextData)
 

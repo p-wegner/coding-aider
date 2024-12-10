@@ -1,9 +1,5 @@
 package de.andrena.codingaider.services
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
-import com.fasterxml.jackson.module.kotlin.KotlinModule
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
@@ -11,6 +7,7 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.messages.PersistentFilesChangedTopic
+import de.andrena.codingaider.model.ContextFileHandler
 import java.io.File
 import java.io.IOException
 
@@ -95,7 +92,7 @@ class PersistentFileService(private val project: Project) {
     fun updateFile(updatedFile: FileData) {
         val index = persistentFiles.indexOfFirst { it.filePath == updatedFile.filePath }
         val virtualFile = LocalFileSystem.getInstance().findFileByPath(updatedFile.filePath)
-        
+
         if (index != -1 && virtualFile?.exists() == true) {
             persistentFiles[index] = updatedFile
             savePersistentFilesToContextFile()

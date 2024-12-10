@@ -1,14 +1,11 @@
 package de.andrena.codingaider.services.plans
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
-import com.fasterxml.jackson.module.kotlin.KotlinModule
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
+import de.andrena.codingaider.model.ContextFileHandler
 import java.io.File
 
 
@@ -113,7 +110,7 @@ class AiderPlanService(private val project: Project) {
         return try {
             val content = file.readText()
             if (!content.contains(AIDER_PLAN_MARKER)) return null
-            
+
             // Process markdown references to include referenced content
             val expandedContent = processMarkdownReferences(content, plansDir)
 
@@ -217,7 +214,7 @@ class AiderPlanService(private val project: Project) {
     fun createAiderPlanSystemPrompt(commandData: CommandData): String =
         project.service<AiderPlanPromptService>().createAiderPlanSystemPrompt(commandData)
 
-    private fun parseContextYaml(contextFile: File): List<FileData> = 
+    private fun parseContextYaml(contextFile: File): List<FileData> =
         ContextFileHandler.readContextFile(contextFile)
 
 }
