@@ -23,6 +23,9 @@ class PersistentFileService(private val project: Project) {
         project.messageBus.syncPublisher(PersistentFilesChangedTopic.PERSISTENT_FILES_CHANGED_TOPIC)
     }
 
+    private data class ContextYamlFile(val path: String, val readOnly: Boolean = false)
+    private data class ContextYamlData(val files: List<ContextYamlFile> = emptyList())
+
     init {
         loadPersistentFiles()
     }
@@ -37,14 +40,10 @@ class PersistentFileService(private val project: Project) {
         if (contextFile.exists()) {
             try {
                 persistentFiles.clear()
-                val yamlData: Map<String, List<Map<String, Any>>> = objectMapper.readValue(contextFile)
-                yamlData["files"]?.forEach { fileMap ->
-                    val filePath = fileMap["path"] as? String
-                    val isReadOnly = fileMap["readOnly"] as? Boolean ?: false
-                    if (filePath != null) {
-                        persistentFiles.add(FileData(filePath, isReadOnly))
-                    }
-                }
+                val yamlData: ContextYamlData = objectMapper.readValue(contextFile)
+                persistentFiles.addAll(yamlData.files.map { file ->
+                    FileData(file.path, file.readOnly)
+                })
             } catch (e: IOException) {
                 e.printStackTrace()
             }
@@ -54,15 +53,15 @@ class PersistentFileService(private val project: Project) {
 
     fun savePersistentFilesToContextFile() {
         try {
-            val data = mapOf(
-                "files" to persistentFiles.map { file ->
-                    mapOf(
-                        "path" to file.filePath,
-                        "readOnly" to file.isReadOnly
+            val yamlData = ContextYamlData(
+                files = persistentFiles.map { file ->
+                    ContextYamlFile(
+                        path = file.filePath,
+                        readOnly = file.isReadOnly
                     )
                 }
             )
-            objectMapper.writeValue(contextFile, data)
+            objectMapper.writeValue(contextFile, yamlData)
             refreshContextFile()
             notifyPersistentFilesChanged()
         } catch (e: IOException) {
