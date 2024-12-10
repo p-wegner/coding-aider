@@ -90,7 +90,10 @@ class EditContextDialog(
             appendLine("files:")
             val files = mutableListOf<FileData>()
             for (i in 0 until contextFilesListModel.size()) {
-                files.add(contextFilesListModel.getElementAt(i))
+                val file = contextFilesListModel.getElementAt(i)
+                if (File(file.filePath).exists()) {
+                    files.add(file)
+                }
             }
             files.forEach { file ->
                 appendLine("- path: \"${file.filePath}\"")
@@ -98,6 +101,9 @@ class EditContextDialog(
             }
         }
         contextFile.writeText(yamlContent)
+        
+        // Refresh plan viewer
+        VirtualFileManager.getInstance().refreshWithoutFileWatcher(true)
     }
 
     override fun createCenterPanel(): JComponent {

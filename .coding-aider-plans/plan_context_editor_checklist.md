@@ -18,11 +18,11 @@
 - [ ] Create save mechanism for context changes
 
 ## Integration
-- [ ] Connect EditContextAction to PlanViewer
-- [ ] Handle context file creation if missing
-- [ ] Update plan viewer after context changes
-- [ ] Add proper error handling
-- [ ] Implement file existence validation
+- [x] Connect EditContextAction to PlanViewer
+- [x] Handle context file creation if missing
+- [x] Update plan viewer after context changes
+- [x] Add proper error handling
+- [x] Implement file existence validation
 
 ## Testing and Refinement
 - [ ] Test with existing plans
