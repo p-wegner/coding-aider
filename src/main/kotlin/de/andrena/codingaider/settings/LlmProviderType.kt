@@ -14,7 +14,7 @@ enum class LlmProviderType(
     OPENROUTER("OpenRouter", requiresApiKey = true, requiresBaseUrl = false, "openrouter",
         "Examples: anthropic/claude-3.5-sonnet, openai/gpt-4o, qwen/qwen-2.5-coder-32b-instruct"),
     VERTEX("Vertex AI", requiresApiKey = true, requiresBaseUrl = false, "vertex_ai",
-        "Examples: claude-3-5-sonnet@20240620, gemini-pro@20240620");
+        "Examples: claude-3-sonnet@latest, gemini-pro@latest, claude-3-opus@latest");
 
     fun getApiKeyName(): String {
         return when (this) {

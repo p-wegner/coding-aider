@@ -213,6 +213,21 @@ class CustomLlmProviderEditorDialog(
                 }
             }
         }
+
+        // Validate Vertex AI specific fields
+        if (selectedType == LlmProviderType.VERTEX) {
+            if (projectIdField.text.trim().isEmpty()) {
+                return ValidationInfo("Project ID is required for Vertex AI", projectIdField)
+            }
+            if (locationField.text.trim().isEmpty()) {
+                return ValidationInfo("Location is required for Vertex AI", locationField)
+            }
+            // Validate model name format for Vertex AI
+            val modelName = modelNameField.text.trim()
+            if (!modelName.matches(Regex("^[\\w-]+(@latest|@\\d{8})?$"))) {
+                return ValidationInfo("Invalid model name format. Examples: model-name@latest, model-name@20240620", modelNameField)
+            }
+        }
         
         return null
     }
