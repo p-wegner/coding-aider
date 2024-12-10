@@ -42,7 +42,8 @@ class IDEBasedExecutor(
             "Aider Command Output",
             "Initializing Aider command...",
             this,
-            displayString = project.service<CommandSummaryService>().generateSummary(commandData)
+            displayString = project.service<CommandSummaryService>().generateSummary(commandData),
+            commandData = commandData
         ).apply {
             isVisible = true
             focus()

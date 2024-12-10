@@ -26,7 +26,8 @@ class MarkdownDialog(
     private val initialTitle: String,
     initialText: String,
     private val onAbort: Abortable?,
-    private val displayString: String?
+    private val displayString: String?,
+    private val commandData: CommandData? = null
 ) : JDialog(null as Frame?, false) {
 
     companion object {
@@ -277,7 +278,7 @@ class MarkdownDialog(
         invokeLater {
             closeButton.text = "Close"
             closeButton.mnemonic = KeyEvent.VK_C
-            closeAndContinueButton.isVisible = true
+            closeAndContinueButton.isVisible = commandData?.structuredMode == true
         }
     }
 
