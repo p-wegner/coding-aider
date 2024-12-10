@@ -1,5 +1,9 @@
 package de.andrena.codingaider.toolwindow.plans
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import com.fasterxml.jackson.module.kotlin.readValue
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
@@ -9,11 +13,13 @@ import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.ui.components.JBList
 import com.intellij.ui.components.panels.Wrapper
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.command.FileData
+import de.andrena.codingaider.services.plans.AiderPlanService
 import java.io.File
 import javax.swing.*
 
@@ -41,8 +47,31 @@ class EditContextDialog(
 
     private fun loadContextFiles() {
         contextFilesListModel.clear()
-        plan.contextFiles.forEach { file ->
-            contextFilesListModel.addElement(file)
+        
+        // Load from context file if it exists
+        val contextFile = File(plan.contextYamlFile?.filePath ?: return)
+        if (contextFile.exists()) {
+            try {
+                val yamlMapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
+                val contextData: Map<String, List<Map<String, Any>>> = yamlMapper.readValue(contextFile)
+                contextData["files"]?.forEach { fileMap ->
+                    val path = fileMap["path"] as? String
+                    val readOnly = fileMap["readOnly"] as? Boolean ?: false
+                    if (path != null) {
+                        contextFilesListModel.addElement(FileData(path, readOnly))
+                    }
+                }
+            } catch (e: Exception) {
+                // Fallback to plan's context files if yaml parsing fails
+                plan.contextFiles.forEach { file ->
+                    contextFilesListModel.addElement(file)
+                }
+            }
+        } else {
+            // Use plan's context files if context file doesn't exist
+            plan.contextFiles.forEach { file ->
+                contextFilesListModel.addElement(file)
+            }
         }
     }
 
@@ -102,8 +131,12 @@ class EditContextDialog(
         }
         contextFile.writeText(yamlContent)
         
-        // Refresh plan viewer
+        // Ensure parent directory exists
+        contextFile.parentFile?.mkdirs()
+        
+        // Refresh plan viewer and update plan service
         VirtualFileManager.getInstance().refreshWithoutFileWatcher(true)
+        project.getService(AiderPlanService::class.java).getAiderPlans()
     }
 
     override fun createCenterPanel(): JComponent {

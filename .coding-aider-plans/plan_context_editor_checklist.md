@@ -10,12 +10,12 @@
 - [ ] Add toolbar with file management actions
 
 ## Core Functionality
-- [ ] Create method to load context from yaml file
-- [ ] Implement file selection dialog
-- [ ] Add support for adding multiple files
-- [ ] Implement file removal functionality
-- [ ] Add read-only toggle capability
-- [ ] Create save mechanism for context changes
+- [x] Create method to load context from yaml file
+- [x] Implement file selection dialog
+- [x] Add support for adding multiple files
+- [x] Implement file removal functionality
+- [x] Add read-only toggle capability
+- [x] Create save mechanism for context changes
 
 ## Integration
 - [x] Connect EditContextAction to PlanViewer
