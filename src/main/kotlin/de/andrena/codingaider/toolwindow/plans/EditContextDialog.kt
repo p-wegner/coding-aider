@@ -41,12 +41,14 @@ class EditContextDialog(
                 }
             }
         })
+        preferredSize = java.awt.Dimension(500, 300)
     }
 
     init {
         title = "Edit Context Files"
         init()
         loadContextFiles()
+        setSize(600, 400)
     }
 
     private fun loadContextFiles() {
