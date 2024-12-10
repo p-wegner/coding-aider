@@ -215,6 +215,6 @@ class AiderPlanService(private val project: Project) {
         project.service<AiderPlanPromptService>().createAiderPlanSystemPrompt(commandData)
 
     private fun parseContextYaml(contextFile: File): List<FileData> =
-        ContextFileHandler.readContextFile(contextFile)
+        ContextFileHandler.readContextFile(contextFile, project.basePath.toString())
 
 }
