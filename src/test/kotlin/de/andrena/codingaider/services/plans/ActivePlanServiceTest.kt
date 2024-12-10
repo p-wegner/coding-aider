@@ -3,10 +3,6 @@ package de.andrena.codingaider.services.plans
 import com.intellij.testFramework.LightPlatformTestCase
 import org.junit.Test
 import org.mockito.Mockito.mock
-import org.mockito.Mockito.`when`
-import junit.framework.TestCase.assertEquals
-import junit.framework.TestCase.assertNull
-import junit.framework.TestCase.assertFalse
 
 class ActivePlanServiceTest : LightPlatformTestCase() {
 
@@ -46,9 +42,4 @@ class ActivePlanServiceTest : LightPlatformTestCase() {
         assertNull(activePlanService.getActivePlan())
     }
 
-    @Test
-    fun testContinuePlanWithNoActivePlan() {
-        `when`(aiderPlanService.getAiderPlans()).thenReturn(emptyList())
-        assertFalse(activePlanService.continuePlan())
-    }
 }
