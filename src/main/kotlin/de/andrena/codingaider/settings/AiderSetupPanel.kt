@@ -100,6 +100,11 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
                     setHistory(listOf(AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION, "latest"))
                     isEnabled = useDockerAiderCheckBox.isSelected
                 }
+            
+            // Add listener to dynamically enable/disable docker image tag field
+            useDockerAiderCheckBox.addActionListener {
+                dockerImageTagField.isEnabled = useDockerAiderCheckBox.isSelected
+            }
         }
         row {
             val warningLabel = JLabel().apply {
