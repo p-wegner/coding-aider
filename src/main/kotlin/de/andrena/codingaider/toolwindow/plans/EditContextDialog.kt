@@ -3,7 +3,6 @@ package de.andrena.codingaider.toolwindow.plans
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.KotlinModule
-import com.fasterxml.jackson.module.kotlin.readValue
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
@@ -19,6 +18,7 @@ import com.intellij.ui.components.panels.Wrapper
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.command.FileData
+import de.andrena.codingaider.model.ContextFileHandler
 import de.andrena.codingaider.model.ContextYamlData
 import de.andrena.codingaider.model.ContextYamlFile
 import de.andrena.codingaider.services.plans.AiderPlan
