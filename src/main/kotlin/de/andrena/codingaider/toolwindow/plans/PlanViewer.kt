@@ -61,8 +61,8 @@ class PlanViewer(private val project: Project) {
         }
     }
 
-    class PlanListCellRenderer(private val shortTooltip: Boolean = true) : JPanel(BorderLayout()),
-        ListCellRenderer<AiderPlan?> {
+    class PlanListCellRenderer(private val shortTooltip: Boolean = true) : JPanel(BorderLayout()), 
+        ListCellRenderer<AiderPlan> {
         private val label = JLabel()
         private val statusIcon = JLabel()
         private val countLabel = JLabel()
@@ -85,8 +85,8 @@ class PlanViewer(private val project: Project) {
         }
 
         override fun getListCellRendererComponent(
-            list: JList<out AiderPlan>?,
-            value: AiderPlan?,
+            list: JList<out AiderPlan>,
+            value: AiderPlan,
             index: Int,
             isSelected: Boolean,
             cellHasFocus: Boolean
