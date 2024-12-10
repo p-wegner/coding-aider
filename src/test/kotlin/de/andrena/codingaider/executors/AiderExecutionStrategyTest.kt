@@ -100,9 +100,24 @@ class AiderExecutionStrategyTest : BasePlatformTestCase() {
     fun `NativeAiderExecutionStrategy builds correct command`() {
         val command = nativeStrategy.buildCommand(commandData)
         assertThat(command).containsExactly(
-            "aider", "--4o", "--file", "/project/file1.txt", "--yes", "--edit-format", "diff",
-            "--no-suggest-shell-commands", "--no-pretty", "--no-fancy-input", "--verbose", "--lint-cmd", "lint",
-            "--map-tokens", "0", "-m", "Test message"
+            "aider",
+            "--4o",
+            "--file",
+            "/project/file1.txt",
+            "--yes",
+            "--edit-format",
+            "diff",
+            "--no-suggest-shell-commands",
+            "--no-pretty",
+            "--no-fancy-input",
+            "--no-detect-urls",
+            "--verbose",
+            "--lint-cmd",
+            "lint",
+            "--map-tokens",
+            "0",
+            "-m",
+            "Test message"
         )
     }
 
@@ -110,9 +125,25 @@ class AiderExecutionStrategyTest : BasePlatformTestCase() {
     fun `NativeAiderExecutionStrategy properly uses custom models`() {
         val command = nativeStrategy.buildCommand(commandData.copy(llm = "o1-preview"))
         assertThat(command).containsExactly(
-            "aider", "--model", "o1-preview", "--file", "/project/file1.txt", "--yes", "--edit-format", "diff",
-            "--no-suggest-shell-commands", "--no-pretty", "--no-fancy-input", "--verbose", "--lint-cmd", "lint",
-            "--map-tokens", "0", "-m", "Test message"
+            "aider",
+            "--model",
+            "o1-preview",
+            "--file",
+            "/project/file1.txt",
+            "--yes",
+            "--edit-format",
+            "diff",
+            "--no-suggest-shell-commands",
+            "--no-pretty",
+            "--no-fancy-input",
+            "--no-detect-urls",
+            "--verbose",
+            "--lint-cmd",
+            "lint",
+            "--map-tokens",
+            "0",
+            "-m",
+            "Test message"
         )
     }
 
@@ -126,10 +157,28 @@ class AiderExecutionStrategyTest : BasePlatformTestCase() {
             "-w", "/app",
             "--cidfile", "/tmp/docker.cid",
             "-v", "/project:/app",
-            "paulgauthier/aider:v0.64.1",
-            "--4o", "--file", "/app/file1.txt", "--yes", "--edit-format", "diff",
+            "paulgauthier/aider:v0.68.0",
+            "--4o",
+            "--file", "/app/file1.txt", "--yes", "--edit-format", "diff",
             "--no-suggest-shell-commands", "--no-pretty",
-            "--no-fancy-input", "--verbose", "--lint-cmd", "lint",
+            "--no-fancy-input", "--no-detect-urls", "--verbose", "--lint-cmd", "lint",
+            "--map-tokens", "0", "-m", "Test message"
+        )
+    }
+
+    @Test
+    fun `DockerAiderExecutionStrategy builds correct command without llm`() {
+        whenever(dockerManager.getCidFilePath()).thenReturn("/tmp/docker.cid")
+        val command = dockerStrategy.buildCommand(commandData.copy(llm = ""))
+        assertThat(command).containsExactly(
+            "docker", "run", "-i", "--rm",
+            "-w", "/app",
+            "--cidfile", "/tmp/docker.cid",
+            "-v", "/project:/app",
+            "paulgauthier/aider:v0.68.0",
+            "--file", "/app/file1.txt", "--yes", "--edit-format", "diff",
+            "--no-suggest-shell-commands", "--no-pretty",
+            "--no-fancy-input", "--no-detect-urls", "--verbose", "--lint-cmd", "lint",
             "--map-tokens", "0", "-m", "Test message"
         )
     }
