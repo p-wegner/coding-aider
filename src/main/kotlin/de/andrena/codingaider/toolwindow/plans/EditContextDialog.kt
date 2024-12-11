@@ -61,8 +61,16 @@ class EditContextDialog(
         if (contextFile.exists()) {
             val files = ContextFileHandler.readContextFile(contextFile, project.basePath ?: "")
             files.forEach { fileData ->
-                if (File(fileData.filePath).exists()) {
-                    contextFilesListModel.addElement(fileData)
+                val file = File(fileData.filePath)
+                if (file.exists()) {
+                    // If it's already an absolute path, use it directly
+                    // If it's a relative path, resolve it against the project base path
+                    val absolutePath = if (file.isAbsolute) {
+                        file.canonicalPath
+                    } else {
+                        File(project.basePath ?: "", fileData.filePath).canonicalPath
+                    }
+                    contextFilesListModel.addElement(FileData(absolutePath, fileData.isReadOnly))
                 }
             }
         } else {
@@ -135,9 +143,11 @@ class EditContextDialog(
         val contextFile = File(plan.contextYamlFile?.filePath ?: return)
         val files = mutableListOf<ContextYamlFile>()
         for (i in 0 until contextFilesListModel.size()) {
-            val file = contextFilesListModel.getElementAt(i)
-            if (File(file.filePath).exists()) {
-                files.add(ContextYamlFile(file.filePath, file.isReadOnly))
+            val fileData = contextFilesListModel.getElementAt(i)
+            val file = File(fileData.filePath)
+            if (file.exists()) {
+                val relativePath = file.relativeTo(File(project.basePath ?: "")).path.replace('\\', '/')
+                files.add(ContextYamlFile(relativePath, fileData.isReadOnly))
             }
         }
         val contextData = ContextYamlData(files)
