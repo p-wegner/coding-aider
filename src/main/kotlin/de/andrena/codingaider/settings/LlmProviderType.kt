@@ -29,7 +29,7 @@ enum class LlmProviderType(
             OPENAI -> "OPENAI_API_KEY"
             OLLAMA -> "" // Ollama doesn't require an API key
             OPENROUTER -> "OPENROUTER_API_KEY"
-            VERTEX_EXPERIMENTAL -> "GOOGLE_APPLICATION_CREDENTIALS"
+            VERTEX_EXPERIMENTAL -> "" // Vertex AI uses gcloud CLI credentials
         }
     }
 
