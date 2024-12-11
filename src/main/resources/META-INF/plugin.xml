@@ -194,6 +194,12 @@
                     text="Add Files from Context YAML"
                     description="Add files from a .context.yaml file to persistent files">
             </action>
+            <action id="de.andrena.codingaider.actions.aider.OpenContextYamlFilesAction"
+                    class="de.andrena.codingaider.actions.aider.OpenContextYamlFilesAction"
+                    text="Open Files from Context YAML"
+                    description="Open all files referenced in a .context.yaml file">
+                <keyboard-shortcut keymap="$default" first-keystroke="alt O"/>
+            </action>
             <action id="de.andrena.codingaider.actions.aider.AiderClipboardImageAction"
                     class="de.andrena.codingaider.actions.aider.AiderClipboardImageAction"
                     text="Aider Clipboard Image"
