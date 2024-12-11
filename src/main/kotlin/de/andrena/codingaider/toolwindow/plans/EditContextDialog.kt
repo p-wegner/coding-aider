@@ -164,6 +164,12 @@ class EditContextDialog(
                                 override fun actionPerformed(e: AnActionEvent) = addOpenFilesToContext()
                             })
                             add(object : AnAction("Add Persistent Files", "Add persistent files", AllIcons.Vcs.History) {
+                                override fun actionPerformed(e: AnActionEvent) = addPersistentFilesToContext()
+                            })
+                            add(object : AnAction("Add Open Files", "Add currently open files", AllIcons.Actions.OpenNewTab) {
+                                override fun actionPerformed(e: AnActionEvent) = addOpenFilesToContext()
+                            })
+                            add(object : AnAction("Add Persistent Files", "Add persistent files", AllIcons.Vcs.History) {
                                 override fun actionPerformed(e: AnActionEvent) = addPersistentFilesToContext() 
                             })
                             add(object :
