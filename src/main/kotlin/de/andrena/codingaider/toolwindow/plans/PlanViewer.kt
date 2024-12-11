@@ -1,30 +1,27 @@
 package de.andrena.codingaider.toolwindow.plans
 
 import com.intellij.icons.AllIcons
-import com.intellij.openapi.actionSystem.*
+import com.intellij.openapi.actionSystem.ActionUpdateThread
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.service
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.LocalFileSystem
-import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBList
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
-import de.andrena.codingaider.command.CommandData
-import de.andrena.codingaider.command.CommandOptions
-import de.andrena.codingaider.executors.api.IDEBasedExecutor
+import de.andrena.codingaider.actions.aider.AiderAction
+import de.andrena.codingaider.inputdialog.AiderInputDialog
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.outputview.CustomMarkdownViewer
-import de.andrena.codingaider.services.FileDataCollectionService
 import de.andrena.codingaider.services.plans.AiderPlan
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.services.plans.ContinuePlanService
-import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.FileRefresher
 import java.awt.*
 import java.awt.event.MouseAdapter
@@ -42,12 +39,15 @@ class PlanViewer(private val project: Project) {
             addMouseListener(object : MouseAdapter() {
                 override fun mouseClicked(e: MouseEvent) {
                     val index = plansList.locationToIndex(e.point)
-                    if (index >= 0 && e.clickCount == 2 && plansList.getCellBounds(index, index)?.contains(e.point) == true) {
+                    if (index >= 0 && e.clickCount == 2 && plansList.getCellBounds(index, index)
+                            ?.contains(e.point) == true
+                    ) {
                         val plan = plansList.model.getElementAt(index)
                         plan.mainPlanFile?.let { fileData ->
-                             LocalFileSystem.getInstance().findFileByPath(fileData.filePath)}?.let {
-                                FileEditorManager.getInstance(project).openFile(it, true)
-                            }
+                            LocalFileSystem.getInstance().findFileByPath(fileData.filePath)
+                        }?.let {
+                            FileEditorManager.getInstance(project).openFile(it, true)
+                        }
                     }
                 }
             })
@@ -61,7 +61,7 @@ class PlanViewer(private val project: Project) {
         }
     }
 
-    class PlanListCellRenderer(private val shortTooltip: Boolean = true) : JPanel(BorderLayout()), 
+    class PlanListCellRenderer(private val shortTooltip: Boolean = true) : JPanel(BorderLayout()),
         ListCellRenderer<AiderPlan> {
         private val label = JLabel()
         private val statusIcon = JLabel()
@@ -172,6 +172,24 @@ class PlanViewer(private val project: Project) {
         override fun update(e: AnActionEvent) {
             val selectedPlan = plansList.selectedValue
             e.presentation.isEnabled = selectedPlan != null && selectedPlan.mainPlanFile != null
+        }
+    }
+
+    inner class NewPlanAction : AnAction(
+        "New Plan",
+        "Create a new plan",
+        AllIcons.General.Add
+    ) {
+        override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+
+        override fun actionPerformed(e: AnActionEvent) {
+            val dialog = AiderInputDialog(project, emptyList()).apply {
+                selectMode(AiderMode.STRUCTURED)
+            }
+            if (dialog.showAndGet()) {
+                val commandData = AiderAction.collectCommandData(dialog, project)
+                AiderAction.executeAiderActionWithCommandData(project, commandData)
+            }
         }
     }
 

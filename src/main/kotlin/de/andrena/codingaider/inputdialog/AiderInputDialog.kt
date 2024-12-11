@@ -84,8 +84,9 @@ class AiderInputDialog(
         val totalTokens = tokenCountService.countTokensInText(getInputText()) + allFileTokens
         tokenCountLabel.text = "$totalTokens tokens"
     }
+
     // TODO: avoid counting token in large files or images
-    val lazyCacheDelegate = LazyCacheDelegate { 
+    val lazyCacheDelegate = LazyCacheDelegate {
         tokenCountService.countTokensInFiles(getAllFiles().filterNot { tokenCountService.shouldSkipTokenCount(it.filePath) })
     }
     val allFileTokens by lazyCacheDelegate
@@ -98,6 +99,10 @@ class AiderInputDialog(
     else AiderMode.NORMAL
 
     private var modeSegmentedButton: SegmentedButton<AiderMode>? = null
+    fun selectMode(mode: AiderMode) {
+        modeSegmentedButton?.selectedItem = mode
+    }
+
     private val modeSegmentedButtonPanel: DialogPanel
     private val messageLabel: JLabel
     private val tokenCountLabel = JLabel("0 tokens").apply {

@@ -71,7 +71,7 @@ class AiderAction : AnAction() {
             }
         }
 
-        private fun collectCommandData(dialog: AiderInputDialog, project: Project): CommandData {
+        fun collectCommandData(dialog: AiderInputDialog, project: Project): CommandData {
             val settings = getInstance()
             return CommandData(
                 message = dialog.getInputText(),
