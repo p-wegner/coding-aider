@@ -20,7 +20,7 @@ enum class LlmProviderType(
         "Examples: anthropic/claude-3.5-sonnet, openai/gpt-4o, qwen/qwen-2.5-coder-32b-instruct"
     ),
     VERTEX_EXPERIMENTAL(
-        "Vertex AI", requiresApiKey = true, requiresBaseUrl = false, "vertex_ai",
+        "Vertex AI", requiresApiKey = false, requiresBaseUrl = false, "vertex_ai",
         "Examples: claude-3-sonnet@latest, gemini-pro@latest, claude-3-opus@latest"
     );
 
