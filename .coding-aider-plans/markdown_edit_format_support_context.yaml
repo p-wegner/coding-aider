@@ -1,0 +1,8 @@
+---
+files:
+- path: src/main/kotlin/de/andrena/codingaider/outputview/CustomMarkdownViewer.kt
+  readOnly: false
+- path: .coding-aider-docs/aider.chat/edit-formats.md
+  readOnly: true
+- path: build.gradle.kts
+  readOnly: true
