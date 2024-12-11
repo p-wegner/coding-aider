@@ -21,6 +21,7 @@ import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.model.ContextFileHandler
 import de.andrena.codingaider.model.ContextYamlData
 import de.andrena.codingaider.model.ContextYamlFile
+import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.services.plans.AiderPlan
 import de.andrena.codingaider.services.plans.AiderPlanService
 import java.awt.Component
@@ -160,17 +161,13 @@ class EditContextDialog(
                             add(object : AnAction("Add Files", "Add files to context", AllIcons.General.Add) {
                                 override fun actionPerformed(e: AnActionEvent) = addContextFiles()
                             })
-                            add(object : AnAction("Add Open Files", "Add currently open files", AllIcons.Actions.OpenNewTab) {
+                            add(object :
+                                AnAction("Add Open Files", "Add currently open files", AllIcons.Actions.OpenNewTab) {
                                 override fun actionPerformed(e: AnActionEvent) = addOpenFilesToContext()
                             })
-                            add(object : AnAction("Add Persistent Files", "Add persistent files", AllIcons.Vcs.History) {
+                            add(object :
+                                AnAction("Add Persistent Files", "Add persistent files", AllIcons.Vcs.History) {
                                 override fun actionPerformed(e: AnActionEvent) = addPersistentFilesToContext()
-                            })
-                            add(object : AnAction("Add Open Files", "Add currently open files", AllIcons.Actions.OpenNewTab) {
-                                override fun actionPerformed(e: AnActionEvent) = addOpenFilesToContext()
-                            })
-                            add(object : AnAction("Add Persistent Files", "Add persistent files", AllIcons.Vcs.History) {
-                                override fun actionPerformed(e: AnActionEvent) = addPersistentFilesToContext() 
                             })
                             add(object :
                                 AnAction("Toggle Read-Only", "Toggle read-only status", AllIcons.Actions.Edit) {
