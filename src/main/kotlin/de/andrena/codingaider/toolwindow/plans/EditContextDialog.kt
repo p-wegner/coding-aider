@@ -31,6 +31,7 @@ class EditContextDialog(
     private val project: Project,
     private val plan: AiderPlan
 ) : DialogWrapper(project) {
+    private val persistentFileService = project.getService(PersistentFileService::class.java)
     private val contextFilesListModel = DefaultListModel<FileData>()
     private val contextFilesList = JBList(contextFilesListModel).apply {
         cellRenderer = ContextFileRenderer()
@@ -108,6 +109,26 @@ class EditContextDialog(
         saveContextFiles()
     }
 
+    private fun addOpenFilesToContext() {
+        val openFiles = com.intellij.openapi.fileEditor.FileEditorManager.getInstance(project).openFiles
+        openFiles.forEach { file ->
+            val fileData = FileData(file.path, false)
+            if (!contextFilesListModel.contains(fileData)) {
+                contextFilesListModel.addElement(fileData)
+            }
+        }
+        saveContextFiles()
+    }
+
+    private fun addPersistentFilesToContext() {
+        persistentFileService.getPersistentFiles().forEach { fileData ->
+            if (!contextFilesListModel.contains(fileData)) {
+                contextFilesListModel.addElement(fileData)
+            }
+        }
+        saveContextFiles()
+    }
+
     private fun saveContextFiles() {
         val contextFile = File(plan.contextYamlFile?.filePath ?: return)
         val files = mutableListOf<ContextYamlFile>()
@@ -138,6 +159,12 @@ class EditContextDialog(
                         DefaultActionGroup().apply {
                             add(object : AnAction("Add Files", "Add files to context", AllIcons.General.Add) {
                                 override fun actionPerformed(e: AnActionEvent) = addContextFiles()
+                            })
+                            add(object : AnAction("Add Open Files", "Add currently open files", AllIcons.Actions.OpenNewTab) {
+                                override fun actionPerformed(e: AnActionEvent) = addOpenFilesToContext()
+                            })
+                            add(object : AnAction("Add Persistent Files", "Add persistent files", AllIcons.Vcs.History) {
+                                override fun actionPerformed(e: AnActionEvent) = addPersistentFilesToContext() 
                             })
                             add(object :
                                 AnAction("Toggle Read-Only", "Toggle read-only status", AllIcons.Actions.Edit) {
