@@ -1,5 +1,6 @@
 package de.andrena.codingaider.actions.aider
 
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
@@ -15,22 +16,22 @@ class AddContextYamlFilesAction : AnAction() {
         val selectedFiles = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY) ?: return
 
         selectedFiles
-            .filter { it.name.endsWith(".context.yaml") }
+            .filter { it.name.endsWith("context.yaml") }
             .forEach { contextYamlFile ->
                 addFilesFromContextYaml(project, contextYamlFile)
             }
     }
 
+    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
     override fun update(e: AnActionEvent) {
         val selectedFiles = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY) ?: return
         e.presentation.isEnabledAndVisible = selectedFiles.any { it.name.endsWith("context.yaml") }
     }
 
     private fun addFilesFromContextYaml(project: Project, contextYamlFile: VirtualFile) {
-        val persistentFileService = project.getService(PersistentFileService::class.java)
         val contextFile = File(contextYamlFile.path)
 
         val filesToAdd = ContextFileHandler.readContextFile(contextFile, project.basePath ?: "")
-        persistentFileService.addAllFiles(filesToAdd)
+        project.getService(PersistentFileService::class.java).addAllFiles(filesToAdd)
     }
 }

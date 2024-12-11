@@ -119,12 +119,6 @@
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
             <add-to-group group-id="ToolsMenu" anchor="last"/>
 
-            <action id="de.andrena.codingaider.actions.aider.AddContextYamlFilesAction"
-                    class="de.andrena.codingaider.actions.aider.AddContextYamlFilesAction"
-                    text="Add Files from Context YAML"
-                    description="Add files from a .context.yaml file to persistent files">
-            </action>
-
             <action id="de.andrena.codingaider.actions.aider.AiderAction"
                     class="de.andrena.codingaider.actions.aider.AiderAction"
                     text="Start Aider Action"
@@ -195,6 +189,11 @@
                     icon="AllIcons.Actions.Execute">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt P"/>
             </action>
+            <action id="de.andrena.codingaider.actions.aider.AddContextYamlFilesAction"
+                    class="de.andrena.codingaider.actions.aider.AddContextYamlFilesAction"
+                    text="Add Files from Context YAML"
+                    description="Add files from a .context.yaml file to persistent files">
+            </action>
             <action id="de.andrena.codingaider.actions.aider.AiderClipboardImageAction"
                     class="de.andrena.codingaider.actions.aider.AiderClipboardImageAction"
                     text="Aider Clipboard Image"
@@ -249,12 +248,6 @@
                 <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
                 <add-to-group group-id="RunContextPopupGroup" anchor="first"/>
                 <add-to-group group-id="TestTreePopupMenu" anchor="first"/>
-            </action>
-            <action id="de.andrena.codingaider.actions.aider.AddContextYamlFilesAction"
-                    class="de.andrena.codingaider.actions.aider.AddContextYamlFilesAction"
-                    text="Add Files from Context YAML"
-                    description="Add files from a .context.yaml file to persistent files">
-                <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
             </action>
         </group>
 
