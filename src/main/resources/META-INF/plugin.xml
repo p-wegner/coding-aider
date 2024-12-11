@@ -250,6 +250,12 @@
                 <add-to-group group-id="RunContextPopupGroup" anchor="first"/>
                 <add-to-group group-id="TestTreePopupMenu" anchor="first"/>
             </action>
+            <action id="de.andrena.codingaider.actions.aider.AddContextYamlFilesAction"
+                    class="de.andrena.codingaider.actions.aider.AddContextYamlFilesAction"
+                    text="Add Files from Context YAML"
+                    description="Add files from a .context.yaml file to persistent files">
+                <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+            </action>
         </group>
 
     </actions>
