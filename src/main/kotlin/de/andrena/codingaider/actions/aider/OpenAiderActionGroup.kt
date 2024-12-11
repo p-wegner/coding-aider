@@ -1,7 +1,10 @@
 package de.andrena.codingaider.actions.aider
 
 import com.intellij.icons.AllIcons
-import com.intellij.openapi.actionSystem.*
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.project.DumbAware
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.ui.awt.RelativePoint
@@ -91,6 +94,13 @@ class OpenAiderActionGroup : AnAction(), DumbAware {
             "Continue Plan",
             AllIcons.Actions.Execute,
             'P'
+        )
+        addQuickAccessAction(
+            popupActionGroup,
+            "de.andrena.codingaider.actions.aider.AddContextYamlFilesAction",
+            "Add Files from Context YAML",
+            AllIcons.Actions.AddList,
+            'F'
         )
         addQuickAccessAction(
             popupActionGroup,
