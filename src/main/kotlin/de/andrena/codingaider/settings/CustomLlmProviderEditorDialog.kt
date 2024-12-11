@@ -100,8 +100,8 @@ class CustomLlmProviderEditorDialog(
 
             LlmProviderType.VERTEX_EXPERIMENTAL -> {
                 baseUrlField.isEnabled = false
-                apiKeyField.isEnabled = true
-                apiKeyField.toolTipText = "Google Cloud API key or service account credentials"
+                apiKeyField.isEnabled = false
+                apiKeyField.text = ""
                 projectIdField.isEnabled = true
                 locationField.isEnabled = true
             }
@@ -207,8 +207,8 @@ class CustomLlmProviderEditorDialog(
             }
         }
 
-        // Validate API key for providers that require it
-        if (selectedType.requiresApiKey) {
+        // Validate API key for providers that require it (except Vertex AI)
+        if (selectedType.requiresApiKey && selectedType != LlmProviderType.VERTEX_EXPERIMENTAL) {
             val apiKeyText = String(apiKeyField.password)
             // For new providers or when a new key is being set
             if (existingProvider == null || apiKeyText != "*".repeat(16)) {
@@ -273,8 +273,8 @@ class CustomLlmProviderEditorDialog(
             location = locationField.text.trim(),
         )
 
-        // Save API key if provided and not masked, except for Ollama
-        if (type.requiresApiKey) {
+        // Save API key if provided and not masked, except for Ollama and Vertex AI
+        if (type.requiresApiKey && type != LlmProviderType.VERTEX_EXPERIMENTAL) {
             val apiKeyText = String(apiKeyField.password)
             if (apiKeyText.isNotBlank() && apiKeyText != "*".repeat(16)) {
                 // New key entered

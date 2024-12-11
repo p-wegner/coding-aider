@@ -175,7 +175,7 @@ class DefaultApiKeyChecker : ApiKeyChecker {
                 keyNames.mapNotNull { keyName ->
                     when (keyName) {
                         "GOOGLE_APPLICATION_CREDENTIALS" ->
-                            ApiKeyManager.getCustomModelKey(provider.name)?.let { keyName to it }
+                            System.getenv(keyName)?.let { keyName to it }
 
                         "VERTEXAI_PROJECT" ->
                             provider.projectId.takeIf { it.isNotEmpty() }?.let { keyName to it }
