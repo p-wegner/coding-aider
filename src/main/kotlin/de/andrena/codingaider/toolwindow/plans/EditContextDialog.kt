@@ -113,7 +113,7 @@ class EditContextDialog(
     private fun addOpenFilesToContext() {
         val openFiles = com.intellij.openapi.fileEditor.FileEditorManager.getInstance(project).openFiles
         openFiles.forEach { file ->
-            val fileData = FileData(file.path, false)
+            val fileData = FileData(file.canonicalPath, false)
             if (!contextFilesListModel.contains(fileData)) {
                 contextFilesListModel.addElement(fileData)
             }

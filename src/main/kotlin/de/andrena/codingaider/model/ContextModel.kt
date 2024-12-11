@@ -17,12 +17,7 @@ object ContextFileHandler {
         return try {
             val yamlData: ContextYamlData = objectMapper.readValue(contextFile)
             yamlData.files.map { 
-                val absolutePath = if (File(it.path).isAbsolute) {
-                    it.path
-                } else {
-                    File(projectBasePath, it.path).canonicalPath
-                }
-                FileData(absolutePath, it.readOnly)
+                FileData(File(projectBasePath, it.path).canonicalPath, it.readOnly)
             }
         } catch (e: Exception) {
             println("Error parsing context yaml ${contextFile.name}: ${e.message}")
@@ -34,7 +29,7 @@ object ContextFileHandler {
         val yamlData = ContextYamlData(
             files = files.map { file ->
                 ContextYamlFile(
-                    path = file.filePath,
+                    path = File(file.filePath).relativeTo(File(projectBasePath)).path.replace('\\', '/'),
                     readOnly = file.isReadOnly
                 )
             }
