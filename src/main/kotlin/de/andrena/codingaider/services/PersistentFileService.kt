@@ -43,7 +43,7 @@ class PersistentFileService(private val project: Project) {
 
     fun savePersistentFilesToContextFile() {
         try {
-            ContextFileHandler.writeContextFile(contextFile, persistentFiles)
+            ContextFileHandler.writeContextFile(contextFile, persistentFiles, project.basePath ?: "")
             refreshContextFile()
             notifyPersistentFilesChanged()
         } catch (e: IOException) {

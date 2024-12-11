@@ -16,7 +16,7 @@ object ContextFileHandler {
     fun readContextFile(contextFile: File, projectBasePath: String): List<FileData> {
         return try {
             val yamlData: ContextYamlData = objectMapper.readValue(contextFile)
-            yamlData.files.map { 
+            yamlData.files.map {
                 FileData(File(projectBasePath, it.path).canonicalPath, it.readOnly)
             }
         } catch (e: Exception) {
@@ -25,7 +25,7 @@ object ContextFileHandler {
         }
     }
 
-    fun writeContextFile(contextFile: File, files: List<FileData>) {
+    fun writeContextFile(contextFile: File, files: List<FileData>, projectBasePath: String) {
         val yamlData = ContextYamlData(
             files = files.map { file ->
                 ContextYamlFile(
