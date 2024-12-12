@@ -1,6 +1,7 @@
 package de.andrena.codingaider.settings
 
 object AiderDefaults {
+    const val SUMMARIZED_OUTPUT = false
     const val USE_SIDECAR_MODE = false
     const val ENABLE_DOCUMENTATION_LOOKUP = false
     const val ALWAYS_INCLUDE_OPEN_FILES = false

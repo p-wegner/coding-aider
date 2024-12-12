@@ -5,10 +5,10 @@
 Plan: [summarized_output_setting.md](summarized_output_setting.md)
 
 ## Settings Implementation
-- [ ] Add summarizedOutput boolean property to AiderSettings
+- [x] Add summarizedOutput boolean property to AiderSettings
 - [ ] Add UI toggle in settings dialog
-- [ ] Add default value in AiderDefaults
-- [ ] Implement persistence for the setting
+- [x] Add default value in AiderDefaults
+- [x] Implement persistence for the setting
 
 ## Command Line Integration
 - [ ] Add command line argument handling in AiderExecutionStrategy

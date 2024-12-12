@@ -21,6 +21,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
 
 
     data class State(
+        var summarizedOutput: Boolean = AiderDefaults.SUMMARIZED_OUTPUT,
         var enableDocumentationLookup: Boolean = AiderDefaults.ENABLE_DOCUMENTATION_LOOKUP,
         var useYesFlag: Boolean = AiderDefaults.USE_YES_FLAG,
         var llm: String = AiderDefaults.LLM,
@@ -53,6 +54,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
     )
 
 
+
+    var summarizedOutput: Boolean
+        get() = myState.summarizedOutput
+        set(value) {
+            myState.summarizedOutput = value
+        }
 
     var documentationLlm: String
         get() = myState.documentationLlm
