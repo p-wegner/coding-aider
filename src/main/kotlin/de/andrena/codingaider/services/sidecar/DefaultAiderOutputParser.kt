@@ -11,6 +11,8 @@ class DefaultAiderOutputParser(
     private val reader: BufferedReader?,
     private val writer: BufferedWriter?
 ) : AiderOutputParser {
+    private var currentSummary = StringBuilder()
+    private var inSummaryBlock = false
     val terminalPromptPrefix = listOf("Tokens: ", "Dropping all files from the chat session")
     private val commandPrompt = "> "
     private fun String.isPromptLine() = this == commandPrompt
@@ -25,7 +27,24 @@ class DefaultAiderOutputParser(
             while (reader?.readLine().also { line = it } != null) {
                 if (verbose) logger.info(line)
                 if (!line!!.isPromptLine()) {
-                    sink.next(line!!)
+                    // Handle XML summary blocks
+                    when {
+                        line!!.trim() == "<aider-summary>" -> {
+                            inSummaryBlock = true
+                            currentSummary.clear()
+                            currentSummary.append(line!!).append("\n")
+                        }
+                        line!!.trim() == "</aider-summary>" -> {
+                            inSummaryBlock = false
+                            currentSummary.append(line!!).append("\n")
+                            // Process complete summary block
+                            sink.next(currentSummary.toString())
+                        }
+                        inSummaryBlock -> {
+                            currentSummary.append(line!!).append("\n")
+                        }
+                        else -> sink.next(line!!)
+                    }
                 }
 
                 if (line == commandPrompt) commandPromptCount++

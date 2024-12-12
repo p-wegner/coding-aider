@@ -20,5 +20,5 @@ Plan: [summarized_output_setting.md](summarized_output_setting.md)
 ## Output Processing
 
 - [x] Define XML structure for summary output
-- [ ] Implement summary flag handling in command execution
+- [x] Implement summary flag handling in command execution
 - [ ] Add summary parsing capability to output processor
