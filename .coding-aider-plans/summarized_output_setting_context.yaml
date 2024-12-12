@@ -2,6 +2,8 @@
 files:
   - path: src/main/kotlin/de/andrena/codingaider/executors/AiderExecutionStrategy.kt
     readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/executors/api/AiderSummaryParser.kt
+    readOnly: false
   - path: README.md
     readOnly: false
   - path: overview.md
