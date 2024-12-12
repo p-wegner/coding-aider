@@ -10,10 +10,10 @@ Plan: [summarized_output_setting.md](summarized_output_setting.md)
 - [x] Add default value in AiderDefaults
 - [x] Implement persistence for the setting
 
-## Command Line Integration
+## Command Line Integration  
 - [x] Add command line argument handling in AiderExecutionStrategy
 - [x] Update buildCommonArgs to include summary flag
-- [ ] Add option to CommandData class
+- [x] Add option to CommandData class
 
 ## Output Processing
 - [ ] Define XML structure for summary output

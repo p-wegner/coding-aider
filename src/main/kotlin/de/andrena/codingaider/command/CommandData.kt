@@ -54,6 +54,7 @@ data class CommandOptions(
     val autoCloseDelay: Int? = null,
     val autoCommit: Boolean? = null,
     val dirtyCommits: Boolean? = null,
+    val summarizedOutput: Boolean? = null,
 ) {
 
     companion object {
