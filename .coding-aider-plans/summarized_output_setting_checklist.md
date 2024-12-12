@@ -7,7 +7,7 @@ Plan: [summarized_output_setting.md](summarized_output_setting.md)
 ## Settings Implementation
 
 - [x] Add summarizedOutput boolean property to AiderSettings
-- [ ] Add UI toggle in settings dialog
+- [x] Add UI toggle in settings dialog
 - [x] Add default value in AiderDefaults
 - [x] Implement persistence for the setting
 
@@ -19,6 +19,6 @@ Plan: [summarized_output_setting.md](summarized_output_setting.md)
 
 ## Output Processing
 
-- [ ] Define XML structure for summary output
+- [x] Define XML structure for summary output
 - [ ] Implement summary flag handling in command execution
 - [ ] Add summary parsing capability to output processor

@@ -24,6 +24,7 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
 
     fun createPanel(panel: Panel) {
         panel.group("Aider Setup") {
+            createOutputSettingsGroup()
             createApiKeysGroup()
             createDockerSetup()
             createAiderExecutableGroup()
@@ -36,6 +37,16 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
         }
     }
 
+
+    private fun Panel.createOutputSettingsGroup() {
+        group("Output Settings") {
+            row {
+                checkBox("Enable summarized output")
+                    .bindSelected({ AiderSettings.getInstance().summarizedOutput }, { AiderSettings.getInstance().summarizedOutput = it })
+                    .comment("When enabled, Aider will include XML-tagged summaries of changes in its output")
+            }
+        }
+    }
 
     private fun Panel.createApiKeysGroup() {
         group("Custom Providers") {
