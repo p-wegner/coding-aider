@@ -41,8 +41,9 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
     private fun Panel.createOutputSettingsGroup() {
         group("Output Settings") {
             row {
+                val settings = AiderSettings.getInstance()
                 checkBox("Enable summarized output")
-                    .bindSelected({ AiderSettings.getInstance().summarizedOutput }, { AiderSettings.getInstance().summarizedOutput = it })
+                    .bindSelected(settings::summarizedOutput)
                     .comment("When enabled, Aider will include XML-tagged summaries of changes in its output")
             }
         }
