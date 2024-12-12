@@ -29,6 +29,23 @@ Currently, Aider provides detailed output of its changes, but there's no easy wa
 - Setting should be configurable in both UI and command line
 - XML tags should be unique to avoid conflicts
 
+## XML Structure
+The summary output will use the following XML format:
+```xml
+<aider-summary>
+  <status>success|failure</status>
+  <changes>
+    <file>
+      <path>/path/to/file</path>
+      <action>add|modify|delete</action>
+      <description>Brief description of changes</description>
+    </file>
+    <!-- Additional file elements as needed -->
+  </changes>
+  <error>Error message if status is failure</error>
+</aider-summary>
+```
+
 ## References
 - [AiderSettings.kt](../src/main/kotlin/de/andrena/codingaider/settings/AiderSettings.kt)
 - [AiderExecutionStrategy.kt](../src/main/kotlin/de/andrena/codingaider/executors/AiderExecutionStrategy.kt)

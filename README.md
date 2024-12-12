@@ -108,7 +108,12 @@ the [Aider documentation](https://aider.chat/docs/llms/openai-compat.html).
     - The Tool Window will display an overview of existing plans and their progress.
     - Further insights can be gained by reviewing the used system prompt
       in [AiderPlanPromptService](./src/main/kotlin/de/andrena/codingaider/services/plans/AiderPlanPromptService.kt).
-14. **Aider Commands and Arguments**:
+14. **Summarized Output**:
+    - Option to enable structured XML summaries of Aider's changes
+    - Provides parseable output for integration with other tools
+    - Includes status, modified files, and change descriptions
+    - Maintains regular detailed output alongside summaries
+15. **Aider Commands and Arguments**:
     - If needed, you can specify additional [arguments](https://aider.chat/docs/config/options.html) for the Aider
       command in the settings or in the command window.
 
