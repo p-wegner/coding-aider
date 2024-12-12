@@ -11,8 +11,8 @@ Plan: [summarized_output_setting.md](summarized_output_setting.md)
 - [x] Implement persistence for the setting
 
 ## Command Line Integration
-- [ ] Add command line argument handling in AiderExecutionStrategy
-- [ ] Update buildCommonArgs to include summary flag
+- [x] Add command line argument handling in AiderExecutionStrategy
+- [x] Update buildCommonArgs to include summary flag
 - [ ] Add option to CommandData class
 
 ## Output Processing
