@@ -1,4 +1,4 @@
-package de.andrena.codingaider.executors
+package de.andrena.codingaider.executors.strategies
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project

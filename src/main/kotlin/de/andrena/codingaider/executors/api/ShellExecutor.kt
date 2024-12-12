@@ -4,9 +4,9 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.docker.DockerContainerManager
-import de.andrena.codingaider.executors.AiderExecutionStrategy
-import de.andrena.codingaider.executors.NativeAiderExecutionStrategy
-import de.andrena.codingaider.executors.DockerAiderExecutionStrategy
+import de.andrena.codingaider.executors.strategies.AiderExecutionStrategy
+import de.andrena.codingaider.executors.strategies.DockerAiderExecutionStrategy
+import de.andrena.codingaider.executors.strategies.NativeAiderExecutionStrategy
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
@@ -23,11 +23,12 @@ class ShellExecutor(
     private val useDockerAider: Boolean
         get() = commandData.options.useDockerAider ?: settings.useDockerAider
     private val executionStrategy: AiderExecutionStrategy by lazy {
-        if (useDockerAider) DockerAiderExecutionStrategy(project,
+        if (useDockerAider) DockerAiderExecutionStrategy(
+            project,
             dockerManager,
             apiKeyChecker,
             settings
-        ) else NativeAiderExecutionStrategy(project,apiKeyChecker, settings)
+        ) else NativeAiderExecutionStrategy(project, apiKeyChecker, settings)
     }
 
     fun execute() {

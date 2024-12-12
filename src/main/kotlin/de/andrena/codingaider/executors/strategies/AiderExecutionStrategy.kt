@@ -1,4 +1,4 @@
-package de.andrena.codingaider.executors
+package de.andrena.codingaider.executors.strategies
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
@@ -16,7 +16,7 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
         return buildList {
             // Handle model selection based on provider type
             if (commandData.llm.isNotEmpty()) {
-                val customProvider = CustomLlmProviderService.getInstance().getProvider(commandData.llm)
+                val customProvider = CustomLlmProviderService.Companion.getInstance().getProvider(commandData.llm)
                 if (customProvider != null) {
                     add("--model")
                     add(customProvider.prefixedModelName)

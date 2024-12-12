@@ -9,6 +9,8 @@ import com.intellij.testFramework.registerServiceInstance
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.docker.DockerContainerManager
+import de.andrena.codingaider.executors.strategies.DockerAiderExecutionStrategy
+import de.andrena.codingaider.executors.strategies.NativeAiderExecutionStrategy
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.settings.CustomLlmProviderService

@@ -1,4 +1,4 @@
-package de.andrena.codingaider.executors
+package de.andrena.codingaider.executors.strategies
 
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
@@ -8,7 +8,7 @@ class SidecarAiderExecutionStrategy(
     project: Project,
     private val settings: AiderSettings
 ) : AiderExecutionStrategy(project) {
-    
+
     override fun buildCommand(commandData: CommandData): List<String> {
         return listOf(settings.aiderExecutablePath) + buildCommonArgs(commandData, settings)
     }

@@ -8,6 +8,9 @@ import de.andrena.codingaider.docker.DockerContainerManager
 import de.andrena.codingaider.executors.api.AiderProcessInteractor
 import de.andrena.codingaider.executors.api.CommandSubject
 import de.andrena.codingaider.executors.api.DefaultAiderProcessInteractor
+import de.andrena.codingaider.executors.strategies.AiderExecutionStrategy
+import de.andrena.codingaider.executors.strategies.DockerAiderExecutionStrategy
+import de.andrena.codingaider.executors.strategies.NativeAiderExecutionStrategy
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.FileExtractorService
 import de.andrena.codingaider.services.plans.AiderPlanService

@@ -4,6 +4,8 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.docker.DockerContainerManager
+import de.andrena.codingaider.executors.strategies.DockerAiderExecutionStrategy
+import de.andrena.codingaider.executors.strategies.NativeAiderExecutionStrategy
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
@@ -18,9 +20,14 @@ class CommandLogger(
         if (settings.verboseCommandLogging) {
             val useDockerAider = commandData.options.useDockerAider ?: settings.useDockerAider
             val executionStrategy = if (useDockerAider) {
-                DockerAiderExecutionStrategy(project,dockerManager ?: DockerContainerManager(), apiKeyChecker, settings)
+                DockerAiderExecutionStrategy(
+                    project,
+                    dockerManager ?: DockerContainerManager(),
+                    apiKeyChecker,
+                    settings
+                )
             } else {
-                NativeAiderExecutionStrategy(project,apiKeyChecker, settings)
+                NativeAiderExecutionStrategy(project, apiKeyChecker, settings)
             }
             val commandArgs = executionStrategy.buildCommand(commandData)
             val commandString = "Command: ${commandArgs.joinToString(" ")}"
