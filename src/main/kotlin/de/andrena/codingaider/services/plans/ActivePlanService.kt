@@ -24,6 +24,12 @@ class ActivePlanService(private val project: Project) {
 
     fun getActivePlan(): AiderPlan? = activePlan
 
+    fun refreshActivePlan() {
+        activePlan = activePlan?.mainPlanFile?.let { mainFile ->
+            project.service<AiderPlanService>().loadPlanFromFile(File(mainFile.filePath))
+        }
+    }
+
     fun clearActivePlan() {
         activePlan = null
     }
@@ -33,17 +39,10 @@ class ActivePlanService(private val project: Project) {
     }
 
     fun handlePlanCompletion(success: Boolean = true) {
-        activePlan?.let { currentPlan ->
-            // Refresh the plan from disk
-            val refreshedPlan = currentPlan.mainPlanFile?.let { mainFile ->
-                project.service<AiderPlanService>().loadPlanFromFile(File(mainFile.filePath))
-            }
-            
-            activePlan = refreshedPlan
-            
-            if (!success || refreshedPlan?.isPlanComplete() == true) {
-                clearActivePlan()
-            }
+        refreshActivePlan()
+
+        if (!success || activePlan?.isPlanComplete() == true) {
+            clearActivePlan()
         }
     }
 

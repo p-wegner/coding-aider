@@ -21,7 +21,7 @@ class PlansPanel(private val project: Project) {
         subscribeToFileChanges()
     }
 
-    fun loadPlans() {
+    private fun loadPlans() {
         planViewer.updatePlans(aiderPlanService.getAiderPlans())
     }
 

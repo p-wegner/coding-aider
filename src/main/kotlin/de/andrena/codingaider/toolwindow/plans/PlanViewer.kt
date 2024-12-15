@@ -145,11 +145,10 @@ class PlanViewer(private val project: Project) {
 
         override fun actionPerformed(e: AnActionEvent) {
             ApplicationManager.getApplication().invokeLater {
-                project.getService(PlansPanel::class.java).loadPlans()
+                updatePlans(project.getService(AiderPlanService::class.java).getAiderPlans())
             }
         }
     }
-
     inner class ContinuePlanAction : AnAction(
         "Continue Plan",
         "Continue executing this plan",
