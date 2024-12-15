@@ -26,6 +26,7 @@ import de.andrena.codingaider.utils.FileRefresher
 import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import com.intellij.openapi.application.ApplicationManager
 import java.io.File
 import javax.swing.*
 
@@ -133,6 +134,18 @@ class PlanViewer(private val project: Project) {
         }
 
         project.service<ContinuePlanService>().continuePlan(selectedPlan)
+    inner class RefreshPlansAction : AnAction(
+        "Refresh Plans",
+        "Refresh and reparse the current plans",
+        AllIcons.Actions.Refresh
+    ) {
+        override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+
+        override fun actionPerformed(e: AnActionEvent) {
+            ApplicationManager.getApplication().invokeLater {
+                project.getService(PlansPanel::class.java).loadPlans()
+            }
+        }
     }
 
     inner class ContinuePlanAction : AnAction(

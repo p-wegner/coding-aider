@@ -21,7 +21,7 @@ class PlansPanel(private val project: Project) {
         subscribeToFileChanges()
     }
 
-    private fun loadPlans() {
+    fun loadPlans() {
         planViewer.updatePlans(aiderPlanService.getAiderPlans())
     }
 
@@ -49,6 +49,7 @@ class PlansPanel(private val project: Project) {
                         DefaultActionGroup().apply {
                             add(planViewer.NewPlanAction())
                             addSeparator()
+                            add(planViewer.RefreshPlansAction())
                             add(planViewer.ContinuePlanAction())
                             add(planViewer.EditContextAction())
                             add(planViewer.DeletePlanAction())
