@@ -134,6 +134,8 @@ class PlanViewer(private val project: Project) {
         }
 
         project.service<ContinuePlanService>().continuePlan(selectedPlan)
+    }
+
     inner class RefreshPlansAction : AnAction(
         "Refresh Plans",
         "Refresh and reparse the current plans",
