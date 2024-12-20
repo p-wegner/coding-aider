@@ -99,7 +99,14 @@ class PlanViewer(private val project: Project) {
             if (value != null) {
                 val planFile = value.planFiles.firstOrNull()
                 val fileName = planFile?.filePath?.let { File(it).nameWithoutExtension } ?: "Unknown Plan"
-                label.text = fileName
+                val prefix = buildString {
+                    var current: AiderPlan? = value
+                    while (current?.parentPlan != null) {
+                        append("  ")
+                        current = current.parentPlan
+                    }
+                }
+                label.text = prefix + fileName
 
                 val openItems = value.openChecklistItems().size
                 val totalItems = value.totalChecklistItems()

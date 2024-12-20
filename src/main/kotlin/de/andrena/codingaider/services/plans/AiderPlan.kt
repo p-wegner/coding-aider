@@ -7,7 +7,9 @@ data class AiderPlan(
     val plan: String,
     val checklist: List<ChecklistItem>,
     val planFiles: List<FileData>,
-    val contextFiles: List<FileData>
+    val contextFiles: List<FileData>,
+    val parentPlan: AiderPlan? = null,
+    val childPlans: List<AiderPlan> = emptyList()
 ) {
     val allFiles: List<FileData>
         get() = planFiles + contextFiles
@@ -40,11 +42,27 @@ data class AiderPlan(
         return countItems(checklist)
     }
 
-    fun isPlanComplete() = openChecklistItems().isEmpty()
+    fun isPlanComplete(): Boolean {
+        return openChecklistItems().isEmpty() && childPlans.all { it.isPlanComplete() }
+    }
+
+    fun getAllChildPlans(): List<AiderPlan> {
+        return childPlans + childPlans.flatMap { it.getAllChildPlans() }
+    }
+
+    fun findRootPlan(): AiderPlan {
+        return parentPlan?.findRootPlan() ?: this
+    }
 
     fun createShortTooltip(): String = buildString {
         appendLine("<html><body>")
         appendLine("<b>Plan:</b> ${mainPlanFile?.filePath}<br>")
+        parentPlan?.mainPlanFile?.let { parent ->
+            appendLine("<b>Parent Plan:</b> ${parent.filePath}<br>")
+        }
+        if (childPlans.isNotEmpty()) {
+            appendLine("<b>Child Plans:</b> ${childPlans.size}<br>")
+        }
         appendLine("<b>Status:</b> ${if (isPlanComplete()) "Complete" else "In Progress"}<br>")
         val checkedItems = totalChecklistItems() - openChecklistItems().size
         appendLine("<b>Progress:</b> $checkedItems/${totalChecklistItems()} items completed")
