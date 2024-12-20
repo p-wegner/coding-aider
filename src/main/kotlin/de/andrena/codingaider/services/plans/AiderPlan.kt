@@ -14,6 +14,11 @@ data class AiderPlan(
 ) {
     companion object {
         private fun calculateDepth(parent: AiderPlan?): Int = parent?.depth?.plus(1) ?: 0
+        
+        fun findCommonAncestor(plan1: AiderPlan, plan2: AiderPlan): AiderPlan? {
+            val ancestors1 = generateSequence(plan1) { it.parentPlan }.toSet()
+            return generateSequence(plan2) { it.parentPlan }.find { it in ancestors1 }
+        }
     }
     val allFiles: List<FileData>
         get() = planFiles + contextFiles
@@ -56,6 +61,25 @@ data class AiderPlan(
 
     fun findRootPlan(): AiderPlan {
         return parentPlan?.findRootPlan() ?: this
+    }
+
+    fun findSiblingPlans(): List<AiderPlan> {
+        return parentPlan?.childPlans?.filter { it != this } ?: emptyList()
+    }
+
+    fun getAncestors(): List<AiderPlan> {
+        return generateSequence(parentPlan) { it.parentPlan }.toList()
+    }
+
+    fun isDescendantOf(otherPlan: AiderPlan): Boolean {
+        return generateSequence(this) { it.parentPlan }.any { it == otherPlan }
+    }
+
+    fun getNextUncompletedPlan(): AiderPlan? {
+        if (!isPlanComplete()) return this
+        return getAllChildPlans().firstOrNull { !it.isPlanComplete() }
+            ?: findSiblingPlans().firstOrNull { !it.isPlanComplete() }
+            ?: parentPlan?.getNextUncompletedPlan()
     }
 
     fun createShortTooltip(): String = buildString {

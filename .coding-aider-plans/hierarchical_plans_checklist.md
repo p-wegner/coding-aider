@@ -2,9 +2,14 @@
 
 # Hierarchical Plans Implementation Checklist
 
-- [ ] Data Structure Updates
-  - [ ] Add parent/child relationship fields to AiderPlan class
-  - [ ] Implement methods for traversing plan hierarchies
+- [x] Data Structure Updates
+  - [x] Add parent/child relationship fields to AiderPlan class
+  - [x] Implement methods for traversing plan hierarchies
+    - Added findCommonAncestor companion method
+    - Added findSiblingPlans method
+    - Added getAncestors method
+    - Added isDescendantOf method
+    - Added getNextUncompletedPlan method
   - [ ] Add support for plan references in markdown files
   - [ ] Update plan loading to handle hierarchical relationships
 
