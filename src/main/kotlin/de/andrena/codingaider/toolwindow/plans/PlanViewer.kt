@@ -102,14 +102,23 @@ class PlanViewer(private val project: Project) {
                 val fileName = planFile?.filePath?.let { File(it).nameWithoutExtension } ?: "Unknown Plan"
                 val prefix = buildString {
                     var current: AiderPlan? = value
+                    var lastParents = mutableListOf<Boolean>()
                     while (current?.parentPlan != null) {
-                        append("│   ") // Vertical line for better hierarchy visualization
+                        val hasNextSibling = current.parentPlan?.childPlans?.lastOrNull() != current
+                        lastParents.add(0, hasNextSibling)
                         current = current.parentPlan
                     }
+                    
+                    // Draw the tree structure
+                    lastParents.forEach { hasNextSibling ->
+                        append(if (hasNextSibling) "│   " else "    ")
+                    }
+                    
+                    // Add the node connector
                     if (value.childPlans.isNotEmpty()) {
-                        append("├─▼ ") // Tree branch with dropdown for parent plans
-                    } else if (value.parentPlan != null) {
-                        append("└─── ") // End branch for leaf plans
+                        append(if (value.parentPlan?.childPlans?.lastOrNull() == value) "└─▼ " else "├─▼ ")
+                    } else {
+                        append(if (value.parentPlan?.childPlans?.lastOrNull() == value) "└── " else "├── ")
                     }
                 }
                 label.text = prefix + fileName
