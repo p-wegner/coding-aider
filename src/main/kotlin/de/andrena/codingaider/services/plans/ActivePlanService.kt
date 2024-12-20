@@ -40,9 +40,25 @@ class ActivePlanService(private val project: Project) {
 
     fun handlePlanCompletion(success: Boolean = true) {
         refreshActivePlan()
-
-        if (!success || activePlan?.isPlanComplete() == true) {
+        
+        if (!success) {
             clearActivePlan()
+            return
+        }
+
+        val currentPlan = activePlan
+        if (currentPlan == null) {
+            return
+        }
+
+        if (currentPlan.isPlanComplete()) {
+            // Try to find next uncompleted plan in hierarchy
+            val nextPlan = currentPlan.getNextUncompletedPlan()
+            if (nextPlan != null) {
+                setActivePlan(nextPlan)
+            } else {
+                clearActivePlan()
+            }
         }
     }
 
@@ -77,8 +93,14 @@ class ActivePlanService(private val project: Project) {
         val plan = activePlan ?: throw IllegalStateException("No active plan found to continue")
 
         if (plan.isPlanComplete()) {
-            clearActivePlan()
-            throw IllegalStateException("Plan is already complete - no further actions needed")
+            // Check for uncompleted child or sibling plans
+            val nextPlan = plan.getNextUncompletedPlan()
+            if (nextPlan != null) {
+                setActivePlan(nextPlan)
+            } else {
+                clearActivePlan()
+                throw IllegalStateException("All plans in hierarchy are complete - no further actions needed")
+            }
         }
 
         if (plan.checklist.isEmpty()) {
@@ -87,7 +109,17 @@ class ActivePlanService(private val project: Project) {
 
         val openItems = plan.openChecklistItems()
         if (openItems.isEmpty()) {
-            throw IllegalStateException("No open items found in checklist. The plan may need to be updated.")
+            // If current plan has no open items but isn't complete, it might have uncompleted child plans
+            if (!plan.isPlanComplete()) {
+                val nextPlan = plan.getNextUncompletedPlan()
+                if (nextPlan != null) {
+                    setActivePlan(nextPlan)
+                } else {
+                    throw IllegalStateException("Inconsistent plan state: no open items but plan is not complete")
+                }
+            } else {
+                throw IllegalStateException("No open items found in checklist. The plan may need to be updated.")
+            }
         }
     }
 

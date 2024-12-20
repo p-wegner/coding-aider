@@ -19,11 +19,11 @@
   - [x] Update tooltips to show plan hierarchy information
   - [x] Add visual indicators for parent/child relationships
 
-- [ ] Plan Execution Logic
-  - [ ] Implement logic to find next executable plan in hierarchy
-  - [ ] Handle completion of child plans
-  - [ ] Add support for continuing parent plans
-  - [ ] Update progress tracking for hierarchical structures
+- [x] Plan Execution Logic
+  - [x] Implement logic to find next executable plan in hierarchy
+  - [x] Handle completion of child plans
+  - [x] Add support for continuing parent plans
+  - [x] Update progress tracking for hierarchical structures
 
 - [ ] Plan Creation and Management
   - [ ] Add support for creating nested plans from single prompt
