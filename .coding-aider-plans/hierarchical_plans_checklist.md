@@ -32,7 +32,20 @@
   - [x] Ensure proper context.yaml handling for nested plans
 
 - [ ] Testing and Documentation
-  - [ ] Add tests for hierarchical plan structures
+  - [x] Add tests for hierarchical plan structures
+    - [x] Test plan hierarchy loading
+    - [x] Test parent-child relationships
+    - [x] Test plan completion tracking
+    - [x] Test next plan selection logic
   - [ ] Update documentation with hierarchy support
+    - [ ] Document plan hierarchy concepts
+    - [ ] Document parent-child relationships
+    - [ ] Document plan navigation
   - [ ] Add examples of nested plan usage
+    - [ ] Create sample main plan
+    - [ ] Create sample subplans
+    - [ ] Show linking between plans
   - [ ] Document new file naming conventions
+    - [ ] Main plan naming
+    - [ ] Subplan naming (_subplan suffix)
+    - [ ] Context file naming

@@ -12,3 +12,7 @@ files:
   readOnly: false
 - path: src/main/kotlin/de/andrena/codingaider/toolwindow/plans/PlansPanel.kt
   readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/services/services.md
+  readOnly: true
+- path: src/main/kotlin/de/andrena/codingaider/toolwindow/toolwindow.md
+  readOnly: true
