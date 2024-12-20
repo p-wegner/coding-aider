@@ -4,6 +4,7 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
@@ -26,7 +27,6 @@ import de.andrena.codingaider.utils.FileRefresher
 import java.awt.*
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
-import com.intellij.openapi.application.ApplicationManager
 import java.io.File
 import javax.swing.*
 
@@ -161,6 +161,7 @@ class PlanViewer(private val project: Project) {
             }
         }
     }
+
     inner class ContinuePlanAction : AnAction(
         "Continue Plan",
         "Continue executing this plan",
@@ -228,10 +229,10 @@ class PlanViewer(private val project: Project) {
 
         override fun actionPerformed(e: AnActionEvent) {
             val selectedPlan = plansList.selectedValue ?: return
-            
+
             val dialog = object : DialogWrapper(project) {
                 private val messageField = JTextField()
-                
+
                 init {
                     title = "Refine Plan"
                     init()
@@ -255,7 +256,7 @@ class PlanViewer(private val project: Project) {
                 }
 
                 override fun getPreferredFocusedComponent(): JComponent = messageField
-                
+
                 fun getMessage(): String = messageField.text
             }
 
@@ -264,9 +265,10 @@ class PlanViewer(private val project: Project) {
                 if (message.isNotBlank()) {
                     val commandData = AiderAction.collectCommandData(
                         selectedPlan.allFiles,
+                        // TODO: create a custom refinement prompt in the AiderPlanPromptService and use it 
                         message,
                         project,
-                        AiderMode.STRUCTURED
+                        AiderMode.NORMAL
                     )
                     AiderAction.executeAiderActionWithCommandData(project, commandData)
                 }
