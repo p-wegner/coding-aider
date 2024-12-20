@@ -82,75 +82,54 @@ data class AiderPlan(
             ?: parentPlan?.getNextUncompletedPlan()
     }
 
-    fun createShortTooltip(): String = buildString {
-        appendLine("<html><body>")
-        appendLine("<b>Plan:</b> ${mainPlanFile?.filePath}<br>")
-        
-        // Show full plan hierarchy
-        val ancestors = getAncestors()
-        if (ancestors.isNotEmpty()) {
-            appendLine("<b>Plan Hierarchy:</b><br>")
-            ancestors.reversed().forEachIndexed { index, ancestor ->
-                appendLine("${"&nbsp;".repeat(index * 4)}└ ${ancestor.mainPlanFile?.filePath}<br>")
-            }
-            appendLine("${"&nbsp;".repeat(ancestors.size * 4)}└ ${mainPlanFile?.filePath} (Current)<br>")
-        }
-        
-        if (childPlans.isNotEmpty()) {
-            appendLine("<br><b>Child Plans:</b> ${childPlans.size}<br>")
-            appendLine("<b>Child Plans Status:</b> ${childPlans.count { it.isPlanComplete() }}/${childPlans.size} completed<br>")
-            childPlans.forEach { child ->
-                appendLine("${"&nbsp;".repeat(4)}└ ${child.mainPlanFile?.filePath} (${if (child.isPlanComplete()) "Complete" else "In Progress"})<br>")
-            }
-        }
-        appendLine("<b>Status:</b> ${if (isPlanComplete()) "Complete" else "In Progress"}<br>")
+    fun createShortTooltip(): String {
         val checkedItems = totalChecklistItems() - openChecklistItems().size
-        appendLine("<b>Progress:</b> $checkedItems/${totalChecklistItems()} items completed")
-        appendLine("<b>Depth:</b> Level $depth")
-        appendLine("</body></html>")
+        val status = if (isPlanComplete()) "Complete" else "In Progress"
+        
+        return buildString {
+            append("<html><body style='width:300px'>")
+            append("<b>${mainPlanFile?.filePath?.substringAfterLast('/')}</b><br>")
+            append("Status: $status | Progress: $checkedItems/${totalChecklistItems()}<br>")
+            
+            if (parentPlan != null) {
+                append("Parent: ${parentPlan.mainPlanFile?.filePath?.substringAfterLast('/')}<br>")
+            }
+            
+            if (childPlans.isNotEmpty()) {
+                val completedChildren = childPlans.count { it.isPlanComplete() }
+                append("Children: $completedChildren/${childPlans.size} complete")
+            }
+            
+            append("</body></html>")
+        }
     }
 
-    fun createTooltip(): String = buildString {
-        appendLine("<html><body style='width: 400px'>")
-        appendLine("<b>Plan:</b> ${mainPlanFile?.filePath}<br>")
-        appendLine("<b>Status:</b> ${if (isPlanComplete()) "Complete" else "In Progress"}<br>")
+    fun createTooltip(): String {
         val checkedItems = totalChecklistItems() - openChecklistItems().size
-        appendLine("<b>Progress:</b> $checkedItems/${totalChecklistItems()} items completed<br>")
-        if (parentPlan != null) {
-            appendLine("<b>Parent Plan:</b> ${parentPlan.mainPlanFile?.filePath}<br>")
-        }
-        if (childPlans.isNotEmpty()) {
-            appendLine("<b>Child Plans:</b><br>")
-            childPlans.forEach { child ->
-                appendLine("• ${child.mainPlanFile?.filePath} (${if (child.isPlanComplete()) "Complete" else "In Progress"})<br>")
+        val status = if (isPlanComplete()) "Complete" else "In Progress"
+        val openItems = openChecklistItems()
+        
+        return buildString {
+            append("<html><body style='width:400px'>")
+            append("<b>${mainPlanFile?.filePath}</b><br>")
+            append("Status: $status | Progress: $checkedItems/${totalChecklistItems()}<br><br>")
+            
+            if (openItems.isNotEmpty()) {
+                append("<b>Open Items:</b><br>")
+                openItems.take(3).forEach { item ->
+                    append("• ${item.description.replace("<", "&lt;").replace(">", "&gt;")}<br>")
+                }
+                if (openItems.size > 3) {
+                    append("<i>... and ${openItems.size - 3} more items</i><br>")
+                }
             }
-        }
-        if (parentPlan != null) {
-            appendLine("<b>Parent Plan:</b> ${parentPlan.mainPlanFile?.filePath}<br>")
-        }
-        if (childPlans.isNotEmpty()) {
-            appendLine("<b>Child Plans:</b><br>")
-            childPlans.forEach { child ->
-                appendLine("• ${child.mainPlanFile?.filePath} (${if (child.isPlanComplete()) "Complete" else "In Progress"})<br>")
+            
+            if (isPlanComplete()) {
+                append("<br><span style='color:green'>✓ All tasks completed!</span>")
             }
+            
+            append("</body></html>")
         }
-        appendLine("<br><b>Open Items:</b><br>")
-        openChecklistItems().take(5).forEach { item ->
-            appendLine("• ${item.description.replace("<", "&lt;").replace(">", "&gt;")}<br>")
-        }
-        if (openChecklistItems().size > 5) {
-            appendLine("<i>... and ${openChecklistItems().size - 5} more items</i><br>")
-        }
-        appendLine("<br><b>Description:</b><br>")
-        val planPreview = plan.lines().take(3).joinToString("\n").let {
-            if (it.length > 200) it.take(200) + "..." else it
-        }
-        appendLine(planPreview.replace("<", "&lt;").replace(">", "&gt;").replace("\n", "<br>"))
-
-        if (isPlanComplete()) {
-            appendLine("<br><br><span style='color: green'>✓ All tasks completed!</span>")
-        }
-        appendLine("</body></html>")
     }
 }
 
