@@ -9,8 +9,12 @@ data class AiderPlan(
     val planFiles: List<FileData>,
     val contextFiles: List<FileData>,
     val parentPlan: AiderPlan? = null,
-    val childPlans: List<AiderPlan> = emptyList()
+    val childPlans: List<AiderPlan> = emptyList(),
+    val depth: Int = calculateDepth(parentPlan)
 ) {
+    companion object {
+        private fun calculateDepth(parent: AiderPlan?): Int = parent?.depth?.plus(1) ?: 0
+    }
     val allFiles: List<FileData>
         get() = planFiles + contextFiles
 
@@ -62,10 +66,12 @@ data class AiderPlan(
         }
         if (childPlans.isNotEmpty()) {
             appendLine("<b>Child Plans:</b> ${childPlans.size}<br>")
+            appendLine("<b>Child Plans Status:</b> ${childPlans.count { it.isPlanComplete() }}/${childPlans.size} completed<br>")
         }
         appendLine("<b>Status:</b> ${if (isPlanComplete()) "Complete" else "In Progress"}<br>")
         val checkedItems = totalChecklistItems() - openChecklistItems().size
         appendLine("<b>Progress:</b> $checkedItems/${totalChecklistItems()} items completed")
+        appendLine("<b>Depth:</b> Level $depth")
         appendLine("</body></html>")
     }
 
@@ -75,6 +81,15 @@ data class AiderPlan(
         appendLine("<b>Status:</b> ${if (isPlanComplete()) "Complete" else "In Progress"}<br>")
         val checkedItems = totalChecklistItems() - openChecklistItems().size
         appendLine("<b>Progress:</b> $checkedItems/${totalChecklistItems()} items completed<br>")
+        if (parentPlan != null) {
+            appendLine("<b>Parent Plan:</b> ${parentPlan.mainPlanFile?.filePath}<br>")
+        }
+        if (childPlans.isNotEmpty()) {
+            appendLine("<b>Child Plans:</b><br>")
+            childPlans.forEach { child ->
+                appendLine("• ${child.mainPlanFile?.filePath} (${if (child.isPlanComplete()) "Complete" else "In Progress"})<br>")
+            }
+        }
         appendLine("<br><b>Open Items:</b><br>")
         openChecklistItems().take(5).forEach { item ->
             appendLine("• ${item.description.replace("<", "&lt;").replace(">", "&gt;")}<br>")
