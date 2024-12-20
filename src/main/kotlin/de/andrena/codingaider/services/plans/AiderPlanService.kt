@@ -199,9 +199,42 @@ class AiderPlanService(private val project: Project) {
         }
     }
 
-    fun getAiderPlans(filesInPlanFolder: List<File>): List<AiderPlan> = filesInPlanFolder
-        .filter { file -> file.extension == "md" && !file.nameWithoutExtension.endsWith("_checklist") }
-        .mapNotNull { file -> loadPlanFromFile(file) }
+    fun getAiderPlans(filesInPlanFolder: List<File>): List<AiderPlan> {
+        // First load all plans without hierarchy
+        val allPlans = filesInPlanFolder
+            .filter { file -> file.extension == "md" && !file.nameWithoutExtension.endsWith("_checklist") }
+            .mapNotNull { file -> loadPlanFromFile(file) }
+            .toMutableList()
+
+        // Then establish parent-child relationships based on references
+        allPlans.forEach { plan ->
+            val content = File(plan.mainPlanFile?.filePath ?: return@forEach).readText()
+            val referencePattern = Regex("""\[.*?\]\((.*?)(?:\s.*?)?\)""")
+            
+            referencePattern.findAll(content).forEach { matchResult ->
+                val referencePath = matchResult.groupValues[1]
+                val referenceFile = File(plansDir, referencePath)
+                
+                if (referenceFile.exists() && !referenceFile.nameWithoutExtension.endsWith("_checklist")) {
+                    val referencedPlan = allPlans.find { it.mainPlanFile?.filePath == referenceFile.absolutePath }
+                    if (referencedPlan != null) {
+                        // Update parent-child relationships
+                        val updatedChildPlan = referencedPlan.copy(parentPlan = plan)
+                        val updatedParentPlan = plan.copy(
+                            childPlans = plan.childPlans + updatedChildPlan
+                        )
+                        
+                        // Replace plans in list with updated versions
+                        allPlans[allPlans.indexOf(plan)] = updatedParentPlan
+                        allPlans[allPlans.indexOf(referencedPlan)] = updatedChildPlan
+                    }
+                }
+            }
+        }
+
+        // Return only root plans (those without parents)
+        return allPlans.filter { it.parentPlan == null }
+    }
 
 
     private fun String.indentationLevel(): Int =

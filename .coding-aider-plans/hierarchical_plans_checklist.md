@@ -11,7 +11,7 @@
     - Added isDescendantOf method
     - Added getNextUncompletedPlan method
   - [x] Add support for plan references in markdown files
-  - [ ] Update plan loading to handle hierarchical relationships
+  - [x] Update plan loading to handle hierarchical relationships
 
 - [ ] UI Enhancements
   - [x] Modify PlanViewer to show hierarchical structure
