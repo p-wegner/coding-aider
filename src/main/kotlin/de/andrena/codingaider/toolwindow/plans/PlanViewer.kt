@@ -69,6 +69,7 @@ class PlanViewer(private val project: Project) {
         private val statusIcon = JLabel()
         private val countLabel = JLabel()
         private val leftPanel = JPanel(FlowLayout(FlowLayout.LEFT, 4, 0))
+        private val treeIndentWidth = 20 // Width for each level of indentation
 
         init {
             isOpaque = true
@@ -100,28 +101,38 @@ class PlanViewer(private val project: Project) {
             if (value != null) {
                 val planFile = value.planFiles.firstOrNull()
                 val fileName = planFile?.filePath?.let { File(it).nameWithoutExtension } ?: "Unknown Plan"
-                val prefix = buildString {
-                    var current: AiderPlan? = value
-                    var lastParents = mutableListOf<Boolean>()
-                    while (current?.parentPlan != null) {
-                        val hasNextSibling = current.parentPlan?.childPlans?.lastOrNull() != current
-                        lastParents.add(0, hasNextSibling)
-                        current = current.parentPlan
+
+                // Calculate tree structure
+                val treePrefix = buildString {
+                    // Get the chain of ancestors
+                    val ancestors = value.getAncestors()
+                    val depth = ancestors.size
+
+                    // For each ancestor level, add the appropriate connector
+                    ancestors.forEachIndexed { index, ancestor ->
+                        val hasNextSibling = ancestor.findSiblingPlans().any { sibling -> 
+                            sibling.mainPlanFile?.filePath?.compareTo(ancestor.mainPlanFile?.filePath ?: "") ?: 0 > 0 
+                        }
+                        if (hasNextSibling) {
+                            append("│   ")
+                        } else {
+                            append("    ")
+                        }
                     }
-                    
-                    // Draw the tree structure
-                    lastParents.forEach { hasNextSibling ->
-                        append(if (hasNextSibling) "│   " else "    ")
-                    }
-                    
-                    // Add the node connector
+
+                    // Add the current node's connector
                     if (value.childPlans.isNotEmpty()) {
-                        append(if (value.parentPlan?.childPlans?.lastOrNull() == value) "└─▼ " else "├─▼ ")
+                        val isLastChild = value.parentPlan?.childPlans?.lastOrNull() == value
+                        append(if (isLastChild) "└─▼ " else "├─▼ ")
                     } else {
-                        append(if (value.parentPlan?.childPlans?.lastOrNull() == value) "└── " else "├── ")
+                        val isLastChild = value.parentPlan?.childPlans?.lastOrNull() == value
+                        append(if (isLastChild) "└── " else "├── ")
                     }
                 }
-                label.text = prefix + fileName
+
+                // Set indentation using border
+                border = BorderFactory.createEmptyBorder(4, 8 + (value.depth * treeIndentWidth), 4, 8)
+                label.text = treePrefix + fileName
 
                 val openItems = value.openChecklistItems().size
                 val totalItems = value.totalChecklistItems()
