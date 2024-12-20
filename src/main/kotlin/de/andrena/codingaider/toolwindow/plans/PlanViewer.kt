@@ -263,10 +263,10 @@ class PlanViewer(private val project: Project) {
                 val message = dialog.getMessage()
                 if (message.isNotBlank()) {
                     val commandData = AiderAction.collectCommandData(
-                        files = selectedPlan.allFiles,
-                        message = message,
-                        project = project,
-                        mode = AiderMode.STRUCTURED
+                        selectedPlan.allFiles,
+                        message,
+                        project,
+                        AiderMode.STRUCTURED
                     )
                     AiderAction.executeAiderActionWithCommandData(project, commandData)
                 }

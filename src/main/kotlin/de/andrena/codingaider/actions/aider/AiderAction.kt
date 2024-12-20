@@ -88,6 +88,23 @@ class AiderAction : AnAction() {
             )
         }
 
+        fun collectCommandData(files: List<FileData>, message: String, project: Project, mode: AiderMode): CommandData {
+            val settings = getInstance()
+            return CommandData(
+                message = message,
+                useYesFlag = settings.useYesFlag,
+                llm = settings.llm,
+                additionalArgs = settings.additionalArgs,
+                files = files,
+                lintCmd = settings.lintCmd,
+                deactivateRepoMap = settings.deactivateRepoMap,
+                editFormat = settings.editFormat,
+                projectPath = project.basePath ?: "",
+                aiderMode = mode,
+                sidecarMode = settings.useSidecarMode
+            )
+        }
+
         private fun collectDefaultShellCommandData(files: List<FileData>, project: Project): CommandData {
             val settings = getInstance()
             return CommandData(
