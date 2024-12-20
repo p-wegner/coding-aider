@@ -31,8 +31,8 @@
     - [x] Update file naming conventions for nested plans
     - [x] Ensure proper context.yaml handling for nested plans
 
-- [ ] Plan Refinement
-    - [ ] Add an action to refine an existing plan
-        - [ ] The action should be triggered by a button in the PlanViewer
-        - [ ] A dialog should be displayed with an input field for a user prompt what to refine in the plan
-        - [ ] Depending on the user input, the plan should be refined and possibly extended to a hierarchical plan
+- [x] Plan Refinement
+    - [x] Add an action to refine an existing plan
+        - [x] The action should be triggered by a button in the PlanViewer
+        - [x] A dialog should be displayed with an input field for a user prompt what to refine in the plan
+        - [x] Depending on the user input, the plan should be refined and possibly extended to a hierarchical plan

@@ -219,6 +219,65 @@ class PlanViewer(private val project: Project) {
         }
     }
 
+    inner class RefinePlanAction : AnAction(
+        "Refine Plan",
+        "Refine and extend the selected plan",
+        AllIcons.Actions.Edit
+    ) {
+        override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+
+        override fun actionPerformed(e: AnActionEvent) {
+            val selectedPlan = plansList.selectedValue ?: return
+            
+            val dialog = object : DialogWrapper(project) {
+                private val messageField = JTextField()
+                
+                init {
+                    title = "Refine Plan"
+                    init()
+                }
+
+                override fun createCenterPanel(): JComponent {
+                    return panel {
+                        row {
+                            label("How would you like to refine this plan?")
+                        }
+                        row {
+                            cell(messageField)
+                                .align(Align.FILL)
+                                .resizableColumn()
+                                .focused()
+                        }
+                        row {
+                            comment("Enter your request to refine or extend the plan. This may create subplans if needed.")
+                        }
+                    }
+                }
+
+                override fun getPreferredFocusedComponent(): JComponent = messageField
+                
+                fun getMessage(): String = messageField.text
+            }
+
+            if (dialog.showAndGet()) {
+                val message = dialog.getMessage()
+                if (message.isNotBlank()) {
+                    val commandData = AiderAction.collectCommandData(
+                        files = selectedPlan.allFiles,
+                        message = message,
+                        project = project,
+                        mode = AiderMode.STRUCTURED
+                    )
+                    AiderAction.executeAiderActionWithCommandData(project, commandData)
+                }
+            }
+        }
+
+        override fun update(e: AnActionEvent) {
+            e.presentation.isEnabled = plansList.selectedValue != null
+        }
+    }
+
     inner class DeletePlanAction : AnAction(
         "Delete Plan",
         "Delete this plan",
