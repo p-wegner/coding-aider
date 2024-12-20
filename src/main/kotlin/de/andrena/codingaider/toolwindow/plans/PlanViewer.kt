@@ -58,18 +58,26 @@ class PlanViewer(private val project: Project) {
 
     fun updatePlans(plans: List<AiderPlan>) {
         plansListModel.clear()
-        plans.forEach { plan ->
+        fun addPlanAndChildren(plan: AiderPlan) {
             plansListModel.addElement(plan)
+            if (expandedPlans.contains(plan.mainPlanFile?.filePath)) {
+                plan.childPlans.forEach { childPlan ->
+                    addPlanAndChildren(childPlan)
+                }
+            }
         }
+        plans.forEach { plan -> addPlanAndChildren(plan) }
     }
 
-    class PlanListCellRenderer(private val shortTooltip: Boolean = true) : JPanel(BorderLayout()),
-        ListCellRenderer<AiderPlan> {
+    class PlanListCellRenderer(
+        private val shortTooltip: Boolean = true,
+        private val expandedPlans: Set<String>
+    ) : JPanel(BorderLayout()), ListCellRenderer<AiderPlan> {
         private val label = JLabel()
         private val statusIcon = JLabel()
         private val countLabel = JLabel()
         private val leftPanel = JPanel(FlowLayout(FlowLayout.LEFT, 4, 0))
-        private val treeIndentWidth = 20 // Width for each level of indentation
+        private val treeIndentWidth = 20
 
         init {
             isOpaque = true
@@ -132,7 +140,14 @@ class PlanViewer(private val project: Project) {
 
                 // Set indentation using border
                 border = BorderFactory.createEmptyBorder(4, 8 + (value.depth * treeIndentWidth), 4, 8)
-                label.text = treePrefix + fileName
+                
+                val expandCollapseIcon = when {
+                    value.childPlans.isEmpty() -> "   "
+                    expandedPlans.contains(value.mainPlanFile?.filePath) -> "▼ "
+                    else -> "▶ "
+                }
+                
+                label.text = " ".repeat(value.depth * 4) + expandCollapseIcon + fileName
 
                 val openItems = value.openChecklistItems().size
                 val totalItems = value.totalChecklistItems()
