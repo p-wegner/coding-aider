@@ -263,12 +263,13 @@ class PlanViewer(private val project: Project) {
             if (dialog.showAndGet()) {
                 val message = dialog.getMessage()
                 if (message.isNotBlank()) {
+                    val promptService = project.service<AiderPlanPromptService>()
+                    val refinementPrompt = promptService.createPlanRefinementPrompt(selectedPlan, message)
                     val commandData = AiderAction.collectCommandData(
                         selectedPlan.allFiles,
-                        // TODO: create a custom refinement prompt in the AiderPlanPromptService and use it 
-                        message,
+                        refinementPrompt,
                         project,
-                        AiderMode.NORMAL
+                        AiderMode.STRUCTURED
                     )
                     AiderAction.executeAiderActionWithCommandData(project, commandData)
                 }

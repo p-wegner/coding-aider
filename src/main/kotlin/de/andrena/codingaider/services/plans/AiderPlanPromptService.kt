@@ -8,6 +8,22 @@ import de.andrena.codingaider.command.FileData
 @Service(Service.Level.PROJECT)
 class AiderPlanPromptService(private val project: Project) {
 
+    fun createPlanRefinementPrompt(plan: AiderPlan, refinementRequest: String): String {
+        val basePrompt = """
+            SYSTEM You are refining an existing plan. The plan should be extended or modified based on the refinement request.
+            SYSTEM If the refinement requires significant new functionality:
+            SYSTEM 1. Create a subplan with _subplan suffix (e.g. feature_subplan1.md)
+            SYSTEM 2. Reference the subplan from the main plan using markdown links
+            SYSTEM 3. Create separate checklist and context.yaml files for the subplan
+            SYSTEM 4. Update the main plan's checklist to track the subplan's completion
+            SYSTEM The refinement request is: $refinementRequest
+            
+            $STRUCTURED_MODE_MARKER Continue with plan refinement
+        """.trimIndent()
+        
+        return basePrompt
+    }
+
     fun createAiderPlanSystemPrompt(commandData: CommandData): String {
         val files = commandData.files
 
