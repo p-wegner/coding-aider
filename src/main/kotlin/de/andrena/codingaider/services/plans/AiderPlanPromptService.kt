@@ -59,6 +59,9 @@ class AiderPlanPromptService(private val project: Project) {
             SYSTEM The main plan file should include these sections: ## Overview, ## Problem Description, ## Goals, ## Additional Notes and Constraints, ## References 
             SYSTEM Save the plan in a new markdown file with a suitable name in the $AIDER_PLANS_FOLDER directory.
             SYSTEM Create separate checklist and context.yaml files to track the progress of implementing the plan.
+            SYSTEM If refining an existing plan, create a subplan with _subplan suffix (e.g. feature_subplan1.md).
+            SYSTEM The subplan should follow the same structure as the main plan but focus on specific components.
+            SYSTEM Reference the subplan from the main plan using markdown links.
             SYSTEM If the feature is complex, break it down into subplans:
             SYSTEM - Create a main plan describing the overall feature
             SYSTEM - Create subplans for major components using _subplan suffix (e.g. feature_subplan1.md)

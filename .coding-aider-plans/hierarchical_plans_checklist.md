@@ -35,5 +35,7 @@
     - [x] Add an action to refine an existing plan
         - [x] The action should be triggered by a button in the PlanViewer
         - [x] A dialog should be displayed with an input field for a user prompt what to refine in the plan
-        - [ ] Depending on the user input, the plan should be refined and possibly extended to a hierarchical plan
-            - This should be done using an appropriate Prompt for the Aider command (compare AiderPlanPromptService)
+        - [x] Depending on the user input, the plan should be refined and possibly extended to a hierarchical plan
+            - [x] Added appropriate prompt handling in AiderPlanPromptService
+            - [x] Implemented plan refinement dialog
+            - [x] Added support for creating subplans based on user input
