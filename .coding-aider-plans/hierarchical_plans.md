@@ -27,6 +27,9 @@ Currently, plans are flat structures without support for hierarchical relationsh
 - UI should clearly show plan hierarchies
 - Existing plan file structure (.md, _checklist.md, _context.yaml) should be maintained
 - Plan references should use relative paths within the .coding-aider-plans directory
+- Subplans should use _subplan suffix in their filenames (e.g. feature_subplan1.md)
+- Each subplan maintains its own checklist and context.yaml files
+- Parent plans track overall progress while subplans focus on specific components
 
 ## References
 [Checklist](hierarchical_plans_checklist.md)

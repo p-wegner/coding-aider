@@ -25,11 +25,11 @@
   - [x] Add support for continuing parent plans
   - [x] Update progress tracking for hierarchical structures
 
-- [ ] Plan Creation and Management
-  - [ ] Add support for creating nested plans from single prompt
-  - [ ] Implement plan refinement into subplans
-  - [ ] Update file naming conventions for nested plans
-  - [ ] Ensure proper context.yaml handling for nested plans
+- [x] Plan Creation and Management
+  - [x] Add support for creating nested plans from single prompt
+  - [x] Implement plan refinement into subplans
+  - [x] Update file naming conventions for nested plans
+  - [x] Ensure proper context.yaml handling for nested plans
 
 - [ ] Testing and Documentation
   - [ ] Add tests for hierarchical plan structures
