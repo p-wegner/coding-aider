@@ -70,80 +70,58 @@ class AiderPlanService(private val project: Project) {
     private fun processMarkdownReferences(content: String, plansDir: File): String {
         val referencePattern = Regex("""\[.*?\]\((.*?)(?:\s.*?)?\)""")
         val processedFiles = mutableSetOf<String>()
-        val planRefs = mutableMapOf<String, AiderPlan>()
-        val maxDepth = 5 // Limit recursion depth
-        val processedContent = StringBuilder()
+        val maxDepth = 3 // Reduced max depth
         
-        fun processReferences(text: String, currentFile: String, depth: Int = 0) {
+        fun processReference(referencePath: String, depth: Int): String {
             if (depth >= maxDepth) {
-                processedContent.append("\n<!-- Max reference depth ($maxDepth) reached -->")
-                return
+                return "\n<!-- Max reference depth ($maxDepth) reached -->\n"
             }
             
-            if (currentFile in processedFiles) {
-                processedContent.append("\n<!-- Circular reference detected to $currentFile -->")
-                return
+            val referenceFile = File(plansDir, referencePath)
+            if (!referenceFile.exists() || referenceFile.extension != "md") {
+                return "[$referencePath]($referencePath)"
             }
             
-            processedFiles.add(currentFile)
+            val absolutePath = referenceFile.absolutePath
+            if (absolutePath in processedFiles) {
+                return "\n<!-- Circular reference detected to $referencePath -->\n"
+            }
             
-            var lastIndex = 0
-            referencePattern.findAll(text).forEach { matchResult ->
-                // Add text before the match
-                processedContent.append(text.substring(lastIndex, matchResult.range.first))
-                
-                try {
-                    val referencePath = matchResult.groupValues[1].trim()
-                    if (referencePath.isBlank()) {
-                        processedContent.append(matchResult.value)
-                    } else {
-                        val referenceFile = File(plansDir, referencePath)
-                        if (!referenceFile.exists() || referenceFile.extension != "md") {
-                            processedContent.append(matchResult.value)
-                        } else {
-                            val absolutePath = referenceFile.absolutePath
-                            if (!referenceFile.nameWithoutExtension.endsWith("_checklist")) {
-                                val referencedPlan = planRefs.getOrPut(absolutePath) {
-                                    loadPlanFromFile(referenceFile) ?: return@forEach
-                                }
-                                
-                                val referencedContent = referenceFile.readText().takeIf { it.isNotBlank() } 
-                                    ?: return@forEach
-                                
-                                processedContent.append("""
-                                    |<!-- Referenced Plan: ${referenceFile.nameWithoutExtension} -->
-                                    |<!-- Status: ${if (referencedPlan.isPlanComplete()) "Complete" else "In Progress"} -->
-                                    |<!-- Progress: ${referencedPlan.totalChecklistItems() - referencedPlan.openChecklistItems().size}/${referencedPlan.totalChecklistItems()} items completed -->
-                                    |
-                                """.trimMargin())
-                                
-                                processReferences(referencedContent, absolutePath, depth + 1)
-                            } else {
-                                try {
-                                    processedContent.append("\n${referenceFile.readText()}\n")
-                                } catch (e: Exception) {
-                                    processedContent.append("\n<!-- Error reading checklist file: ${e.message} -->\n")
-                                }
-                            }
-                        }
+            processedFiles.add(absolutePath)
+            
+            return try {
+                if (referenceFile.nameWithoutExtension.endsWith("_checklist")) {
+                    referenceFile.readText()
+                } else {
+                    val fileContent = referenceFile.readText()
+                    val summary = """
+                        |<!-- Referenced Plan: ${referenceFile.nameWithoutExtension} -->
+                        |<!-- Status: In Progress -->
+                        |
+                        |$fileContent
+                    """.trimMargin()
+                    
+                    // Process nested references
+                    referencePattern.replace(summary) { match ->
+                        val nestedPath = match.groupValues[1].trim()
+                        if (nestedPath.isBlank()) match.value
+                        else processReference(nestedPath, depth + 1)
                     }
-                } catch (e: Exception) {
-                    processedContent.append("\n<!-- Error processing reference: ${e.message} -->\n")
                 }
-                lastIndex = matchResult.range.last + 1
+            } catch (e: Exception) {
+                "\n<!-- Error reading referenced file: ${e.message} -->\n"
+            } finally {
+                processedFiles.remove(absolutePath)
             }
-            
-            // Add remaining text
-            if (lastIndex < text.length) {
-                processedContent.append(text.substring(lastIndex))
-            }
-            
-            processedFiles.remove(currentFile)
         }
         
         return try {
-            processReferences(content, "root", 0)
-            processedContent.toString()
+            // Process top-level references
+            referencePattern.replace(content) { match ->
+                val path = match.groupValues[1].trim()
+                if (path.isBlank()) match.value
+                else processReference(path, 0)
+            }
         } catch (e: Exception) {
             """
             |<!-- Error processing markdown references: ${e.message} -->
