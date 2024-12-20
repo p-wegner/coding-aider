@@ -21,6 +21,7 @@ import de.andrena.codingaider.inputdialog.AiderInputDialog
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.outputview.CustomMarkdownViewer
 import de.andrena.codingaider.services.plans.AiderPlan
+import de.andrena.codingaider.services.plans.AiderPlanPromptService
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.services.plans.ContinuePlanService
 import de.andrena.codingaider.utils.FileRefresher
@@ -269,7 +270,7 @@ class PlanViewer(private val project: Project) {
                         selectedPlan.allFiles,
                         refinementPrompt,
                         project,
-                        AiderMode.STRUCTURED
+                        AiderMode.NORMAL
                     )
                     AiderAction.executeAiderActionWithCommandData(project, commandData)
                 }
