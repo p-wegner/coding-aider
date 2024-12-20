@@ -236,9 +236,15 @@ class AiderPlanService(private val project: Project) {
                             childPlans = plan.childPlans + updatedChildPlan
                         )
                         
-                        // Replace plans in list with updated versions
-                        allPlans[allPlans.indexOf(plan)] = updatedParentPlan
-                        allPlans[allPlans.indexOf(referencedPlan)] = updatedChildPlan
+                        // Safely update plans in list
+                        val parentIndex = allPlans.indexOf(plan)
+                        val childIndex = allPlans.indexOf(referencedPlan)
+                        if (parentIndex >= 0) {
+                            allPlans[parentIndex] = updatedParentPlan
+                        }
+                        if (childIndex >= 0) {
+                            allPlans[childIndex] = updatedChildPlan
+                        }
                     }
                 }
             }
