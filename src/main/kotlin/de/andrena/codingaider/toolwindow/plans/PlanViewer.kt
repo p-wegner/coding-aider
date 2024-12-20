@@ -102,13 +102,13 @@ class PlanViewer(private val project: Project) {
                 val prefix = buildString {
                     var current: AiderPlan? = value
                     while (current?.parentPlan != null) {
-                        append("    ") // Increased indentation for better visibility
+                        append("│   ") // Vertical line for better hierarchy visualization
                         current = current.parentPlan
                     }
                     if (value.childPlans.isNotEmpty()) {
-                        append("▼ ") // Add dropdown indicator for plans with children
+                        append("├─▼ ") // Tree branch with dropdown for parent plans
                     } else if (value.parentPlan != null) {
-                        append("└ ") // Add branch indicator for child plans
+                        append("└─── ") // End branch for leaf plans
                     }
                 }
                 label.text = prefix + fileName

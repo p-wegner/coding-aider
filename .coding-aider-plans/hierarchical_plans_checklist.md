@@ -14,10 +14,10 @@
   - [ ] Update plan loading to handle hierarchical relationships
 
 - [ ] UI Enhancements
-  - [ ] Modify PlanViewer to show hierarchical structure
-  - [ ] Add indentation or tree view for nested plans
-  - [ ] Update tooltips to show plan hierarchy information
-  - [ ] Add visual indicators for parent/child relationships
+  - [x] Modify PlanViewer to show hierarchical structure
+  - [x] Add indentation or tree view for nested plans
+  - [x] Update tooltips to show plan hierarchy information
+  - [x] Add visual indicators for parent/child relationships
 
 - [ ] Plan Execution Logic
   - [ ] Implement logic to find next executable plan in hierarchy
