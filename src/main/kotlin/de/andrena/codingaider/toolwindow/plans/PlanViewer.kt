@@ -33,22 +33,29 @@ import javax.swing.*
 
 class PlanViewer(private val project: Project) {
     private val plansListModel = DefaultListModel<AiderPlan>()
+    private val expandedPlans = mutableSetOf<String>()
     val plansList = JBList(plansListModel)
 
     init {
         plansList.run {
-            cellRenderer = PlanListCellRenderer(false)
+            cellRenderer = PlanListCellRenderer(false, expandedPlans)
             addMouseListener(object : MouseAdapter() {
                 override fun mouseClicked(e: MouseEvent) {
                     val index = plansList.locationToIndex(e.point)
-                    if (index >= 0 && e.clickCount == 2 && plansList.getCellBounds(index, index)
-                            ?.contains(e.point) == true
-                    ) {
+                    if (index >= 0 && plansList.getCellBounds(index, index)?.contains(e.point) == true) {
                         val plan = plansList.model.getElementAt(index)
-                        plan.mainPlanFile?.let { fileData ->
-                            LocalFileSystem.getInstance().findFileByPath(fileData.filePath)
-                        }?.let {
-                            FileEditorManager.getInstance(project).openFile(it, true)
+                        val planId = plan.mainPlanFile?.filePath ?: return
+                        
+                        // Check if click was in the expand/collapse icon area
+                        if (e.x < (plan.depth * 20) + 40) {
+                            if (plan.childPlans.isNotEmpty()) {
+                                if (expandedPlans.contains(planId)) {
+                                    expandedPlans.remove(planId)
+                                } else {
+                                    expandedPlans.add(planId)
+                                }
+                                updatePlans(project.getService(AiderPlanService::class.java).getAiderPlans())
+                            }
                         }
                     }
                 }
