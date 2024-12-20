@@ -114,6 +114,15 @@ data class AiderPlan(
                 appendLine("• ${child.mainPlanFile?.filePath} (${if (child.isPlanComplete()) "Complete" else "In Progress"})<br>")
             }
         }
+        if (parentPlan != null) {
+            appendLine("<b>Parent Plan:</b> ${parentPlan.mainPlanFile?.filePath}<br>")
+        }
+        if (childPlans.isNotEmpty()) {
+            appendLine("<b>Child Plans:</b><br>")
+            childPlans.forEach { child ->
+                appendLine("• ${child.mainPlanFile?.filePath} (${if (child.isPlanComplete()) "Complete" else "In Progress"})<br>")
+            }
+        }
         appendLine("<br><b>Open Items:</b><br>")
         openChecklistItems().take(5).forEach { item ->
             appendLine("• ${item.description.replace("<", "&lt;").replace(">", "&gt;")}<br>")
