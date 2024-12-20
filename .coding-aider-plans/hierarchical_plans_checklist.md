@@ -1,0 +1,33 @@
+[Coding Aider Plan - Checklist]
+
+# Hierarchical Plans Implementation Checklist
+
+- [ ] Data Structure Updates
+  - [ ] Add parent/child relationship fields to AiderPlan class
+  - [ ] Implement methods for traversing plan hierarchies
+  - [ ] Add support for plan references in markdown files
+  - [ ] Update plan loading to handle hierarchical relationships
+
+- [ ] UI Enhancements
+  - [ ] Modify PlanViewer to show hierarchical structure
+  - [ ] Add indentation or tree view for nested plans
+  - [ ] Update tooltips to show plan hierarchy information
+  - [ ] Add visual indicators for parent/child relationships
+
+- [ ] Plan Execution Logic
+  - [ ] Implement logic to find next executable plan in hierarchy
+  - [ ] Handle completion of child plans
+  - [ ] Add support for continuing parent plans
+  - [ ] Update progress tracking for hierarchical structures
+
+- [ ] Plan Creation and Management
+  - [ ] Add support for creating nested plans from single prompt
+  - [ ] Implement plan refinement into subplans
+  - [ ] Update file naming conventions for nested plans
+  - [ ] Ensure proper context.yaml handling for nested plans
+
+- [ ] Testing and Documentation
+  - [ ] Add tests for hierarchical plan structures
+  - [ ] Update documentation with hierarchy support
+  - [ ] Add examples of nested plan usage
+  - [ ] Document new file naming conventions
