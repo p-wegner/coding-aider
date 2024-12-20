@@ -85,12 +85,23 @@ data class AiderPlan(
     fun createShortTooltip(): String = buildString {
         appendLine("<html><body>")
         appendLine("<b>Plan:</b> ${mainPlanFile?.filePath}<br>")
-        parentPlan?.mainPlanFile?.let { parent ->
-            appendLine("<b>Parent Plan:</b> ${parent.filePath}<br>")
+        
+        // Show full plan hierarchy
+        val ancestors = getAncestors()
+        if (ancestors.isNotEmpty()) {
+            appendLine("<b>Plan Hierarchy:</b><br>")
+            ancestors.reversed().forEachIndexed { index, ancestor ->
+                appendLine("${"&nbsp;".repeat(index * 4)}└ ${ancestor.mainPlanFile?.filePath}<br>")
+            }
+            appendLine("${"&nbsp;".repeat(ancestors.size * 4)}└ ${mainPlanFile?.filePath} (Current)<br>")
         }
+        
         if (childPlans.isNotEmpty()) {
-            appendLine("<b>Child Plans:</b> ${childPlans.size}<br>")
+            appendLine("<br><b>Child Plans:</b> ${childPlans.size}<br>")
             appendLine("<b>Child Plans Status:</b> ${childPlans.count { it.isPlanComplete() }}/${childPlans.size} completed<br>")
+            childPlans.forEach { child ->
+                appendLine("${"&nbsp;".repeat(4)}└ ${child.mainPlanFile?.filePath} (${if (child.isPlanComplete()) "Complete" else "In Progress"})<br>")
+            }
         }
         appendLine("<b>Status:</b> ${if (isPlanComplete()) "Complete" else "In Progress"}<br>")
         val checkedItems = totalChecklistItems() - openChecklistItems().size
