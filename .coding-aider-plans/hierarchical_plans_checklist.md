@@ -10,7 +10,7 @@
     - Added getAncestors method
     - Added isDescendantOf method
     - Added getNextUncompletedPlan method
-  - [ ] Add support for plan references in markdown files
+  - [x] Add support for plan references in markdown files
   - [ ] Update plan loading to handle hierarchical relationships
 
 - [ ] UI Enhancements

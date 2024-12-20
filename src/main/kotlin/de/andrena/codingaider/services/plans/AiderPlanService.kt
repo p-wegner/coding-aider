@@ -70,20 +70,45 @@ class AiderPlanService(private val project: Project) {
     private fun processMarkdownReferences(content: String, plansDir: File): String {
         val referencePattern = Regex("""\[.*?\]\((.*?)(?:\s.*?)?\)""")
         val processedFiles = mutableSetOf<String>()
+        val planRefs = mutableMapOf<String, AiderPlan>()
         
-        fun processReferences(text: String, currentFile: String): String {
+        fun processReferences(text: String, currentFile: String, depth: Int = 0): String {
+            if (depth > 10) return text // Prevent deep recursion
             if (currentFile in processedFiles) {
-                return text // Prevent circular references
+                return "<!-- Circular reference detected to $currentFile -->"
             }
             processedFiles.add(currentFile)
             
             return text.replace(referencePattern) { matchResult ->
                 val referencePath = matchResult.groupValues[1]
                 val referenceFile = File(plansDir, referencePath)
+                
                 if (referenceFile.exists() && referenceFile.extension == "md") {
-                    val referencedContent = referenceFile.readText()
-                    // Process nested references
-                    "\n${processReferences(referencedContent, referenceFile.absolutePath)}\n"
+                    val absolutePath = referenceFile.absolutePath
+                    
+                    // Check if it's a plan file (not a checklist)
+                    if (!referenceFile.nameWithoutExtension.endsWith("_checklist")) {
+                        // Load referenced plan if not already loaded
+                        val referencedPlan = planRefs.getOrPut(absolutePath) {
+                            loadPlanFromFile(referenceFile) ?: return@replace matchResult.value
+                        }
+                        
+                        // Process the referenced content with increased depth
+                        val referencedContent = referenceFile.readText()
+                        val processedContent = processReferences(referencedContent, absolutePath, depth + 1)
+                        
+                        // Add metadata about the reference
+                        """
+                        |<!-- Referenced Plan: ${referenceFile.nameWithoutExtension} -->
+                        |<!-- Status: ${if (referencedPlan.isPlanComplete()) "Complete" else "In Progress"} -->
+                        |<!-- Progress: ${referencedPlan.totalChecklistItems() - referencedPlan.openChecklistItems().size}/${referencedPlan.totalChecklistItems()} items completed -->
+                        |
+                        |$processedContent
+                        """.trimMargin()
+                    } else {
+                        // Just include checklist content without processing
+                        "\n${referenceFile.readText()}\n"
+                    }
                 } else {
                     matchResult.value
                 }
