@@ -72,69 +72,78 @@ class AiderPlanService(private val project: Project) {
         val processedFiles = mutableSetOf<String>()
         val planRefs = mutableMapOf<String, AiderPlan>()
         val maxDepth = 5 // Limit recursion depth
+        val processedContent = StringBuilder()
         
-        fun processReferences(text: String, currentFile: String, depth: Int = 0): String {
-            // Check recursion depth
+        fun processReferences(text: String, currentFile: String, depth: Int = 0) {
             if (depth >= maxDepth) {
-                return text + "\n<!-- Max reference depth ($maxDepth) reached -->"
+                processedContent.append("\n<!-- Max reference depth ($maxDepth) reached -->")
+                return
             }
             
-            // Check for circular references
             if (currentFile in processedFiles) {
-                return text + "\n<!-- Circular reference detected to $currentFile -->"
+                processedContent.append("\n<!-- Circular reference detected to $currentFile -->")
+                return
             }
+            
             processedFiles.add(currentFile)
             
-            try {
-                return text.replace(referencePattern) { matchResult ->
-                    try {
-                        val referencePath = matchResult.groupValues[1].trim()
-                        if (referencePath.isBlank()) return@replace matchResult.value
-                        
+            var lastIndex = 0
+            referencePattern.findAll(text).forEach { matchResult ->
+                // Add text before the match
+                processedContent.append(text.substring(lastIndex, matchResult.range.first))
+                
+                try {
+                    val referencePath = matchResult.groupValues[1].trim()
+                    if (referencePath.isBlank()) {
+                        processedContent.append(matchResult.value)
+                    } else {
                         val referenceFile = File(plansDir, referencePath)
                         if (!referenceFile.exists() || referenceFile.extension != "md") {
-                            return@replace matchResult.value
-                        }
-                        
-                        val absolutePath = referenceFile.absolutePath
-                        if (!referenceFile.nameWithoutExtension.endsWith("_checklist")) {
-                            // Load referenced plan if not already loaded
-                            val referencedPlan = planRefs.getOrPut(absolutePath) {
-                                loadPlanFromFile(referenceFile) ?: return@replace matchResult.value
-                            }
-                            
-                            // Process the referenced content with increased depth
-                            val referencedContent = referenceFile.readText().takeIf { it.isNotBlank() } 
-                                ?: return@replace matchResult.value
-                            
-                            val processedContent = processReferences(referencedContent, absolutePath, depth + 1)
-                            
-                            """
-                            |<!-- Referenced Plan: ${referenceFile.nameWithoutExtension} -->
-                            |<!-- Status: ${if (referencedPlan.isPlanComplete()) "Complete" else "In Progress"} -->
-                            |<!-- Progress: ${referencedPlan.totalChecklistItems() - referencedPlan.openChecklistItems().size}/${referencedPlan.totalChecklistItems()} items completed -->
-                            |
-                            |$processedContent
-                            """.trimMargin()
+                            processedContent.append(matchResult.value)
                         } else {
-                            // Just include checklist content without processing
-                            try {
-                                "\n${referenceFile.readText()}\n"
-                            } catch (e: Exception) {
-                                "\n<!-- Error reading checklist file: ${e.message} -->\n"
+                            val absolutePath = referenceFile.absolutePath
+                            if (!referenceFile.nameWithoutExtension.endsWith("_checklist")) {
+                                val referencedPlan = planRefs.getOrPut(absolutePath) {
+                                    loadPlanFromFile(referenceFile) ?: return@forEach
+                                }
+                                
+                                val referencedContent = referenceFile.readText().takeIf { it.isNotBlank() } 
+                                    ?: return@forEach
+                                
+                                processedContent.append("""
+                                    |<!-- Referenced Plan: ${referenceFile.nameWithoutExtension} -->
+                                    |<!-- Status: ${if (referencedPlan.isPlanComplete()) "Complete" else "In Progress"} -->
+                                    |<!-- Progress: ${referencedPlan.totalChecklistItems() - referencedPlan.openChecklistItems().size}/${referencedPlan.totalChecklistItems()} items completed -->
+                                    |
+                                """.trimMargin())
+                                
+                                processReferences(referencedContent, absolutePath, depth + 1)
+                            } else {
+                                try {
+                                    processedContent.append("\n${referenceFile.readText()}\n")
+                                } catch (e: Exception) {
+                                    processedContent.append("\n<!-- Error reading checklist file: ${e.message} -->\n")
+                                }
                             }
                         }
-                    } catch (e: Exception) {
-                        "\n<!-- Error processing reference: ${e.message} -->\n"
                     }
+                } catch (e: Exception) {
+                    processedContent.append("\n<!-- Error processing reference: ${e.message} -->\n")
                 }
-            } finally {
-                processedFiles.remove(currentFile) // Clean up processed files set
+                lastIndex = matchResult.range.last + 1
             }
+            
+            // Add remaining text
+            if (lastIndex < text.length) {
+                processedContent.append(text.substring(lastIndex))
+            }
+            
+            processedFiles.remove(currentFile)
         }
         
         return try {
-            processReferences(content, "root")
+            processReferences(content, "root", 0)
+            processedContent.toString()
         } catch (e: Exception) {
             """
             |<!-- Error processing markdown references: ${e.message} -->
