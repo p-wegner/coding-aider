@@ -69,15 +69,28 @@ class AiderPlanService(private val project: Project) {
 
     private fun processMarkdownReferences(content: String, plansDir: File): String {
         val referencePattern = Regex("""\[.*?\]\((.*?)(?:\s.*?)?\)""")
-        return content.replace(referencePattern) { matchResult ->
-            val referencePath = matchResult.groupValues[1]
-            val referenceFile = File(plansDir, referencePath)
-            if (referenceFile.exists() && referenceFile.extension == "md") {
-                "\n${referenceFile.readText()}\n"
-            } else {
-                matchResult.value
+        val processedFiles = mutableSetOf<String>()
+        
+        fun processReferences(text: String, currentFile: String): String {
+            if (currentFile in processedFiles) {
+                return text // Prevent circular references
+            }
+            processedFiles.add(currentFile)
+            
+            return text.replace(referencePattern) { matchResult ->
+                val referencePath = matchResult.groupValues[1]
+                val referenceFile = File(plansDir, referencePath)
+                if (referenceFile.exists() && referenceFile.extension == "md") {
+                    val referencedContent = referenceFile.readText()
+                    // Process nested references
+                    "\n${processReferences(referencedContent, referenceFile.absolutePath)}\n"
+                } else {
+                    matchResult.value
+                }
             }
         }
+        
+        return processReferences(content, "root")
     }
 
     fun getContextFilesForPlans(files: List<FileData>): List<FileData> {
