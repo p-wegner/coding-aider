@@ -16,7 +16,7 @@ class AiderPlanPromptService(private val project: Project) {
            - Goals
            - Additional Notes
            - References
-        SYSTEM 2. feature_name_checklist.md - Progress tracking with [ ] checkboxes
+        SYSTEM 2. feature_name_checklist.md - Progress tracking with - [ ] checkboxes
         SYSTEM 3. feature_name_context.yaml - Lists required implementation files
     """.trimIndent()
 
@@ -31,11 +31,12 @@ class AiderPlanPromptService(private val project: Project) {
            <!-- SUBPLAN:mainplan_subfeature -->
            [Subplan: Subfeature Name](mainplan_subfeature.md)
            <!-- END_SUBPLAN -->
-        SYSTEM 4. Add to main checklist: [ ] Complete subfeature implementation
+        SYSTEM 4. Add to main checklist: - [ ] Complete subfeature implementation
         SYSTEM 5. Subplan checklists need:
-           - Atomic tasks with [ ] checkboxes
+           - Atomic tasks with - [ ] checkboxes
            - Implementation-specific details
            - Clear dependency markers
+        SYSTEM 6. Ensure the main plan checklist properly delegates actual implementation to the subplans
     """.trimIndent()
 
     fun createPlanRefinementPrompt(plan: AiderPlan, refinementRequest: String): String {
@@ -48,7 +49,7 @@ class AiderPlanPromptService(private val project: Project) {
             
             $planFileStructurePrompt
             
-            $STRUCTURED_MODE_MARKER Continue with plan refinement but don't start implementing the changes. Focus on changes to plan files.
+            $STRUCTURED_MODE_MESSAGE_MARKER Continue with plan refinement but don't start implementing the changes. Focus on changes to plan files.
         """.trimIndent()
 
         return basePrompt
@@ -65,6 +66,7 @@ class AiderPlanPromptService(private val project: Project) {
             SYSTEM File Requirements:
             1. Start plans with $AIDER_PLAN_MARKER
             2. Start checklists with $AIDER_PLAN_CHECKLIST_MARKER
+            3. Checklist items should be atomic and use markdown checkboxes (i.e. - [ ] Taskdescription)
             3. Use consistent naming: feature_name.md, _checklist.md, _context.yaml
             4. Cross-reference files using markdown links
             
@@ -88,6 +90,7 @@ class AiderPlanPromptService(private val project: Project) {
         val planSpecificPrompt = firstPlan?.let {
             """
             SYSTEM A plan already exists. Continue implementing the existing plan $relativePlanPath and its checklist step by step.
+            SYSTEM In case subplans are referenced, continue by implementing the subplans that match the current progress of the main plan. 
             SYSTEM Start implementing before updating the checklist. If no changes are done, don't update the checklist.
             SYSTEM In that case inform the user why no changes were made.
             SYSTEM New files that are not the plan and are not part of the checklist should be created in a suitable location and added to the context.yaml.
@@ -108,18 +111,20 @@ class AiderPlanPromptService(private val project: Project) {
             3. Different team members could work on parts independently
             4. A component needs its own detailed planning
             5. Changes affect more than 3-4 files
-            
+            $subplanGuidancePrompt
             SYSTEM Create separate checklist and context.yaml files for the main plan and each subplan to track the progress of implementing the plan.            
-            SYSTEM For the context.yaml, consider all provided files and add relevant files to the context.yaml.
+            SYSTEM For the context.yaml, consider all provided files and add relevant files to the affected context.yaml.
             SYSTEM Only proceed with changes after creating and committing the plan files.
             SYSTEM Ensure that you stick to the defined editing format when creating or editing files, e.g. only have the filepath above search blocks.
+            SYSTEM Make sure to commit the creation of all plan files even if you think you need additional files to implement the plan.
+            SYSTEM Don't start the implementation until the plan files are committed.
             """
 
         return """
 ${basePrompt.trimStartingWhiteSpaces()}
 ${planSpecificPrompt.trimStartingWhiteSpaces()}
-$STRUCTURED_MODE_MARKER ${commandData.message}
-            """.trimStartingWhiteSpaces()
+$STRUCTURED_MODE_MESSAGE_MARKER ${commandData.message} $STRUCTURED_MODE_MESSAGE_END_MARKER
+               """.trimStartingWhiteSpaces()
     }
 
     fun filterPlanRelevantFiles(files: List<FileData>): List<FileData> =
@@ -138,6 +143,7 @@ $STRUCTURED_MODE_MARKER ${commandData.message}
         const val AIDER_PLAN_MARKER = "[Coding Aider Plan]"
         const val AIDER_PLAN_CHECKLIST_MARKER = "[Coding Aider Plan - Checklist]"
         const val AIDER_PLANS_FOLDER = ".coding-aider-plans"
-        const val STRUCTURED_MODE_MARKER = "[STRUCTURED MODE]"
+        const val STRUCTURED_MODE_MESSAGE_MARKER = "<STRUCTURED MODE>"
+        const val STRUCTURED_MODE_MESSAGE_END_MARKER = "</STRUCTURED MODE>"
     }
 }
