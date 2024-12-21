@@ -29,7 +29,6 @@ class AiderSettingsConfigurable() : Configurable {
         }
     }
     private val additionalArgsField = JBTextField()
-    private val isShellModeCheckBox = JBCheckBox("Use Shell Mode by default")
     private val lintCmdField = JBTextField()
     private val showGitComparisonToolCheckBox = JBCheckBox("Show git comparison tool after execution")
     private val activateIdeExecutorAfterWebcrawlCheckBox =
@@ -44,7 +43,6 @@ class AiderSettingsConfigurable() : Configurable {
     private val includeChangeContextCheckBox = JBCheckBox("Include change context in commit messages")
     private val autoCommitsComboBox = ComboBox(arrayOf("Default", "On", "Off"))
     private val dirtyCommitsComboBox = ComboBox(arrayOf("Default", "On", "Off"))
-    private val useStructuredModeCheckBox = JBCheckBox("Use Structured Mode")
     private val useSidecarModeCheckBox = JBCheckBox("Use Sidecar Mode (Experimental)")
     private val sidecarModeVerboseCheckBox = JBCheckBox("Enable verbose logging for sidecar mode")
     private val enableDocumentationLookupCheckBox = JBCheckBox("Enable documentation lookup")
@@ -76,7 +74,6 @@ class AiderSettingsConfigurable() : Configurable {
                         BrowserUtil.browse("https://aider.chat/docs/config/options.html")
                     }
                 }
-                row { cell(isShellModeCheckBox) }
                 row { cell(alwaysIncludeOpenFilesCheckBox) }
             }
 
@@ -129,9 +126,6 @@ class AiderSettingsConfigurable() : Configurable {
             }
 
             group("Advanced Settings") {
-                row {
-                    cell(useStructuredModeCheckBox)
-                }
                 row {
                     cell(useSidecarModeCheckBox).component.apply {
                         toolTipText =
@@ -236,7 +230,6 @@ class AiderSettingsConfigurable() : Configurable {
         return useYesFlagCheckBox.isSelected != settings.useYesFlag ||
                 llmComboBox.selectedItem.asSelectedItemName() != settings.llm ||
                 additionalArgsField.text != settings.additionalArgs ||
-                isShellModeCheckBox.isSelected != settings.isShellMode ||
                 lintCmdField.text != settings.lintCmd ||
                 showGitComparisonToolCheckBox.isSelected != settings.showGitComparisonTool ||
                 activateIdeExecutorAfterWebcrawlCheckBox.isSelected != settings.activateIdeExecutorAfterWebcrawl ||
@@ -250,7 +243,6 @@ class AiderSettingsConfigurable() : Configurable {
                 includeChangeContextCheckBox.isSelected != settings.includeChangeContext ||
                 autoCommitsComboBox.selectedIndex != settings.autoCommits.toIndex() ||
                 dirtyCommitsComboBox.selectedIndex != settings.dirtyCommits.toIndex() ||
-                useStructuredModeCheckBox.isSelected != settings.useStructuredMode ||
                 useSidecarModeCheckBox.isSelected != settings.useSidecarMode ||
                 sidecarModeVerboseCheckBox.isSelected != settings.sidecarModeVerbose ||
                 enableDocumentationLookupCheckBox.isSelected != settings.enableDocumentationLookup ||
@@ -272,7 +264,6 @@ class AiderSettingsConfigurable() : Configurable {
         settings.useYesFlag = useYesFlagCheckBox.isSelected
         settings.llm = llmComboBox.selectedItem.asSelectedItemName()
         settings.additionalArgs = additionalArgsField.text
-        settings.isShellMode = isShellModeCheckBox.isSelected
         settings.lintCmd = lintCmdField.text
         settings.showGitComparisonTool = showGitComparisonToolCheckBox.isSelected
         settings.activateIdeExecutorAfterWebcrawl = activateIdeExecutorAfterWebcrawlCheckBox.isSelected
@@ -287,7 +278,6 @@ class AiderSettingsConfigurable() : Configurable {
         settings.includeChangeContext = includeChangeContextCheckBox.isSelected
         settings.autoCommits = AiderSettings.AutoCommitSetting.fromIndex(autoCommitsComboBox.selectedIndex)
         settings.dirtyCommits = AiderSettings.DirtyCommitSetting.fromIndex(dirtyCommitsComboBox.selectedIndex)
-        settings.useStructuredMode = useStructuredModeCheckBox.isSelected
         settings.useSidecarMode = useSidecarModeCheckBox.isSelected
         settings.sidecarModeVerbose = sidecarModeVerboseCheckBox.isSelected
         settings.enableDocumentationLookup = enableDocumentationLookupCheckBox.isSelected
@@ -306,7 +296,6 @@ class AiderSettingsConfigurable() : Configurable {
         useYesFlagCheckBox.isSelected = settings.useYesFlag
         llmComboBox.selectedItem = apiKeyChecker.getLlmSelectionForName(settings.llm)
         additionalArgsField.text = settings.additionalArgs
-        isShellModeCheckBox.isSelected = settings.isShellMode
         lintCmdField.text = settings.lintCmd
         showGitComparisonToolCheckBox.isSelected = settings.showGitComparisonTool
         activateIdeExecutorAfterWebcrawlCheckBox.isSelected = settings.activateIdeExecutorAfterWebcrawl
@@ -320,7 +309,6 @@ class AiderSettingsConfigurable() : Configurable {
         includeChangeContextCheckBox.isSelected = settings.includeChangeContext
         autoCommitsComboBox.selectedIndex = settings.autoCommits.toIndex()
         dirtyCommitsComboBox.selectedIndex = settings.dirtyCommits.toIndex()
-        useStructuredModeCheckBox.isSelected = settings.useStructuredMode
         useSidecarModeCheckBox.isSelected = settings.useSidecarMode
         sidecarModeVerboseCheckBox.isSelected = settings.sidecarModeVerbose
         sidecarModeVerboseCheckBox.isEnabled = settings.useSidecarMode

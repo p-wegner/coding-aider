@@ -6,13 +6,11 @@ object AiderDefaults {
     const val ENABLE_DOCUMENTATION_LOOKUP = false
     const val ALWAYS_INCLUDE_OPEN_FILES = false
     const val ALWAYS_INCLUDE_PLAN_CONTEXT_FILES = true
-    const val USE_STRUCTURED_MODE = false
     const val ENABLE_AUTO_PLAN_CONTINUE = true
     const val MARKDOWN_DIALOG_AUTOCLOSE_DELAY_IN_S: Int = 10
     const val USE_YES_FLAG = true
     const val LLM = ""
     const val ADDITIONAL_ARGS = ""
-    const val IS_SHELL_MODE = false
     const val LINT_CMD = ""
     const val SHOW_GIT_COMPARISON_TOOL = true
     const val ACTIVATE_IDE_EXECUTOR_AFTER_WEBCRAWL = false

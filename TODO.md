@@ -1,2 +1,1 @@
 - [ ] Fix duplicate files in context view
-- [ ] remove settings for shell and structured mode

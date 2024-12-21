@@ -26,7 +26,6 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var useYesFlag: Boolean = AiderDefaults.USE_YES_FLAG,
         var llm: String = AiderDefaults.LLM,
         var additionalArgs: String = AiderDefaults.ADDITIONAL_ARGS,
-        var isShellMode: Boolean = AiderDefaults.IS_SHELL_MODE,
         var lintCmd: String = AiderDefaults.LINT_CMD,
         var showGitComparisonTool: Boolean = AiderDefaults.SHOW_GIT_COMPARISON_TOOL,
         var activateIdeExecutorAfterWebcrawl: Boolean = AiderDefaults.ACTIVATE_IDE_EXECUTOR_AFTER_WEBCRAWL,
@@ -41,7 +40,6 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var includeChangeContext: Boolean = AiderDefaults.INCLUDE_CHANGE_CONTEXT,
         var autoCommits: AutoCommitSetting = AiderDefaults.AUTO_COMMITS,
         var dirtyCommits: DirtyCommitSetting = AiderDefaults.DIRTY_COMMITS,
-        var useStructuredMode: Boolean = AiderDefaults.USE_STRUCTURED_MODE,
         var useSidecarMode: Boolean = AiderDefaults.USE_SIDECAR_MODE,
         var sidecarModeVerbose: Boolean = false, // Enable verbose logging for sidecar
         var alwaysIncludeOpenFiles: Boolean = AiderDefaults.ALWAYS_INCLUDE_OPEN_FILES,
@@ -52,7 +50,6 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var enableAutoPlanContinue: Boolean = AiderDefaults.ENABLE_AUTO_PLAN_CONTINUE,
         var optionsPanelCollapsed: Boolean = true,
     )
-
 
 
     var summarizedOutput: Boolean
@@ -106,11 +103,6 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
             myState.additionalArgs = value
         }
 
-    var isShellMode: Boolean
-        get() = myState.isShellMode
-        set(value) {
-            myState.isShellMode = value
-        }
 
     var lintCmd: String
         get() = myState.lintCmd
@@ -222,11 +214,6 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
             myState.alwaysIncludePlanContextFiles = value
         }
 
-    var useStructuredMode: Boolean
-        get() = myState.useStructuredMode
-        set(value) {
-            myState.useStructuredMode = value
-        }
 
     enum class AutoCommitSetting {
         ON, OFF, DEFAULT;
@@ -252,7 +239,6 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         set(value) {
             myState.dockerImageTag = value
         }
-
 
 
     var aiderExecutablePath: String

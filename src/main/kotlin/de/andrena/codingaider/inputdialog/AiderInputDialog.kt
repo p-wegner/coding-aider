@@ -94,9 +94,7 @@ class AiderInputDialog(
 
     private val projectSettings = AiderProjectSettings.getInstance(project)
     private val optionsPanel = AiderOptionsPanel(apiKeyChecker = apiKeyChecker)
-    private var initialMode = if (settings.isShellMode) AiderMode.SHELL
-    else if (settings.useStructuredMode) AiderMode.STRUCTURED
-    else AiderMode.NORMAL
+    private var initialMode = AiderMode.NORMAL
 
     private var modeSegmentedButton: SegmentedButton<AiderMode>? = null
     fun selectMode(mode: AiderMode) {
