@@ -98,6 +98,14 @@ class AiderPlanPromptService(private val project: Project) {
             SYSTEM No plan exists yet. Write a detailed description of the requested feature and the needed changes.
             SYSTEM The main plan file should include these sections: ## Overview, ## Problem Description, ## Goals, ## Additional Notes and Constraints, ## References 
             SYSTEM Save the plan in a new markdown file with a suitable name in the $AIDER_PLANS_FOLDER directory.
+            
+            SYSTEM Create subplans when:
+            1. A feature requires changes across multiple distinct components
+            2. Implementation involves separate logical phases
+            3. Different team members could work on parts independently
+            4. A component needs its own detailed planning
+            5. Changes affect more than 3-4 files
+            
             SYSTEM Create separate checklist and context.yaml files for the main plan and each subplan to track the progress of implementing the plan.            
             SYSTEM For the context.yaml, consider all provided files and add relevant files to the context.yaml.
             SYSTEM Only proceed with changes after creating and committing the plan files.
