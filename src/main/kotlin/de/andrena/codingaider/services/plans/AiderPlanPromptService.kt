@@ -38,7 +38,7 @@ class AiderPlanPromptService(private val project: Project) {
 
     fun createPlanRefinementPrompt(plan: AiderPlan, refinementRequest: String): String {
         val basePrompt = """
-            SYSTEM You are refining an existing plan. The plan should be extended or modified based on the refinement request.
+            SYSTEM You are refining an existing plan ${plan.plan}. The plan should be extended or modified based on the refinement request.
             
             $subplanGuidancePrompt
             
@@ -57,7 +57,22 @@ class AiderPlanPromptService(private val project: Project) {
 
         val existingPlan = filterPlanRelevantFiles(files)
 
-        val contextYamlFormatPrompt = """
+        val basePrompt = """
+            SYSTEM Instead of making changes to the code, markdown files should be used to track progress on the feature.
+            SYSTEM A plan consists of three files:
+            SYSTEM 1. A detailed description of the requested feature
+            SYSTEM 2. A separate file with a checklist for tracking the progress
+            SYSTEM 3. A context.yaml file listing all relevant files needed for implementing the plan
+            SYSTEM The file should be saved in the $AIDER_PLANS_FOLDER directory in the project.
+            SYSTEM Always start plans with the line $AIDER_PLAN_MARKER and checklists with $AIDER_PLAN_CHECKLIST_MARKER at the beginning of the file and use this marker in existing files to identify plans and checklists.
+            SYSTEM The plan should focus on high level descriptions of the requested features and major implementation details.
+            SYSTEM The checklist should focus on the required implementation steps on a more fine grained level.
+            SYSTEM The three files should be named consistently:
+            SYSTEM - feature_name.md (plan)
+            SYSTEM - feature_name_checklist.md (checklist)
+            SYSTEM - feature_name_context.yaml (file list)
+            SYSTEM The plan and checklist should reference each other using markdown file references.
+            SYSTEM The context.yaml should list all files that will be needed to implement the plan.
             SYSTEM The context.yaml must follow this format and be kept up to date:
             SYSTEM ---
             SYSTEM files:
@@ -87,15 +102,7 @@ class AiderPlanPromptService(private val project: Project) {
             SYSTEM No plan exists yet. Write a detailed description of the requested feature and the needed changes.
             SYSTEM The main plan file should include these sections: ## Overview, ## Problem Description, ## Goals, ## Additional Notes and Constraints, ## References 
             SYSTEM Save the plan in a new markdown file with a suitable name in the $AIDER_PLANS_FOLDER directory.
-            SYSTEM Create separate checklist and context.yaml files to track the progress of implementing the plan.
-            SYSTEM If refining an existing plan, create a subplan with main plan name as prefix (e.g. mainplan_feature1.md).
-            SYSTEM The subplan should follow the same structure as the main plan but focus on specific components.
-            SYSTEM Reference the subplan from the main plan using markdown links.
-            SYSTEM If the feature is complex, break it down into subplans:
-            SYSTEM - Create a main plan describing the overall feature
-            SYSTEM - Create subplans for major components 
-            SYSTEM - Reference subplans from the main plan using markdown links
-            SYSTEM - Each subplan should have its own checklist and context.yaml files
+            SYSTEM Create separate checklist and context.yaml files for the main plan and each subplan to track the progress of implementing the plan.            
             SYSTEM For the context.yaml, consider all provided files and add relevant files to the context.yaml.
             SYSTEM Only proceed with changes after creating and committing the plan files.
             SYSTEM Ensure that you stick to the defined editing format when creating or editing files, e.g. only have the filepath above search blocks.
