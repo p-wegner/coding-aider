@@ -181,41 +181,54 @@ class PlanViewer(private val project: Project) {
                 val planFile = value.planFiles.firstOrNull()
                 val fileName = planFile?.filePath?.let { File(it).nameWithoutExtension } ?: "Unknown Plan"
 
-                // Calculate tree structure and indentation
+                // Calculate tree structure and indentation with level markers
                 val treePrefix = buildString {
                     val ancestors = value.getAncestors()
+                    val maxDepth = 8 // Maximum recommended nesting depth
                     
                     // Draw vertical lines for each ancestor level
                     ancestors.forEachIndexed { index, ancestor ->
                         val hasNextSibling = ancestor.findSiblingPlans().any { sibling -> 
                             sibling.mainPlanFile?.filePath?.compareTo(ancestor.mainPlanFile?.filePath ?: "") ?: 0 > 0 
                         }
-                        // Use box-drawing characters for better visual hierarchy
-                        append(if (hasNextSibling) "│   " else "    ")
+                        // Add level marker for deep nesting
+                        val levelMarker = if (index >= maxDepth - 2) "⋮" else "│"
+                        append(if (hasNextSibling) "$levelMarker   " else "    ")
                     }
 
                     // Add the current node's connector with proper box-drawing characters
                     val isLastChild = value.parentPlan?.childPlans?.lastOrNull() == value
                     val hasChildren = value.childPlans.isNotEmpty()
+                    val depth = ancestors.size
                     
-                    when {
-                        hasChildren && isLastChild -> append("└─")
-                        hasChildren -> append("├─")
-                        isLastChild -> append("└─")
-                        else -> append("├─")
+                    // Use different connectors for deep nesting
+                    val (horizontalLine, verticalLine) = when {
+                        depth >= maxDepth -> "─" to "⋯"
+                        else -> "─" to "─"
                     }
                     
-                    // Add expand/collapse indicator if has children
+                    when {
+                        hasChildren && isLastChild -> append("└$horizontalLine")
+                        hasChildren -> append("├$horizontalLine")
+                        isLastChild -> append("└$horizontalLine")
+                        else -> append("├$horizontalLine")
+                    }
+                    
+                    // Add expand/collapse indicator with proper alignment
                     if (hasChildren) {
                         val isExpanded = expandedPlans.contains(value.mainPlanFile?.filePath)
-                        append(if (isExpanded) "▾ " else "▸ ")
+                        append(if (isExpanded) " ▾ " else " ▸ ")
                     } else {
-                        append("── ")
+                        append("$verticalLine ")
                     }
                 }
 
-                // Set proper indentation with consistent spacing
-                border = BorderFactory.createEmptyBorder(4, 8 + (value.depth * treeIndentWidth), 4, 8)
+                // Set proper indentation with consistent spacing and level-based adjustments
+                val effectiveDepth = minOf(value.depth, 8) // Cap visual depth
+                val baseIndent = 8
+                val depthIndent = effectiveDepth * treeIndentWidth
+                val levelAdjustment = if (value.depth > 8) 4 else 0 // Extra space for deep nesting indicator
+                border = BorderFactory.createEmptyBorder(4, baseIndent + depthIndent + levelAdjustment, 4, 8)
                 
                 // Set label text with tree prefix and plan name
                 label.text = "$treePrefix$fileName"
