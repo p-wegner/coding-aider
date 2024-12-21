@@ -26,6 +26,7 @@ import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.services.plans.ContinuePlanService
 import de.andrena.codingaider.utils.FileRefresher
 import java.awt.*
+import java.awt.event.ActionEvent
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.io.File
@@ -39,12 +40,12 @@ class PlanViewer(private val project: Project) {
     init {
         plansList.run {
             cellRenderer = PlanListCellRenderer(false, expandedPlans)
-            
+
             // Enable keyboard navigation
             inputMap.put(KeyStroke.getKeyStroke("LEFT"), "collapse")
             inputMap.put(KeyStroke.getKeyStroke("RIGHT"), "expand")
             inputMap.put(KeyStroke.getKeyStroke("ENTER"), "open")
-            
+
             actionMap.put("collapse", object : AbstractAction() {
                 override fun actionPerformed(e: ActionEvent?) {
                     val selectedPlan = selectedValue ?: return
@@ -55,7 +56,7 @@ class PlanViewer(private val project: Project) {
                     }
                 }
             })
-            
+
             actionMap.put("expand", object : AbstractAction() {
                 override fun actionPerformed(e: ActionEvent?) {
                     val selectedPlan = selectedValue ?: return
@@ -66,7 +67,7 @@ class PlanViewer(private val project: Project) {
                     }
                 }
             })
-            
+
             actionMap.put("open", object : AbstractAction() {
                 override fun actionPerformed(e: ActionEvent?) {
                     val selectedPlan = selectedValue ?: return
@@ -78,7 +79,7 @@ class PlanViewer(private val project: Project) {
                     }
                 }
             })
-            
+
             addMouseListener(object : MouseAdapter() {
                 override fun mouseClicked(e: MouseEvent) {
                     val index = plansList.locationToIndex(e.point)
@@ -185,11 +186,11 @@ class PlanViewer(private val project: Project) {
                 val treePrefix = buildString {
                     val ancestors = value.getAncestors()
                     val maxDepth = 8 // Maximum recommended nesting depth
-                    
+
                     // Draw vertical lines for each ancestor level
                     ancestors.forEachIndexed { index, ancestor ->
-                        val hasNextSibling = ancestor.findSiblingPlans().any { sibling -> 
-                            sibling.mainPlanFile?.filePath?.compareTo(ancestor.mainPlanFile?.filePath ?: "") ?: 0 > 0 
+                        val hasNextSibling = ancestor.findSiblingPlans().any { sibling ->
+                            sibling.mainPlanFile?.filePath?.compareTo(ancestor.mainPlanFile?.filePath ?: "") ?: 0 > 0
                         }
                         // Add level marker for deep nesting
                         val levelMarker = if (index >= maxDepth - 2) "⋮" else "│"
@@ -200,26 +201,27 @@ class PlanViewer(private val project: Project) {
                     val isLastChild = value.parentPlan?.childPlans?.lastOrNull() == value
                     val hasChildren = value.childPlans.isNotEmpty()
                     val depth = ancestors.size
-                    
+
+                    data class Markers(val horizontalLine: String, val verticalLine: String, val levelMarker: String)
                     // Use different connectors and markers for deep nesting
                     val (horizontalLine, verticalLine, levelMarker) = when {
-                        depth >= maxDepth -> "─" to "⋯" to "⋮"
-                        depth >= maxDepth - 2 -> "─" to "─" to "┆"
-                        else -> "─" to "─" to "│"
+                        depth >= maxDepth -> Markers("─", "⋯", "⋮")
+                        depth >= maxDepth - 2 -> Markers("─", "─", "┆")
+                        else -> Markers("─", "─", "│")
                     }
-                    
+
                     // Add level marker for deep nesting
                     if (depth >= maxDepth - 2) {
                         append(" $levelMarker ")
                     }
-                    
+
                     when {
                         hasChildren && isLastChild -> append("└$horizontalLine")
                         hasChildren -> append("├$horizontalLine")
                         isLastChild -> append("└$horizontalLine")
                         else -> append("├$horizontalLine")
                     }
-                    
+
                     // Add expand/collapse indicator with proper alignment and spacing
                     if (hasChildren) {
                         val isExpanded = expandedPlans.contains(value.mainPlanFile?.filePath)
@@ -235,7 +237,7 @@ class PlanViewer(private val project: Project) {
                 val depthIndent = effectiveDepth * treeIndentWidth
                 val levelAdjustment = if (value.depth > 8) 4 else 0 // Extra space for deep nesting indicator
                 border = BorderFactory.createEmptyBorder(4, baseIndent + depthIndent + levelAdjustment, 4, 8)
-                
+
                 // Set label text with tree prefix and plan name
                 label.text = "$treePrefix$fileName"
 
@@ -248,7 +250,7 @@ class PlanViewer(private val project: Project) {
 
                 statusIcon.icon = when {
                     value.isPlanComplete() -> AllIcons.Actions.Commit
-                    value.openChecklistItems().isEmpty() && value.childPlans.any { !it.isPlanComplete() } -> 
+                    value.openChecklistItems().isEmpty() && value.childPlans.any { !it.isPlanComplete() } ->
                         AllIcons.General.Warning // Has uncompleted child plans
                     else -> AllIcons.General.BalloonInformation
                 }
