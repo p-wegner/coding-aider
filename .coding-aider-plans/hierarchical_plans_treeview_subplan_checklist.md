@@ -2,15 +2,15 @@
 
 # Tree Visualization Enhancement Checklist
 
-- [ ] Tree Structure Implementation
-    - [ ] Implement proper tree line drawing
-    - [ ] Add vertical connecting lines between levels
-    - [ ] Fix indentation calculation
-    - [ ] Add horizontal connection lines
-    - [ ] Ensure consistent spacing between levels
+- [x] Tree Structure Implementation
+    - [x] Implement proper tree line drawing
+    - [x] Add vertical connecting lines between levels
+    - [x] Fix indentation calculation
+    - [x] Add horizontal connection lines
+    - [x] Ensure consistent spacing between levels
 
-- [ ] Visual Indicators
-    - [ ] Add proper expand/collapse icons
+- [x] Visual Indicators
+    - [x] Add proper expand/collapse icons
     - [ ] Implement hover effects for tree nodes
     - [ ] Add visual indicators for plan status
     - [ ] Ensure proper icon alignment

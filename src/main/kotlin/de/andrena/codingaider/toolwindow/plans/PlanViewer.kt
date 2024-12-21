@@ -117,44 +117,44 @@ class PlanViewer(private val project: Project) {
                 val planFile = value.planFiles.firstOrNull()
                 val fileName = planFile?.filePath?.let { File(it).nameWithoutExtension } ?: "Unknown Plan"
 
-                // Calculate tree structure
+                // Calculate tree structure and indentation
                 val treePrefix = buildString {
-                    // Get the chain of ancestors
                     val ancestors = value.getAncestors()
-                    val depth = ancestors.size
-
-                    // For each ancestor level, add the appropriate connector
+                    
+                    // Draw vertical lines for each ancestor level
                     ancestors.forEachIndexed { index, ancestor ->
                         val hasNextSibling = ancestor.findSiblingPlans().any { sibling -> 
                             sibling.mainPlanFile?.filePath?.compareTo(ancestor.mainPlanFile?.filePath ?: "") ?: 0 > 0 
                         }
-                        if (hasNextSibling) {
-                            append("│   ")
-                        } else {
-                            append("    ")
-                        }
+                        // Use box-drawing characters for better visual hierarchy
+                        append(if (hasNextSibling) "║   " else "    ")
                     }
 
-                    // Add the current node's connector
-                    if (value.childPlans.isNotEmpty()) {
-                        val isLastChild = value.parentPlan?.childPlans?.lastOrNull() == value
-                        append(if (isLastChild) "└─▼ " else "├─▼ ")
+                    // Add the current node's connector with proper box-drawing characters
+                    val isLastChild = value.parentPlan?.childPlans?.lastOrNull() == value
+                    val hasChildren = value.childPlans.isNotEmpty()
+                    
+                    when {
+                        hasChildren && isLastChild -> append("╚═")
+                        hasChildren -> append("╠═")
+                        isLastChild -> append("╚═")
+                        else -> append("╠═")
+                    }
+                    
+                    // Add expand/collapse indicator if has children
+                    if (hasChildren) {
+                        val isExpanded = expandedPlans.contains(value.mainPlanFile?.filePath)
+                        append(if (isExpanded) "▼ " else "▶ ")
                     } else {
-                        val isLastChild = value.parentPlan?.childPlans?.lastOrNull() == value
-                        append(if (isLastChild) "└── " else "├── ")
+                        append("══ ")
                     }
                 }
 
-                // Set indentation using border
+                // Set proper indentation with consistent spacing
                 border = BorderFactory.createEmptyBorder(4, 8 + (value.depth * treeIndentWidth), 4, 8)
                 
-                val expandCollapseIcon = when {
-                    value.childPlans.isEmpty() -> "   "
-                    expandedPlans.contains(value.mainPlanFile?.filePath) -> "▼ "
-                    else -> "▶ "
-                }
-                
-                label.text = " ".repeat(value.depth * 4) + expandCollapseIcon + fileName
+                // Set label text with proper spacing and no redundant expand/collapse icon
+                label.text = fileName
 
                 val openItems = value.openChecklistItems().size
                 val totalItems = value.totalChecklistItems()
