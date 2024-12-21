@@ -53,9 +53,9 @@ class ActivePlanService(private val project: Project) {
 
         if (currentPlan.isPlanComplete()) {
             // Try to find next uncompleted plan in hierarchy
-            val nextPlan = currentPlan.getNextUncompletedPlan()
-            if (nextPlan != null) {
-                setActivePlan(nextPlan)
+            val nextPlans = currentPlan.getNextUncompletedPlan()
+            if (nextPlans.isNotEmpty()) {
+                setActivePlan(nextPlans.first()) // Set the first uncompleted plan as active
             } else {
                 clearActivePlan()
             }
@@ -94,9 +94,9 @@ class ActivePlanService(private val project: Project) {
 
         if (plan.isPlanComplete()) {
             // Check for uncompleted child or sibling plans
-            val nextPlan = plan.getNextUncompletedPlan()
-            if (nextPlan != null) {
-                setActivePlan(nextPlan)
+            val nextPlans = plan.getNextUncompletedPlan()
+            if (nextPlans.isNotEmpty()) {
+                setActivePlan(nextPlans.first()) // Set the first uncompleted plan as active
             } else {
                 clearActivePlan()
                 throw IllegalStateException("All plans in hierarchy are complete - no further actions needed")

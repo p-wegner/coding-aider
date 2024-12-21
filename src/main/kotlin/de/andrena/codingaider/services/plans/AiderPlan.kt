@@ -75,11 +75,13 @@ data class AiderPlan(
         return generateSequence(this) { it.parentPlan }.any { it == otherPlan }
     }
 
-    fun getNextUncompletedPlan(): AiderPlan? {
-        if (!isPlanComplete()) return this
-        return getAllChildPlans().firstOrNull { !it.isPlanComplete() }
-            ?: findSiblingPlans().firstOrNull { !it.isPlanComplete() }
-            ?: parentPlan?.getNextUncompletedPlan()
+    fun getNextUncompletedPlan(): List<AiderPlan> {
+        if (!isPlanComplete()) return listOf(this)
+        val uncompletedChildren = getAllChildPlans().filter { !it.isPlanComplete() }
+        val uncompletedSiblings = findSiblingPlans().filter { !it.isPlanComplete() }
+        val parentUncompletedPlans = parentPlan?.getNextUncompletedPlan() ?: emptyList()
+        
+        return uncompletedChildren + uncompletedSiblings + parentUncompletedPlans
     }
 
     fun createShortTooltip(): String {
