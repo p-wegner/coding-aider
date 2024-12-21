@@ -68,19 +68,8 @@ class MarkdownDialog(
                 try {
                     isEnabled = false
                     text = "Continuing..."
-                    if (getInstance().enableAutoPlanContinue) {
-                        dispose()
-                        project.service<ContinuePlanService>().continuePlan()
-                    } else {
-                        isEnabled = true
-                        text = "Close & Continue"
-                        JOptionPane.showMessageDialog(
-                            this@MarkdownDialog,
-                            "No incomplete plans found to continue.",
-                            "Continuation Error",
-                            JOptionPane.INFORMATION_MESSAGE
-                        )
-                    }
+                    dispose()
+                    project.service<ContinuePlanService>().continuePlan()
                 } catch (e: Exception) {
                     isEnabled = true
                     text = "Close & Continue"
