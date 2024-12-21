@@ -16,7 +16,8 @@ class AiderPlanService(private val project: Project) {
         const val AIDER_PLAN_CHECKLIST_MARKER = "[Coding Aider Plan - Checklist]"
         const val AIDER_PLANS_FOLDER = ".coding-aider-plans"
         const val STRUCTURED_MODE_MARKER = "[STRUCTURED MODE]"
-
+        const val SUBPLAN_START_MARKER = "<!-- SUBPLAN:"
+        const val SUBPLAN_END_MARKER = "<!-- END_SUBPLAN -->"
     }
 
     fun createPlanFolderIfNeeded(commandData: CommandData) {
@@ -199,11 +200,19 @@ class AiderPlanService(private val project: Project) {
                 parseContextYaml(contextFile)
             } else emptyList()
 
+            // Extract subplan references
+            val subplanRefs = extractSubplanReferences(expandedContent)
+            val subplans = subplanRefs.mapNotNull { subplanRef ->
+                val subplanFile = File(plansDir, subplanRef)
+                if (subplanFile.exists()) loadPlanFromFile(subplanFile) else null
+            }
+
             AiderPlan(
                 plan = planContent,
                 checklist = combinedChecklist,
                 planFiles = files,
-                contextFiles = contextFiles
+                contextFiles = contextFiles,
+                childPlans = subplans
             )
         } catch (e: Exception) {
             println("Error processing plan file ${file.name}: ${e.message}")
@@ -302,6 +311,25 @@ class AiderPlanService(private val project: Project) {
 
     fun createAiderPlanSystemPrompt(commandData: CommandData): String =
         project.service<AiderPlanPromptService>().createAiderPlanSystemPrompt(commandData)
+
+    private fun extractSubplanReferences(content: String): List<String> {
+        val subplans = mutableListOf<String>()
+        val lines = content.lines()
+        var i = 0
+        while (i < lines.size) {
+            val line = lines[i]
+            if (line.trim().startsWith(SUBPLAN_START_MARKER)) {
+                // Look for markdown link in next line
+                if (i + 1 < lines.size) {
+                    val linkLine = lines[i + 1]
+                    val linkMatch = Regex("""\[.*?\]\((.*?)\)""").find(linkLine)
+                    linkMatch?.groupValues?.get(1)?.let { subplans.add(it) }
+                }
+            }
+            i++
+        }
+        return subplans
+    }
 
     private fun parseContextYaml(contextFile: File): List<FileData> =
         ContextFileHandler.readContextFile(contextFile, project.basePath.toString())
