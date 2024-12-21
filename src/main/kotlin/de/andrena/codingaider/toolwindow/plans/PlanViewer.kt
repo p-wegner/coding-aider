@@ -97,12 +97,7 @@ class PlanViewer(private val project: Project) {
 
                             // Check if click was in the expand/collapse icon area
                             if (e.x < treeAreaWidth + 24 && plan.childPlans.isNotEmpty()) {
-                                if (expandedPlans.contains(planId)) {
-                                    expandedPlans.remove(planId)
-                                } else {
-                                    expandedPlans.add(planId)
-                                }
-                                updatePlans(project.getService(AiderPlanService::class.java).getAiderPlans())
+                                animateTreeExpansion(plan, planId)
                             } else if (e.clickCount == 2) {
                                 // Double click to open plan file
                                 plan.mainPlanFile?.let { fileData ->
@@ -119,13 +114,49 @@ class PlanViewer(private val project: Project) {
         }
     }
 
+    private fun animateTreeExpansion(plan: AiderPlan, planId: String) {
+        val isExpanding = !expandedPlans.contains(planId)
+        val timer = Timer(20, null)
+        var progress = 0
+        val steps = 5 // Number of animation steps
+
+        timer.addActionListener { e ->
+            progress++
+            if (progress <= steps) {
+                if (isExpanding) {
+                    // Gradually show children
+                    expandedPlans.add(planId)
+                    updatePlansWithAnimation(project.getService(AiderPlanService::class.java).getAiderPlans(), progress.toFloat() / steps)
+                } else {
+                    // Gradually hide children
+                    updatePlansWithAnimation(project.getService(AiderPlanService::class.java).getAiderPlans(), (steps - progress).toFloat() / steps)
+                }
+            } else {
+                if (!isExpanding) {
+                    expandedPlans.remove(planId)
+                    updatePlansWithAnimation(project.getService(AiderPlanService::class.java).getAiderPlans(), 0f)
+                }
+                timer.stop()
+            }
+        }
+        timer.start()
+    }
+
     fun updatePlans(plans: List<AiderPlan>) {
+        updatePlansWithAnimation(plans, 1f)
+    }
+
+    private fun updatePlansWithAnimation(plans: List<AiderPlan>, animationProgress: Float = 1f) {
         plansListModel.clear()
         fun addPlanAndChildren(plan: AiderPlan) {
             plansListModel.addElement(plan)
             if (expandedPlans.contains(plan.mainPlanFile?.filePath)) {
                 plan.childPlans.forEach { childPlan ->
-                    addPlanAndChildren(childPlan)
+                    // Apply animation progress to child indentation
+                    val animatedPlan = childPlan.copy(
+                        depth = (childPlan.depth * animationProgress).toInt()
+                    )
+                    addPlanAndChildren(animatedPlan)
                 }
             }
         }
