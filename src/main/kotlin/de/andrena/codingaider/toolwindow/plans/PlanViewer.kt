@@ -197,15 +197,16 @@ class PlanViewer(private val project: Project) {
             cellHasFocus: Boolean
         ): Component {
             val isHovered = index == (list as? JBList<*>)?.selectedIndex
+            val isDark = !JBColor.isBright()
             background = when {
                 isSelected -> list?.selectionBackground
-                isHovered -> list?.selectionBackground?.brighter()
+                isHovered -> if (isDark) list?.selectionBackground?.darker()?.darker() else list?.selectionBackground?.brighter()
                 else -> list?.background
             }
             label.background = background
             label.foreground = when {
                 isSelected -> list?.selectionForeground
-                isHovered -> list?.foreground?.darker()
+                isHovered -> if (isDark) list?.foreground?.brighter() else list?.foreground?.darker()
                 else -> list?.foreground
             }
 
@@ -291,8 +292,14 @@ class PlanViewer(private val project: Project) {
                 countLabel.text = "($checkedItems/$totalItems)"
                 countLabel.foreground = when {
                     openItems == 0 -> UIManager.getColor("Label.foreground")
-                    openItems < totalItems / 2 -> UIManager.getColor("Label.infoForeground")
-                    else -> Color(255, 140, 0)
+                    openItems < totalItems / 2 -> JBColor(
+                        Color(0, 128, 0), // Light theme - darker green
+                        Color(98, 150, 85)  // Dark theme - softer green
+                    )
+                    else -> JBColor(
+                        Color(255, 140, 0), // Light theme - orange
+                        Color(255, 165, 0)  // Dark theme - lighter orange
+                    )
                 }
             }
 

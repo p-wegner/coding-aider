@@ -21,10 +21,10 @@
     - [x] Add keyboard navigation support
     - [x] Implement smooth expansion animation
 
-- [ ] Theme Support
-    - [ ] Ensure proper colors in light theme
-    - [ ] Ensure proper colors in dark theme
-    - [ ] Add high contrast support
-    - [ ] Implement proper border colors
-    - [ ] Handle custom UI themes
+- [x] Theme Support
+    - [x] Ensure proper colors in light theme
+    - [x] Ensure proper colors in dark theme
+    - [x] Add high contrast support
+    - [x] Implement proper border colors
+    - [x] Handle custom UI themes
 
