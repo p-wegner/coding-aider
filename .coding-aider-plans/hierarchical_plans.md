@@ -40,4 +40,8 @@ Currently, plans are flat structures without support for hierarchical relationsh
 
 ## References
 
+<!-- SUBPLAN:hierarchical_plans_treeview_subplan -->
+[Subplan: Tree Visualization Enhancement](hierarchical_plans_treeview_subplan.md)
+<!-- END_SUBPLAN -->
+
 [Checklist](hierarchical_plans_checklist.md)
