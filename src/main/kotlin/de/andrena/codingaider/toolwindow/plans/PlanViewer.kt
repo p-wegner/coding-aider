@@ -201,10 +201,16 @@ class PlanViewer(private val project: Project) {
                     val hasChildren = value.childPlans.isNotEmpty()
                     val depth = ancestors.size
                     
-                    // Use different connectors for deep nesting
-                    val (horizontalLine, verticalLine) = when {
-                        depth >= maxDepth -> "─" to "⋯"
-                        else -> "─" to "─"
+                    // Use different connectors and markers for deep nesting
+                    val (horizontalLine, verticalLine, levelMarker) = when {
+                        depth >= maxDepth -> "─" to "⋯" to "⋮"
+                        depth >= maxDepth - 2 -> "─" to "─" to "┆"
+                        else -> "─" to "─" to "│"
+                    }
+                    
+                    // Add level marker for deep nesting
+                    if (depth >= maxDepth - 2) {
+                        append(" $levelMarker ")
                     }
                     
                     when {
@@ -214,12 +220,12 @@ class PlanViewer(private val project: Project) {
                         else -> append("├$horizontalLine")
                     }
                     
-                    // Add expand/collapse indicator with proper alignment
+                    // Add expand/collapse indicator with proper alignment and spacing
                     if (hasChildren) {
                         val isExpanded = expandedPlans.contains(value.mainPlanFile?.filePath)
-                        append(if (isExpanded) " ▾ " else " ▸ ")
+                        append(if (isExpanded) "▾  " else "▸  ")
                     } else {
-                        append("$verticalLine ")
+                        append("$verticalLine  ")
                     }
                 }
 

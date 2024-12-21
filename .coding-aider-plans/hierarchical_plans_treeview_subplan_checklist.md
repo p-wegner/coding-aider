@@ -13,8 +13,8 @@
     - [x] Add proper expand/collapse icons
     - [x] Implement hover effects for tree nodes
     - [x] Add visual indicators for plan status
-    - [ ] Ensure proper icon alignment
-    - [ ] Add level markers for deep nesting
+    - [x] Ensure proper icon alignment
+    - [x] Add level markers for deep nesting
 
 - [x] Interaction Handling
     - [x] Improve expand/collapse click detection
