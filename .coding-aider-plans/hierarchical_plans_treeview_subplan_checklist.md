@@ -11,8 +11,8 @@
 
 - [x] Visual Indicators
     - [x] Add proper expand/collapse icons
-    - [ ] Implement hover effects for tree nodes
-    - [ ] Add visual indicators for plan status
+    - [x] Implement hover effects for tree nodes
+    - [x] Add visual indicators for plan status
     - [ ] Ensure proper icon alignment
     - [ ] Add level markers for deep nesting
 

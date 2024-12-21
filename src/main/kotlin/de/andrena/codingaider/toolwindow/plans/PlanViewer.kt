@@ -109,9 +109,18 @@ class PlanViewer(private val project: Project) {
             isSelected: Boolean,
             cellHasFocus: Boolean
         ): Component {
-            background = if (isSelected) list?.selectionBackground else list?.background
+            val isHovered = index == (list as? JBList<*>)?.selectedIndex
+            background = when {
+                isSelected -> list?.selectionBackground
+                isHovered -> list?.selectionBackground?.brighter()
+                else -> list?.background
+            }
             label.background = background
-            label.foreground = if (isSelected) list?.selectionForeground else list?.foreground
+            label.foreground = when {
+                isSelected -> list?.selectionForeground
+                isHovered -> list?.foreground?.darker()
+                else -> list?.foreground
+            }
 
             if (value != null) {
                 val planFile = value.planFiles.firstOrNull()
@@ -163,10 +172,12 @@ class PlanViewer(private val project: Project) {
                 label.toolTipText = tooltip
                 countLabel.toolTipText = tooltip
 
-                statusIcon.icon = if (value.isPlanComplete())
-                    AllIcons.Actions.Commit
-                else
-                    AllIcons.General.BalloonInformation
+                statusIcon.icon = when {
+                    value.isPlanComplete() -> AllIcons.Actions.Commit
+                    value.openChecklistItems().isEmpty() && value.childPlans.any { !it.isPlanComplete() } -> 
+                        AllIcons.General.Warning // Has uncompleted child plans
+                    else -> AllIcons.General.BalloonInformation
+                }
                 statusIcon.toolTipText = tooltip
 
                 val checkedItems = totalItems - openItems
