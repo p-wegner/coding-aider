@@ -16,9 +16,9 @@
     - [ ] Ensure proper icon alignment
     - [ ] Add level markers for deep nesting
 
-- [ ] Interaction Handling
-    - [ ] Improve expand/collapse click detection
-    - [ ] Add keyboard navigation support
+- [x] Interaction Handling
+    - [x] Improve expand/collapse click detection
+    - [x] Add keyboard navigation support
     - [ ] Implement smooth expansion animation
     - [ ] Handle multi-selection properly
     - [ ] Add context menu support

@@ -39,22 +39,77 @@ class PlanViewer(private val project: Project) {
     init {
         plansList.run {
             cellRenderer = PlanListCellRenderer(false, expandedPlans)
+            
+            // Enable keyboard navigation
+            inputMap.put(KeyStroke.getKeyStroke("LEFT"), "collapse")
+            inputMap.put(KeyStroke.getKeyStroke("RIGHT"), "expand")
+            inputMap.put(KeyStroke.getKeyStroke("ENTER"), "open")
+            
+            actionMap.put("collapse", object : AbstractAction() {
+                override fun actionPerformed(e: ActionEvent?) {
+                    val selectedPlan = selectedValue ?: return
+                    val planId = selectedPlan.mainPlanFile?.filePath ?: return
+                    if (expandedPlans.contains(planId)) {
+                        expandedPlans.remove(planId)
+                        updatePlans(project.getService(AiderPlanService::class.java).getAiderPlans())
+                    }
+                }
+            })
+            
+            actionMap.put("expand", object : AbstractAction() {
+                override fun actionPerformed(e: ActionEvent?) {
+                    val selectedPlan = selectedValue ?: return
+                    val planId = selectedPlan.mainPlanFile?.filePath ?: return
+                    if (selectedPlan.childPlans.isNotEmpty() && !expandedPlans.contains(planId)) {
+                        expandedPlans.add(planId)
+                        updatePlans(project.getService(AiderPlanService::class.java).getAiderPlans())
+                    }
+                }
+            })
+            
+            actionMap.put("open", object : AbstractAction() {
+                override fun actionPerformed(e: ActionEvent?) {
+                    val selectedPlan = selectedValue ?: return
+                    selectedPlan.mainPlanFile?.let { fileData ->
+                        val virtualFile = LocalFileSystem.getInstance().findFileByPath(fileData.filePath)
+                        virtualFile?.let {
+                            FileEditorManager.getInstance(project).openFile(it, true)
+                        }
+                    }
+                }
+            })
+            
             addMouseListener(object : MouseAdapter() {
                 override fun mouseClicked(e: MouseEvent) {
                     val index = plansList.locationToIndex(e.point)
-                    if (index >= 0 && plansList.getCellBounds(index, index)?.contains(e.point) == true) {
-                        val plan = plansList.model.getElementAt(index)
-                        val planId = plan.mainPlanFile?.filePath ?: return
-                        
-                        // Check if click was in the expand/collapse icon area
-                        if (e.x < (plan.depth * 20) + 40) {
-                            if (plan.childPlans.isNotEmpty()) {
+                    if (index >= 0) {
+                        val cellBounds = plansList.getCellBounds(index, index)
+                        if (cellBounds?.contains(e.point) == true) {
+                            val plan = plansList.model.getElementAt(index)
+                            val planId = plan.mainPlanFile?.filePath ?: return
+
+                            // Calculate click areas
+                            val depth = plan.depth
+                            val indentWidth = 20
+                            val iconWidth = 16
+                            val treeAreaWidth = (depth * indentWidth) + iconWidth
+
+                            // Check if click was in the expand/collapse icon area
+                            if (e.x < treeAreaWidth + 24 && plan.childPlans.isNotEmpty()) {
                                 if (expandedPlans.contains(planId)) {
                                     expandedPlans.remove(planId)
                                 } else {
                                     expandedPlans.add(planId)
                                 }
                                 updatePlans(project.getService(AiderPlanService::class.java).getAiderPlans())
+                            } else if (e.clickCount == 2) {
+                                // Double click to open plan file
+                                plan.mainPlanFile?.let { fileData ->
+                                    val virtualFile = LocalFileSystem.getInstance().findFileByPath(fileData.filePath)
+                                    virtualFile?.let {
+                                        FileEditorManager.getInstance(project).openFile(it, true)
+                                    }
+                                }
                             }
                         }
                     }
