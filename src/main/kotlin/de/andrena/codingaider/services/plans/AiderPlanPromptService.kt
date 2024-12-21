@@ -14,21 +14,26 @@ class AiderPlanPromptService(private val project: Project) {
         SYSTEM 2. A separate file with a checklist for tracking the progress (_checklist.md)
         SYSTEM 3. A context.yaml file listing all relevant files needed for implementing the plan (_context.yaml)
         SYSTEM The files should be named consistently with the same base name:
-        SYSTEM - feature_name.md (plan)
-        SYSTEM - feature_name_checklist.md (checklist)
-        SYSTEM - feature_name_context.yaml (file list)
+        SYSTEM - feature_name.md (plan) - Contains sections: Overview, Problem Description, Goals, Additional Notes, References
+        SYSTEM - feature_name_checklist.md (checklist) - Contains clear, actionable tasks with [ ] checkboxes
+        SYSTEM - feature_name_context.yaml (file list) - Lists all files needed for implementation
+        SYSTEM For subplans, use: mainplan_subfeature naming pattern (e.g. authentication_login.md)
     """.trimIndent()
 
     private val subplanGuidancePrompt = """
         SYSTEM When creating subplans:
         SYSTEM 1. Use mainplan_subfeature naming pattern (e.g. authentication_login.md)
         SYSTEM 2. ALWAYS create all three files for each subplan:
-        SYSTEM   - mainplan_subfeature.md (subplan description)
+        SYSTEM   - mainplan_subfeature.md (subplan description with standard sections)
         SYSTEM   - mainplan_subfeature_checklist.md (subplan specific checklist)
         SYSTEM   - mainplan_subfeature_context.yaml (subplan relevant files)
-        SYSTEM 3. Reference subplans from main plan using markdown links
-        SYSTEM 4. Update main plan's checklist to track subplan completion
-        SYSTEM 5. Each subplan's checklist should focus on its specific implementation tasks
+        SYSTEM 3. Reference subplans from main plan using markdown links: [Subplan Name](mainplan_subfeature.md)
+        SYSTEM 4. Update main plan's checklist to track subplan completion with a task: [ ] Complete subfeature implementation
+        SYSTEM 5. Each subplan's checklist must have:
+        SYSTEM   - Clear, atomic tasks with [ ] checkboxes
+        SYSTEM   - Tasks focused on specific implementation details
+        SYSTEM   - Dependencies noted at the start of dependent tasks
+        SYSTEM 6. Main plan should track overall progress while subplans handle specific components
     """.trimIndent()
 
     fun createPlanRefinementPrompt(plan: AiderPlan, refinementRequest: String): String {
