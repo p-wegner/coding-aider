@@ -11,16 +11,16 @@ class AiderPlanPromptService(private val project: Project) {
     fun createPlanRefinementPrompt(plan: AiderPlan, refinementRequest: String): String {
         val basePrompt = """
             SYSTEM You are refining an existing plan. The plan should be extended or modified based on the refinement request.
-            SYSTEM If the refinement requires significant new functionality:
-            SYSTEM 1. Create a subplan with _subplan suffix (e.g. feature_subplan1.md)
+            SYSTEM If the refinement requires significant new functionality or if different modules can be distinguished and implemented separately:
+            SYSTEM 1. Create a subplan with main plan's name and feature suffix (e.g. mainplan_feature1.md) 
+            as well as a checklist (e.g. mainplan_feature1_checklist.md) and context.yaml (e.g. mainplan_feature1_context.yml) file
             SYSTEM 2. Reference the subplan from the main plan using markdown links
-            SYSTEM 3. Create separate checklist and context.yaml files for the subplan
-            SYSTEM 4. Update the main plan's checklist to track the subplan's completion
+            SYSTEM 3. Update the main plan's checklist to track the subplan's completion
             SYSTEM The refinement request is: $refinementRequest
             
-            $STRUCTURED_MODE_MARKER Continue with plan refinement
+            $STRUCTURED_MODE_MARKER Continue with plan refinement but don't start implementing the changes. Focus on changes to plan files.
         """.trimIndent()
-        
+
         return basePrompt
     }
 
@@ -75,12 +75,12 @@ class AiderPlanPromptService(private val project: Project) {
             SYSTEM The main plan file should include these sections: ## Overview, ## Problem Description, ## Goals, ## Additional Notes and Constraints, ## References 
             SYSTEM Save the plan in a new markdown file with a suitable name in the $AIDER_PLANS_FOLDER directory.
             SYSTEM Create separate checklist and context.yaml files to track the progress of implementing the plan.
-            SYSTEM If refining an existing plan, create a subplan with _subplan suffix (e.g. feature_subplan1.md).
+            SYSTEM If refining an existing plan, create a subplan with main plan name as prefix (e.g. mainplan_feature1.md).
             SYSTEM The subplan should follow the same structure as the main plan but focus on specific components.
             SYSTEM Reference the subplan from the main plan using markdown links.
             SYSTEM If the feature is complex, break it down into subplans:
             SYSTEM - Create a main plan describing the overall feature
-            SYSTEM - Create subplans for major components using _subplan suffix (e.g. feature_subplan1.md)
+            SYSTEM - Create subplans for major components 
             SYSTEM - Reference subplans from the main plan using markdown links
             SYSTEM - Each subplan should have its own checklist and context.yaml files
             SYSTEM For the context.yaml, consider all provided files and add relevant files to the context.yaml.
