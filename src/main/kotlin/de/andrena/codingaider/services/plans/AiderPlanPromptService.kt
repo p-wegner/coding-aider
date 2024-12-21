@@ -27,7 +27,10 @@ class AiderPlanPromptService(private val project: Project) {
            - mainplan_subfeature.md
            - mainplan_subfeature_checklist.md 
            - mainplan_subfeature_context.yaml
-        SYSTEM 3. Link from main plan: [Subplan Name](mainplan_subfeature.md)
+        SYSTEM 3. Reference format in main plan:
+           <!-- SUBPLAN:mainplan_subfeature -->
+           [Subplan: Subfeature Name](mainplan_subfeature.md)
+           <!-- END_SUBPLAN -->
         SYSTEM 4. Add to main checklist: [ ] Complete subfeature implementation
         SYSTEM 5. Subplan checklists need:
            - Atomic tasks with [ ] checkboxes

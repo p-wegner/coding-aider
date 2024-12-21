@@ -31,5 +31,19 @@ Currently, plans are flat structures without support for hierarchical relationsh
 - Each subplan maintains its own checklist and context.yaml files
 - Parent plans track overall progress while subplans focus on specific components
 
+## Subplans
+
+<!-- SUBPLAN:hierarchical_plans_ui -->
+[Subplan: UI Implementation](hierarchical_plans_ui.md)
+<!-- END_SUBPLAN -->
+
+<!-- SUBPLAN:hierarchical_plans_data -->
+[Subplan: Data Structure Implementation](hierarchical_plans_data.md)
+<!-- END_SUBPLAN -->
+
+<!-- SUBPLAN:hierarchical_plans_execution -->
+[Subplan: Plan Execution Logic](hierarchical_plans_execution.md)
+<!-- END_SUBPLAN -->
+
 ## References
 [Checklist](hierarchical_plans_checklist.md)
