@@ -127,7 +127,7 @@ class PlanViewer(private val project: Project) {
                             sibling.mainPlanFile?.filePath?.compareTo(ancestor.mainPlanFile?.filePath ?: "") ?: 0 > 0 
                         }
                         // Use box-drawing characters for better visual hierarchy
-                        append(if (hasNextSibling) "║   " else "    ")
+                        append(if (hasNextSibling) "│   " else "    ")
                     }
 
                     // Add the current node's connector with proper box-drawing characters
@@ -135,26 +135,26 @@ class PlanViewer(private val project: Project) {
                     val hasChildren = value.childPlans.isNotEmpty()
                     
                     when {
-                        hasChildren && isLastChild -> append("╚═")
-                        hasChildren -> append("╠═")
-                        isLastChild -> append("╚═")
-                        else -> append("╠═")
+                        hasChildren && isLastChild -> append("└─")
+                        hasChildren -> append("├─")
+                        isLastChild -> append("└─")
+                        else -> append("├─")
                     }
                     
                     // Add expand/collapse indicator if has children
                     if (hasChildren) {
                         val isExpanded = expandedPlans.contains(value.mainPlanFile?.filePath)
-                        append(if (isExpanded) "▼ " else "▶ ")
+                        append(if (isExpanded) "▾ " else "▸ ")
                     } else {
-                        append("══ ")
+                        append("── ")
                     }
                 }
 
                 // Set proper indentation with consistent spacing
                 border = BorderFactory.createEmptyBorder(4, 8 + (value.depth * treeIndentWidth), 4, 8)
                 
-                // Set label text with proper spacing and no redundant expand/collapse icon
-                label.text = fileName
+                // Set label text with tree prefix and plan name
+                label.text = "$treePrefix$fileName"
 
                 val openItems = value.openChecklistItems().size
                 val totalItems = value.totalChecklistItems()
