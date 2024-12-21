@@ -20,8 +20,6 @@
     - [x] Improve expand/collapse click detection
     - [x] Add keyboard navigation support
     - [ ] Implement smooth expansion animation
-    - [ ] Handle multi-selection properly
-    - [ ] Add context menu support
 
 - [ ] Theme Support
     - [ ] Ensure proper colors in light theme
@@ -30,9 +28,3 @@
     - [ ] Implement proper border colors
     - [ ] Handle custom UI themes
 
-- [ ] Testing and Validation
-    - [ ] Test deep nesting scenarios
-    - [ ] Verify expand/collapse behavior
-    - [ ] Test keyboard navigation
-    - [ ] Validate theme switching
-    - [ ] Test performance with large trees
