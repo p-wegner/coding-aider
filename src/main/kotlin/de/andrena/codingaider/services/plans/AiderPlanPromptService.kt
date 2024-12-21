@@ -8,15 +8,38 @@ import de.andrena.codingaider.command.FileData
 @Service(Service.Level.PROJECT)
 class AiderPlanPromptService(private val project: Project) {
 
+    private val planFileStructurePrompt = """
+        SYSTEM A plan consists of three files:
+        SYSTEM 1. A detailed description of the requested feature (.md)
+        SYSTEM 2. A separate file with a checklist for tracking the progress (_checklist.md)
+        SYSTEM 3. A context.yaml file listing all relevant files needed for implementing the plan (_context.yaml)
+        SYSTEM The files should be named consistently with the same base name:
+        SYSTEM - feature_name.md (plan)
+        SYSTEM - feature_name_checklist.md (checklist)
+        SYSTEM - feature_name_context.yaml (file list)
+    """.trimIndent()
+
+    private val subplanGuidancePrompt = """
+        SYSTEM When creating subplans:
+        SYSTEM 1. Use mainplan_subfeature naming pattern (e.g. authentication_login.md)
+        SYSTEM 2. ALWAYS create all three files for each subplan:
+        SYSTEM   - mainplan_subfeature.md (subplan description)
+        SYSTEM   - mainplan_subfeature_checklist.md (subplan specific checklist)
+        SYSTEM   - mainplan_subfeature_context.yaml (subplan relevant files)
+        SYSTEM 3. Reference subplans from main plan using markdown links
+        SYSTEM 4. Update main plan's checklist to track subplan completion
+        SYSTEM 5. Each subplan's checklist should focus on its specific implementation tasks
+    """.trimIndent()
+
     fun createPlanRefinementPrompt(plan: AiderPlan, refinementRequest: String): String {
         val basePrompt = """
             SYSTEM You are refining an existing plan. The plan should be extended or modified based on the refinement request.
-            SYSTEM If the refinement requires significant new functionality or if different modules can be distinguished and implemented separately:
-            SYSTEM 1. Create a subplan with main plan's name and feature suffix (e.g. mainplan_feature1.md) 
-            as well as a checklist (e.g. mainplan_feature1_checklist.md) and context.yaml (e.g. mainplan_feature1_context.yml) file
-            SYSTEM 2. Reference the subplan from the main plan using markdown links
-            SYSTEM 3. Update the main plan's checklist to track the subplan's completion
+            
+            $subplanGuidancePrompt
+            
             SYSTEM The refinement request is: $refinementRequest
+            
+            $planFileStructurePrompt
             
             $STRUCTURED_MODE_MARKER Continue with plan refinement but don't start implementing the changes. Focus on changes to plan files.
         """.trimIndent()
@@ -29,23 +52,8 @@ class AiderPlanPromptService(private val project: Project) {
 
         val existingPlan = filterPlanRelevantFiles(files)
 
-        val basePrompt = """
-            SYSTEM Instead of making changes to the code, markdown files should be used to track progress on the feature.
-            SYSTEM A plan consists of three files:
-            SYSTEM 1. A detailed description of the requested feature
-            SYSTEM 2. A separate file with a checklist for tracking the progress
-            SYSTEM 3. A context.yaml file listing all relevant files needed for implementing the plan
-            SYSTEM The file should be saved in the $AIDER_PLANS_FOLDER directory in the project.
-            SYSTEM Always start plans with the line $AIDER_PLAN_MARKER and checklists with $AIDER_PLAN_CHECKLIST_MARKER at the beginning of the file and use this marker in existing files to identify plans and checklists.
-            SYSTEM The plan should focus on high level descriptions of the requested features and major implementation details.
-            SYSTEM The checklist should focus on the required implementation steps on a more fine grained level.
-            SYSTEM The three files should be named consistently:
-            SYSTEM - feature_name.md (plan)
-            SYSTEM - feature_name_checklist.md (checklist)
-            SYSTEM - feature_name_context.yaml (file list)
-            SYSTEM The plan and checklist should reference each other using markdown file references.
-            SYSTEM The context.yaml should list all files that will be needed to implement the plan.
-            SYSTEM The context.yaml must follow this format:
+        val contextYamlFormatPrompt = """
+            SYSTEM The context.yaml must follow this format and be kept up to date:
             SYSTEM ---
             SYSTEM files:
             SYSTEM - path: "full/path/to/file"
