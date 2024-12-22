@@ -227,40 +227,50 @@ class AiderPlanService(private val project: Project) {
             .mapNotNull { file -> loadPlanFromFile(file) }
             .toMutableList()
 
+        // Create a map to track updated plans
+        val updatedPlans = mutableMapOf<String, AiderPlan>()
+
         // Then establish parent-child relationships based on references
         allPlans.forEach { plan ->
-            val content = File(plan.mainPlanFile?.filePath ?: return@forEach).readText()
+            val planPath = plan.mainPlanFile?.filePath ?: return@forEach
+            if (!updatedPlans.containsKey(planPath)) {
+                updatedPlans[planPath] = plan
+            }
+
+            val content = File(planPath).readText()
             val referencePattern = Regex("""\[.*?\]\((.*?)(?:\s.*?)?\)""")
+            val subplanMarkerPattern = Regex("""${SUBPLAN_START_MARKER}.*?\n.*?\((.*?)\)""", RegexOption.DOT_MATCHES_ALL)
             
-            referencePattern.findAll(content).forEach { matchResult ->
-                val referencePath = matchResult.groupValues[1]
+            // Process both regular references and subplan markers
+            val allReferences = (referencePattern.findAll(content) + subplanMarkerPattern.findAll(content))
+                .map { it.groupValues[1] }
+                .distinct()
+
+            allReferences.forEach { referencePath ->
                 val referenceFile = File(plansDir, referencePath)
                 
                 if (referenceFile.exists() && !referenceFile.nameWithoutExtension.endsWith("_checklist")) {
-                    val referencedPlan = allPlans.find { it.mainPlanFile?.filePath == referenceFile.absolutePath }
-                    if (referencedPlan != null) {
-                        // Update parent-child relationships
-                        val updatedChildPlan = referencedPlan.copy(parentPlan = plan)
-                        val updatedParentPlan = plan.copy(
-                            childPlans = plan.childPlans + updatedChildPlan
-                        )
-                        
-                        // Safely update plans in list
-                        val parentIndex = allPlans.indexOf(plan)
-                        val childIndex = allPlans.indexOf(referencedPlan)
-                        if (parentIndex >= 0) {
-                            allPlans[parentIndex] = updatedParentPlan
-                        }
-                        if (childIndex >= 0) {
-                            allPlans[childIndex] = updatedChildPlan
-                        }
-                    }
+                    val referencedPlanPath = referenceFile.absolutePath
+                    val referencedPlan = updatedPlans[referencedPlanPath] 
+                        ?: allPlans.find { it.mainPlanFile?.filePath == referencedPlanPath }
+                        ?: return@forEach
+
+                    // Update parent-child relationships
+                    val currentParentPlan = updatedPlans[planPath] ?: plan
+                    val updatedChildPlan = referencedPlan.copy(parentPlan = currentParentPlan)
+                    val updatedParentPlan = currentParentPlan.copy(
+                        childPlans = currentParentPlan.childPlans + updatedChildPlan
+                    )
+                    
+                    // Update the plans in our tracking map
+                    updatedPlans[planPath] = updatedParentPlan
+                    updatedPlans[referencedPlanPath] = updatedChildPlan
                 }
             }
         }
 
         // Return only root plans (those without parents)
-        return allPlans.filter { it.parentPlan == null }
+        return updatedPlans.values.filter { it.parentPlan == null }
     }
 
 
