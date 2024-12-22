@@ -5,12 +5,11 @@ import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
 import com.intellij.ui.dsl.builder.panel
-import de.andrena.codingaider.toolwindow.runningcommands.RunningCommandsPanel
 import de.andrena.codingaider.toolwindow.persistentfiles.PersistentFilesPanel
 import de.andrena.codingaider.toolwindow.plans.PlansPanel
-import javax.swing.*
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
+import de.andrena.codingaider.toolwindow.runningcommands.RunningCommandsPanel
+import de.andrena.codingaider.utils.CollapsiblePanel
+import javax.swing.JComponent
 
 class CodingAiderToolWindow : ToolWindowFactory {
     override fun shouldBeAvailable(project: Project) = true
@@ -26,7 +25,7 @@ class CodingAiderToolWindow : ToolWindowFactory {
 
 class CodingAiderToolWindowContent(project: Project) {
     private var persistentFilesCollapsed = false
-    private var plansCollapsed = false 
+    private var plansCollapsed = false
     private var runningCommandsCollapsed = false
 
     private val runningCommandsPanel = RunningCommandsPanel(project)
@@ -46,7 +45,7 @@ class CodingAiderToolWindowContent(project: Project) {
     )
 
     private val runningCommandsCollapsible = CollapsiblePanel(
-        "Running Commands", 
+        "Running Commands",
         ::runningCommandsCollapsed,
         runningCommandsPanel.getContent()
     )
@@ -63,7 +62,7 @@ class CodingAiderToolWindowContent(project: Project) {
                         .align(com.intellij.ui.dsl.builder.Align.FILL)
                         .resizableColumn()
                 }.topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
-                
+
                 row {
                     cell(plansCollapsible.headerPanel)
                         .align(com.intellij.ui.dsl.builder.Align.FILL)
@@ -73,7 +72,7 @@ class CodingAiderToolWindowContent(project: Project) {
                         .align(com.intellij.ui.dsl.builder.Align.FILL)
                         .resizableColumn()
                 }.topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
-                
+
                 row {
                     cell(runningCommandsCollapsible.headerPanel)
                         .align(com.intellij.ui.dsl.builder.Align.FILL)
