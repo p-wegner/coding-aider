@@ -1,22 +1,23 @@
 package de.andrena.codingaider.outputview
 
-import com.vladsch.flexmark.html.HtmlRenderer
-import com.vladsch.flexmark.parser.Parser
-import com.vladsch.flexmark.util.data.MutableDataSet
-import com.vladsch.flexmark.ext.tables.TablesExtension
-import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension
+import com.intellij.util.ui.StartupUiUtil.isDarkTheme
 import com.vladsch.flexmark.ext.autolink.AutolinkExtension
-import com.vladsch.flexmark.ext.gfm.tasklist.TaskListExtension
 import com.vladsch.flexmark.ext.definition.DefinitionExtension
 import com.vladsch.flexmark.ext.footnotes.FootnoteExtension
-import com.vladsch.flexmark.ext.toc.TocExtension
-import com.vladsch.flexmark.util.ast.Node
-import com.vladsch.flexmark.util.html.MutableAttributes
-import com.vladsch.flexmark.html.AttributeProviderFactory
-import com.vladsch.flexmark.html.renderer.AttributablePart
+import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension
+import com.vladsch.flexmark.ext.gfm.tasklist.TaskListExtension
 import com.vladsch.flexmark.ext.gfm.tasklist.TaskListItem
+import com.vladsch.flexmark.ext.tables.TablesExtension
+import com.vladsch.flexmark.ext.toc.TocExtension
 import com.vladsch.flexmark.html.AttributeProvider
+import com.vladsch.flexmark.html.AttributeProviderFactory
+import com.vladsch.flexmark.html.HtmlRenderer
+import com.vladsch.flexmark.html.renderer.AttributablePart
 import com.vladsch.flexmark.html.renderer.LinkResolverContext
+import com.vladsch.flexmark.parser.Parser
+import com.vladsch.flexmark.util.ast.Node
+import com.vladsch.flexmark.util.data.MutableDataSet
+import com.vladsch.flexmark.util.html.MutableAttributes
 import de.andrena.codingaider.utils.FilePathConverter
 import javax.swing.JEditorPane
 
@@ -28,15 +29,17 @@ class CustomMarkdownViewer(private val lookupPaths: List<String> = emptyList()) 
         putClientProperty("JEditorPane.honorDisplayProperties", true)
     }
     private val options = MutableDataSet().apply {
-        set(Parser.EXTENSIONS, listOf(
-            TablesExtension.create(),
-            StrikethroughExtension.create(),
-            AutolinkExtension.create(),
-            TaskListExtension.create(),
-            DefinitionExtension.create(),
-            FootnoteExtension.create(),
-            TocExtension.create()
-        ))
+        set(
+            Parser.EXTENSIONS, listOf(
+                TablesExtension.create(),
+                StrikethroughExtension.create(),
+                AutolinkExtension.create(),
+                TaskListExtension.create(),
+                DefinitionExtension.create(),
+                FootnoteExtension.create(),
+                TocExtension.create()
+            )
+        )
     }
     private val parser = Parser.builder(options).build()
     private val renderer = HtmlRenderer.builder(options)
@@ -81,7 +84,18 @@ class CustomMarkdownViewer(private val lookupPaths: List<String> = emptyList()) 
             content: String
         ): String {
             val style =
-                getMarkdownCssStyle(bodyBg, bodyText, preBg, preBorder, preText, codeColor, linkColor, tableBorder, thBg, trEvenBg)
+                getMarkdownCssStyle(
+                    bodyBg,
+                    bodyText,
+                    preBg,
+                    preBorder,
+                    preText,
+                    codeColor,
+                    linkColor,
+                    tableBorder,
+                    thBg,
+                    trEvenBg
+                )
             return """
                     <html>
                     <head>
@@ -112,7 +126,7 @@ class CustomMarkdownViewer(private val lookupPaths: List<String> = emptyList()) 
             val project = com.intellij.openapi.project.ProjectManager.getInstance().openProjects.firstOrNull()
             val basePath = project?.basePath
             var processedMarkdown = FilePathConverter.convertPathsToMarkdownLinks(markdown, basePath)
-            
+
             // Process aider blocks
             processedMarkdown = processedMarkdown.replace(
                 Regex("<aider-intention>([\\s\\S]*?)</aider-intention>"),
@@ -121,7 +135,7 @@ class CustomMarkdownViewer(private val lookupPaths: List<String> = emptyList()) 
                 Regex("<aider-summary>([\\s\\S]*?)</aider-summary>"),
                 "<div class=\"aider-summary\">$1</div>"
             )
-            
+
             val document = parser.parse(processedMarkdown)
             val html = renderer.render(document)
 
