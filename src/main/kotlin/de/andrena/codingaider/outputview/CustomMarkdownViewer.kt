@@ -337,6 +337,7 @@ fun getMarkdownCssStyle(
                                         left: 0;
                                         font-family: monospace;
                                         margin-right: 0.5em;
+                                        color: inherit !important;
                                     }
                                     
                                     /* Blockquotes */
