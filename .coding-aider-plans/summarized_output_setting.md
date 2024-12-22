@@ -38,14 +38,24 @@ the results. Adding a structured summary would make it easier to:
 
 ## XML Structure
 
-The summary output will use the following XML format:
+The output will use the following XML format:
 
 ```xml
+<aider-intention>
+    Description of planned changes
+</aider-intention>
+
+[The actual changes are shown here]
 
 <aider-summary>
-    The summary content goes here
+    Summary of completed changes
 </aider-summary>
 ```
+
+The format includes:
+- An intention block describing planned changes
+- The actual changes in the middle
+- A summary block with the completed changes
 
 ## References
 
