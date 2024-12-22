@@ -231,19 +231,19 @@ fun getMarkdownCssStyle(
     trEvenBg: String = "#f5f5f5"
 ) = """<style type="text/css">
                                     body { 
-                                        font-family: sans-serif; 
+                                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
                                         margin: 20px;
                                         line-height: 1.6;
-                                        background-color: ${bodyBg};
-                                        color: ${bodyText};
+                                        background-color: ${bodyBg} !important;
+                                        color: ${bodyText} !important;
                                     }
                                     pre { 
-                                        background-color: ${preBg}; 
+                                        background-color: ${preBg} !important; 
                                         padding: 10px; 
                                         border-width: 1px;
                                         border-style: solid;
-                                        border-color: ${preBorder};
-                                        color: ${preText};
+                                        border-color: ${preBorder} !important;
+                                        color: ${preText} !important;
                                         margin: 1em 0;
                                     }
                                     code { 
