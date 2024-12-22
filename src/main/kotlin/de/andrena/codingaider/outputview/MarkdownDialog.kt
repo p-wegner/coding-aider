@@ -238,7 +238,7 @@ class MarkdownDialog(
                     try {
                         if (isProcessFinished) {
                             try {
-                                if (getInstance().enableAutoPlanContinue) {
+                                if (getInstance().enableAutoPlanContinue && commandData?.structuredMode == true) {
                                     project.service<ContinuePlanService>().continuePlan()
                                 }
                             } catch (e: Exception) {
