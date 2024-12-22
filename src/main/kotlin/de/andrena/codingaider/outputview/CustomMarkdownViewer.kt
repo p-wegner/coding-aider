@@ -105,38 +105,87 @@ class CustomMarkdownViewer(private val lookupPaths: List<String> = emptyList()) 
             val html = renderer.render(document)
 
             val colors = if (isDarkTheme) {
-                arrayOf(
-                    "#2b2b2b", // body background
-                    "#ffffff", // body text
-                    "#1e1e1e", // pre background
-                    "#666666", // pre border
-                    "#ffffff", // pre/code text
-                    "#ffffff", // code color
-                    "#589df6", // link color
-                    "#666666", // table border
-                    "#323232", // th background
-                    "#363636"  // tr even background
+                mapOf(
+                    "bodyBg" to "#2b2b2b",
+                    "bodyText" to "#ffffff", 
+                    "preBg" to "#1e1e1e",
+                    "preBorder" to "#666666",
+                    "preText" to "#ffffff",
+                    "codeColor" to "#ffffff",
+                    "linkColor" to "#589df6",
+                    "tableBorder" to "#666666",
+                    "thBg" to "#323232",
+                    "trEvenBg" to "#363636",
+                    "searchBg" to "#362a1e",
+                    "replaceBg" to "#1e3626",
+                    "searchText" to "#ff8c7c",
+                    "replaceText" to "#7cff8c"
                 )
             } else {
-                arrayOf(
-                    "#ffffff", // body background
-                    "#000000", // body text
-                    "#f5f5f5", // pre background
-                    "#cccccc", // pre border
-                    "#000000", // pre/code text
-                    "#000000", // code color
-                    "#0066cc", // link color
-                    "#cccccc", // table border
-                    "#e6e6e6", // th background
-                    "#f5f5f5"  // tr even background
+                mapOf(
+                    "bodyBg" to "#ffffff",
+                    "bodyText" to "#000000",
+                    "preBg" to "#f5f5f5", 
+                    "preBorder" to "#cccccc",
+                    "preText" to "#000000",
+                    "codeColor" to "#000000",
+                    "linkColor" to "#0066cc",
+                    "tableBorder" to "#cccccc",
+                    "thBg" to "#e6e6e6",
+                    "trEvenBg" to "#f5f5f5",
+                    "searchBg" to "#ffedeb",
+                    "replaceBg" to "#ebffed",
+                    "searchText" to "#d73a49",
+                    "replaceText" to "#28a745"
                 )
             }
 
             val styledHtml = """
                 <html>
-                <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; 
-                            margin: 20px; line-height: 1.6; background-color: ${colors[0]}; color: ${colors[1]};">
-                    $html
+                <head>
+                    <style>
+                        body {
+                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                            margin: 20px;
+                            line-height: 1.6;
+                            background-color: ${colors["bodyBg"]};
+                            color: ${colors["bodyText"]};
+                        }
+                        pre {
+                            background-color: ${colors["preBg"]};
+                            border: 1px solid ${colors["preBorder"]};
+                            padding: 10px;
+                            margin: 0;
+                            border-radius: 4px;
+                        }
+                        .search-block {
+                            background-color: ${colors["searchBg"]};
+                            color: ${colors["searchText"]};
+                            padding: 4px 8px;
+                            margin: 0;
+                        }
+                        .replace-block {
+                            background-color: ${colors["replaceBg"]};
+                            color: ${colors["replaceText"]};
+                            padding: 4px 8px;
+                            margin: 0;
+                        }
+                        .divider {
+                            background-color: ${colors["preBorder"]};
+                            height: 1px;
+                            margin: 0;
+                            padding: 0;
+                        }
+                        .file-path {
+                            font-family: monospace;
+                            padding: 4px 0;
+                            margin-top: 16px;
+                            color: ${colors["bodyText"]};
+                        }
+                    </style>
+                </head>
+                <body>
+                    ${processSearchReplaceBlocks(html)}
                 </body>
                 </html>
             """.trimIndent()
@@ -175,3 +224,19 @@ class CustomMarkdownViewer(private val lookupPaths: List<String> = emptyList()) 
 }
 
 
+    private fun processSearchReplaceBlocks(html: String): String {
+        return html.replace(
+            Regex("""(?s)<pre><code>(.+?)<<<<<<< SEARCH\n(.+?)=======\n(.+?)>>>>>>> REPLACE\n</code></pre>"""),
+            { matchResult ->
+                val (_, filePath, searchBlock, replaceBlock) = matchResult.groupValues
+                """
+                <div class="file-path">$filePath</div>
+                <pre>
+                <code class="search-block">$searchBlock</code>
+                <div class="divider"></div>
+                <code class="replace-block">$replaceBlock</code>
+                </pre>
+                """.trimIndent()
+            }
+        )
+    }
