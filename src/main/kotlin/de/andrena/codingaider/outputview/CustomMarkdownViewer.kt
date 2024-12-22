@@ -227,21 +227,21 @@ fun getMarkdownCssStyle(
                                         font-family: Arial, sans-serif; 
                                         margin: 20px;
                                         line-height: 1.6;
-                                        background-color: $bodyBg;
-                                        color: $bodyText;
+                                        background-color: $bodyBg !important;
+                                        color: $bodyText !important;
                                     }
                                     pre { 
-                                        background-color: $preBg; 
+                                        background-color: $preBg !important; 
                                         padding: 10px; 
-                                        border: 1px solid $preBorder;
-                                        color: $preText;
+                                        border: 1px solid $preBorder !important;
+                                        color: $preText !important;
                                     }
                                     code { 
-                                        font-family: "JetBrains Mono", "Courier New", Courier, monospace;
-                                        color: $codeColor;
+                                        font-family: "JetBrains Mono", "Courier New", Courier, monospace !important;
+                                        color: $codeColor !important;
                                     }
                                     a { 
-                                        color: $linkColor; 
+                                        color: $linkColor !important; 
                                         text-decoration: underline;
                                     }
                                     img { 
