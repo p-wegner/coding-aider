@@ -40,7 +40,7 @@ class ActivePlanService(private val project: Project) {
 
     fun handlePlanCompletion(success: Boolean = true) {
         refreshActivePlan()
-        
+
         if (!success) {
             clearActivePlan()
             return
@@ -111,7 +111,7 @@ class ActivePlanService(private val project: Project) {
         if (openItems.isEmpty()) {
             // If current plan has no open items but isn't complete, it might have uncompleted child plans
             if (!plan.isPlanComplete()) {
-                val nextPlan = plan.getNextUncompletedPlan()
+                val nextPlan = plan.getNextUncompletedPlan().firstOrNull()
                 if (nextPlan != null) {
                     setActivePlan(nextPlan)
                 } else {
