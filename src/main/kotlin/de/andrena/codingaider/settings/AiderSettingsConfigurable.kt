@@ -216,6 +216,12 @@ class AiderSettingsConfigurable() : Configurable {
                             "Select the LLM model to use for generating documentation. The default is the LLM model specified in the settings."
                     }
                 }
+                row {
+                    val settings = AiderSettings.getInstance()
+                    checkBox("Enable summarized output")
+                        .bindSelected(settings::summarizedOutput)
+                        .comment("When enabled, Aider will include XML-tagged summaries of changes in its output")
+                }
             }
 
         }.apply {
