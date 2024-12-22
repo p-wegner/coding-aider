@@ -399,7 +399,18 @@ class PlanViewer(private val project: Project) {
             val selectedPlan = plansList.selectedValue ?: return
 
             val dialog = object : DialogWrapper(project) {
-                private val messageField = JTextField()
+                private val descriptionField = JTextField()
+                private val messageArea = JTextArea().apply {
+                    lineWrap = true
+                    wrapStyleWord = true
+                    rows = 5
+                    font = UIManager.getFont("TextField.font")
+                    border = UIManager.getBorder("TextField.border")
+                }
+                private val markdownViewer = CustomMarkdownViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
+                    setDarkTheme(!JBColor.isBright())
+                    setMarkdownContent(selectedPlan.plan)
+                }
 
                 init {
                     title = "Refine Plan"
@@ -407,25 +418,52 @@ class PlanViewer(private val project: Project) {
                 }
 
                 override fun createCenterPanel(): JComponent {
+                    val messageScrollPane = JBScrollPane(messageArea)
+                    val previewScrollPane = JBScrollPane(markdownViewer.component).apply {
+                        preferredSize = Dimension(600, 300)
+                    }
+
                     return panel {
-                        row {
-                            label("How would you like to refine this plan?")
+                        group("Current Plan") {
+                            row {
+                                cell(previewScrollPane)
+                                    .align(Align.FILL)
+                                    .resizableColumn()
+                            }.resizableRow()
                         }
-                        row {
-                            cell(messageField)
-                                .align(Align.FILL)
-                                .resizableColumn()
-                                .focused()
-                        }
-                        row {
-                            comment("Enter your request to refine or extend the plan. This may create subplans if needed.")
+                        
+                        group("Refinement Details") {
+                            row("Description:") {
+                                cell(descriptionField)
+                                    .align(Align.FILL)
+                                    .resizableColumn()
+                                    .comment("Short description of this refinement (e.g. 'Add error handling')")
+                            }
+                            row("Refinement Request:") {
+                                cell(messageScrollPane)
+                                    .align(Align.FILL)
+                                    .resizableColumn()
+                                    .comment("""
+                                        Describe how you want to refine or extend the plan.
+                                        This may create subplans if the changes are substantial.
+                                        Use multiple lines for complex requests.
+                                    """.trimIndent())
+                            }.resizableRow()
                         }
                     }
                 }
 
-                override fun getPreferredFocusedComponent(): JComponent = messageField
+                override fun getPreferredFocusedComponent(): JComponent = descriptionField
 
-                fun getMessage(): String = messageField.text
+                fun getMessage(): String {
+                    val description = descriptionField.text.trim()
+                    val message = messageArea.text.trim()
+                    return if (description.isNotEmpty()) {
+                        "$description:\n$message"
+                    } else {
+                        message
+                    }
+                }
             }
 
             if (dialog.showAndGet()) {
