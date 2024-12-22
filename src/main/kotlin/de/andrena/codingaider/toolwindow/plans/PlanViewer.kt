@@ -126,10 +126,16 @@ class PlanViewer(private val project: Project) {
                 if (isExpanding) {
                     // Gradually show children
                     expandedPlans.add(planId)
-                    updatePlansWithAnimation(project.getService(AiderPlanService::class.java).getAiderPlans(), progress.toFloat() / steps)
+                    updatePlansWithAnimation(
+                        project.getService(AiderPlanService::class.java).getAiderPlans(),
+                        progress.toFloat() / steps
+                    )
                 } else {
                     // Gradually hide children
-                    updatePlansWithAnimation(project.getService(AiderPlanService::class.java).getAiderPlans(), (steps - progress).toFloat() / steps)
+                    updatePlansWithAnimation(
+                        project.getService(AiderPlanService::class.java).getAiderPlans(),
+                        (steps - progress).toFloat() / steps
+                    )
                 }
             } else {
                 if (!isExpanding) {
@@ -178,18 +184,18 @@ class PlanViewer(private val project: Project) {
             val contentPanel = JPanel(BorderLayout(4, 0))
             contentPanel.isOpaque = false
             leftPanel.isOpaque = false
-            
+
             // Ensure consistent icon sizing
             statusIcon.preferredSize = Dimension(16, 16)
             leftPanel.add(statusIcon)
-            
+
             // Add right padding to count label
             countLabel.border = BorderFactory.createEmptyBorder(0, 0, 0, 4)
-            
+
             contentPanel.add(leftPanel, BorderLayout.WEST)
             contentPanel.add(label, BorderLayout.CENTER)
             contentPanel.add(countLabel, BorderLayout.EAST)
-            
+
             add(contentPanel, BorderLayout.CENTER)
             border = BorderFactory.createEmptyBorder(2, 4, 2, 4)
         }
@@ -206,19 +212,22 @@ class PlanViewer(private val project: Project) {
             // Enhanced visual feedback for selection and hover
             background = when {
                 isSelected -> list?.selectionBackground
-                isHovered -> if (isDark) 
-                    list?.selectionBackground?.darker()?.darker()?.brighter() 
-                else 
+                isHovered -> if (isDark)
+                    list?.selectionBackground?.darker()?.darker()?.brighter()
+                else
                     list?.selectionBackground?.brighter()?.brighter()
+
                 else -> list?.background
             }
-            
+
             // Add subtle border for better hierarchy visualization
             border = BorderFactory.createCompoundBorder(
-                BorderFactory.createMatteBorder(0, 0, 1, 0, if (isDark) 
-                    JBColor(Color(60, 60, 60), Color(50, 50, 50))
-                else 
-                    JBColor(Color(230, 230, 230), Color(60, 60, 60))),
+                BorderFactory.createMatteBorder(
+                    0, 0, 1, 0, if (isDark)
+                        JBColor(Color(60, 60, 60), Color(50, 50, 50))
+                    else
+                        JBColor(Color(230, 230, 230), Color(60, 60, 60))
+                ),
                 border
             )
             label.background = background
@@ -276,7 +285,7 @@ class PlanViewer(private val project: Project) {
 
                 // Set label text with tree prefix and plan name
                 label.text = treePrefix + fileName
-                
+
                 // Ensure consistent font
                 label.font = UIManager.getFont("Tree.font")
                 countLabel.font = label.font
@@ -305,6 +314,7 @@ class PlanViewer(private val project: Project) {
                         Color(76, 175, 80),  // Light theme - Material Design green
                         Color(129, 199, 132) // Dark theme - Lighter green
                     )
+
                     else -> JBColor(
                         Color(255, 152, 0),  // Light theme - Material Design orange
                         Color(255, 183, 77)  // Dark theme - Lighter orange
@@ -442,17 +452,19 @@ class PlanViewer(private val project: Project) {
                                     .resizableColumn()
                             }.resizableRow()
                         }
-                        
-                        group("Refinement Details") {
-                            row("Refinement Request:") {
+
+                        group("Refinement Request:") {
+                            row {
                                 cell(messageScrollPane)
                                     .align(Align.FILL)
                                     .resizableColumn()
-                                    .comment("""
+                                    .comment(
+                                        """
                                         Describe how you want to refine or extend the plan.
                                         This may create subplans if the changes are substantial.
                                         Use multiple lines for complex requests.
-                                    """.trimIndent())
+                                    """.trimIndent()
+                                    )
                             }.resizableRow()
                         }
                     }
@@ -503,15 +515,6 @@ class PlanViewer(private val project: Project) {
                 }
 
                 override fun createCenterPanel(): JComponent {
-                    val messageArea = JTextArea().apply {
-                        lineWrap = true
-                        wrapStyleWord = true
-                        rows = 5
-                        font = UIManager.getFont("TextField.font")
-                        border = UIManager.getBorder("TextField.border")
-                    }
-                    val messageScrollPane = JBScrollPane(messageArea)
-
                     val markdownViewer = CustomMarkdownViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
                         setDarkTheme(!JBColor.isBright())
                         setMarkdownContent(selectedPlan.plan)
@@ -528,19 +531,7 @@ class PlanViewer(private val project: Project) {
                                     .resizableColumn()
                             }.resizableRow()
                         }
-                        
-                        group("Refinement Details") {
-                            row("Refinement Request:") {
-                                cell(messageScrollPane)
-                                    .align(Align.FILL)
-                                    .resizableColumn()
-                                    .comment("""
-                                        Describe how you want to refine or extend the plan.
-                                        This may create subplans if the changes are substantial.
-                                        Use multiple lines for complex requests.
-                                    """.trimIndent())
-                            }.resizableRow()
-                        }
+
                     }
                 }
             }

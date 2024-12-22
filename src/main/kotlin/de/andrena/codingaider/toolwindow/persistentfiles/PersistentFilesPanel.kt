@@ -62,37 +62,35 @@ class PersistentFilesPanel(private val project: Project) {
 
     fun getContent(): JComponent {
         return panel {
-            group {
-                row {
-                    val toolbar = ActionManager.getInstance().createActionToolbar(
-                        "PersistentFilesToolbar",
-                        DefaultActionGroup().apply {
-                            add(object : AnAction("Add Files", "Add files to persistent list", AllIcons.General.Add) {
-                                override fun actionPerformed(e: AnActionEvent) = addPersistentFiles()
-                            })
-                            add(object :
-                                AnAction("Add Open Files", "Add currently open files", AllIcons.Actions.OpenNewTab) {
-                                override fun actionPerformed(e: AnActionEvent) = addOpenFilesToPersistent()
-                            })
-                            add(object :
-                                AnAction("Toggle Read-Only", "Toggle read-only status", AllIcons.Actions.Edit) {
-                                override fun actionPerformed(e: AnActionEvent) = toggleReadOnlyMode()
-                            })
-                            add(object : AnAction("Remove Files", "Remove selected files", AllIcons.General.Remove) {
-                                override fun actionPerformed(e: AnActionEvent) = removeSelectedFiles()
-                            })
-                        },
-                        true
-                    )
-                    toolbar.targetComponent = persistentFilesList
-                    cell(Wrapper(toolbar.component))
-                }
-                row {
-                    scrollCell(persistentFilesList)
-                        .align(Align.FILL)
-                        .resizableColumn()
-                }
-            }.resizableRow()
+            row {
+                val toolbar = ActionManager.getInstance().createActionToolbar(
+                    "PersistentFilesToolbar",
+                    DefaultActionGroup().apply {
+                        add(object : AnAction("Add Files", "Add files to persistent list", AllIcons.General.Add) {
+                            override fun actionPerformed(e: AnActionEvent) = addPersistentFiles()
+                        })
+                        add(object :
+                            AnAction("Add Open Files", "Add currently open files", AllIcons.Actions.OpenNewTab) {
+                            override fun actionPerformed(e: AnActionEvent) = addOpenFilesToPersistent()
+                        })
+                        add(object :
+                            AnAction("Toggle Read-Only", "Toggle read-only status", AllIcons.Actions.Edit) {
+                            override fun actionPerformed(e: AnActionEvent) = toggleReadOnlyMode()
+                        })
+                        add(object : AnAction("Remove Files", "Remove selected files", AllIcons.General.Remove) {
+                            override fun actionPerformed(e: AnActionEvent) = removeSelectedFiles()
+                        })
+                    },
+                    true
+                )
+                toolbar.targetComponent = persistentFilesList
+                cell(Wrapper(toolbar.component))
+            }
+            row {
+                scrollCell(persistentFilesList)
+                    .align(Align.FILL)
+                    .resizableColumn()
+            }
         }
     }
 

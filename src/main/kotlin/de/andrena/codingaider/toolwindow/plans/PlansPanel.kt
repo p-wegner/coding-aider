@@ -42,30 +42,28 @@ class PlansPanel(private val project: Project) {
 
     fun getContent(): JComponent {
         return panel {
-            group {
-                row {
-                    val toolbar = ActionManager.getInstance().createActionToolbar(
-                        "AiderPlansToolbar",
-                        DefaultActionGroup().apply {
-                            add(planViewer.NewPlanAction())
-                            addSeparator()
-                            add(planViewer.RefreshPlansAction())
-                            add(planViewer.ContinuePlanAction())
-                            add(planViewer.RefinePlanAction())
-                            add(planViewer.EditContextAction())
-                            add(planViewer.DeletePlanAction())
-                        },
-                        true
-                    )
-                    toolbar.targetComponent = planViewer.plansList
-                    cell(Wrapper(toolbar.component))
-                }
-                row {
-                    scrollCell(planViewer.plansList)
-                        .align(Align.FILL)
-                        .resizableColumn()
-                }
-            }.resizableRow()
+            row {
+                val toolbar = ActionManager.getInstance().createActionToolbar(
+                    "AiderPlansToolbar",
+                    DefaultActionGroup().apply {
+                        add(planViewer.NewPlanAction())
+                        addSeparator()
+                        add(planViewer.RefreshPlansAction())
+                        add(planViewer.ContinuePlanAction())
+                        add(planViewer.RefinePlanAction())
+                        add(planViewer.EditContextAction())
+                        add(planViewer.DeletePlanAction())
+                    },
+                    true
+                )
+                toolbar.targetComponent = planViewer.plansList
+                cell(Wrapper(toolbar.component))
+            }
+            row {
+                scrollCell(planViewer.plansList)
+                    .align(Align.FILL)
+                    .resizableColumn()
+            }
         }
     }
 }

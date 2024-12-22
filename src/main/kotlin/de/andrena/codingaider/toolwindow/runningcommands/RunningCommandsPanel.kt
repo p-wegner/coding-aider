@@ -33,32 +33,30 @@ class RunningCommandsPanel(private val project: Project) {
 
     fun getContent(): JComponent {
         return panel {
-            group {
-                row {
-                    val toolbar = ActionManager.getInstance().createActionToolbar(
-                        "RunningCommandsToolbar",
-                        DefaultActionGroup().apply {
-                            add(object : AnAction(
-                                "Show Last Command Result",
-                                "Show the result of the last command",
-                                AllIcons.Actions.Show
-                            ) {
-                                override fun actionPerformed(e: AnActionEvent) {
-                                    ShowLastCommandResultAction().showLastCommandFor(project)
-                                }
-                            })
-                        },
-                        true
-                    )
-                    toolbar.targetComponent = runningCommandsList
-                    cell(Wrapper(toolbar.component))
-                }
-                row {
-                    scrollCell(runningCommandsList)
-                        .align(Align.FILL)
-                        .resizableColumn()
-                }
-            }.resizableRow()
+            row {
+                val toolbar = ActionManager.getInstance().createActionToolbar(
+                    "RunningCommandsToolbar",
+                    DefaultActionGroup().apply {
+                        add(object : AnAction(
+                            "Show Last Command Result",
+                            "Show the result of the last command",
+                            AllIcons.Actions.Show
+                        ) {
+                            override fun actionPerformed(e: AnActionEvent) {
+                                ShowLastCommandResultAction().showLastCommandFor(project)
+                            }
+                        })
+                    },
+                    true
+                )
+                toolbar.targetComponent = runningCommandsList
+                cell(Wrapper(toolbar.component))
+            }
+            row {
+                scrollCell(runningCommandsList)
+                    .align(Align.FILL)
+                    .resizableColumn()
+            }
         }
     }
 }

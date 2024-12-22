@@ -4,12 +4,10 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
-import com.intellij.ui.components.panels.Wrapper
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.toolwindow.persistentfiles.PersistentFilesPanel
 import de.andrena.codingaider.toolwindow.plans.PlansPanel
 import de.andrena.codingaider.toolwindow.runningcommands.RunningCommandsPanel
-import com.intellij.ui.components.CollapsiblePanel
 import javax.swing.JComponent
 
 class CodingAiderToolWindow : ToolWindowFactory {
