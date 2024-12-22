@@ -203,11 +203,24 @@ class PlanViewer(private val project: Project) {
         ): Component {
             val isHovered = index == (list as? JBList<*>)?.selectedIndex
             val isDark = !JBColor.isBright()
+            // Enhanced visual feedback for selection and hover
             background = when {
                 isSelected -> list?.selectionBackground
-                isHovered -> if (isDark) list?.selectionBackground?.darker()?.darker() else list?.selectionBackground?.brighter()
+                isHovered -> if (isDark) 
+                    list?.selectionBackground?.darker()?.darker()?.brighter() 
+                else 
+                    list?.selectionBackground?.brighter()?.brighter()
                 else -> list?.background
             }
+            
+            // Add subtle border for better hierarchy visualization
+            border = BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 0, if (isDark) 
+                    JBColor(Color(60, 60, 60), Color(50, 50, 50))
+                else 
+                    JBColor(Color(230, 230, 230), Color(60, 60, 60))),
+                border
+            )
             label.background = background
             label.foreground = when {
                 isSelected -> list?.selectionForeground
@@ -219,20 +232,20 @@ class PlanViewer(private val project: Project) {
                 val planFile = value.planFiles.firstOrNull()
                 val fileName = planFile?.filePath?.let { File(it).nameWithoutExtension } ?: "Unknown Plan"
 
-                // Calculate tree structure with standard tree view representation
+                // Calculate tree structure with enhanced visual representation
                 val treePrefix = buildString {
                     val ancestors = value.getAncestors()
                     val maxDepth = 8 // Maximum recommended nesting depth
 
-                    // Draw connecting lines for ancestors
+                    // Draw connecting lines for ancestors with improved visibility
                     ancestors.forEachIndexed { index, ancestor ->
                         val hasNextSibling = ancestor.findSiblingPlans().any { sibling ->
                             sibling.mainPlanFile?.filePath?.compareTo(ancestor.mainPlanFile?.filePath ?: "") ?: 0 > 0
                         }
                         if (index >= maxDepth - 1) {
-                            append(if (hasNextSibling) "⋮   " else "    ")
+                            append(if (hasNextSibling) "┆   " else "    ") // Dotted line for deep nesting
                         } else {
-                            append(if (hasNextSibling) "│   " else "    ")
+                            append(if (hasNextSibling) "┃   " else "    ") // Bold line for better visibility
                         }
                     }
 
@@ -240,17 +253,19 @@ class PlanViewer(private val project: Project) {
                     val isLastChild = value.parentPlan?.childPlans?.lastOrNull() == value
                     val hasChildren = value.childPlans.isNotEmpty()
 
-                    // Add current node connector
+                    // Add current node connector with enhanced visibility
                     if (depth >= maxDepth) {
-                        append(if (isLastChild) "└── " else "├── ")
+                        append(if (isLastChild) "┗━━ " else "┣━━ ") // Double line for better visibility
                     } else {
-                        append(if (isLastChild) "└── " else "├── ")
+                        append(if (isLastChild) "┗━━ " else "┣━━ ")
                     }
 
-                    // Add expand/collapse indicator
+                    // Add clear expand/collapse indicator with spacing
                     if (hasChildren) {
                         val isExpanded = expandedPlans.contains(value.mainPlanFile?.filePath)
-                        append(if (isExpanded) "▼ " else "▶ ")
+                        append(if (isExpanded) "▼  " else "▶  ") // Added extra space for better readability
+                    } else {
+                        append("   ") // Consistent spacing for leaf nodes
                     }
                 }
 
