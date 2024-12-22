@@ -32,7 +32,6 @@ import de.andrena.codingaider.settings.AiderProjectSettings
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.settings.LlmSelection
 import de.andrena.codingaider.utils.ApiKeyChecker
-import de.andrena.codingaider.utils.CollapsiblePanel
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
 import java.awt.BorderLayout
 import java.awt.Dimension
@@ -305,19 +304,16 @@ class AiderInputDialog(
         })
         topPanel.add(optionsManager.panel, gbc.apply { gridy++ })
 
-        // Context view with collapsible UI
+        // Context view with collapsible UI using IntelliJ's UI DSL
         val contextViewPanel = AiderContextViewPanel(project, aiderContextView)
-        val contextCollapsible = CollapsiblePanel(
-            "Context Files",
-            projectSettings::isContextCollapsed, // Always expanded
-            contextViewPanel
-        )
-
-        val contextPanel = JPanel(BorderLayout()).apply {
-            add(contextCollapsible.headerPanel.apply {
-                border = JBUI.Borders.empty(2)
-            }, BorderLayout.NORTH)
-            add(contextCollapsible.contentPanel, BorderLayout.CENTER)
+        val contextPanel = panel {
+            collapsibleGroup("Context Files") {
+                row {
+                    cell(contextViewPanel)
+                        .align(com.intellij.ui.dsl.builder.Align.FILL)
+                }
+            }.expanded(!projectSettings.isContextCollapsed)
+        }.apply {
             border = JBUI.Borders.empty(5)
         }
 
