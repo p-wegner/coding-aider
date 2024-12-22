@@ -224,17 +224,18 @@ fun getMarkdownCssStyle(
     trEvenBg: String
 ) = """<style type="text/css">
                                     body { 
-                                        font-family: Arial, sans-serif; 
+                                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
                                         margin: 20px;
                                         line-height: 1.6;
-                                        background-color: $bodyBg !important;
+                                        background: $bodyBg !important;
                                         color: $bodyText !important;
                                     }
                                     pre { 
-                                        background-color: $preBg !important; 
+                                        background: $preBg !important; 
                                         padding: 10px; 
                                         border: 1px solid $preBorder !important;
                                         color: $preText !important;
+                                        margin: 1em 0;
                                     }
                                     code { 
                                         font-family: "JetBrains Mono", "Courier New", Courier, monospace !important;
