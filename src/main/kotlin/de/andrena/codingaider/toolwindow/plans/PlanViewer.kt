@@ -411,7 +411,6 @@ class PlanViewer(private val project: Project) {
             val selectedPlan = plansList.selectedValue ?: return
 
             val dialog = object : DialogWrapper(project) {
-                private val descriptionField = JTextField()
                 private val messageArea = JTextArea().apply {
                     lineWrap = true
                     wrapStyleWord = true
@@ -445,12 +444,6 @@ class PlanViewer(private val project: Project) {
                         }
                         
                         group("Refinement Details") {
-                            row("Description:") {
-                                cell(descriptionField)
-                                    .align(Align.FILL)
-                                    .resizableColumn()
-                                    .comment("Short description of this refinement (e.g. 'Add error handling')")
-                            }
                             row("Refinement Request:") {
                                 cell(messageScrollPane)
                                     .align(Align.FILL)
@@ -465,16 +458,10 @@ class PlanViewer(private val project: Project) {
                     }
                 }
 
-                override fun getPreferredFocusedComponent(): JComponent = descriptionField
+                override fun getPreferredFocusedComponent(): JComponent = messageArea
 
                 fun getMessage(): String {
-                    val description = descriptionField.text.trim()
-                    val message = messageArea.text.trim()
-                    return if (description.isNotEmpty()) {
-                        "$description:\n$message"
-                    } else {
-                        message
-                    }
+                    return messageArea.text.trim()
                 }
             }
 
