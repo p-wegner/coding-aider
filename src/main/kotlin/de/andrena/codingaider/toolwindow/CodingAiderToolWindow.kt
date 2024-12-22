@@ -4,11 +4,12 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
+import com.intellij.ui.components.panels.Wrapper
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.toolwindow.persistentfiles.PersistentFilesPanel
 import de.andrena.codingaider.toolwindow.plans.PlansPanel
 import de.andrena.codingaider.toolwindow.runningcommands.RunningCommandsPanel
-import de.andrena.codingaider.utils.CollapsiblePanel
+import com.intellij.ui.components.CollapsiblePanel
 import javax.swing.JComponent
 
 class CodingAiderToolWindow : ToolWindowFactory {
@@ -24,62 +25,34 @@ class CodingAiderToolWindow : ToolWindowFactory {
 }
 
 class CodingAiderToolWindowContent(project: Project) {
-    private var persistentFilesCollapsed = false
-    private var plansCollapsed = false
-    private var runningCommandsCollapsed = false
-
     private val runningCommandsPanel = RunningCommandsPanel(project)
     private val plansPanel = PlansPanel(project)
     private val persistentFilesPanel = PersistentFilesPanel(project)
-
-    private val persistentFilesCollapsible = CollapsiblePanel(
-        "Persistent Files",
-        ::persistentFilesCollapsed,
-        persistentFilesPanel.getContent()
-    )
-
-    private val plansCollapsible = CollapsiblePanel(
-        "Plans",
-        ::plansCollapsed,
-        plansPanel.getContent()
-    )
-
-    private val runningCommandsCollapsible = CollapsiblePanel(
-        "Running Commands",
-        ::runningCommandsCollapsed,
-        runningCommandsPanel.getContent()
-    )
 
     fun getContent(): JComponent {
         return panel {
             indent {
                 row {
-                    cell(persistentFilesCollapsible.headerPanel)
-                        .align(com.intellij.ui.dsl.builder.Align.FILL)
-                }
-                row {
-                    cell(persistentFilesCollapsible.contentPanel)
-                        .align(com.intellij.ui.dsl.builder.Align.FILL)
+                    cell(CollapsiblePanel(
+                        "Persistent Files",
+                        persistentFilesPanel.getContent()
+                    )).align(com.intellij.ui.dsl.builder.Align.FILL)
                         .resizableColumn()
                 }.topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
 
                 row {
-                    cell(plansCollapsible.headerPanel)
-                        .align(com.intellij.ui.dsl.builder.Align.FILL)
-                }
-                row {
-                    cell(plansCollapsible.contentPanel)
-                        .align(com.intellij.ui.dsl.builder.Align.FILL)
+                    cell(CollapsiblePanel(
+                        "Plans",
+                        plansPanel.getContent()
+                    )).align(com.intellij.ui.dsl.builder.Align.FILL)
                         .resizableColumn()
                 }.topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
 
                 row {
-                    cell(runningCommandsCollapsible.headerPanel)
-                        .align(com.intellij.ui.dsl.builder.Align.FILL)
-                }
-                row {
-                    cell(runningCommandsCollapsible.contentPanel)
-                        .align(com.intellij.ui.dsl.builder.Align.FILL)
+                    cell(CollapsiblePanel(
+                        "Running Commands",
+                        runningCommandsPanel.getContent()
+                    )).align(com.intellij.ui.dsl.builder.Align.FILL)
                         .resizableColumn()
                 }.topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
             }
