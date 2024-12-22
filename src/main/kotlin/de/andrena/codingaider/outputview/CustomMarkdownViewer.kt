@@ -227,7 +227,7 @@ fun getMarkdownCssStyle(
                                         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
                                         margin: 20px;
                                         line-height: 1.6;
-                                        background: $bodyBg !important;
+                                        background-color: $bodyBg !important;
                                         color: $bodyText !important;
                                     }
                                     pre { 
