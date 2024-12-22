@@ -111,7 +111,6 @@ class AiderInputDialog(
     }
     private val historyComboBox = AiderHistoryComboBox(project, inputTextField)
     private val aiderContextView: AiderContextView
-    private val persistentFileService: PersistentFileService
     private var splitPane: OnePixelSplitter
     private val settingsButton: ActionButton
     private val optionsManager = AiderOptionsManager(project, optionsPanel)
@@ -120,10 +119,9 @@ class AiderInputDialog(
         title = "Aider Command"
         messageLabel = JLabel(PROMPT_LABEL)
 
-        persistentFileService = project.service<PersistentFileService>()
         aiderContextView = AiderContextView(
             project,
-            files + persistentFileService.getPersistentFiles(),
+            files,
             { fileName -> insertTextAtCursor(fileName) },
             {
                 lazyCacheDelegate.evict()
@@ -309,7 +307,6 @@ class AiderInputDialog(
             }
                 .apply { expanded = !projectSettings.isContextCollapsed }
                 .addExpandedListener { projectSettings.isContextCollapsed = !it }
-//                .expanded(!projectSettings.isContextCollapsed)
         }.apply {
             border = JBUI.Borders.empty(5)
         }
@@ -344,7 +341,7 @@ class AiderInputDialog(
     private fun getStructuredModeMessageLabel(): String {
         val existingPlans =
             project.service<AiderPlanPromptService>()
-                .filterPlanRelevantFiles(persistentFileService.getPersistentFiles())
+                .filterPlanRelevantFiles(project.service<PersistentFileService>().getPersistentFiles())
         if (existingPlans.isNotEmpty()) {
             val firstPlan = existingPlans.first()
             val planName = firstPlan.filePath.substringAfterLast("/")

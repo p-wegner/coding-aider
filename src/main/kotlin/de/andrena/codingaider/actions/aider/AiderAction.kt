@@ -42,8 +42,7 @@ class AiderAction : AnAction() {
                     val commandData = collectDefaultShellCommandData(allFiles, project)
                     ShellExecutor(project, commandData).execute()
                 } else {
-                    val dialog = AiderInputDialog(project, allFiles.distinctBy { it.filePath }
-                    )
+                    val dialog = AiderInputDialog(project, allFiles)
                     if (dialog.showAndGet()) {
                         val commandData = collectCommandData(dialog, project)
                         AiderDialogStateService.getInstance(project).saveState(

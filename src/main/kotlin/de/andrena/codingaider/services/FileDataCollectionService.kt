@@ -30,6 +30,6 @@ class FileDataCollectionService(private val project: Project) {
         return traversedFiles.distinctBy { normalizePath(it.filePath) }
     }
 
-    private fun normalizePath(path: String): String = path.replace('\\', '/')
+    private fun normalizePath(path: String): String = path.replace('\\', '/').replace("//", "/")
 
 }

@@ -56,15 +56,12 @@ class EditContextDialog(
     private fun loadContextFiles() {
         contextFilesListModel.clear()
 
-        // Load from context file if it exists
         val contextFile = File(plan.contextYamlFile?.filePath ?: return)
         if (contextFile.exists()) {
             val files = ContextFileHandler.readContextFile(contextFile, project.basePath ?: "")
             files.forEach { fileData ->
                 val file = File(fileData.filePath)
                 if (file.exists()) {
-                    // If it's already an absolute path, use it directly
-                    // If it's a relative path, resolve it against the project base path
                     val absolutePath = if (file.isAbsolute) {
                         file.canonicalPath
                     } else {

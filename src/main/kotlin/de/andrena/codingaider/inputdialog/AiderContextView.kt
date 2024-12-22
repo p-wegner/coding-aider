@@ -158,7 +158,8 @@ class AiderContextView(
         markdownFilesNode.removeAllChildren()
         planFilesNode.removeAllChildren()
 
-        val allUniqueFiles = (allFiles + persistentFiles).distinctBy { it.filePath }
+        val allUniqueFiles =
+            (allFiles).distinctBy { it.filePath.replace('\\', '/').replace("//", "/") }
 
         allUniqueFiles.forEach { fileData ->
             val node = DefaultMutableTreeNode(fileData)
@@ -290,7 +291,11 @@ class AiderContextView(
                 filesFromTree.add(fileData)
             }
         }
-        return FileExtractorService.getInstance().extractFilesIfNeeded(filesFromTree).distinctBy { it.filePath }
+
+        return FileExtractorService.getInstance().extractFilesIfNeeded(filesFromTree)
+            .distinctBy {
+                it.filePath
+            }
     }
 
     fun togglePersistentFile() {
