@@ -9,7 +9,6 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.Panel
-import com.intellij.ui.dsl.builder.bindSelected
 import de.andrena.codingaider.executors.api.CommandObserver
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.ApiKeyManager
@@ -25,7 +24,6 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
 
     fun createPanel(panel: Panel) {
         panel.group("Aider Setup") {
-            createOutputSettingsGroup()
             createApiKeysGroup()
             createDockerSetup()
             createAiderExecutableGroup()
@@ -38,11 +36,6 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
         }
     }
 
-
-    private fun Panel.createOutputSettingsGroup() {
-        group("Output Settings") {
-        }
-    }
 
     private fun Panel.createApiKeysGroup() {
         group("Custom Providers") {
