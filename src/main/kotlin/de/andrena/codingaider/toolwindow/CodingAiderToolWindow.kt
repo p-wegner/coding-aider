@@ -32,28 +32,28 @@ class CodingAiderToolWindowContent(project: Project) {
     fun getContent(): JComponent {
         return panel {
             indent {
-                row {
-                    cell(CollapsiblePanel(
-                        "Persistent Files",
-                        persistentFilesPanel.getContent()
-                    )).align(com.intellij.ui.dsl.builder.Align.FILL)
-                        .resizableColumn()
+                collapsibleGroup("Persistent Files") {
+                    row {
+                        cell(persistentFilesPanel.getContent())
+                            .align(com.intellij.ui.dsl.builder.Align.FILL)
+                            .resizableColumn()
+                    }
                 }.topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
 
-                row {
-                    cell(CollapsiblePanel(
-                        "Plans",
-                        plansPanel.getContent()
-                    )).align(com.intellij.ui.dsl.builder.Align.FILL)
-                        .resizableColumn()
+                collapsibleGroup("Plans") {
+                    row {
+                        cell(plansPanel.getContent())
+                            .align(com.intellij.ui.dsl.builder.Align.FILL)
+                            .resizableColumn()
+                    }
                 }.topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
 
-                row {
-                    cell(CollapsiblePanel(
-                        "Running Commands",
-                        runningCommandsPanel.getContent()
-                    )).align(com.intellij.ui.dsl.builder.Align.FILL)
-                        .resizableColumn()
+                collapsibleGroup("Running Commands") {
+                    row {
+                        cell(runningCommandsPanel.getContent())
+                            .align(com.intellij.ui.dsl.builder.Align.FILL)
+                            .resizableColumn()
+                    }
                 }.topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
             }
         }
