@@ -228,22 +228,22 @@ fun getMarkdownCssStyle(
                                         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
                                         margin: 20px;
                                         line-height: 1.6;
-                                        background-color: #${bodyBg.removePrefix("#")};
-                                        color: #${bodyText.removePrefix("#")};
+                                        background-color: ${bodyBg};
+                                        color: ${bodyText};
                                     }
                                     pre { 
-                                        background: #${preBg.removePrefix("#")}; 
+                                        background: ${preBg}; 
                                         padding: 10px; 
-                                        border: 1px solid #${preBorder.removePrefix("#")};
-                                        color: #${preText.removePrefix("#")};
+                                        border: 1px solid ${preBorder};
+                                        color: ${preText};
                                         margin: 1em 0;
                                     }
                                     code { 
                                         font-family: "JetBrains Mono", "Courier New", Courier, monospace;
-                                        color: #${codeColor.removePrefix("#")};
+                                        color: ${codeColor};
                                     }
                                     a { 
-                                        color: #${linkColor.removePrefix("#")}; 
+                                        color: ${linkColor}; 
                                         text-decoration: underline;
                                     }
                                     img { 
@@ -264,15 +264,15 @@ fun getMarkdownCssStyle(
                                         width: 100%;
                                     }
                                     th, td {
-                                        border: 1px solid #${tableBorder.removePrefix("#")};
+                                        border: 1px solid ${tableBorder};
                                         padding: 8px;
                                         text-align: left;
                                     }
                                     th {
-                                        background-color: #${thBg.removePrefix("#")};
+                                        background-color: ${thBg};
                                     }
                                     tr:nth-child(even) {
-                                        background-color: #${trEvenBg.removePrefix("#")};
+                                        background-color: ${trEvenBg};
                                     }
                                     /* Headings */
                                     h1, h2, h3, h4, h5, h6 {
