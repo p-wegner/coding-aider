@@ -312,7 +312,8 @@ class AiderInputDialog(
                     cell(contextViewPanel)
                         .align(com.intellij.ui.dsl.builder.Align.FILL)
                 }
-            }.expanded(!projectSettings.isContextCollapsed)
+            }
+//                .expanded(!projectSettings.isContextCollapsed)
         }.apply {
             border = JBUI.Borders.empty(5)
         }
