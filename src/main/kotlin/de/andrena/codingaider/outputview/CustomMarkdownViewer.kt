@@ -228,22 +228,22 @@ fun getMarkdownCssStyle(
                                         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
                                         margin: 20px;
                                         line-height: 1.6;
-                                        background-color: $bodyBg !important;
-                                        color: $bodyText !important;
+                                        background-color: $bodyBg;
+                                        color: $bodyText;
                                     }
                                     pre { 
-                                        background: $preBg !important; 
+                                        background: $preBg; 
                                         padding: 10px; 
-                                        border: 1px solid $preBorder !important;
-                                        color: $preText !important;
+                                        border: 1px solid $preBorder;
+                                        color: $preText;
                                         margin: 1em 0;
                                     }
                                     code { 
-                                        font-family: "JetBrains Mono", "Courier New", Courier, monospace !important;
-                                        color: $codeColor !important;
+                                        font-family: "JetBrains Mono", "Courier New", Courier, monospace;
+                                        color: $codeColor;
                                     }
                                     a { 
-                                        color: $linkColor !important; 
+                                        color: $linkColor; 
                                         text-decoration: underline;
                                     }
                                     img { 
