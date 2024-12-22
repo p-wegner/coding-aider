@@ -31,7 +31,9 @@ class CustomMarkdownViewer(private val lookupPaths: List<String> = emptyList()) 
         putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true)
         putClientProperty("JEditorPane.honorDisplayProperties", true)
         putClientProperty("html.disable", false)
-        putClientProperty("css.conv", javax.swing.text.html.StyleSheet())
+        putClientProperty("css.conv", javax.swing.text.html.StyleSheet().apply {
+            addRule("body { font-family: sans-serif; }")
+        })
     }
     private val options = MutableDataSet().apply {
         set(
