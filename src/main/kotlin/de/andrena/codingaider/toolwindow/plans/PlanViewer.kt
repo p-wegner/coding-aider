@@ -503,24 +503,44 @@ class PlanViewer(private val project: Project) {
                 }
 
                 override fun createCenterPanel(): JComponent {
+                    val messageArea = JTextArea().apply {
+                        lineWrap = true
+                        wrapStyleWord = true
+                        rows = 5
+                        font = UIManager.getFont("TextField.font")
+                        border = UIManager.getBorder("TextField.border")
+                    }
+                    val messageScrollPane = JBScrollPane(messageArea)
+
                     val markdownViewer = CustomMarkdownViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
                         setDarkTheme(!JBColor.isBright())
                         setMarkdownContent(selectedPlan.plan)
                     }
-
-                    val scrollPane = JBScrollPane(markdownViewer.component).apply {
-                        preferredSize = Dimension(800, 400)
+                    val previewScrollPane = JBScrollPane(markdownViewer.component).apply {
+                        preferredSize = Dimension(600, 300)
                     }
 
                     return panel {
-                        row {
-                            label("Are you sure you want to delete this plan?")
+                        group("Current Plan") {
+                            row {
+                                cell(previewScrollPane)
+                                    .align(Align.FILL)
+                                    .resizableColumn()
+                            }.resizableRow()
                         }
-                        row {
-                            cell(scrollPane)
-                                .align(Align.FILL)
-                                .resizableColumn()
-                        }.resizableRow()
+                        
+                        group("Refinement Details") {
+                            row("Refinement Request:") {
+                                cell(messageScrollPane)
+                                    .align(Align.FILL)
+                                    .resizableColumn()
+                                    .comment("""
+                                        Describe how you want to refine or extend the plan.
+                                        This may create subplans if the changes are substantial.
+                                        Use multiple lines for complex requests.
+                                    """.trimIndent())
+                            }.resizableRow()
+                        }
                     }
                 }
             }
