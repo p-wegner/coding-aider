@@ -228,7 +228,7 @@ fun getMarkdownCssStyle(
                                         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
                                         margin: 20px;
                                         line-height: 1.6;
-                                        background-color: ${bodyBg};
+                                        background: ${bodyBg};
                                         color: ${bodyText};
                                     }
                                     pre { 
@@ -269,10 +269,10 @@ fun getMarkdownCssStyle(
                                         text-align: left;
                                     }
                                     th {
-                                        background-color: ${thBg};
+                                        background: ${thBg};
                                     }
                                     tr:nth-child(even) {
-                                        background-color: ${trEvenBg};
+                                        background: ${trEvenBg};
                                     }
                                     /* Headings */
                                     h1, h2, h3, h4, h5, h6 {
@@ -370,7 +370,7 @@ fun getMarkdownCssStyle(
                                     
                                     /* Aider Blocks */
                                     .aider-intention {
-                                        background-color: ${if (isDarkTheme) "#2d3748" else "#e6f3ff"};
+                                        background: ${if (isDarkTheme) "#2d3748" else "#e6f3ff"};
                                         border-left: 4px solid ${if (isDarkTheme) "#4299e1" else "#3182ce"};
                                         padding: 1em;
                                         margin: 1em 0;
@@ -378,7 +378,7 @@ fun getMarkdownCssStyle(
                                     }
                                     
                                     .aider-summary {
-                                        background-color: ${if (isDarkTheme) "#2d3b2d" else "#f0fff4"};
+                                        background: ${if (isDarkTheme) "#2d3b2d" else "#f0fff4"};
                                         border-left: 4px solid ${if (isDarkTheme) "#48bb78" else "#38a169"};
                                         padding: 1em;
                                         margin: 1em 0;
