@@ -36,7 +36,8 @@ class CodingAiderToolWindowContent(project: Project) {
                             .align(com.intellij.ui.dsl.builder.Align.FILL)
                             .resizableColumn()
                     }
-                }.topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
+                }.apply { expanded = true }
+                    .topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
 
                 collapsibleGroup("Plans") {
                     row {
@@ -44,7 +45,9 @@ class CodingAiderToolWindowContent(project: Project) {
                             .align(com.intellij.ui.dsl.builder.Align.FILL)
                             .resizableColumn()
                     }
-                }.topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
+                }
+                    .apply { expanded = true }
+                    .topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
 
                 collapsibleGroup("Running Commands") {
                     row {
@@ -52,7 +55,9 @@ class CodingAiderToolWindowContent(project: Project) {
                             .align(com.intellij.ui.dsl.builder.Align.FILL)
                             .resizableColumn()
                     }
-                }.topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
+                }
+                    .apply { expanded = true }
+                    .topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
             }
         }
     }
