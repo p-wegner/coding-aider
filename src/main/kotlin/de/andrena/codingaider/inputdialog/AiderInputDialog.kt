@@ -296,15 +296,9 @@ class AiderInputDialog(
         gbc.gridy++
         gbc.weighty = 0.0
         gbc.fill = GridBagConstraints.HORIZONTAL
-
-        topPanel.add(optionsManager.collapseButton, gbc.apply {
-            gridy++
-            fill = GridBagConstraints.HORIZONTAL
-            weightx = 1.0
-        })
         topPanel.add(optionsManager.panel, gbc.apply { gridy++ })
 
-        // Context view with collapsible UI using IntelliJ's UI DSL
+        // Context view with collapsible UI
         val contextViewPanel = AiderContextViewPanel(project, aiderContextView)
         val contextPanel = panel {
             collapsibleGroup("Context Files") {
