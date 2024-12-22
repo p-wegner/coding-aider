@@ -51,6 +51,7 @@ class AiderSettingsConfigurable() : Configurable {
     private val enableAutoPlanContinueCheckBox = JBCheckBox("Enable automatic plan continuation")
     private val documentationLlmComboBox =
         ComboBox(apiKeyChecker.getAllLlmOptions().toTypedArray())
+    private val summarizedOutputCheckBox = JBCheckBox("Enable summarized output")
 
     override fun getDisplayName(): String = "Aider"
 
@@ -217,7 +218,7 @@ class AiderSettingsConfigurable() : Configurable {
                     }
                 }
                 row {
-                    checkBox("Enable summarized output")
+                    cell(summarizedOutputCheckBox)
                         .applyToComponent {
                             toolTipText =
                                 "When enabled, Aider will include XML-tagged summaries of changes in its output"
@@ -258,6 +259,7 @@ class AiderSettingsConfigurable() : Configurable {
                 alwaysIncludePlanContextFilesCheckBox.isSelected != settings.alwaysIncludePlanContextFiles ||
                 enableAutoPlanContinueCheckBox.isSelected != settings.enableAutoPlanContinue ||
                 documentationLlmComboBox.selectedItem.asSelectedItemName() != settings.documentationLlm ||
+                summarizedOutputCheckBox.isSelected != settings.summarizedOutput ||
                 aiderSetupPanel.isModified()
 
     }
@@ -293,6 +295,7 @@ class AiderSettingsConfigurable() : Configurable {
         settings.alwaysIncludePlanContextFiles = alwaysIncludePlanContextFilesCheckBox.isSelected
         settings.enableAutoPlanContinue = enableAutoPlanContinueCheckBox.isSelected
         settings.documentationLlm = documentationLlmComboBox.selectedItem.asSelectedItemName()
+        settings.summarizedOutput = summarizedOutputCheckBox.isSelected
         aiderSetupPanel.apply()
         settings.notifySettingsChanged()
     }
@@ -325,6 +328,7 @@ class AiderSettingsConfigurable() : Configurable {
         alwaysIncludePlanContextFilesCheckBox.isSelected = settings.alwaysIncludePlanContextFiles
         enableAutoPlanContinueCheckBox.isSelected = settings.enableAutoPlanContinue
         documentationLlmComboBox.selectedItem = apiKeyChecker.getLlmSelectionForName(settings.documentationLlm)
+        summarizedOutputCheckBox.isSelected = settings.summarizedOutput
         aiderSetupPanel.reset()
         settings.notifySettingsChanged()
     }
@@ -415,4 +419,6 @@ class AiderSettingsConfigurable() : Configurable {
                 }
             }
         }
+
+
 }
