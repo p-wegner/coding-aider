@@ -21,7 +21,10 @@ import com.vladsch.flexmark.util.html.MutableAttributes
 import de.andrena.codingaider.utils.FilePathConverter
 import javax.swing.JEditorPane
 
+import com.intellij.openapi.diagnostic.Logger
+
 class CustomMarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
+    private val logger = Logger.getInstance(CustomMarkdownViewer::class.java)
     val component: JEditorPane = JEditorPane().apply {
         contentType = "text/html"
         isEditable = false
@@ -182,6 +185,9 @@ class CustomMarkdownViewer(private val lookupPaths: List<String> = emptyList()) 
                 content = html
             )
 
+            // Log the generated HTML for debugging
+            logger.info("Generated HTML: $styledHtml")
+
             // Store current caret position
             val caretPos = component.caretPosition
             component.text = styledHtml
@@ -213,16 +219,16 @@ class CustomMarkdownViewer(private val lookupPaths: List<String> = emptyList()) 
 }
 
 fun getMarkdownCssStyle(
-    bodyBg: String,
-    bodyText: String,
-    preBg: String,
-    preBorder: String,
-    preText: String,
-    codeColor: String,
-    linkColor: String,
-    tableBorder: String,
-    thBg: String,
-    trEvenBg: String
+    bodyBg: String = "#ffffff",
+    bodyText: String = "#000000",
+    preBg: String = "#f5f5f5",
+    preBorder: String = "#cccccc",
+    preText: String = "#000000",
+    codeColor: String = "#000000",
+    linkColor: String = "#0066cc",
+    tableBorder: String = "#cccccc",
+    thBg: String = "#e6e6e6",
+    trEvenBg: String = "#f5f5f5"
 ) = """<style type="text/css">
                                     body { 
                                         font-family: sans-serif; 
