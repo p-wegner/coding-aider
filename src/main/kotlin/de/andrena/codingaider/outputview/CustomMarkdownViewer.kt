@@ -27,6 +27,7 @@ class CustomMarkdownViewer(private val lookupPaths: List<String> = emptyList()) 
         isEditable = false
         putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true)
         putClientProperty("JEditorPane.honorDisplayProperties", true)
+        putClientProperty("html.disable", false)
     }
     private val options = MutableDataSet().apply {
         set(
