@@ -144,35 +144,34 @@ class CustomMarkdownViewer(private val lookupPaths: List<String> = emptyList()) 
             val styledHtml = """
                 <html>
                 <head>
-                    <style>
-                        body {
-                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+                    <style type="text/css">
+                        body { 
+                            font-family: sans-serif;
                             margin: 20px;
                             line-height: 1.6;
-                            background-color: ${colors["bodyBg"]};
+                            background: ${colors["bodyBg"]};
                             color: ${colors["bodyText"]};
                         }
                         pre {
-                            background-color: ${colors["preBg"]};
-                            border: 1px solid ${colors["preBorder"]};
+                            background: ${colors["preBg"]};
+                            border: solid 1px ${colors["preBorder"]};
                             padding: 10px;
                             margin: 0;
-                            border-radius: 4px;
                         }
                         .search-block {
-                            background-color: ${colors["searchBg"]};
+                            background: ${colors["searchBg"]};
                             color: ${colors["searchText"]};
                             padding: 4px 8px;
                             margin: 0;
                         }
                         .replace-block {
-                            background-color: ${colors["replaceBg"]};
+                            background: ${colors["replaceBg"]};
                             color: ${colors["replaceText"]};
                             padding: 4px 8px;
                             margin: 0;
                         }
                         .divider {
-                            background-color: ${colors["preBorder"]};
+                            background: ${colors["preBorder"]};
                             height: 1px;
                             margin: 0;
                             padding: 0;
