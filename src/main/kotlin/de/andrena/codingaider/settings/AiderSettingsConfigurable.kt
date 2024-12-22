@@ -7,7 +7,6 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.Align
-import com.intellij.ui.dsl.builder.bindSelected
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
@@ -218,14 +217,13 @@ class AiderSettingsConfigurable() : Configurable {
                     }
                 }
                 row {
-                    val settings = AiderSettings.getInstance()
                     checkBox("Enable summarized output")
-                        .bindSelected(settings::summarizedOutput)
                         .applyToComponent {
                             toolTipText =
                                 "When enabled, Aider will include XML-tagged summaries of changes in its output"
                         }
                 }
+
             }
 
         }.apply {

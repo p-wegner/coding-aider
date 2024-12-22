@@ -29,6 +29,12 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
             createAiderExecutableGroup()
 
             row {
+                cell(summarizedOutputCheckBox).component.apply {
+                    toolTipText = "When enabled, Aider will include XML-tagged summaries of changes in its output"
+                }
+            }
+
+            row {
                 button("Test Aider Installation") {
                     showTestCommandResult()
                 }
@@ -289,14 +295,18 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
         val settings = AiderSettings.getInstance()
         return useDockerAiderCheckBox.isSelected != settings.useDockerAider ||
                 dockerImageTagField.text != settings.dockerImageTag ||
-                aiderExecutablePathField.text != settings.aiderExecutablePath
+                aiderExecutablePathField.text != settings.aiderExecutablePath ||
+                settings.summarizedOutput != settings.summarizedOutput
     }
+
+    private val summarizedOutputCheckBox = JBCheckBox("Enable summarized output")
 
     fun apply() {
         val settings = AiderSettings.getInstance()
         settings.useDockerAider = useDockerAiderCheckBox.isSelected
         settings.dockerImageTag = dockerImageTagField.text
         settings.aiderExecutablePath = aiderExecutablePathField.text
+        settings.summarizedOutput = summarizedOutputCheckBox.isSelected
     }
 
     fun reset() {
@@ -305,6 +315,7 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
         dockerImageTagField.text = settings.dockerImageTag
         dockerImageTagField.isEnabled = settings.useDockerAider
         aiderExecutablePathField.text = settings.aiderExecutablePath
+        summarizedOutputCheckBox.isSelected = settings.summarizedOutput
         updateApiKeyFieldsOnClose()
 
     }
