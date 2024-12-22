@@ -111,7 +111,17 @@ class CustomMarkdownViewer(private val lookupPaths: List<String> = emptyList()) 
             // Convert file paths to markdown links
             val project = com.intellij.openapi.project.ProjectManager.getInstance().openProjects.firstOrNull()
             val basePath = project?.basePath
-            val processedMarkdown = FilePathConverter.convertPathsToMarkdownLinks(markdown, basePath)
+            var processedMarkdown = FilePathConverter.convertPathsToMarkdownLinks(markdown, basePath)
+            
+            // Process aider blocks
+            processedMarkdown = processedMarkdown.replace(
+                Regex("<aider-intention>([\\s\\S]*?)</aider-intention>"),
+                "<div class=\"aider-intention\">$1</div>"
+            ).replace(
+                Regex("<aider-summary>([\\s\\S]*?)</aider-summary>"),
+                "<div class=\"aider-summary\">$1</div>"
+            )
+            
             val document = parser.parse(processedMarkdown)
             val html = renderer.render(document)
 
@@ -339,6 +349,23 @@ fun getMarkdownCssStyle(
                                         border-top: 1px solid $tableBorder;
                                         margin-top: 2em;
                                         padding-top: 1em;
+                                    }
+                                    
+                                    /* Aider Blocks */
+                                    .aider-intention {
+                                        background-color: ${if (isDarkTheme) "#2d3748" else "#e6f3ff"};
+                                        border-left: 4px solid ${if (isDarkTheme) "#4299e1" else "#3182ce"};
+                                        padding: 1em;
+                                        margin: 1em 0;
+                                        border-radius: 4px;
+                                    }
+                                    
+                                    .aider-summary {
+                                        background-color: ${if (isDarkTheme) "#2d3b2d" else "#f0fff4"};
+                                        border-left: 4px solid ${if (isDarkTheme) "#48bb78" else "#38a169"};
+                                        padding: 1em;
+                                        margin: 1em 0;
+                                        border-radius: 4px;
                                     }
                                 </style>"""
 
