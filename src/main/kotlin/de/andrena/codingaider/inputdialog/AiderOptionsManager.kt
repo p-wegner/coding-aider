@@ -7,8 +7,7 @@ import javax.swing.JComponent
 
 class AiderOptionsManager(
     private val project: Project,
-    private val sharedOptionsPanel: AiderOptionsPanel,
-    private val onOptionsChanged: () -> Unit
+    private val sharedOptionsPanel: AiderOptionsPanel
 ) {
     private val projectSettings = AiderProjectSettings.getInstance(project)
 
@@ -22,7 +21,9 @@ class AiderOptionsManager(
                 cell(sharedOptionsPanel)
                     .align(com.intellij.ui.dsl.builder.Align.FILL)
             }
-        }.expanded(!projectSettings.isOptionsCollapsed)
-            .onIsModified { projectSettings.isOptionsCollapsed = !it }
+        }.apply { expanded = !projectSettings.isOptionsCollapsed }
+            .addExpandedListener { projectSettings.isOptionsCollapsed = !it }
+//        expanded(!projectSettings.isOptionsCollapsed)
+//            .onIsModified { projectSettings.isOptionsCollapsed = !it }
     }
 }

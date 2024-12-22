@@ -114,7 +114,7 @@ class AiderInputDialog(
     private val persistentFileService: PersistentFileService
     private var splitPane: OnePixelSplitter
     private val settingsButton: ActionButton
-    private val optionsManager = AiderOptionsManager(project, optionsPanel) { updateTokenCount() }
+    private val optionsManager = AiderOptionsManager(project, optionsPanel)
 
     init {
         title = "Aider Command"
@@ -307,6 +307,8 @@ class AiderInputDialog(
                         .align(com.intellij.ui.dsl.builder.Align.FILL)
                 }
             }
+                .apply { expanded = !projectSettings.isContextCollapsed }
+                .addExpandedListener { projectSettings.isContextCollapsed = !it }
 //                .expanded(!projectSettings.isContextCollapsed)
         }.apply {
             border = JBUI.Borders.empty(5)
