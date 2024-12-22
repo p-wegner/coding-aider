@@ -25,27 +25,61 @@ class CodingAiderToolWindow : ToolWindowFactory {
 }
 
 class CodingAiderToolWindowContent(project: Project) {
+    private var persistentFilesCollapsed = false
+    private var plansCollapsed = false 
+    private var runningCommandsCollapsed = false
+
     private val runningCommandsPanel = RunningCommandsPanel(project)
     private val plansPanel = PlansPanel(project)
     private val persistentFilesPanel = PersistentFilesPanel(project)
+
+    private val persistentFilesCollapsible = CollapsiblePanel(
+        "Persistent Files",
+        ::persistentFilesCollapsed,
+        persistentFilesPanel.getContent()
+    )
+
+    private val plansCollapsible = CollapsiblePanel(
+        "Plans",
+        ::plansCollapsed,
+        plansPanel.getContent()
+    )
+
+    private val runningCommandsCollapsible = CollapsiblePanel(
+        "Running Commands", 
+        ::runningCommandsCollapsed,
+        runningCommandsPanel.getContent()
+    )
 
     fun getContent(): JComponent {
         return panel {
             indent {
                 row {
-                    cell(persistentFilesPanel.getContent())
+                    cell(persistentFilesCollapsible.headerPanel)
+                        .align(com.intellij.ui.dsl.builder.Align.FILL)
+                }
+                row {
+                    cell(persistentFilesCollapsible.contentPanel)
                         .align(com.intellij.ui.dsl.builder.Align.FILL)
                         .resizableColumn()
                 }.topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
                 
                 row {
-                    cell(plansPanel.getContent())
+                    cell(plansCollapsible.headerPanel)
+                        .align(com.intellij.ui.dsl.builder.Align.FILL)
+                }
+                row {
+                    cell(plansCollapsible.contentPanel)
                         .align(com.intellij.ui.dsl.builder.Align.FILL)
                         .resizableColumn()
                 }.topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
                 
                 row {
-                    cell(runningCommandsPanel.getContent())
+                    cell(runningCommandsCollapsible.headerPanel)
+                        .align(com.intellij.ui.dsl.builder.Align.FILL)
+                }
+                row {
+                    cell(runningCommandsCollapsible.contentPanel)
                         .align(com.intellij.ui.dsl.builder.Align.FILL)
                         .resizableColumn()
                 }.topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
