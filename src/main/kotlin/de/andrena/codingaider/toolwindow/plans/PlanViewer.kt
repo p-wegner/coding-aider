@@ -171,22 +171,27 @@ class PlanViewer(private val project: Project) {
         private val statusIcon = JLabel()
         private val countLabel = JLabel()
         private val leftPanel = JPanel(FlowLayout(FlowLayout.LEFT, 4, 0))
-        private val treeIndentWidth = 20
+        private val treeIndentWidth = 16 // Standard tree indent width
 
         init {
             isOpaque = true
-            val contentPanel = JPanel(BorderLayout(8, 0))
+            val contentPanel = JPanel(BorderLayout(4, 0))
             contentPanel.isOpaque = false
             leftPanel.isOpaque = false
-
+            
+            // Ensure consistent icon sizing
+            statusIcon.preferredSize = Dimension(16, 16)
             leftPanel.add(statusIcon)
-
+            
+            // Add right padding to count label
+            countLabel.border = BorderFactory.createEmptyBorder(0, 0, 0, 4)
+            
             contentPanel.add(leftPanel, BorderLayout.WEST)
             contentPanel.add(label, BorderLayout.CENTER)
             contentPanel.add(countLabel, BorderLayout.EAST)
-
+            
             add(contentPanel, BorderLayout.CENTER)
-            border = BorderFactory.createEmptyBorder(4, 8, 4, 8)
+            border = BorderFactory.createEmptyBorder(2, 4, 2, 4)
         }
 
         override fun getListCellRendererComponent(
@@ -249,13 +254,17 @@ class PlanViewer(private val project: Project) {
                     }
                 }
 
-                // Set consistent indentation
-                val baseIndent = 8
+                // Set consistent tree-like indentation
+                val baseIndent = 4
                 val depthIndent = value.depth * treeIndentWidth
-                border = BorderFactory.createEmptyBorder(4, baseIndent, 4, 8)
+                border = BorderFactory.createEmptyBorder(2, baseIndent + depthIndent, 2, 4)
 
                 // Set label text with tree prefix and plan name
-                label.text = "$treePrefix$fileName"
+                label.text = treePrefix + fileName
+                
+                // Ensure consistent font
+                label.font = UIManager.getFont("Tree.font")
+                countLabel.font = label.font
 
                 val openItems = value.openChecklistItems().size
                 val totalItems = value.totalChecklistItems()
@@ -274,17 +283,21 @@ class PlanViewer(private val project: Project) {
 
                 val checkedItems = totalItems - openItems
                 countLabel.text = "($checkedItems/$totalItems)"
+                // Use more subtle progress colors that work well in both themes
                 countLabel.foreground = when {
                     openItems == 0 -> UIManager.getColor("Label.foreground")
                     openItems < totalItems / 2 -> JBColor(
-                        Color(0, 128, 0), // Light theme - darker green
-                        Color(98, 150, 85)  // Dark theme - softer green
+                        Color(76, 175, 80),  // Light theme - Material Design green
+                        Color(129, 199, 132) // Dark theme - Lighter green
                     )
                     else -> JBColor(
-                        Color(255, 140, 0), // Light theme - orange
-                        Color(255, 165, 0)  // Dark theme - lighter orange
+                        Color(255, 152, 0),  // Light theme - Material Design orange
+                        Color(255, 183, 77)  // Dark theme - Lighter orange
                     )
                 }
+                // Add subtle background for better visibility
+                countLabel.isOpaque = true
+                countLabel.background = if (isSelected) list?.selectionBackground else list?.background
             }
 
             return this
