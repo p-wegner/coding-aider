@@ -281,8 +281,8 @@ fun getMarkdownCssStyle(
                                         font-weight: bold;
                                         line-height: 1.25;
                                     }
-                                    h1 { font-size: 2em; border-bottom: 1px solid #${tableBorder.removePrefix("#")}; }
-                                    h2 { font-size: 1.5em; border-bottom: 1px solid #${tableBorder.removePrefix("#")}; }
+                                    h1 { font-size: 2em; border-bottom: 1px solid ${tableBorder}; }
+                                    h2 { font-size: 1.5em; border-bottom: 1px solid ${tableBorder}; }
                                     h3 { font-size: 1.25em; }
                                     h4 { font-size: 1em; }
                                     h5 { font-size: 0.875em; }
@@ -363,7 +363,7 @@ fun getMarkdownCssStyle(
                                     
                                     /* Footnotes */
                                     .footnotes {
-                                        border-top: 1px solid #${tableBorder.removePrefix("#")};
+                                        border-top: 1px solid ${tableBorder};
                                         margin-top: 2em;
                                         padding-top: 1em;
                                     }
