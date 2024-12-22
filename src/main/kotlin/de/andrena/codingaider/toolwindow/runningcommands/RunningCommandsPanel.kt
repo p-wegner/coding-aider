@@ -33,7 +33,7 @@ class RunningCommandsPanel(private val project: Project) {
 
     fun getContent(): JComponent {
         return panel {
-            group("Running Commands") {
+            group {
                 row {
                     val toolbar = ActionManager.getInstance().createActionToolbar(
                         "RunningCommandsToolbar",

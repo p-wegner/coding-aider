@@ -62,7 +62,7 @@ class PersistentFilesPanel(private val project: Project) {
 
     fun getContent(): JComponent {
         return panel {
-            group("Persistent Files") {
+            group {
                 row {
                     val toolbar = ActionManager.getInstance().createActionToolbar(
                         "PersistentFilesToolbar",
