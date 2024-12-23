@@ -4,6 +4,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
+import de.andrena.codingaider.settings.AiderSettings
 import reactor.core.publisher.Flux
 import reactor.core.publisher.FluxSink
 import reactor.core.publisher.Mono
@@ -124,6 +125,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
     private fun setupProcessStreams(processInfo: ProcessInfo) {
         processInfo.reader = BufferedReader(InputStreamReader(processInfo.process!!.inputStream))
         processInfo.writer = BufferedWriter(OutputStreamWriter(processInfo.process!!.outputStream))
+        val settings = AiderSettings.getInstance()
         processInfo.outputParser = if (settings.useSidecarMode) {
             EagerAiderOutputParser(verbose, logger, processInfo.reader, processInfo.writer)
         } else {
@@ -282,8 +284,9 @@ class AiderProcessManager(private val project: Project) : Disposable {
             Thread.sleep(1000) // Wait for cleanup
 
             // Try to start a new process
-            val command = processInfo.process?.info()?.commandLine()?.split(" ") ?: return false
-            val workingDir = processInfo.process?.info()?.command()?.parent ?: return false
+            val command = processInfo.process?.info()?.commandLine()?.orElse(null)?.split(" ") ?: return false
+            // TODO: get working dir properly
+            val workingDir = ""
             
             return startProcess(command, workingDir, verbose, planId)
         } catch (e: Exception) {
@@ -456,6 +459,11 @@ class AiderProcessManager(private val project: Project) : Disposable {
             cleanupFailedProcess(processInfo)
             return false
         }
+    }
+
+    private fun tryProcessRecovery(info: ProcessInfo): Boolean {
+        // TODO: implement
+        return false
     }
 
     private fun verifyProcessResponsiveness(processInfo: ProcessInfo): Boolean {

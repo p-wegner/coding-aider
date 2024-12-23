@@ -129,9 +129,8 @@ $STRUCTURED_MODE_MESSAGE_MARKER ${commandData.message} $STRUCTURED_MODE_MESSAGE_
 
     fun filterPlanRelevantFiles(files: List<FileData>): List<FileData> =
         files.filter {
-            it.filePath.contains(AIDER_PLANS_FOLDER) && (it.filePath.endsWith(".md") || it.filePath.endsWith(
-                ".yaml"
-            ))
+            it.filePath.contains(AIDER_PLANS_FOLDER) && !it.filePath.contains(FINISHED_AIDER_PLANS_FOLDER)
+                    && (it.filePath.endsWith(".md") || it.filePath.endsWith(".yaml"))
         }
 
     fun filterPlanMainFiles(files: List<FileData>): List<FileData> =
@@ -143,6 +142,7 @@ $STRUCTURED_MODE_MESSAGE_MARKER ${commandData.message} $STRUCTURED_MODE_MESSAGE_
         const val AIDER_PLAN_MARKER = "[Coding Aider Plan]"
         const val AIDER_PLAN_CHECKLIST_MARKER = "[Coding Aider Plan - Checklist]"
         const val AIDER_PLANS_FOLDER = ".coding-aider-plans"
+        const val FINISHED_AIDER_PLANS_FOLDER = ".coding-aider-plans-finished"
         const val STRUCTURED_MODE_MESSAGE_MARKER = "<STRUCTURED MODE>"
         const val STRUCTURED_MODE_MESSAGE_END_MARKER = "</STRUCTURED MODE>"
     }

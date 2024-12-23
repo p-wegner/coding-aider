@@ -2,6 +2,7 @@ package de.andrena.codingaider.services.plans
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
@@ -11,11 +12,14 @@ import de.andrena.codingaider.executors.api.CommandFinishedCallback
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.FileDataCollectionService
+import de.andrena.codingaider.services.sidecar.AiderProcessManager
+import de.andrena.codingaider.services.sidecar.SidecarProcessInitializer
 import de.andrena.codingaider.settings.AiderSettings
 import java.io.File
 
 @Service(Service.Level.PROJECT)
 class ActivePlanService(private val project: Project) {
+    private val logger = Logger.getInstance(ActivePlanService::class.java)
     private var activePlan: AiderPlan? = null
 
     fun setActivePlan(plan: AiderPlan) {
