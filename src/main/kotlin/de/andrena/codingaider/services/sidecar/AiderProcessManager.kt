@@ -50,7 +50,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
             }
 
             return try {
-                validateStartupConditions(workingDir)
+                validateStartupConditions(workingDir, planId)
                 
                 val processBuilder = ProcessBuilder(command)
                     .apply { 
@@ -86,7 +86,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
         }
     }
 
-    private fun validateStartupConditions(workingDir: String) {
+    private fun validateStartupConditions(workingDir: String, planId: String? = null) {
         val workingDirFile = java.io.File(workingDir)
         if (!workingDirFile.exists()) {
             throw IllegalStateException("Working directory does not exist: $workingDir")
@@ -100,8 +100,19 @@ class AiderProcessManager(private val project: Project) : Disposable {
         
         // Additional validation for concurrent processes
         synchronized(processLock) {
-            if (planProcesses.size >= MAX_CONCURRENT_PROCESSES) {
+            if (planId == null && planProcesses.size >= MAX_CONCURRENT_PROCESSES) {
                 throw IllegalStateException("Maximum number of concurrent processes ($MAX_CONCURRENT_PROCESSES) reached")
+            }
+            if (planId != null && planProcesses.containsKey(planId)) {
+                // For plan processes, check if existing process is still valid
+                val existingProcess = planProcesses[planId]
+                if (existingProcess?.isRunning?.get() == true && existingProcess.process?.isAlive == true) {
+                    throw IllegalStateException("Process for plan $planId is already running")
+                } else {
+                    // Clean up invalid process
+                    cleanupFailedProcess(existingProcess!!)
+                    planProcesses.remove(planId)
+                }
             }
         }
     }
@@ -313,6 +324,11 @@ class AiderProcessManager(private val project: Project) : Disposable {
                         processInfo.writer?.flush()
                         Thread.sleep(100) // Brief wait for command to complete
                         
+                        // Send drop command to ensure clean state
+                        processInfo.writer?.write("/drop\n")
+                        processInfo.writer?.flush()
+                        Thread.sleep(100)
+                        
                         disposeProcess(processInfo)
                         planProcesses.remove(planId)
                         logger.info("Successfully disposed Aider sidecar process for plan $planId")
@@ -321,6 +337,9 @@ class AiderProcessManager(private val project: Project) : Disposable {
                         // Force cleanup even if disposal fails
                         processInfo.isRunning.set(false)
                         planProcesses.remove(planId)
+                    } finally {
+                        // Ensure process is terminated
+                        processInfo.process?.destroyForcibly()
                     }
                 } else {
                     logger.info("No running process found for plan $planId")
@@ -398,24 +417,39 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 processInfo.reader?.reset()
             }
             
-            // Verify process can still accept commands
+            // Verify process can still accept commands with timeout
             if (!verifyProcessResponsiveness(processInfo)) {
                 logger.error("Process is not responsive to commands")
-                cleanupFailedProcess(processInfo)
-                return false
+                if (!tryProcessRecovery(processInfo)) {
+                    cleanupFailedProcess(processInfo)
+                    return false
+                }
             }
             
-            // Check process health
-            val exitValue = processInfo.process?.exitValue()
-            if (exitValue != null) {
-                logger.error("Process has terminated with exit code: $exitValue")
-                cleanupFailedProcess(processInfo)
-                return false
+            // Check process health and resource usage
+            try {
+                val exitValue = processInfo.process?.exitValue()
+                if (exitValue != null) {
+                    logger.error("Process has terminated with exit code: $exitValue")
+                    cleanupFailedProcess(processInfo)
+                    return false
+                }
+                
+                // Check process resource usage
+                val processHandle = processInfo.process?.toHandle()
+                if (processHandle?.isAlive == true) {
+                    val info = processHandle.info()
+                    if (info.totalCpuDuration().isPresent && 
+                        info.totalCpuDuration().get().seconds > 3600) { // 1 hour CPU time
+                        logger.warn("Process has high CPU usage, considering restart")
+                        return tryProcessRecovery(processInfo)
+                    }
+                }
+            } catch (e: IllegalThreadStateException) {
+                // Process is still running
+                return true
             }
             
-            return true
-        } catch (e: IllegalThreadStateException) {
-            // Process is still running
             return true
         } catch (e: Exception) {
             logger.error("Error checking process status", e)
