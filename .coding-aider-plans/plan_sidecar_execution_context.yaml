@@ -1,0 +1,8 @@
+---
+files:
+  - path: src/main/kotlin/de/andrena/codingaider/services/plans/ActivePlanService.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/services/plans/ContinuePlanService.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/executors/CommandExecutor.kt
+    readOnly: false
