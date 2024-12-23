@@ -18,10 +18,16 @@ import java.util.concurrent.atomic.AtomicBoolean
 @Service(Service.Level.PROJECT)
 class AiderProcessManager(private val project: Project) : Disposable {
     private val logger = Logger.getInstance(AiderProcessManager::class.java)
-    private var process: Process? = null
-    private var reader: BufferedReader? = null
-    private var writer: BufferedWriter? = null
-    private val isRunning = AtomicBoolean(false)
+    private data class ProcessInfo(
+        var process: Process? = null,
+        var reader: BufferedReader? = null,
+        var writer: BufferedWriter? = null,
+        val isRunning: AtomicBoolean = AtomicBoolean(false)
+    )
+    
+    private val defaultProcess = ProcessInfo()
+    private val planProcesses = mutableMapOf<String, ProcessInfo>()
+    private val processLock = Any()
 
     private val startupTimeout = Duration.ofSeconds(60)
     private var verbose: Boolean = false
@@ -29,12 +35,16 @@ class AiderProcessManager(private val project: Project) : Disposable {
     fun startProcess(
         command: List<String>,
         workingDir: String,
-        verbose: Boolean = false
+        verbose: Boolean = false,
+        planId: String? = null
     ): Boolean {
-        synchronized(this) {
+        synchronized(processLock) {
+            val processInfo = planId?.let { 
+                planProcesses.getOrPut(it) { ProcessInfo() }
+            } ?: defaultProcess
             this.verbose = verbose
-            if (isRunning.get()) {
-                logger.info("Aider sidecar process already running")
+            if (processInfo.isRunning.get()) {
+                logger.info("Aider sidecar process already running for ${planId ?: "default"}")
                 return true
             }
 
@@ -44,10 +54,10 @@ class AiderProcessManager(private val project: Project) : Disposable {
                     .directory(java.io.File(workingDir))
                     .redirectErrorStream(true)
 
-                process = processBuilder.start()
-                reader = BufferedReader(InputStreamReader(process!!.inputStream))
-                writer = BufferedWriter(OutputStreamWriter(process!!.outputStream))
-                outputParser = DefaultAiderOutputParser(verbose, logger, reader, writer)
+                processInfo.process = processBuilder.start()
+                processInfo.reader = BufferedReader(InputStreamReader(processInfo.process!!.inputStream))
+                processInfo.writer = BufferedWriter(OutputStreamWriter(processInfo.process!!.outputStream))
+                outputParser = DefaultAiderOutputParser(verbose, logger, processInfo.reader, processInfo.writer)
 
                 if (verbose) {
                     logger.info("Started Aider sidecar process with command: ${command.joinToString(" ")}")
@@ -63,16 +73,16 @@ class AiderProcessManager(private val project: Project) : Disposable {
         }
     }
 
-    private fun waitForFirstUserPrompt(): Boolean =
+    private fun waitForFirstUserPrompt(processInfo: ProcessInfo = defaultProcess): Boolean =
         Mono.create { sink ->
             try {
                 var line: String?
-                reader?.readLine()
+                processInfo.reader?.readLine()
                 // TODO: make more robust, read until char 62 is encountered and no further characters are read within a timeout
-                while (reader!!.readLine().also { line = it } != null) {
+                while (processInfo.reader!!.readLine().also { line = it } != null) {
                     if (verbose) logger.info(line)
                     if (line!!.isEmpty()) {
-                        isRunning.set(true)
+                        processInfo.isRunning.set(true)
                         sink.success(true)
                         break
                     }
@@ -91,13 +101,18 @@ class AiderProcessManager(private val project: Project) : Disposable {
 
 
 
-    fun sendCommandAsync(command: String): Flux<String> {
-        if (!isRunning.get()) {
-            return Flux.error(IllegalStateException("Aider sidecar process not running"))
+    fun sendCommandAsync(command: String, planId: String? = null): Flux<String> {
+        val processInfo = synchronized(processLock) {
+            planId?.let { planProcesses[it] } ?: defaultProcess
+        }
+        
+        if (!processInfo.isRunning.get()) {
+            return Flux.error(IllegalStateException("Aider sidecar process not running for ${planId ?: "default"}"))
         }
 
         return Flux.create { sink: FluxSink<String> ->
-            synchronized(this) {
+            synchronized(processLock) {
+                outputParser = DefaultAiderOutputParser(verbose, logger, processInfo.reader, processInfo.writer)
                 outputParser.writeCommandAndReadResults(command, sink)
             }
         }
@@ -127,17 +142,47 @@ class AiderProcessManager(private val project: Project) : Disposable {
         }
     }
 
-    override fun dispose() {
-        synchronized(this) {
-            try {
-                isRunning.set(false)
-                writer?.close()
-                reader?.close()
-                process?.destroy()
-                logger.info("Disposed Aider sidecar process")
+    fun disposePlanProcess(planId: String) {
+        synchronized(processLock) {
+            planProcesses[planId]?.let { processInfo ->
+                disposeProcess(processInfo)
+                planProcesses.remove(planId)
+                logger.info("Disposed Aider sidecar process for plan $planId")
+            }
+        }
+    }
 
-                // Wait for process to terminate
-                Mono.fromCallable { process?.isAlive == true }
+    private fun disposeProcess(processInfo: ProcessInfo) {
+        try {
+            processInfo.isRunning.set(false)
+            processInfo.writer?.close()
+            processInfo.reader?.close()
+            processInfo.process?.destroy()
+
+            // Wait for process to terminate
+            Mono.fromCallable { processInfo.process?.isAlive == true }
+                .repeatWhen { it.delayElements(Duration.ofMillis(100)) }
+                .takeUntil { !it }
+                .timeout(Duration.ofSeconds(5))
+                .doFinally {
+                    processInfo.process?.destroyForcibly()
+                }
+                .subscribe()
+        } catch (e: Exception) {
+            logger.error("Error disposing Aider process", e)
+        }
+    }
+
+    override fun dispose() {
+        synchronized(processLock) {
+            try {
+                // Dispose all plan processes
+                planProcesses.values.forEach { disposeProcess(it) }
+                planProcesses.clear()
+                
+                // Dispose default process
+                disposeProcess(defaultProcess)
+                logger.info("Disposed all Aider sidecar processes")
                     .repeatWhen { it.delayElements(Duration.ofMillis(100)) }
                     .takeUntil { !it }
                     .timeout(Duration.ofSeconds(5))
@@ -151,11 +196,18 @@ class AiderProcessManager(private val project: Project) : Disposable {
         }
     }
 
-    fun isReadyForCommand(): Boolean {
-        synchronized(this) {
-            if (process?.isAlive != true) return false
-            if (!isRunning.get()) return false
+    fun isReadyForCommand(planId: String? = null): Boolean {
+        synchronized(processLock) {
+            val processInfo = planId?.let { planProcesses[it] } ?: defaultProcess
+            if (processInfo.process?.isAlive != true) return false
+            if (!processInfo.isRunning.get()) return false
             return true
+        }
+    }
+
+    fun getPlanProcessIds(): Set<String> {
+        synchronized(processLock) {
+            return planProcesses.keys.toSet()
         }
     }
 
