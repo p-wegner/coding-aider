@@ -145,9 +145,15 @@ class AiderProcessManager(private val project: Project) : Disposable {
     fun disposePlanProcess(planId: String) {
         synchronized(processLock) {
             planProcesses[planId]?.let { processInfo ->
-                disposeProcess(processInfo)
-                planProcesses.remove(planId)
-                logger.info("Disposed Aider sidecar process for plan $planId")
+                if (processInfo.isRunning.get()) {
+                    logger.info("Disposing Aider sidecar process for completed plan: $planId")
+                    disposeProcess(processInfo)
+                    planProcesses.remove(planId)
+                    logger.info("Successfully disposed Aider sidecar process for plan $planId")
+                } else {
+                    logger.info("No running process found for plan $planId")
+                    planProcesses.remove(planId)
+                }
             }
         }
     }

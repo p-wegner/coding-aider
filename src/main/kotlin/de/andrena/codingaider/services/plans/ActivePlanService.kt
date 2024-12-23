@@ -42,7 +42,7 @@ class ActivePlanService(private val project: Project) {
         refreshActivePlan()
 
         if (!success) {
-            clearActivePlan()
+            cleanupAndClearPlan()
             return
         }
 
@@ -55,11 +55,22 @@ class ActivePlanService(private val project: Project) {
             // Try to find next uncompleted plan in hierarchy
             val nextPlans = currentPlan.getNextUncompletedPlan()
             if (nextPlans.isNotEmpty()) {
+                cleanupAndClearPlan() // Cleanup current plan's resources
                 setActivePlan(nextPlans.first()) // Set the first uncompleted plan as active
             } else {
-                clearActivePlan()
+                cleanupAndClearPlan()
             }
         }
+    }
+
+    private fun cleanupAndClearPlan() {
+        activePlan?.mainPlanFile?.filePath?.let { planPath ->
+            // Clean up sidecar process if enabled
+            if (AiderSettings.getInstance().useSidecarMode) {
+                project.service<AiderProcessManager>().disposePlanProcess(planPath)
+            }
+        }
+        clearActivePlan()
     }
 
     fun handlePlanError(error: Throwable? = null) {
