@@ -97,12 +97,27 @@ class AiderProcessManager(private val project: Project) : Disposable {
         if (!workingDirFile.canRead() || !workingDirFile.canWrite()) {
             throw IllegalStateException("Insufficient permissions for working directory: $workingDir")
         }
+        
+        // Additional validation for concurrent processes
+        synchronized(processLock) {
+            if (planProcesses.size >= MAX_CONCURRENT_PROCESSES) {
+                throw IllegalStateException("Maximum number of concurrent processes ($MAX_CONCURRENT_PROCESSES) reached")
+            }
+        }
+    }
+
+    companion object {
+        private const val MAX_CONCURRENT_PROCESSES = 5
     }
 
     private fun setupProcessStreams(processInfo: ProcessInfo) {
         processInfo.reader = BufferedReader(InputStreamReader(processInfo.process!!.inputStream))
         processInfo.writer = BufferedWriter(OutputStreamWriter(processInfo.process!!.outputStream))
-        processInfo.outputParser = DefaultAiderOutputParser(verbose, logger, processInfo.reader, processInfo.writer)
+        processInfo.outputParser = if (settings.useSidecarMode) {
+            EagerAiderOutputParser(verbose, logger, processInfo.reader, processInfo.writer)
+        } else {
+            DefaultAiderOutputParser(verbose, logger, processInfo.reader, processInfo.writer)
+        }
     }
 
     private fun cleanupFailedProcess(processInfo: ProcessInfo) {

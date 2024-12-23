@@ -8,3 +8,9 @@ files:
     readOnly: false
   - path: src/main/kotlin/de/andrena/codingaider/services/plans/ActivePlanService.kt
     readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/services/sidecar/AiderOutputParser.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/services/sidecar/DefaultAiderOutputParser.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/services/sidecar/EagerAiderOutputParser.kt
+    readOnly: false
