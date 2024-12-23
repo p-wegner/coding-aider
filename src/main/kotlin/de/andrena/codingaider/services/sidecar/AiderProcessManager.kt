@@ -43,33 +43,76 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 planProcesses.getOrPut(it) { ProcessInfo() }
             } ?: defaultProcess
             this.verbose = verbose
+            
             if (processInfo.isRunning.get()) {
                 logger.info("Aider sidecar process already running for ${planId ?: "default"}")
                 return true
             }
 
             return try {
+                validateStartupConditions(workingDir)
+                
                 val processBuilder = ProcessBuilder(command)
-                    .apply { environment().putIfAbsent("PYTHONIOENCODING", "utf-8") }
-                    .directory(java.io.File(workingDir))
-                    .redirectErrorStream(true)
+                    .apply { 
+                        environment().putIfAbsent("PYTHONIOENCODING", "utf-8")
+                        directory(java.io.File(workingDir))
+                        redirectErrorStream(true)
+                    }
 
                 processInfo.process = processBuilder.start()
-                processInfo.reader = BufferedReader(InputStreamReader(processInfo.process!!.inputStream))
-                processInfo.writer = BufferedWriter(OutputStreamWriter(processInfo.process!!.outputStream))
-                processInfo.outputParser = DefaultAiderOutputParser(verbose, logger, processInfo.reader, processInfo.writer)
+                setupProcessStreams(processInfo)
 
                 if (verbose) {
                     logger.info("Started Aider sidecar process with command: ${command.joinToString(" ")}")
                     logger.info("Working directory: $workingDir")
                 }
 
-                waitForFirstUserPrompt()
+                val started = waitForFirstUserPrompt(processInfo)
+                if (!started) {
+                    cleanupFailedProcess(processInfo)
+                }
+                started
 
             } catch (e: Exception) {
-                logger.error("Failed to start Aider sidecar process", e)
+                val errorMsg = when (e) {
+                    is SecurityException -> "Security error starting process: ${e.message}"
+                    is IllegalStateException -> e.message
+                    else -> "Failed to start Aider sidecar process: ${e.message}"
+                }
+                logger.error(errorMsg, e)
+                cleanupFailedProcess(processInfo)
                 false
             }
+        }
+    }
+
+    private fun validateStartupConditions(workingDir: String) {
+        val workingDirFile = java.io.File(workingDir)
+        if (!workingDirFile.exists()) {
+            throw IllegalStateException("Working directory does not exist: $workingDir")
+        }
+        if (!workingDirFile.isDirectory) {
+            throw IllegalStateException("Working directory path is not a directory: $workingDir")
+        }
+        if (!workingDirFile.canRead() || !workingDirFile.canWrite()) {
+            throw IllegalStateException("Insufficient permissions for working directory: $workingDir")
+        }
+    }
+
+    private fun setupProcessStreams(processInfo: ProcessInfo) {
+        processInfo.reader = BufferedReader(InputStreamReader(processInfo.process!!.inputStream))
+        processInfo.writer = BufferedWriter(OutputStreamWriter(processInfo.process!!.outputStream))
+        processInfo.outputParser = DefaultAiderOutputParser(verbose, logger, processInfo.reader, processInfo.writer)
+    }
+
+    private fun cleanupFailedProcess(processInfo: ProcessInfo) {
+        try {
+            processInfo.isRunning.set(false)
+            processInfo.writer?.close()
+            processInfo.reader?.close()
+            processInfo.process?.destroyForcibly()
+        } catch (e: Exception) {
+            logger.error("Error cleaning up failed process", e)
         }
     }
 
@@ -77,27 +120,55 @@ class AiderProcessManager(private val project: Project) : Disposable {
         Mono.create { sink ->
             try {
                 var line: String?
+                var lastChar: Int? = null
+                var lastCharTime = System.currentTimeMillis()
+                val charTimeout = Duration.ofMillis(500)
+
                 processInfo.reader?.readLine()
-                // TODO: make more robust, read until char 62 is encountered and no further characters are read within a timeout
-                while (processInfo.reader!!.readLine().also { line = it } != null) {
-                    if (verbose) logger.info(line)
-                    if (line!!.isEmpty()) {
-                        processInfo.isRunning.set(true)
-                        sink.success(true)
-                        break
+                while (processInfo.reader!!.ready() || processInfo.process?.isAlive == true) {
+                    if (processInfo.reader!!.ready()) {
+                        val currentChar = processInfo.reader!!.read()
+                        if (currentChar == -1) break
+                        
+                        if (verbose) logger.debug("Read char: ${currentChar.toChar()}")
+                        
+                        if (currentChar == 62) { // '>' character
+                            lastChar = currentChar
+                            lastCharTime = System.currentTimeMillis()
+                        } else if (lastChar == 62 && 
+                            System.currentTimeMillis() - lastCharTime > charTimeout.toMillis()) {
+                            processInfo.isRunning.set(true)
+                            sink.success(true)
+                            return@create
+                        }
+                    } else {
+                        Thread.sleep(50)
                     }
                 }
+                
+                if (!processInfo.process?.isAlive!!) {
+                    val exitCode = processInfo.process?.exitValue() ?: -1
+                    sink.error(IllegalStateException("Process terminated with exit code $exitCode before becoming ready"))
+                } else {
+                    sink.error(IllegalStateException("Process stream ended before prompt was detected"))
+                }
             } catch (e: Exception) {
-                sink.error(e)
+                val errorMsg = when (e) {
+                    is SecurityException -> "Security error during process startup: ${e.message}"
+                    is IllegalStateException -> e.message
+                    else -> "Unexpected error during process startup: ${e.message}"
+                }
+                logger.error(errorMsg, e)
+                sink.error(IllegalStateException(errorMsg, e))
             }
         }
-            .timeout(startupTimeout)
-            .doOnError { error ->
-                logger.error("Aider sidecar process failed to become ready: ${error.message}")
-                dispose()
-            }
-            .onErrorReturn(false)
-            .block() ?: false
+        .timeout(startupTimeout)
+        .doOnError { error ->
+            logger.error("Aider sidecar process failed to become ready: ${error.message}")
+            dispose()
+        }
+        .onErrorReturn(false)
+        .block() ?: false
 
 
 
@@ -199,9 +270,50 @@ class AiderProcessManager(private val project: Project) : Disposable {
     fun isReadyForCommand(planId: String? = null): Boolean {
         synchronized(processLock) {
             val processInfo = planId?.let { planProcesses[it] } ?: defaultProcess
-            if (processInfo.process?.isAlive != true) return false
-            if (!processInfo.isRunning.get()) return false
+            return checkProcessStatus(processInfo)
+        }
+    }
+
+    private fun checkProcessStatus(processInfo: ProcessInfo): Boolean {
+        if (processInfo.process?.isAlive != true) {
+            logger.debug("Process is not alive")
+            return false
+        }
+        
+        if (!processInfo.isRunning.get()) {
+            logger.debug("Process is not marked as running")
+            return false
+        }
+
+        try {
+            // Check if streams are still valid
+            if (processInfo.reader?.ready() == true) {
+                processInfo.reader?.mark(1)
+                val available = processInfo.reader?.read()
+                if (available == -1) {
+                    logger.error("Process streams have been closed")
+                    cleanupFailedProcess(processInfo)
+                    return false
+                }
+                processInfo.reader?.reset()
+            }
+            
+            // Check process health
+            val exitValue = processInfo.process?.exitValue()
+            if (exitValue != null) {
+                logger.error("Process has terminated with exit code: $exitValue")
+                cleanupFailedProcess(processInfo)
+                return false
+            }
+            
             return true
+        } catch (e: IllegalThreadStateException) {
+            // Process is still running
+            return true
+        } catch (e: Exception) {
+            logger.error("Error checking process status", e)
+            cleanupFailedProcess(processInfo)
+            return false
         }
     }
 
