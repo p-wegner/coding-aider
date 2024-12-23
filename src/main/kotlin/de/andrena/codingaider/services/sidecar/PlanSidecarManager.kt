@@ -13,9 +13,10 @@ class PlanSidecarManager(private val project: Project) : Disposable {
     private val logger = Logger.getInstance(PlanSidecarManager::class.java)
     private val processManagers = ConcurrentHashMap<String, AiderProcessManager>()
     private val processStateListeners = mutableListOf<(String, ProcessState) -> Unit>()
+    private val processErrorListeners = mutableListOf<(String, Throwable) -> Unit>()
 
     enum class ProcessState {
-        STARTING, READY, FAILED, DISPOSED
+        STARTING, READY, FAILED, DISPOSED, RECOVERING
     }
     
     fun addProcessStateListener(listener: (String, ProcessState) -> Unit) {
@@ -26,17 +27,35 @@ class PlanSidecarManager(private val project: Project) : Disposable {
         processStateListeners.remove(listener)
     }
 
+    fun addProcessErrorListener(listener: (String, Throwable) -> Unit) {
+        processErrorListeners.add(listener)
+    }
+
+    fun removeProcessErrorListener(listener: (String, Throwable) -> Unit) {
+        processErrorListeners.remove(listener)
+    }
+
     private fun notifyProcessState(planId: String, state: ProcessState) {
         processStateListeners.forEach { it(planId, state) }
+    }
+
+    private fun notifyProcessError(planId: String, error: Throwable) {
+        processErrorListeners.forEach { it(planId, error) }
     }
 
     fun getOrCreateProcessManager(plan: AiderPlan): AiderProcessManager {
         val planId = plan.mainPlanFile?.filePath ?: throw IllegalStateException("Plan has no main file")
         return processManagers.computeIfAbsent(planId) { 
-            notifyProcessState(planId, ProcessState.STARTING)
-            AiderProcessManager(project).also {
-                logger.info("Created new process manager for plan: $planId")
-                notifyProcessState(planId, ProcessState.READY)
+            try {
+                notifyProcessState(planId, ProcessState.STARTING)
+                AiderProcessManager(project).also {
+                    logger.info("Created new process manager for plan: $planId")
+                    notifyProcessState(planId, ProcessState.READY)
+                }
+            } catch (e: Exception) {
+                notifyProcessState(planId, ProcessState.FAILED)
+                notifyProcessError(planId, e)
+                throw e
             }
         }
     }
@@ -48,9 +67,14 @@ class PlanSidecarManager(private val project: Project) : Disposable {
     
     fun cleanupPlanProcess(plan: AiderPlan) {
         val planId = plan.mainPlanFile?.filePath ?: return
-        notifyProcessState(planId, ProcessState.DISPOSED)
-        processManagers.remove(planId)?.dispose()
-        logger.info("Cleaned up process manager for plan: $planId")
+        try {
+            notifyProcessState(planId, ProcessState.DISPOSED)
+            processManagers.remove(planId)?.dispose()
+            logger.info("Cleaned up process manager for plan: $planId")
+        } catch (e: Exception) {
+            notifyProcessError(planId, e)
+            throw e
+        }
     }
     
     fun cleanupAllProcesses() {

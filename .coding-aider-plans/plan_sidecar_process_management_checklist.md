@@ -23,10 +23,10 @@
   - [x] Add process lifecycle notifications
   - [x] Implement plan state synchronization
   - [x] Handle plan completion events
-- [ ] Add process status callbacks
-  - [ ] Create callback interfaces
-  - [ ] Implement status change notifications
-  - [ ] Add error reporting callbacks
+- [x] Add process status callbacks
+  - [x] Create callback interfaces
+  - [x] Implement status change notifications
+  - [x] Add error reporting callbacks
 - [ ] Implement cleanup triggers
   - [ ] Add plan completion triggers
   - [ ] Create timeout-based cleanup
