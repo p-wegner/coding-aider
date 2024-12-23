@@ -181,16 +181,49 @@ class AiderProcessManager(private val project: Project) : Disposable {
             return Flux.error(IllegalStateException("Aider sidecar process not running for ${planId ?: "default"}"))
         }
 
+        if (!checkProcessStatus(processInfo)) {
+            return Flux.error(IllegalStateException("Aider sidecar process is not responsive"))
+        }
+
         return Flux.create { sink: FluxSink<String> ->
             synchronized(processLock) {
-                val parser = processInfo.outputParser ?: DefaultAiderOutputParser(verbose, logger, processInfo.reader, processInfo.writer)
-                parser.writeCommandAndReadResults(command, sink)
+                try {
+                    val parser = processInfo.outputParser ?: DefaultAiderOutputParser(verbose, logger, processInfo.reader, processInfo.writer)
+                    parser.writeCommandAndReadResults(command, sink)
+                } catch (e: Exception) {
+                    // If command fails, try to recover process state
+                    if (!recoverProcessState(processInfo, planId)) {
+                        sink.error(IllegalStateException("Failed to recover process state after error", e))
+                    } else {
+                        sink.error(e)
+                    }
+                }
             }
         }
             .subscribeOn(Schedulers.boundedElastic())
             .doOnError { e ->
                 logger.error("Error sending async command to Aider sidecar process", e)
             }
+    }
+
+    private fun recoverProcessState(processInfo: ProcessInfo, planId: String?): Boolean {
+        return try {
+            // Try to reset process state
+            processInfo.writer?.write("/clear\n")
+            processInfo.writer?.flush()
+            Thread.sleep(500) // Wait for clear command to complete
+            
+            // Verify process is still responsive
+            if (!verifyProcessResponsiveness(processInfo)) {
+                logger.error("Process not responsive after recovery attempt")
+                return false
+            }
+            
+            true
+        } catch (e: Exception) {
+            logger.error("Failed to recover process state", e)
+            false
+        }
     }
 
     fun interruptCurrentCommand(planId: String? = null) {
@@ -286,7 +319,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
         }
 
         try {
-            // Check if streams are still valid
+            // Check if streams are still valid and process is responsive
             if (processInfo.reader?.ready() == true) {
                 processInfo.reader?.mark(1)
                 val available = processInfo.reader?.read()
@@ -296,6 +329,13 @@ class AiderProcessManager(private val project: Project) : Disposable {
                     return false
                 }
                 processInfo.reader?.reset()
+            }
+            
+            // Verify process can still accept commands
+            if (!verifyProcessResponsiveness(processInfo)) {
+                logger.error("Process is not responsive to commands")
+                cleanupFailedProcess(processInfo)
+                return false
             }
             
             // Check process health
@@ -314,6 +354,27 @@ class AiderProcessManager(private val project: Project) : Disposable {
             logger.error("Error checking process status", e)
             cleanupFailedProcess(processInfo)
             return false
+        }
+    }
+
+    private fun verifyProcessResponsiveness(processInfo: ProcessInfo): Boolean {
+        return try {
+            // Send a no-op command to verify process responsiveness
+            processInfo.writer?.write("\n")
+            processInfo.writer?.flush()
+            
+            // Wait briefly for response
+            var attempts = 0
+            while (attempts++ < 5) {
+                if (processInfo.reader?.ready() == true) {
+                    return true
+                }
+                Thread.sleep(100)
+            }
+            false
+        } catch (e: Exception) {
+            logger.error("Error verifying process responsiveness", e)
+            false
         }
     }
 
