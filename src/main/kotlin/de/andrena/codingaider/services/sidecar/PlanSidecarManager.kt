@@ -65,16 +65,61 @@ class PlanSidecarManager(private val project: Project) : Disposable {
         return processManagers[planId]
     }
     
-    fun cleanupPlanProcess(plan: AiderPlan) {
+    fun cleanupPlanProcess(plan: AiderPlan, force: Boolean = false) {
         val planId = plan.mainPlanFile?.filePath ?: return
         try {
+            // Check if process should be cleaned up
+            if (!force && isProcessActive(planId)) {
+                logger.info("Process for plan $planId is still active, skipping cleanup")
+                return
+            }
+
             notifyProcessState(planId, ProcessState.DISPOSED)
             processManagers.remove(planId)?.dispose()
-            logger.info("Cleaned up process manager for plan: $planId")
+            logger.info("Successfully disposed Aider sidecar process for plan $planId")
         } catch (e: Exception) {
             notifyProcessError(planId, e)
             throw e
         }
+    }
+
+    private fun isProcessActive(planId: String): Boolean {
+        val processManager = processManagers[planId] ?: return false
+        return processManager.isReadyForCommand(planId)
+    }
+
+    // Cleanup inactive processes periodically
+    private val cleanupJob = java.util.Timer("PlanProcessCleanup").apply {
+        scheduleAtFixedRate(object : java.util.TimerTask() {
+            override fun run() {
+                try {
+                    cleanupInactiveProcesses()
+                } catch (e: Exception) {
+                    logger.error("Error during process cleanup", e)
+                }
+            }
+        }, CLEANUP_INTERVAL, CLEANUP_INTERVAL)
+    }
+
+    private fun cleanupInactiveProcesses() {
+        val inactiveTimeout = System.currentTimeMillis() - PROCESS_INACTIVE_TIMEOUT
+        processManagers.entries.removeIf { (planId, manager) ->
+            try {
+                if (!manager.isReadyForCommand(planId)) {
+                    logger.info("Cleaning up inactive process for plan: $planId")
+                    manager.dispose()
+                    true
+                } else false
+            } catch (e: Exception) {
+                logger.error("Error checking process state for $planId", e)
+                true
+            }
+        }
+    }
+
+    companion object {
+        private const val CLEANUP_INTERVAL = 5 * 60 * 1000L // 5 minutes
+        private const val PROCESS_INACTIVE_TIMEOUT = 30 * 60 * 1000L // 30 minutes
     }
     
     fun cleanupAllProcesses() {
