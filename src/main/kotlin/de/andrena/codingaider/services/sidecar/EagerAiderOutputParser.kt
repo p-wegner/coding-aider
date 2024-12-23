@@ -12,9 +12,14 @@ class EagerAiderOutputParser(
     private val reader: BufferedReader?,
     private val writer: BufferedWriter?
 ) : AiderOutputParser {
-    private val readTimeout = 500L // milliseconds
-    private val maxEmptyReads = 10 // Maximum number of consecutive empty reads
+    private val readTimeout = 250L // Reduced timeout for better responsiveness
+    private val maxEmptyReads = 20 // Increased to handle slower responses
     private val commandPrompt = "> "
+    private val summaryStartMarker = "<aider-summary>"
+    private val summaryEndMarker = "</aider-summary>"
+    private var inSummaryBlock = false
+    private val currentSummary = StringBuilder()
+    
     private fun String.isPromptLine() = this == commandPrompt
 
     override fun writeCommandAndReadResults(command: String, sink: FluxSink<String>) {
@@ -22,37 +27,109 @@ class EagerAiderOutputParser(
             writer?.write("$command\n")
             writer?.flush()
 
-            var lastReadTime = System.currentTimeMillis() 
+            var lastReadTime = System.currentTimeMillis()
             var emptyReads = 0
+            var lastChar: Int? = null
 
             while (true) {
                 if (reader?.ready() == true) {
-                    emptyReads = 0 // Reset counter on successful read
-                    reader.mark(1000) // Mark the current position
+                    emptyReads = 0
+                    reader.mark(1000)
                     val char = reader.read()
-                    if (char == -1 || char == 62) { // 62 is the char code for ">"
-                        // End of stream
-                        sink.complete()
-                        return
+                    
+                    when {
+                        char == -1 -> {
+                            handleEndOfStream(sink)
+                            return
+                        }
+                        char == 62 && lastChar == 10 -> { // "\n>" sequence
+                            handlePrompt(sink)
+                            return
+                        }
+                        else -> {
+                            reader.reset()
+                            val line = reader.readLine()
+                            handleLine(line, sink)
+                            lastReadTime = System.currentTimeMillis()
+                            lastChar = 10 // Line feed after readLine()
+                        }
                     }
-                    reader.reset() // Go back to marked position
-
-                    val line = reader.readLine()
-                    if (verbose) logger.info(line)
-                    if (!line.isPromptLine()) {
-                        sink.next(line)
-                    }
-                    lastReadTime = System.currentTimeMillis()
                 } else {
-                    emptyReads++
-                    // Check if we've exceeded the timeout or max empty reads
-                    if (System.currentTimeMillis() - lastReadTime > readTimeout || emptyReads > maxEmptyReads) {
-                        sink.complete()
-                        return
-                    }
-                    TimeUnit.MILLISECONDS.sleep(25) // Reduced sleep time for better responsiveness
+                    if (handleEmptyRead(emptyReads++, lastReadTime, sink)) return
+                    TimeUnit.MILLISECONDS.sleep(10) // Further reduced sleep time
                 }
             }
+        } catch (e: Exception) {
+            handleError(e, sink)
+        }
+    }
+
+    private fun handleEndOfStream(sink: FluxSink<String>) {
+        if (inSummaryBlock) {
+            completeSummaryBlock(sink)
+        }
+        sink.complete()
+    }
+
+    private fun handlePrompt(sink: FluxSink<String>) {
+        if (inSummaryBlock) {
+            completeSummaryBlock(sink)
+        }
+        sink.complete()
+    }
+
+    private fun handleLine(line: String, sink: FluxSink<String>) {
+        if (verbose) logger.info(line)
+        
+        when {
+            line.trim() == summaryStartMarker -> {
+                inSummaryBlock = true
+                currentSummary.clear()
+                currentSummary.append(line).append("\n")
+            }
+            line.trim() == summaryEndMarker -> {
+                currentSummary.append(line).append("\n")
+                sink.next(currentSummary.toString())
+                inSummaryBlock = false
+                currentSummary.clear()
+            }
+            inSummaryBlock -> {
+                currentSummary.append(line).append("\n")
+            }
+            !line.isPromptLine() -> {
+                sink.next(line)
+            }
+        }
+    }
+
+    private fun handleEmptyRead(emptyReads: Int, lastReadTime: Long, sink: FluxSink<String>): Boolean {
+        val timeSinceLastRead = System.currentTimeMillis() - lastReadTime
+        if (timeSinceLastRead > readTimeout || emptyReads > maxEmptyReads) {
+            if (inSummaryBlock) {
+                completeSummaryBlock(sink)
+            }
+            sink.complete()
+            return true
+        }
+        return false
+    }
+
+    private fun completeSummaryBlock(sink: FluxSink<String>) {
+        if (currentSummary.isNotEmpty()) {
+            currentSummary.append("</aider-summary>\n")
+            sink.next(currentSummary.toString())
+            currentSummary.clear()
+        }
+        inSummaryBlock = false
+    }
+
+    private fun handleError(e: Exception, sink: FluxSink<String>) {
+        logger.error("Error in EagerAiderOutputParser", e)
+        if (inSummaryBlock) {
+            completeSummaryBlock(sink)
+        }
+        sink.error(e)
+    }
         } catch (e: Exception) {
             sink.error(e)
         }
