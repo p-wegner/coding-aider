@@ -130,5 +130,4 @@ class EagerAiderOutputParser(
         }
         sink.error(e)
     }
-    }
 }
