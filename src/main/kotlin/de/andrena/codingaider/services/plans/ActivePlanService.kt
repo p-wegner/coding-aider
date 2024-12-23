@@ -81,12 +81,22 @@ class ActivePlanService(private val project: Project) {
                     // Send clear command before disposal
                     project.service<AiderProcessManager>().let { processManager ->
                         if (processManager.isReadyForCommand(planPath)) {
-                            processManager.sendCommandAsync("", planPath)
+                            // Send clear command and wait for completion
+                            processManager.sendCommandAsync("/clear", planPath)
+                                .doOnComplete {
+                                    // Send drop command after clear
+                                    processManager.sendCommandAsync("/drop", planPath)
+                                        .subscribe(
+                                            {},
+                                            { error -> logger.error("Error sending drop command: ${error.message}") }
+                                        )
+                                }
                                 .subscribe(
                                     {},
                                     { error -> logger.error("Error sending clear command: ${error.message}") }
                                 )
                         }
+                        // Dispose process after commands
                         processManager.disposePlanProcess(planPath)
                     }
                 } catch (e: Exception) {
