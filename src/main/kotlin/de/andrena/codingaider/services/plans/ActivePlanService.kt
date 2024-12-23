@@ -57,8 +57,18 @@ class ActivePlanService(private val project: Project) {
             if (nextPlans.isNotEmpty()) {
                 cleanupAndClearPlan() // Cleanup current plan's resources
                 setActivePlan(nextPlans.first()) // Set the first uncompleted plan as active
+                
+                // Auto-continue to next plan if enabled
+                if (AiderSettings.getInstance().enableAutoPlanContinue) {
+                    continuePlan()
+                }
             } else {
                 cleanupAndClearPlan()
+            }
+        } else if (AiderSettings.getInstance().enableAutoPlanContinue) {
+            // Auto-continue current plan if it has open items
+            if (currentPlan.openChecklistItems().isNotEmpty()) {
+                continuePlan()
             }
         }
     }
@@ -68,10 +78,19 @@ class ActivePlanService(private val project: Project) {
             // Clean up sidecar process if enabled
             if (AiderSettings.getInstance().useSidecarMode) {
                 try {
-                    project.service<AiderProcessManager>().disposePlanProcess(planPath)
+                    // Send clear command before disposal
+                    project.service<AiderProcessManager>().let { processManager ->
+                        if (processManager.isReadyForCommand(planPath)) {
+                            processManager.sendCommandAsync("", planPath)
+                                .subscribe(
+                                    {},
+                                    { error -> logger.error("Error sending clear command: ${error.message}") }
+                                )
+                        }
+                        processManager.disposePlanProcess(planPath)
+                    }
                 } catch (e: Exception) {
-                    println("Error disposing plan process: ${e.message}")
-                    e.printStackTrace()
+                    logger.error("Error disposing plan process: ${e.message}", e)
                 }
             }
         }
