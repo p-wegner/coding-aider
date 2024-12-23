@@ -19,10 +19,10 @@
   - [x] Add recovery logging
 
 ## Integration
-- [ ] Connect with ActivePlanService
-  - [ ] Add process lifecycle notifications
-  - [ ] Implement plan state synchronization
-  - [ ] Handle plan completion events
+- [x] Connect with ActivePlanService
+  - [x] Add process lifecycle notifications
+  - [x] Implement plan state synchronization
+  - [x] Handle plan completion events
 - [ ] Add process status callbacks
   - [ ] Create callback interfaces
   - [ ] Implement status change notifications

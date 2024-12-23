@@ -13,6 +13,7 @@ import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.FileDataCollectionService
 import de.andrena.codingaider.services.sidecar.AiderProcessManager
+import de.andrena.codingaider.services.sidecar.PlanSidecarManager
 import de.andrena.codingaider.services.sidecar.SidecarProcessInitializer
 import de.andrena.codingaider.settings.AiderSettings
 import java.io.File
@@ -78,30 +79,12 @@ class ActivePlanService(private val project: Project) {
     }
 
     private fun cleanupAndClearPlan() {
-        activePlan?.mainPlanFile?.filePath?.let { planPath ->
+        activePlan?.let { plan ->
             // Clean up sidecar process if enabled
             if (AiderSettings.getInstance().useSidecarMode) {
                 try {
-                    // Send clear command before disposal
-                    project.service<AiderProcessManager>().let { processManager ->
-                        if (processManager.isReadyForCommand(planPath)) {
-                            // Send clear command and wait for completion
-                            processManager.sendCommandAsync("/clear", planPath)
-                                .doOnComplete {
-                                    // Send drop command after clear
-                                    processManager.sendCommandAsync("/drop", planPath)
-                                        .subscribe(
-                                            {},
-                                            { error -> logger.error("Error sending drop command: ${error.message}") }
-                                        )
-                                }
-                                .subscribe(
-                                    {},
-                                    { error -> logger.error("Error sending clear command: ${error.message}") }
-                                )
-                        }
-                        // Dispose process after commands
-                        processManager.disposePlanProcess(planPath)
+                    plan.mainPlanFile?.filePath?.let { planPath ->
+                        project.service<PlanSidecarManager>().cleanupPlanProcess(plan)
                     }
                 } catch (e: Exception) {
                     logger.error("Error disposing plan process: ${e.message}", e)

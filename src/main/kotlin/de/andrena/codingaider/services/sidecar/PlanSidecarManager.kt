@@ -12,12 +12,31 @@ import java.util.concurrent.ConcurrentHashMap
 class PlanSidecarManager(private val project: Project) : Disposable {
     private val logger = Logger.getInstance(PlanSidecarManager::class.java)
     private val processManagers = ConcurrentHashMap<String, AiderProcessManager>()
+    private val processStateListeners = mutableListOf<(String, ProcessState) -> Unit>()
+
+    enum class ProcessState {
+        STARTING, READY, FAILED, DISPOSED
+    }
     
+    fun addProcessStateListener(listener: (String, ProcessState) -> Unit) {
+        processStateListeners.add(listener)
+    }
+
+    fun removeProcessStateListener(listener: (String, ProcessState) -> Unit) {
+        processStateListeners.remove(listener)
+    }
+
+    private fun notifyProcessState(planId: String, state: ProcessState) {
+        processStateListeners.forEach { it(planId, state) }
+    }
+
     fun getOrCreateProcessManager(plan: AiderPlan): AiderProcessManager {
         val planId = plan.mainPlanFile?.filePath ?: throw IllegalStateException("Plan has no main file")
         return processManagers.computeIfAbsent(planId) { 
+            notifyProcessState(planId, ProcessState.STARTING)
             AiderProcessManager(project).also {
                 logger.info("Created new process manager for plan: $planId")
+                notifyProcessState(planId, ProcessState.READY)
             }
         }
     }
@@ -29,6 +48,7 @@ class PlanSidecarManager(private val project: Project) : Disposable {
     
     fun cleanupPlanProcess(plan: AiderPlan) {
         val planId = plan.mainPlanFile?.filePath ?: return
+        notifyProcessState(planId, ProcessState.DISPOSED)
         processManagers.remove(planId)?.dispose()
         logger.info("Cleaned up process manager for plan: $planId")
     }
