@@ -27,8 +27,8 @@
   - [x] Create callback interfaces
   - [x] Implement status change notifications
   - [x] Add error reporting callbacks
-- [ ] Implement cleanup triggers
-  - [ ] Add plan completion triggers
-  - [ ] Create timeout-based cleanup
-  - [ ] Implement resource monitoring
+- [x] Implement cleanup triggers
+  - [x] Add plan completion triggers
+  - [x] Create timeout-based cleanup
+  - [x] Implement resource monitoring
 - [x] Add monitoring interfaces

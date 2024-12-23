@@ -84,6 +84,7 @@ class PlanSidecarManager(private val project: Project) : Disposable {
     }
 
     override fun dispose() {
+        cleanupJob.cancel()
         cleanupAllProcesses()
     }
 }
