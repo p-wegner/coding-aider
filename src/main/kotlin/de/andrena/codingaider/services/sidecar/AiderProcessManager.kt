@@ -267,9 +267,21 @@ class AiderProcessManager(private val project: Project) : Disposable {
             planProcesses[planId]?.let { processInfo ->
                 if (processInfo.isRunning.get()) {
                     logger.info("Disposing Aider sidecar process for completed plan: $planId")
-                    disposeProcess(processInfo)
-                    planProcesses.remove(planId)
-                    logger.info("Successfully disposed Aider sidecar process for plan $planId")
+                    try {
+                        // Send clear command before disposal
+                        processInfo.writer?.write("/clear\n")
+                        processInfo.writer?.flush()
+                        Thread.sleep(100) // Brief wait for command to complete
+                        
+                        disposeProcess(processInfo)
+                        planProcesses.remove(planId)
+                        logger.info("Successfully disposed Aider sidecar process for plan $planId")
+                    } catch (e: Exception) {
+                        logger.error("Error during plan process disposal", e)
+                        // Force cleanup even if disposal fails
+                        processInfo.isRunning.set(false)
+                        planProcesses.remove(planId)
+                    }
                 } else {
                     logger.info("No running process found for plan $planId")
                     planProcesses.remove(planId)

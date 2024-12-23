@@ -67,7 +67,12 @@ class ActivePlanService(private val project: Project) {
         activePlan?.mainPlanFile?.filePath?.let { planPath ->
             // Clean up sidecar process if enabled
             if (AiderSettings.getInstance().useSidecarMode) {
-                project.service<AiderProcessManager>().disposePlanProcess(planPath)
+                try {
+                    project.service<AiderProcessManager>().disposePlanProcess(planPath)
+                } catch (e: Exception) {
+                    println("Error disposing plan process: ${e.message}")
+                    e.printStackTrace()
+                }
             }
         }
         clearActivePlan()
