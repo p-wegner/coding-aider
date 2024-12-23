@@ -3,9 +3,9 @@
 # Plan Sidecar Execution Integration Checklist
 
 ## Execution Flow
-- [ ] Update ActivePlanService for sidecar mode
-- [ ] Modify plan continuation logic
-- [ ] Add process selection handling
+- [x] Update ActivePlanService for sidecar mode
+- [x] Modify plan continuation logic
+- [x] Add process selection handling
 - [ ] Implement context persistence
 
 ## Integration

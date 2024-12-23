@@ -146,6 +146,7 @@ class ActivePlanService(private val project: Project) {
             val virtualFiles = collectVirtualFiles(selectedPlan, fileSystem, projectBasePath)
             val filesToInclude = collectFilesToInclude(virtualFiles)
 
+            // Create command data with plan-specific settings
             val commandData = CommandData(
                 message = "",
                 useYesFlag = settings.useYesFlag,
@@ -155,7 +156,8 @@ class ActivePlanService(private val project: Project) {
                 lintCmd = settings.lintCmd,
                 projectPath = projectBasePath,
                 aiderMode = AiderMode.STRUCTURED,
-                sidecarMode = settings.useSidecarMode
+                sidecarMode = settings.useSidecarMode,
+                planId = selectedPlan.mainPlanFile?.filePath // Use plan file path as unique ID
             )
 
             setActivePlan(selectedPlan)
