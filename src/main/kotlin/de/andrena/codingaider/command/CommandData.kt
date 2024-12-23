@@ -30,7 +30,8 @@ data class CommandData(
     val projectPath: String,
     val options: CommandOptions = CommandOptions.DEFAULT,
     val aiderMode: AiderMode = AiderMode.NORMAL,
-    val sidecarMode: Boolean = false
+    val sidecarMode: Boolean = false,
+    val planId: String? = null
 ) {
 
     val isShellMode: Boolean get() = aiderMode == AiderMode.SHELL
