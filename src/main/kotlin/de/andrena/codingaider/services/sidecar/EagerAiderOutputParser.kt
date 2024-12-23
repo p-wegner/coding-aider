@@ -12,7 +12,8 @@ class EagerAiderOutputParser(
     private val reader: BufferedReader?,
     private val writer: BufferedWriter?
 ) : AiderOutputParser {
-    private val readTimeout = 300L // milliseconds
+    private val readTimeout = 500L // milliseconds
+    private val maxEmptyReads = 10 // Maximum number of consecutive empty reads
     private val commandPrompt = "> "
     private fun String.isPromptLine() = this == commandPrompt
 
@@ -21,10 +22,12 @@ class EagerAiderOutputParser(
             writer?.write("$command\n")
             writer?.flush()
 
-            var lastReadTime = System.currentTimeMillis()
+            var lastReadTime = System.currentTimeMillis() 
+            var emptyReads = 0
 
             while (true) {
                 if (reader?.ready() == true) {
+                    emptyReads = 0 // Reset counter on successful read
                     reader.mark(1000) // Mark the current position
                     val char = reader.read()
                     if (char == -1 || char == 62) { // 62 is the char code for ">"
@@ -41,12 +44,13 @@ class EagerAiderOutputParser(
                     }
                     lastReadTime = System.currentTimeMillis()
                 } else {
-                    // Check if we've exceeded the timeout
-                    if (System.currentTimeMillis() - lastReadTime > readTimeout) {
+                    emptyReads++
+                    // Check if we've exceeded the timeout or max empty reads
+                    if (System.currentTimeMillis() - lastReadTime > readTimeout || emptyReads > maxEmptyReads) {
                         sink.complete()
                         return
                     }
-                    TimeUnit.MILLISECONDS.sleep(50) // Small sleep to prevent busy waiting
+                    TimeUnit.MILLISECONDS.sleep(25) // Reduced sleep time for better responsiveness
                 }
             }
         } catch (e: Exception) {

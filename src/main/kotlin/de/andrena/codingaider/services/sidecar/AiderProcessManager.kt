@@ -22,7 +22,8 @@ class AiderProcessManager(private val project: Project) : Disposable {
         var process: Process? = null,
         var reader: BufferedReader? = null,
         var writer: BufferedWriter? = null,
-        val isRunning: AtomicBoolean = AtomicBoolean(false)
+        val isRunning: AtomicBoolean = AtomicBoolean(false),
+        var outputParser: AiderOutputParser? = null
     )
     
     private val defaultProcess = ProcessInfo()
@@ -31,7 +32,6 @@ class AiderProcessManager(private val project: Project) : Disposable {
 
     private val startupTimeout = Duration.ofSeconds(60)
     private var verbose: Boolean = false
-    private lateinit var outputParser : AiderOutputParser
     fun startProcess(
         command: List<String>,
         workingDir: String,
@@ -57,7 +57,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 processInfo.process = processBuilder.start()
                 processInfo.reader = BufferedReader(InputStreamReader(processInfo.process!!.inputStream))
                 processInfo.writer = BufferedWriter(OutputStreamWriter(processInfo.process!!.outputStream))
-                outputParser = DefaultAiderOutputParser(verbose, logger, processInfo.reader, processInfo.writer)
+                processInfo.outputParser = DefaultAiderOutputParser(verbose, logger, processInfo.reader, processInfo.writer)
 
                 if (verbose) {
                     logger.info("Started Aider sidecar process with command: ${command.joinToString(" ")}")
@@ -112,8 +112,8 @@ class AiderProcessManager(private val project: Project) : Disposable {
 
         return Flux.create { sink: FluxSink<String> ->
             synchronized(processLock) {
-                outputParser = DefaultAiderOutputParser(verbose, logger, processInfo.reader, processInfo.writer)
-                outputParser.writeCommandAndReadResults(command, sink)
+                val parser = processInfo.outputParser ?: DefaultAiderOutputParser(verbose, logger, processInfo.reader, processInfo.writer)
+                parser.writeCommandAndReadResults(command, sink)
             }
         }
             .subscribeOn(Schedulers.boundedElastic())

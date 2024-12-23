@@ -3,11 +3,15 @@
 # Plan Sidecar Mode Implementation Checklist
 
 ## Setup
-- [ ] Add plan sidecar mode setting to AiderSettings
-- [ ] Update settings UI to include plan sidecar mode option
+- [x] Add plan sidecar mode setting to AiderSettings
+- [x] Update settings UI to include plan sidecar mode option
 
 ## Implementation
-- [ ] Complete process management implementation
+- [x] Improve process management implementation
+  - [x] Move outputParser into ProcessInfo
+  - [x] Add better process termination detection
+  - [x] Improve empty read handling
+  - [x] Optimize sleep timings
 - [ ] Complete plan execution integration
 - [ ] Add process cleanup on plan completion
 - [ ] Implement proper error handling
