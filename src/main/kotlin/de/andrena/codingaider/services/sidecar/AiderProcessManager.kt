@@ -297,10 +297,31 @@ class AiderProcessManager(private val project: Project) : Disposable {
 
             // Try to start a new process
             val command = processInfo.process?.info()?.commandLine()?.orElse(null)?.split(" ") ?: return false
-            // TODO: get working dir properly
-            val workingDir = ""
+            val workingDir = processInfo.process?.info()?.command()?.orElse(null)?.let {
+                File(it).parentFile?.absolutePath
+            } ?: System.getProperty("user.dir")
             
-            return startProcess(command, workingDir, verbose, planId)
+            // Validate working directory
+            if (!File(workingDir).exists()) {
+                logger.error("Working directory no longer exists: $workingDir")
+                return false
+            }
+            
+            // Attempt to start new process with original parameters
+            val started = startProcess(command, workingDir, verbose, planId)
+            if (!started) {
+                logger.error("Failed to start new process during hard reset")
+                return false
+            }
+            
+            // Verify new process is responsive
+            if (!verifyProcessResponsiveness(processInfo)) {
+                logger.error("New process not responsive after hard reset")
+                cleanupFailedProcess(processInfo)
+                return false
+            }
+            
+            true
         } catch (e: Exception) {
             logger.error("Hard reset failed", e)
             false
