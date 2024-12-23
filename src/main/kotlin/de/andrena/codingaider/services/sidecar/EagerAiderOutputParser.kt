@@ -19,11 +19,21 @@ class EagerAiderOutputParser(
     private val summaryEndMarker = "</aider-summary>"
     private var inSummaryBlock = false
     private val currentSummary = StringBuilder()
+    private var hasSeenValidResponse = false
+    private var lastValidResponseTime = 0L
     
     private fun String.isPromptLine() = this == commandPrompt
+    
+    private fun resetState() {
+        hasSeenValidResponse = false
+        lastValidResponseTime = 0L
+        currentSummary.clear()
+        inSummaryBlock = false
+    }
 
     override fun writeCommandAndReadResults(command: String, sink: FluxSink<String>) {
         try {
+            resetState()
             writer?.write("$command\n")
             writer?.flush()
 
@@ -51,6 +61,10 @@ class EagerAiderOutputParser(
                             val line = reader.readLine()
                             handleLine(line, sink)
                             lastReadTime = System.currentTimeMillis()
+                            if (!line.isPromptLine()) {
+                                hasSeenValidResponse = true
+                                lastValidResponseTime = lastReadTime
+                            }
                             lastChar = 10 // Line feed after readLine()
                         }
                     }
@@ -68,7 +82,12 @@ class EagerAiderOutputParser(
         if (inSummaryBlock) {
             completeSummaryBlock(sink)
         }
-        sink.complete()
+        // Only complete if we've seen a valid response
+        if (hasSeenValidResponse) {
+            sink.complete()
+        } else {
+            sink.error(OutputParsingException("Stream ended without valid response"))
+        }
     }
 
     private fun handlePrompt(sink: FluxSink<String>) {
@@ -128,6 +147,12 @@ class EagerAiderOutputParser(
         if (inSummaryBlock) {
             completeSummaryBlock(sink)
         }
-        sink.error(e)
+        val wrappedException = when (e) {
+            is IllegalStateException -> OutputParsingException("Parser state error: ${e.message}", e)
+            is SecurityException -> OutputParsingException("Security error during parsing: ${e.message}", e)
+            is OutputParsingException -> e
+            else -> OutputParsingException("Unexpected error during parsing: ${e.message}", e)
+        }
+        sink.error(wrappedException)
     }
 }
