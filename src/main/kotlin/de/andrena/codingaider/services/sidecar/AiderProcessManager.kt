@@ -259,16 +259,28 @@ class AiderProcessManager(private val project: Project) : Disposable {
 
     private fun tryGentleRecovery(processInfo: ProcessInfo): Boolean {
         return try {
+            // First try to clear any pending output
+            processInfo.reader?.skip(processInfo.reader?.available()?.toLong() ?: 0)
+            
             // Try to reset process state
             processInfo.writer?.write("/clear\n")
             processInfo.writer?.flush()
             Thread.sleep(500) // Wait for clear command to complete
+            
+            // Send a test command to verify process state
+            processInfo.writer?.write("\n")
+            processInfo.writer?.flush()
             
             // Verify process is still responsive
             if (!verifyProcessResponsiveness(processInfo)) {
                 logger.error("Process not responsive after gentle recovery attempt")
                 return false
             }
+            
+            // Send drop command to ensure clean state
+            processInfo.writer?.write("/drop\n")
+            processInfo.writer?.flush()
+            Thread.sleep(100)
             
             true
         } catch (e: Exception) {
@@ -462,8 +474,28 @@ class AiderProcessManager(private val project: Project) : Disposable {
     }
 
     private fun tryProcessRecovery(info: ProcessInfo): Boolean {
-        // TODO: implement
-        return false
+        logger.info("Attempting process recovery")
+        
+        return try {
+            // First try gentle recovery
+            if (tryGentleRecovery(info)) {
+                logger.info("Successfully recovered process through gentle recovery")
+                return true
+            }
+
+            // If gentle recovery fails, try hard reset
+            logger.info("Gentle recovery failed, attempting hard reset")
+            if (tryHardReset(info)) {
+                logger.info("Successfully recovered process through hard reset")
+                return true
+            }
+
+            logger.error("All recovery attempts failed")
+            false
+        } catch (e: Exception) {
+            logger.error("Failed to recover process state", e)
+            false
+        }
     }
 
     private fun verifyProcessResponsiveness(processInfo: ProcessInfo): Boolean {
