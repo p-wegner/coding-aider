@@ -42,4 +42,4 @@
   - [x] Add /clear command before disposal
   - [x] Improve error handling
   - [x] Ensure forced cleanup on failures
-- [ ] Test error recovery scenarios
+- [x] Test error recovery scenarios

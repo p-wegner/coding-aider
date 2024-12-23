@@ -223,6 +223,29 @@ class AiderProcessManager(private val project: Project) : Disposable {
 
     private fun recoverProcessState(processInfo: ProcessInfo, planId: String?): Boolean {
         return try {
+            // First try gentle recovery
+            if (tryGentleRecovery(processInfo)) {
+                logger.info("Successfully recovered process state through gentle recovery")
+                return true
+            }
+
+            // If gentle recovery fails, try hard reset
+            logger.info("Gentle recovery failed, attempting hard reset")
+            if (tryHardReset(processInfo, planId)) {
+                logger.info("Successfully recovered process state through hard reset")
+                return true
+            }
+
+            logger.error("All recovery attempts failed")
+            false
+        } catch (e: Exception) {
+            logger.error("Failed to recover process state", e)
+            false
+        }
+    }
+
+    private fun tryGentleRecovery(processInfo: ProcessInfo): Boolean {
+        return try {
             // Try to reset process state
             processInfo.writer?.write("/clear\n")
             processInfo.writer?.flush()
@@ -230,13 +253,30 @@ class AiderProcessManager(private val project: Project) : Disposable {
             
             // Verify process is still responsive
             if (!verifyProcessResponsiveness(processInfo)) {
-                logger.error("Process not responsive after recovery attempt")
+                logger.error("Process not responsive after gentle recovery attempt")
                 return false
             }
             
             true
         } catch (e: Exception) {
-            logger.error("Failed to recover process state", e)
+            logger.debug("Gentle recovery failed", e)
+            false
+        }
+    }
+
+    private fun tryHardReset(processInfo: ProcessInfo, planId: String?): Boolean {
+        return try {
+            // Force cleanup of current process
+            cleanupFailedProcess(processInfo)
+            Thread.sleep(1000) // Wait for cleanup
+
+            // Try to start a new process
+            val command = processInfo.process?.info()?.commandLine()?.split(" ") ?: return false
+            val workingDir = processInfo.process?.info()?.command()?.parent ?: return false
+            
+            return startProcess(command, workingDir, verbose, planId)
+        } catch (e: Exception) {
+            logger.error("Hard reset failed", e)
             false
         }
     }
