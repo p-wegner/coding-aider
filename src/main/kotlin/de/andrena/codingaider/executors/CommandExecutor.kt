@@ -184,7 +184,7 @@ class CommandExecutor(
     fun abortCommand() {
         isAborted = true
         if (commandData.sidecarMode) {
-            project.service<AiderProcessManager>().interruptCurrentCommand()
+            project.service<AiderProcessManager>().interruptCurrentCommand(activePlan?.mainPlanFile?.filePath)
         }
         if (useDockerAider) {
             dockerManager.stopDockerContainer()

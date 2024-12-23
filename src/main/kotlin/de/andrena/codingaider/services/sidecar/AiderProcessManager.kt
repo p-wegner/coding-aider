@@ -122,22 +122,23 @@ class AiderProcessManager(private val project: Project) : Disposable {
             }
     }
 
-    fun interruptCurrentCommand() {
-        synchronized(this) {
-            if (process?.isAlive == true) {
+    fun interruptCurrentCommand(planId: String? = null) {
+        synchronized(processLock) {
+            val processInfo = planId?.let { planProcesses[it] } ?: defaultProcess
+            if (processInfo.process?.isAlive == true) {
                 if (System.getProperty("os.name").lowercase().contains("windows")) {
                     // Windows specific handling
-                    Runtime.getRuntime().exec("cmd.exe /C taskkill /F /T /PID ${process!!.pid()}")
+                    Runtime.getRuntime().exec("cmd.exe /C taskkill /F /T /PID ${processInfo.process!!.pid()}")
                 } else {
                     // Unix-based systems (Linux, macOS)
-                    process?.descendants()?.forEach { processHandle ->
+                    processInfo.process?.descendants()?.forEach { processHandle ->
                         processHandle.destroyForcibly()
                     }
-                    process?.pid()?.let { pid ->
+                    processInfo.process?.pid()?.let { pid ->
                         Runtime.getRuntime().exec("kill -SIGINT $pid")
                     }
                 }
-                logger.info("Sent interrupt signal to Aider process")
+                logger.info("Sent interrupt signal to Aider process for ${planId ?: "default"}")
             }
         }
     }
@@ -189,13 +190,6 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 // Dispose default process
                 disposeProcess(defaultProcess)
                 logger.info("Disposed all Aider sidecar processes")
-                    .repeatWhen { it.delayElements(Duration.ofMillis(100)) }
-                    .takeUntil { !it }
-                    .timeout(Duration.ofSeconds(5))
-                    .doFinally {
-                        process?.destroyForcibly()
-                    }
-                    .subscribe()
             } catch (e: Exception) {
                 logger.error("Error disposing Aider sidecar process", e)
             }
