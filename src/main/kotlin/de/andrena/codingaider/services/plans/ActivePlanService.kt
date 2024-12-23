@@ -162,8 +162,6 @@ class ActivePlanService(private val project: Project) {
                 projectPath = projectBasePath,
                 aiderMode = AiderMode.STRUCTURED,
                 sidecarMode = settings.useSidecarMode,
-                planId = selectedPlan.mainPlanFile?.filePath
-                sidecarMode = settings.useSidecarMode,
                 planId = selectedPlan.mainPlanFile?.filePath // Use plan file path as unique ID
             )
 
