@@ -1,1 +1,4 @@
 - [ ] Fix duplicate files in context view
+- [ ] parsing two subplans fails
+- [ ] archive plan
+- [ ] llm selection in aider input dialog changes settingsai
