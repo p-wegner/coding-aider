@@ -11,6 +11,7 @@ import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 import java.io.BufferedReader
 import java.io.BufferedWriter
+import java.io.File
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.time.Duration
@@ -19,6 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 @Service(Service.Level.PROJECT)
 class AiderProcessManager(private val project: Project) : Disposable {
     private val logger = Logger.getInstance(AiderProcessManager::class.java)
+
     private data class ProcessInfo(
         var process: Process? = null,
         var reader: BufferedReader? = null,
@@ -26,7 +28,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
         val isRunning: AtomicBoolean = AtomicBoolean(false),
         var outputParser: AiderOutputParser? = null
     )
-    
+
     private val defaultProcess = ProcessInfo()
     private val planProcesses = mutableMapOf<String, ProcessInfo>()
     private val processLock = Any()
@@ -40,11 +42,11 @@ class AiderProcessManager(private val project: Project) : Disposable {
         planId: String? = null
     ): Boolean {
         synchronized(processLock) {
-            val processInfo = planId?.let { 
+            val processInfo = planId?.let {
                 planProcesses.getOrPut(it) { ProcessInfo() }
             } ?: defaultProcess
             this.verbose = verbose
-            
+
             if (processInfo.isRunning.get()) {
                 logger.info("Aider sidecar process already running for ${planId ?: "default"}")
                 return true
@@ -52,11 +54,11 @@ class AiderProcessManager(private val project: Project) : Disposable {
 
             return try {
                 validateStartupConditions(workingDir, planId)
-                
+
                 val processBuilder = ProcessBuilder(command)
-                    .apply { 
+                    .apply {
                         environment().putIfAbsent("PYTHONIOENCODING", "utf-8")
-                        directory(java.io.File(workingDir))
+                        directory(File(workingDir))
                         redirectErrorStream(true)
                     }
 
@@ -88,7 +90,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
     }
 
     private fun validateStartupConditions(workingDir: String, planId: String? = null) {
-        val workingDirFile = java.io.File(workingDir)
+        val workingDirFile = File(workingDir)
         if (!workingDirFile.exists()) {
             throw IllegalStateException("Working directory does not exist: $workingDir")
         }
@@ -98,7 +100,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
         if (!workingDirFile.canRead() || !workingDirFile.canWrite()) {
             throw IllegalStateException("Insufficient permissions for working directory: $workingDir")
         }
-        
+
         // Additional validation for concurrent processes
         synchronized(processLock) {
             if (planId == null && planProcesses.size >= MAX_CONCURRENT_PROCESSES) {
@@ -157,14 +159,15 @@ class AiderProcessManager(private val project: Project) : Disposable {
                     if (processInfo.reader!!.ready()) {
                         val currentChar = processInfo.reader!!.read()
                         if (currentChar == -1) break
-                        
+
                         if (verbose) logger.debug("Read char: ${currentChar.toChar()}")
-                        
+
                         if (currentChar == 62) { // '>' character
                             lastChar = currentChar
                             lastCharTime = System.currentTimeMillis()
-                        } else if (lastChar == 62 && 
-                            System.currentTimeMillis() - lastCharTime > charTimeout.toMillis()) {
+                        } else if (lastChar == 62 &&
+                            System.currentTimeMillis() - lastCharTime > charTimeout.toMillis()
+                        ) {
                             processInfo.isRunning.set(true)
                             sink.success(true)
                             return@create
@@ -173,7 +176,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
                         Thread.sleep(50)
                     }
                 }
-                
+
                 if (!processInfo.process?.isAlive!!) {
                     val exitCode = processInfo.process?.exitValue() ?: -1
                     sink.error(IllegalStateException("Process terminated with exit code $exitCode before becoming ready"))
@@ -190,21 +193,20 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 sink.error(IllegalStateException(errorMsg, e))
             }
         }
-        .timeout(startupTimeout)
-        .doOnError { error ->
-            logger.error("Aider sidecar process failed to become ready: ${error.message}")
-            dispose()
-        }
-        .onErrorReturn(false)
-        .block() ?: false
-
+            .timeout(startupTimeout)
+            .doOnError { error ->
+                logger.error("Aider sidecar process failed to become ready: ${error.message}")
+                dispose()
+            }
+            .onErrorReturn(false)
+            .block() ?: false
 
 
     fun sendCommandAsync(command: String, planId: String? = null): Flux<String> {
         val processInfo = synchronized(processLock) {
             planId?.let { planProcesses[it] } ?: defaultProcess
         }
-        
+
         if (!processInfo.isRunning.get()) {
             return Flux.error(IllegalStateException("Aider sidecar process not running for ${planId ?: "default"}"))
         }
@@ -216,7 +218,12 @@ class AiderProcessManager(private val project: Project) : Disposable {
         return Flux.create { sink: FluxSink<String> ->
             synchronized(processLock) {
                 try {
-                    val parser = processInfo.outputParser ?: DefaultAiderOutputParser(verbose, logger, processInfo.reader, processInfo.writer)
+                    val parser = processInfo.outputParser ?: DefaultAiderOutputParser(
+                        verbose,
+                        logger,
+                        processInfo.reader,
+                        processInfo.writer
+                    )
                     parser.writeCommandAndReadResults(command, sink)
                 } catch (e: Exception) {
                     // If command fails, try to recover process state
@@ -259,29 +266,29 @@ class AiderProcessManager(private val project: Project) : Disposable {
 
     private fun tryGentleRecovery(processInfo: ProcessInfo): Boolean {
         return try {
-            // First try to clear any pending output
-            processInfo.reader?.skip(processInfo.reader?.available()?.toLong() ?: 0)
-            
+            // TODO: First try to clear any pending output
+            // processInfo.reader?.skip(processInfo.reader?.available()?.toLong() ?: 0)
+
             // Try to reset process state
             processInfo.writer?.write("/clear\n")
             processInfo.writer?.flush()
             Thread.sleep(500) // Wait for clear command to complete
-            
+
             // Send a test command to verify process state
             processInfo.writer?.write("\n")
             processInfo.writer?.flush()
-            
+
             // Verify process is still responsive
             if (!verifyProcessResponsiveness(processInfo)) {
                 logger.error("Process not responsive after gentle recovery attempt")
                 return false
             }
-            
+
             // Send drop command to ensure clean state
             processInfo.writer?.write("/drop\n")
             processInfo.writer?.flush()
             Thread.sleep(100)
-            
+
             true
         } catch (e: Exception) {
             logger.debug("Gentle recovery failed", e)
@@ -300,27 +307,27 @@ class AiderProcessManager(private val project: Project) : Disposable {
             val workingDir = processInfo.process?.info()?.command()?.orElse(null)?.let {
                 File(it).parentFile?.absolutePath
             } ?: System.getProperty("user.dir")
-            
+
             // Validate working directory
             if (!File(workingDir).exists()) {
                 logger.error("Working directory no longer exists: $workingDir")
                 return false
             }
-            
+
             // Attempt to start new process with original parameters
             val started = startProcess(command, workingDir, verbose, planId)
             if (!started) {
                 logger.error("Failed to start new process during hard reset")
                 return false
             }
-            
+
             // Verify new process is responsive
             if (!verifyProcessResponsiveness(processInfo)) {
                 logger.error("New process not responsive after hard reset")
                 cleanupFailedProcess(processInfo)
                 return false
             }
-            
+
             true
         } catch (e: Exception) {
             logger.error("Hard reset failed", e)
@@ -359,12 +366,12 @@ class AiderProcessManager(private val project: Project) : Disposable {
                         processInfo.writer?.write("/clear\n")
                         processInfo.writer?.flush()
                         Thread.sleep(100) // Brief wait for command to complete
-                        
+
                         // Send drop command to ensure clean state
                         processInfo.writer?.write("/drop\n")
                         processInfo.writer?.flush()
                         Thread.sleep(100)
-                        
+
                         disposeProcess(processInfo)
                         planProcesses.remove(planId)
                         logger.info("Successfully disposed Aider sidecar process for plan $planId")
@@ -412,7 +419,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 // Dispose all plan processes
                 planProcesses.values.forEach { disposeProcess(it) }
                 planProcesses.clear()
-                
+
                 // Dispose default process
                 disposeProcess(defaultProcess)
                 logger.info("Disposed all Aider sidecar processes")
@@ -434,7 +441,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
             logger.debug("Process is not alive")
             return false
         }
-        
+
         if (!processInfo.isRunning.get()) {
             logger.debug("Process is not marked as running")
             return false
@@ -452,7 +459,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 }
                 processInfo.reader?.reset()
             }
-            
+
             // Verify process can still accept commands with timeout
             if (!verifyProcessResponsiveness(processInfo)) {
                 logger.error("Process is not responsive to commands")
@@ -461,7 +468,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
                     return false
                 }
             }
-            
+
             // Check process health and resource usage
             try {
                 val exitValue = processInfo.process?.exitValue()
@@ -470,13 +477,14 @@ class AiderProcessManager(private val project: Project) : Disposable {
                     cleanupFailedProcess(processInfo)
                     return false
                 }
-                
+
                 // Check process resource usage
                 val processHandle = processInfo.process?.toHandle()
                 if (processHandle?.isAlive == true) {
                     val info = processHandle.info()
-                    if (info.totalCpuDuration().isPresent && 
-                        info.totalCpuDuration().get().seconds > 3600) { // 1 hour CPU time
+                    if (info.totalCpuDuration().isPresent &&
+                        info.totalCpuDuration().get().seconds > 3600
+                    ) { // 1 hour CPU time
                         logger.warn("Process has high CPU usage, considering restart")
                         return tryProcessRecovery(processInfo)
                     }
@@ -485,7 +493,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
                 // Process is still running
                 return true
             }
-            
+
             return true
         } catch (e: Exception) {
             logger.error("Error checking process status", e)
@@ -496,7 +504,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
 
     private fun tryProcessRecovery(info: ProcessInfo): Boolean {
         logger.info("Attempting process recovery")
-        
+
         return try {
             // First try gentle recovery
             if (tryGentleRecovery(info)) {
@@ -506,7 +514,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
 
             // If gentle recovery fails, try hard reset
             logger.info("Gentle recovery failed, attempting hard reset")
-            if (tryHardReset(info)) {
+            if (tryHardReset(info, null)) {
                 logger.info("Successfully recovered process through hard reset")
                 return true
             }
@@ -524,7 +532,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
             // Send a no-op command to verify process responsiveness
             processInfo.writer?.write("\n")
             processInfo.writer?.flush()
-            
+
             // Wait briefly for response
             var attempts = 0
             while (attempts++ < 5) {
