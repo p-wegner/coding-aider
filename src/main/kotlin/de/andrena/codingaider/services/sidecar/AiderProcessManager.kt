@@ -159,43 +159,68 @@ class AiderProcessManager() : Disposable {
             .onErrorReturn(false)
             .block() ?: false
 
-    // TODO: this doesn't work reliably, reader.ready might be blocking
     private fun readOutputUntilLongerPause(
         processInfo: ProcessInfo,
         sink: MonoSink<Boolean>
     ) {
+        val buffer = StringBuilder()
+        val promptPattern = Regex("(?m)^\\s*>\\s*$") // Matches '>' at line start/end with optional whitespace
+        val errorPattern = Regex("(?i)error:|exception:|failed|terminated") // Common error indicators
+
         try {
-            var lastChar: Int? = null
-            var lastCharTime = System.currentTimeMillis()
-            processInfo.reader?.readLine()
-
-            while (processInfo.process?.isAlive == true) {
-                val currentTime = System.currentTimeMillis()
-                if (!processInfo.reader!!.ready()) {
-                    // Check if we've waited 2 seconds since the last '>' character
-                    if (currentTime - lastCharTime > Duration.ofSeconds(2).toMillis()) {
-                        processInfo.isRunning.set(true)
-                        sink.success(true)
-                        return
+            // Start async reader thread
+            val readerThread = Thread {
+                try {
+                    val reader = processInfo.reader!!
+                    val charBuffer = CharArray(4096)
+                    
+                    while (processInfo.process?.isAlive == true) {
+                        val count = reader.read(charBuffer)
+                        if (count == -1) break
+                        
+                        synchronized(buffer) {
+                            buffer.append(charBuffer, 0, count)
+                            
+                            // Check for startup completion indicators
+                            val content = buffer.toString()
+                            
+                            // Check for errors first
+                            if (errorPattern.find(content) != null) {
+                                sink.error(IllegalStateException("Error detected during startup: $content"))
+                                return@synchronized
+                            }
+                            
+                            // Look for prompt pattern
+                            if (promptPattern.find(content) != null) {
+                                if (verbose) logger.debug("Detected prompt pattern in output")
+                                processInfo.isRunning.set(true)
+                                sink.success(true)
+                                return@synchronized
+                            }
+                        }
+                        
+                        // Small delay to prevent CPU spinning
+                        Thread.sleep(10)
                     }
-                    Thread.sleep(50)
-                    continue
+                } catch (e: Exception) {
+                    sink.error(e)
                 }
-
-                val currentChar = processInfo.reader!!.read()
-                if (currentChar == -1) break
-
-                if (verbose) logger.debug("Read char: ${currentChar.toChar()}")
-                lastChar = currentChar
-                lastCharTime = currentTime
+            }.apply {
+                isDaemon = true
+                start()
             }
 
-            if (!processInfo.process?.isAlive!!) {
-                val exitCode = processInfo.process?.exitValue() ?: -1
-                sink.error(IllegalStateException("Process terminated with exit code $exitCode before becoming ready"))
-            } else {
-                sink.error(IllegalStateException("Process stream ended before prompt was detected"))
-            }
+            // Set timeout for startup
+            Thread {
+                Thread.sleep(startupTimeout.toMillis())
+                if (!processInfo.isRunning.get()) {
+                    synchronized(buffer) {
+                        val output = buffer.toString()
+                        sink.error(IllegalStateException("Startup timeout. Last output: $output"))
+                    }
+                }
+            }.start()
+
         } catch (e: Exception) {
             val errorMsg = when (e) {
                 is SecurityException -> "Security error during process startup: ${e.message}"
