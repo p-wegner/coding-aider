@@ -155,19 +155,27 @@ class AiderProcessManager() : Disposable {
 
                 processInfo.reader?.readLine()
                 while (processInfo.reader!!.ready() || processInfo.process?.isAlive == true) {
-                    // TODO: read chars until no char is written within 2 seconds AI!
-                    if (processInfo.reader!!.ready()) {
-                        val currentChar = processInfo.reader!!.read()
-                        if (currentChar == -1) break
+                    val currentTime = System.currentTimeMillis()
+                    if (!processInfo.reader!!.ready()) {
+                        // Check if we've waited 2 seconds since the last '>' character
+                        if (lastChar == 62 && currentTime - lastCharTime > Duration.ofSeconds(2).toMillis()) {
+                            processInfo.isRunning.set(true)
+                            sink.success(true)
+                            return@create
+                        }
+                        Thread.sleep(50)
+                        continue
+                    }
 
-                        if (verbose) logger.debug("Read char: ${currentChar.toChar()}")
+                    val currentChar = processInfo.reader!!.read()
+                    if (currentChar == -1) break
 
-                        if (currentChar == 62) { // '>' character
-                            lastChar = currentChar
-                            lastCharTime = System.currentTimeMillis()
-                        } else if (lastChar == 62 &&
-                            System.currentTimeMillis() - lastCharTime > charTimeout.toMillis()
-                        ) {
+                    if (verbose) logger.debug("Read char: ${currentChar.toChar()}")
+
+                    if (currentChar == 62) { // '>' character
+                        lastChar = currentChar
+                        lastCharTime = currentTime
+                    }
                             processInfo.isRunning.set(true)
                             sink.success(true)
                             return@create
