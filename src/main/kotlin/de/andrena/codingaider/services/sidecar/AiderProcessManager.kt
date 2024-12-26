@@ -155,6 +155,7 @@ class AiderProcessManager() : Disposable {
 
                 processInfo.reader?.readLine()
                 while (processInfo.reader!!.ready() || processInfo.process?.isAlive == true) {
+                    // TODO: read chars until no char is written within 2 seconds AI!
                     if (processInfo.reader!!.ready()) {
                         val currentChar = processInfo.reader!!.read()
                         if (currentChar == -1) break
