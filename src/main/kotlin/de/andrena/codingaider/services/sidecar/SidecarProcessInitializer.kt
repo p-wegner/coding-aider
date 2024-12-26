@@ -71,7 +71,7 @@ class SidecarProcessInitializer(private val project: Project, private val cs: Co
             }
 
             // Ensure the process is running before returning
-            if (!processManager.isReadyForCommand()) {
+            if (!processManager.isReadyForCommand(planId)) {
                 throw IllegalStateException("Sidecar Aider process failed to start")
             }
         }

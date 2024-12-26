@@ -7,6 +7,7 @@ import de.andrena.codingaider.settings.AiderSettings
 import reactor.core.publisher.Flux
 import reactor.core.publisher.FluxSink
 import reactor.core.publisher.Mono
+import reactor.core.publisher.MonoSink
 import reactor.core.scheduler.Schedulers
 import java.io.BufferedReader
 import java.io.BufferedWriter
@@ -148,47 +149,7 @@ class AiderProcessManager() : Disposable {
 
     private fun waitForFirstUserPrompt(processInfo: ProcessInfo = defaultProcess): Boolean =
         Mono.create { sink ->
-            try {
-                var lastChar: Int? = null
-                var lastCharTime = System.currentTimeMillis()
-                processInfo.reader?.readLine()
-                // make this nicer AI!
-                while (processInfo.reader!!.ready() || processInfo.process?.isAlive == true) {
-                    val currentTime = System.currentTimeMillis()
-                    if (!processInfo.reader!!.ready()) {
-                        // Check if we've waited 2 seconds since the last '>' character
-                        if (currentTime - lastCharTime > Duration.ofSeconds(2).toMillis()) {
-                            processInfo.isRunning.set(true)
-                            sink.success(true)
-                            return@create
-                        }
-                        Thread.sleep(50)
-                        continue
-                    }
-
-                    val currentChar = processInfo.reader!!.read()
-                    if (currentChar == -1) break
-
-                    if (verbose) logger.debug("Read char: ${currentChar.toChar()}")
-                    lastChar = currentChar
-                    lastCharTime = currentTime
-                }
-
-                if (!processInfo.process?.isAlive!!) {
-                    val exitCode = processInfo.process?.exitValue() ?: -1
-                    sink.error(IllegalStateException("Process terminated with exit code $exitCode before becoming ready"))
-                } else {
-                    sink.error(IllegalStateException("Process stream ended before prompt was detected"))
-                }
-            } catch (e: Exception) {
-                val errorMsg = when (e) {
-                    is SecurityException -> "Security error during process startup: ${e.message}"
-                    is IllegalStateException -> e.message
-                    else -> "Unexpected error during process startup: ${e.message}"
-                }
-                logger.error(errorMsg, e)
-                sink.error(IllegalStateException(errorMsg, e))
-            }
+            readOutputUntilLongerPause(processInfo, sink)
         }
             .timeout(startupTimeout)
             .doOnError { error ->
@@ -197,6 +158,53 @@ class AiderProcessManager() : Disposable {
             }
             .onErrorReturn(false)
             .block() ?: false
+
+    private fun readOutputUntilLongerPause(
+        processInfo: ProcessInfo,
+        sink: MonoSink<Boolean>
+    ) {
+        try {
+            var lastChar: Int? = null
+            var lastCharTime = System.currentTimeMillis()
+            processInfo.reader?.readLine()
+
+            while (processInfo.process?.isAlive == true) {
+                val currentTime = System.currentTimeMillis()
+                if (!processInfo.reader!!.ready()) {
+                    // Check if we've waited 2 seconds since the last '>' character
+                    if (currentTime - lastCharTime > Duration.ofSeconds(2).toMillis()) {
+                        processInfo.isRunning.set(true)
+                        sink.success(true)
+                        return
+                    }
+                    Thread.sleep(50)
+                    continue
+                }
+
+                val currentChar = processInfo.reader!!.read()
+                if (currentChar == -1) break
+
+                if (verbose) logger.debug("Read char: ${currentChar.toChar()}")
+                lastChar = currentChar
+                lastCharTime = currentTime
+            }
+
+            if (!processInfo.process?.isAlive!!) {
+                val exitCode = processInfo.process?.exitValue() ?: -1
+                sink.error(IllegalStateException("Process terminated with exit code $exitCode before becoming ready"))
+            } else {
+                sink.error(IllegalStateException("Process stream ended before prompt was detected"))
+            }
+        } catch (e: Exception) {
+            val errorMsg = when (e) {
+                is SecurityException -> "Security error during process startup: ${e.message}"
+                is IllegalStateException -> e.message
+                else -> "Unexpected error during process startup: ${e.message}"
+            }
+            logger.error(errorMsg, e)
+            sink.error(IllegalStateException(errorMsg, e))
+        }
+    }
 
 
     fun sendCommandAsync(command: String, planId: String? = null): Flux<String> {
