@@ -176,13 +176,6 @@ class AiderProcessManager() : Disposable {
                         lastChar = currentChar
                         lastCharTime = currentTime
                     }
-                            processInfo.isRunning.set(true)
-                            sink.success(true)
-                            return@create
-                        }
-                    } else {
-                        Thread.sleep(50)
-                    }
                 }
 
                 if (!processInfo.process?.isAlive!!) {
