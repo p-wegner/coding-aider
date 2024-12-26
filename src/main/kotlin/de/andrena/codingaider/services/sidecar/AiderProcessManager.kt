@@ -4,6 +4,7 @@ import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
 import de.andrena.codingaider.settings.AiderSettings
+import io.ktor.util.collections.ConcurrentMap
 import reactor.core.publisher.Flux
 import reactor.core.publisher.FluxSink
 import reactor.core.publisher.Mono
@@ -30,7 +31,7 @@ class AiderProcessManager() : Disposable {
     )
 
     private val defaultProcess = ProcessInfo()
-    private val planProcesses = mutableMapOf<String, ProcessInfo>()
+    private val planProcesses = ConcurrentMap<String, ProcessInfo>()
     private val processLock = Any()
 
     private val startupTimeout = Duration.ofSeconds(60)
@@ -114,8 +115,9 @@ class AiderProcessManager() : Disposable {
                     throw IllegalStateException("Process for plan $planId is already running")
                 } else {
                     // Clean up invalid process
-                    cleanupFailedProcess(existingProcess!!)
-                    planProcesses.remove(planId)
+                    // TODO: when to cleanup?
+//                    cleanupFailedProcess(existingProcess!!)
+//                    planProcesses.remove(planId)
                 }
             }
         }
@@ -383,22 +385,22 @@ class AiderProcessManager() : Disposable {
 
         try {
             // Check if streams are still valid and process is responsive
-            if (processInfo.reader?.ready() == true) {
-                processInfo.reader?.mark(1)
-                val available = processInfo.reader?.read()
-                if (available == -1) {
-                    logger.error("Process streams have been closed")
-                    cleanupFailedProcess(processInfo)
-                    return false
-                }
-                processInfo.reader?.reset()
-            }
+//            if (processInfo.reader?.ready() == true) {
+//                processInfo.reader?.mark(1)
+//                val available = processInfo.reader?.read()
+//                if (available == -1) {
+//                    logger.error("Process streams have been closed")
+//                    cleanupFailedProcess(processInfo)
+//                    return false
+//                }
+//                processInfo.reader?.reset()
+//            }
             // Verify process can still accept commands with timeout
-            if (!verifyProcessResponsiveness(processInfo)) {
-                logger.error("Process is not responsive to commands")
-                cleanupFailedProcess(processInfo)
-                return false
-            }
+//            if (!verifyProcessResponsiveness(processInfo)) {
+//                logger.error("Process is not responsive to commands")
+//                cleanupFailedProcess(processInfo)
+//                return false
+//            }
 
             // Check process health and resource usage
             try {
