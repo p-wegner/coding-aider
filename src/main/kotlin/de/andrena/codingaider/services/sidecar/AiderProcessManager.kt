@@ -159,6 +159,7 @@ class AiderProcessManager() : Disposable {
             .onErrorReturn(false)
             .block() ?: false
 
+    // TODO: this doesn't work reliably, reader.ready might be blocking
     private fun readOutputUntilLongerPause(
         processInfo: ProcessInfo,
         sink: MonoSink<Boolean>
