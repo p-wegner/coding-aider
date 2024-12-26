@@ -183,12 +183,13 @@ class CommandExecutor(
         }
     }
 
-    fun abortCommand() {
+    fun abortCommand(planId: String?) {
         isAborted = true
         if (commandData.sidecarMode) {
             // TODO: interrupt command in sidecar for plan
-            project.service<AiderProcessManager>().interruptCurrentCommand()
+            project.service<AiderProcessManager>().interruptCurrentCommand(planId)
         }
+        // TODO: support sidecar docker mode
         if (useDockerAider) {
             dockerManager.stopDockerContainer()
         } else {

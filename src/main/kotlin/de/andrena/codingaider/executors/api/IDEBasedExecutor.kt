@@ -78,9 +78,9 @@ class IDEBasedExecutor(
         }
     }
 
-    override fun abortCommand() {
+    override fun abortCommand(planId: String?) {
         try {
-            commandExecutor.get()?.abortCommand()
+            commandExecutor.get()?.abortCommand(planId)
             executionThread?.interrupt()
             updateDialogProgress("Aider command aborted by user", "Aider Command Aborted")
             markdownDialog?.setProcessFinished()

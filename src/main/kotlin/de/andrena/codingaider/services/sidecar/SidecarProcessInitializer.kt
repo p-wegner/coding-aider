@@ -31,20 +31,16 @@ class SidecarProcessInitializer(private val project: Project, private val cs: Co
     private fun handleSettingsChange() {
         val newSidecarMode = settings.useSidecarMode
 
-        // Only react if sidecar mode setting has changed
         if (currentSidecarMode != newSidecarMode) {
             if (newSidecarMode) {
-                // Sidecar mode enabled, start process
                 initializeSidecarProcess()
             } else {
-                // Sidecar mode disabled, shutdown process
                 shutdownSidecarProcess()
             }
             currentSidecarMode = newSidecarMode
         }
     }
 
-    // TODO: use plan id to determine if process should be started
     fun initializeSidecarProcess(planId: String? = null) {
         if (!settings.useSidecarMode) {
             logger.info("Sidecar mode is disabled")

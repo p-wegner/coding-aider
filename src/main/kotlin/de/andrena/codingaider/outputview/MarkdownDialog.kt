@@ -145,7 +145,7 @@ class MarkdownDialog(
                     dispose()
                 } else {
                     isProcessFinished = true  // Prevent multiple abort calls
-                    onAbort.abortCommand()
+                    onAbort.abortCommand(commandData?.planId)
                 }
             }
         })
@@ -157,7 +157,7 @@ class MarkdownDialog(
                 if (isProcessFinished || onAbort == null) {
                     dispose()
                 } else {
-                    onAbort.abortCommand()
+                    onAbort.abortCommand(commandData?.planId)
                 }
             }
         }
@@ -178,7 +178,7 @@ class MarkdownDialog(
                 if (isProcessFinished || onAbort == null) {
                     dispose()
                 } else {
-                    onAbort.abortCommand()
+                    onAbort.abortCommand(commandData?.planId)
                 }
             }
         })
