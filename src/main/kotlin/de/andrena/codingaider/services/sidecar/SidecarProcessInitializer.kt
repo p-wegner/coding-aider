@@ -41,7 +41,7 @@ class SidecarProcessInitializer(private val project: Project, private val cs: Co
             currentSidecarMode = newSidecarMode
         }
     }
-
+    // TODO: use plan id to determine if process should be started
     fun initializeSidecarProcess() {
         if (!settings.useSidecarMode) {
             logger.info("Sidecar mode is disabled")
