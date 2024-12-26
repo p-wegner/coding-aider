@@ -34,6 +34,7 @@ class AiderProcessManager() : Disposable {
 
     private val startupTimeout = Duration.ofSeconds(60)
     private var verbose: Boolean = false
+
     fun startProcess(
         command: List<String>,
         workingDir: String,
@@ -224,12 +225,7 @@ class AiderProcessManager() : Disposable {
                     )
                     parser.writeCommandAndReadResults(command, sink)
                 } catch (e: Exception) {
-                    // If command fails, try to recover process state
-                    if (!recoverProcessState(processInfo, planId)) {
-                        sink.error(IllegalStateException("Failed to recover process state after error", e))
-                    } else {
-                        sink.error(e)
-                    }
+                    sink.error(e)
                 }
             }
         }
@@ -237,29 +233,6 @@ class AiderProcessManager() : Disposable {
             .doOnError { e ->
                 logger.error("Error sending async command to Aider sidecar process", e)
             }
-    }
-
-    private fun recoverProcessState(processInfo: ProcessInfo, planId: String?): Boolean {
-        return try {
-            // First try gentle recovery
-            if (tryGentleRecovery(processInfo)) {
-                logger.info("Successfully recovered process state through gentle recovery")
-                return true
-            }
-
-            // If gentle recovery fails, try hard reset
-            logger.info("Gentle recovery failed, attempting hard reset")
-            if (tryHardReset(processInfo, planId)) {
-                logger.info("Successfully recovered process state through hard reset")
-                return true
-            }
-
-            logger.error("All recovery attempts failed")
-            false
-        } catch (e: Exception) {
-            logger.error("Failed to recover process state", e)
-            false
-        }
     }
 
     private fun tryGentleRecovery(processInfo: ProcessInfo): Boolean {
@@ -458,14 +431,11 @@ class AiderProcessManager() : Disposable {
                 }
                 processInfo.reader?.reset()
             }
-
             // Verify process can still accept commands with timeout
             if (!verifyProcessResponsiveness(processInfo)) {
                 logger.error("Process is not responsive to commands")
-                if (!tryProcessRecovery(processInfo)) {
-                    cleanupFailedProcess(processInfo)
-                    return false
-                }
+                cleanupFailedProcess(processInfo)
+                return false
             }
 
             // Check process health and resource usage
@@ -476,53 +446,16 @@ class AiderProcessManager() : Disposable {
                     cleanupFailedProcess(processInfo)
                     return false
                 }
-
-                // Check process resource usage
-                val processHandle = processInfo.process?.toHandle()
-                if (processHandle?.isAlive == true) {
-                    val info = processHandle.info()
-                    if (info.totalCpuDuration().isPresent &&
-                        info.totalCpuDuration().get().seconds > 3600
-                    ) { // 1 hour CPU time
-                        logger.warn("Process has high CPU usage, considering restart")
-                        return tryProcessRecovery(processInfo)
-                    }
-                }
+                return true
             } catch (e: IllegalThreadStateException) {
                 // Process is still running
                 return true
             }
-
             return true
         } catch (e: Exception) {
             logger.error("Error checking process status", e)
             cleanupFailedProcess(processInfo)
             return false
-        }
-    }
-
-    private fun tryProcessRecovery(info: ProcessInfo): Boolean {
-        logger.info("Attempting process recovery")
-
-        return try {
-            // First try gentle recovery
-            if (tryGentleRecovery(info)) {
-                logger.info("Successfully recovered process through gentle recovery")
-                return true
-            }
-
-            // If gentle recovery fails, try hard reset
-            logger.info("Gentle recovery failed, attempting hard reset")
-            if (tryHardReset(info, null)) {
-                logger.info("Successfully recovered process through hard reset")
-                return true
-            }
-
-            logger.error("All recovery attempts failed")
-            false
-        } catch (e: Exception) {
-            logger.error("Failed to recover process state", e)
-            false
         }
     }
 

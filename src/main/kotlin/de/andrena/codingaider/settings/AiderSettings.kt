@@ -70,6 +70,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
             myState.enableAutoPlanContinue = value
         }
 
+
     private var myState = State()
 
     var enableDocumentationLookup: Boolean
