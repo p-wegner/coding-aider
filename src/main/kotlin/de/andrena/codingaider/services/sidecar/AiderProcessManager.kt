@@ -3,7 +3,6 @@ package de.andrena.codingaider.services.sidecar
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.project.Project
 import de.andrena.codingaider.settings.AiderSettings
 import reactor.core.publisher.Flux
 import reactor.core.publisher.FluxSink
@@ -18,7 +17,7 @@ import java.time.Duration
 import java.util.concurrent.atomic.AtomicBoolean
 
 @Service(Service.Level.PROJECT)
-class AiderProcessManager(private val project: Project) : Disposable {
+class AiderProcessManager() : Disposable {
     private val logger = Logger.getInstance(AiderProcessManager::class.java)
 
     private data class ProcessInfo(
@@ -149,7 +148,6 @@ class AiderProcessManager(private val project: Project) : Disposable {
     private fun waitForFirstUserPrompt(processInfo: ProcessInfo = defaultProcess): Boolean =
         Mono.create { sink ->
             try {
-                var line: String?
                 var lastChar: Int? = null
                 var lastCharTime = System.currentTimeMillis()
                 val charTimeout = Duration.ofMillis(500)
@@ -356,6 +354,7 @@ class AiderProcessManager(private val project: Project) : Disposable {
         }
     }
 
+    // TODO: use to cleanup when plan completed
     fun disposePlanProcess(planId: String) {
         synchronized(processLock) {
             planProcesses[planId]?.let { processInfo ->
@@ -545,12 +544,6 @@ class AiderProcessManager(private val project: Project) : Disposable {
         } catch (e: Exception) {
             logger.error("Error verifying process responsiveness", e)
             false
-        }
-    }
-
-    fun getPlanProcessIds(): Set<String> {
-        synchronized(processLock) {
-            return planProcesses.keys.toSet()
         }
     }
 

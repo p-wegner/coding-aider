@@ -44,7 +44,7 @@ class SidecarProcessInitializerIntegrationTest() : BaseIntegrationTest() {
         whenever(settings.additionalArgs).thenReturn("")
         whenever(settings.dirtyCommits).thenReturn(AiderSettings.DirtyCommitSetting.ON)
         whenever(project.getService(MySettingsService::class.java)).thenReturn(settingsService)
-        aiderProcessManager = AiderProcessManager(project)
+        aiderProcessManager = AiderProcessManager()
         whenever(project.getService(AiderProcessManager::class.java)).thenReturn(aiderProcessManager)
         whenever(project.basePath).thenReturn(tempDir.toString())
 

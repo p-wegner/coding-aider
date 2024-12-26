@@ -22,7 +22,8 @@ data class AiderPlan(
     }
     val allFiles: List<FileData>
         get() = planFiles + contextFiles
-
+    val id: String
+        get() = mainPlanFile?.filePath ?: ""
     val mainPlanFile: FileData?
         get() = planFiles.firstOrNull { it.filePath.endsWith(".md") && !it.filePath.endsWith("_checklist.md") }
     val checklistPlanFile: FileData?
