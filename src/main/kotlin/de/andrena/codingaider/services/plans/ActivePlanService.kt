@@ -184,7 +184,7 @@ class ActivePlanService(private val project: Project) {
                 val processManager = project.service<AiderProcessManager>()
                 val planId = selectedPlan.mainPlanFile?.filePath
                 if (planId != null && !processManager.isReadyForCommand(planId)) {
-                    project.service<SidecarProcessInitializer>().initializeSidecarProcess()
+                    project.service<SidecarProcessInitializer>().initializeSidecarProcess(planId)
                 }
             }
 

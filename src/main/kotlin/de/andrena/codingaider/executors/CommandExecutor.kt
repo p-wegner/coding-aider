@@ -106,12 +106,13 @@ class CommandExecutor(
                 }"
             )
         }
-
-        changeContextFiles(commandData)
+        if (commandData.planId == null) {
+            changeContextFiles(commandData)
+        }
         val output = try {
             val startTime = System.currentTimeMillis()
             val output = StringBuilder()
-            val response = processInteractor.sendCommandAsync(commandString)
+            val response = processInteractor.sendCommandAsync(commandString,commandData.planId)
                 .doOnNext { message ->
                     output.append(message).append("\n")
                     notifyObservers {
@@ -142,14 +143,15 @@ class CommandExecutor(
     }
 
     private fun startSideCarAndExecuteCommand(updatedCommandData: CommandData): String {
-        startSideCarWithTimeout()
+
+        startSideCarWithTimeout(updatedCommandData.planId)
         return executeSidecarCommand(updatedCommandData)
     }
 
-    private fun startSideCarWithTimeout() {
-        project.service<SidecarProcessInitializer>().initializeSidecarProcess()
+    private fun startSideCarWithTimeout(planId: String?) {
+        project.service<SidecarProcessInitializer>().initializeSidecarProcess(planId)
         val startTime = System.currentTimeMillis()
-        while (!project.service<AiderProcessManager>().isReadyForCommand()) {
+        while (!project.service<AiderProcessManager>().isReadyForCommand(planId)) {
             Thread.sleep(100)
             if (System.currentTimeMillis() - startTime > 10000) {
                 throw IllegalStateException("Sidecar process failed to start")

@@ -8,9 +8,11 @@ import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.executors.strategies.SidecarAiderExecutionStrategy
 import de.andrena.codingaider.inputdialog.AiderMode
+import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.settings.MySettingsService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.io.File
 
 @Service(Service.Level.PROJECT)
 class SidecarProcessInitializer(private val project: Project, private val cs: CoroutineScope) : Disposable {
@@ -41,26 +43,29 @@ class SidecarProcessInitializer(private val project: Project, private val cs: Co
             currentSidecarMode = newSidecarMode
         }
     }
+
     // TODO: use plan id to determine if process should be started
-    fun initializeSidecarProcess() {
+    fun initializeSidecarProcess(planId: String? = null) {
         if (!settings.useSidecarMode) {
             logger.info("Sidecar mode is disabled")
             return
         }
-        if (processManager.isReadyForCommand()) {
+        if (processManager.isReadyForCommand(planId)) {
             logger.info("Sidecar process is already running")
             return
         }
         logger.info("Starting Sidecar process ")
         cs.launch {
             val strategy = SidecarAiderExecutionStrategy(project, settings)
-            val command = strategy.buildCommand(createInitializationCommandData())
+
+            val command = strategy.buildCommand(createInitializationCommandData(planId))
 
             val workingDir = project.basePath ?: System.getProperty("user.home")
             val processStarted = processManager.startProcess(
                 command,
                 workingDir,
                 settings.sidecarModeVerbose,
+                planId
             )
 
             if (processStarted) {
@@ -76,18 +81,38 @@ class SidecarProcessInitializer(private val project: Project, private val cs: Co
         }
     }
 
-    private fun createInitializationCommandData(): CommandData {
+    private fun createInitializationCommandData(planId: String?): CommandData {
+        if (planId == null) {
+            return CommandData(
+                message = "",
+                projectPath = project.basePath ?: "",
+                files = emptyList(),
+                useYesFlag = true,
+                llm = settings.llm,
+                additionalArgs = settings.additionalArgs ?: "",
+                lintCmd = settings.lintCmd ?: "",
+                aiderMode = AiderMode.NORMAL,
+                sidecarMode = settings.useSidecarMode
+
+            )
+        }
+        val aiderPlan = project.service<AiderPlanService>().loadPlanFromFile(File(planId))
+            ?: throw IllegalStateException("Plan not found")
+        val files = aiderPlan.allFiles.filter { fileData ->
+            val file = File(fileData.filePath)
+            file.exists()
+        }
         return CommandData(
             message = "",
             projectPath = project.basePath ?: "",
-            files = emptyList(),
+            files = files,
             useYesFlag = true,
             llm = settings.llm,
             additionalArgs = settings.additionalArgs ?: "",
             lintCmd = settings.lintCmd ?: "",
             aiderMode = AiderMode.NORMAL,
-            sidecarMode = settings.useSidecarMode
-
+            sidecarMode = settings.useSidecarMode,
+            planId = planId
         )
     }
 
