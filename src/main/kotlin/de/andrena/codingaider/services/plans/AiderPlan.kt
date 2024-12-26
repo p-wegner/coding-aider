@@ -52,6 +52,9 @@ data class AiderPlan(
     }
 
     fun isPlanComplete(): Boolean {
+        return openChecklistItems().isEmpty()
+    }
+    fun isPlanFamilyComplete(): Boolean {
         return openChecklistItems().isEmpty() && childPlans.all { it.isPlanComplete() }
     }
 
@@ -75,11 +78,11 @@ data class AiderPlan(
         return generateSequence(this) { it.parentPlan }.any { it == otherPlan }
     }
 
-    fun getNextUncompletedPlan(): List<AiderPlan> {
+    fun getNextUncompletedPlansInSameFamily(): List<AiderPlan> {
         if (!isPlanComplete()) return listOf(this)
         val uncompletedChildren = getAllChildPlans().filter { !it.isPlanComplete() }
         val uncompletedSiblings = findSiblingPlans().filter { !it.isPlanComplete() }
-        val parentUncompletedPlans = parentPlan?.getNextUncompletedPlan() ?: emptyList()
+        val parentUncompletedPlans = parentPlan?.getNextUncompletedPlansInSameFamily() ?: emptyList()
         
         return uncompletedChildren + uncompletedSiblings + parentUncompletedPlans
     }

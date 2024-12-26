@@ -43,7 +43,7 @@ class ActivePlanService(private val project: Project) {
         return checked && children.all { it.isComplete() }
     }
 
-    fun handlePlanCompletion(success: Boolean = true) {
+    fun handlePlanActionFinished(success: Boolean = true) {
         refreshActivePlan()
 
         if (!success) {
@@ -56,25 +56,24 @@ class ActivePlanService(private val project: Project) {
             return
         }
 
-        if (currentPlan.isPlanComplete()) {
-            // Try to find next uncompleted plan in hierarchy
-            val nextPlans = currentPlan.getNextUncompletedPlan()
-            if (nextPlans.isNotEmpty()) {
-                cleanupAndClearPlan() // Cleanup current plan's resources
-                setActivePlan(nextPlans.first()) // Set the first uncompleted plan as active
-                
-                // Auto-continue to next plan if enabled
-                if (AiderSettings.getInstance().enableAutoPlanContinue) {
-                    continuePlan()
-                }
-            } else {
-                cleanupAndClearPlan()
+        if (!currentPlan.isPlanComplete()) {
+            if (AiderSettings.getInstance().enableAutoPlanContinue) {
+                continuePlan()
+                return
             }
-        } else if (AiderSettings.getInstance().enableAutoPlanContinue) {
-            // Auto-continue current plan if it has open items
-            if (currentPlan.openChecklistItems().isNotEmpty()) {
+        }
+        // Try to find next uncompleted plan in hierarchy
+        val nextPlans = currentPlan.getNextUncompletedPlansInSameFamily()
+        if (nextPlans.isNotEmpty()) {
+            cleanupAndClearPlan() // Cleanup current plan's resources
+            setActivePlan(nextPlans.first()) // Set the first uncompleted plan as active
+
+            // TODO: Auto-continue to next plan if enabled for whole familiy
+            if (AiderSettings.getInstance().enableAutoPlanContinue) {
                 continuePlan()
             }
+        } else {
+            cleanupAndClearPlan()
         }
     }
 
@@ -126,7 +125,7 @@ class ActivePlanService(private val project: Project) {
 
         if (plan.isPlanComplete()) {
             // Check for uncompleted child or sibling plans
-            val nextPlans = plan.getNextUncompletedPlan()
+            val nextPlans = plan.getNextUncompletedPlansInSameFamily()
             if (nextPlans.isNotEmpty()) {
                 setActivePlan(nextPlans.first()) // Set the first uncompleted plan as active
             } else {
@@ -143,7 +142,7 @@ class ActivePlanService(private val project: Project) {
         if (openItems.isEmpty()) {
             // If current plan has no open items but isn't complete, it might have uncompleted child plans
             if (!plan.isPlanComplete()) {
-                val nextPlan = plan.getNextUncompletedPlan().firstOrNull()
+                val nextPlan = plan.getNextUncompletedPlansInSameFamily().firstOrNull()
                 if (nextPlan != null) {
                     setActivePlan(nextPlan)
                 } else {
@@ -192,7 +191,7 @@ class ActivePlanService(private val project: Project) {
 
             setActivePlan(selectedPlan)
             val commandFinishedCallback: CommandFinishedCallback = object : CommandFinishedCallback {
-                override fun onCommandFinished(success: Boolean) = handlePlanCompletion(success)
+                override fun onCommandFinished(success: Boolean) = handlePlanActionFinished(success)
             }
             IDEBasedExecutor(project, commandData, commandFinishedCallback).execute()
 
