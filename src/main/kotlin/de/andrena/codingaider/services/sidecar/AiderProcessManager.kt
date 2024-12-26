@@ -151,14 +151,13 @@ class AiderProcessManager() : Disposable {
             try {
                 var lastChar: Int? = null
                 var lastCharTime = System.currentTimeMillis()
-                val charTimeout = Duration.ofMillis(500)
-
                 processInfo.reader?.readLine()
+                // make this nicer AI!
                 while (processInfo.reader!!.ready() || processInfo.process?.isAlive == true) {
                     val currentTime = System.currentTimeMillis()
                     if (!processInfo.reader!!.ready()) {
                         // Check if we've waited 2 seconds since the last '>' character
-                        if (lastChar == 62 && currentTime - lastCharTime > Duration.ofSeconds(2).toMillis()) {
+                        if (currentTime - lastCharTime > Duration.ofSeconds(2).toMillis()) {
                             processInfo.isRunning.set(true)
                             sink.success(true)
                             return@create
@@ -171,11 +170,8 @@ class AiderProcessManager() : Disposable {
                     if (currentChar == -1) break
 
                     if (verbose) logger.debug("Read char: ${currentChar.toChar()}")
-
-                    if (currentChar == 62) { // '>' character
-                        lastChar = currentChar
-                        lastCharTime = currentTime
-                    }
+                    lastChar = currentChar
+                    lastCharTime = currentTime
                 }
 
                 if (!processInfo.process?.isAlive!!) {
