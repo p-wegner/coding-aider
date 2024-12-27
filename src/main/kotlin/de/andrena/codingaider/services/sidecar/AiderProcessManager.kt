@@ -131,11 +131,7 @@ class AiderProcessManager() : Disposable {
         processInfo.reader = BufferedReader(InputStreamReader(processInfo.process!!.inputStream))
         processInfo.writer = BufferedWriter(OutputStreamWriter(processInfo.process!!.outputStream))
         val settings = AiderSettings.getInstance()
-        processInfo.outputParser = if (settings.useSidecarMode) {
-            EagerAiderOutputParser(verbose, logger, processInfo.reader, processInfo.writer)
-        } else {
-            DefaultAiderOutputParser(verbose, logger, processInfo.reader, processInfo.writer)
-        }
+        processInfo.outputParser = RobustAiderOutputParser(verbose, logger, processInfo.reader, processInfo.writer)
     }
 
     private fun cleanupFailedProcess(processInfo: ProcessInfo) {
