@@ -138,21 +138,32 @@ class AiderProcessManager() : Disposable {
                     val reader = processInfo.reader!!
                     val buffer = CharArray(1024)
                     val sb = StringBuilder()
+                    var lastReadTime = System.currentTimeMillis()
                     
                     while (true) {
-                        val readCount = reader.read(buffer)
-                        if (readCount == -1) break
-                        
-                        sb.append(buffer, 0, readCount)
-                        
-                        // Process complete lines
-                        var lineEnd: Int
-                        while (sb.indexOf('\n').also { lineEnd = it } != -1) {
-                            val line = sb.substring(0, lineEnd).trim()
-                            if (line.isNotEmpty()) {
-                                sink.next(line)
+                        if (reader.ready()) {
+                            val readCount = reader.read(buffer)
+                            if (readCount == -1) break
+                            
+                            sb.append(buffer, 0, readCount)
+                            lastReadTime = System.currentTimeMillis()
+                            
+                            // Process complete lines
+                            var lineEnd: Int
+                            while (sb.indexOf('\n').also { lineEnd = it } != -1) {
+                                val line = sb.substring(0, lineEnd).trim()
+                                if (line.isNotEmpty()) {
+                                    sink.next(line)
+                                }
+                                sb.delete(0, lineEnd + 1)
                             }
-                            sb.delete(0, lineEnd + 1)
+                        } else {
+                            // Check if we have pending data and timeout has been reached
+                            if (sb.isNotEmpty() && System.currentTimeMillis() - lastReadTime > 2000) {
+                                sink.next(sb.toString().trim())
+                                sb.clear()
+                            }
+                            Thread.sleep(100) // Sleep to avoid busy waiting
                         }
                     }
                     
