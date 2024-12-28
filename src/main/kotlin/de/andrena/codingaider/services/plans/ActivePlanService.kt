@@ -178,21 +178,8 @@ class ActivePlanService(private val project: Project) {
                 sidecarMode = settings.useSidecarMode,
                 planId = selectedPlan.mainPlanFile?.filePath // Use plan file path as unique ID
             )
-
-            // Initialize plan-specific sidecar process if needed
-            if (settings.useSidecarMode) {
-                val processManager = project.service<AiderProcessManager>()
-                val planId = selectedPlan.mainPlanFile?.filePath
-                if (planId != null && !processManager.isReadyForCommand(planId)) {
-                    project.service<SidecarProcessInitializer>().initializeSidecarProcess(planId)
-                }
-            }
-
             setActivePlan(selectedPlan)
-            val commandFinishedCallback: CommandFinishedCallback = object : CommandFinishedCallback {
-                override fun onCommandFinished(success: Boolean) = handlePlanActionFinished(success)
-            }
-            IDEBasedExecutor(project, commandData, commandFinishedCallback).execute()
+            IDEBasedExecutor(project, commandData).execute()
 
         } catch (e: Exception) {
             val errorMessage = when (e) {

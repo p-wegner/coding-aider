@@ -18,7 +18,7 @@ class DefaultAiderProcessInteractor(private val project: Project) : AiderProcess
 
 
     override fun sendCommandAsync(command: String, planId: String?): Flux<String> {
-        return processManager.sendCommandAsync(command,planId)
+        return processManager.sendCommandAsync(command, planId)
     }
 
     override fun isReadyForCommand(planId: String?): Boolean {
@@ -28,7 +28,7 @@ class DefaultAiderProcessInteractor(private val project: Project) : AiderProcess
 
 interface AiderProcessInteractor {
 
-    fun sendCommandSync(command: String, planId: String?=null): String
-    fun sendCommandAsync(command: String, planId: String?=null): Flux<String>
-    fun isReadyForCommand(planId: String?=null): Boolean
+    fun sendCommandSync(command: String, planId: String? = null): String
+    fun sendCommandAsync(command: String, planId: String? = null): Flux<String>
+    fun isReadyForCommand(planId: String? = null): Boolean
 }

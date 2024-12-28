@@ -96,16 +96,6 @@ class CommandExecutor(
         val commandString = buildSidecarCommandString(commandData)
         logger.info("Executing Sidecar Aider command: $commandString")
 
-        notifyObservers {
-            it.onCommandStart(
-                "Starting Sidecar Aider command...\n${
-                    commandLogger.getCommandString(
-                        false,
-                        null
-                    )
-                }"
-            )
-        }
         if (commandData.planId == null) {
             changeContextFiles(commandData)
         }
@@ -161,7 +151,6 @@ class CommandExecutor(
     private fun changeContextFiles(commandData: CommandData) {
         processInteractor.sendCommandSync("/drop")
         processInteractor.sendCommandSync("/clear")
-        // TODO: Termination of add and read-only commands is not detected correctly
         commandData.files.filter { !it.isReadOnly }
             .takeIf { it.isNotEmpty() }
             ?.joinToString(" ") { it.filePath }

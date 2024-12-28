@@ -10,7 +10,6 @@ import reactor.core.scheduler.Schedulers
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.File
-import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.time.Duration
 import java.util.concurrent.atomic.AtomicBoolean
@@ -67,8 +66,6 @@ class AiderProcessManager() : Disposable {
                     logger.info("Started Aider sidecar process with command: ${command.joinToString(" ")}")
                     logger.info("Working directory: $workingDir")
                 }
-                processInfo.writer?.write("\n")
-                processInfo.writer?.flush()
                 waitForFirstPrompt(processInfo)
                     .doOnSuccess { processInfo.isRunning.set(true) }
                     .then()
@@ -85,6 +82,7 @@ class AiderProcessManager() : Disposable {
         return processInfo.outputFlux!!
             // Filter out all lines that are not the prompt
             .filter { line -> promptRegex.matches(line.trim()) }
+            // expect two times the promptRegex and then complete
             .next()
             // Next returns a Mono<String>, but we want a Mono<Void>
             // to indicate “done waiting,” so map or then
@@ -130,60 +128,116 @@ class AiderProcessManager() : Disposable {
     }
 
     private fun setupProcessStreams(processInfo: ProcessInfo) {
-        processInfo.reader = BufferedReader(InputStreamReader(processInfo.process!!.inputStream))
-        processInfo.writer = BufferedWriter(OutputStreamWriter(processInfo.process!!.outputStream))
+        val inputStream = processInfo.process!!.inputStream
+        val outputStream = processInfo.process!!.outputStream
+
+        processInfo.reader = null
+        processInfo.writer = BufferedWriter(OutputStreamWriter(outputStream, Charsets.UTF_8))
+
+        // We'll keep a single hot Flux that reads from the process
         processInfo.outputFlux = Flux.create<String> { sink ->
             val readerThread = Thread {
                 try {
-                    val reader = processInfo.reader!!
-                    val buffer = CharArray(1024)
+                    val buffer = ByteArray(1024)
                     val sb = StringBuilder()
+                    val decoder = Charsets.UTF_8.newDecoder()
+
+                    // *** IDLE FLUSH ***
+                    // Track the time of last read. Whenever we go 300ms without data,
+                    // we flush anything left in sb to the sink.
                     var lastReadTime = System.currentTimeMillis()
-                    
+                    val IDLE_TIMEOUT_MS = 1000L
+
                     while (true) {
-                        if (reader.ready()) {
-                            val readCount = reader.read(buffer)
-                            if (readCount == -1) break
-                            
-                            sb.append(buffer, 0, readCount)
-                            lastReadTime = System.currentTimeMillis()
-                            
-                            // Process complete lines
-                            var lineEnd: Int
-                            while (sb.indexOf('\n').also { lineEnd = it } != -1) {
-                                val line = sb.substring(0, lineEnd).trim()
-                                if (line.isNotEmpty()) {
-                                    sink.next(line)
+                        val available = inputStream.available()
+                        if (available > 0) {
+                            val toRead = minOf(available, buffer.size)
+                            val readCount = inputStream.read(buffer, 0, toRead)
+                            if (readCount < 0) {
+                                // EOF
+                                if (sb.isNotEmpty()) {
+                                    sink.next(sb.toString().trim())
                                 }
-                                sb.delete(0, lineEnd + 1)
+                                sink.complete()
+                                break
+                            }
+
+                            lastReadTime = System.currentTimeMillis() // *** IDLE FLUSH ***
+
+                            val chunk = decoder
+                                .decode(java.nio.ByteBuffer.wrap(buffer, 0, readCount))
+                                .toString()
+//                            val noAnsi = chunk.replace(Regex("\\u001B\\[[;\\d]*[A-Za-z]"), "")
+                            sb.append(chunk)
+                            logger.warn("Raw chunk: '$chunk'")
+//                            sb.append(chunk)
+
+                            // Attempt to parse lines or prompts out of sb
+                            while (true) {
+                                val newlineIndex = sb.indexOf("\n")
+                                val promptIndex = sb.indexOf("> ")
+
+                                val boundaryIndex = when {
+                                    newlineIndex == -1 && promptIndex == -1 -> -1
+                                    newlineIndex == -1 -> promptIndex
+                                    promptIndex == -1 -> newlineIndex
+                                    else -> minOf(newlineIndex, promptIndex)
+                                }
+
+                                if (boundaryIndex == -1) {
+                                    break // no more boundary
+                                }
+
+                                val line = sb.substring(0, boundaryIndex).trimEnd()
+                                // Determine which boundary we matched
+                                val matchedPrompt = (boundaryIndex == promptIndex)
+                                if (matchedPrompt) {
+                                    // 1) Emit any text up to the prompt (if it's not empty)
+                                    if (line.isNotEmpty()) {
+                                        sink.next(line)
+                                    }
+                                    // 2) Also emit the prompt *itself*, so that subscribers can .takeUntil(...)
+                                    sink.next("> ")   // or sink.next(">") if you prefer
+                                    // 3) Remove the prompt chars from buffer
+                                    sb.delete(0, boundaryIndex + 2)  // 2 = length of "> "
+                                } else {
+                                    // Boundary was a newline
+                                    if (line.isNotEmpty()) {
+                                        sink.next(line)
+                                    }
+                                    // Remove 1 char for the newline
+                                    sb.delete(0, boundaryIndex + 1)
+                                }
                             }
                         } else {
-                            // Check if we have pending data and timeout has been reached
-                            if (sb.isNotEmpty() && System.currentTimeMillis() - lastReadTime > 2000) {
+                            // *** IDLE FLUSH ***
+                            // Check how long we've been idle
+                            val idleTime = System.currentTimeMillis() - lastReadTime
+                            if (idleTime >= IDLE_TIMEOUT_MS && sb.isNotEmpty()) {
+                                // We assume the partial buffer is "done" because we got no data for 300ms
                                 sink.next(sb.toString().trim())
-                                sb.clear()
+                                sb.setLength(0) // Clear the buffer
                             }
-                            Thread.sleep(100) // Sleep to avoid busy waiting
+
+
+                            Thread.sleep(50)
                         }
                     }
-                    
-                    // Process any remaining content in the buffer
-                    if (sb.isNotEmpty()) {
-                        sink.next(sb.toString().trim())
-                    }
-                    
-                    sink.complete() // End of stream
                 } catch (e: Exception) {
                     sink.error(e)
                 }
             }
             readerThread.isDaemon = true
             readerThread.start()
+
             sink.onCancel { readerThread.interrupt() }
         }
+            // Because this is a "hot" flux, we do .publish().autoConnect(1)
+            // So it's shared by all subscribers but starts reading immediately
             .publish()
             .autoConnect(1)
             .doOnNext { line -> logger.warn("Aider output: $line") }
+            .doOnError(logger::error)
             .subscribeOn(Schedulers.boundedElastic())
     }
 
@@ -201,7 +255,7 @@ class AiderProcessManager() : Disposable {
 
     private val promptRegex = Regex("^>\\s*$")
 
-    val idleTimeout = Duration.ofMillis(500)
+
     fun sendCommandAsync(command: String, planId: String? = null): Flux<String> {
         val processInfo = synchronized(processLock) {
             planId?.let { planProcesses[it] } ?: defaultProcess
@@ -214,42 +268,16 @@ class AiderProcessManager() : Disposable {
         if (!checkProcessStatus(processInfo)) {
             return Flux.error(IllegalStateException("Aider sidecar process is not responsive"))
         }
-        // 1) flush the old output by sending a /help command
-        //    then wait for the prompt
-        val flushMono = Mono.fromCallable {
-            processInfo.writer?.write("/help\n")
-            processInfo.writer?.flush()
-            true
-        }
-            .then(
-                processInfo.outputFlux!!
-                    // read lines until the prompt
-                    .takeUntil { line -> promptRegex.matches(line.trim()) }
-//                    .timeout(idleTimeout, Mono.empty())
-                    .collectList()
-                    .then() // convert Flux<String> -> Mono<Void>
-            )
-        val newLineFlushMono = Mono.fromCallable {
-            processInfo.writer?.write("\n")
-            processInfo.writer?.flush()
-            true // just a dummy
-        }
         val writeCommandMono = Mono.fromCallable {
             processInfo.writer?.write("$command\n")
             processInfo.writer?.flush()
             true // just a dummy
         }
         val responseFlux = processInfo.outputFlux!!
-            // Optionally: skip lines that might be from a previous command if needed
-            // .skipUntil { ...some logic to detect the command started... }
             .takeUntil { line -> promptRegex.matches(line) }
             .filter { line -> !promptRegex.matches(line) }
 
-        // 3. Return the flux that:
-        //    - first writes the command (Mono),
-        //    - then collects lines from the shared flux until the next prompt
         return writeCommandMono
-//            .then(newLineFlushMono)
             .thenMany(responseFlux)
     }
 
@@ -282,22 +310,11 @@ class AiderProcessManager() : Disposable {
                 if (processInfo.isRunning.get()) {
                     logger.info("Disposing Aider sidecar process for completed plan: $planId")
                     try {
-                        // Send clear command before disposal
-                        processInfo.writer?.write("/clear\n")
-                        processInfo.writer?.flush()
-                        Thread.sleep(100) // Brief wait for command to complete
-
-                        // Send drop command to ensure clean state
-                        processInfo.writer?.write("/drop\n")
-                        processInfo.writer?.flush()
-                        Thread.sleep(100)
-
                         disposeProcess(processInfo)
                         planProcesses.remove(planId)
                         logger.info("Successfully disposed Aider sidecar process for plan $planId")
                     } catch (e: Exception) {
                         logger.error("Error during plan process disposal", e)
-                        // Force cleanup even if disposal fails
                         processInfo.isRunning.set(false)
                         planProcesses.remove(planId)
                     } finally {
