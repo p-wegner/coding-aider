@@ -32,7 +32,6 @@ class AiderProcessManager() : Disposable {
     private val planProcesses = ConcurrentMap<String, ProcessInfo>()
     private val processLock = Any()
 
-    private val startupTimeout = Duration.ofSeconds(60)
     private var verbose: Boolean = false
 
     fun startProcess(
@@ -70,11 +69,12 @@ class AiderProcessManager() : Disposable {
                 }
                 processInfo.writer?.write("\n")
                 processInfo.writer?.flush()
-                waitForFirstPrompt(processInfo).doOnNext {
+                waitForFirstPrompt(processInfo)
+                    .doOnSuccess {
                     processInfo.isRunning.set(true)
-                }
+                }.then()
             }
-                .timeout(Duration.ofSeconds(10))
+                .timeout(Duration.ofSeconds(100))
                 .subscribeOn(Schedulers.boundedElastic())
 
         }
@@ -167,7 +167,6 @@ class AiderProcessManager() : Disposable {
             logger.error("Error cleaning up failed process", e)
         }
     }
-
 
 
     private val promptRegex = Regex("^>\\s*$")
