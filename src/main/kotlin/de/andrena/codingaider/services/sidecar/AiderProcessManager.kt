@@ -135,12 +135,32 @@ class AiderProcessManager() : Disposable {
         processInfo.outputFlux = Flux.create<String> { sink ->
             val readerThread = Thread {
                 try {
-                    processInfo.reader?.use<BufferedReader, Unit> { reader ->
-                        while (true) {
-                            val line = reader.readLine() ?: break
-                            sink.next(line)
+                    val reader = processInfo.reader!!
+                    val buffer = CharArray(1024)
+                    val sb = StringBuilder()
+                    
+                    while (true) {
+                        val readCount = reader.read(buffer)
+                        if (readCount == -1) break
+                        
+                        sb.append(buffer, 0, readCount)
+                        
+                        // Process complete lines
+                        var lineEnd: Int
+                        while (sb.indexOf('\n').also { lineEnd = it } != -1) {
+                            val line = sb.substring(0, lineEnd).trim()
+                            if (line.isNotEmpty()) {
+                                sink.next(line)
+                            }
+                            sb.delete(0, lineEnd + 1)
                         }
                     }
+                    
+                    // Process any remaining content in the buffer
+                    if (sb.isNotEmpty()) {
+                        sink.next(sb.toString().trim())
+                    }
+                    
                     sink.complete() // End of stream
                 } catch (e: Exception) {
                     sink.error(e)
