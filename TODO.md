@@ -3,3 +3,4 @@
 - [ ] archive plan => new feature to move all plan files of the selected plan to the .coding-aider-plans-finished folder
 - [ ] BUG: llm selection in aider input dialog changes settings (it should only be temporary)
 - [ ] BUG: plan step finished => new aider action started before dialog is closed
+- [ ] Feature: Add option to create api-key-free custom provider (i.e. model shortcut only)
