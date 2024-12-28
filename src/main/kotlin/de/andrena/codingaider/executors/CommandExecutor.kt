@@ -143,7 +143,6 @@ class CommandExecutor(
     }
 
     private fun startSideCarAndExecuteCommand(updatedCommandData: CommandData): String {
-
         startSideCarWithTimeout(updatedCommandData.planId)
         return executeSidecarCommand(updatedCommandData)
     }

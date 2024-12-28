@@ -70,9 +70,8 @@ class AiderProcessManager() : Disposable {
                 processInfo.writer?.write("\n")
                 processInfo.writer?.flush()
                 waitForFirstPrompt(processInfo)
-                    .doOnSuccess {
-                    processInfo.isRunning.set(true)
-                }.then()
+                    .doOnSuccess { processInfo.isRunning.set(true) }
+                    .then()
             }
                 .timeout(Duration.ofSeconds(100))
                 .subscribeOn(Schedulers.boundedElastic())
@@ -86,13 +85,12 @@ class AiderProcessManager() : Disposable {
         return processInfo.outputFlux!!
             // Filter out all lines that are not the prompt
             .filter { line -> promptRegex.matches(line.trim()) }
-            // Take just the first match
             .next()
             // Next returns a Mono<String>, but we want a Mono<Void>
             // to indicate “done waiting,” so map or then
             .then()
             // Optionally set a timeout, in case the process never produces the prompt
-            .timeout(Duration.ofSeconds(10))
+            .timeout(Duration.ofSeconds(100))
     }
 
     private fun validateStartupConditions(workingDir: String, planId: String? = null) {
@@ -154,6 +152,7 @@ class AiderProcessManager() : Disposable {
         }
             .publish()
             .autoConnect(1)
+            .doOnNext { line -> logger.warn("Aider output: $line") }
             .subscribeOn(Schedulers.boundedElastic())
     }
 
@@ -171,6 +170,7 @@ class AiderProcessManager() : Disposable {
 
     private val promptRegex = Regex("^>\\s*$")
 
+    val idleTimeout = Duration.ofMillis(500)
     fun sendCommandAsync(command: String, planId: String? = null): Flux<String> {
         val processInfo = synchronized(processLock) {
             planId?.let { planProcesses[it] } ?: defaultProcess
@@ -182,6 +182,26 @@ class AiderProcessManager() : Disposable {
 
         if (!checkProcessStatus(processInfo)) {
             return Flux.error(IllegalStateException("Aider sidecar process is not responsive"))
+        }
+        // 1) flush the old output by sending a /help command
+        //    then wait for the prompt
+        val flushMono = Mono.fromCallable {
+            processInfo.writer?.write("/help\n")
+            processInfo.writer?.flush()
+            true
+        }
+            .then(
+                processInfo.outputFlux!!
+                    // read lines until the prompt
+                    .takeUntil { line -> promptRegex.matches(line.trim()) }
+//                    .timeout(idleTimeout, Mono.empty())
+                    .collectList()
+                    .then() // convert Flux<String> -> Mono<Void>
+            )
+        val newLineFlushMono = Mono.fromCallable {
+            processInfo.writer?.write("\n")
+            processInfo.writer?.flush()
+            true // just a dummy
         }
         val writeCommandMono = Mono.fromCallable {
             processInfo.writer?.write("$command\n")
@@ -197,7 +217,9 @@ class AiderProcessManager() : Disposable {
         // 3. Return the flux that:
         //    - first writes the command (Mono),
         //    - then collects lines from the shared flux until the next prompt
-        return writeCommandMono.thenMany(responseFlux)
+        return writeCommandMono
+//            .then(newLineFlushMono)
+            .thenMany(responseFlux)
     }
 
 
@@ -315,45 +337,16 @@ class AiderProcessManager() : Disposable {
         }
 
         try {
-
-            try {
-                val exitValue = processInfo.process?.exitValue()
-                if (exitValue != null) {
-                    logger.error("Process has terminated with exit code: $exitValue")
-                    cleanupFailedProcess(processInfo)
-                    return false
-                }
-                return true
-            } catch (e: IllegalThreadStateException) {
-                // Process is still running
-                return true
+            val exitValue = processInfo.process?.exitValue()
+            if (exitValue != null) {
+                logger.error("Process has terminated with exit code: $exitValue")
+                cleanupFailedProcess(processInfo)
+                return false
             }
             return true
-        } catch (e: Exception) {
-            logger.error("Error checking process status", e)
-            cleanupFailedProcess(processInfo)
-            return false
-        }
-    }
-
-    private fun verifyProcessResponsiveness(processInfo: ProcessInfo): Boolean {
-        return try {
-            // Send a no-op command to verify process responsiveness
-            processInfo.writer?.write("\n")
-            processInfo.writer?.flush()
-
-            // Wait briefly for response
-            var attempts = 0
-            while (attempts++ < 5) {
-                if (processInfo.reader?.ready() == true) {
-                    return true
-                }
-                Thread.sleep(100)
-            }
-            false
-        } catch (e: Exception) {
-            logger.error("Error verifying process responsiveness", e)
-            false
+        } catch (e: IllegalThreadStateException) {
+            // Process is still running
+            return true
         }
     }
 
