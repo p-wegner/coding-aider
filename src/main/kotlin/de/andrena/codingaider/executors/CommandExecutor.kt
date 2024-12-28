@@ -153,7 +153,7 @@ class CommandExecutor(
         val startTime = System.currentTimeMillis()
         while (!project.service<AiderProcessManager>().isReadyForCommand(planId)) {
             Thread.sleep(100)
-            if (System.currentTimeMillis() - startTime > 10000) {
+            if (System.currentTimeMillis() - startTime > 20000) {
                 throw IllegalStateException("Sidecar process failed to start")
             }
         }

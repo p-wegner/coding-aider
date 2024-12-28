@@ -3,12 +3,9 @@ package de.andrena.codingaider.services.sidecar
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
-import de.andrena.codingaider.settings.AiderSettings
 import io.ktor.util.collections.ConcurrentMap
 import reactor.core.publisher.Flux
-import reactor.core.publisher.FluxSink
 import reactor.core.publisher.Mono
-import reactor.core.publisher.MonoSink
 import reactor.core.scheduler.Schedulers
 import java.io.BufferedReader
 import java.io.BufferedWriter
@@ -27,7 +24,8 @@ class AiderProcessManager() : Disposable {
         var reader: BufferedReader? = null,
         var writer: BufferedWriter? = null,
         val isRunning: AtomicBoolean = AtomicBoolean(false),
-        var outputParser: AiderOutputParser? = null
+        var outputParser: AiderOutputParser? = null,
+        var outputFlux: Flux<String>? = null
     )
 
     private val defaultProcess = ProcessInfo()
@@ -42,7 +40,7 @@ class AiderProcessManager() : Disposable {
         workingDir: String,
         verbose: Boolean = false,
         planId: String? = null
-    ): Boolean {
+    ): Mono<Void> {
         synchronized(processLock) {
             val processInfo = planId?.let {
                 planProcesses.getOrPut(it) { ProcessInfo() }
@@ -51,10 +49,9 @@ class AiderProcessManager() : Disposable {
 
             if (processInfo.isRunning.get()) {
                 logger.info("Aider sidecar process already running for ${planId ?: "default"}")
-                return true
+                return Mono.empty()
             }
-
-            return try {
+            return Mono.defer {
                 validateStartupConditions(workingDir, planId)
 
                 val processBuilder = ProcessBuilder(command)
@@ -71,24 +68,31 @@ class AiderProcessManager() : Disposable {
                     logger.info("Started Aider sidecar process with command: ${command.joinToString(" ")}")
                     logger.info("Working directory: $workingDir")
                 }
-
-                val started = waitForFirstUserPrompt(processInfo)
-                if (!started) {
-                    cleanupFailedProcess(processInfo)
+                processInfo.writer?.write("\n")
+                processInfo.writer?.flush()
+                waitForFirstPrompt(processInfo).doOnNext {
+                    processInfo.isRunning.set(true)
                 }
-                started
-
-            } catch (e: Exception) {
-                val errorMsg = when (e) {
-                    is SecurityException -> "Security error starting process: ${e.message}"
-                    is IllegalStateException -> e.message
-                    else -> "Failed to start Aider sidecar process: ${e.message}"
-                }
-                logger.error(errorMsg, e)
-                cleanupFailedProcess(processInfo)
-                false
             }
+                .timeout(Duration.ofSeconds(10))
+                .subscribeOn(Schedulers.boundedElastic())
+
         }
+    }
+
+    private fun waitForFirstPrompt(processInfo: ProcessInfo): Mono<Void> {
+        val promptRegex = Regex("^>\\s*$")
+
+        return processInfo.outputFlux!!
+            // Filter out all lines that are not the prompt
+            .filter { line -> promptRegex.matches(line.trim()) }
+            // Take just the first match
+            .next()
+            // Next returns a Mono<String>, but we want a Mono<Void>
+            // to indicate “done waiting,” so map or then
+            .then()
+            // Optionally set a timeout, in case the process never produces the prompt
+            .timeout(Duration.ofSeconds(10))
     }
 
     private fun validateStartupConditions(workingDir: String, planId: String? = null) {
@@ -124,14 +128,33 @@ class AiderProcessManager() : Disposable {
     }
 
     companion object {
-        private const val MAX_CONCURRENT_PROCESSES = 5
+        private const val MAX_CONCURRENT_PROCESSES = 20
     }
 
     private fun setupProcessStreams(processInfo: ProcessInfo) {
         processInfo.reader = BufferedReader(InputStreamReader(processInfo.process!!.inputStream))
         processInfo.writer = BufferedWriter(OutputStreamWriter(processInfo.process!!.outputStream))
-        val settings = AiderSettings.getInstance()
-        processInfo.outputParser = RobustAiderOutputParser(verbose, logger, processInfo.reader, processInfo.writer)
+        processInfo.outputFlux = Flux.create<String> { sink ->
+            val readerThread = Thread {
+                try {
+                    processInfo.reader?.use<BufferedReader, Unit> { reader ->
+                        while (true) {
+                            val line = reader.readLine() ?: break
+                            sink.next(line)
+                        }
+                    }
+                    sink.complete() // End of stream
+                } catch (e: Exception) {
+                    sink.error(e)
+                }
+            }
+            readerThread.isDaemon = true
+            readerThread.start()
+            sink.onCancel { readerThread.interrupt() }
+        }
+            .publish()
+            .autoConnect(1)
+            .subscribeOn(Schedulers.boundedElastic())
     }
 
     private fun cleanupFailedProcess(processInfo: ProcessInfo) {
@@ -145,91 +168,9 @@ class AiderProcessManager() : Disposable {
         }
     }
 
-    private fun waitForFirstUserPrompt(processInfo: ProcessInfo = defaultProcess): Boolean =
-        Mono.create { sink ->
-            readOutputUntilLongerPause(processInfo, sink)
-        }
-            .timeout(startupTimeout)
-            .doOnError { error ->
-                logger.error("Aider sidecar process failed to become ready: ${error.message}")
-                dispose()
-            }
-            .onErrorReturn(false)
-            .block() ?: false
 
-    private fun readOutputUntilLongerPause(
-        processInfo: ProcessInfo,
-        sink: MonoSink<Boolean>
-    ) {
-        val buffer = StringBuilder()
-        val promptPattern = Regex("(?m)^\\s*>\\s*$") // Matches '>' at line start/end with optional whitespace
-        val errorPattern = Regex("(?i)error:|exception:|failed|terminated") // Common error indicators
 
-        try {
-            // Start async reader thread
-            val readerThread = Thread {
-                try {
-                    val reader = processInfo.reader!!
-                    val charBuffer = CharArray(4096)
-                    
-                    while (processInfo.process?.isAlive == true) {
-                        val count = reader.read(charBuffer)
-                        if (count == -1) break
-                        
-                        synchronized(buffer) {
-                            buffer.append(charBuffer, 0, count)
-                            
-                            // Check for startup completion indicators
-                            val content = buffer.toString()
-                            
-                            // Check for errors first
-                            if (errorPattern.find(content) != null) {
-                                sink.error(IllegalStateException("Error detected during startup: $content"))
-                                return@synchronized
-                            }
-                            
-                            // Look for prompt pattern
-                            if (promptPattern.find(content) != null) {
-                                if (verbose) logger.debug("Detected prompt pattern in output")
-                                processInfo.isRunning.set(true)
-                                sink.success(true)
-                                return@synchronized
-                            }
-                        }
-                        
-                        // Small delay to prevent CPU spinning
-                        Thread.sleep(10)
-                    }
-                } catch (e: Exception) {
-                    sink.error(e)
-                }
-            }.apply {
-                isDaemon = true
-                start()
-            }
-
-            // Set timeout for startup
-            Thread {
-                Thread.sleep(startupTimeout.toMillis())
-                if (!processInfo.isRunning.get()) {
-                    synchronized(buffer) {
-                        val output = buffer.toString()
-                        sink.error(IllegalStateException("Startup timeout. Last output: $output"))
-                    }
-                }
-            }.start()
-
-        } catch (e: Exception) {
-            val errorMsg = when (e) {
-                is SecurityException -> "Security error during process startup: ${e.message}"
-                is IllegalStateException -> e.message
-                else -> "Unexpected error during process startup: ${e.message}"
-            }
-            logger.error(errorMsg, e)
-            sink.error(IllegalStateException(errorMsg, e))
-        }
-    }
-
+    private val promptRegex = Regex("^>\\s*$")
 
     fun sendCommandAsync(command: String, planId: String? = null): Flux<String> {
         val processInfo = synchronized(processLock) {
@@ -243,26 +184,21 @@ class AiderProcessManager() : Disposable {
         if (!checkProcessStatus(processInfo)) {
             return Flux.error(IllegalStateException("Aider sidecar process is not responsive"))
         }
-
-        return Flux.create { sink: FluxSink<String> ->
-            synchronized(processLock) {
-                try {
-                    val parser = processInfo.outputParser ?: DefaultAiderOutputParser(
-                        verbose,
-                        logger,
-                        processInfo.reader,
-                        processInfo.writer
-                    )
-                    parser.writeCommandAndReadResults(command, sink)
-                } catch (e: Exception) {
-                    sink.error(e)
-                }
-            }
+        val writeCommandMono = Mono.fromCallable {
+            processInfo.writer?.write("$command\n")
+            processInfo.writer?.flush()
+            true // just a dummy
         }
-            .subscribeOn(Schedulers.boundedElastic())
-            .doOnError { e ->
-                logger.error("Error sending async command to Aider sidecar process", e)
-            }
+        val responseFlux = processInfo.outputFlux!!
+            // Optionally: skip lines that might be from a previous command if needed
+            // .skipUntil { ...some logic to detect the command started... }
+            .takeUntil { line -> promptRegex.matches(line) }
+            .filter { line -> !promptRegex.matches(line) }
+
+        // 3. Return the flux that:
+        //    - first writes the command (Mono),
+        //    - then collects lines from the shared flux until the next prompt
+        return writeCommandMono.thenMany(responseFlux)
     }
 
 
@@ -380,25 +316,7 @@ class AiderProcessManager() : Disposable {
         }
 
         try {
-            // Check if streams are still valid and process is responsive
-//            if (processInfo.reader?.ready() == true) {
-//                processInfo.reader?.mark(1)
-//                val available = processInfo.reader?.read()
-//                if (available == -1) {
-//                    logger.error("Process streams have been closed")
-//                    cleanupFailedProcess(processInfo)
-//                    return false
-//                }
-//                processInfo.reader?.reset()
-//            }
-            // Verify process can still accept commands with timeout
-//            if (!verifyProcessResponsiveness(processInfo)) {
-//                logger.error("Process is not responsive to commands")
-//                cleanupFailedProcess(processInfo)
-//                return false
-//            }
 
-            // Check process health and resource usage
             try {
                 val exitValue = processInfo.process?.exitValue()
                 if (exitValue != null) {

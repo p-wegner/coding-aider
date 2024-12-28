@@ -1,7 +1,9 @@
 package de.andrena.codingaider.services.sidecar
 
 import com.intellij.openapi.diagnostic.Logger
+import reactor.core.publisher.Flux
 import reactor.core.publisher.FluxSink
+import reactor.core.scheduler.Schedulers
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.util.concurrent.TimeUnit
@@ -121,4 +123,32 @@ class RobustAiderOutputParser(
             sink.next(summary.toString())
         }
     }
+}
+fun streamProcessOutputAsFlux(process: Process): Flux<String> {
+    return Flux.create<String> { sink ->
+        // Use a dedicated thread to read blocking I/O
+        val readerThread = Thread {
+            try {
+                process.inputStream.bufferedReader().use { reader ->
+                    while (true) {
+                        val line = reader.readLine() ?: break
+                        sink.next(line)  // emit each line
+                    }
+                    // If we exit the loop normally, we've hit EOF
+                    sink.complete()
+                }
+            } catch (e: Exception) {
+                sink.error(e)
+            }
+        }
+
+        readerThread.start()
+
+        // If the subscriber cancels, interrupt the reading thread
+        sink.onCancel {
+            readerThread.interrupt()
+        }
+    }
+        // Move blocking reads off the main thread to avoid blocking the reactive pipeline
+        .subscribeOn(Schedulers.boundedElastic())
 }

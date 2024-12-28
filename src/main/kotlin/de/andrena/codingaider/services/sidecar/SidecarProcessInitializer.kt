@@ -22,10 +22,7 @@ class SidecarProcessInitializer(private val project: Project, private val cs: Co
     private var currentSidecarMode: Boolean? = null
 
     init {
-        // Listen for settings changes
-        settings.addSettingsChangeListener {
-            handleSettingsChange()
-        }
+        settings.addSettingsChangeListener { handleSettingsChange() }
     }
 
     private fun handleSettingsChange() {
@@ -51,30 +48,17 @@ class SidecarProcessInitializer(private val project: Project, private val cs: Co
             return
         }
         logger.info("Starting Sidecar process ")
-        cs.launch {
-            val strategy = SidecarAiderExecutionStrategy(project, settings)
+        val strategy = SidecarAiderExecutionStrategy(project, settings)
 
-            val command = strategy.buildCommand(createInitializationCommandData(planId))
+        val command = strategy.buildCommand(createInitializationCommandData(planId))
 
-            val workingDir = project.basePath ?: System.getProperty("user.home")
-            val processStarted = processManager.startProcess(
-                command,
-                workingDir,
-                settings.sidecarModeVerbose,
-                planId
-            )
-
-            if (processStarted) {
-                logger.info("Sidecar Aider process initialized successfully")
-            } else {
-                logger.error("Failed to initialize Sidecar Aider process")
-            }
-
-            // Ensure the process is running before returning
-            if (!processManager.isReadyForCommand(planId)) {
-                throw IllegalStateException("Sidecar Aider process failed to start")
-            }
-        }
+        val workingDir = project.basePath ?: System.getProperty("user.home")
+        processManager.startProcess(
+            command,
+            workingDir,
+            settings.sidecarModeVerbose,
+            planId
+        ).block()
     }
 
     private fun createInitializationCommandData(planId: String?): CommandData {
