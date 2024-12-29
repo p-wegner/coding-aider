@@ -15,7 +15,7 @@ class FileDataCollectionService(private val project: Project) {
     private val settings: AiderSettings = getInstance()
 
     fun collectAllFiles(
-        files: Array<VirtualFile>,
+        files: Array<VirtualFile> = emptyArray(),
         includePersistentFiles: Boolean = true
 
     ): List<FileData> {

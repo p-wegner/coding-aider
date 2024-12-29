@@ -20,6 +20,7 @@ import de.andrena.codingaider.actions.aider.AiderAction
 import de.andrena.codingaider.inputdialog.AiderInputDialog
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.outputview.CustomMarkdownViewer
+import de.andrena.codingaider.services.FileDataCollectionService
 import de.andrena.codingaider.services.plans.AiderPlan
 import de.andrena.codingaider.services.plans.AiderPlanPromptService
 import de.andrena.codingaider.services.plans.AiderPlanService
@@ -400,7 +401,8 @@ class PlanViewer(private val project: Project) {
         override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
         override fun actionPerformed(e: AnActionEvent) {
-            val dialog = AiderInputDialog(project, emptyList()).apply {
+            val allFiles = project.service<FileDataCollectionService>().collectAllFiles(includePersistentFiles = true)
+            val dialog = AiderInputDialog(project, allFiles).apply {
                 selectMode(AiderMode.STRUCTURED)
             }
             if (dialog.showAndGet()) {

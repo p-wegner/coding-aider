@@ -8,4 +8,4 @@
 - [ ] Feature: plan system prompt include manual stop markers where the user should test something
 - [ ] Feature: plan system prompt improved testing strategy and feedback mechanism for the llm
 - [ ] BUG: outputview modals seem to be connected (show)
-- [ ] BUG: Create plan file from toolwindow does not consider persistent files
+- [x] BUG: Create plan file from toolwindow does not consider persistent files
