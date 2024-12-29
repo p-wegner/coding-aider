@@ -41,7 +41,7 @@ class ActivePlanService(private val project: Project) {
     private fun ChecklistItem.isComplete(): Boolean {
         return checked && children.all { it.isComplete() }
     }
-
+    // TODO: decide whether to use this or not
     fun handlePlanActionFinished(success: Boolean = true) {
         refreshActivePlan()
 
