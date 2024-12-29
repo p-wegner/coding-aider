@@ -269,7 +269,7 @@ class AiderProcessManager() : Disposable {
             return Flux.error(IllegalStateException("Aider sidecar process is not responsive"))
         }
         val writeCommandMono = Mono.fromCallable {
-            processInfo.writer?.write("$command\n")
+            processInfo.writer?.write("${command.removeNewlines()}\n")
             processInfo.writer?.flush()
             true // just a dummy
         }
@@ -281,6 +281,7 @@ class AiderProcessManager() : Disposable {
             .thenMany(responseFlux)
     }
 
+    private fun String.removeNewlines() = replace("\n", " ").replace("\r", " ")
 
     fun interruptCurrentCommand(planId: String? = null) {
         synchronized(processLock) {

@@ -61,7 +61,7 @@ class AiderPlanPromptService(private val project: Project) {
         val existingPlan = filterPlanRelevantFiles(files)
 
         val basePrompt = """
-            SYSTEM Create plan files in $AIDER_PLANS_FOLDER before making code changes:
+            SYSTEM You are working in a plan based mode with plan files in $AIDER_PLANS_FOLDER:
             
             SYSTEM File Requirements:
             1. Start plans with $AIDER_PLAN_MARKER
@@ -79,10 +79,6 @@ class AiderPlanPromptService(private val project: Project) {
               - path: "full/path/to/file"
                 readOnly: false
             
-            SYSTEM Implementation:
-            1. Create/update plan files first
-            2. Implement changes step by step
-            3. Keep context.yaml current with all needed files
         """.trimStartingWhiteSpaces()
 
         val firstPlan = existingPlan.firstOrNull()
