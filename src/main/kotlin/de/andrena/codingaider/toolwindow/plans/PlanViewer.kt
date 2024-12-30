@@ -500,6 +500,70 @@ class PlanViewer(private val project: Project) {
         }
     }
 
+    inner class ArchivePlanAction : AnAction(
+        "Archive Plan", 
+        "Move this plan to the finished plans folder",
+        AllIcons.Actions.MoveToTrash
+    ) {
+        override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+
+        override fun actionPerformed(e: AnActionEvent) {
+            val selectedPlan = plansList.selectedValue ?: return
+            
+            val dialog = object : DialogWrapper(project) {
+                init {
+                    title = "Archive Plan"
+                    init()
+                }
+
+                override fun createCenterPanel(): JComponent {
+                    val markdownViewer = CustomMarkdownViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
+                        setDarkTheme(!JBColor.isBright())
+                        setMarkdownContent(selectedPlan.plan)
+                    }
+                    val previewScrollPane = JBScrollPane(markdownViewer.component).apply {
+                        preferredSize = Dimension(600, 300)
+                    }
+
+                    return panel {
+                        group("Plan to Archive") {
+                            row {
+                                cell(previewScrollPane)
+                                    .align(Align.FILL)
+                                    .resizableColumn()
+                            }.resizableRow()
+                        }
+                    }
+                }
+            }
+
+            if (dialog.showAndGet()) {
+                val finishedPlansDir = File(project.basePath + "/${AiderPlanService.FINISHED_AIDER_PLANS_FOLDER}")
+                if (!finishedPlansDir.exists()) {
+                    finishedPlansDir.mkdir()
+                }
+
+                selectedPlan.planFiles.forEach { fileData ->
+                    val file = File(fileData.filePath)
+                    if (file.exists()) {
+                        val destFile = File(finishedPlansDir, file.name)
+                        if (destFile.exists()) {
+                            destFile.delete()
+                        }
+                        file.renameTo(destFile)
+                    }
+                }
+                FileRefresher.refreshPath(project.basePath + "/${AiderPlanService.AIDER_PLANS_FOLDER}")
+                FileRefresher.refreshPath(finishedPlansDir.absolutePath)
+                updatePlans(project.getService(AiderPlanService::class.java).getAiderPlans())
+            }
+        }
+
+        override fun update(e: AnActionEvent) {
+            e.presentation.isEnabled = plansList.selectedValue != null
+        }
+    }
+
     inner class DeletePlanAction : AnAction(
         "Delete Plan",
         "Delete this plan",
