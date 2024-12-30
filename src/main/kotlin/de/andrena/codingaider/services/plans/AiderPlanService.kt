@@ -15,6 +15,7 @@ class AiderPlanService(private val project: Project) {
         const val AIDER_PLAN_MARKER = "[Coding Aider Plan]"
         const val AIDER_PLAN_CHECKLIST_MARKER = "[Coding Aider Plan - Checklist]"
         const val AIDER_PLANS_FOLDER = ".coding-aider-plans"
+        const val FINISHED_AIDER_PLANS_FOLDER = ".coding-aider-plans-finished"
         const val STRUCTURED_MODE_MARKER = "[STRUCTURED MODE]"
         const val SUBPLAN_START_MARKER = "<!-- SUBPLAN:"
         const val SUBPLAN_END_MARKER = "<!-- END_SUBPLAN -->"

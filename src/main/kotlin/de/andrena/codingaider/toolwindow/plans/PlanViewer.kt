@@ -1,6 +1,7 @@
 package de.andrena.codingaider.toolwindow.plans
 
 import com.intellij.icons.AllIcons
+import com.intellij.icons.AllIcons.Actions.SuggestedRefactoringBulb
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -299,10 +300,10 @@ class PlanViewer(private val project: Project) {
                 countLabel.toolTipText = tooltip
 
                 statusIcon.icon = when {
-                    value.isPlanComplete() -> AllIcons.Actions.Commit
+                    value.isPlanComplete() -> AllIcons.Diff.GutterCheckBoxSelected
                     value.openChecklistItems().isEmpty() && value.childPlans.any { !it.isPlanComplete() } ->
-                        AllIcons.General.Warning // Has uncompleted child plans
-                    else -> AllIcons.General.BalloonInformation
+                        AllIcons.Diff.GutterCheckBoxIndeterminate // Has uncompleted child plans
+                    else -> AllIcons.Diff.GutterCheckBox
                 }
                 statusIcon.toolTipText = tooltip
 
@@ -415,7 +416,7 @@ class PlanViewer(private val project: Project) {
     inner class RefinePlanAction : AnAction(
         "Refine Plan",
         "Refine and extend the selected plan",
-        AllIcons.Actions.Edit
+        SuggestedRefactoringBulb
     ) {
         override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
@@ -503,7 +504,7 @@ class PlanViewer(private val project: Project) {
     inner class ArchivePlanAction : AnAction(
         "Archive Plan", 
         "Move this plan to the finished plans folder",
-        AllIcons.Actions.MoveToTrash
+        AllIcons.Actions.ClearCash
     ) {
         override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 

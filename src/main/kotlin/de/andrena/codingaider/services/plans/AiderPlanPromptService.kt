@@ -125,7 +125,7 @@ $STRUCTURED_MODE_MESSAGE_MARKER ${commandData.message} $STRUCTURED_MODE_MESSAGE_
 
     fun filterPlanRelevantFiles(files: List<FileData>): List<FileData> =
         files.filter {
-            it.filePath.contains(AIDER_PLANS_FOLDER) && !it.filePath.contains(FINISHED_AIDER_PLANS_FOLDER)
+            it.filePath.contains(AIDER_PLANS_FOLDER) && !it.filePath.contains(AiderPlanService.FINISHED_AIDER_PLANS_FOLDER)
                     && (it.filePath.endsWith(".md") || it.filePath.endsWith(".yaml"))
         }
 
@@ -133,12 +133,11 @@ $STRUCTURED_MODE_MESSAGE_MARKER ${commandData.message} $STRUCTURED_MODE_MESSAGE_
         filterPlanRelevantFiles(files).filter { it.filePath.endsWith(".md") && !it.filePath.endsWith("_checklist.md") }
 
     private fun String.trimStartingWhiteSpaces() = trimIndent().trimStart { it.isWhitespace() }
-
+    // TODO: decide where to put this (see AiderPlanService)
     companion object {
         const val AIDER_PLAN_MARKER = "[Coding Aider Plan]"
         const val AIDER_PLAN_CHECKLIST_MARKER = "[Coding Aider Plan - Checklist]"
-        const val AIDER_PLANS_FOLDER = ".coding-aider-plans"
-        const val FINISHED_AIDER_PLANS_FOLDER = ".coding-aider-plans-finished"
+        const val AIDER_PLANS_FOLDER = AiderPlanService.AIDER_PLANS_FOLDER
         const val STRUCTURED_MODE_MESSAGE_MARKER = "<STRUCTURED MODE>"
         const val STRUCTURED_MODE_MESSAGE_END_MARKER = "</STRUCTURED MODE>"
     }
