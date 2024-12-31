@@ -164,12 +164,11 @@ class AiderPlanService(private val project: Project) {
             val content = file.readText()
             if (!content.contains(AIDER_PLAN_MARKER)) return null
 
-            // Process markdown references to include referenced content
-            // TODO: make sure this doesn't break later tree calculations / subplan parsing
-            val expandedContent = processMarkdownReferences(content, plansDir)
+            // Extract plan content from the original content
+            val planContent = content.substringAfter(AIDER_PLAN_MARKER).trim()
 
-            // Extract plan content from the expanded content
-            val planContent = expandedContent.substringAfter(AIDER_PLAN_MARKER).trim()
+            // Process markdown references to include referenced content for checklist extraction
+            val expandedContent = processMarkdownReferences(content, plansDir)
 
             // Get checklist items from expanded content
             val planChecklist = extractChecklistItems(expandedContent)
@@ -203,8 +202,8 @@ class AiderPlanService(private val project: Project) {
                 parseContextYaml(contextFile)
             } else emptyList()
 
-            // Extract subplan references
-            val subplanRefs = extractSubplanReferences(expandedContent)
+            // Extract subplan references from the original content
+            val subplanRefs = extractSubplanReferences(content)
             val subplans = subplanRefs.mapNotNull { subplanRef ->
                 val subplanFile = File(plansDir, subplanRef)
                 if (subplanFile.exists()) loadPlanFromFile(subplanFile) else null
