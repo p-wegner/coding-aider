@@ -502,7 +502,7 @@ class PlanViewer(private val project: Project) {
     }
 
     inner class ArchivePlanAction : AnAction(
-        "Archive Plan", 
+        "Archive Plan",
         "Move this plan to the finished plans folder",
         AllIcons.Actions.ClearCash
     ) {
@@ -510,7 +510,7 @@ class PlanViewer(private val project: Project) {
 
         override fun actionPerformed(e: AnActionEvent) {
             val selectedPlan = plansList.selectedValue ?: return
-            
+
             val dialog = object : DialogWrapper(project) {
                 init {
                     title = "Archive Plan"

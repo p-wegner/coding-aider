@@ -96,6 +96,7 @@ class AiderPlanService(private val project: Project) {
                     referenceFile.readText()
                 } else {
                     val fileContent = referenceFile.readText()
+                    // TODO: fix missmatch with later subplan parsing
                     val summary = """
                         |<!-- Referenced Plan: ${referenceFile.nameWithoutExtension} -->
                         |<!-- Status: In Progress -->
@@ -164,6 +165,7 @@ class AiderPlanService(private val project: Project) {
             if (!content.contains(AIDER_PLAN_MARKER)) return null
 
             // Process markdown references to include referenced content
+            // TODO: make sure this doesn't break later tree calculations / subplan parsing
             val expandedContent = processMarkdownReferences(content, plansDir)
 
             // Extract plan content from the expanded content
@@ -322,6 +324,7 @@ class AiderPlanService(private val project: Project) {
 
     fun createAiderPlanSystemPrompt(commandData: CommandData): String =
         project.service<AiderPlanPromptService>().createAiderPlanSystemPrompt(commandData)
+
 
     private fun extractSubplanReferences(content: String): List<String> {
         val subplans = mutableListOf<String>()
