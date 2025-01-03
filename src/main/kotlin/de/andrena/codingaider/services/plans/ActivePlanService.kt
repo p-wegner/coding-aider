@@ -13,7 +13,6 @@ import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.FileDataCollectionService
 import de.andrena.codingaider.services.sidecar.AiderProcessManager
-import de.andrena.codingaider.services.sidecar.SidecarProcessInitializer
 import de.andrena.codingaider.settings.AiderSettings
 import java.io.File
 
@@ -41,8 +40,10 @@ class ActivePlanService(private val project: Project) {
     private fun ChecklistItem.isComplete(): Boolean {
         return checked && children.all { it.isComplete() }
     }
-    // TODO: decide whether to use this or not
+
     fun handlePlanActionFinished(success: Boolean = true) {
+        return
+        // TODO: decide whether to use this or not
         refreshActivePlan()
 
         if (!success) {
@@ -55,7 +56,7 @@ class ActivePlanService(private val project: Project) {
             return
         }
 
-        if (!currentPlan.isPlanComplete()) {
+        if (!currentPlan!!.isPlanComplete()) {
             if (AiderSettings.getInstance().enableAutoPlanContinue) {
                 continuePlan()
                 return
@@ -175,10 +176,10 @@ class ActivePlanService(private val project: Project) {
                 projectPath = projectBasePath,
                 aiderMode = AiderMode.STRUCTURED,
                 sidecarMode = settings.useSidecarMode,
-                planId = selectedPlan.mainPlanFile?.filePath // Use plan file path as unique ID
+                planId = selectedPlan.mainPlanFile?.filePath
             )
             setActivePlan(selectedPlan)
-            IDEBasedExecutor(project, commandData).execute()
+            IDEBasedExecutor(project, commandData, CommandFinishedCallback { handlePlanActionFinished(it) }).execute()
 
         } catch (e: Exception) {
             val errorMessage = when (e) {

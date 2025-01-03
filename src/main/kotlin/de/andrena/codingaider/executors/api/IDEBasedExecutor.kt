@@ -17,8 +17,8 @@ import java.awt.EventQueue.invokeLater
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.concurrent.thread
-
-interface CommandFinishedCallback {
+@FunctionalInterface
+fun interface CommandFinishedCallback {
     fun onCommandFinished(success: Boolean)
 }
 
