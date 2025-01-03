@@ -8,6 +8,7 @@ object AiderDefaults {
     const val ALWAYS_INCLUDE_PLAN_CONTEXT_FILES = true
     // TODO: make enum with off, single plan, family
     const val ENABLE_AUTO_PLAN_CONTINUE = true
+    const val ENABLE_AUTO_PLAN_CONTINUATION_IN_FAMILY = false
     const val MARKDOWN_DIALOG_AUTOCLOSE_DELAY_IN_S: Int = 10
     const val USE_YES_FLAG = true
     const val LLM = ""

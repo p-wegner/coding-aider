@@ -67,8 +67,7 @@ class ActivePlanService(private val project: Project) {
             cleanupAndClearPlan() // Cleanup current plan's resources
             setActivePlan(nextPlans.first()) // Set the first uncompleted plan as active
 
-            // TODO: Auto-continue to next plan if enabled for whole familiy
-            if (AiderSettings.getInstance().enableAutoPlanContinue) {
+            if (AiderSettings.getInstance().enableAutoPlanContinuationInPlanFamily) {
                 continuePlan()
             }
         } else {

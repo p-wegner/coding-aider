@@ -48,6 +48,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var aiderExecutablePath: String = AiderDefaults.AIDER_EXECUTABLE_PATH,
         var documentationLlm: String = AiderDefaults.DOCUMENTATION_LLM,
         var enableAutoPlanContinue: Boolean = AiderDefaults.ENABLE_AUTO_PLAN_CONTINUE,
+        var enableAutoPlanContinuationInPlanFamily: Boolean = AiderDefaults.ENABLE_AUTO_PLAN_CONTINUATION_IN_FAMILY,
         var optionsPanelCollapsed: Boolean = true,
     )
 
@@ -68,6 +69,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.enableAutoPlanContinue
         set(value) {
             myState.enableAutoPlanContinue = value
+        }
+
+    var enableAutoPlanContinuationInPlanFamily: Boolean
+        get() = myState.enableAutoPlanContinuationInPlanFamily
+        set(value) {
+            myState.enableAutoPlanContinuationInPlanFamily = value
         }
 
 
