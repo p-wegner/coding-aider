@@ -66,7 +66,10 @@ data class CommandOptions(
     }
 }
 
-data class FileData(
-    val filePath: String,
-    val isReadOnly: Boolean
-)
+data class FileData(val filePath: String, val isReadOnly: Boolean) {
+    val normalizedFilePath: String
+        get() = filePath.replace('\\', '/').replace("//", "/")
+}
+
+
+
