@@ -87,11 +87,6 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
                 add("--commit-prompt")
                 add(getCommitPrompt())
             }
-            // Add summarized output flag if enabled
-//            if (settings.summarizedOutput) {
-//                add("--summary-format")
-//                add("xml")
-//            }
             if (commandData.sidecarMode) {
                 return@buildList
             }
