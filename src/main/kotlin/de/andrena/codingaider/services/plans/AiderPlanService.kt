@@ -231,10 +231,15 @@ class AiderPlanService(private val project: Project) {
 
         // Create a map to track updated plans
         val updatedPlans = mutableMapOf<String, AiderPlan>()
-        val remainingPlans = allPlans.toMutableList() // Create mutable copy for modification
+        // Create immutable copy of all plans and a mutable list for processing
+        val allPlansCopy = allPlans.toList()
+        val remainingPlans = allPlansCopy.toMutableList()
 
         // Then establish parent-child relationships based on references
-        remainingPlans.forEach { plan ->
+        // Use iterator to safely remove while iterating
+        val iterator = remainingPlans.iterator()
+        while (iterator.hasNext()) {
+            val plan = iterator.next()
             val planPath = plan.mainPlanFile?.filePath ?: return@forEach
             if (!updatedPlans.containsKey(planPath)) {
                 updatedPlans[planPath] = plan
@@ -254,8 +259,8 @@ class AiderPlanService(private val project: Project) {
                         val referencedPlan = allPlans.find { it.mainPlanFile?.filePath == referencedPlanPath }
                             ?: return@forEach
 
-                        // Remove the referenced plan from the root list if it exists
-                        remainingPlans.removeIf { it.mainPlanFile?.filePath == referencedPlanPath }
+                        // Remove the referenced plan from the root list if it exists using iterator
+                        iterator.remove()
 
                         // Update parent-child relationships
                         val currentParentPlan = updatedPlans[planPath] ?: plan
