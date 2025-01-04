@@ -13,6 +13,10 @@ enum class LlmProviderType(
         "OpenAI", requiresApiKey = true, requiresBaseUrl = true, "openai",
         "Examples: o1-preview, gpt-4o"
     ),
+    CUSTOM_AIDERMODEL(
+        "Custom", false,false,  "",
+        "Examples: deepseek/deepseek-chat", AuthType.NONE, false
+    ),
     OLLAMA(
         "Ollama", requiresApiKey = false, requiresBaseUrl = true, "ollama",
         "Examples: llama3:70b, qwen2.5-coder:32b",
@@ -49,6 +53,5 @@ enum class LlmProviderType(
         }
     }
 
-    fun requiresAuthentication(): Boolean = authType != AuthType.NONE
 
 }

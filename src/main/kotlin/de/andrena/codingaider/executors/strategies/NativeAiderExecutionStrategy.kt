@@ -68,6 +68,9 @@ class NativeAiderExecutionStrategy(
                             environment["VERTEXAI_LOCATION"] = customProvider.location
                         }
                     }
+
+                    LlmProviderType.CUSTOM_AIDERMODEL -> {
+                    }
                 }
             }
 
