@@ -118,9 +118,9 @@ class PlanViewer(private val project: Project) {
 
     private fun animateTreeExpansion(plan: AiderPlan, planId: String) {
         val isExpanding = !expandedPlans.contains(planId)
-        val timer = Timer(20, null)
+        val timer = Timer(16, null) // Smoother animation with 60fps timing
         var progress = 0
-        val steps = 5 // Number of animation steps
+        val steps = 8 // More animation steps for smoother transition
 
         timer.addActionListener { e ->
             progress++
@@ -179,7 +179,7 @@ class PlanViewer(private val project: Project) {
         private val statusIcon = JLabel()
         private val countLabel = JLabel()
         private val leftPanel = JPanel(FlowLayout(FlowLayout.LEFT, 4, 0))
-        private val treeIndentWidth = 16 // Standard tree indent width
+        private val treeIndentWidth = 20 // Increased indent width for better readability
 
         init {
             isOpaque = true
@@ -248,36 +248,34 @@ class PlanViewer(private val project: Project) {
                     val ancestors = value.getAncestors()
                     val maxDepth = 8 // Maximum recommended nesting depth
 
-                    // Draw connecting lines for ancestors with improved visibility
+                    // Draw connecting lines for ancestors
                     ancestors.forEachIndexed { index, ancestor ->
                         val hasNextSibling = ancestor.findSiblingPlans().any { sibling ->
                             sibling.mainPlanFile?.filePath?.compareTo(ancestor.mainPlanFile?.filePath ?: "") ?: 0 > 0
                         }
-                        if (index >= maxDepth - 1) {
-                            append(if (hasNextSibling) "┆   " else "    ") // Dotted line for deep nesting
-                        } else {
-                            append(if (hasNextSibling) "┃   " else "    ") // Bold line for better visibility
+                        val isLastAncestor = index == ancestors.lastIndex
+                        val lineChar = when {
+                            index >= maxDepth - 1 -> if (hasNextSibling) "┆" else " "  // Dotted for deep nesting
+                            hasNextSibling -> "┃" // Solid line for siblings
+                            else -> " "    // Empty space for no siblings
                         }
+                        append("$lineChar   ")
                     }
 
-                    val depth = ancestors.size
                     val isLastChild = value.parentPlan?.childPlans?.lastOrNull() == value
                     val hasChildren = value.childPlans.isNotEmpty()
+                    val isExpanded = expandedPlans.contains(value.mainPlanFile?.filePath)
 
-                    // Add current node connector with enhanced visibility
-                    if (depth >= maxDepth) {
-                        append(if (isLastChild) "┗━━ " else "┣━━ ") // Double line for better visibility
-                    } else {
-                        append(if (isLastChild) "┗━━ " else "┣━━ ")
-                    }
-
-                    // Add clear expand/collapse indicator with spacing
-                    if (hasChildren) {
-                        val isExpanded = expandedPlans.contains(value.mainPlanFile?.filePath)
-                        append(if (isExpanded) "▼  " else "▶  ") // Added extra space for better readability
-                    } else {
-                        append("   ") // Consistent spacing for leaf nodes
-                    }
+                    // Add current node connector
+                    append(when {
+                        isLastChild -> "└"
+                        else -> "├"
+                    })
+                    append(when {
+                        hasChildren -> if (isExpanded) "▼─" else "▶─"
+                        else -> "──"
+                    })
+                    append(" ")
                 }
 
                 // Set consistent tree-like indentation
