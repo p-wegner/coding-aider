@@ -13,7 +13,7 @@
 - [x] Update validation logic for provider creation/editing
 
 ## Command Generation
-- [ ] Update AiderExecutionStrategy to handle API key optional providers
+- [x] Update AiderExecutionStrategy to handle API key optional providers
 - [ ] Ensure proper model name formatting in command generation
 
 ## Documentation

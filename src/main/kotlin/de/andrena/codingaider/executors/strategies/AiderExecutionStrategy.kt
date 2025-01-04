@@ -19,8 +19,15 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
             if (commandData.llm.isNotEmpty()) {
                 val customProvider = CustomLlmProviderService.Companion.getInstance().getProvider(commandData.llm)
                 if (customProvider != null) {
+                    // Handle model name based on provider type
                     add("--model")
                     add(customProvider.prefixedModelName)
+                    
+                    // Add base URL for providers that require it
+                    if (customProvider.type.requiresBaseUrl && customProvider.baseUrl.isNotEmpty()) {
+                        add("--base-url")
+                        add(customProvider.baseUrl)
+                    }
                 } else {
                     if (commandData.llm.startsWith("--")) {
                         add(commandData.llm)
