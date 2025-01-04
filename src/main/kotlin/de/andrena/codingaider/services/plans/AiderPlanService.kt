@@ -253,6 +253,9 @@ class AiderPlanService(private val project: Project) {
                         val referencedPlan = allPlans.find { it.mainPlanFile?.filePath == referencedPlanPath }
                             ?: return@forEach
 
+                        // Remove the referenced plan from the root list if it exists
+                        allPlans.removeIf { it.mainPlanFile?.filePath == referencedPlanPath }
+
                         // Update parent-child relationships
                         val currentParentPlan = updatedPlans[planPath] ?: plan
                         val updatedChildPlan = referencedPlan.copy(parentPlan = currentParentPlan)
