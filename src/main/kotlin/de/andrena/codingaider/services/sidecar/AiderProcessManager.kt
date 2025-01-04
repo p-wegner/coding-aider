@@ -23,7 +23,6 @@ class AiderProcessManager() : Disposable {
         var reader: BufferedReader? = null,
         var writer: BufferedWriter? = null,
         val isRunning: AtomicBoolean = AtomicBoolean(false),
-        var outputParser: AiderOutputParser? = null,
         var outputFlux: Flux<String>? = null
     )
 
