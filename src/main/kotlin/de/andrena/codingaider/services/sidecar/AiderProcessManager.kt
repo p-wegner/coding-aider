@@ -270,7 +270,7 @@ class AiderProcessManager() : Disposable {
         val writeCommandMono = Mono.fromCallable {
             processInfo.writer?.write("${command.removeNewlines()}\n")
             processInfo.writer?.flush()
-            true // just a dummy
+            true
         }
         val responseFlux = processInfo.outputFlux!!
             .takeUntil { line -> promptRegex.matches(line) }
