@@ -5,12 +5,12 @@
 ## Provider System Updates
 - [x] Update LlmProviderType to support API key optional providers
 - [x] Modify CustomLlmProvider to handle API key optional status
-- [ ] Update model name handling in CustomLlmProvider
+- [x] Update model name handling in CustomLlmProvider
 
 ## UI Changes
-- [ ] Update CustomLlmProviderDialog to handle API key optional providers
-- [ ] Modify provider editor dialog UI based on provider type
-- [ ] Update validation logic for provider creation/editing
+- [x] Update CustomLlmProviderDialog to handle API key optional providers
+- [x] Modify provider editor dialog UI based on provider type
+- [x] Update validation logic for provider creation/editing
 
 ## Command Generation
 - [ ] Update AiderExecutionStrategy to handle API key optional providers
