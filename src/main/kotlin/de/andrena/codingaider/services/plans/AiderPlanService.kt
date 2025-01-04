@@ -248,20 +248,22 @@ class AiderPlanService(private val project: Project) {
                 
                 if (referenceFile.exists() && !referenceFile.nameWithoutExtension.endsWith("_checklist")) {
                     val referencedPlanPath = referenceFile.absolutePath
-                    val referencedPlan = updatedPlans[referencedPlanPath] 
-                        ?: allPlans.find { it.mainPlanFile?.filePath == referencedPlanPath }
-                        ?: return@forEach
+                    // Only process if we haven't already seen this plan
+                    if (!updatedPlans.containsKey(referencedPlanPath)) {
+                        val referencedPlan = allPlans.find { it.mainPlanFile?.filePath == referencedPlanPath }
+                            ?: return@forEach
 
-                    // Update parent-child relationships
-                    val currentParentPlan = updatedPlans[planPath] ?: plan
-                    val updatedChildPlan = referencedPlan.copy(parentPlan = currentParentPlan)
-                    val updatedParentPlan = currentParentPlan.copy(
-                        childPlans = currentParentPlan.childPlans + updatedChildPlan
-                    )
-                    
-                    // Update the plans in our tracking map
-                    updatedPlans[planPath] = updatedParentPlan
-                    updatedPlans[referencedPlanPath] = updatedChildPlan
+                        // Update parent-child relationships
+                        val currentParentPlan = updatedPlans[planPath] ?: plan
+                        val updatedChildPlan = referencedPlan.copy(parentPlan = currentParentPlan)
+                        val updatedParentPlan = currentParentPlan.copy(
+                            childPlans = currentParentPlan.childPlans + updatedChildPlan
+                        )
+                        
+                        // Update the plans in our tracking map
+                        updatedPlans[planPath] = updatedParentPlan
+                        updatedPlans[referencedPlanPath] = updatedChildPlan
+                    }
                 }
             }
         }
