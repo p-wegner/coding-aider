@@ -121,7 +121,6 @@ class PlanViewer(private val project: Project) {
         val timer = Timer(12, null) // Faster animation (approximately 83fps)
         var progress = 0
         val steps = 12 // More steps for smoother animation
-        val easingFactor = 0.3f // Add easing for smoother animation
 
         fun easeInOutQuad(t: Float): Float {
             return if (t < 0.5f) 2 * t * t else -1 + (4 - 2 * t) * t
