@@ -3,7 +3,7 @@
 # Implementation Checklist
 
 ## Provider System Updates
-- [ ] Update LlmProviderType to support API key optional providers
+- [x] Update LlmProviderType to support API key optional providers
 - [ ] Modify CustomLlmProvider to handle API key optional status
 - [ ] Update model name handling in CustomLlmProvider
 

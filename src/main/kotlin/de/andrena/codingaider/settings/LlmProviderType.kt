@@ -5,7 +5,8 @@ enum class LlmProviderType(
     val requiresApiKey: Boolean = true,
     val requiresBaseUrl: Boolean = false,
     val modelNamePrefix: String,
-    val exampleModels: String
+    val exampleModels: String,
+    val authType: AuthType = AuthType.API_KEY
 ) {
     OPENAI(
         "OpenAI", requiresApiKey = true, requiresBaseUrl = true, "openai",
@@ -13,7 +14,8 @@ enum class LlmProviderType(
     ),
     OLLAMA(
         "Ollama", requiresApiKey = false, requiresBaseUrl = true, "ollama",
-        "Examples: llama3:70b, qwen2.5-coder:32b"
+        "Examples: llama3:70b, qwen2.5-coder:32b",
+        authType = AuthType.NONE
     ),
     OPENROUTER(
         "OpenRouter", requiresApiKey = true, requiresBaseUrl = false, "openrouter",
@@ -21,16 +23,27 @@ enum class LlmProviderType(
     ),
     VERTEX_EXPERIMENTAL(
         "Vertex AI", requiresApiKey = false, requiresBaseUrl = false, "vertex_ai",
-        "Examples: claude-3-sonnet@latest, gemini-pro@latest, claude-3-opus@latest"
+        "Examples: claude-3-sonnet@latest, gemini-pro@latest, claude-3-opus@latest",
+        authType = AuthType.GCLOUD
     );
 
+    enum class AuthType {
+        API_KEY,    // Standard API key authentication
+        NONE,       // No authentication required
+        GCLOUD      // Uses Google Cloud authentication
+    }
+
     fun getApiKeyName(): String {
-        return when (this) {
-            OPENAI -> "OPENAI_API_KEY"
-            OLLAMA -> "" // Ollama doesn't require an API key
-            OPENROUTER -> "OPENROUTER_API_KEY"
-            VERTEX_EXPERIMENTAL -> "" // Vertex AI uses gcloud CLI credentials
+        return when (authType) {
+            AuthType.API_KEY -> when (this) {
+                OPENAI -> "OPENAI_API_KEY"
+                OPENROUTER -> "OPENROUTER_API_KEY"
+                else -> ""
+            }
+            AuthType.NONE, AuthType.GCLOUD -> ""
         }
     }
+
+    fun requiresAuthentication(): Boolean = authType != AuthType.NONE
 
 }
