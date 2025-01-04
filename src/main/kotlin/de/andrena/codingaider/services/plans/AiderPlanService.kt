@@ -240,7 +240,7 @@ class AiderPlanService(private val project: Project) {
         val iterator = remainingPlans.iterator()
         while (iterator.hasNext()) {
             val plan = iterator.next()
-            val planPath = plan.mainPlanFile?.filePath ?: return@forEach
+            val planPath = plan.mainPlanFile?.filePath!!
             if (!updatedPlans.containsKey(planPath)) {
                 updatedPlans[planPath] = plan
             }
