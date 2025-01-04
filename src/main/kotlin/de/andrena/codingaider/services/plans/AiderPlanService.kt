@@ -240,13 +240,8 @@ class AiderPlanService(private val project: Project) {
             }
 
             val content = File(planPath).readText()
-            val referencePattern = Regex("""\[.*?\]\((.*?)(?:\s.*?)?\)""")
-            val subplanMarkerPattern = Regex("""${SUBPLAN_START_MARKER}.*?\n.*?\((.*?)\)""", RegexOption.DOT_MATCHES_ALL)
-            
-            // Process both regular references and subplan markers
-            val allReferences = (referencePattern.findAll(content) + subplanMarkerPattern.findAll(content))
-                .map { it.groupValues[1] }
-                .distinct()
+            // Use the same unified subplan reference extraction
+            val allReferences = extractSubplanReferences(content)
 
             allReferences.forEach { referencePath ->
                 val referenceFile = File(plansDir, referencePath)
@@ -327,21 +322,26 @@ class AiderPlanService(private val project: Project) {
 
     private fun extractSubplanReferences(content: String): List<String> {
         val subplans = mutableListOf<String>()
-        val lines = content.lines()
-        var i = 0
-        while (i < lines.size) {
-            val line = lines[i]
-            if (line.trim().startsWith(SUBPLAN_START_MARKER)) {
-                // Look for markdown link in next line
-                if (i + 1 < lines.size) {
-                    val linkLine = lines[i + 1]
-                    val linkMatch = Regex("""\[.*?\]\((.*?)\)""").find(linkLine)
-                    linkMatch?.groupValues?.get(1)?.let { subplans.add(it) }
-                }
+        
+        // First try to find subplans using the structured format
+        val structuredPattern = Regex("""${SUBPLAN_START_MARKER}.*?\n.*?\((.*?)\)""", RegexOption.DOT_MATCHES_ALL)
+        structuredPattern.findAll(content).forEach { match ->
+            val path = match.groupValues[1].trim()
+            if (path.isNotBlank()) {
+                subplans.add(path)
             }
-            i++
         }
-        return subplans
+        
+        // Then look for regular markdown links that might be subplans
+        val linkPattern = Regex("""\[.*?\]\((.*?)(?:\s.*?)?\)""")
+        linkPattern.findAll(content).forEach { match ->
+            val path = match.groupValues[1].trim()
+            if (path.isNotBlank() && path.endsWith(".md") && !path.endsWith("_checklist.md")) {
+                subplans.add(path)
+            }
+        }
+        
+        return subplans.distinct()
     }
 
     private fun parseContextYaml(contextFile: File): List<FileData> =
