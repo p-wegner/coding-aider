@@ -21,7 +21,13 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
                 if (customProvider != null) {
                     // Handle model name based on provider type
                     add("--model")
-                    add(customProvider.prefixedModelName)
+                    // Use prefixedModelName only if not already prefixed
+                    val modelName = if (customProvider.modelName.startsWith("${customProvider.type.modelNamePrefix}/")) {
+                        customProvider.modelName
+                    } else {
+                        customProvider.prefixedModelName
+                    }
+                    add(modelName)
                     
                     // Add base URL for providers that require it
                     if (customProvider.type.requiresBaseUrl && customProvider.baseUrl.isNotEmpty()) {

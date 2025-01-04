@@ -14,8 +14,8 @@
 
 ## Command Generation
 - [x] Update AiderExecutionStrategy to handle API key optional providers
-- [ ] Ensure proper model name formatting in command generation
+- [x] Ensure proper model name formatting in command generation
 
 ## Documentation
-- [ ] Update settings documentation with API key optional providers
+- [x] Update settings documentation with API key optional providers
 
