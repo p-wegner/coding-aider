@@ -6,7 +6,8 @@ enum class LlmProviderType(
     val requiresBaseUrl: Boolean = false,
     val modelNamePrefix: String,
     val exampleModels: String,
-    val authType: AuthType = AuthType.API_KEY
+    val authType: AuthType = AuthType.API_KEY,
+    val requiresModelPrefix: Boolean = true
 ) {
     OPENAI(
         "OpenAI", requiresApiKey = true, requiresBaseUrl = true, "openai",
@@ -22,9 +23,13 @@ enum class LlmProviderType(
         "Examples: anthropic/claude-3.5-sonnet, openai/gpt-4o, qwen/qwen-2.5-coder-32b-instruct"
     ),
     VERTEX_EXPERIMENTAL(
-        "Vertex AI", requiresApiKey = false, requiresBaseUrl = false, "vertex_ai",
-        "Examples: claude-3-sonnet@latest, gemini-pro@latest, claude-3-opus@latest",
-        authType = AuthType.GCLOUD
+        "Vertex AI", 
+        requiresApiKey = false, 
+        requiresBaseUrl = false, 
+        modelNamePrefix = "vertex_ai",
+        exampleModels = "Examples: claude-3-sonnet@latest, gemini-pro@latest, claude-3-opus@latest",
+        authType = AuthType.GCLOUD,
+        requiresModelPrefix = false  // Vertex AI doesn't use model prefixes
     );
 
     enum class AuthType {

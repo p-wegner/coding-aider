@@ -12,6 +12,9 @@ data class CustomLlmProvider(
 ) {
     val prefixedModelName: String
         get() {
+            // Don't add prefix for providers that don't use it
+            if (!type.requiresModelPrefix) return modelName
+            // Don't duplicate prefix
             if (modelName.startsWith("${type.modelNamePrefix}/")) return modelName
             return "${type.modelNamePrefix}/${modelName}"
         }

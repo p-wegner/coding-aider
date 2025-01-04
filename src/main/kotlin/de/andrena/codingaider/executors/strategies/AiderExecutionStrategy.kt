@@ -21,18 +21,20 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
                 if (customProvider != null) {
                     // Handle model name based on provider type
                     add("--model")
-                    // Use prefixedModelName only if not already prefixed
-                    val modelName = if (customProvider.modelName.startsWith("${customProvider.type.modelNamePrefix}/")) {
-                        customProvider.modelName
+                    // Handle model name based on provider type
+                    val modelName = customProvider.modelName
+                    // Only add prefix if needed and not already prefixed
+                    val prefixedModelName = if (!modelName.startsWith("${customProvider.type.modelNamePrefix}/")) {
+                        "${customProvider.type.modelNamePrefix}/$modelName"
                     } else {
-                        customProvider.prefixedModelName
+                        modelName
                     }
                     add(modelName)
                     
                     // Add base URL for providers that require it
                     if (customProvider.type.requiresBaseUrl && customProvider.baseUrl.isNotEmpty()) {
                         add("--base-url")
-                        add(customProvider.baseUrl)
+                        add(customProvider.baseUrl.trimEnd('/'))  // Ensure no trailing slash
                     }
                 } else {
                     if (commandData.llm.startsWith("--")) {
