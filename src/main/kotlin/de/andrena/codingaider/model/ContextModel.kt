@@ -16,9 +16,24 @@ object ContextFileHandler {
     fun readContextFile(contextFile: File, projectBasePath: String): List<FileData> {
         return try {
             val yamlData: ContextYamlData = objectMapper.readValue(contextFile)
-            yamlData.files.map {
-                // TODO: handle all types of file paths (relative, absolute)
-                FileData(File(projectBasePath, it.path).canonicalPath, it.readOnly)
+            yamlData.files.mapNotNull {
+                try {
+                    val file = if (File(it.path).isAbsolute) {
+                        File(it.path)
+                    } else {
+                        File(projectBasePath, it.path)
+                    }.canonicalFile
+                    
+                    if (!file.exists()) {
+                        println("Warning: File ${file.path} from context ${contextFile.name} does not exist")
+                        null
+                    } else {
+                        FileData(file.canonicalPath, it.readOnly)
+                    }
+                } catch (e: Exception) {
+                    println("Error processing file path ${it.path} from context ${contextFile.name}: ${e.message}")
+                    null
+                }
             }
         } catch (e: Exception) {
             println("Error parsing context yaml ${contextFile.name}: ${e.message}")
@@ -28,11 +43,23 @@ object ContextFileHandler {
 
     fun writeContextFile(contextFile: File, files: List<FileData>, projectBasePath: String) {
         val yamlData = ContextYamlData(
-            files = files.map { file ->
-                ContextYamlFile(
-                    path = File(file.filePath).relativeTo(File(projectBasePath)).path.replace('\\', '/'),
-                    readOnly = file.isReadOnly
-                )
+            files = files.mapNotNull { file ->
+                try {
+                    val filePath = File(file.filePath)
+                    val relativePath = if (filePath.isAbsolute) {
+                        filePath.relativeTo(File(projectBasePath)).path
+                    } else {
+                        filePath.path
+                    }.replace('\\', '/')
+                    
+                    ContextYamlFile(
+                        path = relativePath,
+                        readOnly = file.isReadOnly
+                    )
+                } catch (e: Exception) {
+                    println("Error processing file path ${file.filePath} for context ${contextFile.name}: ${e.message}")
+                    null
+                }
             }
         )
         objectMapper.writeValue(contextFile, yamlData)
