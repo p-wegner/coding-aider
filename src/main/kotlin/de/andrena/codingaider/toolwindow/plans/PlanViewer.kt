@@ -118,25 +118,31 @@ class PlanViewer(private val project: Project) {
 
     private fun animateTreeExpansion(plan: AiderPlan, planId: String) {
         val isExpanding = !expandedPlans.contains(planId)
-        val timer = Timer(16, null) // Smoother animation with 60fps timing
+        val timer = Timer(12, null) // Faster animation (approximately 83fps)
         var progress = 0
-        val steps = 8 // More animation steps for smoother transition
+        val steps = 12 // More steps for smoother animation
+        val easingFactor = 0.3f // Add easing for smoother animation
+
+        fun easeInOutQuad(t: Float): Float {
+            return if (t < 0.5f) 2 * t * t else -1 + (4 - 2 * t) * t
+        }
 
         timer.addActionListener { e ->
             progress++
             if (progress <= steps) {
+                val normalizedProgress = progress.toFloat() / steps
+                val easedProgress = easeInOutQuad(normalizedProgress)
+                
                 if (isExpanding) {
-                    // Gradually show children
                     expandedPlans.add(planId)
                     updatePlansWithAnimation(
                         project.getService(AiderPlanService::class.java).getAiderPlans(),
-                        progress.toFloat() / steps
+                        easedProgress
                     )
                 } else {
-                    // Gradually hide children
                     updatePlansWithAnimation(
                         project.getService(AiderPlanService::class.java).getAiderPlans(),
-                        (steps - progress).toFloat() / steps
+                        1 - easedProgress
                     )
                 }
             } else {
@@ -243,7 +249,7 @@ class PlanViewer(private val project: Project) {
                 val planFile = value.planFiles.firstOrNull()
                 val fileName = planFile?.filePath?.let { File(it).nameWithoutExtension } ?: "Unknown Plan"
 
-                // Calculate tree structure with enhanced visual representation
+                // Calculate tree structure with improved visual representation
                 val treePrefix = buildString {
                     val ancestors = value.getAncestors()
                     val maxDepth = 8 // Maximum recommended nesting depth
@@ -253,11 +259,11 @@ class PlanViewer(private val project: Project) {
                         val hasNextSibling = ancestor.findSiblingPlans().any { sibling ->
                             sibling.mainPlanFile?.filePath?.compareTo(ancestor.mainPlanFile?.filePath ?: "") ?: 0 > 0
                         }
-                        val isLastAncestor = index == ancestors.lastIndex
+                        val isLastInChain = ancestor.parentPlan?.childPlans?.lastOrNull() == ancestor
                         val lineChar = when {
-                            index >= maxDepth - 1 -> if (hasNextSibling) "│" else " "  // Vertical line for deep nesting
-                            hasNextSibling -> "│" // Vertical line for siblings
-                            else -> " "    // Space for no siblings
+                            !hasNextSibling && isLastInChain -> " "    // No line needed
+                            index >= maxDepth - 1 -> "│" // Vertical line for deep nesting
+                            else -> "│" // Standard vertical line
                         }
                         append("$lineChar   ")
                     }
@@ -266,15 +272,14 @@ class PlanViewer(private val project: Project) {
                     val hasChildren = value.childPlans.isNotEmpty()
                     val isExpanded = expandedPlans.contains(value.mainPlanFile?.filePath)
 
-                    // Add current node connector
+                    // Add current node connector with improved visibility
                     append(when {
-                        isLastChild -> "└"
-                        else -> "├"
+                        isLastChild -> "└──"
+                        else -> "├──"
                     })
-                    append(when {
-                        hasChildren -> if (isExpanded) "▾─" else "▸─"
-                        else -> "──"
-                    })
+                    if (hasChildren) {
+                        append(if (isExpanded) "▼" else "▶")
+                    }
                     append(" ")
                 }
 
