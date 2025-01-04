@@ -18,9 +18,4 @@
 
 ## Documentation
 - [ ] Update settings documentation with API key optional providers
-- [ ] Add examples for different provider configurations
 
-## Testing
-- [ ] Test provider creation without API keys
-- [ ] Verify command generation with custom providers
-- [ ] Test UI behavior with different provider types
