@@ -17,6 +17,7 @@ object ContextFileHandler {
         return try {
             val yamlData: ContextYamlData = objectMapper.readValue(contextFile)
             yamlData.files.map {
+                // TODO: handle all types of file paths (relative, absolute)
                 FileData(File(projectBasePath, it.path).canonicalPath, it.readOnly)
             }
         } catch (e: Exception) {
