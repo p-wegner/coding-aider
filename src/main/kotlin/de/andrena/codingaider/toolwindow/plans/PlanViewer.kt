@@ -255,9 +255,9 @@ class PlanViewer(private val project: Project) {
                         }
                         val isLastAncestor = index == ancestors.lastIndex
                         val lineChar = when {
-                            index >= maxDepth - 1 -> if (hasNextSibling) "│" else " "  // Thin line for deep nesting
-                            hasNextSibling -> "│" // Consistent vertical line
-                            else -> " "    // Empty space for no siblings
+                            index >= maxDepth - 1 -> if (hasNextSibling) "│" else " "  // Vertical line for deep nesting
+                            hasNextSibling -> "│" // Vertical line for siblings
+                            else -> " "    // Space for no siblings
                         }
                         append("$lineChar   ")
                     }
@@ -272,7 +272,7 @@ class PlanViewer(private val project: Project) {
                         else -> "├"
                     })
                     append(when {
-                        hasChildren -> if (isExpanded) "v-" else ">-"
+                        hasChildren -> if (isExpanded) "▾─" else "▸─"
                         else -> "──"
                     })
                     append(" ")
