@@ -230,39 +230,40 @@ class AiderPlanService(private val project: Project) {
             .toList()
 
         // Create a map to track all plans by their path
-        val plansMap = allPlans.associateBy { it.mainPlanFile?.filePath ?: "" }.toMutableMap()
-
-        // Create a set to track root plans
-        val rootPlans = mutableSetOf<AiderPlan>()
-
-        // Process each plan to establish parent-child relationships
+        val plansMap = mutableMapOf<String, AiderPlan>()
+        
+        // First pass: Create all plans without relationships
+        allPlans.forEach { plan ->
+            plansMap[plan.mainPlanFile?.filePath ?: ""] = plan
+        }
+        
+        // Second pass: Establish parent-child relationships
         allPlans.forEach { plan ->
             val content = File(plan.mainPlanFile?.filePath ?: "").readText()
             val references = extractSubplanReferences(content)
-
-            references.forEach { referencePath ->
-                val referencedPlan = plansMap[File(plansDir, referencePath).absolutePath]
-                referencedPlan?.let { childPlan ->
-                    // Update the child plan with its parent
-                    val updatedChildPlan = childPlan.copy(parentPlan = plan)
-                    plansMap[childPlan.mainPlanFile?.filePath ?: ""] = updatedChildPlan
-
-                    // Update the parent plan with its children
-                    val updatedParentPlan = plan.copy(
-                        childPlans = plan.childPlans + updatedChildPlan
-                    )
-                    plansMap[plan.mainPlanFile?.filePath ?: ""] = updatedParentPlan
+            
+            val childPlans = references.mapNotNull { referencePath ->
+                val absolutePath = File(plansDir, referencePath).absolutePath
+                plansMap[absolutePath]?.let { childPlan ->
+                    childPlan.copy(parentPlan = plan)
                 }
             }
-
-            // If this plan has no parent, it's a root plan
-            if (plan.parentPlan == null) {
-                rootPlans.add(plan)
+            
+            if (childPlans.isNotEmpty()) {
+                // Update the parent plan with its children
+                plansMap[plan.mainPlanFile?.filePath ?: ""] = plan.copy(
+                    childPlans = childPlans
+                )
+                
+                // Update each child plan in the map
+                childPlans.forEach { childPlan ->
+                    plansMap[childPlan.mainPlanFile?.filePath ?: ""] = childPlan
+                }
             }
         }
-
-        // Return only root plans
-        return rootPlans.toList()
+        
+        // Return only root plans (those without parents)
+        return plansMap.values.filter { it.parentPlan == null }
     }
 
 

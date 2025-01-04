@@ -161,19 +161,24 @@ class PlanViewer(private val project: Project) {
 
     private fun updatePlansWithAnimation(plans: List<AiderPlan>, animationProgress: Float = 1f) {
         plansListModel.clear()
+        
+        // Only process root plans (those without parents)
+        val rootPlans = plans.filter { it.parentPlan == null }
+        
         fun addPlanAndChildren(plan: AiderPlan) {
             plansListModel.addElement(plan)
             if (expandedPlans.contains(plan.mainPlanFile?.filePath)) {
                 plan.childPlans.forEach { childPlan ->
                     // Apply animation progress to child indentation
                     val animatedPlan = childPlan.copy(
-                        depth = (childPlan.depth * animationProgress).toInt()
+                        depth = ((childPlan.depth) * animationProgress).toInt()
                     )
                     addPlanAndChildren(animatedPlan)
                 }
             }
         }
-        plans.forEach { plan -> addPlanAndChildren(plan) }
+        
+        rootPlans.forEach { plan -> addPlanAndChildren(plan) }
     }
 
     class PlanListCellRenderer(
