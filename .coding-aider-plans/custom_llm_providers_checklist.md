@@ -4,7 +4,7 @@
 
 ## Provider System Updates
 - [x] Update LlmProviderType to support API key optional providers
-- [ ] Modify CustomLlmProvider to handle API key optional status
+- [x] Modify CustomLlmProvider to handle API key optional status
 - [ ] Update model name handling in CustomLlmProvider
 
 ## UI Changes

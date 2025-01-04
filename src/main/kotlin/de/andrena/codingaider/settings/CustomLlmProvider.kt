@@ -15,4 +15,16 @@ data class CustomLlmProvider(
             if (modelName.startsWith("${type.modelNamePrefix}/")) return modelName
             return "${type.modelNamePrefix}/${modelName}"
         }
+
+    val requiresApiKey: Boolean
+        get() = type.requiresApiKey
+
+    val requiresBaseUrl: Boolean
+        get() = type.requiresBaseUrl
+
+    val requiresAuthentication: Boolean
+        get() = type.requiresAuthentication()
+
+    val apiKeyName: String
+        get() = type.getApiKeyName()
 }
