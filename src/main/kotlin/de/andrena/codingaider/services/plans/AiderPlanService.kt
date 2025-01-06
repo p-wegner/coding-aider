@@ -242,23 +242,23 @@ class AiderPlanService(private val project: Project) {
             val content = File(plan.mainPlanFile?.filePath ?: "").readText()
             val references = extractSubplanReferences(content)
             
+            // Get all referenced plans as children, regardless of whether they have their own subplans
             val childPlans = references.mapNotNull { referencePath ->
                 val absolutePath = File(plansDir, referencePath).absolutePath
                 plansMap[absolutePath]?.let { childPlan ->
+                    // Create a new copy of the child plan with this plan as its parent
                     childPlan.copy(parentPlan = plan)
                 }
             }
             
-            if (childPlans.isNotEmpty()) {
-                // Update the parent plan with its children
-                plansMap[plan.mainPlanFile?.filePath ?: ""] = plan.copy(
-                    childPlans = childPlans
-                )
-                
-                // Update each child plan in the map
-                childPlans.forEach { childPlan ->
-                    plansMap[childPlan.mainPlanFile?.filePath ?: ""] = childPlan
-                }
+            // Always update the plan with its children, even if the children list is empty
+            plansMap[plan.mainPlanFile?.filePath ?: ""] = plan.copy(
+                childPlans = childPlans
+            )
+            
+            // Update each child plan in the map with its parent reference
+            childPlans.forEach { childPlan ->
+                plansMap[childPlan.mainPlanFile?.filePath ?: ""] = childPlan
             }
         }
         
