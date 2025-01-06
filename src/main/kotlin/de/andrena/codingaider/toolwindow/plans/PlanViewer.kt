@@ -190,7 +190,6 @@ class PlanViewer(private val project: Project) {
         private val countLabel = JLabel()
         private val leftPanel = JPanel(FlowLayout(FlowLayout.LEFT, 4, 0))
         private val treeIndentWidth = 20
-        private val maxVisibleDepth = 8 // Maximum visible depth before collapsing
 
         init {
             isOpaque = true
@@ -261,64 +260,38 @@ class PlanViewer(private val project: Project) {
                     
                     // Draw connecting lines for ancestors
                     ancestors.forEachIndexed { index, ancestor ->
+                        // Check if this ancestor has siblings after it
                         val hasNextSibling = ancestor.findSiblingPlans().any { sibling ->
                             sibling.mainPlanFile?.filePath?.compareTo(ancestor.mainPlanFile?.filePath ?: "") ?: 0 > 0
                         }
                         
-                        // Determine line character based on position in hierarchy
-                        val lineChar = when {
-                            index >= maxVisibleDepth - 1 -> "│" // Vertical line for deep nesting
-                            hasNextSibling -> "│" // Vertical line when there are siblings
-                            else -> " " // Space when no siblings
-                        }
-                        append("$lineChar   ")
+                        // Draw vertical line if there are siblings after this ancestor
+                        append(if (hasNextSibling) "│   " else "    ")
                     }
 
                     val isLastChild = value.parentPlan?.childPlans?.lastOrNull() == value
                     val hasChildren = value.childPlans.isNotEmpty()
                     val isExpanded = expandedPlans.contains(value.mainPlanFile?.filePath)
                     
-                    // Handle deep nesting with visual indicator
-                    if (depth >= maxVisibleDepth) {
-                        append("└─⋯─") // Ellipsis indicator for deep nesting
-                    } else {
-                        // Add current node connector
-                        append(when {
-                            isLastChild -> "└──"
-                            else -> "├──"
-                        })
-                        // Add expand/collapse indicator
-                        if (hasChildren) {
-                            append(if (isExpanded) "▼" else "▶")
-                        }
+                    // Add current node connector
+                    append(when {
+                        isLastChild -> "└──"
+                        else -> "├──"
+                    })
+                    
+                    // Add expand/collapse indicator
+                    if (hasChildren) {
+                        append(if (isExpanded) "▼" else "▶")
                     }
                     append(" ")
                 }
 
-                // Calculate indentation with depth limit
+                // Calculate indentation based on depth
                 val baseIndent = 4
-                val effectiveDepth = minOf(value.depth, maxVisibleDepth)
-                val depthIndent = effectiveDepth * treeIndentWidth
+                val depthIndent = value.depth * treeIndentWidth
                 
-                // Add subtle gradient for deep nesting
-                val bgColor = if (isSelected) list?.selectionBackground else list?.background
-                val depthColor = if (effectiveDepth > 0) {
-                    val factor = 0.95f - (0.05f * effectiveDepth)
-                    JBColor(
-                        Color(
-                            (bgColor!!.red * factor).toInt(),
-                            (bgColor!!.green * factor).toInt(),
-                            (bgColor!!.blue * factor).toInt()
-                        ),
-                        Color(
-                            (bgColor!!.red * factor * 0.8f).toInt(),
-                            (bgColor!!.green * factor * 0.8f).toInt(),
-                            (bgColor!!.blue * factor * 0.8f).toInt()
-                        )
-                    )
-                } else bgColor
-                
-                background = depthColor
+                // Use standard background color for all levels
+                background = if (isSelected) list?.selectionBackground else list?.background
                 border = BorderFactory.createEmptyBorder(2, baseIndent + depthIndent, 2, 4)
 
                 // Set label text with tree prefix and plan name
