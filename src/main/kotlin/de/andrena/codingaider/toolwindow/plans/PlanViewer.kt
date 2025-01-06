@@ -162,23 +162,41 @@ class PlanViewer(private val project: Project) {
     private fun updatePlansWithAnimation(plans: List<AiderPlan>, animationProgress: Float = 1f) {
         plansListModel.clear()
         
-        // Only process root plans (those without parents)
-        val rootPlans = plans.filter { it.parentPlan == null }
+        // Create a map of all plans by their path
+        val plansMap = mutableMapOf<String, AiderPlan>()
+        plans.forEach { plan ->
+            plansMap[plan.mainPlanFile?.filePath ?: ""] = plan
+        }
         
-        fun addPlanAndChildren(plan: AiderPlan) {
-            plansListModel.addElement(plan)
-            if (expandedPlans.contains(plan.mainPlanFile?.filePath)) {
-                plan.childPlans.forEach { childPlan ->
-                    // Apply animation progress to child indentation
-                    val animatedPlan = childPlan.copy(
-                        depth = ((childPlan.depth) * animationProgress).toInt()
-                    )
-                    addPlanAndChildren(animatedPlan)
+        // Find true root plans (plans that aren't referenced as subplans by any other plan)
+        val rootPlans = plans.filter { plan ->
+            !plans.any { otherPlan ->
+                otherPlan.childPlans.any { childPlan -> 
+                    childPlan.mainPlanFile?.filePath == plan.mainPlanFile?.filePath
                 }
             }
         }
         
-        rootPlans.forEach { plan -> addPlanAndChildren(plan) }
+        // Recursive function to add plans with proper hierarchy
+        fun addPlanAndChildren(plan: AiderPlan, depth: Int = 0) {
+            // Create a copy with correct depth
+            val planWithDepth = plan.copy(depth = depth)
+            plansListModel.addElement(planWithDepth)
+            
+            // If expanded, add children with increased depth
+            if (expandedPlans.contains(plan.mainPlanFile?.filePath)) {
+                plan.childPlans.forEach { childPlan ->
+                    // Find the full child plan from the map to ensure we have all its children
+                    val fullChildPlan = plansMap[childPlan.mainPlanFile?.filePath ?: ""] ?: return@forEach
+                    addPlanAndChildren(fullChildPlan, depth + 1)
+                }
+            }
+        }
+        
+        // Add all root plans and their hierarchies
+        rootPlans.forEach { plan -> 
+            addPlanAndChildren(plan)
+        }
     }
 
     class PlanListCellRenderer(
@@ -256,10 +274,9 @@ class PlanViewer(private val project: Project) {
                 // Calculate tree structure with proper hierarchy visualization
                 val treePrefix = buildString {
                     val ancestors = value.getAncestors()
-                    val depth = value.depth
                     
                     // Draw connecting lines for ancestors
-                    ancestors.forEachIndexed { index, ancestor ->
+                    ancestors.forEach { ancestor ->
                         // Check if this ancestor has siblings after it
                         val hasNextSibling = ancestor.findSiblingPlans().any { sibling ->
                             sibling.mainPlanFile?.filePath?.compareTo(ancestor.mainPlanFile?.filePath ?: "") ?: 0 > 0

@@ -72,7 +72,18 @@ data class AiderPlan(
     }
 
     fun getAncestors(): List<AiderPlan> {
-        return generateSequence(parentPlan) { it.parentPlan }.toList()
+        val ancestors = mutableListOf<AiderPlan>()
+        var current = parentPlan
+        while (current != null) {
+            ancestors.add(current)
+            current = current.parentPlan
+        }
+        return ancestors
+    }
+
+    fun isRootPlan(): Boolean {
+        return parentPlan == null && 
+            !getAllChildPlans().any { it.childPlans.any { child -> child.mainPlanFile?.filePath == mainPlanFile?.filePath } }
     }
 
     fun isDescendantOf(otherPlan: AiderPlan): Boolean {
