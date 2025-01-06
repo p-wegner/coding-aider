@@ -92,13 +92,15 @@ class PlanViewer(private val project: Project) {
                             val planId = plan.mainPlanFile?.filePath ?: return
 
                             // Calculate click areas
+                            // Calculate click area for expand/collapse
                             val depth = plan.depth
                             val indentWidth = 20
                             val iconWidth = 16
                             val treeAreaWidth = (depth * indentWidth) + iconWidth
+                            val expandClickWidth = treeAreaWidth + 24
 
                             // Check if click was in the expand/collapse icon area
-                            if (e.x < treeAreaWidth + 24 && plan.childPlans.isNotEmpty()) {
+                            if (e.x < expandClickWidth && plan.childPlans.isNotEmpty()) {
                                 animateTreeExpansion(plan, planId)
                             } else if (e.clickCount == 2) {
                                 // Double click to open plan file
