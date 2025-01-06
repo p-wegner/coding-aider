@@ -191,7 +191,7 @@ class PlanViewer(private val project: Project) {
                     // Find the full child plan from the map to ensure we have all its children
                     val fullChildPlan = plansMap[childPlan.mainPlanFile?.filePath ?: ""] ?: return@forEach
                     
-                    // Always add the child plan, even if it has no children
+                    // Add the child plan and its children recursively
                     addPlanAndChildren(fullChildPlan, depth + 1)
                 }
             }
