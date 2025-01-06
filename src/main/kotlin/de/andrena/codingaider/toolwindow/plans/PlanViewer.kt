@@ -185,13 +185,13 @@ class PlanViewer(private val project: Project) {
             val planWithDepth = plan.copy(depth = depth)
             plansListModel.addElement(planWithDepth)
             
-            // If expanded, add children with increased depth
+            // If expanded, add all children regardless of whether they have subplans
             if (expandedPlans.contains(plan.mainPlanFile?.filePath)) {
                 plan.childPlans.forEach { childPlan ->
                     // Find the full child plan from the map to ensure we have all its children
                     val fullChildPlan = plansMap[childPlan.mainPlanFile?.filePath ?: ""] ?: return@forEach
                     
-                    // Recursively add all descendants regardless of whether they have children
+                    // Always add the child plan, even if it has no children
                     addPlanAndChildren(fullChildPlan, depth + 1)
                 }
             }
