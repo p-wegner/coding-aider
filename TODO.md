@@ -1,6 +1,6 @@
 - [ ] BUG: Fix duplicate files in context view (normalization issues or duplicate logic to add files)
-- [ ] BUG: parsing two subplans fails => not properly displayed in toolwindow
-- [ ] archive plan => new feature to move all plan files of the selected plan to the .coding-aider-plans-finished folder
+- [x] BUG: parsing two subplans fails => not properly displayed in toolwindow
+- [x] archive plan => new feature to move all plan files of the selected plan to the .coding-aider-plans-finished folder
 - [x] BUG?: llm selection in aider input dialog changes settings (it should only be temporary)
 - [ ] BUG: plan step finished => new aider action started before dialog is closed
 - [ ] Feature: Add option to create api-key-free custom provider (i.e. model shortcut only will use api keys from aider configs)
@@ -9,3 +9,4 @@
 - [ ] Feature: plan system prompt improved testing strategy and feedback mechanism for the llm
 - [x] BUG: Create plan file from toolwindow does not consider persistent files+
 - [x] context file edit in plan fails to detect files
+- [ ] arbitrary hierarchy depth in planviewer
