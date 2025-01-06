@@ -191,7 +191,7 @@ class PlanViewer(private val project: Project) {
                     // Find the full child plan from the map to ensure we have all its children
                     val fullChildPlan = plansMap[childPlan.mainPlanFile?.filePath ?: ""] ?: return@forEach
                     
-                    // Recursively add all descendants
+                    // Recursively add all descendants regardless of whether they have children
                     addPlanAndChildren(fullChildPlan, depth + 1)
                 }
             }
@@ -201,6 +201,9 @@ class PlanViewer(private val project: Project) {
         rootPlans.forEach { plan -> 
             addPlanAndChildren(plan)
         }
+        
+        // Ensure proper tree structure visualization
+        plansList.cellRenderer = PlanListCellRenderer(false, expandedPlans)
         
         // Ensure proper tree structure visualization
         plansList.cellRenderer = PlanListCellRenderer(false, expandedPlans)
