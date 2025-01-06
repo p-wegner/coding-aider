@@ -304,11 +304,17 @@ class PlanViewer(private val project: Project) {
                 val bgColor = if (isSelected) list?.selectionBackground else list?.background
                 val depthColor = if (effectiveDepth > 0) {
                     val factor = 0.95f - (0.05f * effectiveDepth)
-                    // Todo: use JBColor and support theming
-                    Color(
-                        (bgColor!!.red * factor).toInt(),
-                        (bgColor!!.green * factor).toInt(),
-                        (bgColor!!.blue * factor).toInt()
+                    JBColor(
+                        Color(
+                            (bgColor!!.red * factor).toInt(),
+                            (bgColor!!.green * factor).toInt(),
+                            (bgColor!!.blue * factor).toInt()
+                        ),
+                        Color(
+                            (bgColor!!.red * factor * 0.8f).toInt(),
+                            (bgColor!!.green * factor * 0.8f).toInt(),
+                            (bgColor!!.blue * factor * 0.8f).toInt()
+                        )
                     )
                 } else bgColor
                 
