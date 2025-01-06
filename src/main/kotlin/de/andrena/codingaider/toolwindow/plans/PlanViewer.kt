@@ -189,7 +189,8 @@ class PlanViewer(private val project: Project) {
         private val statusIcon = JLabel()
         private val countLabel = JLabel()
         private val leftPanel = JPanel(FlowLayout(FlowLayout.LEFT, 4, 0))
-        private val treeIndentWidth = 20 // Increased indent width for better readability
+        private val treeIndentWidth = 20
+        private val maxVisibleDepth = 8 // Maximum visible depth before collapsing
 
         init {
             isOpaque = true
@@ -253,21 +254,22 @@ class PlanViewer(private val project: Project) {
                 val planFile = value.planFiles.firstOrNull()
                 val fileName = planFile?.filePath?.let { File(it).nameWithoutExtension } ?: "Unknown Plan"
 
-                // Calculate tree structure with improved visual representation
+                // Calculate tree structure with proper hierarchy visualization
                 val treePrefix = buildString {
                     val ancestors = value.getAncestors()
-                    val maxDepth = 8 // Maximum recommended nesting depth
-
+                    val depth = value.depth
+                    
                     // Draw connecting lines for ancestors
                     ancestors.forEachIndexed { index, ancestor ->
                         val hasNextSibling = ancestor.findSiblingPlans().any { sibling ->
                             sibling.mainPlanFile?.filePath?.compareTo(ancestor.mainPlanFile?.filePath ?: "") ?: 0 > 0
                         }
-                        val isLastInChain = ancestor.parentPlan?.childPlans?.lastOrNull() == ancestor
+                        
+                        // Determine line character based on position in hierarchy
                         val lineChar = when {
-                            !hasNextSibling && isLastInChain -> " "    // No line needed
-                            index >= maxDepth - 1 -> "│" // Vertical line for deep nesting
-                            else -> "│" // Standard vertical line
+                            index >= maxVisibleDepth - 1 -> "│" // Vertical line for deep nesting
+                            hasNextSibling -> "│" // Vertical line when there are siblings
+                            else -> " " // Space when no siblings
                         }
                         append("$lineChar   ")
                     }
@@ -275,21 +277,41 @@ class PlanViewer(private val project: Project) {
                     val isLastChild = value.parentPlan?.childPlans?.lastOrNull() == value
                     val hasChildren = value.childPlans.isNotEmpty()
                     val isExpanded = expandedPlans.contains(value.mainPlanFile?.filePath)
-
-                    // Add current node connector with improved visibility
-                    append(when {
-                        isLastChild -> "└──"
-                        else -> "├──"
-                    })
-                    if (hasChildren) {
-                        append(if (isExpanded) "▼" else "▶")
+                    
+                    // Handle deep nesting with visual indicator
+                    if (depth >= maxVisibleDepth) {
+                        append("└─⋯─") // Ellipsis indicator for deep nesting
+                    } else {
+                        // Add current node connector
+                        append(when {
+                            isLastChild -> "└──"
+                            else -> "├──"
+                        })
+                        // Add expand/collapse indicator
+                        if (hasChildren) {
+                            append(if (isExpanded) "▼" else "▶")
+                        }
                     }
                     append(" ")
                 }
 
-                // Set consistent tree-like indentation
+                // Calculate indentation with depth limit
                 val baseIndent = 4
-                val depthIndent = value.depth * treeIndentWidth
+                val effectiveDepth = minOf(value.depth, maxVisibleDepth)
+                val depthIndent = effectiveDepth * treeIndentWidth
+                
+                // Add subtle gradient for deep nesting
+                val bgColor = if (isSelected) list?.selectionBackground else list?.background
+                val depthColor = if (effectiveDepth > 0) {
+                    val factor = 0.95f - (0.05f * effectiveDepth)
+                    Color(
+                        (bgColor.red * factor).toInt(),
+                        (bgColor.green * factor).toInt(),
+                        (bgColor.blue * factor).toInt()
+                    )
+                } else bgColor
+                
+                background = depthColor
                 border = BorderFactory.createEmptyBorder(2, baseIndent + depthIndent, 2, 4)
 
                 // Set label text with tree prefix and plan name
