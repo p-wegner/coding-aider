@@ -282,19 +282,7 @@ class PlanViewer(private val project: Project) {
                 val treePrefix = buildString {
                     val ancestors = value.getAncestors()
                     
-                    // Draw connecting lines for ancestors
-                    ancestors.forEach { ancestor ->
-                        // Check if this ancestor has siblings after it
-                        val hasNextSibling = ancestor.findSiblingPlans().any { sibling ->
-                            sibling.mainPlanFile?.filePath?.compareTo(ancestor.mainPlanFile?.filePath ?: "") ?: 0 > 0
-                        }
-                        
-                        // Draw vertical line if there are siblings after this ancestor
-                        append(if (hasNextSibling) "│   " else "    ")
-                    }
-
                     // Draw tree structure
-                    val ancestors = value.getAncestors()
                     val hasChildren = value.childPlans.isNotEmpty()
                     val isExpanded = expandedPlans.contains(value.mainPlanFile?.filePath)
                     
