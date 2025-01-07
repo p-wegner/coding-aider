@@ -66,6 +66,13 @@ class PlanViewer(private val project: Project) {
                     if (selectedPlan.childPlans.isNotEmpty() && !expandedPlans.contains(planId)) {
                         expandedPlans.add(planId)
                         updatePlans(project.getService(AiderPlanService::class.java).getAiderPlans())
+                        
+                        // Adjust list height after expansion
+                        val visibleRowCount = minOf(plansListModel.size(), 10) // Show max 10 rows
+                        plansList.visibleRowCount = visibleRowCount
+                        (plansList.parent as? JViewport)?.preferredSize = plansList.preferredSize
+                        plansList.revalidate()
+                        plansList.repaint()
                     }
                 }
             })
@@ -123,6 +130,17 @@ class PlanViewer(private val project: Project) {
         val timer = Timer(12, null) // Faster animation (approximately 83fps)
         var progress = 0
         val steps = 12 // More steps for smoother animation
+        
+        // Store initial height for animation
+        val initialHeight = plansList.preferredSize.height
+        val targetHeight = if (isExpanding) {
+            // Calculate target height based on number of visible items
+            val visibleRowCount = minOf(plansListModel.size() + plan.childPlans.size, 10)
+            plansList.visibleRowCount = visibleRowCount
+            plansList.preferredSize.height
+        } else {
+            initialHeight - (plan.childPlans.size * plansList.fixedCellHeight)
+        }
 
         fun easeInOutQuad(t: Float): Float {
             return if (t < 0.5f) 2 * t * t else -1 + (4 - 2 * t) * t
@@ -151,6 +169,13 @@ class PlanViewer(private val project: Project) {
                     expandedPlans.remove(planId)
                     updatePlansWithAnimation(project.getService(AiderPlanService::class.java).getAiderPlans(), 0f)
                 }
+                
+                // Final height adjustment
+                plansList.visibleRowCount = minOf(plansListModel.size(), 10)
+                (plansList.parent as? JViewport)?.preferredSize = plansList.preferredSize
+                plansList.revalidate()
+                plansList.repaint()
+                
                 timer.stop()
             }
         }
