@@ -326,7 +326,8 @@ class PlanViewer(private val project: Project) {
             isSelected: Boolean,
             cellHasFocus: Boolean
         ): Component {
-            val isHovered = index == (list as? JBList<*>)?.selectedIndex
+            // Safeguard against invalid indices
+            val isHovered = index >= 0 && index == (list as? JBList<*>)?.selectedIndex
             val isDark = !JBColor.isBright()
             // Enhanced visual feedback for selection and hover
             background = when {
@@ -382,7 +383,12 @@ class PlanViewer(private val project: Project) {
                     
                     // Add current node connector with hover effect
                     val isHovered = value == (list as? JBList<*>)?.let { 
-                        it.model.getElementAt(it.selectedIndex) 
+                        val selectedIdx = it.selectedIndex
+                        if (selectedIdx >= 0 && selectedIdx < it.model.size) {
+                            it.model.getElementAt(selectedIdx)
+                        } else {
+                            null
+                        }
                     }
                 
                     // Add expand/collapse indicator if has children
