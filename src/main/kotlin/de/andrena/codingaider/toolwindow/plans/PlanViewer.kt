@@ -95,6 +95,45 @@ class PlanViewer(private val project: Project) {
             })
 
             addMouseListener(object : MouseAdapter() {
+                private var hoveredPlan: AiderPlan? = null
+                
+                override fun mouseMoved(e: MouseEvent) {
+                    val index = plansList.locationToIndex(e.point)
+                    if (index >= 0) {
+                        val plan = plansList.model.getElementAt(index)
+                        val planId = plan.mainPlanFile?.filePath ?: return
+                        
+                        // Calculate if mouse is over expand/collapse area
+                        val depth = plan.depth
+                        val indentWidth = 20
+                        val iconWidth = 16
+                        val treeAreaWidth = (depth * indentWidth) + iconWidth
+                        val expandClickWidth = treeAreaWidth + 24
+                        
+                        if (e.x < expandClickWidth && plan.childPlans.isNotEmpty()) {
+                            if (hoveredPlan != plan) {
+                                hoveredPlan = plan
+                                plansList.cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+                                plansList.repaint()
+                            }
+                        } else {
+                            if (hoveredPlan != null) {
+                                hoveredPlan = null
+                                plansList.cursor = Cursor.getDefaultCursor()
+                                plansList.repaint()
+                            }
+                        }
+                    }
+                }
+                
+                override fun mouseExited(e: MouseEvent) {
+                    if (hoveredPlan != null) {
+                        hoveredPlan = null
+                        plansList.cursor = Cursor.getDefaultCursor()
+                        plansList.repaint()
+                    }
+                }
+
                 override fun mouseClicked(e: MouseEvent) {
                     val index = plansList.locationToIndex(e.point)
                     if (index >= 0) {
@@ -104,7 +143,6 @@ class PlanViewer(private val project: Project) {
                             val planId = plan.mainPlanFile?.filePath ?: return
 
                             // Calculate click areas
-                            // Calculate click area for expand/collapse
                             val depth = plan.depth
                             val indentWidth = 20
                             val iconWidth = 16
@@ -342,14 +380,26 @@ class PlanViewer(private val project: Project) {
                     // Check if this is the last child in its parent's children
                     val isLastChild = value.parentPlan?.childPlans?.lastOrNull() == value
                     
-                    // Add current node connector
-                    append(if (isLastChild) "└──" else "├──")
-                    
+                    // Add current node connector with hover effect
+                    val isHovered = value == (list as? JBList<*>)?.let { 
+                        it.model.getElementAt(it.selectedIndex) 
+                    }
+                
                     // Add expand/collapse indicator if has children
                     if (hasChildren) {
-                        append(if (isExpanded) "▼" else "▶")
+                        val iconColor = if (isHovered) {
+                            if (isDark) "#64B5F6" else "#1976D2" // Blue color for hover
+                        } else {
+                            if (isDark) "#BDBDBD" else "#616161" // Gray color
+                        }
+                    
+                        append(if (isExpanded) """<font color="$iconColor">▼</font>""" 
+                               else """<font color="$iconColor">▶</font>""")
+                        append(" ")
+                    } else {
+                        append(if (isLastChild) "└──" else "├──")
+                        append(" ")
                     }
-                    append(" ")
                 }
 
                 // Calculate indentation based on depth
@@ -360,8 +410,8 @@ class PlanViewer(private val project: Project) {
                 background = if (isSelected) list?.selectionBackground else list?.background
                 border = BorderFactory.createEmptyBorder(2, baseIndent + depthIndent, 2, 4)
 
-                // Set label text with tree prefix and plan name
-                label.text = treePrefix + fileName
+                // Set label text with HTML formatting for colors
+                label.text = "<html>$treePrefix$fileName</html>"
 
                 // Ensure consistent font
                 label.font = UIManager.getFont("Tree.font")
