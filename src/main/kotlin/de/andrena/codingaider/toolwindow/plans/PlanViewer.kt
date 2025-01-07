@@ -70,7 +70,12 @@ class PlanViewer(private val project: Project) {
                         // Adjust list height after expansion
                         val visibleRowCount = minOf(plansListModel.size(), 10) // Show max 10 rows
                         plansList.visibleRowCount = visibleRowCount
-                        (plansList.parent as? JViewport)?.preferredSize = plansList.preferredSize
+                        plansList.parent?.let { parent ->
+                            parent.preferredSize = plansList.preferredSize
+                            if (parent is JViewport) {
+                                parent.viewSize = plansList.preferredSize
+                            }
+                        }
                         plansList.revalidate()
                         plansList.repaint()
                     }
@@ -172,7 +177,12 @@ class PlanViewer(private val project: Project) {
                 
                 // Final height adjustment
                 plansList.visibleRowCount = minOf(plansListModel.size(), 10)
-                (plansList.parent as? JViewport)?.preferredSize = plansList.preferredSize
+                plansList.parent?.let { parent ->
+                    parent.preferredSize = plansList.preferredSize
+                    if (parent is JViewport) {
+                        parent.viewSize = plansList.preferredSize
+                    }
+                }
                 plansList.revalidate()
                 plansList.repaint()
                 
