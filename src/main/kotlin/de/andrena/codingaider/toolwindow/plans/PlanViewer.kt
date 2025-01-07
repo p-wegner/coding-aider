@@ -179,33 +179,26 @@ class PlanViewer(private val project: Project) {
             }
         }
         
+        // Track visited plans to prevent duplicates
+        val visitedPlans = mutableSetOf<String>()
+        
         // Recursive function to add plans with proper hierarchy
         fun addPlanAndChildren(plan: AiderPlan, depth: Int = 0) {
+            val planId = plan.mainPlanFile?.filePath ?: return
+            if (planId in visitedPlans) return
+            visitedPlans.add(planId)
+            
             // Create a copy with correct depth
             val planWithDepth = plan.copy(depth = depth)
             plansListModel.addElement(planWithDepth)
             
             // If expanded, add all children and their descendants
-            if (expandedPlans.contains(plan.mainPlanFile?.filePath)) {
-                // Get all descendants in proper order
-                val allDescendants = mutableListOf<AiderPlan>()
-                val stack = ArrayDeque<AiderPlan>().apply {
-                    addAll(plan.childPlans.reversed())
-                }
-                
-                while (stack.isNotEmpty()) {
-                    val current = stack.removeLast()
-                    allDescendants.add(current)
-                    // Add children in reverse order so they come out in correct order
-                    stack.addAll(current.childPlans.reversed())
-                }
-                
-                // Add all descendants with proper depth
-                allDescendants.forEach { descendant ->
-                    val descendantDepth = depth + 1 + descendant.getAncestors().count { 
-                        it.mainPlanFile?.filePath != plan.mainPlanFile?.filePath 
+            if (expandedPlans.contains(planId)) {
+                plan.childPlans.forEach { child ->
+                    // Only add children that haven't been visited
+                    if (child.mainPlanFile?.filePath !in visitedPlans) {
+                        addPlanAndChildren(child, depth + 1)
                     }
-                    addPlanAndChildren(descendant, descendantDepth)
                 }
             }
         }
@@ -301,39 +294,22 @@ class PlanViewer(private val project: Project) {
                     // Draw tree structure
                     val hasChildren = value.childPlans.isNotEmpty()
                     val isExpanded = expandedPlans.contains(value.mainPlanFile?.filePath)
-                
+                    
                     // Draw connecting lines for ancestors
-                    ancestors.forEachIndexed { index, ancestor ->
+                    ancestors.forEach { ancestor ->
                         // Check if this ancestor has siblings after it
                         val hasNextSibling = ancestor.findSiblingPlans().any { sibling ->
                             sibling.mainPlanFile?.filePath?.compareTo(ancestor.mainPlanFile?.filePath ?: "") ?: 0 > 0
                         }
-                    
-                        // Draw vertical line if there are siblings after this ancestor
                         append(if (hasNextSibling) "│   " else "    ")
-                    
-                        // For deeper levels, check if parent ancestors have siblings
-                        if (index > 0) {
-                            val parentAncestor = ancestors.getOrNull(index - 1)
-                            if (parentAncestor != null) {
-                                val parentHasSiblings = parentAncestor.findSiblingPlans().any { sibling ->
-                                    sibling.mainPlanFile?.filePath?.compareTo(parentAncestor.mainPlanFile?.filePath ?: "") ?: 0 > 0
-                                }
-                                if (parentHasSiblings) {
-                                    append("│   ")
-                                } else {
-                                    append("    ")
-                                }
-                            }
-                        }
                     }
 
                     // Check if this is the last child in its parent's children
                     val isLastChild = value.parentPlan?.childPlans?.lastOrNull() == value
-                
+                    
                     // Add current node connector
                     append(if (isLastChild) "└──" else "├──")
-                
+                    
                     // Add expand/collapse indicator if has children
                     if (hasChildren) {
                         append(if (isExpanded) "▼" else "▶")
