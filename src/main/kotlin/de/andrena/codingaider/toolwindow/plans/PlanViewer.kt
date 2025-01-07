@@ -185,14 +185,27 @@ class PlanViewer(private val project: Project) {
             val planWithDepth = plan.copy(depth = depth)
             plansListModel.addElement(planWithDepth)
             
-            // If expanded, add all children regardless of whether they have subplans
+            // If expanded, add all children and their descendants
             if (expandedPlans.contains(plan.mainPlanFile?.filePath)) {
-                plan.childPlans.forEach { childPlan ->
-                    // Find the full child plan from the map to ensure we have all its children
-                    val fullChildPlan = plansMap[childPlan.mainPlanFile?.filePath ?: ""] ?: return@forEach
-                    
-                    // Add the child plan and its children recursively
-                    addPlanAndChildren(fullChildPlan, depth + 1)
+                // Get all descendants in proper order
+                val allDescendants = mutableListOf<AiderPlan>()
+                val stack = ArrayDeque<AiderPlan>().apply {
+                    addAll(plan.childPlans.reversed())
+                }
+                
+                while (stack.isNotEmpty()) {
+                    val current = stack.removeLast()
+                    allDescendants.add(current)
+                    // Add children in reverse order so they come out in correct order
+                    stack.addAll(current.childPlans.reversed())
+                }
+                
+                // Add all descendants with proper depth
+                allDescendants.forEach { descendant ->
+                    val descendantDepth = depth + 1 + descendant.getAncestors().count { 
+                        it.mainPlanFile?.filePath != plan.mainPlanFile?.filePath 
+                    }
+                    addPlanAndChildren(descendant, descendantDepth)
                 }
             }
         }
@@ -288,24 +301,39 @@ class PlanViewer(private val project: Project) {
                     // Draw tree structure
                     val hasChildren = value.childPlans.isNotEmpty()
                     val isExpanded = expandedPlans.contains(value.mainPlanFile?.filePath)
-                    
+                
                     // Draw connecting lines for ancestors
-                    ancestors.forEach { ancestor ->
+                    ancestors.forEachIndexed { index, ancestor ->
                         // Check if this ancestor has siblings after it
                         val hasNextSibling = ancestor.findSiblingPlans().any { sibling ->
                             sibling.mainPlanFile?.filePath?.compareTo(ancestor.mainPlanFile?.filePath ?: "") ?: 0 > 0
                         }
-                        
+                    
                         // Draw vertical line if there are siblings after this ancestor
                         append(if (hasNextSibling) "│   " else "    ")
+                    
+                        // For deeper levels, check if parent ancestors have siblings
+                        if (index > 0) {
+                            val parentAncestor = ancestors.getOrNull(index - 1)
+                            if (parentAncestor != null) {
+                                val parentHasSiblings = parentAncestor.findSiblingPlans().any { sibling ->
+                                    sibling.mainPlanFile?.filePath?.compareTo(parentAncestor.mainPlanFile?.filePath ?: "") ?: 0 > 0
+                                }
+                                if (parentHasSiblings) {
+                                    append("│   ")
+                                } else {
+                                    append("    ")
+                                }
+                            }
+                        }
                     }
 
                     // Check if this is the last child in its parent's children
                     val isLastChild = value.parentPlan?.childPlans?.lastOrNull() == value
-                    
+                
                     // Add current node connector
                     append(if (isLastChild) "└──" else "├──")
-                    
+                
                     // Add expand/collapse indicator if has children
                     if (hasChildren) {
                         append(if (isExpanded) "▼" else "▶")
