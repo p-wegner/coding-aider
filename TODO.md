@@ -10,3 +10,4 @@
 - [x] BUG: Create plan file from toolwindow does not consider persistent files+
 - [x] context file edit in plan fails to detect files
 - [ ] arbitrary hierarchy depth in planviewer
+- [ ] macOS installation instruction, set aider path manually in settings

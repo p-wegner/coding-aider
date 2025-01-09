@@ -326,7 +326,6 @@ class PlanViewer(private val project: Project) {
             isSelected: Boolean,
             cellHasFocus: Boolean
         ): Component {
-            // Safeguard against invalid indices
             val isHovered = index >= 0 && index == (list as? JBList<*>)?.selectedIndex
             val isDark = !JBColor.isBright()
             // Enhanced visual feedback for selection and hover
