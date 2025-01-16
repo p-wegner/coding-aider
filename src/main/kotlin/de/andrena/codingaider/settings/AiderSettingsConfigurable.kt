@@ -17,7 +17,7 @@ class AiderSettingsConfigurable() : Configurable {
 
     private val apiKeyChecker: ApiKeyChecker = service<DefaultApiKeyChecker>()
     private var settingsComponent: JPanel? = null
-    private val aiderSetupPanel = AiderSetupPanel(apiKeyChecker)
+    private val aiderSetupPanel = AiderSetupPanel(apiKeyChecker, useSidecarModeCheckBox)
     private val useYesFlagCheckBox = JBCheckBox("Use --yes flag by default")
     private var llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
     private val llmComboBox: JComboBox<LlmSelection>
