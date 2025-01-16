@@ -18,7 +18,7 @@ import javax.swing.event.DocumentListener
 
 class AiderSetupPanel(
     private val apiKeyChecker: ApiKeyChecker,
-    private val useSidecarModeCheckBox: JBCheckBox
+    private val dockerModeChanged: (Boolean) -> Unit
 ) {
     private val apiKeyFields = mutableMapOf<String, JPasswordField>()
     val useDockerAiderCheckBox = JBCheckBox("Use aider in Docker")
@@ -90,11 +90,8 @@ class AiderSetupPanel(
                 .apply {
                     toolTipText =
                         "If enabled, Aider will be run using the Docker image paulgauthier/aider. Currently a new container will be used for every command, which may delay the execution compared to native aider setup."
-                    addActionListener { 
-                        if (isSelected) {
-                            useSidecarModeCheckBox.isSelected = false
-                        }
-                        useSidecarModeCheckBox.isEnabled = !isSelected
+                    addActionListener {
+                        dockerModeChanged(isSelected)
                     }
                 }
         }

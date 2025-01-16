@@ -4,6 +4,7 @@ import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.openapi.ui.Messages
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.Align
@@ -17,7 +18,13 @@ class AiderSettingsConfigurable() : Configurable {
 
     private val apiKeyChecker: ApiKeyChecker = service<DefaultApiKeyChecker>()
     private var settingsComponent: JPanel? = null
-    private val aiderSetupPanel = AiderSetupPanel(apiKeyChecker, useSidecarModeCheckBox)
+    private val useSidecarModeCheckBox = JBCheckBox("Use Sidecar Mode (Experimental)")
+    private val aiderSetupPanel = AiderSetupPanel(apiKeyChecker) {
+        if (it) {
+            useSidecarModeCheckBox.isSelected = false
+        }
+        useSidecarModeCheckBox.isEnabled = !it
+    }
     private val useYesFlagCheckBox = JBCheckBox("Use --yes flag by default")
     private var llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
     private val llmComboBox: JComboBox<LlmSelection>
@@ -43,7 +50,6 @@ class AiderSettingsConfigurable() : Configurable {
     private val includeChangeContextCheckBox = JBCheckBox("Include change context in commit messages")
     private val autoCommitsComboBox = ComboBox(arrayOf("Default", "On", "Off"))
     private val dirtyCommitsComboBox = ComboBox(arrayOf("Default", "On", "Off"))
-    private val useSidecarModeCheckBox = JBCheckBox("Use Sidecar Mode (Experimental)")
     private val sidecarModeVerboseCheckBox = JBCheckBox("Enable verbose logging for sidecar mode")
     private val enableDocumentationLookupCheckBox = JBCheckBox("Enable documentation lookup")
     private val alwaysIncludeOpenFilesCheckBox = JBCheckBox("Always include open files in context")
@@ -133,15 +139,6 @@ class AiderSettingsConfigurable() : Configurable {
                             "Run Aider as a persistent process. This is experimental and may improve performance."
                         addItemListener { e ->
                             sidecarModeVerboseCheckBox.isEnabled = e.stateChange == java.awt.event.ItemEvent.SELECTED
-                        }
-                        addActionListener {
-                            if (isSelected && useDockerAiderCheckBox.isSelected) {
-                                isSelected = false
-                                Messages.showWarningDialog(
-                                    "Sidecar mode cannot be used with Docker. Please disable Docker first.",
-                                    "Incompatible Settings"
-                                )
-                            }
                         }
                     }
                 }
