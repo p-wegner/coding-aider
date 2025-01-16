@@ -96,13 +96,36 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
                 .component
                 .apply {
                     toolTipText = "Enter the full Docker image name including tag (e.g. paulgauthier/aider:v0.68.0)"
-                    setHistory(listOf(AiderDefaults.DOCKER_IMAGE, "paulgauthier/aider:latest"))
+                    setHistory(listOf(AiderDefaults.DOCKER_IMAGE, "paulgauthier/aider:latest","paulgauthier/aider:dev"))
                 }
 
             // Add listener to dynamically enable/disable docker image field
             useDockerAiderCheckBox.addActionListener {
                 dockerImageField.isEnabled = useDockerAiderCheckBox.isSelected
             }
+        }
+        row {
+            val warningLabel = JLabel().apply {
+                foreground = UIManager.getColor("Label.errorForeground")
+                isVisible = false
+            }
+            cell(warningLabel)
+            dockerImageField.addDocumentListener(object : DocumentListener {
+                override fun insertUpdate(e: DocumentEvent) = checkTag()
+                override fun removeUpdate(e: DocumentEvent) = checkTag()
+                override fun changedUpdate(e: DocumentEvent) = checkTag()
+
+                private fun checkTag() {
+                    if (dockerImageField.text != AiderDefaults.DOCKER_IMAGE) {
+                        warningLabel.text =
+                            "Warning: Using a different docker image and version than ${AiderDefaults.DOCKER_IMAGE} " +
+                                    "might not be fully compatibility with the plugin."
+                        warningLabel.isVisible = true
+                    } else {
+                        warningLabel.isVisible = false
+                    }
+                }
+            })
         }
     }
 

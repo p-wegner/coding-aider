@@ -594,8 +594,7 @@ class PlanViewer(private val project: Project) {
                                     .comment(
                                         """
                                         Describe how you want to refine or extend the plan.
-                                        This may create subplans if the changes are substantial.
-                                        Use multiple lines for complex requests.
+                                        This may create subplans if the changes are substantial or if you prompted the LLM to do so.
                                     """.trimIndent()
                                     )
                             }.resizableRow()

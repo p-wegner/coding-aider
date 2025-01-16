@@ -106,7 +106,7 @@ class DockerAiderExecutionStrategy(
             }
         }
 
-        dockerArgs.add("${AiderDefaults.DOCKER_IMAGE}:${settings.dockerImageTag}")
+        dockerArgs.add(settings.dockerImage)
 
         return dockerArgs + buildCommonArgs(commandData, settings).map { arg ->
             commandData.files.fold(arg) { acc, fileData ->
