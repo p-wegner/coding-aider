@@ -134,6 +134,15 @@ class AiderSettingsConfigurable() : Configurable {
                         addItemListener { e ->
                             sidecarModeVerboseCheckBox.isEnabled = e.stateChange == java.awt.event.ItemEvent.SELECTED
                         }
+                        addActionListener {
+                            if (isSelected && useDockerAiderCheckBox.isSelected) {
+                                isSelected = false
+                                Messages.showWarningDialog(
+                                    "Sidecar mode cannot be used with Docker. Please disable Docker first.",
+                                    "Incompatible Settings"
+                                )
+                            }
+                        }
                     }
                 }
                 row {
@@ -320,9 +329,10 @@ class AiderSettingsConfigurable() : Configurable {
         includeChangeContextCheckBox.isSelected = settings.includeChangeContext
         autoCommitsComboBox.selectedIndex = settings.autoCommits.toIndex()
         dirtyCommitsComboBox.selectedIndex = settings.dirtyCommits.toIndex()
-        useSidecarModeCheckBox.isSelected = settings.useSidecarMode
+        useSidecarModeCheckBox.isSelected = settings.useSidecarMode && !settings.useDockerAider
         sidecarModeVerboseCheckBox.isSelected = settings.sidecarModeVerbose
-        sidecarModeVerboseCheckBox.isEnabled = settings.useSidecarMode
+        sidecarModeVerboseCheckBox.isEnabled = settings.useSidecarMode && !settings.useDockerAider
+        useSidecarModeCheckBox.isEnabled = !settings.useDockerAider
         enableDocumentationLookupCheckBox.isSelected = settings.enableDocumentationLookup
         alwaysIncludeOpenFilesCheckBox.isSelected = settings.alwaysIncludeOpenFiles
         alwaysIncludePlanContextFilesCheckBox.isSelected = settings.alwaysIncludePlanContextFiles
