@@ -96,22 +96,13 @@ class CommandExecutor(
         val commandString = buildSidecarCommandString(commandData)
         logger.info("Executing Sidecar Aider command: $commandString")
 
-        notifyObservers {
-            it.onCommandStart(
-                "Starting Sidecar Aider command...\n${
-                    commandLogger.getCommandString(
-                        false,
-                        null
-                    )
-                }"
-            )
+        if (commandData.planId == null) {
+            changeContextFiles(commandData)
         }
-
-        changeContextFiles(commandData)
         val output = try {
             val startTime = System.currentTimeMillis()
             val output = StringBuilder()
-            val response = processInteractor.sendCommandAsync(commandString)
+            val response = processInteractor.sendCommandAsync(commandString,commandData.planId)
                 .doOnNext { message ->
                     output.append(message).append("\n")
                     notifyObservers {
@@ -142,16 +133,16 @@ class CommandExecutor(
     }
 
     private fun startSideCarAndExecuteCommand(updatedCommandData: CommandData): String {
-        startSideCarWithTimeout()
+        startSideCarWithTimeout(updatedCommandData.planId)
         return executeSidecarCommand(updatedCommandData)
     }
 
-    private fun startSideCarWithTimeout() {
-        project.service<SidecarProcessInitializer>().initializeSidecarProcess()
+    private fun startSideCarWithTimeout(planId: String?) {
+        project.service<SidecarProcessInitializer>().initializeSidecarProcess(planId)
         val startTime = System.currentTimeMillis()
-        while (!project.service<AiderProcessManager>().isReadyForCommand()) {
+        while (!project.service<AiderProcessManager>().isReadyForCommand(planId)) {
             Thread.sleep(100)
-            if (System.currentTimeMillis() - startTime > 10000) {
+            if (System.currentTimeMillis() - startTime > 20000) {
                 throw IllegalStateException("Sidecar process failed to start")
             }
         }
@@ -160,7 +151,6 @@ class CommandExecutor(
     private fun changeContextFiles(commandData: CommandData) {
         processInteractor.sendCommandSync("/drop")
         processInteractor.sendCommandSync("/clear")
-        // TODO: Termination of add and read-only commands is not detected correctly
         commandData.files.filter { !it.isReadOnly }
             .takeIf { it.isNotEmpty() }
             ?.joinToString(" ") { it.filePath }
@@ -181,11 +171,13 @@ class CommandExecutor(
         }
     }
 
-    fun abortCommand() {
+    fun abortCommand(planId: String?) {
         isAborted = true
         if (commandData.sidecarMode) {
-            project.service<AiderProcessManager>().interruptCurrentCommand()
+            // TODO: interrupt command in sidecar for plan
+            project.service<AiderProcessManager>().interruptCurrentCommand(planId)
         }
+        // TODO: support sidecar docker mode
         if (useDockerAider) {
             dockerManager.stopDockerContainer()
         } else {

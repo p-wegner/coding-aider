@@ -19,8 +19,17 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
             if (commandData.llm.isNotEmpty()) {
                 val customProvider = CustomLlmProviderService.Companion.getInstance().getProvider(commandData.llm)
                 if (customProvider != null) {
+                    // Handle model name based on provider type
                     add("--model")
-                    add(customProvider.prefixedModelName)
+                    // Handle model name based on provider type
+                    val modelName = customProvider.modelName
+                    // Only add prefix if needed and not already prefixed
+                    val prefixedModelName = if (!modelName.startsWith("${customProvider.type.modelNamePrefix}/") && customProvider.type.requiresModelPrefix) {
+                        "${customProvider.type.modelNamePrefix}/$modelName"
+                    } else {
+                        modelName
+                    }
+                    add(prefixedModelName)
                 } else {
                     if (commandData.llm.startsWith("--")) {
                         add(commandData.llm)
@@ -87,11 +96,6 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
                 add("--commit-prompt")
                 add(getCommitPrompt())
             }
-            // Add summarized output flag if enabled
-//            if (settings.summarizedOutput) {
-//                add("--summary-format")
-//                add("xml")
-//            }
             if (commandData.sidecarMode) {
                 return@buildList
             }

@@ -122,8 +122,11 @@ class CustomLlmProviderEditorDialog(
         projectIdRow.visible(selectedType == LlmProviderType.VERTEX_EXPERIMENTAL)
         locationRow.visible(selectedType == LlmProviderType.VERTEX_EXPERIMENTAL)
 
-        // Update model name tooltip with examples
-        modelNameField.toolTipText = selectedType.exampleModels
+        // Update model name tooltip and validation based on provider type
+        modelNameField.toolTipText = when (selectedType) {
+            LlmProviderType.VERTEX_EXPERIMENTAL -> "Model name without vertex_ai/ prefix. ${selectedType.exampleModels}"
+            else -> selectedType.exampleModels
+        }
     }
 
     override fun createCenterPanel(): JComponent = panel {
@@ -239,7 +242,14 @@ class CustomLlmProviderEditorDialog(
             val modelName = modelNameField.text.trim()
             if (!modelName.matches(Regex("^[\\w-]+(@latest|@\\d{8})?$"))) {
                 return ValidationInfo(
-                    "Invalid model name format. Examples: claude-3-sonnet@latest, gemini-pro@20240620",
+                    "Invalid model name format for Vertex AI. Examples: claude-3-sonnet@latest, gemini-pro@20240620",
+                    modelNameField
+                )
+            }
+            // Ensure model name doesn't already include the vertex_ai/ prefix
+            if (modelName.startsWith("vertex_ai/")) {
+                return ValidationInfo(
+                    "Model name should not include the vertex_ai/ prefix - it will be added automatically",
                     modelNameField
                 )
             }

@@ -95,7 +95,7 @@ class DockerAiderExecutionStrategy(
                 }
             }
 
-            null -> {} // No special configuration needed
+            LlmProviderType.CUSTOM_AIDERMODEL, null -> {} // No special configuration needed
         }
 
         // Mount files outside the project

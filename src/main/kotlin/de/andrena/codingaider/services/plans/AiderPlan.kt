@@ -22,7 +22,8 @@ data class AiderPlan(
     }
     val allFiles: List<FileData>
         get() = planFiles + contextFiles
-
+    val id: String
+        get() = mainPlanFile?.filePath ?: ""
     val mainPlanFile: FileData?
         get() = planFiles.firstOrNull { it.filePath.endsWith(".md") && !it.filePath.endsWith("_checklist.md") }
     val checklistPlanFile: FileData?
@@ -52,6 +53,9 @@ data class AiderPlan(
     }
 
     fun isPlanComplete(): Boolean {
+        return openChecklistItems().isEmpty()
+    }
+    fun isPlanFamilyComplete(): Boolean {
         return openChecklistItems().isEmpty() && childPlans.all { it.isPlanComplete() }
     }
 
@@ -68,18 +72,29 @@ data class AiderPlan(
     }
 
     fun getAncestors(): List<AiderPlan> {
-        return generateSequence(parentPlan) { it.parentPlan }.toList()
+        val ancestors = mutableListOf<AiderPlan>()
+        var current = parentPlan
+        while (current != null) {
+            ancestors.add(current)
+            current = current.parentPlan
+        }
+        return ancestors
+    }
+
+    fun isRootPlan(): Boolean {
+        return parentPlan == null && 
+            !getAllChildPlans().any { it.childPlans.any { child -> child.mainPlanFile?.filePath == mainPlanFile?.filePath } }
     }
 
     fun isDescendantOf(otherPlan: AiderPlan): Boolean {
         return generateSequence(this) { it.parentPlan }.any { it == otherPlan }
     }
 
-    fun getNextUncompletedPlan(): List<AiderPlan> {
+    fun getNextUncompletedPlansInSameFamily(): List<AiderPlan> {
         if (!isPlanComplete()) return listOf(this)
         val uncompletedChildren = getAllChildPlans().filter { !it.isPlanComplete() }
         val uncompletedSiblings = findSiblingPlans().filter { !it.isPlanComplete() }
-        val parentUncompletedPlans = parentPlan?.getNextUncompletedPlan() ?: emptyList()
+        val parentUncompletedPlans = parentPlan?.getNextUncompletedPlansInSameFamily() ?: emptyList()
         
         return uncompletedChildren + uncompletedSiblings + parentUncompletedPlans
     }

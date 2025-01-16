@@ -17,6 +17,8 @@ import de.andrena.codingaider.inputdialog.AiderMode
  * @property editFormat Specifies the format for edit instructions (e.g., "diff").
  * @property options Contains optional parameters for the command, including whether to disable presentation of changes.
  * @property aiderMode The mode to use for the command.
+ * @property sidecarMode If true, uses the sidecar mode for the command.
+ * @property planId The plan ID to use for the command.
  */
 data class CommandData(
     val message: String,
@@ -30,7 +32,8 @@ data class CommandData(
     val projectPath: String,
     val options: CommandOptions = CommandOptions.DEFAULT,
     val aiderMode: AiderMode = AiderMode.NORMAL,
-    val sidecarMode: Boolean = false
+    val sidecarMode: Boolean = false,
+    val planId: String? = null
 ) {
 
     val isShellMode: Boolean get() = aiderMode == AiderMode.SHELL
@@ -46,6 +49,7 @@ data class CommandData(
  * @property autoCloseDelay If not null, sets the auto close delay for the markdown dialog.
  * @property autoCommit If true, automatically commits the changes after the command execution.
  * @property dirtyCommits If true, will commit changes before the command execution.
+ * @property summarizedOutput If true, returns a summarized output in xml tags after usual outputs.
  */
 data class CommandOptions(
     val disablePresentation: Boolean = false,
@@ -62,7 +66,10 @@ data class CommandOptions(
     }
 }
 
-data class FileData(
-    val filePath: String,
-    val isReadOnly: Boolean
-)
+data class FileData(val filePath: String, val isReadOnly: Boolean) {
+    val normalizedFilePath: String
+        get() = filePath.replace('\\', '/').replace("//", "/")
+}
+
+
+

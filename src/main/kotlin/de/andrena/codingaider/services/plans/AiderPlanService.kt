@@ -15,6 +15,7 @@ class AiderPlanService(private val project: Project) {
         const val AIDER_PLAN_MARKER = "[Coding Aider Plan]"
         const val AIDER_PLAN_CHECKLIST_MARKER = "[Coding Aider Plan - Checklist]"
         const val AIDER_PLANS_FOLDER = ".coding-aider-plans"
+        const val FINISHED_AIDER_PLANS_FOLDER = ".coding-aider-plans-finished"
         const val STRUCTURED_MODE_MARKER = "[STRUCTURED MODE]"
         const val SUBPLAN_START_MARKER = "<!-- SUBPLAN:"
         const val SUBPLAN_END_MARKER = "<!-- END_SUBPLAN -->"
@@ -95,6 +96,7 @@ class AiderPlanService(private val project: Project) {
                     referenceFile.readText()
                 } else {
                     val fileContent = referenceFile.readText()
+                    // TODO: fix missmatch with later subplan parsing
                     val summary = """
                         |<!-- Referenced Plan: ${referenceFile.nameWithoutExtension} -->
                         |<!-- Status: In Progress -->
@@ -162,11 +164,11 @@ class AiderPlanService(private val project: Project) {
             val content = file.readText()
             if (!content.contains(AIDER_PLAN_MARKER)) return null
 
-            // Process markdown references to include referenced content
-            val expandedContent = processMarkdownReferences(content, plansDir)
+            // Extract plan content from the original content
+            val planContent = content.substringAfter(AIDER_PLAN_MARKER).trim()
 
-            // Extract plan content from the expanded content
-            val planContent = expandedContent.substringAfter(AIDER_PLAN_MARKER).trim()
+            // Process markdown references to include referenced content for checklist extraction
+            val expandedContent = processMarkdownReferences(content, plansDir)
 
             // Get checklist items from expanded content
             val planChecklist = extractChecklistItems(expandedContent)
@@ -200,8 +202,8 @@ class AiderPlanService(private val project: Project) {
                 parseContextYaml(contextFile)
             } else emptyList()
 
-            // Extract subplan references
-            val subplanRefs = extractSubplanReferences(expandedContent)
+            // Extract subplan references from the original content
+            val subplanRefs = extractSubplanReferences(content)
             val subplans = subplanRefs.mapNotNull { subplanRef ->
                 val subplanFile = File(plansDir, subplanRef)
                 if (subplanFile.exists()) loadPlanFromFile(subplanFile) else null
@@ -225,52 +227,43 @@ class AiderPlanService(private val project: Project) {
         val allPlans = filesInPlanFolder
             .filter { file -> file.extension == "md" && !file.nameWithoutExtension.endsWith("_checklist") }
             .mapNotNull { file -> loadPlanFromFile(file) }
-            .toMutableList()
+            .toList()
 
-        // Create a map to track updated plans
-        val updatedPlans = mutableMapOf<String, AiderPlan>()
-
-        // Then establish parent-child relationships based on references
+        // Create a map to track all plans by their path
+        val plansMap = mutableMapOf<String, AiderPlan>()
+        
+        // First pass: Create all plans without relationships
         allPlans.forEach { plan ->
-            val planPath = plan.mainPlanFile?.filePath ?: return@forEach
-            if (!updatedPlans.containsKey(planPath)) {
-                updatedPlans[planPath] = plan
-            }
-
-            val content = File(planPath).readText()
-            val referencePattern = Regex("""\[.*?\]\((.*?)(?:\s.*?)?\)""")
-            val subplanMarkerPattern = Regex("""${SUBPLAN_START_MARKER}.*?\n.*?\((.*?)\)""", RegexOption.DOT_MATCHES_ALL)
+            plansMap[plan.mainPlanFile?.filePath ?: ""] = plan
+        }
+        
+        // Second pass: Establish parent-child relationships
+        allPlans.forEach { plan ->
+            val content = File(plan.mainPlanFile?.filePath ?: "").readText()
+            val references = extractSubplanReferences(content)
             
-            // Process both regular references and subplan markers
-            val allReferences = (referencePattern.findAll(content) + subplanMarkerPattern.findAll(content))
-                .map { it.groupValues[1] }
-                .distinct()
-
-            allReferences.forEach { referencePath ->
-                val referenceFile = File(plansDir, referencePath)
-                
-                if (referenceFile.exists() && !referenceFile.nameWithoutExtension.endsWith("_checklist")) {
-                    val referencedPlanPath = referenceFile.absolutePath
-                    val referencedPlan = updatedPlans[referencedPlanPath] 
-                        ?: allPlans.find { it.mainPlanFile?.filePath == referencedPlanPath }
-                        ?: return@forEach
-
-                    // Update parent-child relationships
-                    val currentParentPlan = updatedPlans[planPath] ?: plan
-                    val updatedChildPlan = referencedPlan.copy(parentPlan = currentParentPlan)
-                    val updatedParentPlan = currentParentPlan.copy(
-                        childPlans = currentParentPlan.childPlans + updatedChildPlan
-                    )
-                    
-                    // Update the plans in our tracking map
-                    updatedPlans[planPath] = updatedParentPlan
-                    updatedPlans[referencedPlanPath] = updatedChildPlan
+            // Get all referenced plans as children, regardless of whether they have their own subplans
+            val childPlans = references.mapNotNull { referencePath ->
+                val absolutePath = File(plansDir, referencePath).absolutePath
+                plansMap[absolutePath]?.let { childPlan ->
+                    // Create a new copy of the child plan with this plan as its parent
+                    childPlan.copy(parentPlan = plan)
                 }
             }
+            
+            // Always update the plan with its children, even if the children list is empty
+            plansMap[plan.mainPlanFile?.filePath ?: ""] = plan.copy(
+                childPlans = childPlans
+            )
+            
+            // Update each child plan in the map with its parent reference
+            childPlans.forEach { childPlan ->
+                plansMap[childPlan.mainPlanFile?.filePath ?: ""] = childPlan
+            }
         }
-
+        
         // Return only root plans (those without parents)
-        return updatedPlans.values.filter { it.parentPlan == null }
+        return plansMap.values.filter { it.parentPlan == null }
     }
 
 
@@ -322,23 +315,29 @@ class AiderPlanService(private val project: Project) {
     fun createAiderPlanSystemPrompt(commandData: CommandData): String =
         project.service<AiderPlanPromptService>().createAiderPlanSystemPrompt(commandData)
 
+
     private fun extractSubplanReferences(content: String): List<String> {
         val subplans = mutableListOf<String>()
-        val lines = content.lines()
-        var i = 0
-        while (i < lines.size) {
-            val line = lines[i]
-            if (line.trim().startsWith(SUBPLAN_START_MARKER)) {
-                // Look for markdown link in next line
-                if (i + 1 < lines.size) {
-                    val linkLine = lines[i + 1]
-                    val linkMatch = Regex("""\[.*?\]\((.*?)\)""").find(linkLine)
-                    linkMatch?.groupValues?.get(1)?.let { subplans.add(it) }
-                }
+        
+        // First try to find subplans using the structured format
+        val structuredPattern = Regex("""${SUBPLAN_START_MARKER}.*?\n.*?\((.*?)\)""", RegexOption.DOT_MATCHES_ALL)
+        structuredPattern.findAll(content).forEach { match ->
+            val path = match.groupValues[1].trim()
+            if (path.isNotBlank()) {
+                subplans.add(path)
             }
-            i++
         }
-        return subplans
+        
+        // Then look for regular markdown links that might be subplans
+        val linkPattern = Regex("""\[.*?\]\((.*?)(?:\s.*?)?\)""")
+        linkPattern.findAll(content).forEach { match ->
+            val path = match.groupValues[1].trim()
+            if (path.isNotBlank() && path.endsWith(".md") && !path.endsWith("_checklist.md")) {
+                subplans.add(path)
+            }
+        }
+        
+        return subplans.distinct()
     }
 
     private fun parseContextYaml(contextFile: File): List<FileData> =

@@ -1,0 +1,10 @@
+---
+files:
+  - path: src/main/kotlin/de/andrena/codingaider/services/sidecar/AiderProcessManager.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/services/plans/ActivePlanService.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/services/sidecar/PlanSidecarManager.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/command/CommandData.kt
+    readOnly: false

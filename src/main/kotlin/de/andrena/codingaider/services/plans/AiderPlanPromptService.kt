@@ -37,19 +37,18 @@ class AiderPlanPromptService(private val project: Project) {
            - Implementation-specific details
            - Clear dependency markers
         SYSTEM 6. Ensure the main plan checklist properly delegates actual implementation to the subplans
+        SYSTEM 7. Ensure the main plan references all subplans
+        SYSTEM 8. Only create subplans if necessary
+        
     """.trimIndent()
 
     fun createPlanRefinementPrompt(plan: AiderPlan, refinementRequest: String): String {
         val basePrompt = """
             SYSTEM You are refining an existing plan ${plan.plan}. The plan should be extended or modified based on the refinement request.
-            
-            $subplanGuidancePrompt
-            
             SYSTEM The refinement request is: $refinementRequest
-            
+            SYSTEM Decide whether to use subplans.
+            $subplanGuidancePrompt
             $planFileStructurePrompt
-            
-            $STRUCTURED_MODE_MESSAGE_MARKER Continue with plan refinement but don't start implementing the changes. Focus on changes to plan files.
         """.trimIndent()
 
         return basePrompt
@@ -61,7 +60,7 @@ class AiderPlanPromptService(private val project: Project) {
         val existingPlan = filterPlanRelevantFiles(files)
 
         val basePrompt = """
-            SYSTEM Create plan files in $AIDER_PLANS_FOLDER before making code changes:
+            SYSTEM You are working in a plan based mode with plan files in $AIDER_PLANS_FOLDER:
             
             SYSTEM File Requirements:
             1. Start plans with $AIDER_PLAN_MARKER
@@ -79,10 +78,6 @@ class AiderPlanPromptService(private val project: Project) {
               - path: "full/path/to/file"
                 readOnly: false
             
-            SYSTEM Implementation:
-            1. Create/update plan files first
-            2. Implement changes step by step
-            3. Keep context.yaml current with all needed files
         """.trimStartingWhiteSpaces()
 
         val firstPlan = existingPlan.firstOrNull()
@@ -105,12 +100,10 @@ class AiderPlanPromptService(private val project: Project) {
             SYSTEM The main plan file should include these sections: ## Overview, ## Problem Description, ## Goals, ## Additional Notes and Constraints, ## References 
             SYSTEM Save the plan in a new markdown file with a suitable name in the $AIDER_PLANS_FOLDER directory.
             
-            SYSTEM Create subplans when:
-            1. A feature requires changes across multiple distinct components
-            2. Implementation involves separate logical phases
-            3. Different team members could work on parts independently
-            4. A component needs its own detailed planning
-            5. Changes affect more than 3-4 files
+            SYSTEM Create subplans only if necessary. Use subplans when:
+            1. A feature requires many changes across plenty of components
+            2. Different team members could work on parts independently
+            3. A component needs its own detailed planning
             $subplanGuidancePrompt
             SYSTEM Create separate checklist and context.yaml files for the main plan and each subplan to track the progress of implementing the plan.            
             SYSTEM For the context.yaml, consider all provided files and add relevant files to the affected context.yaml.
@@ -129,20 +122,19 @@ $STRUCTURED_MODE_MESSAGE_MARKER ${commandData.message} $STRUCTURED_MODE_MESSAGE_
 
     fun filterPlanRelevantFiles(files: List<FileData>): List<FileData> =
         files.filter {
-            it.filePath.contains(AIDER_PLANS_FOLDER) && (it.filePath.endsWith(".md") || it.filePath.endsWith(
-                ".yaml"
-            ))
+            it.filePath.contains(AIDER_PLANS_FOLDER) && !it.filePath.contains(AiderPlanService.FINISHED_AIDER_PLANS_FOLDER)
+                    && (it.filePath.endsWith(".md") || it.filePath.endsWith(".yaml"))
         }
 
     fun filterPlanMainFiles(files: List<FileData>): List<FileData> =
         filterPlanRelevantFiles(files).filter { it.filePath.endsWith(".md") && !it.filePath.endsWith("_checklist.md") }
 
     private fun String.trimStartingWhiteSpaces() = trimIndent().trimStart { it.isWhitespace() }
-
+    // TODO: decide where to put this (see AiderPlanService)
     companion object {
         const val AIDER_PLAN_MARKER = "[Coding Aider Plan]"
         const val AIDER_PLAN_CHECKLIST_MARKER = "[Coding Aider Plan - Checklist]"
-        const val AIDER_PLANS_FOLDER = ".coding-aider-plans"
+        const val AIDER_PLANS_FOLDER = AiderPlanService.AIDER_PLANS_FOLDER
         const val STRUCTURED_MODE_MESSAGE_MARKER = "<STRUCTURED MODE>"
         const val STRUCTURED_MODE_MESSAGE_END_MARKER = "</STRUCTURED MODE>"
     }

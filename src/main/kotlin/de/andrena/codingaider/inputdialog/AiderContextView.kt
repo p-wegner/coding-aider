@@ -159,7 +159,7 @@ class AiderContextView(
         planFilesNode.removeAllChildren()
 
         val allUniqueFiles =
-            (allFiles).distinctBy { it.filePath.replace('\\', '/').replace("//", "/") }
+            (allFiles).distinctBy { it.normalizedFilePath }
 
         allUniqueFiles.forEach { fileData ->
             val node = DefaultMutableTreeNode(fileData)

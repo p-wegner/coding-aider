@@ -52,10 +52,11 @@ class AiderOptionsPanel(
         setupUI()
         // Set initial selection from settings
         llmComboBox.selectedItem = llmOptions.find { it.name == settings.llm }
-        llmComboBox.addActionListener {
-            val selected = llmComboBox.selectedItem as? LlmSelection
-            selected?.let { settings.llm = it.name }
-        }
+        //TODO: decide whether to use this or not
+//        llmComboBox.addActionListener {
+//            val selected = llmComboBox.selectedItem as? LlmSelection
+//            selected?.let { settings.llm = it.name }
+//        }
     }
 
     fun dispose() {

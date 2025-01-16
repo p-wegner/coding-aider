@@ -1,6 +1,7 @@
 package de.andrena.codingaider.toolwindow.plans
 
 import com.intellij.icons.AllIcons
+import com.intellij.icons.AllIcons.Actions.SuggestedRefactoringBulb
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
@@ -20,6 +21,7 @@ import de.andrena.codingaider.actions.aider.AiderAction
 import de.andrena.codingaider.inputdialog.AiderInputDialog
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.outputview.CustomMarkdownViewer
+import de.andrena.codingaider.services.FileDataCollectionService
 import de.andrena.codingaider.services.plans.AiderPlan
 import de.andrena.codingaider.services.plans.AiderPlanPromptService
 import de.andrena.codingaider.services.plans.AiderPlanService
@@ -64,6 +66,18 @@ class PlanViewer(private val project: Project) {
                     if (selectedPlan.childPlans.isNotEmpty() && !expandedPlans.contains(planId)) {
                         expandedPlans.add(planId)
                         updatePlans(project.getService(AiderPlanService::class.java).getAiderPlans())
+                        
+                        // Adjust list height after expansion
+                        val visibleRowCount = minOf(plansListModel.size(), 10) // Show max 10 rows
+                        plansList.visibleRowCount = visibleRowCount
+                        plansList.parent?.let { parent ->
+                            parent.preferredSize = plansList.preferredSize
+                            if (parent is JViewport) {
+                                parent.viewSize = plansList.preferredSize
+                            }
+                        }
+                        plansList.revalidate()
+                        plansList.repaint()
                     }
                 }
             })
@@ -81,6 +95,45 @@ class PlanViewer(private val project: Project) {
             })
 
             addMouseListener(object : MouseAdapter() {
+                private var hoveredPlan: AiderPlan? = null
+                
+                override fun mouseMoved(e: MouseEvent) {
+                    val index = plansList.locationToIndex(e.point)
+                    if (index >= 0) {
+                        val plan = plansList.model.getElementAt(index)
+                        val planId = plan.mainPlanFile?.filePath ?: return
+                        
+                        // Calculate if mouse is over expand/collapse area
+                        val depth = plan.depth
+                        val indentWidth = 20
+                        val iconWidth = 16
+                        val treeAreaWidth = (depth * indentWidth) + iconWidth
+                        val expandClickWidth = treeAreaWidth + 24
+                        
+                        if (e.x < expandClickWidth && plan.childPlans.isNotEmpty()) {
+                            if (hoveredPlan != plan) {
+                                hoveredPlan = plan
+                                plansList.cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+                                plansList.repaint()
+                            }
+                        } else {
+                            if (hoveredPlan != null) {
+                                hoveredPlan = null
+                                plansList.cursor = Cursor.getDefaultCursor()
+                                plansList.repaint()
+                            }
+                        }
+                    }
+                }
+                
+                override fun mouseExited(e: MouseEvent) {
+                    if (hoveredPlan != null) {
+                        hoveredPlan = null
+                        plansList.cursor = Cursor.getDefaultCursor()
+                        plansList.repaint()
+                    }
+                }
+
                 override fun mouseClicked(e: MouseEvent) {
                     val index = plansList.locationToIndex(e.point)
                     if (index >= 0) {
@@ -94,9 +147,10 @@ class PlanViewer(private val project: Project) {
                             val indentWidth = 20
                             val iconWidth = 16
                             val treeAreaWidth = (depth * indentWidth) + iconWidth
+                            val expandClickWidth = treeAreaWidth + 24
 
                             // Check if click was in the expand/collapse icon area
-                            if (e.x < treeAreaWidth + 24 && plan.childPlans.isNotEmpty()) {
+                            if (e.x < expandClickWidth && plan.childPlans.isNotEmpty()) {
                                 animateTreeExpansion(plan, planId)
                             } else if (e.clickCount == 2) {
                                 // Double click to open plan file
@@ -116,25 +170,41 @@ class PlanViewer(private val project: Project) {
 
     private fun animateTreeExpansion(plan: AiderPlan, planId: String) {
         val isExpanding = !expandedPlans.contains(planId)
-        val timer = Timer(20, null)
+        val timer = Timer(12, null) // Faster animation (approximately 83fps)
         var progress = 0
-        val steps = 5 // Number of animation steps
+        val steps = 12 // More steps for smoother animation
+        
+        // Store initial height for animation
+        val initialHeight = plansList.preferredSize.height
+        val targetHeight = if (isExpanding) {
+            // Calculate target height based on number of visible items
+            val visibleRowCount = minOf(plansListModel.size() + plan.childPlans.size, 10)
+            plansList.visibleRowCount = visibleRowCount
+            plansList.preferredSize.height
+        } else {
+            initialHeight - (plan.childPlans.size * plansList.fixedCellHeight)
+        }
+
+        fun easeInOutQuad(t: Float): Float {
+            return if (t < 0.5f) 2 * t * t else -1 + (4 - 2 * t) * t
+        }
 
         timer.addActionListener { e ->
             progress++
             if (progress <= steps) {
+                val normalizedProgress = progress.toFloat() / steps
+                val easedProgress = easeInOutQuad(normalizedProgress)
+                
                 if (isExpanding) {
-                    // Gradually show children
                     expandedPlans.add(planId)
                     updatePlansWithAnimation(
                         project.getService(AiderPlanService::class.java).getAiderPlans(),
-                        progress.toFloat() / steps
+                        easedProgress
                     )
                 } else {
-                    // Gradually hide children
                     updatePlansWithAnimation(
                         project.getService(AiderPlanService::class.java).getAiderPlans(),
-                        (steps - progress).toFloat() / steps
+                        1 - easedProgress
                     )
                 }
             } else {
@@ -142,6 +212,18 @@ class PlanViewer(private val project: Project) {
                     expandedPlans.remove(planId)
                     updatePlansWithAnimation(project.getService(AiderPlanService::class.java).getAiderPlans(), 0f)
                 }
+                
+                // Final height adjustment
+                plansList.visibleRowCount = minOf(plansListModel.size(), 10)
+                plansList.parent?.let { parent ->
+                    parent.preferredSize = plansList.preferredSize
+                    if (parent is JViewport) {
+                        parent.viewSize = plansList.preferredSize
+                    }
+                }
+                plansList.revalidate()
+                plansList.repaint()
+                
                 timer.stop()
             }
         }
@@ -154,19 +236,56 @@ class PlanViewer(private val project: Project) {
 
     private fun updatePlansWithAnimation(plans: List<AiderPlan>, animationProgress: Float = 1f) {
         plansListModel.clear()
-        fun addPlanAndChildren(plan: AiderPlan) {
-            plansListModel.addElement(plan)
-            if (expandedPlans.contains(plan.mainPlanFile?.filePath)) {
-                plan.childPlans.forEach { childPlan ->
-                    // Apply animation progress to child indentation
-                    val animatedPlan = childPlan.copy(
-                        depth = (childPlan.depth * animationProgress).toInt()
-                    )
-                    addPlanAndChildren(animatedPlan)
+        
+        // Create a map of all plans by their path
+        val plansMap = mutableMapOf<String, AiderPlan>()
+        plans.forEach { plan ->
+            plansMap[plan.mainPlanFile?.filePath ?: ""] = plan
+        }
+        
+        // Find true root plans (plans that aren't referenced as subplans by any other plan)
+        val rootPlans = plans.filter { plan ->
+            !plans.any { otherPlan ->
+                otherPlan.childPlans.any { childPlan -> 
+                    childPlan.mainPlanFile?.filePath == plan.mainPlanFile?.filePath
                 }
             }
         }
-        plans.forEach { plan -> addPlanAndChildren(plan) }
+        
+        // Track visited plans to prevent duplicates
+        val visitedPlans = mutableSetOf<String>()
+        
+        // Recursive function to add plans with proper hierarchy
+        fun addPlanAndChildren(plan: AiderPlan, depth: Int = 0) {
+            val planId = plan.mainPlanFile?.filePath ?: return
+            if (planId in visitedPlans) return
+            visitedPlans.add(planId)
+            
+            // Create a copy with correct depth
+            val planWithDepth = plan.copy(depth = depth)
+            plansListModel.addElement(planWithDepth)
+            
+            // If expanded, add all children and their descendants
+            if (expandedPlans.contains(planId)) {
+                plan.childPlans.forEach { child ->
+                    // Only add children that haven't been visited
+                    if (child.mainPlanFile?.filePath !in visitedPlans) {
+                        addPlanAndChildren(child, depth + 1)
+                    }
+                }
+            }
+        }
+        
+        // Add all root plans and their hierarchies
+        rootPlans.forEach { plan -> 
+            addPlanAndChildren(plan)
+        }
+        
+        // Ensure proper tree structure visualization
+        plansList.cellRenderer = PlanListCellRenderer(false, expandedPlans)
+        
+        // Ensure proper tree structure visualization
+        plansList.cellRenderer = PlanListCellRenderer(false, expandedPlans)
     }
 
     class PlanListCellRenderer(
@@ -177,7 +296,7 @@ class PlanViewer(private val project: Project) {
         private val statusIcon = JLabel()
         private val countLabel = JLabel()
         private val leftPanel = JPanel(FlowLayout(FlowLayout.LEFT, 4, 0))
-        private val treeIndentWidth = 16 // Standard tree indent width
+        private val treeIndentWidth = 20
 
         init {
             isOpaque = true
@@ -207,7 +326,7 @@ class PlanViewer(private val project: Project) {
             isSelected: Boolean,
             cellHasFocus: Boolean
         ): Component {
-            val isHovered = index == (list as? JBList<*>)?.selectedIndex
+            val isHovered = index >= 0 && index == (list as? JBList<*>)?.selectedIndex
             val isDark = !JBColor.isBright()
             // Enhanced visual feedback for selection and hover
             background = when {
@@ -241,50 +360,63 @@ class PlanViewer(private val project: Project) {
                 val planFile = value.planFiles.firstOrNull()
                 val fileName = planFile?.filePath?.let { File(it).nameWithoutExtension } ?: "Unknown Plan"
 
-                // Calculate tree structure with enhanced visual representation
+                // Calculate tree structure with proper hierarchy visualization
                 val treePrefix = buildString {
                     val ancestors = value.getAncestors()
-                    val maxDepth = 8 // Maximum recommended nesting depth
-
-                    // Draw connecting lines for ancestors with improved visibility
-                    ancestors.forEachIndexed { index, ancestor ->
+                    
+                    // Draw tree structure
+                    val hasChildren = value.childPlans.isNotEmpty()
+                    val isExpanded = expandedPlans.contains(value.mainPlanFile?.filePath)
+                    
+                    // Draw connecting lines for ancestors
+                    ancestors.forEach { ancestor ->
+                        // Check if this ancestor has siblings after it
                         val hasNextSibling = ancestor.findSiblingPlans().any { sibling ->
                             sibling.mainPlanFile?.filePath?.compareTo(ancestor.mainPlanFile?.filePath ?: "") ?: 0 > 0
                         }
-                        if (index >= maxDepth - 1) {
-                            append(if (hasNextSibling) "┆   " else "    ") // Dotted line for deep nesting
+                        append(if (hasNextSibling) "│   " else "    ")
+                    }
+
+                    // Check if this is the last child in its parent's children
+                    val isLastChild = value.parentPlan?.childPlans?.lastOrNull() == value
+                    
+                    // Add current node connector with hover effect
+                    val isHovered = value == (list as? JBList<*>)?.let { 
+                        val selectedIdx = it.selectedIndex
+                        if (selectedIdx >= 0 && selectedIdx < it.model.size) {
+                            it.model.getElementAt(selectedIdx)
                         } else {
-                            append(if (hasNextSibling) "┃   " else "    ") // Bold line for better visibility
+                            null
                         }
                     }
-
-                    val depth = ancestors.size
-                    val isLastChild = value.parentPlan?.childPlans?.lastOrNull() == value
-                    val hasChildren = value.childPlans.isNotEmpty()
-
-                    // Add current node connector with enhanced visibility
-                    if (depth >= maxDepth) {
-                        append(if (isLastChild) "┗━━ " else "┣━━ ") // Double line for better visibility
-                    } else {
-                        append(if (isLastChild) "┗━━ " else "┣━━ ")
-                    }
-
-                    // Add clear expand/collapse indicator with spacing
+                
+                    // Add expand/collapse indicator if has children
                     if (hasChildren) {
-                        val isExpanded = expandedPlans.contains(value.mainPlanFile?.filePath)
-                        append(if (isExpanded) "▼  " else "▶  ") // Added extra space for better readability
+                        val iconColor = if (isHovered) {
+                            if (isDark) "#64B5F6" else "#1976D2" // Blue color for hover
+                        } else {
+                            if (isDark) "#BDBDBD" else "#616161" // Gray color
+                        }
+                    
+                        append(if (isExpanded) """<font color="$iconColor">▼</font>""" 
+                               else """<font color="$iconColor">▶</font>""")
+                        append(" ")
                     } else {
-                        append("   ") // Consistent spacing for leaf nodes
+                        append(if (isLastChild) "└──" else "├──")
+                        append(" ")
                     }
                 }
 
-                // Set consistent tree-like indentation
+                // Calculate indentation based on depth
                 val baseIndent = 4
                 val depthIndent = value.depth * treeIndentWidth
+                
+                // Use standard background color for all levels
+                background = if (isSelected) list?.selectionBackground else list?.background
                 border = BorderFactory.createEmptyBorder(2, baseIndent + depthIndent, 2, 4)
 
-                // Set label text with tree prefix and plan name
-                label.text = treePrefix + fileName
+                // Set label text with HTML formatting for colors
+                label.text = "<html>$treePrefix$fileName</html>"
 
                 // Ensure consistent font
                 label.font = UIManager.getFont("Tree.font")
@@ -298,10 +430,10 @@ class PlanViewer(private val project: Project) {
                 countLabel.toolTipText = tooltip
 
                 statusIcon.icon = when {
-                    value.isPlanComplete() -> AllIcons.Actions.Commit
+                    value.isPlanComplete() -> AllIcons.Diff.GutterCheckBoxSelected
                     value.openChecklistItems().isEmpty() && value.childPlans.any { !it.isPlanComplete() } ->
-                        AllIcons.General.Warning // Has uncompleted child plans
-                    else -> AllIcons.General.BalloonInformation
+                        AllIcons.Diff.GutterCheckBoxIndeterminate // Has uncompleted child plans
+                    else -> AllIcons.Diff.GutterCheckBox
                 }
                 statusIcon.toolTipText = tooltip
 
@@ -400,7 +532,8 @@ class PlanViewer(private val project: Project) {
         override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
         override fun actionPerformed(e: AnActionEvent) {
-            val dialog = AiderInputDialog(project, emptyList()).apply {
+            val allFiles = project.service<FileDataCollectionService>().collectAllFiles(includePersistentFiles = true)
+            val dialog = AiderInputDialog(project, allFiles).apply {
                 selectMode(AiderMode.STRUCTURED)
             }
             if (dialog.showAndGet()) {
@@ -413,7 +546,7 @@ class PlanViewer(private val project: Project) {
     inner class RefinePlanAction : AnAction(
         "Refine Plan",
         "Refine and extend the selected plan",
-        AllIcons.Actions.Edit
+        SuggestedRefactoringBulb
     ) {
         override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
@@ -490,6 +623,70 @@ class PlanViewer(private val project: Project) {
                     )
                     AiderAction.executeAiderActionWithCommandData(project, commandData)
                 }
+            }
+        }
+
+        override fun update(e: AnActionEvent) {
+            e.presentation.isEnabled = plansList.selectedValue != null
+        }
+    }
+
+    inner class ArchivePlanAction : AnAction(
+        "Archive Plan",
+        "Move this plan to the finished plans folder",
+        AllIcons.Actions.ClearCash
+    ) {
+        override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+
+        override fun actionPerformed(e: AnActionEvent) {
+            val selectedPlan = plansList.selectedValue ?: return
+
+            val dialog = object : DialogWrapper(project) {
+                init {
+                    title = "Archive Plan"
+                    init()
+                }
+
+                override fun createCenterPanel(): JComponent {
+                    val markdownViewer = CustomMarkdownViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
+                        setDarkTheme(!JBColor.isBright())
+                        setMarkdownContent(selectedPlan.plan)
+                    }
+                    val previewScrollPane = JBScrollPane(markdownViewer.component).apply {
+                        preferredSize = Dimension(600, 300)
+                    }
+
+                    return panel {
+                        group("Plan to Archive") {
+                            row {
+                                cell(previewScrollPane)
+                                    .align(Align.FILL)
+                                    .resizableColumn()
+                            }.resizableRow()
+                        }
+                    }
+                }
+            }
+
+            if (dialog.showAndGet()) {
+                val finishedPlansDir = File(project.basePath + "/${AiderPlanService.FINISHED_AIDER_PLANS_FOLDER}")
+                if (!finishedPlansDir.exists()) {
+                    finishedPlansDir.mkdir()
+                }
+
+                selectedPlan.planFiles.forEach { fileData ->
+                    val file = File(fileData.filePath)
+                    if (file.exists()) {
+                        val destFile = File(finishedPlansDir, file.name)
+                        if (destFile.exists()) {
+                            destFile.delete()
+                        }
+                        file.renameTo(destFile)
+                    }
+                }
+                FileRefresher.refreshPath(project.basePath + "/${AiderPlanService.AIDER_PLANS_FOLDER}")
+                FileRefresher.refreshPath(finishedPlansDir.absolutePath)
+                updatePlans(project.getService(AiderPlanService::class.java).getAiderPlans())
             }
         }
 

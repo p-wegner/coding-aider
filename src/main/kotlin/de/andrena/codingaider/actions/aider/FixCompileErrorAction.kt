@@ -6,6 +6,7 @@ import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.lang.annotation.HighlightSeverity
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.components.service
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.editor.impl.DocumentMarkupModel
 import com.intellij.openapi.progress.ProgressIndicator
@@ -19,6 +20,7 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.AiderInputDialog
+import de.andrena.codingaider.services.FileDataCollectionService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 
 class FixCompileErrorActionGroup : DefaultActionGroup() {
@@ -71,14 +73,11 @@ abstract class BaseFixCompileErrorAction : AnAction() {
 
         fun createCommandData(
             project: Project,
-            psiFile: PsiFile,
+            files: List<FileData>,
             message: String,
-            useYesFlag: Boolean,
-            isShellMode: Boolean
+            useYesFlag: Boolean
         ): CommandData {
             val settings = getInstance()
-            val filePath = psiFile.virtualFile?.path
-            val files = filePath?.let { listOf(FileData(it, false)) } ?: emptyList()
             return CommandData(
                 message = message,
                 useYesFlag = useYesFlag,
@@ -111,8 +110,8 @@ class FixCompileErrorAction : BaseFixCompileErrorAction() {
     companion object {
         fun fixCompileError(project: Project, psiFile: PsiFile) {
             val errorMessage = getErrorMessage(project, psiFile)
-            val commandData =
-                createCommandData(project, psiFile, fixErrorPrompt(errorMessage), true, false)
+            val files = getFiles(psiFile, project)
+            val commandData = createCommandData(project, files, fixErrorPrompt(errorMessage), true)
             IDEBasedExecutor(project, commandData).execute()
         }
 
@@ -135,6 +134,12 @@ class FixCompileErrorAction : BaseFixCompileErrorAction() {
         }
     }
 
+}
+
+private fun getFiles(psiFile: PsiFile, project: Project): List<FileData> {
+    val elements = psiFile.virtualFile?.let { arrayOf(it) } ?: emptyArray()
+    val files = project.service<FileDataCollectionService>().collectAllFiles(elements)
+    return files
 }
 
 class FixCompileErrorInteractive : BaseFixCompileErrorAction() {
@@ -161,26 +166,27 @@ class FixCompileErrorInteractive : BaseFixCompileErrorAction() {
     private fun showDialog(project: Project, psiFile: PsiFile) {
         val errorMessage = getErrorMessage(project, psiFile)
         ApplicationManager.getApplication().invokeAndWait {
-            val dialog = AiderInputDialog(
-                project,
-                listOf(FileData(psiFile.virtualFile.path, false)),
-                fixErrorPrompt(errorMessage)
-            )
-
-            if (dialog.showAndGet()) {
-                val commandData = createCommandData(
+            getFiles(psiFile, project).let { files ->
+                val dialog = AiderInputDialog(
                     project,
-                    psiFile,
-                    dialog.getInputText(),
-                    dialog.isYesFlagChecked(),
-                    dialog.isShellMode()
-                ).copy(
-                    llm = dialog.getLlm().name,
-                    additionalArgs = dialog.getAdditionalArgs(),
-                    files = dialog.getAllFiles()
+                    files,
+                    fixErrorPrompt(errorMessage)
                 )
 
-                AiderAction.executeAiderActionWithCommandData(project, commandData)
+                if (dialog.showAndGet()) {
+                    val commandData = createCommandData(
+                        project,
+                        files,
+                        dialog.getInputText(),
+                        dialog.isYesFlagChecked()
+                    ).copy(
+                        llm = dialog.getLlm().name,
+                        additionalArgs = dialog.getAdditionalArgs(),
+                        files = dialog.getAllFiles()
+                    )
+
+                    AiderAction.executeAiderActionWithCommandData(project, commandData)
+                }
             }
         }
     }

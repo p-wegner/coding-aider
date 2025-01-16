@@ -54,6 +54,7 @@ class DefaultApiKeyChecker : ApiKeyChecker {
                 "VERTEXAI_PROJECT",
                 "VERTEXAI_LOCATION"
             )
+            LlmProviderType.CUSTOM_AIDERMODEL -> emptyList()
         }
     }
 

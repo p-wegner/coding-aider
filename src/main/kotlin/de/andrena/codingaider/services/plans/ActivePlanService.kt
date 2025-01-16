@@ -2,6 +2,7 @@ package de.andrena.codingaider.services.plans
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
@@ -11,11 +12,13 @@ import de.andrena.codingaider.executors.api.CommandFinishedCallback
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.FileDataCollectionService
+import de.andrena.codingaider.services.sidecar.AiderProcessManager
 import de.andrena.codingaider.settings.AiderSettings
 import java.io.File
 
 @Service(Service.Level.PROJECT)
 class ActivePlanService(private val project: Project) {
+    private val logger = Logger.getInstance(ActivePlanService::class.java)
     private var activePlan: AiderPlan? = null
 
     fun setActivePlan(plan: AiderPlan) {
@@ -38,11 +41,13 @@ class ActivePlanService(private val project: Project) {
         return checked && children.all { it.isComplete() }
     }
 
-    fun handlePlanCompletion(success: Boolean = true) {
+    fun handlePlanActionFinished(success: Boolean = true) {
+        return
+        // TODO: decide whether to use this or not
         refreshActivePlan()
 
         if (!success) {
-            clearActivePlan()
+            cleanupAndClearPlan()
             return
         }
 
@@ -51,15 +56,40 @@ class ActivePlanService(private val project: Project) {
             return
         }
 
-        if (currentPlan.isPlanComplete()) {
-            // Try to find next uncompleted plan in hierarchy
-            val nextPlans = currentPlan.getNextUncompletedPlan()
-            if (nextPlans.isNotEmpty()) {
-                setActivePlan(nextPlans.first()) // Set the first uncompleted plan as active
-            } else {
-                clearActivePlan()
+        if (!currentPlan!!.isPlanComplete()) {
+            if (AiderSettings.getInstance().enableAutoPlanContinue) {
+                continuePlan()
+                return
             }
         }
+        // Try to find next uncompleted plan in hierarchy
+        val nextPlans = currentPlan.getNextUncompletedPlansInSameFamily()
+        if (nextPlans.isNotEmpty()) {
+            cleanupAndClearPlan() // Cleanup current plan's resources
+            setActivePlan(nextPlans.first()) // Set the first uncompleted plan as active
+
+            if (AiderSettings.getInstance().enableAutoPlanContinuationInPlanFamily) {
+                continuePlan()
+            }
+        } else {
+            cleanupAndClearPlan()
+        }
+    }
+
+    private fun cleanupAndClearPlan() {
+        activePlan?.let { plan ->
+            // Clean up sidecar process if enabled
+            if (AiderSettings.getInstance().useSidecarMode) {
+                try {
+                    plan.mainPlanFile?.filePath?.let { planPath ->
+                        project.service<AiderProcessManager>().disposePlanProcess(plan.id)
+                    }
+                } catch (e: Exception) {
+                    logger.error("Error disposing plan process: ${e.message}", e)
+                }
+            }
+        }
+        clearActivePlan()
     }
 
     fun handlePlanError(error: Throwable? = null) {
@@ -94,7 +124,7 @@ class ActivePlanService(private val project: Project) {
 
         if (plan.isPlanComplete()) {
             // Check for uncompleted child or sibling plans
-            val nextPlans = plan.getNextUncompletedPlan()
+            val nextPlans = plan.getNextUncompletedPlansInSameFamily()
             if (nextPlans.isNotEmpty()) {
                 setActivePlan(nextPlans.first()) // Set the first uncompleted plan as active
             } else {
@@ -111,7 +141,7 @@ class ActivePlanService(private val project: Project) {
         if (openItems.isEmpty()) {
             // If current plan has no open items but isn't complete, it might have uncompleted child plans
             if (!plan.isPlanComplete()) {
-                val nextPlan = plan.getNextUncompletedPlan().firstOrNull()
+                val nextPlan = plan.getNextUncompletedPlansInSameFamily().firstOrNull()
                 if (nextPlan != null) {
                     setActivePlan(nextPlan)
                 } else {
@@ -135,6 +165,7 @@ class ActivePlanService(private val project: Project) {
             val virtualFiles = collectVirtualFiles(selectedPlan, fileSystem, projectBasePath)
             val filesToInclude = collectFilesToInclude(virtualFiles)
 
+            // Create command data with plan-specific settings
             val commandData = CommandData(
                 message = "",
                 useYesFlag = settings.useYesFlag,
@@ -144,14 +175,11 @@ class ActivePlanService(private val project: Project) {
                 lintCmd = settings.lintCmd,
                 projectPath = projectBasePath,
                 aiderMode = AiderMode.STRUCTURED,
-                sidecarMode = settings.useSidecarMode
+                sidecarMode = settings.useSidecarMode,
+                planId = selectedPlan.mainPlanFile?.filePath
             )
-
             setActivePlan(selectedPlan)
-            val commandFinishedCallback: CommandFinishedCallback = object : CommandFinishedCallback {
-                override fun onCommandFinished(success: Boolean) = handlePlanCompletion(success)
-            }
-            IDEBasedExecutor(project, commandData, commandFinishedCallback).execute()
+            IDEBasedExecutor(project, commandData, CommandFinishedCallback { handlePlanActionFinished(it) }).execute()
 
         } catch (e: Exception) {
             val errorMessage = when (e) {
