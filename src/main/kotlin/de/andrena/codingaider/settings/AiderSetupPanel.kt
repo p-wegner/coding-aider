@@ -19,7 +19,7 @@ import javax.swing.event.DocumentListener
 class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
     private val apiKeyFields = mutableMapOf<String, JPasswordField>()
     val useDockerAiderCheckBox = JBCheckBox("Use aider in Docker")
-    val dockerImageTagField = TextFieldWithHistory()
+    val dockerImageField = TextFieldWithHistory()
     val aiderExecutablePathField = TextFieldWithHistory()
 
     fun createPanel(panel: Panel) {
@@ -89,44 +89,20 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
                         "If enabled, Aider will be run using the Docker image paulgauthier/aider. Currently a new container will be used for every command, which may delay the execution compared to native aider setup."
                 }
         }
-        row("Docker Image Tag:") {
-            cell(dockerImageTagField)
+        row("Docker Image:") {
+            cell(dockerImageField)
                 .resizableColumn()
                 .align(Align.FILL)
                 .component
                 .apply {
-                    toolTipText =
-                        "Enter the Docker image tag for ${AiderDefaults.DOCKER_IMAGE}. Suggestions are provided in the dropdown."
-                    setHistory(listOf(AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION, "latest"))
+                    toolTipText = "Enter the full Docker image name including tag (e.g. paulgauthier/aider:v0.68.0)"
+                    setHistory(listOf(AiderDefaults.DOCKER_IMAGE, "paulgauthier/aider:latest"))
                 }
 
-            // Add listener to dynamically enable/disable docker image tag field
+            // Add listener to dynamically enable/disable docker image field
             useDockerAiderCheckBox.addActionListener {
-                dockerImageTagField.isEnabled = useDockerAiderCheckBox.isSelected
+                dockerImageField.isEnabled = useDockerAiderCheckBox.isSelected
             }
-        }
-        row {
-            val warningLabel = JLabel().apply {
-                foreground = UIManager.getColor("Label.errorForeground")
-                isVisible = false
-            }
-            cell(warningLabel)
-            dockerImageTagField.addDocumentListener(object : DocumentListener {
-                override fun insertUpdate(e: DocumentEvent) = checkTag()
-                override fun removeUpdate(e: DocumentEvent) = checkTag()
-                override fun changedUpdate(e: DocumentEvent) = checkTag()
-
-                private fun checkTag() {
-                    if (dockerImageTagField.text != AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION) {
-                        warningLabel.text =
-                            "Warning: Using a different version than ${AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION} " +
-                                    "might not be fully compatibility with the plugin."
-                        warningLabel.isVisible = true
-                    } else {
-                        warningLabel.isVisible = false
-                    }
-                }
-            })
         }
     }
 
@@ -288,7 +264,7 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
     fun isModified(): Boolean {
         val settings = AiderSettings.getInstance()
         return useDockerAiderCheckBox.isSelected != settings.useDockerAider ||
-                dockerImageTagField.text != settings.dockerImageTag ||
+                dockerImageField.text != settings.dockerImage ||
                 aiderExecutablePathField.text != settings.aiderExecutablePath
 
     }
@@ -297,15 +273,15 @@ class AiderSetupPanel(private val apiKeyChecker: ApiKeyChecker) {
     fun apply() {
         val settings = AiderSettings.getInstance()
         settings.useDockerAider = useDockerAiderCheckBox.isSelected
-        settings.dockerImageTag = dockerImageTagField.text
+        settings.dockerImage = dockerImageField.text
         settings.aiderExecutablePath = aiderExecutablePathField.text
     }
 
     fun reset() {
         val settings = AiderSettings.getInstance()
         useDockerAiderCheckBox.isSelected = settings.useDockerAider
-        dockerImageTagField.text = settings.dockerImageTag
-        dockerImageTagField.isEnabled = settings.useDockerAider
+        dockerImageField.text = settings.dockerImage
+        dockerImageField.isEnabled = settings.useDockerAider
         aiderExecutablePathField.text = settings.aiderExecutablePath
         updateApiKeyFieldsOnClose()
 

@@ -44,7 +44,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var sidecarModeVerbose: Boolean = false, // Enable verbose logging for sidecar
         var alwaysIncludeOpenFiles: Boolean = AiderDefaults.ALWAYS_INCLUDE_OPEN_FILES,
         var alwaysIncludePlanContextFiles: Boolean = AiderDefaults.ALWAYS_INCLUDE_PLAN_CONTEXT_FILES,
-        var dockerImageTag: String = AiderDefaults.DOCKER_IMAGE_TAG_SUGGESTION,
+        var dockerImage: String = AiderDefaults.DOCKER_IMAGE,
         var aiderExecutablePath: String = AiderDefaults.AIDER_EXECUTABLE_PATH,
         var documentationLlm: String = AiderDefaults.DOCUMENTATION_LLM,
         var enableAutoPlanContinue: Boolean = AiderDefaults.ENABLE_AUTO_PLAN_CONTINUE,
@@ -241,10 +241,10 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         }
     }
 
-    var dockerImageTag: String
-        get() = myState.dockerImageTag
+    var dockerImage: String
+        get() = myState.dockerImage
         set(value) {
-            myState.dockerImageTag = value
+            myState.dockerImage = value
         }
 
 
