@@ -83,7 +83,9 @@ class AiderContextView(
                                 }
                                 val fileContent = file
                                     ?.takeIf { !tokenCountService.shouldSkipTokenCount(it.filePath) }
-                                    ?.let { File(it.filePath).readText() } ?: ""
+                                    ?.let { File(it.filePath)
+                                        .takeIf { it.exists() }
+                                        ?.readText()?:"" } ?: ""
 
                                 val tokenCount = tokenCountService.countTokensInText(fileContent)
                                 text = "$name (Tokens: $tokenCount)"
