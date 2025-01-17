@@ -24,17 +24,25 @@ class AiderHistoryService(private val project: Project) {
                 val dateTime = LocalDateTime.parse(lines[0], dateTimeFormatter)
                 val command = lines.drop(1)
                     .run {
-                        if (lines.any {
-                                it.contains(
-                                    "+$STRUCTURED_MODE_MARKER",
-                                    false
-                                )
-                            }) dropWhile { !it.startsWith("+$STRUCTURED_MODE_MARKER") } else this
+                        // For plan mode, we want to skip system prompts and only show user prompts
+                        if (lines.any { it.contains("+<SystemPrompt>", false) }) {
+                            filter { line -> 
+                                !line.startsWith("+<SystemPrompt>") && 
+                                !line.startsWith("+</SystemPrompt>") &&
+                                !line.startsWith("+$STRUCTURED_MODE_MARKER")
+                            }
+                        } else if (lines.any { it.contains("+$STRUCTURED_MODE_MARKER", false) }) {
+                            dropWhile { !it.startsWith("+$STRUCTURED_MODE_MARKER") }
+                        } else {
+                            this
+                        }
                     }
                     .joinToString("\n") {
                         it.trim()
                             .removePrefix("+")
                             .removePrefix(STRUCTURED_MODE_MARKER)
+                            .removePrefix("<UserPrompt>")
+                            .removeSuffix("</UserPrompt>")
                             .trim()
                     }
                 dateTime to command.split("\n").filter { it.isNotEmpty() }
