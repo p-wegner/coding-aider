@@ -22,28 +22,29 @@ class AiderHistoryService(private val project: Project) {
             .map { entry ->
                 val lines = entry.lines()
                 val dateTime = LocalDateTime.parse(lines[0], dateTimeFormatter)
-                val command = lines.drop(1)
-                    .run {
-                        // For plan mode, we want to skip system prompts and only show user prompts
-                        if (lines.any { it.contains("+<SystemPrompt>", false) }) {
-                            filter { line -> 
-                                !line.startsWith("+<SystemPrompt>") && 
-                                !line.startsWith("+</SystemPrompt>") &&
-                                !line.startsWith("+$STRUCTURED_MODE_MARKER")
-                            }
-                        } else if (lines.any { it.contains("+$STRUCTURED_MODE_MARKER", false) }) {
-                            dropWhile { !it.startsWith("+$STRUCTURED_MODE_MARKER") }
+                val command = lines.drop(1).joinToString("\n") { it.trim() }
+                    .let { fullText ->
+                        // Extract only the user prompt between <UserPrompt> tags for plan mode
+                        if (fullText.contains("<SystemPrompt>")) {
+                            fullText.substringAfterLast("<UserPrompt>")
+                                .substringBefore("</UserPrompt>")
+                                .trim()
+                        } else if (fullText.contains(STRUCTURED_MODE_MARKER)) {
+                            fullText.substringAfter(STRUCTURED_MODE_MARKER)
+                                .substringBefore(STRUCTURED_MODE_MARKER)
+                                .trim()
                         } else {
-                            this
+                            fullText
                         }
                     }
-                    .joinToString("\n") {
-                        it.trim()
-                            .removePrefix("+")
+                    .split("\n")
+                    .filter { it.isNotBlank() }
+                    .joinToString("\n") { 
+                        it.removePrefix("+")
                             .removePrefix(STRUCTURED_MODE_MARKER)
                             .removePrefix("<UserPrompt>")
                             .removeSuffix("</UserPrompt>")
-                            .trim()
+                            .trim() 
                     }
                 dateTime to command.split("\n").filter { it.isNotEmpty() }
             }
