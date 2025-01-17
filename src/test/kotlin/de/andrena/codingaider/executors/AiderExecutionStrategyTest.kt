@@ -77,8 +77,8 @@ class AiderExecutionStrategyTest : BasePlatformTestCase() {
         val command = nativeStrategy.buildCommand(commandData)
 
         assertThat(command).contains("-m")
-        assertThat(command.last()).contains("SYSTEM A plan already exists. Continue implementing the existing plan")
-        assertThat(command.last()).contains("[STRUCTURED MODE] Continue with the plan")
+        assertThat(command.last()).contains("A plan already exists. Continue implementing the existing plan")
+        assertThat(command.last()).contains("Continue with the plan")
     }
 
     @Test
@@ -94,8 +94,8 @@ class AiderExecutionStrategyTest : BasePlatformTestCase() {
         val command = dockerStrategy.buildCommand(commandData)
 
         assertThat(command).contains("-m")
-        assertThat(command.last()).contains("SYSTEM A plan already exists. Continue implementing the existing plan")
-        assertThat(command.last()).contains("[STRUCTURED MODE] Update the plan")
+        assertThat(command.last()).contains("A plan already exists. Continue implementing the existing plan")
+        assertThat(command.last()).contains("Update the plan")
     }
 
     @Test
@@ -242,7 +242,7 @@ class AiderExecutionStrategyTest : BasePlatformTestCase() {
         val command = nativeStrategy.buildCommand(commandData)
 
         assertThat(command).contains("-m")
-        assertThat(command.last()).contains("[STRUCTURED MODE] Single line message")
+        assertThat(command.last()).contains("Single line message")
     }
 
     @Test
@@ -252,7 +252,7 @@ class AiderExecutionStrategyTest : BasePlatformTestCase() {
         val command = nativeStrategy.buildCommand(commandData)
 
         assertThat(command).contains("-m")
-        assertThat(command.last()).isEqualTo("$structuredModeSystemMessage\n[STRUCTURED MODE] $multiLineMessage")
+        assertThat(command.last()).isEqualTo("$structuredModeSystemMessage\n<UserPrompt> $multiLineMessage </UserPrompt>")
     }
 
     @Test
@@ -263,6 +263,6 @@ class AiderExecutionStrategyTest : BasePlatformTestCase() {
         val command = dockerStrategy.buildCommand(commandData)
 
         assertThat(command).contains("-m")
-        assertThat(command.last()).isEqualTo("$structuredModeSystemMessage\n[STRUCTURED MODE] $multiLineMessage")
+        assertThat(command.last()).isEqualTo("$structuredModeSystemMessage\n<UserPrompt> $multiLineMessage </UserPrompt>")
     }
 }
