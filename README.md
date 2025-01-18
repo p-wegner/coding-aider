@@ -60,7 +60,7 @@ the [Aider documentation](https://aider.chat/docs/llms/openai-compat.html).
 ## Key Features
 
 1. **AI-Powered Coding Assistance**: Harness the power of Aider to receive intelligent coding assistance
-   within your IDE.
+   within your IDE. See [Plan Mode](docs/plan-mode.md) for details on maintaining context across sessions.
 
 2. **Intuitive Access**:
     - Quickly initiate Aider actions via the "Start Aider Action" option in the Tools menu or Project View popup menu.
