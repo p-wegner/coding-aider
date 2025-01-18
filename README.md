@@ -105,19 +105,11 @@ the [Aider documentation](https://aider.chat/docs/llms/openai-compat.html).
     - **Document Each Folder Action**: Generate documentation for each folder in the selected files.
     - **Continue Plan Action**: Allow users to select and continue an unfinished plan within the Coding Aider plugin.
 
-13. **Structured Mode**:
-    - Facilitates a more organized approach to developing features and implementing code changes.
-    - Simply describe a feature briefly, and the plugin will generate a detailed plan and checklist for you.
-    - These plans and checklists are saved in the .coding-aider-plans directory and can be manually adjusted as needed.
-    - Once a plan is created, Aider will automatically update it to reflect current progress and any new requirements.
-    - This mode aids in tracking the implementation progress of features and avoids time-consuming manual prompting for
-      larger features.
-    - If a plan is active (i.e. its files are contained in the context), you can leave the message field empty, and
-      Aider will continue working on the existing plan.
-    - Alternatively, you can use the [Continue Plan](./docs/actions.md) action to continue working on the existing plan.
-    - The Tool Window will display an overview of existing plans and their progress.
-    - Further insights can be gained by reviewing the used system prompt
-      in [AiderPlanPromptService](./src/main/kotlin/de/andrena/codingaider/services/plans/AiderPlanPromptService.kt).
+13. **Structured Mode and Plans**: 
+    - Break down complex features into manageable tasks
+    - Track implementation progress with checklists
+    - Maintain context across multiple coding sessions
+    - See [Plan Mode](docs/plan-mode.md) for detailed workflow
 14. **Summarized Output**:
     - Option to enable structured XML summaries of Aider's changes
     - Provides parseable output for integration with other tools
