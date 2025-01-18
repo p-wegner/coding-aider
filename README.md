@@ -10,10 +10,20 @@ while allowing you complete control over the context utilized by the LLM.
 
 ## Important Note
 
-To utilize this plugin, you
+To utilize this plugin, you need either:
 
-- must have a functional Aider installation (version 0.65.0 or higher)
-- or be able to run docker containers
+1. A functional Aider installation (version 0.65.0 or higher):
+   - On Mac/Linux: Ensure aider is in your PATH or set the path manually in Settings
+   - On Windows: Aider should be available in PATH or set manually
+   
+2. OR Docker installed and running:
+   - On Mac: Ensure docker command is in PATH (usually in /usr/local/bin)
+   - On Windows: Docker Desktop should add docker to PATH automatically
+
+### Mac Users
+
+If you encounter "command not found" errors, you can:
+- Set the full path to the aider executable in Tools > Aider Settings
 
 ## LLM Provider Configuration
 

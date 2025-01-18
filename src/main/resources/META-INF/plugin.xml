@@ -18,10 +18,25 @@
         Visit <a href="https://github.com/p-wegner/coding-aider">the plugin github page</a> for more information and to report issues.
 
         <h3>Important Note</h3>
-        <p>To utilize this plugin, you</p>
+        <p>To utilize this plugin, you need either:</p>
         <ul>
-            <li>must have a functional Aider installation (version 0.65.0 or higher)</li>
-            <li>or be able to run docker containers</li>
+            <li>A functional Aider installation (version 0.65.0 or higher)
+                <ul>
+                    <li>On Mac/Linux: Ensure aider is in your PATH or set the path manually in Settings</li>
+                    <li>On Windows: Aider should be available in PATH or set manually</li>
+                </ul>
+            </li>
+            <li>OR Docker installed and running
+                <ul>
+                    <li>On Mac: Ensure docker command is in PATH (usually in /usr/local/bin)</li>
+                    <li>On Windows: Docker Desktop should add docker to PATH automatically</li>
+                </ul>
+            </li>
+        </ul>
+
+        <p><strong>Mac Users:</strong> If you encounter "command not found" errors, you can:</p>
+        <ul>
+            <li>Set the full path to the aider executable in Tools > Aider Settings</li>
         </ul>
 
         <h3>LLM Provider Configuration</h3>

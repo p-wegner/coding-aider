@@ -24,7 +24,6 @@ class AiderHistoryService(private val project: Project) {
                 val dateTime = LocalDateTime.parse(lines[0], dateTimeFormatter)
                 val command = lines.drop(1).joinToString("\n") { it.trim() }
                     .let { fullText ->
-                        // Extract only the user prompt between <UserPrompt> tags for plan mode
                         if (fullText.contains("<SystemPrompt>")) {
                             fullText.substringAfterLast("<UserPrompt>")
                                 .substringBefore("</UserPrompt>")
