@@ -122,36 +122,45 @@ class MarkdownJcefViewer {
                         padding: 4px 8px;
                     }
                     .aider-intention, .aider-summary {
-                        border-radius: 6px;
-                        padding: 16px;
-                        margin: 16px 0;
+                        border-radius: 8px;
+                        padding: 20px;
+                        margin: 24px 0;
                         position: relative;
-                        font-size: 14px;
-                        line-height: 1.6;
+                        font-size: 15px;
+                        line-height: 1.7;
+                        box-shadow: 0 2px 8px ${if (isDark) "rgba(0,0,0,0.3)" else "rgba(0,0,0,0.1)"};
                     }
                     .aider-intention {
                         background: ${if (isDark) "#1a2733" else "#f0f7ff"};
-                        border: 2px solid ${if (isDark) "#2c4356" else "#bcd6f5"};
+                        border: 3px solid ${if (isDark) "#2c4356" else "#bcd6f5"};
                         color: ${if (isDark) "#589df6" else "#0066cc"};
                     }
                     .aider-intention::before {
-                        content: "Intention";
+                        content: "🎯 Intention";
                         display: block;
                         font-weight: bold;
-                        margin-bottom: 8px;
+                        font-size: 16px;
+                        margin-bottom: 12px;
+                        padding-bottom: 8px;
+                        border-bottom: 2px solid ${if (isDark) "#2c4356" else "#bcd6f5"};
                         color: ${if (isDark) "#88b0e4" else "#0055cc"};
+                        letter-spacing: 0.5px;
                     }
                     .aider-summary {
                         background: ${if (isDark) "#2d2d2d" else "#f8f8f8"};
-                        border: 2px solid ${if (isDark) "#454545" else "#e5e5e5"};
+                        border: 3px solid ${if (isDark) "#454545" else "#e5e5e5"};
                         color: ${if (isDark) "#e0e0e0" else "#2b2b2b"};
                     }
                     .aider-summary::before {
-                        content: "Summary";
+                        content: "📋 Summary";
                         display: block;
                         font-weight: bold;
-                        margin-bottom: 8px;
+                        font-size: 16px;
+                        margin-bottom: 12px;
+                        padding-bottom: 8px;
+                        border-bottom: 2px solid ${if (isDark) "#454545" else "#e5e5e5"};
                         color: ${if (isDark) "#cccccc" else "#666666"};
+                        letter-spacing: 0.5px;
                     }
                 </style>
             </head>
