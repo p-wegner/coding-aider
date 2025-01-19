@@ -1,6 +1,5 @@
 package de.andrena.codingaider.outputview
 
-import com.intellij.util.ui.StartupUiUtil.isDarkTheme
 import com.vladsch.flexmark.ext.autolink.AutolinkExtension
 import com.vladsch.flexmark.ext.definition.DefinitionExtension
 import com.vladsch.flexmark.ext.footnotes.FootnoteExtension
