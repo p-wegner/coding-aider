@@ -232,6 +232,36 @@ class MarkdownJcefViewer {
                         border-radius: 4px;
                         font-family: monospace;
                     }
+                    
+                    /* Custom scrollbar styling */
+                    ::-webkit-scrollbar {
+                        width: 12px;
+                        height: 12px;
+                    }
+                    
+                    ::-webkit-scrollbar-track {
+                        background: ${if (isDark) "#3c3f41" else "#f0f0f0"};
+                        border-radius: 6px;
+                    }
+                    
+                    ::-webkit-scrollbar-thumb {
+                        background: ${if (isDark) "#585858" else "#c4c4c4"};
+                        border: 3px solid ${if (isDark) "#3c3f41" else "#f0f0f0"};
+                        border-radius: 6px;
+                        min-height: 40px;
+                    }
+                    
+                    ::-webkit-scrollbar-thumb:hover {
+                        background: ${if (isDark) "#666666" else "#a8a8a8"};
+                    }
+                    
+                    ::-webkit-scrollbar-thumb:active {
+                        background: ${if (isDark) "#787878" else "#919191"};
+                    }
+                    
+                    ::-webkit-scrollbar-corner {
+                        background: ${if (isDark) "#3c3f41" else "#f0f0f0"};
+                    }
                 </style>
             </head>
             <body>
