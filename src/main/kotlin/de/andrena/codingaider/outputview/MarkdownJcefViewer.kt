@@ -27,7 +27,6 @@ class MarkdownJcefViewer {
             // Create the JCEF Browser
             jbCefBrowser = JBCefBrowser().apply {
                 component.isFocusable = true
-                component.preferredSize = java.awt.Dimension(800, 600)
             }
             // Add the browser component to our mainPanel
             mainPanel.add(jbCefBrowser!!.component, BorderLayout.CENTER)
