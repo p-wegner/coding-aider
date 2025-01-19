@@ -118,18 +118,33 @@ class MarkdownJcefViewer {
                     pre {
                         background: ${colors["preBg"]};
                         border: 1px solid ${colors["preBorder"]};
-                        padding: 10px;
-                        margin: 0;
+                        padding: 16px;
+                        margin: 16px 0;
+                        border-radius: 8px;
+                        box-shadow: 0 2px 4px ${if (isDark) "rgba(0,0,0,0.3)" else "rgba(0,0,0,0.1)"};
+                        overflow-x: auto;
+                    }
+                    
+                    pre code {
+                        font-family: 'JetBrains Mono', Consolas, Monaco, 'Courier New', monospace;
+                        font-size: 14px;
+                        line-height: 1.5;
+                        tab-size: 4;
                     }
                     .search-block {
                         background: ${colors["searchBg"]};
                         color: ${colors["searchText"]};
-                        padding: 4px 8px;
+                        padding: 8px 12px;
+                        border-radius: 6px 6px 0 0;
+                        margin: 0;
+                        border-bottom: 2px solid ${if (isDark) "#444" else "#ddd"};
                     }
                     .replace-block {
                         background: ${colors["replaceBg"]};
                         color: ${colors["replaceText"]};
-                        padding: 4px 8px;
+                        padding: 8px 12px;
+                        border-radius: 0 0 6px 6px;
+                        margin: 0;
                     }
                     .aider-intention, .aider-summary {
                         border-radius: 12px;

@@ -22,8 +22,8 @@
 - [x] Update summary block CSS styling
 - [x] Update intention block CSS styling
 - [x] Fix line break handling in HTML conversion
-- [ ] Improve code block formatting
-- [ ] Enhance visual hierarchy with better spacing
+- [x] Improve code block formatting
+- [x] Enhance visual hierarchy with better spacing
 
 ## Testing
 - [ ] Test window sizing with various content lengths
