@@ -117,12 +117,24 @@ class MarkdownDialog(
                 }
             }
         }
-        preferredSize = java.awt.Dimension(800, 600)
-        minimumSize = java.awt.Dimension(400, 300)
+        // Set optimal window dimensions based on screen size
+        val screenSize = java.awt.Toolkit.getDefaultToolkit().screenSize
+        val optimalWidth = (screenSize.width * 0.6).toInt().coerceIn(600, 1200)
+        val optimalHeight = (screenSize.height * 0.7).toInt().coerceIn(400, 800)
+        preferredSize = java.awt.Dimension(optimalWidth, optimalHeight)
+        minimumSize = java.awt.Dimension(500, 400)
+        
+        // Use weighted layout for better content scaling
+        layout = BorderLayout(10, 10)
         pack()
         setLocationRelativeTo(null)
-        layout = BorderLayout()
+        // Add scroll pane with proper weighting
+        scrollPane.border = javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5)
         add(scrollPane, BorderLayout.CENTER)
+        scrollPane.preferredSize = java.awt.Dimension(
+            (preferredSize.width * 0.95).toInt(),
+            (preferredSize.height * 0.9).toInt()
+        )
 
         defaultCloseOperation = DO_NOTHING_ON_CLOSE
         addWindowListener(object : java.awt.event.WindowAdapter() {

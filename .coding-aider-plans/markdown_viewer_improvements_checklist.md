@@ -3,9 +3,9 @@
 # Markdown Viewer Improvements Checklist
 
 ## Window Sizing
-- [ ] Adjust initial window size calculation
-- [ ] Implement dynamic content area sizing
-- [ ] Add minimum window size constraints
+- [x] Adjust initial window size calculation
+- [x] Implement dynamic content area sizing
+- [x] Add minimum window size constraints
 - [ ] Optimize scroll bar visibility logic
 
 ## Scroll Position Management
