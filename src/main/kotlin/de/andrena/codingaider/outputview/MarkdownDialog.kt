@@ -186,6 +186,7 @@ class MarkdownDialog(
     }
 
     private var lastContent = ""
+    private var currentContent = ""
 
     fun updateProgress(output: String, message: String) {
         com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
@@ -293,6 +294,7 @@ class MarkdownDialog(
                     .aider-summary { background: #f7f7f7; border-color: #e0e0e0; color: #333333; }
                     """
                 }
+                currentContent = lastContent
                 markdownViewer.setMarkdown("""
                     <style>$themeCss</style>
                     $currentContent
