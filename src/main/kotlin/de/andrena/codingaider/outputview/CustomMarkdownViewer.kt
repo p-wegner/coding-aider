@@ -20,10 +20,8 @@ import com.vladsch.flexmark.util.html.MutableAttributes
 import de.andrena.codingaider.utils.FilePathConverter
 import javax.swing.JEditorPane
 
-import com.intellij.openapi.diagnostic.Logger
 
 class CustomMarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
-    private val logger = Logger.getInstance(CustomMarkdownViewer::class.java)
     val component: JEditorPane = JEditorPane().apply {
         contentType = "text/html"
         isEditable = false
@@ -215,8 +213,6 @@ class CustomMarkdownViewer(private val lookupPaths: List<String> = emptyList()) 
                 </html>
             """.trimIndent()
 
-            // Log the generated HTML for debugging
-            logger.info("Generated HTML: $styledHtml")
 
             // Store current caret position
             val caretPos = component.caretPosition
