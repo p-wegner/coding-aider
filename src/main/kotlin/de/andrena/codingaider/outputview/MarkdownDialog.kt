@@ -43,8 +43,8 @@ class MarkdownDialog(
         return displayString ?: initialTitle
     }
 
-    private val markdownViewer = CustomMarkdownViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
-        setDarkTheme(!JBColor.isBright())
+    private val markdownViewer = MarkdownJcefViewer().apply {
+        setMarkdown(initialText)
     }
     private val scrollPane = JBScrollPane(markdownViewer.component).apply {
         horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
@@ -88,7 +88,7 @@ class MarkdownDialog(
 
     init {
         title = initialTitle
-        markdownViewer.setMarkdownContent(initialText)
+        markdownViewer.setMarkdown(initialText)
 
         // Add scroll listener to detect when user manually scrolls
         scrollPane.verticalScrollBar.addAdjustmentListener { e ->
@@ -200,7 +200,7 @@ class MarkdownDialog(
                     val wasAtBottom = autoScroll
 
                     // Update content
-                    markdownViewer.setMarkdownContent(newContent)
+                    markdownViewer.setMarkdown(newContent)
                     title = message
 
                     // Handle scrolling after content update
@@ -278,6 +278,25 @@ class MarkdownDialog(
                 toFront()
                 requestFocus()
                 markdownViewer.component.requestFocusInWindow()
+                // Set dark theme based on current IDE theme
+                val isDark = !JBColor.isBright()
+                val themeCss = if (isDark) {
+                    """
+                    body { background: #2b2b2b; color: #ffffff; }
+                    .aider-intention { background: #1a2733; border-color: #2c4356; color: #589df6; }
+                    .aider-summary { background: #2b2b2b; border-color: #404040; color: #cccccc; }
+                    """
+                } else {
+                    """
+                    body { background: #ffffff; color: #000000; }
+                    .aider-intention { background: #f0f7ff; border-color: #bcd6f5; color: #0066cc; }
+                    .aider-summary { background: #f7f7f7; border-color: #e0e0e0; color: #333333; }
+                    """
+                }
+                markdownViewer.setMarkdown("""
+                    <style>$themeCss</style>
+                    $currentContent
+                """.trimIndent())
             }
         }
     }
