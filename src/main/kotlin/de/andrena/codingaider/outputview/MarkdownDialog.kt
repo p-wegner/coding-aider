@@ -58,14 +58,6 @@ class MarkdownDialog(
                 shouldAutoScroll = isAtBottom
             }
         }
-        
-        verticalScrollBar.addAdjustmentListener { e ->
-            if (!e.valueIsAdjusting) {
-                val scrollBar = verticalScrollBar
-                val isAtBottom = scrollBar.value >= scrollBar.maximum - scrollBar.visibleAmount - 10
-                shouldAutoScroll = isAtBottom
-            }
-        }
     }
     private var autoCloseTimer: TimerTask? = null
     private var refreshTimer: Timer? = null
