@@ -50,6 +50,14 @@ class MarkdownDialog(
         border = null
         horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
         verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER
+        
+        verticalScrollBar.addAdjustmentListener { e ->
+            if (!e.valueIsAdjusting) {
+                val scrollBar = verticalScrollBar
+                val isAtBottom = scrollBar.value >= scrollBar.maximum - scrollBar.visibleAmount - 10
+                shouldAutoScroll = isAtBottom
+            }
+        }
     }
     private var autoCloseTimer: TimerTask? = null
     private var refreshTimer: Timer? = null
@@ -84,7 +92,7 @@ class MarkdownDialog(
         }
     }
     private var isProcessFinished = false
-    private var autoScroll = true
+    private var shouldAutoScroll = true
 
     init {
         title = initialTitle
@@ -182,12 +190,18 @@ class MarkdownDialog(
                 if (newContent != lastContent) {
                     lastContent = newContent
 
-                    // Calculate the distance from the bottom before updating
+                    // Get scroll position before update
                     val scrollBar = scrollPane.verticalScrollBar
-                    val extent = scrollBar.model.extent
-                    val maximum = scrollBar.model.maximum
-                    val currentValue = scrollBar.value
-                    val distanceFromBottom = maximum - (currentValue + extent)
+                    val wasAtBottom = scrollBar.value >= scrollBar.maximum - scrollBar.visibleAmount - 10
+                    
+                    // If user scrolled up, disable auto-scroll
+                    if (!wasAtBottom && shouldAutoScroll) {
+                        shouldAutoScroll = false
+                    }
+                    // If user scrolled to bottom, enable auto-scroll
+                    if (wasAtBottom && !shouldAutoScroll) {
+                        shouldAutoScroll = true
+                    }
 
                     // Update content
                     markdownViewer.setMarkdown(newContent)
@@ -196,16 +210,10 @@ class MarkdownDialog(
                     // Handle scrolling after content update
                     SwingUtilities.invokeLater {
                         scrollPane.revalidate()
-                        val newMaximum = scrollBar.model.maximum
-                        val newExtent = scrollBar.model.extent
-
-                        if (distanceFromBottom <= 20) {
-                            // If user was near the bottom, scroll to bottom
-                            scrollBar.value = newMaximum - newExtent
-                        } else {
-                            // Maintain the same distance from bottom
-                            val newScrollValue = newMaximum - newExtent - distanceFromBottom
-                            scrollBar.value = newScrollValue.coerceIn(0, scrollBar.maximum - newExtent)
+                        
+                        if (shouldAutoScroll) {
+                            // Scroll to bottom
+                            scrollBar.value = scrollBar.maximum - scrollBar.visibleAmount
                         }
                         
                         scrollPane.repaint()
