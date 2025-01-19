@@ -22,11 +22,6 @@ the results. Adding a structured summary would make it easier to:
 
 1. Add a new setting to enable/disable summarized output
 2. Implement XML-tagged summary blocks in Aider's output
-3. Ensure the summary includes:
-    - List of modified files
-    - Type of changes made (add/modify/delete)
-    - Brief description of changes
-    - Status (success/failure)
 
 ## Additional Notes and Constraints
 
