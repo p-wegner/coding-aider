@@ -132,15 +132,6 @@ class MarkdownJcefViewer {
                         padding: 4px 8px;
                     }
                     .aider-intention, .aider-summary {
-                        border-radius: 8px;
-                        padding: 20px;
-                        margin: 24px 0;
-                        position: relative;
-                        font-size: 15px;
-                        line-height: 1.7;
-                        box-shadow: 0 2px 8px ${if (isDark) "rgba(0,0,0,0.3)" else "rgba(0,0,0,0.1)"};
-                    }
-                    .aider-intention, .aider-summary {
                         border-radius: 12px;
                         padding: 24px;
                         margin: 32px 0;
@@ -148,6 +139,9 @@ class MarkdownJcefViewer {
                         font-size: 15px;
                         line-height: 1.7;
                         box-shadow: 0 4px 12px ${if (isDark) "rgba(0,0,0,0.4)" else "rgba(0,0,0,0.15)"};
+                        white-space: pre-wrap;
+                        word-wrap: break-word;
+                        overflow-wrap: break-word;
                     }
                     
                     .aider-intention {
@@ -167,10 +161,12 @@ class MarkdownJcefViewer {
                         display: block;
                         font-weight: bold;
                         font-size: 17px;
-                        margin: -8px -12px 16px -12px;
-                        padding: 8px 12px;
+                        margin: -12px -16px 16px -16px;
+                        padding: 12px 16px;
                         letter-spacing: 0.5px;
                         border-bottom: 2px solid;
+                        background: ${if (isDark) "rgba(255,255,255,0.05)" else "rgba(0,0,0,0.03)"};
+                        border-radius: 10px 10px 0 0;
                     }
                     
                     .aider-intention::before {
@@ -200,10 +196,26 @@ class MarkdownJcefViewer {
                     
                     .aider-intention ul li::marker {
                         color: ${if (isDark) "#88b0e4" else "#0055cc"};
+                        font-size: 1.1em;
                     }
                     
                     .aider-summary ul li::marker {
                         color: ${if (isDark) "#808080" else "#666666"};
+                        font-size: 1.1em;
+                    }
+                    
+                    .aider-intention p,
+                    .aider-summary p {
+                        margin: 12px 0;
+                        line-height: 1.8;
+                    }
+                    
+                    .aider-intention code,
+                    .aider-summary code {
+                        background: ${if (isDark) "rgba(255,255,255,0.1)" else "rgba(0,0,0,0.05)"};
+                        padding: 2px 6px;
+                        border-radius: 4px;
+                        font-family: monospace;
                     }
                 </style>
             </head>

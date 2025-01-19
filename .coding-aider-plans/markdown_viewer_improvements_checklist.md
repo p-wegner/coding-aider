@@ -19,9 +19,9 @@
 - [x] Apply smooth scrolling to position restoration
 
 ## Content Formatting
-- [ ] Update summary block CSS styling
-- [ ] Update intention block CSS styling
-- [ ] Fix line break handling in HTML conversion
+- [x] Update summary block CSS styling
+- [x] Update intention block CSS styling
+- [x] Fix line break handling in HTML conversion
 - [ ] Improve code block formatting
 - [ ] Enhance visual hierarchy with better spacing
 
