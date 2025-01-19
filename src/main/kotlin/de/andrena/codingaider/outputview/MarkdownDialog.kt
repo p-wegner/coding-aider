@@ -101,6 +101,7 @@ class MarkdownDialog(
     private var isProcessFinished = false
     private var shouldAutoScroll = true
     private var lastManualScrollPosition = 0
+    private var isScrollAnimationInProgress = false
 
     init {
         title = initialTitle
@@ -219,14 +220,18 @@ class MarkdownDialog(
                     SwingUtilities.invokeLater {
                         scrollPane.revalidate()
                         
-                        if (shouldAutoScroll) {
-                            // Smooth scroll to bottom
-                            val targetValue = scrollBar.maximum - scrollBar.visibleAmount
-                            smoothScrollTo(scrollBar, targetValue)
-                        } else {
-                            // Restore last manual scroll position, adjusting for content changes
-                            val maxScroll = scrollBar.maximum - scrollBar.visibleAmount
-                            scrollBar.value = minOf(lastManualScrollPosition, maxScroll)
+                        if (!isScrollAnimationInProgress) {
+                            if (shouldAutoScroll) {
+                                // Smooth scroll to bottom
+                                val targetValue = scrollBar.maximum - scrollBar.visibleAmount
+                                smoothScrollTo(scrollBar, targetValue)
+                            } else {
+                                // Restore last manual scroll position, adjusting for content changes
+                                val maxScroll = scrollBar.maximum - scrollBar.visibleAmount
+                                val targetValue = minOf(lastManualScrollPosition, maxScroll)
+                                // Use smooth scrolling even for position restoration
+                                smoothScrollTo(scrollBar, targetValue)
+                            }
                         }
                         
                         scrollPane.repaint()
@@ -304,26 +309,34 @@ class MarkdownDialog(
 
 }
     private fun smoothScrollTo(scrollBar: JScrollBar, targetValue: Int) {
+        if (isScrollAnimationInProgress) return
+        
+        isScrollAnimationInProgress = true
         val startValue = scrollBar.value
         val distance = targetValue - startValue
-        val steps = 10
-        val delay = 16L // ~60fps
+        val steps = 15 // Increased for smoother animation
+        val delay = 12L // Slightly faster (~83fps)
         
         Thread {
-            for (i in 1..steps) {
-                val progress = i.toFloat() / steps
-                val easedProgress = (1 - Math.cos(progress * Math.PI)) / 2
-                val currentValue = startValue + (distance * easedProgress).toInt()
-                
-                SwingUtilities.invokeLater {
-                    scrollBar.value = currentValue
+            try {
+                for (i in 1..steps) {
+                    val progress = i.toFloat() / steps
+                    // Enhanced easing function for smoother acceleration/deceleration
+                    val easedProgress = (1 - Math.cos(progress * Math.PI)) / 2
+                    val currentValue = startValue + (distance * easedProgress).toInt()
+                    
+                    SwingUtilities.invokeLater {
+                        scrollBar.value = currentValue
+                    }
+                    
+                    Thread.sleep(delay)
                 }
-                
-                Thread.sleep(delay)
-            }
-            // Ensure we reach exact target
-            SwingUtilities.invokeLater {
-                scrollBar.value = targetValue
+                // Ensure we reach exact target
+                SwingUtilities.invokeLater {
+                    scrollBar.value = targetValue
+                }
+            } finally {
+                isScrollAnimationInProgress = false
             }
         }.start()
     }

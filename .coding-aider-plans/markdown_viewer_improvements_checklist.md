@@ -14,6 +14,9 @@
 - [x] Add user scroll position override detection
 - [x] Fix scroll reset during content updates
 - [x] Add smooth scrolling animation
+- [x] Improve animation smoothness and reliability
+- [x] Add animation state management
+- [x] Apply smooth scrolling to position restoration
 
 ## Content Formatting
 - [ ] Update summary block CSS styling
