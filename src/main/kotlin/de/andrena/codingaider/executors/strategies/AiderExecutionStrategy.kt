@@ -105,7 +105,7 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
                     if (settings.summarizedOutput) {
                         add(
                             project.service<AiderOutputSummaryService>()
-                                .createPromptPrefix() + "\n" + commandData.message
+                                .createPrompt(commandData.message)
                         )
                     } else {
                         add(commandData.message)
