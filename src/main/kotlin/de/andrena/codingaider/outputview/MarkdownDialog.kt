@@ -90,23 +90,6 @@ class MarkdownDialog(
         title = initialTitle
         markdownViewer.setMarkdown(initialText)
 
-        // Add scroll listener to detect when user manually scrolls
-        scrollPane.verticalScrollBar.addAdjustmentListener { e ->
-            val scrollBar = scrollPane.verticalScrollBar
-            val extent = scrollBar.model.extent
-            val maximum = scrollBar.model.maximum
-            val current = scrollBar.model.value
-
-            // Check if we're within 20 pixels of the bottom
-            val isAtBottom = (current + extent + 20) >= maximum
-
-            // Update autoScroll when:
-            // 1. User is manually scrolling (valueIsAdjusting is true)
-            // 2. Or when they've scrolled to the bottom
-            if (scrollBar.valueIsAdjusting || isAtBottom) {
-                autoScroll = isAtBottom
-            }
-        }
 
         // Start refresh timer
         refreshTimer = Timer().apply {
@@ -199,17 +182,12 @@ class MarkdownDialog(
                 if (newContent != lastContent) {
                     lastContent = newContent
 
-                    // Calculate if we're at bottom before update
+                    // Calculate the distance from the bottom before updating
                     val scrollBar = scrollPane.verticalScrollBar
                     val extent = scrollBar.model.extent
                     val maximum = scrollBar.model.maximum
                     val currentValue = scrollBar.value
-                    val isAtBottom = (currentValue + extent) >= (maximum - 20)
-                    
-                    // Store viewport position relative to total height
-                    val viewportHeight = scrollPane.viewport.height
-                    val totalHeight = scrollPane.viewport.view?.height ?: 0
-                    val scrollRatio = if (totalHeight > 0) currentValue.toDouble() / totalHeight else 0.0
+                    val distanceFromBottom = maximum - (currentValue + extent)
 
                     // Update content
                     markdownViewer.setMarkdown(newContent)
@@ -218,15 +196,16 @@ class MarkdownDialog(
                     // Handle scrolling after content update
                     SwingUtilities.invokeLater {
                         scrollPane.revalidate()
-                        val newTotalHeight = scrollPane.viewport.view?.height ?: 0
-                        
-                        if (autoScroll || isAtBottom) {
-                            // Scroll to bottom
-                            scrollBar.value = scrollBar.maximum - extent
+                        val newMaximum = scrollBar.model.maximum
+                        val newExtent = scrollBar.model.extent
+
+                        if (distanceFromBottom <= 20) {
+                            // If user was near the bottom, scroll to bottom
+                            scrollBar.value = newMaximum - newExtent
                         } else {
-                            // Maintain relative scroll position
-                            val newScrollValue = (scrollRatio * newTotalHeight).toInt()
-                            scrollBar.value = newScrollValue.coerceIn(0, scrollBar.maximum - extent)
+                            // Maintain the same distance from bottom
+                            val newScrollValue = newMaximum - newExtent - distanceFromBottom
+                            scrollBar.value = newScrollValue.coerceIn(0, scrollBar.maximum - newExtent)
                         }
                         
                         scrollPane.repaint()
