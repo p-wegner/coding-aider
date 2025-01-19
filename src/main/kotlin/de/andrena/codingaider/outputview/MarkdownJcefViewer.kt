@@ -121,21 +121,37 @@ class MarkdownJcefViewer {
                         color: ${colors["replaceText"]};
                         padding: 4px 8px;
                     }
+                    .aider-intention, .aider-summary {
+                        border-radius: 6px;
+                        padding: 16px;
+                        margin: 16px 0;
+                        position: relative;
+                        font-size: 14px;
+                        line-height: 1.6;
+                    }
                     .aider-intention {
                         background: ${if (isDark) "#1a2733" else "#f0f7ff"};
-                        border: 1px solid ${if (isDark) "#2c4356" else "#bcd6f5"};
-                        border-radius: 4px;
-                        padding: 12px;
-                        margin: 12px 0;
+                        border: 2px solid ${if (isDark) "#2c4356" else "#bcd6f5"};
                         color: ${if (isDark) "#589df6" else "#0066cc"};
                     }
+                    .aider-intention::before {
+                        content: "Intention";
+                        display: block;
+                        font-weight: bold;
+                        margin-bottom: 8px;
+                        color: ${if (isDark) "#88b0e4" else "#0055cc"};
+                    }
                     .aider-summary {
-                        background: ${if (isDark) "#2b2b2b" else "#f7f7f7"};
-                        border: 1px solid ${if (isDark) "#404040" else "#e0e0e0"};
-                        border-radius: 4px;
-                        padding: 12px;
-                        margin: 12px 0;
-                        color: ${if (isDark) "#cccccc" else "#333333"};
+                        background: ${if (isDark) "#2d2d2d" else "#f8f8f8"};
+                        border: 2px solid ${if (isDark) "#454545" else "#e5e5e5"};
+                        color: ${if (isDark) "#e0e0e0" else "#2b2b2b"};
+                    }
+                    .aider-summary::before {
+                        content: "Summary";
+                        display: block;
+                        font-weight: bold;
+                        margin-bottom: 8px;
+                        color: ${if (isDark) "#cccccc" else "#666666"};
                     }
                 </style>
             </head>
