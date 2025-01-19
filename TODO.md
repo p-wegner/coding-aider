@@ -5,3 +5,4 @@
 - [ ] Bug: Plan View actions use old markdown viewer
 - [ ] Bug: structured output not highlighted properly
 - [ ] Bug: Show last command skips the first line
+- [ ] Feature: Paste Image in aider dialog should call the clipboard image action
