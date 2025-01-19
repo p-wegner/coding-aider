@@ -6,3 +6,5 @@
 - [ ] Bug: structured output not highlighted properly
 - [ ] Bug: Show last command skips the first line
 - [ ] Feature: Paste Image in aider dialog should call the clipboard image action
+- [ ] Bug: Duplicate entries in persistent files (service missing duplicate detection)
+  - atleast one file new => all files added even if they are contained already
