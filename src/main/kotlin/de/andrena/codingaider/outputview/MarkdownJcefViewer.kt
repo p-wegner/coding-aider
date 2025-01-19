@@ -130,37 +130,70 @@ class MarkdownJcefViewer {
                         line-height: 1.7;
                         box-shadow: 0 2px 8px ${if (isDark) "rgba(0,0,0,0.3)" else "rgba(0,0,0,0.1)"};
                     }
+                    .aider-intention, .aider-summary {
+                        border-radius: 12px;
+                        padding: 24px;
+                        margin: 32px 0;
+                        position: relative;
+                        font-size: 15px;
+                        line-height: 1.7;
+                        box-shadow: 0 4px 12px ${if (isDark) "rgba(0,0,0,0.4)" else "rgba(0,0,0,0.15)"};
+                    }
+                    
                     .aider-intention {
                         background: ${if (isDark) "#1a2733" else "#f0f7ff"};
                         border: 3px solid ${if (isDark) "#2c4356" else "#bcd6f5"};
-                        color: ${if (isDark) "#589df6" else "#0066cc"};
+                        color: ${if (isDark) "#a8c7f0" else "#0066cc"};
                     }
-                    .aider-intention::before {
-                        content: "🎯 Intention";
-                        display: block;
-                        font-weight: bold;
-                        font-size: 16px;
-                        margin-bottom: 12px;
-                        padding-bottom: 8px;
-                        border-bottom: 2px solid ${if (isDark) "#2c4356" else "#bcd6f5"};
-                        color: ${if (isDark) "#88b0e4" else "#0055cc"};
-                        letter-spacing: 0.5px;
-                    }
+                    
                     .aider-summary {
-                        background: ${if (isDark) "#2d2d2d" else "#f8f8f8"};
-                        border: 3px solid ${if (isDark) "#454545" else "#e5e5e5"};
+                        background: ${if (isDark) "#2a2a2a" else "#f8f8f8"};
+                        border: 3px solid ${if (isDark) "#404040" else "#e0e0e0"};
                         color: ${if (isDark) "#e0e0e0" else "#2b2b2b"};
                     }
+                    
+                    .aider-intention::before,
                     .aider-summary::before {
-                        content: "📋 Summary";
                         display: block;
                         font-weight: bold;
-                        font-size: 16px;
-                        margin-bottom: 12px;
-                        padding-bottom: 8px;
-                        border-bottom: 2px solid ${if (isDark) "#454545" else "#e5e5e5"};
-                        color: ${if (isDark) "#cccccc" else "#666666"};
+                        font-size: 17px;
+                        margin: -8px -12px 16px -12px;
+                        padding: 8px 12px;
                         letter-spacing: 0.5px;
+                        border-bottom: 2px solid;
+                    }
+                    
+                    .aider-intention::before {
+                        content: "🎯 Intention";
+                        border-color: ${if (isDark) "#2c4356" else "#bcd6f5"};
+                        color: ${if (isDark) "#88b0e4" else "#0055cc"};
+                    }
+                    
+                    .aider-summary::before {
+                        content: "📋 Summary";
+                        border-color: ${if (isDark) "#404040" else "#e0e0e0"};
+                        color: ${if (isDark) "#cccccc" else "#666666"};
+                    }
+                    
+                    .aider-intention ul,
+                    .aider-intention ol,
+                    .aider-summary ul,
+                    .aider-summary ol {
+                        margin: 8px 0;
+                        padding-left: 24px;
+                    }
+                    
+                    .aider-intention li,
+                    .aider-summary li {
+                        margin: 4px 0;
+                    }
+                    
+                    .aider-intention ul li::marker {
+                        color: ${if (isDark) "#88b0e4" else "#0055cc"};
+                    }
+                    
+                    .aider-summary ul li::marker {
+                        color: ${if (isDark) "#808080" else "#666666"};
                     }
                 </style>
             </head>
