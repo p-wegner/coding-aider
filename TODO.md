@@ -4,3 +4,4 @@
 - [ ] Bug: Scrolling in outputdialog does not work properly
 - [ ] Bug: Plan View actions use old markdown viewer
 - [ ] Bug: structured output not highlighted properly
+- [ ] Bug: Show last command skips the first line
