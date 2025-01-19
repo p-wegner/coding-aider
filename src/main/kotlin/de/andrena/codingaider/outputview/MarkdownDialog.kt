@@ -55,7 +55,14 @@ class MarkdownDialog(
             if (!e.valueIsAdjusting) {
                 val scrollBar = verticalScrollBar
                 val isAtBottom = scrollBar.value >= scrollBar.maximum - scrollBar.visibleAmount - 10
-                shouldAutoScroll = isAtBottom
+                // Only update auto-scroll if user has manually scrolled
+                if (shouldAutoScroll != isAtBottom) {
+                    shouldAutoScroll = isAtBottom
+                }
+                // Store last manual scroll position
+                if (!shouldAutoScroll) {
+                    lastManualScrollPosition = scrollBar.value
+                }
             }
         }
     }
@@ -93,6 +100,7 @@ class MarkdownDialog(
     }
     private var isProcessFinished = false
     private var shouldAutoScroll = true
+    private var lastManualScrollPosition = 0
 
     init {
         title = initialTitle
@@ -212,8 +220,13 @@ class MarkdownDialog(
                         scrollPane.revalidate()
                         
                         if (shouldAutoScroll) {
-                            // Scroll to bottom
-                            scrollBar.value = scrollBar.maximum - scrollBar.visibleAmount
+                            // Smooth scroll to bottom
+                            val targetValue = scrollBar.maximum - scrollBar.visibleAmount
+                            smoothScrollTo(scrollBar, targetValue)
+                        } else {
+                            // Restore last manual scroll position, adjusting for content changes
+                            val maxScroll = scrollBar.maximum - scrollBar.visibleAmount
+                            scrollBar.value = minOf(lastManualScrollPosition, maxScroll)
                         }
                         
                         scrollPane.repaint()
@@ -290,3 +303,27 @@ class MarkdownDialog(
     }
 
 }
+    private fun smoothScrollTo(scrollBar: JScrollBar, targetValue: Int) {
+        val startValue = scrollBar.value
+        val distance = targetValue - startValue
+        val steps = 10
+        val delay = 16L // ~60fps
+        
+        Thread {
+            for (i in 1..steps) {
+                val progress = i.toFloat() / steps
+                val easedProgress = (1 - Math.cos(progress * Math.PI)) / 2
+                val currentValue = startValue + (distance * easedProgress).toInt()
+                
+                SwingUtilities.invokeLater {
+                    scrollBar.value = currentValue
+                }
+                
+                Thread.sleep(delay)
+            }
+            // Ensure we reach exact target
+            SwingUtilities.invokeLater {
+                scrollBar.value = targetValue
+            }
+        }.start()
+    }

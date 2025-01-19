@@ -9,11 +9,11 @@
 - [ ] Optimize scroll bar visibility logic
 
 ## Scroll Position Management
-- [ ] Add scroll position tracking
-- [ ] Implement smart auto-scroll behavior
-- [ ] Add user scroll position override detection
-- [ ] Fix scroll reset during content updates
-- [ ] Add smooth scrolling animation
+- [x] Add scroll position tracking
+- [x] Implement smart auto-scroll behavior
+- [x] Add user scroll position override detection
+- [x] Fix scroll reset during content updates
+- [x] Add smooth scrolling animation
 
 ## Content Formatting
 - [ ] Update summary block CSS styling
