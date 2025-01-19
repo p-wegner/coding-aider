@@ -187,18 +187,29 @@ class MarkdownDialog(
 
     private var lastContent = ""
     private var currentContent = ""
+    private var isUpdating = false
 
     fun updateProgress(output: String, message: String) {
+        if (isUpdating) return
+        isUpdating = true
+        
         com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
             try {
                 val newContent = output.replace("\r\n", "\n")
                 if (newContent != lastContent) {
                     lastContent = newContent
 
-                    // Store scroll info before update
+                    // Calculate if we're at bottom before update
                     val scrollBar = scrollPane.verticalScrollBar
+                    val extent = scrollBar.model.extent
+                    val maximum = scrollBar.model.maximum
                     val currentValue = scrollBar.value
-                    val wasAtBottom = autoScroll
+                    val isAtBottom = (currentValue + extent) >= (maximum - 20)
+                    
+                    // Store viewport position relative to total height
+                    val viewportHeight = scrollPane.viewport.height
+                    val totalHeight = scrollPane.viewport.view?.height ?: 0
+                    val scrollRatio = if (totalHeight > 0) currentValue.toDouble() / totalHeight else 0.0
 
                     // Update content
                     markdownViewer.setMarkdown(newContent)
@@ -206,16 +217,20 @@ class MarkdownDialog(
 
                     // Handle scrolling after content update
                     SwingUtilities.invokeLater {
-                        if (wasAtBottom || autoScroll) {
-                            // Scroll to bottom if auto-scroll is enabled or was at bottom
-                            scrollBar.value = scrollBar.maximum
-                        } else {
-                            // Try to maintain previous scroll position
-                            scrollBar.value = currentValue
-                        }
-                        // Ensure the scroll pane is properly laid out
                         scrollPane.revalidate()
+                        val newTotalHeight = scrollPane.viewport.view?.height ?: 0
+                        
+                        if (autoScroll || isAtBottom) {
+                            // Scroll to bottom
+                            scrollBar.value = scrollBar.maximum - extent
+                        } else {
+                            // Maintain relative scroll position
+                            val newScrollValue = (scrollRatio * newTotalHeight).toInt()
+                            scrollBar.value = newScrollValue.coerceIn(0, scrollBar.maximum - extent)
+                        }
+                        
                         scrollPane.repaint()
+                        isUpdating = false
                     }
                 }
             } catch (e: Exception) {
