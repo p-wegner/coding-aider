@@ -169,6 +169,32 @@ class CustomMarkdownViewer(private val lookupPaths: List<String> = emptyList()) 
                             padding: 4px 8px;
                             margin: 0;
                         }
+                        .aider-intention {
+                            background: #f0f7ff;
+                            border: 1px solid #bcd6f5;
+                            border-radius: 4px;
+                            padding: 12px;
+                            margin: 12px 0;
+                            color: #0066cc;
+                        }
+                        .aider-summary {
+                            background: #f7f7f7;
+                            border: 1px solid #e0e0e0;
+                            border-radius: 4px;
+                            padding: 12px;
+                            margin: 12px 0;
+                            color: #333333;
+                        }
+                        body.dark-theme .aider-intention {
+                            background: #1a2733;
+                            border-color: #2c4356;
+                            color: #589df6;
+                        }
+                        body.dark-theme .aider-summary {
+                            background: #2b2b2b;
+                            border-color: #404040;
+                            color: #cccccc;
+                        }
                         .divider {
                             background: ${colors["preBorder"]};
                             height: 1px;
