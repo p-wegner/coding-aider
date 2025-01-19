@@ -46,10 +46,10 @@ class MarkdownDialog(
     private val markdownViewer = MarkdownJcefViewer().apply {
         setMarkdown(initialText)
     }
-    private val scrollPane = JBScrollPane(markdownViewer.component).apply {
+    private val scrollPane = JBScrollPane().apply {
+        setViewportView(markdownViewer.component)
         horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
         verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
-        viewport.scrollMode = JViewport.BACKINGSTORE_SCROLL_MODE
     }
     private var autoCloseTimer: TimerTask? = null
     private var refreshTimer: Timer? = null
