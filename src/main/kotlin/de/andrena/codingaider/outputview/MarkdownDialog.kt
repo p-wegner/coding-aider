@@ -283,24 +283,8 @@ class MarkdownDialog(
                 markdownViewer.component.requestFocusInWindow()
                 // Set dark theme based on current IDE theme
                 val isDark = !JBColor.isBright()
-                val themeCss = if (isDark) {
-                    """
-                    body { background: #2b2b2b; color: #ffffff; }
-                    .aider-intention { background: #1a2733; border-color: #2c4356; color: #589df6; }
-                    .aider-summary { background: #2b2b2b; border-color: #404040; color: #cccccc; }
-                    """
-                } else {
-                    """
-                    body { background: #ffffff; color: #000000; }
-                    .aider-intention { background: #f0f7ff; border-color: #bcd6f5; color: #0066cc; }
-                    .aider-summary { background: #f7f7f7; border-color: #e0e0e0; color: #333333; }
-                    """
-                }
                 currentContent = lastContent
-                markdownViewer.setMarkdown("""
-                    <style>$themeCss</style>
-                    $currentContent
-                """.trimIndent())
+                markdownViewer.setMarkdown(currentContent)
             }
         }
     }

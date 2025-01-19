@@ -97,13 +97,23 @@ class MarkdownJcefViewer {
         return """
             <html>
             <head>
-                <style>
+                <style id="theme-styles">
+                    :root {
+                        --body-bg: ${if (isDark) "#2b2b2b" else "#ffffff"};
+                        --body-text: ${if (isDark) "#ffffff" else "#000000"};
+                        --intention-bg: ${if (isDark) "#1a2733" else "#f0f7ff"};
+                        --intention-border: ${if (isDark) "#2c4356" else "#bcd6f5"};
+                        --intention-text: ${if (isDark) "#589df6" else "#0066cc"};
+                        --summary-bg: ${if (isDark) "#2b2b2b" else "#f7f7f7"};
+                        --summary-border: ${if (isDark) "#404040" else "#e0e0e0"};
+                        --summary-text: ${if (isDark) "#cccccc" else "#333333"};
+                    }
                     body { 
                         font-family: sans-serif;
                         margin: 20px;
                         line-height: 1.6;
-                        background: ${colors["bodyBg"]};
-                        color: ${colors["bodyText"]};
+                        background: var(--body-bg);
+                        color: var(--body-text);
                     }
                     pre {
                         background: ${colors["preBg"]};
