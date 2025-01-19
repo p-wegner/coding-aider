@@ -2,6 +2,7 @@
 - [ ] Feature: plan system prompt include manual stop markers where the user should test something
 - [ ] Feature: plan system prompt improved testing strategy and feedback mechanism for the llm
 - [ ] Bug: Scrolling in outputdialog does not work properly
+  - always scrolls to top 
 - [ ] Bug: Plan View actions use old markdown viewer
 - [ ] Bug: structured output not highlighted properly
 - [ ] Bug: Show last command skips the first line
