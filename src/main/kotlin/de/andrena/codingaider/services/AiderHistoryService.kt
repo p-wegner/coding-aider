@@ -54,7 +54,7 @@ class AiderHistoryService(private val project: Project) {
         if (!chatHistoryFile.exists()) return "No chat history available."
 
         return chatHistoryFile.readText()
-            .split("\n#### ")
+            .split("# aider chat started at .*".toRegex())
             .lastOrNull()?.trim() ?: "No chat history available."
     }
 

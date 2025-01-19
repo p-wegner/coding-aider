@@ -50,7 +50,7 @@ class MarkdownDialog(
         border = null
         horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
         verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
-        
+
         verticalScrollBar.addAdjustmentListener { e ->
             if (!e.valueIsAdjusting) {
                 val scrollBar = verticalScrollBar
@@ -123,7 +123,7 @@ class MarkdownDialog(
         val optimalHeight = (screenSize.height * 0.7).toInt().coerceIn(400, 800)
         preferredSize = java.awt.Dimension(optimalWidth, optimalHeight)
         minimumSize = java.awt.Dimension(500, 400)
-        
+
         // Use weighted layout for better content scaling
         layout = BorderLayout(10, 10)
         pack()
@@ -204,7 +204,7 @@ class MarkdownDialog(
     fun updateProgress(output: String, message: String) {
         if (isUpdating) return
         isUpdating = true
-        
+
         com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
             try {
                 val newContent = output.replace("\r\n", "\n")
@@ -214,7 +214,7 @@ class MarkdownDialog(
                     // Get scroll position before update
                     val scrollBar = scrollPane.verticalScrollBar
                     val wasAtBottom = scrollBar.value >= scrollBar.maximum - scrollBar.visibleAmount - 10
-                    
+
                     // If user scrolled up, disable auto-scroll
                     if (!wasAtBottom && shouldAutoScroll) {
                         shouldAutoScroll = false
@@ -231,7 +231,7 @@ class MarkdownDialog(
                     // Handle scrolling after content update
                     SwingUtilities.invokeLater {
                         scrollPane.revalidate()
-                        
+
                         if (!isScrollAnimationInProgress) {
                             if (shouldAutoScroll) {
                                 // Smooth scroll to bottom
@@ -245,7 +245,7 @@ class MarkdownDialog(
                                 smoothScrollTo(scrollBar, targetValue)
                             }
                         }
-                        
+
                         scrollPane.repaint()
                         isUpdating = false
                     }
@@ -319,16 +319,15 @@ class MarkdownDialog(
         }
     }
 
-}
     private fun smoothScrollTo(scrollBar: JScrollBar, targetValue: Int) {
         if (isScrollAnimationInProgress) return
-        
+
         isScrollAnimationInProgress = true
         val startValue = scrollBar.value
         val distance = targetValue - startValue
         val steps = 15 // Increased for smoother animation
         val delay = 12L // Slightly faster (~83fps)
-        
+
         Thread {
             try {
                 for (i in 1..steps) {
@@ -336,11 +335,11 @@ class MarkdownDialog(
                     // Enhanced easing function for smoother acceleration/deceleration
                     val easedProgress = (1 - Math.cos(progress * Math.PI)) / 2
                     val currentValue = startValue + (distance * easedProgress).toInt()
-                    
+
                     SwingUtilities.invokeLater {
                         scrollBar.value = currentValue
                     }
-                    
+
                     Thread.sleep(delay)
                 }
                 // Ensure we reach exact target
@@ -352,3 +351,4 @@ class MarkdownDialog(
             }
         }.start()
     }
+}
