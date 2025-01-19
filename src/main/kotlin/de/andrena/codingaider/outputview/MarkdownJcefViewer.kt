@@ -2,6 +2,13 @@ package de.andrena.codingaider.outputview
 
 import com.intellij.ui.jcef.JBCefApp
 import com.intellij.ui.jcef.JBCefBrowser
+import com.vladsch.flexmark.ext.autolink.AutolinkExtension
+import com.vladsch.flexmark.ext.definition.DefinitionExtension
+import com.vladsch.flexmark.ext.footnotes.FootnoteExtension
+import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension
+import com.vladsch.flexmark.ext.gfm.tasklist.TaskListExtension
+import com.vladsch.flexmark.ext.tables.TablesExtension
+import com.vladsch.flexmark.ext.toc.TocExtension
 import java.util.*
 import javax.swing.JComponent
 import javax.swing.JPanel
@@ -40,12 +47,21 @@ class MarkdownJcefViewer {
             browser.loadURL("data:text/html;base64,$encodedHtml")
         }
     }
+    private val options = MutableDataSet().apply {
+        set(
+            Parser.EXTENSIONS, listOf(
+                TablesExtension.create(),
+                StrikethroughExtension.create(),
+                AutolinkExtension.create(),
+                TaskListExtension.create(),
+                DefinitionExtension.create(),
+                FootnoteExtension.create(),
+                TocExtension.create()
+            )
+        )
+    }
 
     private fun convertMarkdownToHtml(markdown: String): String {
-        val options = MutableDataSet()
-        // Add parser extensions if needed
-        // options.set(Parser.EXTENSIONS, listOf(TablesExtension.create(), ...))
-
         val parser = Parser.builder(options).build()
         val document = parser.parse(markdown)
         val renderer = HtmlRenderer.builder(options).build()
