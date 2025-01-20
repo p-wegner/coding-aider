@@ -69,72 +69,46 @@ class AiderHistoryService(private val project: Project) {
         return Pair(systemPrompt, userPrompt)
     }
 
-    private fun extractNonXmlPrompts(chatContent: String): Pair<String?, String?> {
-        val promptLines = chatContent.lines()
-            .takeWhile { !it.startsWith(">") }
-            .filter { it.isNotBlank() }
-            .map { it.removePrefix("####").trim() }
-            .filter { it.isNotBlank() }
-
-        if (promptLines.isEmpty()) return Pair(null, null)
-
-        // Split into system/user prompts at first empty line or natural separation
-        val splitIndex = promptLines.indexOfFirst { it.isEmpty() }
-        return if (splitIndex != -1) {
-            val systemPrompt = promptLines.take(splitIndex).joinToString("\n")
-            val userPrompt = promptLines.drop(splitIndex + 1).joinToString("\n")
-            Pair(systemPrompt, userPrompt)
-        } else {
-            // If no clear split, treat all as system prompt except last paragraph that looks like user input
-            val userPromptIndex = promptLines.indexOfLast { it.startsWith("UserPrompt:") }
-            if (userPromptIndex != -1) {
-                Pair(
-                    promptLines.take(userPromptIndex).joinToString("\n"),
-                    promptLines.drop(userPromptIndex + 1).joinToString("\n")
-                )
-            } else {
-                Pair(promptLines.joinToString("\n"), null)
-            }
-        }
-    }
 
     fun getLastChatHistory(): String {
         if (!chatHistoryFile.exists()) return "No chat history available."
 
         val chatContent = chatHistoryFile.readText()
-            .split("# aider chat started at .*".toRegex())
-            .lastOrNull()?.trim() ?: return "No chat history available."
+        val contentParts = chatContent.split("# aider chat started at .*".toRegex())
+        val lastChat = contentParts.lastOrNull()?.trim() ?: return "No chat history available."
 
-        // Extract prompts - prioritize XML format first
-        val (systemPrompt, userPrompt) = extractXmlPrompts(chatContent)
+        // Extract prompts from XML blocks
+        val (systemPrompt, userPrompt) = extractXmlPrompts(lastChat)
         
-        // Build cleaned output
-        val promptSection = buildString {
-            if (systemPrompt != null) {
+        // Build cleaned output without duplicate prompts
+        return buildString {
+            // Add system prompt if found
+            systemPrompt?.let { prompt ->
                 appendLine("System Prompt:")
-                appendLine(systemPrompt.removeSurrounding("<SystemPrompt>", "</SystemPrompt>").trim())
+                appendLine(prompt.trim().replace("<SystemPrompt>|</SystemPrompt>".toRegex(), ""))
                 appendLine()
             }
-            if (userPrompt != null) {
+            
+            // Add user prompt if found
+            userPrompt?.let { prompt ->
                 appendLine("User Prompt:")
-                appendLine(userPrompt.removeSurrounding("<UserPrompt>", "</UserPrompt>").trim())
+                appendLine(prompt.trim().replace("<UserPrompt>|</UserPrompt>".toRegex(), ""))
                 appendLine()
             }
-        }
-
-        // Get the chat content after prompts, skipping any duplicate prompt sections
-        val chatSection = chatContent.lines()
-            .dropWhile { line ->
-                line.startsWith("<SystemPrompt>") || 
-                line.startsWith("</SystemPrompt>") ||
-                line.startsWith("<UserPrompt>") ||
-                line.startsWith("</UserPrompt>") ||
-                line.startsWith("####")
+            
+            // Add cleaned chat content
+            var inPromptSection = false
+            lastChat.lines().forEach { line ->
+                when {
+                    line.startsWith("<SystemPrompt>") -> inPromptSection = true
+                    line.startsWith("</SystemPrompt>") -> inPromptSection = false
+                    line.startsWith("<UserPrompt>") -> inPromptSection = true
+                    line.startsWith("</UserPrompt>") -> inPromptSection = false
+                    line.startsWith("####") -> inPromptSection = true
+                    !inPromptSection && line.isNotBlank() -> appendLine(line)
+                }
             }
-            .joinToString("\n")
-            .trim()
-
-        return (promptSection + chatSection).trim()
+        }.trim()
     }
 
     private fun String.substringBetween(start: String, end: String): String? {
