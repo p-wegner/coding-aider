@@ -50,21 +50,43 @@ class AiderHistoryService(private val project: Project) {
             .reversed()
     }
 
-    private fun cleanPromptSection(text: String): String {
+    private fun extractPromptContent(text: String): String {
         return text.lines()
             .filter { it.startsWith("####") }
             .map { it.removePrefix("####").trim() }
+            .filter { it.isNotEmpty() }
             .joinToString("\n")
     }
 
-    private fun extractUserPrompt(text: String): String? {
-        val userPromptStart = text.indexOf("<UserPrompt>")
-        val userPromptEnd = text.indexOf("</UserPrompt>")
+    private fun extractXmlPrompts(chatContent: String): Pair<String?, String?> {
+        val systemPrompt = chatContent.substringBetween("<SystemPrompt>", "</SystemPrompt>")
+            ?.let { extractPromptContent(it) }
         
-        if (userPromptStart != -1 && userPromptEnd != -1) {
-            return text.substring(userPromptStart + 12, userPromptEnd).trim()
+        val userPrompt = chatContent.substringBetween("<UserPrompt>", "</UserPrompt>")
+            ?.trim()
+            ?.takeIf { it.isNotEmpty() }
+
+        return Pair(systemPrompt, userPrompt)
+    }
+
+    private fun extractNonXmlPrompts(chatContent: String): Pair<String?, String?> {
+        val promptLines = chatContent.lines()
+            .takeWhile { !it.startsWith(">") }
+            .filter { it.startsWith("####") }
+            
+        if (promptLines.isEmpty()) return Pair(null, null)
+        
+        val userPromptIndex = promptLines.indexOfFirst { it.contains("UserPrompt:") }
+        
+        return if (userPromptIndex != -1) {
+            val systemPrompt = promptLines.take(userPromptIndex)
+                .joinToString("\n") { it.removePrefix("####").trim() }
+            val userPrompt = promptLines.drop(userPromptIndex + 1)
+                .joinToString("\n") { it.removePrefix("####").trim() }
+            Pair(systemPrompt, userPrompt)
+        } else {
+            Pair(extractPromptContent(promptLines.joinToString("\n")), null)
         }
-        return null
     }
 
     fun getLastChatHistory(): String {
@@ -74,16 +96,18 @@ class AiderHistoryService(private val project: Project) {
             .split("# aider chat started at .*".toRegex())
             .lastOrNull()?.trim() ?: return "No chat history available."
 
-        // Extract system and user prompts
-        val systemPromptSection = chatContent.substringBetween("<SystemPrompt>", "</SystemPrompt>")
-            ?.let { cleanPromptSection(it) }
-        val userPrompt = extractUserPrompt(chatContent)
+        // Try XML-tagged prompts first, fall back to non-XML format
+        val (systemPrompt, userPrompt) = if (chatContent.contains("<SystemPrompt>")) {
+            extractXmlPrompts(chatContent)
+        } else {
+            extractNonXmlPrompts(chatContent)
+        }
 
         // Build cleaned output
         val promptSection = buildString {
-            if (systemPromptSection != null) {
+            if (systemPrompt != null) {
                 appendLine("System Prompt:")
-                appendLine(systemPromptSection)
+                appendLine(systemPrompt)
                 appendLine()
             }
             if (userPrompt != null) {
@@ -93,12 +117,14 @@ class AiderHistoryService(private val project: Project) {
             }
         }
 
-        // Get the rest of the chat content after the prompts
-        val chatSection = chatContent.substringAfter("</UserPrompt>")
-            .trim()
-            .lines()
-            .filter { !it.startsWith("####") }
-            .joinToString("\n")
+        // Get the chat content after prompts, handling both XML and non-XML formats
+        val chatSection = if (chatContent.contains("</UserPrompt>")) {
+            chatContent.substringAfter("</UserPrompt>")
+        } else {
+            chatContent.lines()
+                .dropWhile { it.startsWith("####") || it.isBlank() }
+                .joinToString("\n")
+        }.trim()
 
         return promptSection + chatSection
     }
