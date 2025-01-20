@@ -224,26 +224,27 @@ class MarkdownDialog(
                         shouldAutoScroll = true
                     }
 
+                    // Capture scroll state before update
+                    val prevMaximum = scrollBar.maximum
+                    val wasAtBottom = scrollBar.value >= scrollBar.maximum - scrollBar.visibleAmount - 10
+
                     // Update content
                     markdownViewer.setMarkdown(newContent)
                     title = message
 
                     // Handle scrolling after content update
                     SwingUtilities.invokeLater {
-                        scrollPane.revalidate()
-
-                        if (!isScrollAnimationInProgress) {
-                            if (shouldAutoScroll) {
-                                // Smooth scroll to bottom
-                                val targetValue = scrollBar.maximum - scrollBar.visibleAmount
-                                smoothScrollTo(scrollBar, targetValue)
-                            } else {
-                                // Restore last manual scroll position, adjusting for content changes
-                                val maxScroll = scrollBar.maximum - scrollBar.visibleAmount
-                                val targetValue = minOf(lastManualScrollPosition, maxScroll)
-                                // Use smooth scrolling even for position restoration
-                                smoothScrollTo(scrollBar, targetValue)
-                            }
+                        // Calculate after content has rendered
+                        val newMaximum = scrollBar.maximum
+                        val heightDelta = newMaximum - prevMaximum
+                        
+                        if (shouldAutoScroll && wasAtBottom) {
+                            // Direct scroll to bottom without animation
+                            scrollBar.value = scrollBar.maximum
+                        } else {
+                            // Maintain relative position accounting for new content
+                            val adjustedPosition = lastManualScrollPosition + heightDelta
+                            scrollBar.value = adjustedPosition.coerceIn(scrollBar.minimum, scrollBar.maximum - scrollBar.visibleAmount)
                         }
 
                         scrollPane.repaint()
