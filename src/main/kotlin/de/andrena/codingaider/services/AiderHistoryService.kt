@@ -72,20 +72,29 @@ class AiderHistoryService(private val project: Project) {
     private fun extractNonXmlPrompts(chatContent: String): Pair<String?, String?> {
         val promptLines = chatContent.lines()
             .takeWhile { !it.startsWith(">") }
-            .filter { it.startsWith("####") }
-            
+            .filter { it.isNotBlank() }
+            .map { it.removePrefix("####").trim() }
+            .filter { it.isNotBlank() }
+
         if (promptLines.isEmpty()) return Pair(null, null)
-        
-        val userPromptIndex = promptLines.indexOfFirst { it.contains("UserPrompt:") }
-        
-        return if (userPromptIndex != -1) {
-            val systemPrompt = promptLines.take(userPromptIndex)
-                .joinToString("\n") { it.removePrefix("####").trim() }
-            val userPrompt = promptLines.drop(userPromptIndex + 1)
-                .joinToString("\n") { it.removePrefix("####").trim() }
+
+        // Split into system/user prompts at first empty line or natural separation
+        val splitIndex = promptLines.indexOfFirst { it.isEmpty() }
+        return if (splitIndex != -1) {
+            val systemPrompt = promptLines.take(splitIndex).joinToString("\n")
+            val userPrompt = promptLines.drop(splitIndex + 1).joinToString("\n")
             Pair(systemPrompt, userPrompt)
         } else {
-            Pair(extractPromptContent(promptLines.joinToString("\n")), null)
+            // If no clear split, treat all as system prompt except last paragraph that looks like user input
+            val userPromptIndex = promptLines.indexOfLast { it.startsWith("UserPrompt:") }
+            if (userPromptIndex != -1) {
+                Pair(
+                    promptLines.take(userPromptIndex).joinToString("\n"),
+                    promptLines.drop(userPromptIndex + 1).joinToString("\n")
+                )
+            } else {
+                Pair(promptLines.joinToString("\n"), null)
+            }
         }
     }
 
