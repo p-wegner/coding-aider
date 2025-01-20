@@ -58,17 +58,23 @@ class AiderHistoryService(private val project: Project) {
             .joinToString("\n")
     }
 
-    private fun extractXmlPrompts(chatContent: String): Pair<String?, String?> {
-        val systemPrompt = chatContent.substringBetween("<SystemPrompt>", "</SystemPrompt>")
-            ?.let { extractPromptContent(it) }
+    private fun extractXmlPrompts(chatContent: String): Triple<String?, String?, String?> {
+        val systemPrompt = chatContent.substringBetween("<SystemPrompt>([\\s\\S]*?)</SystemPrompt>".toRegex())
+            ?.replace("<SystemPrompt>|</SystemPrompt>".toRegex(), "")
+            ?.trim()
+            ?.takeIf { it.isNotEmpty() }
         
-        val userPrompt = chatContent.substringBetween("<UserPrompt>", "</UserPrompt>")
+        val userPrompt = chatContent.substringBetween("<UserPrompt>([\\s\\S]*?)</UserPrompt>".toRegex())
+            ?.replace("<UserPrompt>|</UserPrompt>".toRegex(), "")
             ?.trim()
             ?.takeIf { it.isNotEmpty() }
 
-        return Pair(systemPrompt, userPrompt)
-    }
+        val aiderOutput = chatContent.substringAfterLast("</UserPrompt>")
+            ?.substringBefore("# aider chat started at")
+            ?.trim()
 
+        return Triple(systemPrompt, userPrompt, aiderOutput)
+    }
 
     fun getLastChatHistory(): String {
         if (!chatHistoryFile.exists()) return "No chat history available."
@@ -77,48 +83,30 @@ class AiderHistoryService(private val project: Project) {
         val contentParts = chatContent.split("# aider chat started at .*".toRegex())
         val lastChat = contentParts.lastOrNull()?.trim() ?: return "No chat history available."
 
-        // Extract prompts from XML blocks
-        val (systemPrompt, userPrompt) = extractXmlPrompts(lastChat)
+        // Extract prompts and output from XML blocks
+        val (systemPrompt, userPrompt, aiderOutput) = extractXmlPrompts(lastChat)
         
-        // Build cleaned output without duplicate prompts
         return buildString {
-            // Add system prompt if found
             systemPrompt?.let { prompt ->
-                appendLine("System Prompt:")
-                appendLine(prompt.trim().replace("<SystemPrompt>|</SystemPrompt>".toRegex(), ""))
+                appendLine("System Context:")
+                appendLine(prompt.replace("####", "").trim())
                 appendLine()
             }
             
-            // Add user prompt if found
             userPrompt?.let { prompt ->
-                appendLine("User Prompt:")
-                appendLine(prompt.trim().replace("<UserPrompt>|</UserPrompt>".toRegex(), ""))
+                appendLine("User Request:")
+                appendLine(prompt.replace("####", "").trim())
                 appendLine()
             }
             
-            // Add cleaned chat content
-            var inPromptSection = false
-            lastChat.lines().forEach { line ->
-                when {
-                    line.startsWith("<SystemPrompt>") -> inPromptSection = true
-                    line.startsWith("</SystemPrompt>") -> inPromptSection = false
-                    line.startsWith("<UserPrompt>") -> inPromptSection = true
-                    line.startsWith("</UserPrompt>") -> inPromptSection = false
-                    line.startsWith("####") -> inPromptSection = true
-                    !inPromptSection && line.isNotBlank() -> appendLine(line)
-                }
-            }
+            appendLine("Aider Output:")
+            appendLine(aiderOutput ?: "No output captured")
         }.trim()
     }
 
-    private fun String.substringBetween(start: String, end: String): String? {
-        val startIndex = this.indexOf(start)
-        val endIndex = this.indexOf(end)
-        
-        if (startIndex != -1 && endIndex != -1) {
-            return this.substring(startIndex + start.length, endIndex)
-        }
-        return null
+    private fun String.substringBetween(regex: Regex): String? {
+        val match = regex.find(this)
+        return match?.groups?.get(1)?.value?.trim()
     }
 
 }
