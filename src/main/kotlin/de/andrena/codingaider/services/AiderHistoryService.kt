@@ -88,19 +88,18 @@ class AiderHistoryService(private val project: Project) {
         
         return buildString {
             systemPrompt?.let { prompt ->
-                appendLine("System Context:")
-                appendLine(prompt.replace("####", "").trim())
-                appendLine()
+                appendLine("> **System Context**  \n_${prompt.replace("####", "").trim()}_")
+                appendLine("\n---")
             }
             
             userPrompt?.let { prompt ->
-                appendLine("User Request:")
-                appendLine(prompt.replace("####", "").trim())
-                appendLine()
+                appendLine("## User Request\n")
+                appendLine("```plaintext\n${prompt.replace("####", "").trim()}\n```")
+                appendLine("\n---")
             }
             
-            appendLine("Aider Output:")
-            appendLine(aiderOutput ?: "No output captured")
+            appendLine("## Aider Execution\n")
+            appendLine("```xml\n${aiderOutput ?: "<!-- No execution output captured -->"}\n```")
         }.trim()
     }
 
