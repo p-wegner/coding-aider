@@ -6,7 +6,6 @@
 - [x] Adjust initial window size calculation
 - [x] Implement dynamic content area sizing
 - [x] Add minimum window size constraints
-- [ ] Optimize scroll bar visibility logic
 
 ## Scroll Position Management
 - [x] Add scroll position tracking
@@ -19,14 +18,8 @@
 - [x] Apply smooth scrolling to position restoration
 
 ## Content Formatting
-- [x] Update summary block CSS styling
+- [ ] Update summary block CSS styling
 - [x] Update intention block CSS styling
 - [x] Fix line break handling in HTML conversion
 - [x] Improve code block formatting
 - [x] Enhance visual hierarchy with better spacing
-
-## Testing
-- [ ] Test window sizing with various content lengths
-- [ ] Verify scroll position maintenance
-- [ ] Test formatting with different themes
-- [ ] Validate performance with streaming updates
