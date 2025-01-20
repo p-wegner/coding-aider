@@ -166,9 +166,16 @@ class MarkdownJcefViewer {
                     }
                     
                     .aider-summary {
-                        background: ${if (isDark) "#2a2a2a" else "#f8f8f8"};
-                        border: 3px solid ${if (isDark) "#404040" else "#e0e0e0"};
-                        color: ${if (isDark) "#e0e0e0" else "#2b2b2b"};
+                        background: ${if (isDark) "#2d2d2d" else "#fafafa"};
+                        border: 3px solid ${if (isDark) "#454545" else "#e5e5e5"};
+                        color: ${if (isDark) "#e8e8e8" else "#2b2b2b"};
+                        box-shadow: 0 4px 8px ${if (isDark) "rgba(0,0,0,0.3)" else "rgba(0,0,0,0.1)"};
+                        transition: all 0.2s ease;
+                    }
+                    
+                    .aider-summary:hover {
+                        border-color: ${if (isDark) "#505050" else "#d0d0d0"};
+                        box-shadow: 0 6px 12px ${if (isDark) "rgba(0,0,0,0.4)" else "rgba(0,0,0,0.15)"};
                     }
                     
                     .aider-intention::before,
