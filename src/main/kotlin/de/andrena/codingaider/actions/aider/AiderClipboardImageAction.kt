@@ -38,6 +38,10 @@ class AiderClipboardImageAction : AnAction() {
         }
     }
 
+    fun saveImageFromPaste(project: Project, image: Image) {
+        saveImageToFile(project, image)
+    }
+
     private fun saveImageToFile(project: Project, image: Image) {
         val projectRoot = project.basePath ?: "."
         val imagesPath = "$projectRoot/$AIDER_DOCS_FOLDER/images"
