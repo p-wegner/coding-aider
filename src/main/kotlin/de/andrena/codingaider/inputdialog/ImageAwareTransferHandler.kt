@@ -35,11 +35,11 @@ class ImageAwareTransferHandler(
 
     // Keep the old methods for backward compatibility
     override fun importData(comp: JComponent, t: Transferable): Boolean {
-        return importData(TransferSupport(comp, t))
+        return importData(createTransferSupport(comp, t))
     }
 
     override fun canImport(comp: JComponent?, transferFlavors: Array<out DataFlavor>?): Boolean {
         if (comp == null || transferFlavors == null) return false
-        return canImport(TransferSupport(comp, transferFlavors))
+        return canImport(createTransferSupport(comp, transferFlavors))
     }
 }
