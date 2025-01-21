@@ -316,7 +316,6 @@ class MarkdownDialog(
                 requestFocus()
                 markdownViewer.component.requestFocusInWindow()
                 // Set dark theme based on current IDE theme
-                val isDark = !JBColor.isBright()
                 currentContent = lastContent
                 markdownViewer.setMarkdown(currentContent)
             }
