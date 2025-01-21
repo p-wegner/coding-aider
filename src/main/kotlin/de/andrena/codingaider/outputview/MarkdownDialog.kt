@@ -103,9 +103,28 @@ class MarkdownDialog(
     private var lastManualScrollPosition = 0
     private var isScrollAnimationInProgress = false
 
+    private var resizeTimer: Timer? = null
+    
     init {
         title = initialTitle
         markdownViewer.setMarkdown(initialText)
+        
+        // Add resize listener with debouncing
+        addComponentListener(object : java.awt.event.ComponentAdapter() {
+            override fun componentResized(e: java.awt.event.ComponentEvent) {
+                resizeTimer?.cancel()
+                resizeTimer = Timer().apply {
+                    schedule(150) { // Debounce resize events
+                        invokeLater {
+                            markdownViewer.component.revalidate()
+                            markdownViewer.component.repaint()
+                            scrollPane.revalidate()
+                            scrollPane.repaint()
+                        }
+                    }
+                }
+            }
+        })
 
 
         // Start refresh timer
@@ -143,6 +162,8 @@ class MarkdownDialog(
                     refreshTimer = null
                     autoCloseTimer?.cancel()
                     autoCloseTimer = null
+                    resizeTimer?.cancel()
+                    resizeTimer = null
                     project.service<RunningCommandService>().removeRunningCommand(this@MarkdownDialog)
                 } catch (ex: Exception) {
                     println("Error during dialog cleanup: ${ex.message}")
@@ -327,30 +348,31 @@ class MarkdownDialog(
         isScrollAnimationInProgress = true
         val startValue = scrollBar.value
         val distance = targetValue - startValue
-        val steps = 15 // Increased for smoother animation
-        val delay = 12L // Slightly faster (~83fps)
+        val steps = 20 // More steps for smoother animation
+        val duration = 300L // Total animation duration in ms
+        val startTime = System.currentTimeMillis()
 
-        Thread {
-            try {
-                for (i in 1..steps) {
-                    val progress = i.toFloat() / steps
-                    // Enhanced easing function for smoother acceleration/deceleration
-                    val easedProgress = (1 - Math.cos(progress * Math.PI)) / 2
-                    val currentValue = startValue + (distance * easedProgress).toInt()
-
-                    SwingUtilities.invokeLater {
-                        scrollBar.value = currentValue
-                    }
-
-                    Thread.sleep(delay)
-                }
-                // Ensure we reach exact target
+        Timer().scheduleAtFixedRate(0, 16) { // ~60fps
+            val currentTime = System.currentTimeMillis()
+            val elapsed = (currentTime - startTime).toFloat()
+            val progress = (elapsed / duration).coerceIn(0f, 1f)
+            
+            if (progress >= 1f) {
                 SwingUtilities.invokeLater {
                     scrollBar.value = targetValue
+                    isScrollAnimationInProgress = false
                 }
-            } finally {
-                isScrollAnimationInProgress = false
+                cancel()
+                return@scheduleAtFixedRate
             }
-        }.start()
+
+            // Improved easing function for more natural motion
+            val easedProgress = (1 - (1 - progress) * (1 - progress)).toFloat()
+            val currentValue = startValue + (distance * easedProgress).toInt()
+
+            SwingUtilities.invokeLater {
+                scrollBar.value = currentValue
+            }
+        }
     }
 }
