@@ -224,8 +224,10 @@ class MarkdownDialog(
                         shouldAutoScroll = true
                     }
 
-                    // Capture scroll state before update
-                    val prevMaximum = scrollBar.maximum
+                    // Capture precise scroll state before update
+                    val prevViewportHeight = scrollPane.viewport.viewRect.height
+                    val prevScrollPosition = scrollBar.value
+                    val prevContentHeight = scrollPane.viewport.viewSize.height
 
                     // Update content
                     markdownViewer.setMarkdown(newContent)
@@ -234,16 +236,22 @@ class MarkdownDialog(
                     // Handle scrolling after content update
                     SwingUtilities.invokeLater {
                         // Calculate after content has rendered
-                        val newMaximum = scrollBar.maximum
-                        val heightDelta = (newMaximum - prevMaximum).coerceAtLeast(0)
+                        val newContentHeight = scrollPane.viewport.viewSize.height
+                        val viewportHeight = scrollPane.viewport.viewRect.height
                         
                         if (shouldAutoScroll && wasAtBottom) {
-                            // Direct scroll to bottom without animation
+                            // Direct scroll to bottom without animation if we were at bottom
                             scrollBar.value = scrollBar.maximum
-                        } else {
-                            // Maintain relative position accounting for new content
-                            val adjustedPosition = (lastManualScrollPosition * (newMaximum.toDouble() / prevMaximum.toDouble())).toInt()
-                            scrollBar.value = adjustedPosition.coerceIn(scrollBar.minimum, scrollBar.maximum - scrollBar.visibleAmount)
+                        } else if (prevContentHeight > 0 && newContentHeight > 0) {
+                            // Calculate relative position based on visible content
+                            val relativePosition = (prevScrollPosition + viewportHeight/2).toDouble() / prevContentHeight
+                            val newPosition = (newContentHeight * relativePosition - viewportHeight/2).toInt()
+                            
+                            // Apply bounded scroll position
+                            scrollBar.value = newPosition.coerceIn(
+                                scrollBar.minimum, 
+                                (scrollBar.maximum - scrollBar.visibleAmount).coerceAtLeast(scrollBar.minimum)
+                            )
                         }
 
                         scrollPane.repaint()
