@@ -211,23 +211,19 @@ class MarkdownDialog(
                 if (newContent != lastContent) {
                     lastContent = newContent
 
-                    // Get scroll position before update
+                    // Store scroll state before update
                     val scrollBar = scrollPane.verticalScrollBar
                     val wasAtBottom = scrollBar.value >= scrollBar.maximum - scrollBar.visibleAmount - 10
-
-                    // If user scrolled up, disable auto-scroll
-                    if (!wasAtBottom && shouldAutoScroll) {
-                        shouldAutoScroll = false
-                    }
-                    // If user scrolled to bottom, enable auto-scroll
-                    if (wasAtBottom && !shouldAutoScroll) {
-                        shouldAutoScroll = true
-                    }
-
-                    // Capture precise scroll state before update
                     val prevViewportHeight = scrollPane.viewport.viewRect.height
                     val prevScrollPosition = scrollBar.value
                     val prevContentHeight = scrollPane.viewport.viewSize.height
+                    val prevScrollRatio = if (prevContentHeight - prevViewportHeight > 0) {
+                        prevScrollPosition.toDouble() / (prevContentHeight - prevViewportHeight)
+                    } else 0.0
+
+                    // Update scroll behavior based on user action
+                    if (!wasAtBottom && shouldAutoScroll) shouldAutoScroll = false
+                    if (wasAtBottom && !shouldAutoScroll) shouldAutoScroll = true
 
                     // Update content
                     markdownViewer.setMarkdown(newContent)
@@ -235,29 +231,23 @@ class MarkdownDialog(
 
                     // Handle scrolling after content update
                     SwingUtilities.invokeLater {
-                        // Calculate after content has rendered
                         val newContentHeight = scrollPane.viewport.viewSize.height
                         val viewportHeight = scrollPane.viewport.viewRect.height
-                        
-                        if (shouldAutoScroll && wasAtBottom) {
-                            // Direct scroll to bottom without animation if we were at bottom
-                            scrollBar.value = scrollBar.maximum
-                        } else if (prevContentHeight > 0 && newContentHeight > 0) {
-                            // Calculate position ratio before content changed
-                            val maxScroll = prevContentHeight - prevViewportHeight
-                            val ratio = if (maxScroll > 0) prevScrollPosition.toDouble() / maxScroll else 0.0
-                            
-                            // Calculate new position based on ratio of new content height
-                            val newMaxScroll = newContentHeight - viewportHeight
-                            var newPosition = (newMaxScroll * ratio).toInt()
-                            
-                            // If we're near the bottom, snap to bottom
-                            if (newMaxScroll - newPosition < 20) {
-                                newPosition = newMaxScroll
+                        val newMaxScroll = (newContentHeight - viewportHeight).coerceAtLeast(0)
+
+                        when {
+                            shouldAutoScroll && wasAtBottom -> {
+                                smoothScrollTo(scrollBar, scrollBar.maximum)
                             }
-                            
-                            // Ensure valid scroll range
-                            newPosition = newPosition.coerceIn(0, (newContentHeight - viewportHeight).coerceAtLeast(0))
+                            prevContentHeight > 0 && newContentHeight > 0 -> {
+                                val targetPosition = (newMaxScroll * prevScrollRatio).toInt()
+                                    .coerceIn(0, newMaxScroll)
+                                if (Math.abs(targetPosition - scrollBar.value) > viewportHeight / 3) {
+                                    smoothScrollTo(scrollBar, targetPosition)
+                                } else {
+                                    scrollBar.value = targetPosition
+                                }
+                            }
                         }
 
                         scrollPane.repaint()
