@@ -40,7 +40,6 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 component.apply {
                     isFocusable = true
                     minimumSize = Dimension(200, 100)
-                    isResizable = true
                     background = mainPanel.background
                 }
                 jbCefClient.addLoadHandler(object : CefLoadHandlerAdapter() {
