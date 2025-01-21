@@ -8,15 +8,15 @@
 - [x] Add minimum window size constraints
 
 ## Scroll Position Management
-- [x] Add scroll position tracking
-- [x] Implement smart auto-scroll behavior
-- [x] Add user scroll position override detection
-- [x] Fix scroll reset during content updates
+- [ ] Add scroll position tracking
+- [ ] Implement smart auto-scroll behavior
+- [ ] Add user scroll position override detection
+- [ ] Fix scroll reset during content updates
+- [ ] Fix scroll behavior when content is updated (currently scrolls to top)
 - [x] Add smooth scrolling animation
 - [x] Improve animation smoothness and reliability
 - [x] Add animation state management
 - [x] Apply smooth scrolling to position restoration
-- [x] Fix scroll behavior when content is updated (currently scrolls to top)
 
 ## Content Formatting
 - [x] Update summary block CSS styling
