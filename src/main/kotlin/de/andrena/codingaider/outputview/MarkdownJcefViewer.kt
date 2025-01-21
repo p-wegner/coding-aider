@@ -57,7 +57,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                             browser.executeJavaScript(js, browser.url, 0)
                         }
                     }
-                }, component.cefBrowser)
+                }, jbCefBrowser!!.cefBrowser)
             }
             // Add the browser component to our mainPanel with BorderLayout.CENTER
             mainPanel.add(jbCefBrowser!!.component, BorderLayout.CENTER)
