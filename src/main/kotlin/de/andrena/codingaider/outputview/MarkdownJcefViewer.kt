@@ -31,7 +31,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         isOpaque = true
         background = if (!JBColor.isBright()) JBColor(0x2B2B2B, 0x2B2B2B) else JBColor.WHITE
     }
-    private var jbCefBrowser: JBCefBrowser? = null
+    private lateinit var jbCefBrowser: JBCefBrowser
     private var isDarkTheme = false
     private var currentContent = ""
 
@@ -40,12 +40,13 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             if (JBCefApp.isSupported()) {
                 // Create the JCEF Browser
                 jbCefBrowser = JBCefBrowser().apply {
-                    component?.apply {
+                    component.apply {
                         isFocusable = true
                         minimumSize = Dimension(200, 100)
                         background = mainPanel.background
                     }
-                    jbCefClient?.addLoadHandler(object : CefLoadHandlerAdapter() {
+                }
+                jbCefBrowser.jbCefClient.addLoadHandler(object : CefLoadHandlerAdapter() {
                     override fun onLoadingStateChange(browser: CefBrowser, isLoading: Boolean, canGoBack: Boolean, canGoForward: Boolean) {
                         if (!isLoading) {
                             // Inject scroll behavior improvements
@@ -58,12 +59,12 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                             browser.executeJavaScript(js, browser.url, 0)
                         }
                     }
-                }, jbCefBrowser?.cefBrowser)
-                }
+                }, jbCefBrowser.cefBrowser)
+
                 // Add the browser component to our mainPanel with BorderLayout.CENTER
-                jbCefBrowser?.component?.let { browserComponent ->
+                jbCefBrowser.component.let { browserComponent ->
                     mainPanel.add(browserComponent, BorderLayout.CENTER)
-                } ?: createFallbackComponent()
+                }
             } else {
                 createFallbackComponent()
             }
@@ -100,7 +101,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 comp.caretPosition = 0
             }
             else -> {
-                jbCefBrowser?.let { browser ->
+                jbCefBrowser.let { browser ->
                     val encodedHtml = Base64.getEncoder().encodeToString(html.toByteArray(Charsets.UTF_8))
                     browser.loadURL("data:text/html;base64,$encodedHtml")
                 }
