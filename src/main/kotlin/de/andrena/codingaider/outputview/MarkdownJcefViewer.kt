@@ -19,6 +19,8 @@ import com.vladsch.flexmark.parser.Parser
 import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.util.data.MutableDataSet
 import de.andrena.codingaider.utils.FilePathConverter
+import org.cef.browser.CefBrowser
+import org.cef.handler.CefLoadHandlerAdapter
 
 class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
 
@@ -46,12 +48,13 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     override fun onLoadingStateChange(browser: CefBrowser?, isLoading: Boolean, canGoBack: Boolean, canGoForward: Boolean) {
                         if (!isLoading && browser != null) {
                             // Inject scroll behavior improvements
-                            browser.executeJavaScript("""
+                            val js = """
                                 document.documentElement.style.height = '100%';
                                 document.body.style.height = '100%';
                                 document.body.style.margin = '20px';
                                 document.body.style.boxSizing = 'border-box';
-                            """.trimIndent(), browser.url, 0)
+                            """.trimIndent()
+                            browser.executeJavaScript(js, browser.url, 0, browser)
                         }
                     }
                 })

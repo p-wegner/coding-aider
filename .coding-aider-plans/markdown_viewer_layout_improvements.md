@@ -29,10 +29,3 @@ Current issues:
 - Current CSS styles in markdown conversion
 - Swing layout manager documentation
 
-<!-- SUBPLAN:markdown_viewer_layout_css -->
-[Subplan: CSS Improvements](markdown_viewer_layout_css.md)
-<!-- END_SUBPLAN -->
-
-<!-- SUBPLAN:markdown_viewer_layout_swing -->
-[Subplan: Swing Layout Adjustments](markdown_viewer_layout_swing.md)
-<!-- END_SUBPLAN -->
