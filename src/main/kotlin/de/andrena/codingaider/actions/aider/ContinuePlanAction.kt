@@ -59,7 +59,7 @@ private class SelectPlanDialog(private val project: Project) : DialogWrapper(pro
             }
         }
 
-        val markdownViewer = MarkdownJcefViewer().apply {
+        val markdownViewer = MarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
             setDarkTheme(!JBColor.isBright())
         }
 
@@ -71,11 +71,11 @@ private class SelectPlanDialog(private val project: Project) : DialogWrapper(pro
 
         planComboBox.addActionListener {
             selectedPlan = planComboBox.selectedItem as? AiderPlan
-            markdownViewer.setMarkdownContent(selectedPlan?.plan ?: "")
+            markdownViewer.setMarkdown(selectedPlan?.plan ?: "")
         }
 
         // Set initial text
-        markdownViewer.setMarkdownContent((planComboBox.selectedItem as? AiderPlan)?.plan ?: "")
+        markdownViewer.setMarkdown((planComboBox.selectedItem as? AiderPlan)?.plan ?: "")
 
         return panel {
             row("Plan") {

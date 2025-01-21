@@ -43,7 +43,7 @@ class MarkdownDialog(
         return displayString ?: initialTitle
     }
 
-    private val markdownViewer = MarkdownJcefViewer().apply {
+    private val markdownViewer = MarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
         setMarkdown(initialText)
     }
     private val scrollPane = JBScrollPane(markdownViewer.component).apply {

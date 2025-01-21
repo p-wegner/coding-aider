@@ -561,9 +561,9 @@ class PlanViewer(private val project: Project) {
                     font = UIManager.getFont("TextField.font")
                     border = UIManager.getBorder("TextField.border")
                 }
-                private val markdownViewer = CustomMarkdownViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
+                private val markdownViewer = MarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
                     setDarkTheme(!JBColor.isBright())
-                    setMarkdownContent(selectedPlan.plan)
+                    setMarkdown(selectedPlan.plan)
                 }
 
                 init {
@@ -647,9 +647,9 @@ class PlanViewer(private val project: Project) {
                 }
 
                 override fun createCenterPanel(): JComponent {
-                    val markdownViewer = MarkdownJcefViewer().apply {
+                    val markdownViewer = MarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
                         setDarkTheme(!JBColor.isBright())
-                        setMarkdownContent(selectedPlan.plan)
+                        setMarkdown(selectedPlan.plan)
                     }
                     val previewScrollPane = JBScrollPane(markdownViewer.component).apply {
                         preferredSize = Dimension(600, 300)
@@ -711,9 +711,9 @@ class PlanViewer(private val project: Project) {
                 }
 
                 override fun createCenterPanel(): JComponent {
-                    val markdownViewer = CustomMarkdownViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
+                    val markdownViewer = MarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
                         setDarkTheme(!JBColor.isBright())
-                        setMarkdownContent(selectedPlan.plan)
+                        setMarkdown(selectedPlan.plan)
                     }
                     val previewScrollPane = JBScrollPane(markdownViewer.component).apply {
                         preferredSize = Dimension(600, 300)

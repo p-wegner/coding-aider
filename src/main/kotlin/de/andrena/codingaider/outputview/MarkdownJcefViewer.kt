@@ -16,11 +16,14 @@ import java.awt.BorderLayout
 import com.vladsch.flexmark.parser.Parser
 import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.util.data.MutableDataSet
+import de.andrena.codingaider.utils.FilePathConverter
 
-class MarkdownJcefViewer {
+class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
 
     private val mainPanel: JPanel = JPanel(BorderLayout())
     private var jbCefBrowser: JBCefBrowser? = null
+    private var isDarkTheme = false
+    private var currentContent = ""
 
     init {
         if (JBCefApp.isSupported()) {
@@ -43,12 +46,22 @@ class MarkdownJcefViewer {
         get() = mainPanel
 
     fun setMarkdown(markdown: String) {
+        if (markdown == currentContent) return
+        currentContent = markdown
         jbCefBrowser?.let { browser ->
             val html = convertMarkdownToHtml(markdown)
             val encodedHtml = Base64.getEncoder().encodeToString(html.toByteArray(Charsets.UTF_8))
             browser.loadURL("data:text/html;base64,$encodedHtml")
         }
     }
+
+    fun setDarkTheme(dark: Boolean) {
+        isDarkTheme = dark
+        if (currentContent.isNotEmpty()) {
+            setMarkdown(currentContent)
+        }
+    }
+
     private val options = MutableDataSet().apply {
         set(
             Parser.EXTENSIONS, listOf(
@@ -65,10 +78,22 @@ class MarkdownJcefViewer {
 
     private fun convertMarkdownToHtml(markdown: String): String {
         val parser = Parser.builder(options).build()
-        val document = parser.parse(markdown)
+        val project = com.intellij.openapi.project.ProjectManager.getInstance().openProjects.firstOrNull()
+        val basePath = project?.basePath
+        var processedMarkdown = FilePathConverter.convertPathsToMarkdownLinks(markdown, basePath)
+        val document = parser.parse(processedMarkdown)
+
         val renderer = HtmlRenderer.builder(options).build()
-        val html = renderer.render(document)
-        
+        var html = renderer.render(document)
+
+        // Process aider blocks
+        html = html.replace(
+            Regex("<aider-intention>([\\s\\S]*?)</aider-intention>"),
+            "<div class=\"aider-intention\">$1</div>"
+        ).replace(
+            Regex("<aider-summary>([\\s\\S]*?)</aider-summary>"),
+            "<div class=\"aider-summary\">$1</div>"
+        )
         val isDark = !com.intellij.ui.JBColor.isBright()
         val colors = if (isDark) {
             mapOf(
