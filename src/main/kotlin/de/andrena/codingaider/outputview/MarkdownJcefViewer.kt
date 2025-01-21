@@ -58,16 +58,19 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                             browser.executeJavaScript(js, browser.url, 0)
                         }
                     }
-                }, jbCefBrowser!!.cefBrowser)
+                }, jbCefBrowser?.cefBrowser)
+                }
+                // Add the browser component to our mainPanel with BorderLayout.CENTER
+                jbCefBrowser?.component?.let { browserComponent ->
+                    mainPanel.add(browserComponent, BorderLayout.CENTER)
+                } ?: createFallbackComponent()
+            } else {
+                createFallbackComponent()
             }
-            // Add the browser component to our mainPanel with BorderLayout.CENTER
-            mainPanel.add(jbCefBrowser!!.component, BorderLayout.CENTER)
-        } else {
-            // Fallback if JCEF is not supported
-            mainPanel.add(
-                javax.swing.JLabel("JCEF is not supported on this IDE/platform."),
-                BorderLayout.CENTER
-            )
+        } catch (e: Exception) {
+            println("Error initializing JCEF browser: ${e.message}")
+            e.printStackTrace()
+            createFallbackComponent()
         }
     }
 
