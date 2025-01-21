@@ -20,6 +20,7 @@ import javax.swing.*
 import kotlin.concurrent.schedule
 import kotlin.concurrent.scheduleAtFixedRate
 import kotlin.math.max
+import kotlin.math.pow
 
 
 class MarkdownDialog(

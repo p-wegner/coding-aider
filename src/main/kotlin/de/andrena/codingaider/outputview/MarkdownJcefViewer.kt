@@ -32,9 +32,11 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         background = if (!JBColor.isBright()) JBColor(0x2B2B2B, 0x2B2B2B) else JBColor.WHITE
     }
     private lateinit var jbCefBrowser: JBCefBrowser
+
+    private var fallbackEditor: JEditorPane? = null
     private var isDarkTheme = false
     private var currentContent = ""
-
+    private var isBasePageLoaded = false
     init {
         try {
             if (JBCefApp.isSupported()) {
@@ -46,25 +48,12 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         background = mainPanel.background
                     }
                 }
-                jbCefBrowser.jbCefClient.addLoadHandler(object : CefLoadHandlerAdapter() {
-                    override fun onLoadingStateChange(browser: CefBrowser, isLoading: Boolean, canGoBack: Boolean, canGoForward: Boolean) {
-                        if (!isLoading) {
-                            // Inject scroll behavior improvements
-                            val js = """
-                                document.documentElement.style.height = '100%';
-                                document.body.style.height = '100%';
-                                document.body.style.margin = '20px';
-                                document.body.style.boxSizing = 'border-box';
-                            """.trimIndent().replace("\n", " ")
-                            browser.executeJavaScript(js, browser.url, 0)
-                        }
-                    }
-                }, jbCefBrowser.cefBrowser)
-
                 // Add the browser component to our mainPanel with BorderLayout.CENTER
-                jbCefBrowser.component.let { browserComponent ->
-                    mainPanel.add(browserComponent, BorderLayout.CENTER)
-                }
+                mainPanel.add(jbCefBrowser.component, BorderLayout.CENTER)
+
+                // Load the base page exactly once here in init
+                loadBasePage()
+                isBasePageLoaded = true
             } else {
                 createFallbackComponent()
             }
@@ -74,9 +63,46 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             createFallbackComponent()
         }
     }
+    private fun loadBasePage() {
+        val baseHtml = """
+        <html>
+          <head>
+            <meta charset="UTF-8"/>
+            <title>Markdown Viewer</title>
+            <style>
+              html, body {
+                margin: 0; 
+                padding: 0;
+                /* 100% height to allow a child to fill */
+                height: 100%;
+                box-sizing: border-box;
+                overflow: hidden; /* We'll let container do the scrolling */
+              }
+              #markdown-container {
+                box-sizing: border-box;
+                padding: 20px;
+                /* Take up the full visible space of the browser */
+                height: 100%;
+                /* Make this element scrollable */
+                overflow-y: auto;
+                /* If you want horizontal scrolling only if needed:
+                   overflow-x: auto; 
+                */
+              }
+            </style>
+          </head>
+          <body>
+            <div id="markdown-container"></div>
+          </body>
+        </html>
+    """.trimIndent()
 
+        val encodedBase = Base64.getEncoder().encodeToString(baseHtml.toByteArray(Charsets.UTF_8))
+        jbCefBrowser.loadURL("data:text/html;base64,$encodedBase")
+    }
     private fun createFallbackComponent() {
-        val fallbackEditor = JEditorPane().apply {
+        // The user does not have JCEF support, fallback to JEditorPane
+        fallbackEditor = JEditorPane().apply {
             contentType = "text/html"
             isEditable = false
             putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true)
@@ -87,26 +113,55 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         mainPanel.add(fallbackEditor, BorderLayout.CENTER)
     }
 
+
     val component: JComponent
         get() = mainPanel
 
     fun setMarkdown(markdown: String) {
         if (markdown == currentContent) return
         currentContent = markdown
-        
+
         val html = convertMarkdownToHtml(markdown)
-        when (val comp = component) {
-            is JEditorPane -> {
-                comp.text = html
-                comp.caretPosition = 0
-            }
-            else -> {
-                jbCefBrowser.let { browser ->
-                    val encodedHtml = Base64.getEncoder().encodeToString(html.toByteArray(Charsets.UTF_8))
-                    browser.loadURL("data:text/html;base64,$encodedHtml")
-                }
-            }
+
+        // If fallback editor is in use
+        fallbackEditor?.let {
+            it.text = html
+            it.caretPosition = 0
+            return
         }
+
+        // Otherwise, use JCEF and inject the HTML snippet
+        if (!isBasePageLoaded) {
+            loadBasePage()
+            isBasePageLoaded = true
+        }
+
+        val encodedHtml = Base64.getEncoder().encodeToString(html.toByteArray(Charsets.UTF_8))
+
+        // We'll do the wasAtBottom check, replace container content, and scroll if needed.
+        val script = """
+        (function() {
+            var container = document.getElementById('markdown-container');
+            if (!container) return;
+
+            // Are we close to bottom already?
+            var scrollPos = container.scrollTop;
+            var clientH = container.clientHeight;
+            var scrollH = container.scrollHeight;
+            var nearBottom = (scrollPos + clientH >= scrollH - 5);
+
+            // Inject new HTML
+            var decoded = atob('$encodedHtml');
+            container.innerHTML = decoded;
+
+            // If we were at the bottom before, jump to bottom again
+            if (nearBottom) {
+                container.scrollTop = container.scrollHeight;
+            }
+        })();
+    """.trimIndent()
+
+        jbCefBrowser.cefBrowser.executeJavaScript(script, jbCefBrowser.cefBrowser.url, 0)
     }
 
     fun setDarkTheme(dark: Boolean) {
