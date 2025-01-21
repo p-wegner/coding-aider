@@ -205,12 +205,12 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         val renderer = HtmlRenderer.builder(options).build()
         var html = renderer.render(document)
 
-        // Process aider blocks
+        // Process aider blocks with proper whitespace handling
         html = html.replace(
-            Regex("<aider-intention>([\\s\\S]*?)</aider-intention>"),
+            Regex("(?s)<aider-intention>\\s*(.*?)\\s*</aider-intention>"),
             "<div class=\"aider-intention\">$1</div>"
         ).replace(
-            Regex("<aider-summary>([\\s\\S]*?)</aider-summary>"),
+            Regex("(?s)<aider-summary>\\s*(.*?)\\s*</aider-summary>"),
             "<div class=\"aider-summary\">$1</div>"
         )
         val isDark = !com.intellij.ui.JBColor.isBright()

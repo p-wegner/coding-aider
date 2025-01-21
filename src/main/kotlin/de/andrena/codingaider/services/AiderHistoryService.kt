@@ -59,19 +59,19 @@ class AiderHistoryService(private val project: Project) {
     }
 
     private fun extractXmlPrompts(chatContent: String): Triple<String?, String?, String?> {
-        val systemPrompt = chatContent.substringBetween("<SystemPrompt>([\\s\\S]*?)</SystemPrompt>".toRegex())
-            ?.replace("<SystemPrompt>|</SystemPrompt>".toRegex(), "")
-            ?.trim()
+        val systemPromptRegex = "(?s)<SystemPrompt>\\s*(.*?)\\s*</SystemPrompt>".toRegex()
+        val userPromptRegex = "(?s)<UserPrompt>\\s*(.*?)\\s*</UserPrompt>".toRegex()
+        
+        val systemPrompt = systemPromptRegex.find(chatContent)?.groupValues?.get(1)?.trim()
             ?.takeIf { it.isNotEmpty() }
         
-        val userPrompt = chatContent.substringBetween("<UserPrompt>([\\s\\S]*?)</UserPrompt>".toRegex())
-            ?.replace("<UserPrompt>|</UserPrompt>".toRegex(), "")
-            ?.trim()
+        val userPrompt = userPromptRegex.find(chatContent)?.groupValues?.get(1)?.trim()
             ?.takeIf { it.isNotEmpty() }
 
-        val aiderOutput = chatContent.substringAfterLast("</UserPrompt>")
-            ?.substringBefore("# aider chat started at")
-            ?.trim()
+        val aiderOutput = chatContent.substringAfter("</UserPrompt>", "")
+            .substringBefore("# aider chat started at", chatContent)
+            .trim()
+            .takeIf { it.isNotEmpty() }
 
         return Triple(systemPrompt, userPrompt, aiderOutput)
     }
