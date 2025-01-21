@@ -235,14 +235,14 @@ class MarkdownDialog(
                     SwingUtilities.invokeLater {
                         // Calculate after content has rendered
                         val newMaximum = scrollBar.maximum
-                        val heightDelta = newMaximum - prevMaximum
+                        val heightDelta = (newMaximum - prevMaximum).coerceAtLeast(0)
                         
                         if (shouldAutoScroll && wasAtBottom) {
                             // Direct scroll to bottom without animation
                             scrollBar.value = scrollBar.maximum
                         } else {
                             // Maintain relative position accounting for new content
-                            val adjustedPosition = lastManualScrollPosition + heightDelta
+                            val adjustedPosition = (lastManualScrollPosition * (newMaximum.toDouble() / prevMaximum.toDouble())).toInt()
                             scrollBar.value = adjustedPosition.coerceIn(scrollBar.minimum, scrollBar.maximum - scrollBar.visibleAmount)
                         }
 
