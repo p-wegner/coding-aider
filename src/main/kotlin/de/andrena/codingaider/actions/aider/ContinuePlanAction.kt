@@ -10,6 +10,7 @@ import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.dsl.builder.AlignX
+import com.intellij.ui.dsl.builder.AlignY
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.outputview.MarkdownJcefViewer
 import de.andrena.codingaider.services.plans.AiderPlan
@@ -90,9 +91,8 @@ private class SelectPlanDialog(private val project: Project) : DialogWrapper(pro
             row {
                 cell(scrollPane)
                     .align(AlignX.FILL)
+                    .align(AlignY.FILL)
                     .resizableColumn()
-                    .weightx(1.0)
-                    .weighty(1.0)
             }.resizableRow()
         }.apply {
             border = BorderFactory.createEmptyBorder(8, 8, 8, 8)
