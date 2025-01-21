@@ -16,7 +16,7 @@
 - [x] Improve animation smoothness and reliability
 - [x] Add animation state management
 - [x] Apply smooth scrolling to position restoration
-- [x] Fix scroll behavior when content is updated (currently scrolls to top)
+- [ ] Fix scroll behavior when content is updated (currently scrolls to top)
 
 ## Content Formatting
 - [x] Update summary block CSS styling
