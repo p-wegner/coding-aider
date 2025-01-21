@@ -31,7 +31,10 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         if (JBCefApp.isSupported()) {
             // Create the JCEF Browser
             jbCefBrowser = JBCefBrowser().apply {
-                component.isFocusable = true
+                component.apply {
+                    isFocusable = true
+                    minimumSize = Dimension(200, 100)
+                }
             }
             // Add the browser component to our mainPanel with BorderLayout.CENTER
             mainPanel.add(jbCefBrowser!!.component, BorderLayout.CENTER)
