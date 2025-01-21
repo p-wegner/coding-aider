@@ -22,6 +22,8 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
 
     private val mainPanel: JPanel = JPanel(BorderLayout()).apply {
         border = null
+        minimumSize = Dimension(200, 100)
+        preferredSize = Dimension(600, 400)
     }
     private var jbCefBrowser: JBCefBrowser? = null
     private var isDarkTheme = false
@@ -34,6 +36,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 component.apply {
                     isFocusable = true
                     minimumSize = Dimension(200, 100)
+                    isResizable = true
                 }
             }
             // Add the browser component to our mainPanel with BorderLayout.CENTER
@@ -165,7 +168,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         border-radius: 8px;
                         box-shadow: 0 2px 4px ${if (isDark) "rgba(0,0,0,0.3)" else "rgba(0,0,0,0.1)"};
                         overflow-x: auto;
-                        max-width: calc(100vw - 60px);
+                        max-width: 100%;
                         white-space: pre-wrap;
                         word-wrap: break-word;
                     }

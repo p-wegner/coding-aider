@@ -4,7 +4,7 @@
 - [x] Implement responsive layout container
   - [x] Update JPanel layout manager for proper resizing
   - [x] Configure minimum and preferred size constraints
-  - [ ] Test window resizing behavior
+  - [x] Test window resizing behavior
 
 ## Scrolling Enhancements
 - [x] Eliminate nested scrollbars
@@ -16,7 +16,7 @@
 - [x] Improve content wrapping
   - [x] Add responsive CSS for code blocks
   - [x] Implement dynamic width calculations
-  - [ ] Test content reflow during window resizing
+  - [x] Test content reflow during window resizing
 
 ## Theme Compatibility
 - [ ] Verify dark/light theme transitions
