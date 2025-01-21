@@ -24,6 +24,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         border = null
         minimumSize = Dimension(200, 100)
         preferredSize = Dimension(600, 400)
+        isOpaque = true
     }
     private var jbCefBrowser: JBCefBrowser? = null
     private var isDarkTheme = false
@@ -171,6 +172,8 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         max-width: 100%;
                         white-space: pre-wrap;
                         word-wrap: break-word;
+                        box-sizing: border-box;
+                        width: calc(100% - 32px); /* Account for padding */
                     }
                     
                     pre code {

@@ -36,3 +36,34 @@
   - [ ] Verify all scroll scenarios
   - [ ] Validate window size boundaries
   - [ ] Check theme switching behavior
+[Coding Aider Plan - Checklist]
+
+## Layout Container Improvements
+- [x] Update JPanel layout for proper resizing
+- [x] Configure content panel with proper borders
+- [x] Improve content wrapping behavior
+- [ ] Add responsive width calculations
+
+## Scrolling Enhancements  
+- [x] Fix horizontal scrollbar issues
+- [x] Improve pre tag overflow handling
+- [ ] Add smooth scroll transitions
+- [ ] Optimize scroll position preservation
+
+## Content Responsiveness
+- [x] Add box-sizing calculations
+- [x] Implement dynamic width handling
+- [ ] Add viewport size listeners
+- [ ] Improve content reflow during resize
+
+## Theme Compatibility
+- [ ] Test dark theme transitions
+- [ ] Verify light theme behavior
+- [ ] Add theme-specific spacing
+- [ ] Validate contrast ratios
+
+## Performance Optimization
+- [ ] Add resize debouncing
+- [ ] Optimize reflow calculations
+- [ ] Cache rendered content
+- [ ] Add performance monitoring

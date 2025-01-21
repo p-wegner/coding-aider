@@ -129,12 +129,11 @@ class MarkdownDialog(
         pack()
         setLocationRelativeTo(null)
         // Add scroll pane with proper weighting
-        scrollPane.border = javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5)
-        add(scrollPane, BorderLayout.CENTER)
-        scrollPane.preferredSize = java.awt.Dimension(
-            (preferredSize.width * 0.95).toInt(),
-            (preferredSize.height * 0.9).toInt()
-        )
+        val contentPanel = JPanel(BorderLayout(0, 0)).apply {
+            border = javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5)
+            add(scrollPane, BorderLayout.CENTER)
+        }
+        add(contentPanel, BorderLayout.CENTER)
 
         defaultCloseOperation = DO_NOTHING_ON_CLOSE
         addWindowListener(object : java.awt.event.WindowAdapter() {
