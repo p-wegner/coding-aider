@@ -1,21 +1,21 @@
 [Coding Aider Plan - Checklist]
 
 ## Layout Improvements
-- [ ] Implement responsive layout container
-  - [ ] Update JPanel layout manager for proper resizing
-  - [ ] Configure minimum and preferred size constraints
+- [x] Implement responsive layout container
+  - [x] Update JPanel layout manager for proper resizing
+  - [x] Configure minimum and preferred size constraints
   - [ ] Test window resizing behavior
 
 ## Scrolling Enhancements
-- [ ] Eliminate nested scrollbars
-  - [ ] Remove redundant scroll containers
-  - [ ] Configure JCEF browser scrolling settings
+- [x] Eliminate nested scrollbars
+  - [x] Remove redundant scroll containers
+  - [x] Configure JCEF browser scrolling settings
   - [ ] Test scrolling behavior in different window sizes
 
 ## Content Responsiveness
-- [ ] Improve content wrapping
-  - [ ] Add responsive CSS for code blocks
-  - [ ] Implement dynamic width calculations
+- [x] Improve content wrapping
+  - [x] Add responsive CSS for code blocks
+  - [x] Implement dynamic width calculations
   - [ ] Test content reflow during window resizing
 
 ## Theme Compatibility

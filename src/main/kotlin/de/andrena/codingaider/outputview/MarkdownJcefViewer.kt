@@ -50,10 +50,19 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     fun setMarkdown(markdown: String) {
         if (markdown == currentContent) return
         currentContent = markdown
-        jbCefBrowser?.let { browser ->
-            val html = convertMarkdownToHtml(markdown)
-            val encodedHtml = Base64.getEncoder().encodeToString(html.toByteArray(Charsets.UTF_8))
-            browser.loadURL("data:text/html;base64,$encodedHtml")
+        
+        val html = convertMarkdownToHtml(markdown)
+        when (val comp = component) {
+            is JEditorPane -> {
+                comp.text = html
+                comp.caretPosition = 0
+            }
+            else -> {
+                jbCefBrowser?.let { browser ->
+                    val encodedHtml = Base64.getEncoder().encodeToString(html.toByteArray(Charsets.UTF_8))
+                    browser.loadURL("data:text/html;base64,$encodedHtml")
+                }
+            }
         }
     }
 
@@ -141,6 +150,9 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         line-height: 1.6;
                         background: var(--body-bg);
                         color: var(--body-text);
+                        max-width: 100%;
+                        overflow-x: hidden;
+                        box-sizing: border-box;
                     }
                     pre {
                         background: ${colors["preBg"]};
@@ -150,6 +162,9 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         border-radius: 8px;
                         box-shadow: 0 2px 4px ${if (isDark) "rgba(0,0,0,0.3)" else "rgba(0,0,0,0.1)"};
                         overflow-x: auto;
+                        max-width: calc(100vw - 60px);
+                        white-space: pre-wrap;
+                        word-wrap: break-word;
                     }
                     
                     pre code {
