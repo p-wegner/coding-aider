@@ -344,53 +344,69 @@ class MarkdownDialog(
     }
 
     private fun smoothScrollTo(scrollBar: JScrollBar, targetValue: Int) {
+        // Prevent multiple animations from running simultaneously
+        scrollAnimationTimer?.cancel()
         if (isScrollAnimationInProgress) {
-            scrollAnimationTimer?.cancel()
+            isScrollAnimationInProgress = false
+        }
+
+        val startValue = scrollBar.value
+        // Don't animate if the distance is too small
+        if (Math.abs(targetValue - startValue) < 10) {
+            scrollBar.value = targetValue
+            lastScrollPosition = targetValue
+            return
         }
 
         isScrollAnimationInProgress = true
-        val startValue = scrollBar.value
         val distance = targetValue - startValue
-        val duration = 300L // Total animation duration in ms
+        val duration = 250L // Slightly faster animation
         val startTime = System.currentTimeMillis()
-
-        // Cancel any existing animation
-        scrollAnimationTimer?.cancel()
         
-        // Create new animation timer
         scrollAnimationTimer = Timer().apply {
-            scheduleAtFixedRate(0, 16) { // ~60fps
+            scheduleAtFixedRate(0, 8) { // ~120fps for smoother animation
+                if (!isScrollAnimationInProgress) {
+                    cancel()
+                    return@scheduleAtFixedRate
+                }
+
                 val currentTime = System.currentTimeMillis()
                 val elapsed = (currentTime - startTime).toFloat()
                 val progress = (elapsed / duration).coerceIn(0f, 1f)
                 
                 if (progress >= 1f) {
                     SwingUtilities.invokeLater {
-                        scrollBar.value = targetValue
-                        lastScrollPosition = targetValue
-                        isScrollAnimationInProgress = false
+                        try {
+                            scrollBar.value = targetValue
+                            lastScrollPosition = targetValue
+                        } finally {
+                            isScrollAnimationInProgress = false
+                        }
                     }
                     cancel()
                     return@scheduleAtFixedRate
                 }
 
-                // Enhanced easing function for smoother motion
-                val easedProgress = easeInOutCubic(progress)
+                val easedProgress = easeInOutQuint(progress)
                 val currentValue = startValue + (distance * easedProgress).toInt()
 
                 SwingUtilities.invokeLater {
-                    scrollBar.value = currentValue
-                    lastScrollPosition = currentValue
+                    try {
+                        scrollBar.value = currentValue
+                        lastScrollPosition = currentValue
+                    } catch (e: Exception) {
+                        isScrollAnimationInProgress = false
+                    }
                 }
             }
         }
     }
 
-    private fun easeInOutCubic(x: Float): Float {
+    private fun easeInOutQuint(x: Float): Float {
         return if (x < 0.5f) {
-            4 * x * x * x
+            16 * x * x * x * x * x
         } else {
-            1 - (-2 * x + 2).pow(3) / 2
+            1 - (-2 * x + 2).pow(5) / 2
         }
     }
 }
