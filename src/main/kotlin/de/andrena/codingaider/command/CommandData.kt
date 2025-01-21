@@ -69,6 +69,11 @@ data class CommandOptions(
 data class FileData(val filePath: String, val isReadOnly: Boolean) {
     val normalizedFilePath: String
         get() = filePath.replace('\\', '/').replace("//", "/")
+
+    fun hasSameNormalizedPath(other: FileData): Boolean {
+        return other.normalizedFilePath == normalizedFilePath
+
+    }
 }
 
 

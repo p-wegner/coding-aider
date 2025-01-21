@@ -58,7 +58,7 @@ class PersistentFileService(private val project: Project) {
     }
 
     fun addFile(file: FileData) {
-        if (!persistentFiles.any { it.filePath == file.filePath }) {
+        if (!persistentFiles.any { it.hasSameNormalizedPath(file)}) {
             persistentFiles.add(file)
             savePersistentFilesToContextFile()
         }

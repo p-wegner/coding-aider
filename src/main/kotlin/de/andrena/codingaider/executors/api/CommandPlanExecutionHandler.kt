@@ -31,6 +31,7 @@ class CommandPlanExecutionHandler(private val project: Project, private val comm
     }
 
     fun beforeCommandStarted() {
+        if (!commandData.structuredMode) return
         val plansFolder = File(project.basePath, AiderPlanService.AIDER_PLANS_FOLDER)
         if (plansFolder.exists() && plansFolder.isDirectory) {
             initialPlanFiles = plansFolder.listFiles { file -> file.isFile && file.extension == "md" }
