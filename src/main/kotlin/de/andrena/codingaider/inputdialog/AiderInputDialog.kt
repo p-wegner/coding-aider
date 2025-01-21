@@ -74,8 +74,9 @@ class AiderInputDialog(
             this.getEditor(true)?.let { editor ->
                 TextCompletionUtil.installCompletionHint(editor)
                 // Add paste handler for images
+                val clipboardAction = AiderClipboardImageAction()
                 editor.component.transferHandler = ImageAwareTransferHandler(editor.component.transferHandler) { image ->
-                    AiderClipboardImageAction().saveImageFromPaste(project, image)
+                    clipboardAction.saveImageFromPaste(project, image)
                 }
             }
             val value: DocumentListener = object : DocumentListener {
