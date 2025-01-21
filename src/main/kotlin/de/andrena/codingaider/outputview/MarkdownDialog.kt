@@ -109,8 +109,7 @@ class MarkdownDialog(
     
     init {
         title = initialTitle
-        markdownViewer.setMarkdown(initialText)
-        
+
         // Add resize listener with debouncing
         addComponentListener(object : java.awt.event.ComponentAdapter() {
             override fun componentResized(e: java.awt.event.ComponentEvent) {
@@ -216,7 +215,7 @@ class MarkdownDialog(
                 }
             }
         })
-
+        markdownViewer.setMarkdown(initialText)
     }
 
     private var lastContent = ""

@@ -20,6 +20,7 @@ import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.util.data.MutableDataSet
 import de.andrena.codingaider.utils.FilePathConverter
 import org.cef.browser.CefBrowser
+import org.cef.browser.CefFrame
 import org.cef.handler.CefLoadHandlerAdapter
 
 class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
@@ -50,8 +51,17 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 }
                 // Add the browser component to our mainPanel with BorderLayout.CENTER
                 mainPanel.add(jbCefBrowser.component, BorderLayout.CENTER)
-
                 // Load the base page exactly once here in init
+                jbCefBrowser.cefBrowser.client.addLoadHandler(object : CefLoadHandlerAdapter() {
+                    override fun onLoadEnd(browser: CefBrowser?, frame: CefFrame?, httpStatusCode: Int) {
+                        // Make sure it's the main frame finishing load
+                        if (frame?.isMain == true) {
+                            // Now the #markdown-container definitely exists
+                            // => do your injection
+                            setMarkdown(currentContent)
+                        }
+                    }
+                })
                 loadBasePage()
                 isBasePageLoaded = true
             } else {
@@ -118,7 +128,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         get() = mainPanel
 
     fun setMarkdown(markdown: String) {
-        if (markdown == currentContent) return
+//        if (markdown == currentContent) return
         currentContent = markdown
 
         val html = convertMarkdownToHtml(markdown)

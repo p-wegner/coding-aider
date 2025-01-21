@@ -1,11 +1,13 @@
 - [ ] Feature: native gemini support
 - [ ] Feature: plan system prompt include manual stop markers where the user should test something
 - [ ] Feature: plan system prompt improved testing strategy and feedback mechanism for the llm
-- [ ] Bug: Scrolling in outputdialog does not work properly
-  - always scrolls to top 
-- [ ] Bug: Plan View actions use old markdown viewer
 - [ ] Bug: structured output not highlighted properly
-- [ ] Bug: Show last command skips the first line
 - [ ] Feature: Paste Image in aider dialog should call the clipboard image action
 - [ ] Bug: Duplicate entries in persistent files (service missing duplicate detection)
   - atleast one file new => all files added even if they are contained already
+- [ ] Feature: create plan from previous command 
+  - will be used if a feature is too complex to be done in one go
+  - ai could give a recommendation if this is needed (use exisiting ouput summary xml as api for tool calling)
+  - button directly in the output dialog
+  - edge cases: undo changes before creating plan or keep them and integrate in the plan (might degrade quality)
+  - 

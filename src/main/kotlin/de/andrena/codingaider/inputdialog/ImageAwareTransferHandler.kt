@@ -38,8 +38,4 @@ class ImageAwareTransferHandler(
         return importData(TransferSupport(comp, t))
     }
 
-    override fun canImport(comp: JComponent?, transferFlavors: Array<out DataFlavor>?): Boolean {
-        if (comp == null || transferFlavors == null) return false
-        return canImport(TransferSupport(comp, transferFlavors))
-    }
 }
