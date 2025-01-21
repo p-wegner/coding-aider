@@ -11,7 +11,7 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.panel
-import de.andrena.codingaider.outputview.CustomMarkdownViewer
+import de.andrena.codingaider.outputview.MarkdownJcefViewer
 import de.andrena.codingaider.services.plans.AiderPlan
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.services.plans.ContinuePlanService
@@ -59,7 +59,7 @@ private class SelectPlanDialog(private val project: Project) : DialogWrapper(pro
             }
         }
 
-        val markdownViewer = CustomMarkdownViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
+        val markdownViewer = MarkdownJcefViewer().apply {
             setDarkTheme(!JBColor.isBright())
         }
 

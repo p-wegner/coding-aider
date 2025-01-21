@@ -245,19 +245,3 @@ class CustomMarkdownViewer(private val lookupPaths: List<String> = emptyList()) 
 }
 
 
-    private fun processSearchReplaceBlocks(html: String): String {
-        return html.replace(
-            Regex("""(?s)<pre><code>(.+?)<<<<<<< SEARCH\n(.+?)=======\n(.+?)>>>>>>> REPLACE\n</code></pre>"""),
-            { matchResult ->
-                val (_, filePath, searchBlock, replaceBlock) = matchResult.groupValues
-                """
-                <div class="file-path">$filePath</div>
-                <pre>
-                <code class="search-block">$searchBlock</code>
-                <div class="divider"></div>
-                <code class="replace-block">$replaceBlock</code>
-                </pre>
-                """.trimIndent()
-            }
-        )
-    }

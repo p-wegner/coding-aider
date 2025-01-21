@@ -20,7 +20,7 @@ import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.actions.aider.AiderAction
 import de.andrena.codingaider.inputdialog.AiderInputDialog
 import de.andrena.codingaider.inputdialog.AiderMode
-import de.andrena.codingaider.outputview.CustomMarkdownViewer
+import de.andrena.codingaider.outputview.MarkdownJcefViewer
 import de.andrena.codingaider.services.FileDataCollectionService
 import de.andrena.codingaider.services.plans.AiderPlan
 import de.andrena.codingaider.services.plans.AiderPlanPromptService
@@ -647,7 +647,7 @@ class PlanViewer(private val project: Project) {
                 }
 
                 override fun createCenterPanel(): JComponent {
-                    val markdownViewer = CustomMarkdownViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
+                    val markdownViewer = MarkdownJcefViewer().apply {
                         setDarkTheme(!JBColor.isBright())
                         setMarkdownContent(selectedPlan.plan)
                     }
