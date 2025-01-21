@@ -65,8 +65,12 @@ private class SelectPlanDialog(private val project: Project) : DialogWrapper(pro
 
         val scrollPane = JBScrollPane(markdownViewer.component).apply {
             verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
-            horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_AS_NEEDED
-            border = BorderFactory.createLineBorder(JBColor.border())
+            horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
+            border = BorderFactory.createEmptyBorder()
+            
+            // Set minimum size for better initial layout
+            minimumSize = Dimension(400, 300)
+            preferredSize = Dimension(800, 600)
         }
 
         planComboBox.addActionListener {
@@ -78,19 +82,28 @@ private class SelectPlanDialog(private val project: Project) : DialogWrapper(pro
         markdownViewer.setMarkdown((planComboBox.selectedItem as? AiderPlan)?.plan ?: "")
 
         return panel {
-            row("Plan") {
+            row {
+                label("Plan:")
                 cell(planComboBox)
                     .align(AlignX.FILL)
             }
-            row("Details") {
+            row {
                 cell(scrollPane)
                     .align(AlignX.FILL)
                     .resizableColumn()
+                    .weightx(1.0)
+                    .weighty(1.0)
             }.resizableRow()
         }.apply {
-            border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
-            preferredSize = Dimension(800, 600)
-            minimumSize = Dimension(400, 300)
+            border = BorderFactory.createEmptyBorder(8, 8, 8, 8)
+            
+            // Calculate optimal size based on screen dimensions
+            val screenSize = java.awt.Toolkit.getDefaultToolkit().screenSize
+            val optimalWidth = (screenSize.width * 0.7).toInt().coerceIn(600, 1200)
+            val optimalHeight = (screenSize.height * 0.8).toInt().coerceIn(400, 800)
+            
+            preferredSize = Dimension(optimalWidth, optimalHeight)
+            minimumSize = Dimension(500, 400)
         }
 
     }
