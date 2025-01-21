@@ -36,15 +36,16 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     private var currentContent = ""
 
     init {
-        if (JBCefApp.isSupported()) {
-            // Create the JCEF Browser
-            jbCefBrowser = JBCefBrowser().apply {
-                component.apply {
-                    isFocusable = true
-                    minimumSize = Dimension(200, 100)
-                    background = mainPanel.background
-                }
-                jbCefClient.addLoadHandler(object : CefLoadHandlerAdapter() {
+        try {
+            if (JBCefApp.isSupported()) {
+                // Create the JCEF Browser
+                jbCefBrowser = JBCefBrowser().apply {
+                    component?.apply {
+                        isFocusable = true
+                        minimumSize = Dimension(200, 100)
+                        background = mainPanel.background
+                    }
+                    jbCefClient?.addLoadHandler(object : CefLoadHandlerAdapter() {
                     override fun onLoadingStateChange(browser: CefBrowser?, isLoading: Boolean, canGoBack: Boolean, canGoForward: Boolean) {
                         if (!isLoading && browser != null) {
                             // Inject scroll behavior improvements
@@ -68,6 +69,18 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 BorderLayout.CENTER
             )
         }
+    }
+
+    private fun createFallbackComponent() {
+        val fallbackEditor = JEditorPane().apply {
+            contentType = "text/html"
+            isEditable = false
+            putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true)
+            putClientProperty("JEditorPane.honorDisplayProperties", true)
+            putClientProperty("html.disable", false)
+            putClientProperty(JEditorPane.W3C_LENGTH_UNITS, true)
+        }
+        mainPanel.add(fallbackEditor, BorderLayout.CENTER)
     }
 
     val component: JComponent
