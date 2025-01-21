@@ -1,7 +1,9 @@
 package de.andrena.codingaider.outputview
 
-import com.intellij.ui.jcef.JBCefApp
-import com.intellij.ui.jcef.JBCefBrowser
+import com.intellij.ui.jcef.*
+import javax.swing.JEditorPane
+import java.awt.Dimension
+import com.intellij.ui.JBColor
 import com.vladsch.flexmark.ext.autolink.AutolinkExtension
 import com.vladsch.flexmark.ext.definition.DefinitionExtension
 import com.vladsch.flexmark.ext.footnotes.FootnoteExtension
@@ -41,21 +43,18 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     isResizable = true
                     background = mainPanel.background
                 }
-                jbCefClient.addLoadHandler(object : com.intellij.ui.jcef.JBCefLoadHandler {
-                    override fun onLoadingStateChange(browser: com.intellij.ui.jcef.JBCefBrowser, isLoading: Boolean, canGoBack: Boolean, canGoForward: Boolean) {
-                        if (!isLoading) {
+                jbCefClient.addLoadHandler(object : CefLoadHandlerAdapter() {
+                    override fun onLoadingStateChange(browser: CefBrowser?, isLoading: Boolean, canGoBack: Boolean, canGoForward: Boolean) {
+                        if (!isLoading && browser != null) {
                             // Inject scroll behavior improvements
-                            browser.cefBrowser.executeJavaScript("""
+                            browser.executeJavaScript("""
                                 document.documentElement.style.height = '100%';
                                 document.body.style.height = '100%';
                                 document.body.style.margin = '20px';
                                 document.body.style.boxSizing = 'border-box';
-                            """.trimIndent(), browser.cefBrowser.url, 0)
+                            """.trimIndent(), browser.url, 0)
                         }
                     }
-                    override fun onLoadStart(browser: com.intellij.ui.jcef.JBCefBrowser, frame: com.intellij.ui.jcef.JBCefFrame, transitionType: com.intellij.ui.jcef.JBCefLoadHandler.TransitionType) {}
-                    override fun onLoadEnd(browser: com.intellij.ui.jcef.JBCefBrowser, frame: com.intellij.ui.jcef.JBCefFrame, httpStatusCode: Int) {}
-                    override fun onLoadError(browser: com.intellij.ui.jcef.JBCefBrowser, frame: com.intellij.ui.jcef.JBCefFrame, errorCode: com.intellij.ui.jcef.JBCefLoadHandler.ErrorCode, errorText: String, failedUrl: String) {}
                 })
             }
             // Add the browser component to our mainPanel with BorderLayout.CENTER
