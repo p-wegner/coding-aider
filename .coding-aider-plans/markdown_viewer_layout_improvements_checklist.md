@@ -47,14 +47,14 @@
 ## Scrolling Enhancements  
 - [x] Fix horizontal scrollbar issues
 - [x] Improve pre tag overflow handling
-- [ ] Add smooth scroll transitions
-- [ ] Optimize scroll position preservation
+- [x] Add smooth scroll transitions
+- [x] Optimize scroll position preservation
 
 ## Content Responsiveness
 - [x] Add box-sizing calculations
 - [x] Implement dynamic width handling
-- [ ] Add viewport size listeners
-- [ ] Improve content reflow during resize
+- [x] Add viewport size listeners
+- [x] Improve content reflow during resize
 
 ## Theme Compatibility
 - [ ] Test dark theme transitions
@@ -63,7 +63,7 @@
 - [ ] Validate contrast ratios
 
 ## Performance Optimization
-- [ ] Add resize debouncing
-- [ ] Optimize reflow calculations
+- [x] Add resize debouncing
+- [x] Optimize reflow calculations
 - [ ] Cache rendered content
 - [ ] Add performance monitoring
