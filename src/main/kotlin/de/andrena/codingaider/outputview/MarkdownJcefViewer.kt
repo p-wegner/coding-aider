@@ -430,17 +430,25 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         """.trimIndent()
     }
 
+    private fun escapeHtml(text: String): String {
+        return text.replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace("\"", "&quot;")
+            .replace("'", "&#x27;")
+    }
+
     private fun processSearchReplaceBlocks(html: String): String {
         return html.replace(
-            Regex("""(?s)<pre><code>(.+?)<<<<<<< SEARCH\n(.+?)=======\n(.+?)>>>>>>> REPLACE\n</code></pre>"""),
+            Regex("""(?s)<pre><code>(.+?)<<<<<<< SEARCH\n(.*?)=======\n(.*?)>>>>>>> REPLACE\n</code></pre>"""),
             { matchResult ->
                 val (_, filePath, searchBlock, replaceBlock) = matchResult.groupValues
                 """
-                <div style="font-family: monospace; padding: 4px 0; margin-top: 16px;">$filePath</div>
+                <div class="file-path">${escapeHtml(filePath)}</div>
                 <pre>
-                <code class="search-block">$searchBlock</code>
-                <div style="background: ${if (!com.intellij.ui.JBColor.isBright()) "#666666" else "#cccccc"}; height: 1px;"></div>
-                <code class="replace-block">$replaceBlock</code>
+                <code class="search-block">${escapeHtml(searchBlock)}</code>
+                <div class="divider"></div>
+                <code class="replace-block">${escapeHtml(replaceBlock)}</code>
                 </pre>
                 """.trimIndent()
             }
