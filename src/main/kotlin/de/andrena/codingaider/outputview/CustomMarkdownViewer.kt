@@ -20,7 +20,7 @@ import com.vladsch.flexmark.util.html.MutableAttributes
 import de.andrena.codingaider.utils.FilePathConverter
 import javax.swing.JEditorPane
 
-
+@Deprecated("Use MarkdownJcefViewer instead")
 class CustomMarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
     val component: JEditorPane = JEditorPane().apply {
         contentType = "text/html"
