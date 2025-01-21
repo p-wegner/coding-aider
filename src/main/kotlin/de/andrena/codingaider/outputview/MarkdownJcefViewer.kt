@@ -20,8 +20,8 @@ import de.andrena.codingaider.utils.FilePathConverter
 
 class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
 
-    private val mainPanel: JPanel = JPanel(null).apply {
-        layout = null  // Disable layout manager for manual positioning
+    private val mainPanel: JPanel = JPanel(BorderLayout()).apply {
+        border = null
     }
     private var jbCefBrowser: JBCefBrowser? = null
     private var isDarkTheme = false
@@ -32,11 +32,9 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             // Create the JCEF Browser
             jbCefBrowser = JBCefBrowser().apply {
                 component.isFocusable = true
-                component.setSize(800, 600)  // Initial size
-                component.setLocation(0, 0)
             }
-            // Add the browser component to our mainPanel
-            mainPanel.add(jbCefBrowser!!.component)
+            // Add the browser component to our mainPanel with BorderLayout.CENTER
+            mainPanel.add(jbCefBrowser!!.component, BorderLayout.CENTER)
         } else {
             // Fallback if JCEF is not supported
             mainPanel.add(
