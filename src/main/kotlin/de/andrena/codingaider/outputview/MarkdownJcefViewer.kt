@@ -54,10 +54,10 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                                 document.body.style.margin = '20px';
                                 document.body.style.boxSizing = 'border-box';
                             """.trimIndent()
-                            browser.executeJavaScript(js, browser.url, 0, browser)
+                            browser.executeJavaScript(js, browser.url, 0)
                         }
                     }
-                })
+                }, component.cefBrowser)
             }
             // Add the browser component to our mainPanel with BorderLayout.CENTER
             mainPanel.add(jbCefBrowser!!.component, BorderLayout.CENTER)
