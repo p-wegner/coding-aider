@@ -54,7 +54,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                                 document.body.style.height = '100%';
                                 document.body.style.margin = '20px';
                                 document.body.style.boxSizing = 'border-box';
-                            """.trimIndent()
+                            """.trimIndent().replace("\n", " ")
                             browser.executeJavaScript(js, browser.url, 0)
                         }
                     }
