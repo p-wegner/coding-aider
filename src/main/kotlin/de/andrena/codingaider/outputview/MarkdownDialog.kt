@@ -243,15 +243,21 @@ class MarkdownDialog(
                             // Direct scroll to bottom without animation if we were at bottom
                             scrollBar.value = scrollBar.maximum
                         } else if (prevContentHeight > 0 && newContentHeight > 0) {
-                            // Calculate relative position based on visible content
-                            val relativePosition = (prevScrollPosition + viewportHeight/2).toDouble() / prevContentHeight
-                            val newPosition = (newContentHeight * relativePosition - viewportHeight/2).toInt()
+                            // Calculate position ratio before content changed
+                            val maxScroll = prevContentHeight - prevViewportHeight
+                            val ratio = if (maxScroll > 0) prevScrollPosition.toDouble() / maxScroll else 0.0
                             
-                            // Apply bounded scroll position
-                            scrollBar.value = newPosition.coerceIn(
-                                scrollBar.minimum, 
-                                (scrollBar.maximum - scrollBar.visibleAmount).coerceAtLeast(scrollBar.minimum)
-                            )
+                            // Calculate new position based on ratio of new content height
+                            val newMaxScroll = newContentHeight - viewportHeight
+                            var newPosition = (newMaxScroll * ratio).toInt()
+                            
+                            // If we're near the bottom, snap to bottom
+                            if (newMaxScroll - newPosition < 20) {
+                                newPosition = newMaxScroll
+                            }
+                            
+                            // Ensure valid scroll range
+                            newPosition = newPosition.coerceIn(0, (newContentHeight - viewportHeight).coerceAtLeast(0))
                         }
 
                         scrollPane.repaint()
