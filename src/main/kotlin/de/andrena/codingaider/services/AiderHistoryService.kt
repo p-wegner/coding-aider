@@ -68,10 +68,15 @@ class AiderHistoryService(private val project: Project) {
         val userPrompt = userPromptRegex.find(chatContent)?.groupValues?.get(1)?.trim()
             ?.takeIf { it.isNotEmpty() }
 
-        val aiderOutput = chatContent.substringAfter("</UserPrompt>", "")
-            .substringBefore("# aider chat started at", chatContent)
-            .trim()
-            .takeIf { it.isNotEmpty() }
+        // Extract everything after </UserPrompt> until the next chat session or end
+        val outputStart = chatContent.indexOf("</UserPrompt>")
+        val outputEnd = chatContent.indexOf("# aider chat started at", outputStart + 1)
+            .takeIf { it >= 0 } ?: chatContent.length
+            
+        val aiderOutput = if (outputStart >= 0) {
+            chatContent.substring(outputStart + 12, outputEnd).trim()
+                .takeIf { it.isNotEmpty() }
+        } else null
 
         return Triple(systemPrompt, userPrompt, aiderOutput)
     }
