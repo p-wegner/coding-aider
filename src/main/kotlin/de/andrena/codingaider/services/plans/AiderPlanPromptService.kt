@@ -60,7 +60,7 @@ The refinement request is: <UserPrompt>$refinementRequest</UserPrompt>
         val existingPlan = filterPlanRelevantFiles(files)
 
         val basePrompt = """
-You are working in a plan based mode with plan files in $AIDER_PLANS_FOLDER:
+You are working in a plan based mode with plan files in $AIDER_PLANS_FOLDER:  
 
 File Requirements:
 1. Start plans with $AIDER_PLAN_MARKER
@@ -69,47 +69,49 @@ File Requirements:
 3. Use consistent naming: feature_name.md, _checklist.md, _context.yaml
 4. Cross-reference files using markdown links
 
-Content Guidelines:
+## Content Guidelines:
 - Plans: High-level feature descriptions and major implementation details
 - Checklists: Fine-grained implementation steps
 - Context YAML format:
+```
   ---
   files:
   - path: "full/path/to/file"
     readOnly: false
+```    
         """.trimStartingWhiteSpaces()
 
         val firstPlan = existingPlan.firstOrNull()
         val relativePlanPath = firstPlan?.filePath?.removePrefix(commandData.projectPath) ?: ""
         val planSpecificPrompt = firstPlan?.let {
             """
-A plan already exists. Continue implementing the existing plan $relativePlanPath and its checklist step by step.
-In case subplans are referenced, continue by implementing the subplans that match the current progress of the main plan. 
-Start implementing before updating the checklist. If no changes are done, don't update the checklist.
-In that case inform the user why no changes were made.
-New files that are not the plan and are not part of the checklist should be created in a suitable location and added to the context.yaml.
-If no further information is given, use ${commandData.projectPath} as the location.
-Update the plan, checklist and context.yaml as needed based on the current progress and any new requirements.
-Important: Always keep the context.yaml up to date with your changes. If files are created or edited, add them to the context.yaml.
-If the current instruction doesn't align with the existing plan, update the plan accordingly before proceeding.
+A plan already exists. Continue implementing the existing plan $relativePlanPath and its checklist step by step.  
+In case subplans are referenced, continue by implementing the subplans that match the current progress of the main plan.   
+Start implementing before updating the checklist. If no changes are done, don't update the checklist.  
+In that case inform the user why no changes were made.  
+New files that are not the plan and are not part of the checklist should be created in a suitable location and added to the context.yaml.  
+If no further information is given, use ${commandData.projectPath} as the location.  
+Update the plan, checklist and context.yaml as needed based on the current progress and any new requirements.  
+Important: Always keep the context.yaml up to date with your changes. If files are created or edited, add them to the context.yaml.  
+If the current instruction doesn't align with the existing plan, update the plan accordingly before proceeding.  
             """
 
         } ?: """
-No plan exists yet. Write a detailed description of the requested feature and the needed changes.
-The main plan file should include these sections: ## Overview, ## Problem Description, ## Goals, ## Additional Notes and Constraints, ## References
-Save the plan in a new markdown file with a suitable name in the $AIDER_PLANS_FOLDER directory.
+No plan exists yet. Write a detailed description of the requested feature and the needed changes.  
+The main plan file should include these sections: ## Overview, ## Problem Description, ## Goals, ## Additional Notes and Constraints, ## References  
+Save the plan in a new markdown file with a suitable name in the $AIDER_PLANS_FOLDER directory.  
 
 Create subplans only if necessary. Use subplans when:
 1. A feature requires many changes across plenty of components
 2. Different team members could work on parts independently
 3. A component needs its own detailed planning
 $subplanGuidancePrompt
-Create separate checklist and context.yaml files for the main plan and each subplan to track the progress of implementing the plan.
-For the context.yaml, consider all provided files and add relevant files to the affected context.yaml.
-Only proceed with changes after creating and committing the plan files.
-Ensure that you stick to the defined editing format when creating or editing files, e.g. only have the filepath above search blocks.
-Make sure to commit the creation of all plan files even if you think you need additional files to implement the plan.
-Don't start the implementation until the plan files are committed.
+Create separate checklist and context.yaml files for the main plan and each subplan to track the progress of implementing the plan.  
+For the context.yaml, consider all provided files and add relevant files to the affected context.yaml.  
+Only proceed with changes after creating and committing the plan files.  
+Ensure that you stick to the defined editing format when creating or editing files, e.g. only have the filepath above search blocks.  
+Make sure to commit the creation of all plan files even if you think you need additional files to implement the plan.  
+Don't start the implementation until the plan files are committed.  
             """
 
         return """<SystemPrompt>

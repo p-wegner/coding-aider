@@ -27,7 +27,7 @@ class DefaultApiKeyChecker : ApiKeyChecker {
         "--4o" to "OPENAI_API_KEY",
         "o1-mini" to "OPENAI_API_KEY",
         "o1-preview" to "OPENAI_API_KEY",
-        "--deepseek" to "DEEPSEEK_API_KEY"
+        "--deepseek" to "DEEPSEEK_API_KEY",
     )
 
     // API Key Cache

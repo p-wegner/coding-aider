@@ -226,7 +226,6 @@ class MarkdownDialog(
 
                     // Capture scroll state before update
                     val prevMaximum = scrollBar.maximum
-                    val wasAtBottom = scrollBar.value >= scrollBar.maximum - scrollBar.visibleAmount - 10
 
                     // Update content
                     markdownViewer.setMarkdown(newContent)
