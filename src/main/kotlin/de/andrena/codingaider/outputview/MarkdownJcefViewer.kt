@@ -25,6 +25,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         minimumSize = Dimension(200, 100)
         preferredSize = Dimension(600, 400)
         isOpaque = true
+        background = if (!JBColor.isBright()) JBColor(0x2B2B2B, 0x2B2B2B) else JBColor.WHITE
     }
     private var jbCefBrowser: JBCefBrowser? = null
     private var isDarkTheme = false
@@ -38,7 +39,24 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     isFocusable = true
                     minimumSize = Dimension(200, 100)
                     isResizable = true
+                    background = mainPanel.background
                 }
+                jbCefClient.addLoadHandler(object : com.intellij.ui.jcef.JBCefLoadHandler {
+                    override fun onLoadingStateChange(browser: com.intellij.ui.jcef.JBCefBrowser, isLoading: Boolean, canGoBack: Boolean, canGoForward: Boolean) {
+                        if (!isLoading) {
+                            // Inject scroll behavior improvements
+                            browser.cefBrowser.executeJavaScript("""
+                                document.documentElement.style.height = '100%';
+                                document.body.style.height = '100%';
+                                document.body.style.margin = '20px';
+                                document.body.style.boxSizing = 'border-box';
+                            """.trimIndent(), browser.cefBrowser.url, 0)
+                        }
+                    }
+                    override fun onLoadStart(browser: com.intellij.ui.jcef.JBCefBrowser, frame: com.intellij.ui.jcef.JBCefFrame, transitionType: com.intellij.ui.jcef.JBCefLoadHandler.TransitionType) {}
+                    override fun onLoadEnd(browser: com.intellij.ui.jcef.JBCefBrowser, frame: com.intellij.ui.jcef.JBCefFrame, httpStatusCode: Int) {}
+                    override fun onLoadError(browser: com.intellij.ui.jcef.JBCefBrowser, frame: com.intellij.ui.jcef.JBCefFrame, errorCode: com.intellij.ui.jcef.JBCefLoadHandler.ErrorCode, errorText: String, failedUrl: String) {}
+                })
             }
             // Add the browser component to our mainPanel with BorderLayout.CENTER
             mainPanel.add(jbCefBrowser!!.component, BorderLayout.CENTER)
