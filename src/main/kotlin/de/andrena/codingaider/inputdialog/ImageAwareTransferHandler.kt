@@ -11,21 +11,35 @@ class ImageAwareTransferHandler(
     private val onImagePasted: (Image) -> Unit
 ) : TransferHandler() {
 
-    override fun importData(comp: JComponent, t: Transferable): Boolean {
-        if (t.isDataFlavorSupported(DataFlavor.imageFlavor)) {
-            val image = t.getTransferData(DataFlavor.imageFlavor) as? Image
-            if (image != null) {
-                onImagePasted(image)
-                return true
+    override fun importData(support: TransferSupport): Boolean {
+        if (support.isDataFlavorSupported(DataFlavor.imageFlavor)) {
+            try {
+                val image = support.transferable.getTransferData(DataFlavor.imageFlavor) as? Image
+                if (image != null) {
+                    onImagePasted(image)
+                    return true
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
             }
         }
-        return delegate?.importData(comp, t) ?: false
+        return delegate?.importData(support) ?: false
+    }
+
+    override fun canImport(support: TransferSupport): Boolean {
+        if (support.isDataFlavorSupported(DataFlavor.imageFlavor)) {
+            return true
+        }
+        return delegate?.canImport(support) ?: false
+    }
+
+    // Keep the old methods for backward compatibility
+    override fun importData(comp: JComponent, t: Transferable): Boolean {
+        return importData(TransferSupport(comp, t))
     }
 
     override fun canImport(comp: JComponent?, transferFlavors: Array<out DataFlavor>?): Boolean {
-        if (transferFlavors?.contains(DataFlavor.imageFlavor) == true) {
-            return true
-        }
-        return delegate?.canImport(comp, transferFlavors) ?: false
+        if (comp == null || transferFlavors == null) return false
+        return canImport(TransferSupport(comp, transferFlavors))
     }
 }
