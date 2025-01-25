@@ -1,6 +1,7 @@
 package de.andrena.codingaider.command
 
 import de.andrena.codingaider.inputdialog.AiderMode
+import de.andrena.codingaider.utils.FileTraversal
 
 
 /**
@@ -68,13 +69,13 @@ data class CommandOptions(
 
 data class FileData(val filePath: String, val isReadOnly: Boolean) {
     val normalizedFilePath: String
-        get() = filePath.replace('\\', '/').replace("//", "/")
+        get() = FileTraversal.normalizedFilePath(filePath)
 
     fun hasSameNormalizedPath(other: FileData): Boolean {
         return other.normalizedFilePath == normalizedFilePath
-
     }
 }
+
 
 
 

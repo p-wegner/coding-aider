@@ -17,4 +17,5 @@ object FileTraversal {
             traverseFileOrDirectory(file, isReadOnly)
         }
     }
+    fun normalizedFilePath(it: String): String = it.replace('\\', '/').replace("//", "/")
 }

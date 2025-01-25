@@ -11,4 +11,4 @@
   - button directly in the output dialog
   - edge cases: undo changes before creating plan or keep them and integrate in the plan (might degrade quality)
 - [ ] Bug: Bring to front for running commands not working reliably
-- [ ] Bug  
+- [ ] Bug: open file from persistent file list not working

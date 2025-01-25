@@ -6,6 +6,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.settings.AiderProjectSettings
+import de.andrena.codingaider.utils.FileTraversal
 import java.io.File
 import javax.swing.JComponent
 import javax.swing.JLabel
@@ -53,8 +54,8 @@ class WorkingDirectoryPanel(private val project: Project) {
     private fun isValidWorkingDirectory(path: String): Boolean {
         val file = File(path)
         val projectPath = project.basePath ?: return false
-        return file.isDirectory && 
-               file.absolutePath.startsWith(projectPath) && 
+        return file.isDirectory &&
+               FileTraversal.normalizedFilePath(file.absolutePath).startsWith(FileTraversal.normalizedFilePath(projectPath)) &&
                LocalFileSystem.getInstance().findFileByPath(path)?.exists() == true
     }
 }
