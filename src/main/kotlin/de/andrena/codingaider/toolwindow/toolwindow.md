@@ -67,6 +67,20 @@ Handles Aider plans:
 - Double-click to open plan files.
 - Real-time plan updates.
 
+#### WorkingDirectoryPanel
+
+Manages working directory configuration:
+- Directory selection within project
+- Path validation and normalization
+- Clear/reset functionality
+- Automatic subtree-only mode
+
+**Key Features**:
+- Visual directory path display
+- Directory selection via file chooser
+- Working directory persistence
+- Project-relative path validation
+
 #### RunningCommandsPanel
 
 Monitors running commands:
