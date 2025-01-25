@@ -77,6 +77,8 @@ class CommandExecutor(
                 val workingDir = project.service<AiderProjectSettings>().workingDirectory
                 if (workingDir != null && workingDir.isNotEmpty()) {
                     directory(File(workingDir))
+                    // Add --subtree-only flag when working directory is set
+                    commandArgs.add("--subtree-only")
                 } else if (commandData.projectPath.isNotEmpty()) {
                     directory(File(commandData.projectPath))
                 }

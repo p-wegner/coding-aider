@@ -15,8 +15,8 @@
 - [x] Add validation for selected directory
 
 ### Command Execution
-- [ ] Update CommandExecutor to use working directory setting
-- [ ] Add subtree-only flag when working directory is set
+- [x] Update CommandExecutor to use working directory setting
+- [x] Add subtree-only flag when working directory is set
 - [ ] Update process builder directory configuration
 - [ ] Handle path normalization and validation
 
