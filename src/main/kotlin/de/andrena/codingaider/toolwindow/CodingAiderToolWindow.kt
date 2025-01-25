@@ -26,6 +26,7 @@ class CodingAiderToolWindowContent(project: Project) {
     private val runningCommandsPanel = RunningCommandsPanel(project)
     private val plansPanel = PlansPanel(project)
     private val persistentFilesPanel = PersistentFilesPanel(project)
+    private val workingDirectoryPanel = WorkingDirectoryPanel(project)
 
     fun getContent(): JComponent {
         return panel {
@@ -42,6 +43,16 @@ class CodingAiderToolWindowContent(project: Project) {
                 collapsibleGroup("Plans") {
                     row {
                         cell(plansPanel.getContent())
+                            .align(com.intellij.ui.dsl.builder.Align.FILL)
+                            .resizableColumn()
+                    }
+                }
+                    .apply { expanded = true }
+                    .topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
+
+                collapsibleGroup("Working Directory") {
+                    row {
+                        cell(workingDirectoryPanel.getContent())
                             .align(com.intellij.ui.dsl.builder.Align.FILL)
                             .resizableColumn()
                     }

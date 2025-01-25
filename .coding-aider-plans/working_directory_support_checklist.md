@@ -8,11 +8,11 @@
 - [x] Add working directory persistence logic
 
 ### Tool Window UI
-- [ ] Create new WorkingDirectoryPanel component
-- [ ] Add directory selection button and path display
-- [ ] Add clear/reset button
-- [ ] Integrate panel into CodingAiderToolWindowContent
-- [ ] Add validation for selected directory
+- [x] Create new WorkingDirectoryPanel component
+- [x] Add directory selection button and path display
+- [x] Add clear/reset button
+- [x] Integrate panel into CodingAiderToolWindowContent
+- [x] Add validation for selected directory
 
 ### Command Execution
 - [ ] Update CommandExecutor to use working directory setting
