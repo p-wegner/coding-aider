@@ -12,7 +12,7 @@ while allowing you complete control over the context utilized by the LLM.
 
 To utilize this plugin, you need either:
 
-1. A functional Aider installation (version 0.65.0 or higher):
+1. A functional Aider installation (version 0.72.3 or higher):
    - On Mac/Linux: Ensure aider is in your PATH or set the path manually in Settings
    - On Windows: Aider should be available in PATH or set manually
    
@@ -104,13 +104,10 @@ the [Aider documentation](https://aider.chat/docs/llms/openai-compat.html).
     - **OpenAiderActionGroup**: Access a popup menu with all available Aider actions.
     - **Document Each Folder Action**: Generate documentation for each folder in the selected files.
     - **Continue Plan Action**: Allow users to select and continue an unfinished plan within the Coding Aider plugin.
-
 13. **Working Directory Support**:
     - Configure a specific working directory for Aider operations
-    - Automatically enables subtree-only mode for focused context
-    - Accessible via the Coding Aider tool window
-    - Persists across IDE restarts
-
+    - Files outside the working directory are not included in the context and won't be seen by Aider
+    - Might help working with large repositories
 14. **Structured Mode and Plans**: 
     - Break down complex features into manageable tasks
     - Track implementation progress with checklists
@@ -118,9 +115,7 @@ the [Aider documentation](https://aider.chat/docs/llms/openai-compat.html).
     - See [Plan Mode](docs/plan-mode.md) for detailed workflow
 14. **Summarized Output**:
     - Option to enable structured XML summaries of Aider's changes
-    - Provides parseable output for integration with other tools
-    - Includes status, modified files, and change descriptions
-    - Maintains regular detailed output alongside summaries
+    - Intention and Summary blocks are included in the output
 15. **Aider Commands and Arguments**:
     - If needed, you can specify additional [arguments](https://aider.chat/docs/config/options.html) for the Aider
       command in the settings or in the command window.

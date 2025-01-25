@@ -27,6 +27,6 @@ object AiderDefaults {
     const val INCLUDE_CHANGE_CONTEXT = false
     val AUTO_COMMITS = AiderSettings.AutoCommitSetting.DEFAULT
     val DIRTY_COMMITS = AiderSettings.DirtyCommitSetting.DEFAULT
-    const val DOCKER_IMAGE: String = "paulgauthier/aider:v0.71.1"
+    const val DOCKER_IMAGE: String = "paulgauthier/aider:v0.72.3"
     const val AIDER_EXECUTABLE_PATH: String = "aider"
 }
