@@ -10,10 +10,10 @@ import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.settings.CustomLlmProviderService
 
 abstract class AiderExecutionStrategy(protected val project: Project) {
-    abstract fun buildCommand(commandData: CommandData): List<String>
+    abstract fun buildCommand(commandData: CommandData): MutableList<String>
     abstract fun prepareEnvironment(processBuilder: ProcessBuilder, commandData: CommandData)
     abstract fun cleanupAfterExecution()
-    fun buildCommonArgs(commandData: CommandData, settings: AiderSettings): List<String> {
+    fun buildCommonArgs(commandData: CommandData, settings: AiderSettings): MutableList<String> {
         return buildList {
             // Handle model selection based on provider type
             if (commandData.llm.isNotEmpty()) {
@@ -124,7 +124,7 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
 
                 else -> {}
             }
-        }
+        }.toMutableList()
     }
 
 

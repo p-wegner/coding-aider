@@ -20,7 +20,7 @@ class DockerAiderExecutionStrategy(
     private val settings: AiderSettings
 ) : AiderExecutionStrategy(project) {
 
-    override fun buildCommand(commandData: CommandData): List<String> {
+    override fun buildCommand(commandData: CommandData): MutableList<String> {
         val dockerArgs = mutableListOf(
             "docker", "run", "-i",
             // For sidecar mode, we want to keep the container running
@@ -108,7 +108,7 @@ class DockerAiderExecutionStrategy(
 
         dockerArgs.add(settings.dockerImage)
 
-        return dockerArgs + buildCommonArgs(commandData, settings).map { arg ->
+        return (dockerArgs + buildCommonArgs(commandData, settings).map { arg ->
             commandData.files.fold(arg) { acc, fileData ->
                 if (!fileData.filePath.startsWith(commandData.projectPath)) {
                     acc.replace(fileData.filePath, "/extra/${File(fileData.filePath).name}")
@@ -117,6 +117,7 @@ class DockerAiderExecutionStrategy(
                 }
             }
         }
+                ).toMutableList()
     }
 
     override fun prepareEnvironment(processBuilder: ProcessBuilder, commandData: CommandData) {

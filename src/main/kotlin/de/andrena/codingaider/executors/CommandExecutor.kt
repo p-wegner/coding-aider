@@ -16,6 +16,7 @@ import de.andrena.codingaider.services.FileExtractorService
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.services.sidecar.AiderProcessManager
 import de.andrena.codingaider.services.sidecar.SidecarProcessInitializer
+import de.andrena.codingaider.settings.AiderProjectSettings
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker

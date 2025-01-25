@@ -10,3 +10,5 @@
   - ai could give a recommendation if this is needed (use exisiting ouput summary xml as api for tool calling)
   - button directly in the output dialog
   - edge cases: undo changes before creating plan or keep them and integrate in the plan (might degrade quality)
+- [ ] Bug: Bring to front for running commands not working reliably
+- [ ] Bug  

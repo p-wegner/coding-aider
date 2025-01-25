@@ -17,7 +17,7 @@ class WorkingDirectoryPanel(private val project: Project) {
     fun getContent(): JComponent {
         return panel {
             row {
-                pathLabel = label(getDisplayPath())
+                pathLabel = label(getDisplayPath()).component
             }
             row {
                 button("Select Directory") { selectDirectory() }

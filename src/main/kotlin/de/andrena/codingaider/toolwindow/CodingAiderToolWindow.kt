@@ -8,6 +8,7 @@ import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.toolwindow.persistentfiles.PersistentFilesPanel
 import de.andrena.codingaider.toolwindow.plans.PlansPanel
 import de.andrena.codingaider.toolwindow.runningcommands.RunningCommandsPanel
+import de.andrena.codingaider.toolwindow.workingdirectory.WorkingDirectoryPanel
 import javax.swing.JComponent
 
 class CodingAiderToolWindow : ToolWindowFactory {

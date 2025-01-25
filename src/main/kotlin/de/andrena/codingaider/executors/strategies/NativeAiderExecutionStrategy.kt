@@ -14,8 +14,8 @@ class NativeAiderExecutionStrategy(
     private val settings: AiderSettings
 ) : AiderExecutionStrategy(project) {
 
-    override fun buildCommand(commandData: CommandData): List<String> {
-        return listOf(settings.aiderExecutablePath) + buildCommonArgs(commandData, settings)
+    override fun buildCommand(commandData: CommandData): MutableList<String> {
+        return (listOf(settings.aiderExecutablePath) + buildCommonArgs(commandData, settings)).toMutableList()
     }
 
     override fun prepareEnvironment(processBuilder: ProcessBuilder, commandData: CommandData) {

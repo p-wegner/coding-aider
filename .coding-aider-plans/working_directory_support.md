@@ -24,7 +24,3 @@ Currently, Aider always operates from the project root directory, which can lead
 - Need to update command execution to respect working directory
 - Consider UX for directory selection (file chooser dialog)
 
-## References
-- [Aider subtree-only documentation](https://aider.chat/docs/config/options.html#subtree-only)
-- [IntelliJ Platform SDK - Settings](https://plugins.jetbrains.com/docs/intellij/settings.html)
-- [IntelliJ Platform SDK - File Chooser](https://plugins.jetbrains.com/docs/intellij/file-chooser.html)
