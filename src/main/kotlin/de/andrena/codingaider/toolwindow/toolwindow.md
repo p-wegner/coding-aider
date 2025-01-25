@@ -6,7 +6,8 @@ The Coding Aider Tool Window is a specialized interface in the Coding Aider appl
 
 1. **Persistent Files Panel** - For managing frequently accessed files.
 2. **Plans Panel** - For viewing and executing Aider plans.
-3. **Running Commands Panel** - For monitoring running commands.
+3. **Working Directory Panel** - For restricting Aider operations to a specific directory.
+4. **Running Commands Panel** - For monitoring running commands.
 
 ## Architecture and Design
 
