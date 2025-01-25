@@ -20,14 +20,5 @@
 - [ ] Update process builder directory configuration
 - [ ] Handle path normalization and validation
 
-### Testing
-- [ ] Test working directory persistence
-- [ ] Test directory selection UI
-- [ ] Test command execution with working directory
-- [ ] Test subtree-only flag application
-- [ ] Test path validation and normalization
-
 ### Documentation
 - [ ] Update README with working directory feature
-- [ ] Add tooltips and UI help text
-- [ ] Document configuration options
