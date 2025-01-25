@@ -105,7 +105,13 @@ the [Aider documentation](https://aider.chat/docs/llms/openai-compat.html).
     - **Document Each Folder Action**: Generate documentation for each folder in the selected files.
     - **Continue Plan Action**: Allow users to select and continue an unfinished plan within the Coding Aider plugin.
 
-13. **Structured Mode and Plans**: 
+13. **Working Directory Support**:
+    - Configure a specific working directory for Aider operations
+    - Automatically enables subtree-only mode for focused context
+    - Accessible via the Coding Aider tool window
+    - Persists across IDE restarts
+
+14. **Structured Mode and Plans**: 
     - Break down complex features into manageable tasks
     - Track implementation progress with checklists
     - Maintain context across multiple coding sessions

@@ -18,7 +18,7 @@
 - [x] Update CommandExecutor to use working directory setting
 - [x] Add subtree-only flag when working directory is set
 - [x] Update process builder directory configuration
-- [ ] Handle path normalization and validation
+- [x] Handle path normalization and validation
 
 ### Documentation
-- [ ] Update README with working directory feature
+- [x] Update README with working directory feature
