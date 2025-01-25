@@ -12,7 +12,8 @@ import de.andrena.codingaider.command.FileData
 class AiderProjectSettings(private val project: Project) : PersistentStateComponent<AiderProjectSettings.State> {
     data class State(
         var isOptionsCollapsed: Boolean = true,
-        var isContextCollapsed: Boolean = false
+        var isContextCollapsed: Boolean = false,
+        var workingDirectory: String? = null
     )
 
     private var myState = State()
@@ -33,6 +34,12 @@ class AiderProjectSettings(private val project: Project) : PersistentStateCompon
         get() = myState.isContextCollapsed
         set(value) {
             myState.isContextCollapsed = value
+        }
+
+    var workingDirectory: String?
+        get() = myState.workingDirectory
+        set(value) {
+            myState.workingDirectory = value
         }
 
     companion object {

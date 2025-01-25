@@ -74,8 +74,12 @@ class CommandExecutor(
         }
         val processBuilder = ProcessBuilder(commandArgs)
             .apply {
-                // TODO set defined working directory here if needed
-                if (commandData.projectPath.isNotEmpty()) directory(File(commandData.projectPath))
+                val workingDir = project.service<AiderProjectSettings>().workingDirectory
+                if (workingDir != null && workingDir.isNotEmpty()) {
+                    directory(File(workingDir))
+                } else if (commandData.projectPath.isNotEmpty()) {
+                    directory(File(commandData.projectPath))
+                }
                 environment().putIfAbsent("PYTHONIOENCODING", "utf-8")
                 redirectErrorStream(true)
             }

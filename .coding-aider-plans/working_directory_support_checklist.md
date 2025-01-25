@@ -3,9 +3,9 @@
 ## Implementation Steps
 
 ### Project Settings
-- [ ] Add workingDirectory field to AiderProjectSettings
-- [ ] Update settings state class to include working directory
-- [ ] Add working directory persistence logic
+- [x] Add workingDirectory field to AiderProjectSettings
+- [x] Update settings state class to include working directory
+- [x] Add working directory persistence logic
 
 ### Tool Window UI
 - [ ] Create new WorkingDirectoryPanel component
