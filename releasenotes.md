@@ -1,6 +1,43 @@
 # Coding-Aider Plugin Release Notes - v1.2.7
 
+## 🚀 New Features
 
+- Working Directory Support:
+  - Configure specific working directory for Aider operations
+  - Files outside working directory are excluded from context
+  - Path normalization and validation for working directory paths
+  - Working directory panel in tool window
+- Improved Markdown Viewer:
+  - Enhanced JCEF browser integration with theme support
+  - Improved scrolling behavior and layout responsiveness
+  - Better styling for code blocks and search/replace sections
+  - Smooth scrolling animation with error handling
+- Enhanced Plan Mode:
+  - Support for hierarchical plans with parent-child relationships
+  - Tree visualization for plan hierarchy
+  - Plan refinement capabilities
+  - Improved plan continuation logic
+  - Archive functionality for completed plans
+- Image Handling:
+  - Improved clipboard image support in input dialog
+  - Automatic image saving and persistent file management
+- Output Formatting:
+  - Added HTML escaping for search/replace blocks
+  - Enhanced styling for summary blocks
+  - Improved history parsing and display
+
+## 🔧 Fixes and Improvements
+
+- Fixed path normalization for working directory validation
+- Resolved XML block encoding issues in markdown viewer
+- Improved scroll position handling during content updates
+- Enhanced theme compatibility and styling
+- Fixed initialization issues with JCEF browser
+- Improved error handling and null safety
+- Updated documentation for new features
+- Fixed tests and updated Aider version requirements
+
+## Previous Versions
 
 # Coding-Aider Plugin Release Notes - v1.2.5
 
