@@ -128,7 +128,6 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         get() = mainPanel
 
     fun setMarkdown(markdown: String) {
-//        if (markdown == currentContent) return
         currentContent = markdown
 
         val html = convertMarkdownToHtml(markdown)
@@ -344,13 +343,13 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     }
                     
                     .aider-intention::before {
-                        content: "🎯 Intention";
+                        content: "Intention";
                         border-color: ${if (isDark) "#2c4356" else "#bcd6f5"};
                         color: ${if (isDark) "#88b0e4" else "#0055cc"};
                     }
                     
                     .aider-summary::before {
-                        content: "📋 Summary";
+                        content: "Summary";
                         border-color: ${if (isDark) "#404040" else "#e0e0e0"};
                         color: ${if (isDark) "#cccccc" else "#666666"};
                     }
