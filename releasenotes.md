@@ -5,37 +5,30 @@
 - Working Directory Support:
   - Configure specific working directory for Aider operations
   - Files outside working directory are excluded from context
-  - Path normalization and validation for working directory paths
   - Working directory panel in tool window
-- Improved Markdown Viewer:
-  - Enhanced JCEF browser integration with theme support
+- Improved Markdown Output Viewer (Running Command and Last Command Result):
+  - Replaced Swing Browser with Chromium based JCEF Browser for better css support
   - Improved scrolling behavior and layout responsiveness
   - Better styling for code blocks and search/replace sections
-  - Smooth scrolling animation with error handling
+  - Autoscrolling with manual scroll position saving
+  - Improved Parsing for Last Command Result
 - Enhanced Plan Mode:
   - Support for hierarchical plans with parent-child relationships
-  - Tree visualization for plan hierarchy
+  - Tree visualization (experimental) for plan hierarchy
+  - Reworked system prompt
   - Plan refinement capabilities
   - Improved plan continuation logic
   - Archive functionality for completed plans
-- Image Handling:
-  - Improved clipboard image support in input dialog
-  - Automatic image saving and persistent file management
-- Output Formatting:
-  - Added HTML escaping for search/replace blocks
-  - Enhanced styling for summary blocks
-  - Improved history parsing and display
-
+- Experimental Sidecar Mode for plan execution
+  - Ideally an aider process can be used until the plan is finished
+- Setting for structured xml output blocks for summary and intention
+- Support for custom "aider model", e.g. simple way to add aider supported llms like `r1` to dropdown without additional api key setup
+- Added action to add files from a (plan) yaml file to the persistent file list
+- 
 ## 🔧 Fixes and Improvements
-
-- Fixed path normalization for working directory validation
-- Resolved XML block encoding issues in markdown viewer
-- Improved scroll position handling during content updates
-- Enhanced theme compatibility and styling
-- Fixed initialization issues with JCEF browser
-- Improved error handling and null safety
-- Updated documentation for new features
-- Fixed tests and updated Aider version requirements
+- Duplicate aider executeable path in settings fix
+- Customize used docker image and tag in settings
+- Removed Api Key setup for vertex ai provider
 
 ## Previous Versions
 
