@@ -6,6 +6,7 @@
 - [x] Add debug logging to ImageAwareTransferHandler methods
 - [x] Add logging for supported DataFlavors in canImport
 - [x] Log delegate handler type and capabilities
+- [x] Add component and transfer details logging
 
 ### Transfer Handler Implementation
 - [ ] Fix canImport implementation to properly check flavors
