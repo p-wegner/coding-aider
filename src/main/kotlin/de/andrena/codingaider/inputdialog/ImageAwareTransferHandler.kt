@@ -17,30 +17,59 @@ class ImageAwareTransferHandler(
     override fun importData(support: TransferSupport): Boolean {
         logger.debug("importData called with TransferSupport")
         logger.debug("Available flavors: ${support.dataFlavors.joinToString { it.mimeType }}")
-        if (support.isDataFlavorSupported(DataFlavor.imageFlavor)) {
-            logger.debug("Image flavor supported")
-            logger.debug("Transfer component: ${support.component?.javaClass?.simpleName}")
-            try {
+        
+        try {
+            // Try direct image data first
+            if (support.isDataFlavorSupported(DataFlavor.imageFlavor)) {
+                logger.debug("Processing image flavor")
                 val image = support.transferable.getTransferData(DataFlavor.imageFlavor) as? Image
                 if (image != null) {
                     onImagePasted(image)
                     return true
                 }
-            } catch (e: Exception) {
-                logger.warn("Failed to import image data", e)
             }
+            
+            // Try file list flavor for image files
+            if (support.isDataFlavorSupported(DataFlavor.javaFileListFlavor)) {
+                logger.debug("Processing file list flavor")
+                val fileList = support.transferable.getTransferData(DataFlavor.javaFileListFlavor) as? List<*>
+                fileList?.firstOrNull()?.let { file ->
+                    if (file is java.io.File && isImageFile(file.name)) {
+                        logger.debug("Found image file: ${file.name}")
+                        val image = javax.imageio.ImageIO.read(file)
+                        if (image != null) {
+                            onImagePasted(image)
+                            return true
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            logger.warn("Failed to import image data", e)
         }
+        
         return delegate?.importData(support) ?: false
+    }
+
+    private fun isImageFile(fileName: String): Boolean {
+        val extension = fileName.lowercase().substringAfterLast('.', "")
+        return extension in setOf("png", "jpg", "jpeg", "gif", "bmp")
     }
 
     override fun canImport(support: TransferSupport): Boolean {
         logger.debug("canImport called with TransferSupport")
         logger.debug("Available flavors: ${support.dataFlavors.joinToString { it.mimeType }}")
         
-        if (support.isDataFlavorSupported(DataFlavor.imageFlavor)) {
-            logger.debug("Image flavor supported")
+        // Check for direct image data
+        val hasImageFlavor = support.isDataFlavorSupported(DataFlavor.imageFlavor)
+        // Check for file lists that might contain images
+        val hasFileFlavor = support.isDataFlavorSupported(DataFlavor.javaFileListFlavor)
+        
+        if (hasImageFlavor || hasFileFlavor) {
+            logger.debug("Image or file flavor supported")
             return true
         }
+        
         val delegateResult = delegate?.canImport(support) ?: false
         logger.debug("Delegating to handler ${delegate?.javaClass?.simpleName}, result: $delegateResult")
         return delegateResult
