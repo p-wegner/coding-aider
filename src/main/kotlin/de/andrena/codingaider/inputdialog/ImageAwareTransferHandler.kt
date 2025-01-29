@@ -1,5 +1,6 @@
 package de.andrena.codingaider.inputdialog
 
+import com.intellij.openapi.diagnostic.Logger
 import java.awt.Image
 import java.awt.datatransfer.DataFlavor
 import java.awt.datatransfer.Transferable
@@ -11,9 +12,12 @@ class ImageAwareTransferHandler(
     private val delegate: TransferHandler?,
     private val onImagePasted: (Image) -> Unit
 ) : TransferHandler() {
+    private val logger = Logger.getInstance(ImageAwareTransferHandler::class.java)
 
     override fun importData(support: TransferSupport): Boolean {
+        logger.debug("importData called with TransferSupport")
         if (support.isDataFlavorSupported(DataFlavor.imageFlavor)) {
+            logger.debug("Image flavor supported")
             try {
                 val image = support.transferable.getTransferData(DataFlavor.imageFlavor) as? Image
                 if (image != null) {
@@ -21,17 +25,23 @@ class ImageAwareTransferHandler(
                     return true
                 }
             } catch (e: Exception) {
-                e.printStackTrace()
+                logger.warn("Failed to import image data", e)
             }
         }
         return delegate?.importData(support) ?: false
     }
 
     override fun canImport(support: TransferSupport): Boolean {
+        logger.debug("canImport called with TransferSupport")
+        logger.debug("Available flavors: ${support.dataFlavors.joinToString { it.mimeType }}")
+        
         if (support.isDataFlavorSupported(DataFlavor.imageFlavor)) {
+            logger.debug("Image flavor supported")
             return true
         }
-        return delegate?.canImport(support) ?: false
+        val delegateResult = delegate?.canImport(support) ?: false
+        logger.debug("Delegating to handler ${delegate?.javaClass?.simpleName}, result: $delegateResult")
+        return delegateResult
     }
 
     override fun importData(comp: JComponent, t: Transferable): Boolean {

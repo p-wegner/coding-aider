@@ -3,9 +3,9 @@
 ## Implementation Steps
 
 ### Debug Setup
-- [ ] Add debug logging to ImageAwareTransferHandler methods
-- [ ] Add logging for supported DataFlavors in canImport
-- [ ] Log delegate handler type and capabilities
+- [x] Add debug logging to ImageAwareTransferHandler methods
+- [x] Add logging for supported DataFlavors in canImport
+- [x] Log delegate handler type and capabilities
 
 ### Transfer Handler Implementation
 - [ ] Fix canImport implementation to properly check flavors
