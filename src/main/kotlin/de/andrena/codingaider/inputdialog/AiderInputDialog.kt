@@ -71,13 +71,19 @@ class AiderInputDialog(
                     }
                 }
             }
+            // Set up transfer handler for both the text field and its editor
+            val clipboardAction = AiderClipboardImageAction()
+            val imageHandler = { image: java.awt.Image -> 
+                clipboardAction.saveImageFromPaste(project, image)
+            }
+            
+            // Set handler on the text field itself
+            this.transferHandler = ImageAwareTransferHandler(this.transferHandler, imageHandler)
+            
+            // Also set handler on the editor component when available
             this.getEditor(true)?.let { editor ->
                 TextCompletionUtil.installCompletionHint(editor)
-                // Add paste handler for images
-                val clipboardAction = AiderClipboardImageAction()
-                editor.component.transferHandler = ImageAwareTransferHandler(editor.component.transferHandler) { image ->
-                    clipboardAction.saveImageFromPaste(project, image)
-                }
+                editor.component.transferHandler = ImageAwareTransferHandler(editor.component.transferHandler, imageHandler)
             }
             val value: DocumentListener = object : DocumentListener {
                 override fun documentChanged(e: DocumentEvent) = updateTokenCount()

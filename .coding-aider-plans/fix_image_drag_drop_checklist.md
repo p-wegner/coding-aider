@@ -16,7 +16,7 @@
 - [x] Add null safety checks for delegate operations
 
 ### Input Dialog Integration
-- [ ] Update input field to properly register transfer handler
+- [x] Update input field to properly register transfer handler
 - [ ] Ensure transfer handler is preserved during component updates
 - [ ] Add visual feedback during drag operations
 
