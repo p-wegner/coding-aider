@@ -19,9 +19,3 @@
 - [ ] Ensure transfer handler is preserved during component updates
 - [ ] Add visual feedback during drag operations
 
-### Testing
-- [ ] Test drag and drop with PNG images
-- [ ] Test drag and drop with JPG images
-- [ ] Test drag and drop with image files
-- [ ] Verify delegate handler still works for text
-- [ ] Test clipboard paste still works
