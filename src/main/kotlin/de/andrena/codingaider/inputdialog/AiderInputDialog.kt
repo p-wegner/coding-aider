@@ -109,6 +109,28 @@ class AiderInputDialog(
                         }
                     }
                 )
+                
+                // Add visual feedback during drag operations
+                editor.component.dropTarget = java.awt.dnd.DropTarget(editor.component, 
+                    object : java.awt.dnd.DropTargetAdapter() {
+                        override fun dragEnter(dtde: java.awt.dnd.DropTargetDragEvent) {
+                            if (dtde.isDataFlavorSupported(java.awt.datatransfer.DataFlavor.imageFlavor) ||
+                                dtde.isDataFlavorSupported(java.awt.datatransfer.DataFlavor.javaFileListFlavor)) {
+                                editor.component.border = javax.swing.BorderFactory.createLineBorder(
+                                    java.awt.Color.BLUE, 2)
+                            }
+                        }
+                        
+                        override fun dragExit(dte: java.awt.dnd.DropTargetEvent) {
+                            editor.component.border = null
+                        }
+                        
+                        override fun drop(dtde: java.awt.dnd.DropTargetDropEvent) {
+                            editor.component.border = null
+                            dtde.acceptDrop(java.awt.dnd.DnDConstants.ACTION_COPY)
+                        }
+                    }
+                )
             }
             val value: DocumentListener = object : DocumentListener {
                 override fun documentChanged(e: DocumentEvent) = updateTokenCount()

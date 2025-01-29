@@ -18,5 +18,5 @@
 ### Input Dialog Integration
 - [x] Update input field to properly register transfer handler
 - [x] Ensure transfer handler is preserved during component updates
-- [x] Add visual feedback during drag operations
+- [x] Add visual feedback during drag operations ✓
 
