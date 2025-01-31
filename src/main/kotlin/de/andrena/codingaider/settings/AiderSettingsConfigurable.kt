@@ -71,7 +71,6 @@ class AiderSettingsConfigurable() : Configurable {
                     cell(llmComboBox).component.apply {
                         renderer = LlmComboBoxRenderer()
                     }
-                    cell(manageProvidersButton)
                 }
                 row("Default Additional Arguments:") {
                     cell(additionalArgsField)
