@@ -5,5 +5,4 @@
 - [x] Add animation transitions
 - [x] Style collapsible panel
 - [x] Update markdown parsing logic
-- [ ] Ensure accessibility compliance
 - [ ] Update documentation
