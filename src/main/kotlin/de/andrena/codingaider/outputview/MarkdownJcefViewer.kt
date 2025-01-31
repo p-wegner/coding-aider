@@ -485,10 +485,18 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             .replace("'", "&#x27;")
     }
 
+    /**
+     * Processes the HTML content to add special formatting for search/replace blocks and collapsible panels.
+     * 
+     * @param html The input HTML content to process
+     * @return The processed HTML with formatted blocks and collapsible panels
+     */
     private fun processSearchReplaceBlocks(html: String): String {
         var processedHtml = html
 
         // Wrap initial command in collapsible panel if present
+        // This creates an expandable/collapsible section for the initial command
+        // to improve readability of the output
         val commandPattern = """<p>Initial command:\s*<code>(.*?)</code></p>""".toRegex()
         processedHtml = processedHtml.replace(commandPattern) { matchResult ->
             """
