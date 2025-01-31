@@ -1,5 +1,14 @@
 # Coding-Aider Plugin Release Notes - v1.2.7
 
+## 🌟 Key Highlight
+
+Enhanced Plan Mode stands out as the most significant feature, introducing:
+- Hierarchical plan management with parent-child relationships
+- Visual tree representation for better plan organization
+- Improved plan continuation and refinement capabilities
+- Archive system for completed plans
+This feature dramatically improves project organization and execution workflow.
+
 ## 🚀 New Features
 
 - Working Directory Support:
