@@ -328,6 +328,54 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         border-color: ${if (isDark) "#505050" else "#d0d0d0"};
                         box-shadow: 0 6px 12px ${if (isDark) "rgba(0,0,0,0.4)" else "rgba(0,0,0,0.15)"};
                     }
+
+                    .collapsible-panel {
+                        background: ${if (isDark) "#2d2d2d" else "#f8f8f8"};
+                        border: 1px solid ${if (isDark) "#404040" else "#e0e0e0"};
+                        border-radius: 6px;
+                        margin: 10px 0;
+                        overflow: hidden;
+                    }
+
+                    .collapsible-header {
+                        background: ${if (isDark) "#383838" else "#f0f0f0"};
+                        padding: 10px 15px;
+                        cursor: pointer;
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        user-select: none;
+                        transition: background-color 0.2s;
+                    }
+
+                    .collapsible-header:hover {
+                        background: ${if (isDark) "#404040" else "#e8e8e8"};
+                    }
+
+                    .collapsible-title {
+                        font-weight: bold;
+                        color: ${if (isDark) "#cccccc" else "#333333"};
+                    }
+
+                    .collapsible-arrow {
+                        transition: transform 0.3s;
+                    }
+
+                    .collapsible-content {
+                        max-height: 0;
+                        overflow: hidden;
+                        transition: max-height 0.3s ease-out;
+                        padding: 0 15px;
+                    }
+
+                    .collapsible-panel.expanded .collapsible-arrow {
+                        transform: rotate(180deg);
+                    }
+
+                    .collapsible-panel.expanded .collapsible-content {
+                        max-height: 500px;
+                        padding: 15px;
+                    }
                     
                     .aider-intention::before,
                     .aider-summary::before {
@@ -438,7 +486,26 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     }
 
     private fun processSearchReplaceBlocks(html: String): String {
-        return html.replace(
+        var processedHtml = html
+
+        // Wrap initial command in collapsible panel if present
+        val commandPattern = """<p>Initial command:\s*<code>(.*?)</code></p>""".toRegex()
+        processedHtml = processedHtml.replace(commandPattern) { matchResult ->
+            """
+            <div class="collapsible-panel">
+                <div class="collapsible-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="collapsible-title">Initial Command</span>
+                    <span class="collapsible-arrow">▼</span>
+                </div>
+                <div class="collapsible-content">
+                    <code>${matchResult.groupValues[1]}</code>
+                </div>
+            </div>
+            """.trimIndent()
+        }
+
+        // Process search/replace blocks
+        return processedHtml.replace(
             Regex("""(?s)<pre><code>(.+?)<<<<<<< SEARCH\n(.*?)=======\n(.*?)>>>>>>> REPLACE\n</code></pre>"""),
             { matchResult ->
                 val (_, filePath, searchBlock, replaceBlock) = matchResult.groupValues
