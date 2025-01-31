@@ -3,9 +3,7 @@
 - [ ] Create collapsible panel component structure
 - [ ] Implement dark/light theme support
 - [ ] Add animation transitions
+- [ ] Style collapsible panel
 - [ ] Update markdown parsing logic
 - [ ] Ensure accessibility compliance
-- [ ] Write unit tests
 - [ ] Update documentation
-- [ ] Complete styling implementation subplan
-- [ ] Complete interaction logic subplan
