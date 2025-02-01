@@ -21,6 +21,7 @@ The current implementation shows the initial command text directly in the output
 - Should follow IntelliJ platform UI guidelines
 - Needs to handle dark/light theme variations
 - Must maintain current scroll behavior logic
+- Use <aider-command> xml tag to mark the command section
 
 ## References
 - `MarkdownJcefViewer.kt` - Main markdown rendering component

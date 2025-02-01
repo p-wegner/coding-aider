@@ -161,7 +161,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
 
             // Store expansion states before update
             var expandedPanels = Array.from(document.querySelectorAll('.collapsible-panel.expanded'))
-                .map(panel => panel.querySelector('.collapsible-content').textContent.trim());
+               .map(panel => panel.querySelector('.collapsible-content').textContent.trim());
             
             // Inject new HTML
             var decoded = atob('$encodedHtml');
