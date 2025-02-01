@@ -41,6 +41,10 @@ class AiderOptionsPanel(
         preferredSize = Dimension(200, preferredSize.height)
     }
 
+    val reasoningEffortComboBox = ComboBox(arrayOf("", "low", "medium", "high")).apply {
+        preferredSize = Dimension(100, preferredSize.height)
+    }
+
     private val customProviderService = CustomLlmProviderService.getInstance()
     private val defaultProviderService = service<DefaultProviderSettings>()
     private val customProviderListener: () -> Unit = { updateLlmOptions() }
@@ -116,7 +120,26 @@ class AiderOptionsPanel(
         add(additionalArgsField, gbc.apply {
             gridx = 4
             gridy = 0
-            weightx = 0.7
+            weightx = 0.5
+            fill = GridBagConstraints.HORIZONTAL
+        })
+
+        // Reasoning effort dropdown
+        add(JBLabel("Reasoning:").apply {
+            displayedMnemonic = KeyEvent.VK_R
+            labelFor = reasoningEffortComboBox
+            toolTipText = "Set the reasoning effort level"
+        }, gbc.apply {
+            gridx = 5
+            gridy = 0
+            weightx = 0.0
+            insets.left = 10
+        })
+
+        add(reasoningEffortComboBox, gbc.apply {
+            gridx = 6
+            gridy = 0
+            weightx = 0.2
             fill = GridBagConstraints.HORIZONTAL
         })
     }

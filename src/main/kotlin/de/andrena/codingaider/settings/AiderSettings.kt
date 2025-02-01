@@ -21,6 +21,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
 
 
     data class State(
+        var reasoningEffort: String = AiderDefaults.REASONING_EFFORT,
         var summarizedOutput: Boolean = AiderDefaults.SUMMARIZED_OUTPUT,
         var enableDocumentationLookup: Boolean = AiderDefaults.ENABLE_DOCUMENTATION_LOOKUP,
         var useYesFlag: Boolean = AiderDefaults.USE_YES_FLAG,
@@ -52,6 +53,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var optionsPanelCollapsed: Boolean = true,
     )
 
+
+    var reasoningEffort: String
+        get() = myState.reasoningEffort
+        set(value) {
+            myState.reasoningEffort = value
+        }
 
     var summarizedOutput: Boolean
         get() = myState.summarizedOutput

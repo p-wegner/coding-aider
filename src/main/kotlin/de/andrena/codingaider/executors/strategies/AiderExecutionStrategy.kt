@@ -96,6 +96,10 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
                 add("--commit-prompt")
                 add(getCommitPrompt())
             }
+            if (settings.reasoningEffort.isNotEmpty()) {
+                add("--reasoning-effort")
+                add(settings.reasoningEffort)
+            }
             if (commandData.sidecarMode) {
                 return@buildList
             }
