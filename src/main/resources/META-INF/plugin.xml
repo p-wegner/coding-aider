@@ -215,6 +215,12 @@
                     description="Open all files referenced in a .context.yaml file">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt O"/>
             </action>
+            <action id="de.andrena.codingaider.actions.workingdirectory.SetWorkingDirectoryAction"
+                    class="de.andrena.codingaider.actions.workingdirectory.SetWorkingDirectoryAction"
+                    text="Set as Aider Working Directory"
+                    description="Set this directory as the working directory for Aider operations">
+                <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="de.andrena.codingaider.AiderActionGroup"/>
+            </action>
             <action id="de.andrena.codingaider.actions.aider.AiderClipboardImageAction"
                     class="de.andrena.codingaider.actions.aider.AiderClipboardImageAction"
                     text="Aider Clipboard Image"
