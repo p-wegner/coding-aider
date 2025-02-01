@@ -126,7 +126,7 @@ class PersistentFilesPanel(private val project: Project) {
     private fun openFileInEditor(fileData: FileData) {
         val file = File(fileData.filePath)
         if (file.exists()) {
-            val virtualFile = com.intellij.openapi.vfs.LocalFileSystem.getInstance().findFileByIoFile(file)
+            val virtualFile = com.intellij.openapi.vfs.LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file)
             virtualFile?.let { FileEditorManager.getInstance(project).openFile(it, true) }
         }
     }

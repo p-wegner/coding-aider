@@ -86,7 +86,8 @@ class PlanViewer(private val project: Project) {
                 override fun actionPerformed(e: ActionEvent?) {
                     val selectedPlan = selectedValue ?: return
                     selectedPlan.mainPlanFile?.let { fileData ->
-                        val virtualFile = LocalFileSystem.getInstance().findFileByPath(fileData.filePath)
+                        val file = File(fileData.filePath)
+                        val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file)
                         virtualFile?.let {
                             FileEditorManager.getInstance(project).openFile(it, true)
                         }
