@@ -13,36 +13,60 @@ import de.andrena.codingaider.settings.AiderSettings
 class GitCodeReviewAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        performGitCodeReview(project)
-    }
+        
+        try {
+            val dialog = GitCodeReviewDialog(project)
+            if (!dialog.showAndGet()) return
 
-    override fun update(e: AnActionEvent) {
-        e.presentation.isEnabledAndVisible = e.project != null
-    }
+            val (fromRef, toRef) = dialog.getSelectedRefs()
+            val prompt = dialog.getPrompt()
 
-    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+            val files = try {
+                GitDiffUtils.getChangedFiles(project, fromRef, toRef)
+            } catch (ex: VcsException) {
+                NotificationUtils.showError(
+                    project,
+                    "Git Diff Error",
+                    "Failed to get changed files: ${ex.message}"
+                )
+                return
+            }
 
-    private fun performGitCodeReview(project: Project) {
-        val dialog = GitCodeReviewDialog(project)
-        if (!dialog.showAndGet()) return
+            if (files.isEmpty()) {
+                NotificationUtils.showWarning(
+                    project,
+                    "No Changes",
+                    "No changes found between $fromRef and $toRef"
+                )
+                return
+            }
 
-        val settings = AiderSettings.getInstance()
-        val commandData = CommandData(
-            message = dialog.getPrompt(),
-            useYesFlag = settings.useYesFlag,
-            llm = settings.llm,
-            additionalArgs = settings.additionalArgs,
-            files = dialog.getSelectedFiles(),
-            lintCmd = settings.lintCmd,
-            deactivateRepoMap = settings.deactivateRepoMap,
-            editFormat = settings.editFormat,
-            projectPath = project.basePath ?: "",
-            options = CommandOptions(
-                commitHashToCompareWith = dialog.getBaseCommit()
-            ),
-            sidecarMode = settings.useSidecarMode
-        )
+            val settings = AiderSettings.getInstance()
+            val commandData = CommandData(
+                message = """Review the code changes between Git refs '$fromRef' and '$toRef'.
+                    |Focus on: $prompt""".trimMargin(),
+                useYesFlag = settings.useYesFlag,
+                llm = settings.llm,
+                additionalArgs = settings.additionalArgs,
+                files = files,
+                lintCmd = settings.lintCmd,
+                deactivateRepoMap = settings.deactivateRepoMap,
+                editFormat = settings.editFormat,
+                projectPath = project.basePath ?: "",
+                options = CommandOptions(
+                    commitHashToCompareWith = fromRef
+                ),
+                sidecarMode = settings.useSidecarMode
+            )
 
-        IDEBasedExecutor(project, commandData).execute()
+            IDEBasedExecutor(project, commandData).execute()
+
+        } catch (ex: Exception) {
+            NotificationUtils.showError(
+                project,
+                "Git Review Error",
+                "An error occurred during code review: ${ex.message}"
+            )
+        }
     }
 }

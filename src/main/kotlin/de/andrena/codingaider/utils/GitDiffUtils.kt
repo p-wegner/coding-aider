@@ -7,9 +7,14 @@ import git4idea.repo.GitRepository
 import de.andrena.codingaider.command.FileData
 
 object GitDiffUtils {
+    @Throws(VcsException::class)
     fun getChangedFiles(project: Project, baseCommit: String, targetCommit: String): List<FileData> {
+        if (baseCommit.isBlank() || targetCommit.isBlank()) {
+            throw VcsException("Base commit and target commit must not be empty")
+        }
+
         val repository = GitUtil.getRepositoryManager(project).repositories.firstOrNull()
-            ?: return emptyList()
+            ?: throw VcsException("No Git repository found in project")
 
         return getChangedFilesFromRepository(repository, baseCommit, targetCommit)
     }

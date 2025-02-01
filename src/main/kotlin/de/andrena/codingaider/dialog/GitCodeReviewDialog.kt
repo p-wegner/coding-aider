@@ -63,17 +63,16 @@ class GitCodeReviewDialog(private val project: Project) : DialogWrapper(project)
         super.doOKAction()
     }
 
-    fun getPrompt(): String = """
-        Review the code changes between commits/branches. Focus on:
+    fun getPrompt(): String = promptArea.text.ifBlank {
+        """
+        Review focusing on:
         1. Code quality and best practices
         2. Potential bugs or issues
         3. Performance implications
         4. Security considerations
-        
-        Custom instructions: ${promptArea.text}
-    """.trimIndent()
+        """.trimIndent()
+    }
 
-    fun getSelectedFiles(): List<FileData> = selectedFiles
-    
-    fun getBaseCommit(): String = baseCommit
+    fun getSelectedRefs(): Pair<String, String> =
+        Pair(baseCommitField.text.trim(), targetCommitField.text.trim())
 }
