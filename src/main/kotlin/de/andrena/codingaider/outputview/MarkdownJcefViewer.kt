@@ -350,6 +350,11 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         border-radius: 6px;
                         margin: 10px 0;
                         overflow: hidden;
+                        transition: all 0.3s ease;
+                    }
+
+                    .collapsible-panel.expanded {
+                        box-shadow: 0 2px 8px ${if (isDark) "rgba(0,0,0,0.3)" else "rgba(0,0,0,0.1)"};
                     }
 
                     .collapsible-header {
@@ -509,9 +514,23 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     private fun processSearchReplaceBlocks(html: String): String {
         var processedHtml = html
 
+        // Process initialization output
+        val initPattern = """Aider v[\d.]+ .*?(?=\n\n|\Z)""".toRegex(RegexOption.DOT_MATCHES_ALL)
+        processedHtml = processedHtml.replace(initPattern) { matchResult ->
+            """
+            <div class="collapsible-panel expanded">
+                <div class="collapsible-header" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="collapsible-title">Initialization Details</span>
+                    <span class="collapsible-arrow">^</span>
+                </div>
+                <div class="collapsible-content">
+                    <pre><code>${escapeHtml(matchResult.value.trim())}</code></pre>
+                </div>
+            </div>
+            """.trimIndent()
+        }
+
         // Wrap initial command in collapsible panel if present
-        // This creates an expandable/collapsible section for the initial command
-        // to improve readability of the output
         val commandPattern = """<aider-command>\s*(.*?)\s*</aider-command>""".toRegex(RegexOption.DOT_MATCHES_ALL)
         processedHtml = processedHtml.replace(commandPattern) { matchResult ->
             """
