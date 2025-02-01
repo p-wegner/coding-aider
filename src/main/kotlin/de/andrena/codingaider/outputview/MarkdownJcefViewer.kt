@@ -159,9 +159,23 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             var scrollH = container.scrollHeight;
             var nearBottom = (scrollPos + clientH >= scrollH - 5);
 
+            // Store expansion states before update
+            var expandedPanels = Array.from(document.querySelectorAll('.collapsible-panel.expanded'))
+                .map(panel => panel.querySelector('.collapsible-content').textContent.trim());
+            
             // Inject new HTML
             var decoded = atob('$encodedHtml');
             container.innerHTML = decoded;
+            
+            // Restore expansion states
+            expandedPanels.forEach(content => {
+                var panels = Array.from(document.querySelectorAll('.collapsible-panel'));
+                panels.forEach(panel => {
+                    if (panel.querySelector('.collapsible-content').textContent.trim() === content) {
+                        panel.classList.add('expanded');
+                    }
+                });
+            });
 
             // If we were at the bottom before, jump to bottom again
             if (nearBottom) {
