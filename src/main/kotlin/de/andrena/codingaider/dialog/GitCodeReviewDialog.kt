@@ -2,6 +2,8 @@ package de.andrena.codingaider.dialog
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.openapi.ui.Messages
+import com.intellij.openapi.vcs.VcsException
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBTextField
@@ -9,6 +11,7 @@ import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.utils.GitDiffUtils
 import java.awt.BorderLayout
 import java.awt.Dimension
+import java.awt.EventQueue.invokeLater
 import javax.swing.*
 
 class GitCodeReviewDialog(private val project: Project) : DialogWrapper(project) {
@@ -54,7 +57,7 @@ class GitCodeReviewDialog(private val project: Project) : DialogWrapper(project)
     override fun doOKAction() {
         baseCommit = baseCommitField.text.trim()
         val targetCommit = targetCommitField.text.trim()
-        
+
         if (baseCommit.isBlank() || targetCommit.isBlank()) {
             Messages.showErrorDialog(
                 project,
@@ -64,15 +67,17 @@ class GitCodeReviewDialog(private val project: Project) : DialogWrapper(project)
             return
         }
 
-        try {
-            selectedFiles = GitDiffUtils.getChangedFiles(project, baseCommit, targetCommit)
-            super.doOKAction()
-        } catch (e: VcsException) {
-            Messages.showErrorDialog(
-                project,
-                e.message ?: "Failed to get changed files",
-                "Git Error"
-            )
+        invokeLater {
+            try {
+                selectedFiles = GitDiffUtils.getChangedFiles(project, baseCommit, targetCommit)
+                super.doOKAction()
+            } catch (e: VcsException) {
+                Messages.showErrorDialog(
+                    project,
+                    e.message ?: "Failed to get changed files",
+                    "Git Error"
+                )
+            }
         }
     }
 
@@ -84,7 +89,7 @@ class GitCodeReviewDialog(private val project: Project) : DialogWrapper(project)
             3. Performance implications
             4. Security considerations
             """.trimIndent()
-        
+
         return promptArea.text.ifBlank { defaultPrompt }
     }
 
