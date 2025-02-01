@@ -2,12 +2,12 @@ package de.andrena.codingaider.utils
 
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.VcsException
-import com.intellij.openapi.vcs.changes.Change
 import git4idea.GitUtil
 import git4idea.commands.GitCommand
 import git4idea.commands.GitLineHandler
 import git4idea.repo.GitRepository
 import de.andrena.codingaider.command.FileData
+import git4idea.commands.Git
 
 object GitDiffUtils {
     @Throws(VcsException::class)
@@ -19,20 +19,7 @@ object GitDiffUtils {
         val repository = GitUtil.getRepositoryManager(project).repositories.firstOrNull()
             ?: throw VcsException("No Git repository found in project")
 
-        validateGitRef(repository, baseCommit)
-        validateGitRef(repository, targetCommit)
-
         return getChangedFilesFromRepository(repository, baseCommit, targetCommit)
-    }
-
-    private fun validateGitRef(repository: GitRepository, ref: String) {
-        val handler = GitLineHandler(repository.project, repository.root, GitCommand.REV_PARSE)
-        handler.addParameters("--verify", ref)
-        
-        val result = Git.getInstance().runCommand(handler)
-        if (!result.success()) {
-            throw VcsException("Invalid Git reference: $ref")
-        }
     }
 
     private fun getChangedFilesFromRepository(
@@ -49,7 +36,7 @@ object GitDiffUtils {
                 throw VcsException("Failed to get changes between commits")
             }
 
-            val changedFiles = result.output.lines()
+            val changedFiles = result.output
                 .filter { it.isNotEmpty() }
                 .map { FileData(repository.root.path + "/" + it, false) }
 

@@ -1,4 +1,4 @@
-package de.andrena.codingaider.dialog
+package de.andrena.codingaider.actions.git
 
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
@@ -12,7 +12,6 @@ import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.utils.GitDiffUtils
 import java.awt.BorderLayout
 import java.awt.Dimension
-import java.awt.EventQueue.invokeLater
 import javax.swing.*
 
 class GitCodeReviewDialog(private val project: Project) : DialogWrapper(project) {

@@ -2,8 +2,8 @@ package de.andrena.codingaider.dialog
 
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
+import de.andrena.codingaider.actions.git.GitCodeReviewDialog
 import org.mockito.kotlin.mock
-import org.mockito.kotlin.whenever
 
 class GitCodeReviewDialogTest : BasePlatformTestCase() {
     private lateinit var dialog: GitCodeReviewDialog

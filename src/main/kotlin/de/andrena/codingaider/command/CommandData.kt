@@ -71,9 +71,7 @@ data class FileData(val filePath: String, val isReadOnly: Boolean) {
     val normalizedFilePath: String
         get() = FileTraversal.normalizedFilePath(filePath)
 
-    fun hasSameNormalizedPath(other: FileData): Boolean {
-        return other.normalizedFilePath == normalizedFilePath
-    }
+    fun hasSameNormalizedPath(other: FileData): Boolean = other.normalizedFilePath == normalizedFilePath
 }
 
 
