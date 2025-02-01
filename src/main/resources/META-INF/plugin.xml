@@ -227,6 +227,13 @@
                     description="Save clipboard image and add to persistent files">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt I"/>
             </action>
+            <action id="de.andrena.codingaider.actions.git.GitCodeReviewAction"
+                    class="de.andrena.codingaider.actions.git.GitCodeReviewAction"
+                    text="Git Code Review"
+                    description="Review code changes between Git branches or commits"
+                    icon="AllIcons.Vcs.Compare">
+                <keyboard-shortcut keymap="$default" first-keystroke="alt R"/>
+            </action>
             <separator/>
             <action id="de.andrena.codingaider.SettingsAction"
                     class="de.andrena.codingaider.actions.ide.SettingsAction"
