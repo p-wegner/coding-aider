@@ -65,7 +65,7 @@ class CommandExecutor(
         logger.info("Executing Aider command: ${commandArgs.joinToString(" ")}")
         notifyObservers {
             it.onCommandStart(
-                "Starting Aider command...\n${
+                "\n${
                     commandLogger.getCommandString(
                         false,
                         if (useDockerAider) dockerManager else null

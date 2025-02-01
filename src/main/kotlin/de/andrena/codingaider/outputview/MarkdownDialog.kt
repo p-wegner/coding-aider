@@ -2,7 +2,6 @@ package de.andrena.codingaider.outputview
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBScrollPane
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.services.RunningCommandService
@@ -222,7 +221,7 @@ class MarkdownDialog(
     private var currentContent = ""
     private var isUpdating = false
 
-    fun updateProgress(output: String, message: String) {
+    fun updateProgress(output: String, title: String) {
         if (isUpdating) return
         isUpdating = true
 
@@ -248,7 +247,7 @@ class MarkdownDialog(
 
                     // Update content
                     markdownViewer.setMarkdown(newContent)
-                    title = message
+                    this@MarkdownDialog.title = title
 
                     // Handle scrolling after content update
                     SwingUtilities.invokeLater {

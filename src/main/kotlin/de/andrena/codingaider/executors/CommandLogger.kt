@@ -30,7 +30,7 @@ class CommandLogger(
                 NativeAiderExecutionStrategy(project, apiKeyChecker, settings)
             }
             val commandArgs = executionStrategy.buildCommand(commandData)
-            val commandString = "Command: ${commandArgs.joinToString(" ")}"
+            val commandString = "<aider-command>${commandArgs.joinToString(" ")}</aider-command>"
             if (includeNewlines) "$commandString\n\n" else commandString
         } else ""
 

@@ -18,7 +18,6 @@ The current implementation shows the initial command text directly in the output
 4. Preserve functionality of command text selection/copying
 
 ## Additional Notes and Constraints
-- Must work with both JCEF and fallback JEditorPane renderers
 - Should follow IntelliJ platform UI guidelines
 - Needs to handle dark/light theme variations
 - Must maintain current scroll behavior logic
@@ -27,11 +26,3 @@ The current implementation shows the initial command text directly in the output
 - `MarkdownJcefViewer.kt` - Main markdown rendering component
 - `MarkdownDialog.kt` - Output view container
 - `IDEBasedExecutor.kt` - Command execution entry point
-
-<!-- SUBPLAN:collapsible_command_panel_styling -->
-[Subplan: Styling Implementation](collapsible_command_panel_styling.md)
-<!-- END_SUBPLAN -->
-
-<!-- SUBPLAN:collapsible_command_panel_logic -->
-[Subplan: Interaction Logic](collapsible_command_panel_logic.md)
-<!-- END_SUBPLAN -->

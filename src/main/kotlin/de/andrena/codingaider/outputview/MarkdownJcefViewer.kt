@@ -497,7 +497,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         // Wrap initial command in collapsible panel if present
         // This creates an expandable/collapsible section for the initial command
         // to improve readability of the output
-        val commandPattern = """<p>Initial command:\s*<code>(.*?)</code></p>""".toRegex()
+        val commandPattern = """<aider-command>\s*(.*?)</aider-command>""".toRegex()
         processedHtml = processedHtml.replace(commandPattern) { matchResult ->
             """
             <div class="collapsible-panel">
