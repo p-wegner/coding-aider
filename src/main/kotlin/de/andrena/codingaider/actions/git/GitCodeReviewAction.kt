@@ -1,6 +1,7 @@
 package de.andrena.codingaider.actions.git
 
 import com.intellij.notification.NotificationGroupManager
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
@@ -36,16 +37,27 @@ class GitCodeReviewAction : AnAction() {
             val (fromRef, toRef) = dialog.getSelectedRefs()
             val prompt = dialog.getPrompt()
 
-            val files = try {
-                GitDiffUtils.getChangedFiles(project, fromRef, toRef)
-            } catch (ex: VcsException) {
-                showNotification(
-                    project,
-                    "Failed to get changed files: ${ex.message}",
-                    NotificationType.ERROR
-                )
-                return
-            }
+            val files = mutableListOf<FileData>()
+            val success = ProgressManager.getInstance().runProcessWithProgressSynchronously(
+                {
+                    try {
+                        files.addAll(GitDiffUtils.getChangedFiles(project, fromRef, toRef))
+                    } catch (ex: VcsException) {
+                        showNotification(
+                            project,
+                            "Failed to get changed files: ${ex.message}",
+                            NotificationType.ERROR
+                        )
+                        return@runProcessWithProgressSynchronously false
+                    }
+                    true
+                },
+                "Getting Changed Files...",
+                true,
+                project
+            )
+            
+            if (!success) return
 
             val settings = AiderSettings.getInstance()
             val commandData = CommandData(
