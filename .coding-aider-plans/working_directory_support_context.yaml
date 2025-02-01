@@ -8,7 +8,5 @@ files:
   readOnly: false
 - path: src/main/kotlin/de/andrena/codingaider/executors/CommandExecutor.kt
   readOnly: false
-- path: README.md
-  readOnly: false
 - path: src/main/kotlin/de/andrena/codingaider/toolwindow/workingdirectory/WorkingDirectoryPanel.kt
   readOnly: false

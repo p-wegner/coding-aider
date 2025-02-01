@@ -25,11 +25,11 @@ class WorkingDirectoryPanel(private val project: Project) {
                     }
             }
             row {
-                button("Select Directory") { selectDirectory() }
+                button("Select Directory") { selectDirectory() }.component
                     .apply {
                         toolTipText = "Choose a working directory to restrict Aider operations"
                     }
-                button("Clear") { clearDirectory() }
+                button("Clear") { clearDirectory() }.component
                     .apply {
                         toolTipText = "Reset to use project root directory"
                     }
