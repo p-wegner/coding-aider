@@ -20,16 +20,28 @@ class WorkingDirectoryPanel(private val project: Project) {
         return panel {
             row {
                 pathLabel = label(getDisplayPath()).component
+                    .apply { 
+                        toolTipText = "When set, Aider operations will be restricted to files within this directory"
+                    }
             }
             row {
                 button("Select Directory") { selectDirectory() }
+                    .apply {
+                        toolTipText = "Choose a working directory to restrict Aider operations"
+                    }
                 button("Clear") { clearDirectory() }
+                    .apply {
+                        toolTipText = "Reset to use project root directory"
+                    }
             }
         }
     }
 
     private fun getDisplayPath(): String {
-        return settings.workingDirectory?.let { "Working Directory: $it" } ?: "No working directory set (using project root)"
+        return settings.workingDirectory?.let { path ->
+            val normalizedPath = FileTraversal.normalizedFilePath(path)
+            "Working Directory: $normalizedPath (Aider operations restricted to this subtree)"
+        } ?: "No working directory set (using project root)"
     }
 
     private fun selectDirectory() {
@@ -54,27 +66,36 @@ class WorkingDirectoryPanel(private val project: Project) {
 
     private fun isValidWorkingDirectory(path: String): Boolean {
         val file = File(path)
-        val projectPath = project.basePath ?: return false
+        val projectPath = project.basePath ?: run {
+            Messages.showErrorDialog(project, "Project base path not found", "Invalid Working Directory")
+            return false
+        }
         
+        if (!file.exists()) {
+            Messages.showErrorDialog(project, "Directory does not exist", "Invalid Working Directory")
+            return false
+        }
+
         if (!file.isDirectory) {
             Messages.showErrorDialog(project, "Selected path is not a directory", "Invalid Working Directory")
             return false
         }
         
-        val normalizedPath = FileTraversal.normalizedFilePath(file.absolutePath)
-        val normalizedProjectPath = FileTraversal.normalizedFilePath(projectPath)
+        val normalizedPath = FileTraversal.normalizedFilePath(file.canonicalPath)
+        val normalizedProjectPath = FileTraversal.normalizedFilePath(File(projectPath).canonicalPath)
         
         if (!normalizedPath.startsWith(normalizedProjectPath)) {
             Messages.showErrorDialog(
                 project,
-                "Working directory must be within the project directory",
+                "Working directory must be within the project directory.\nSelected: $normalizedPath\nProject: $normalizedProjectPath",
                 "Invalid Working Directory"
             )
             return false
         }
-        
-        if (LocalFileSystem.getInstance().findFileByPath(path)?.exists() != true) {
-            Messages.showErrorDialog(project, "Directory does not exist", "Invalid Working Directory")
+
+        // Check if directory is readable
+        if (!file.canRead()) {
+            Messages.showErrorDialog(project, "Directory is not readable", "Invalid Working Directory")
             return false
         }
         
