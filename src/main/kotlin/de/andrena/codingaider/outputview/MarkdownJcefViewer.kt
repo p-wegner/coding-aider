@@ -498,7 +498,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         // Wrap initial command in collapsible panel if present
         // This creates an expandable/collapsible section for the initial command
         // to improve readability of the output
-        val commandPattern = """<aider-command>\s*(.*?)</aider-command>""".toRegex()
+        val commandPattern = """<aider-command>\s*(.*?)\s*</aider-command>""".toRegex(RegexOption.DOT_MATCHES_ALL)
         processedHtml = processedHtml.replace(commandPattern) { matchResult ->
             """
             <div class="collapsible-panel">
@@ -507,7 +507,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     <span class="collapsible-arrow">▼</span>
                 </div>
                 <div class="collapsible-content">
-                    <code>${matchResult.groupValues[1]}</code>
+                    <pre><code>${escapeHtml(matchResult.groupValues[1].trim())}</code></pre>
                 </div>
             </div>
             """.trimIndent()
