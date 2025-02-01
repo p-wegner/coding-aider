@@ -16,6 +16,17 @@ class WorkingDirectoryPanel(private val project: Project) {
     private val settings = AiderProjectSettings.getInstance(project)
     private var pathLabel: JLabel? = null
 
+    init {
+        project.messageBus.connect().subscribe(
+            WorkingDirectoryTopic.TOPIC,
+            object : WorkingDirectoryListener {
+                override fun onWorkingDirectoryChanged(path: String) {
+                    pathLabel?.text = getDisplayPath()
+                }
+            }
+        )
+    }
+
     fun getContent(): JComponent {
         return panel {
             row {
