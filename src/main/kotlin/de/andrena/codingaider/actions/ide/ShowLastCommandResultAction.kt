@@ -7,7 +7,6 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.outputview.MarkdownDialog
 import de.andrena.codingaider.services.AiderHistoryService
-import java.awt.Window
 
 class ShowLastCommandResultAction : AnAction() {
     companion object {

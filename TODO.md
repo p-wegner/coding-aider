@@ -12,7 +12,7 @@
   - edge cases: undo changes before creating plan or keep them and integrate in the plan (might degrade quality)
 - [ ] Bug: Bring to front for running commands not working reliably
 - [ ] Bug: open file from persistent file list not working
-- [ ] style aider system message (aider -m ...) with newlines and/or differentiate between output and command
+- [x] style aider system message (aider -m ...) with newlines and/or differentiate between output and command
 - [ ] show last command should bring existing dialog to front and not open more than one dialog
 - [ ] o3 mini support, reasoning effort setting
 - [ ] refine plan doesn't show plan

@@ -130,7 +130,7 @@ class AiderOptionsPanel(
         add(JBLabel("Reasoning:").apply {
             displayedMnemonic = KeyEvent.VK_R
             labelFor = reasoningEffortComboBox
-            toolTipText = "Set the reasoning effort level"
+            toolTipText = "Set the reasoning effort level that will be used for reasoning models"
         }, gbc.apply {
             gridx = 5
             gridy = 0
