@@ -504,7 +504,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             <div class="collapsible-panel">
                 <div class="collapsible-header" onclick="this.parentElement.classList.toggle('expanded')">
                     <span class="collapsible-title">Initial Command</span>
-                    <span class="collapsible-arrow">▼</span>
+                    <span class="collapsible-arrow"> ^ </span>
                 </div>
                 <div class="collapsible-content">
                     <pre><code>${escapeHtml(matchResult.groupValues[1].trim())}</code></pre>
