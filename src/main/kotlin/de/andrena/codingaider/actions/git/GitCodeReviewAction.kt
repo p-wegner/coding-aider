@@ -1,15 +1,19 @@
 package de.andrena.codingaider.actions.git
 
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
-import de.andrena.codingaider.utils.showNotification
+import com.intellij.openapi.vcs.VcsException
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.CommandOptions
 import de.andrena.codingaider.dialog.GitCodeReviewDialog
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.settings.AiderSettings
+import de.andrena.codingaider.utils.GitDiffUtils
+import git4idea.GitUtil
 
 class GitCodeReviewAction : AnAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
@@ -19,9 +23,8 @@ class GitCodeReviewAction : AnAction() {
         if (!isGitAvailable(project)) {
             showNotification(
                 project,
-                "Git Not Available",
                 "This action requires a Git repository",
-                true
+                NotificationType.ERROR
             )
             return
         }
@@ -38,9 +41,8 @@ class GitCodeReviewAction : AnAction() {
             } catch (ex: VcsException) {
                 showNotification(
                     project,
-                    "Git Diff Error", 
                     "Failed to get changed files: ${ex.message}",
-                    true
+                    NotificationType.ERROR
                 )
                 return
             }
@@ -75,9 +77,8 @@ class GitCodeReviewAction : AnAction() {
         } catch (ex: Exception) {
             showNotification(
                 project,
-                "Git Review Error",
-                "An error occurred during code review: ${ex.message}",
-                true
+                "An error occurred during code review: ${ex.message}",NotificationType.ERROR
+
             )
         }
     }
@@ -89,4 +90,11 @@ class GitCodeReviewAction : AnAction() {
             false
         }
     }
+    private fun showNotification(project: Project, content: String, type: NotificationType) {
+        NotificationGroupManager.getInstance()
+            .getNotificationGroup("Aider Clipboard Image")
+            .createNotification(content, type)
+            .notify(project)
+    }
+
 }
