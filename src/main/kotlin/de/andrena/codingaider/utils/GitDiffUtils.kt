@@ -29,8 +29,8 @@ object GitDiffUtils {
         val handler = GitLineHandler(repository.project, repository.root, GitCommand.REV_PARSE)
         handler.addParameters("--verify", ref)
         
-        val result = repository.git.runCommand(handler)
-        if (result.exitCode != 0) {
+        val result = Git.getInstance().runCommand(handler)
+        if (!result.success()) {
             throw VcsException("Invalid Git reference: $ref")
         }
     }
@@ -41,19 +41,23 @@ object GitDiffUtils {
         targetCommit: String
     ): List<FileData> {
         try {
-            val git = repository.git
-            val changes = mutableListOf<Change>()
+            val handler = GitLineHandler(repository.project, repository.root, GitCommand.DIFF)
+            handler.addParameters("--name-only", baseCommit, targetCommit)
+            
+            val result = Git.getInstance().runCommand(handler)
+            if (!result.success()) {
+                throw VcsException("Failed to get changes between commits")
+            }
 
-            git.getChanges(repository, baseCommit, targetCommit, changes)
+            val changedFiles = result.output.lines()
+                .filter { it.isNotEmpty() }
+                .map { FileData(repository.root.path + "/" + it, false) }
 
-            if (changes.isEmpty()) {
+            if (changedFiles.isEmpty()) {
                 throw VcsException("No changes found between $baseCommit and $targetCommit")
             }
 
-            return changes.mapNotNull { change ->
-                val file = change.afterRevision?.file ?: change.beforeRevision?.file
-                file?.path?.let { FileData(it, false) }
-            }
+            return changedFiles
         } catch (e: Exception) {
             throw VcsException("Failed to get changes between commits:\n${e.message}")
         }
