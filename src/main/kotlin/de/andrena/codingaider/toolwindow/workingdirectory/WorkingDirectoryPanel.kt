@@ -3,6 +3,7 @@ package de.andrena.codingaider.toolwindow.workingdirectory
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.settings.AiderProjectSettings
