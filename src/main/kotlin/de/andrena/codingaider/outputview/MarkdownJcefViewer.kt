@@ -521,7 +521,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             <div class="collapsible-panel expanded">
                 <div class="collapsible-header" onclick="this.parentElement.classList.toggle('expanded')">
                     <span class="collapsible-title">Initialization Details</span>
-                    <span class="collapsible-arrow">▼</span>
+                    <span class="collapsible-arrow">^</span>
                 </div>
                 <div class="collapsible-content">
                     <pre><code>${escapeHtml(matchResult.value.trim()).replace("\n", "<br>")}</code></pre>
