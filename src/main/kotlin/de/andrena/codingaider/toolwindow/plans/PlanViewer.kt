@@ -157,7 +157,8 @@ class PlanViewer(private val project: Project) {
                                 // Double click to open plan file
                                 plansList.selectedIndex = index
                                 plan.mainPlanFile?.let { fileData ->
-                                    val virtualFile = LocalFileSystem.getInstance().findFileByPath(fileData.filePath)
+                                    val file = File(fileData.filePath)
+                                    val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file)
                                     virtualFile?.let {
                                         FileEditorManager.getInstance(project).openFile(it, true)
                                     }
