@@ -4,6 +4,7 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
+import de.andrena.codingaider.utils.showNotification
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.CommandOptions
 import de.andrena.codingaider.dialog.GitCodeReviewDialog
@@ -16,10 +17,11 @@ class GitCodeReviewAction : AnAction() {
         val project = e.project ?: return
         
         if (!isGitAvailable(project)) {
-            NotificationUtils.showError(
+            showNotification(
                 project,
                 "Git Not Available",
-                "This action requires a Git repository"
+                "This action requires a Git repository",
+                true
             )
             return
         }
@@ -34,10 +36,11 @@ class GitCodeReviewAction : AnAction() {
             val files = try {
                 GitDiffUtils.getChangedFiles(project, fromRef, toRef)
             } catch (ex: VcsException) {
-                NotificationUtils.showError(
+                showNotification(
                     project,
-                    "Git Diff Error",
-                    "Failed to get changed files: ${ex.message}"
+                    "Git Diff Error", 
+                    "Failed to get changed files: ${ex.message}",
+                    true
                 )
                 return
             }
@@ -70,10 +73,11 @@ class GitCodeReviewAction : AnAction() {
             IDEBasedExecutor(project, commandData).execute()
 
         } catch (ex: Exception) {
-            NotificationUtils.showError(
+            showNotification(
                 project,
                 "Git Review Error",
-                "An error occurred during code review: ${ex.message}"
+                "An error occurred during code review: ${ex.message}",
+                true
             )
         }
     }
