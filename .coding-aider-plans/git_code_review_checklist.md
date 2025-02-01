@@ -1,3 +1,7 @@
+[Coding Aider Plan - Checklist]
+
+# Implementation Checklist
+
 - [ ] Define the new action class for Git code review and place it in the actions package.
 - [ ] Create the dialog for branch/tag selection and prompt entry.
 - [ ] Integrate Git4Idea APIs to compute file differences between branches/tags.

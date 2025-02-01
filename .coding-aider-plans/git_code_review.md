@@ -20,11 +20,5 @@ Developers need to efficiently review code changes between branches or commits. 
 - Testing should verify that the generated CommandData has both the Git diff and the user prompt.
 
 ## References
-- [Git4Idea Documentation](https://www.jetbrains.org/intellij/sdk/docs/platform/git_integration/git_integration.html)
 - [Aider CommandData Specification](../src/main/kotlin/de/andrena/codingaider/command/CommandData.kt)
 
-<!-- SUBPLAN:git_code_review_ui -->
-[Subplan: Git Code Review UI](git_code_review_ui.md)
-<!-- END_SUBPLAN -->
-
-- [ ] Complete subfeature implementation for Git Code Review UI
