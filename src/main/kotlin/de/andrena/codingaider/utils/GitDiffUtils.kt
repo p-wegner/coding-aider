@@ -55,7 +55,7 @@ object GitDiffUtils {
                 file?.path?.let { FileData(it, false) }
             }
         } catch (e: Exception) {
-            throw VcsException("Failed to get changes: ${e.message}")
+            throw VcsException("Failed to get changes between commits:\n${e.message}")
         }
     }
 }

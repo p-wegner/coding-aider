@@ -76,14 +76,16 @@ class GitCodeReviewDialog(private val project: Project) : DialogWrapper(project)
         }
     }
 
-    fun getPrompt(): String = promptArea.text.ifBlank {
-        """
-        Review focusing on:
-        1. Code quality and best practices
-        2. Potential bugs or issues
-        3. Performance implications
-        4. Security considerations
-        """.trimIndent()
+    fun getPrompt(): String {
+        val defaultPrompt = """
+            Review focusing on:
+            1. Code quality and best practices
+            2. Potential bugs or issues
+            3. Performance implications
+            4. Security considerations
+            """.trimIndent()
+        
+        return promptArea.text.ifBlank { defaultPrompt }
     }
 
     fun getSelectedRefs(): Pair<String, String> =
