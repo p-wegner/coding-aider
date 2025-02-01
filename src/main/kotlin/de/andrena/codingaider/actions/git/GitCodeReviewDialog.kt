@@ -70,7 +70,7 @@ class GitCodeReviewDialog(private val project: Project) : DialogWrapper(project)
         try {
             ProgressManager.getInstance().runProcessWithProgressSynchronously(
                 {
-                    selectedFiles = GitDiffUtils.getChangedFiles(project, baseCommit, targetCommit)
+                    selectedFiles = GitDiffUtils.getChangedFiles(project, baseCommit, targetCommit).files
                 },
                 "Getting Changed Files",
                 true,

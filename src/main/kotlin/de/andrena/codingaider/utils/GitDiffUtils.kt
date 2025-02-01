@@ -10,18 +10,6 @@ import de.andrena.codingaider.command.FileData
 import git4idea.commands.Git
 
 object GitDiffUtils {
-    @Throws(VcsException::class)
-    fun getChangedFiles(project: Project, baseCommit: String, targetCommit: String): List<FileData> {
-        if (baseCommit.isBlank() || targetCommit.isBlank()) {
-            throw VcsException("Base commit and target commit must not be empty")
-        }
-
-        val repository = GitUtil.getRepositoryManager(project).repositories.firstOrNull()
-            ?: throw VcsException("No Git repository found in project")
-
-        return getChangedFilesFromRepository(repository, baseCommit, targetCommit)
-    }
-
     data class DiffResult(
         val files: List<FileData>,
         val diffContent: String

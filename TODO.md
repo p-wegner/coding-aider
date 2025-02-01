@@ -7,7 +7,7 @@
   - atleast one file new => all files added even if they are contained already
 - [ ] Feature: create plan from previous command 
   - will be used if a feature is too complex to be done in one go
-  - ai could give a recommendation if this is needed (use exisiting ouput summary xml as api for tool calling)
+  - ai could give a recommendation if this is needed (use existing ouput summary xml as api for tool calling)
   - button directly in the output dialog
   - edge cases: undo changes before creating plan or keep them and integrate in the plan (might degrade quality)
 - [ ] Bug: Bring to front for running commands not working reliably
@@ -15,4 +15,5 @@
 - [x] style aider system message (aider -m ...) with newlines and/or differentiate between output and command
 - [x] show last command should bring existing dialog to front and not open more than one dialog
 - [x] o3 mini support, reasoning effort setting
+- [ ] Feature: implement todo inspection
 - [ ] refine plan doesn't show plan

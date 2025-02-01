@@ -10,7 +10,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.VcsException
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.CommandOptions
-import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.GitDiffUtils
