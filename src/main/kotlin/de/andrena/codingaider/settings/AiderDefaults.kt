@@ -1,7 +1,7 @@
 package de.andrena.codingaider.settings
 
 object AiderDefaults {
-    const val REASONING_EFFORT = ""  // Can be: "", "low", "medium", "high"
+    const val REASONING_EFFORT = "" // Can be: "", "low", "medium", "high"
     const val SUMMARIZED_OUTPUT = false
     const val USE_SIDECAR_MODE = false
     const val ENABLE_DOCUMENTATION_LOOKUP = false

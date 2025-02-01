@@ -44,6 +44,7 @@ class AiderOptionsPanel(
     val reasoningEffortComboBox = ComboBox(arrayOf("", "low", "medium", "high")).apply {
         preferredSize = Dimension(100, preferredSize.height)
         toolTipText = "Set the reasoning effort level for the LLM"
+        selectedItem = AiderSettings.getInstance().reasoningEffort
     }
 
     private val customProviderService = CustomLlmProviderService.getInstance()
