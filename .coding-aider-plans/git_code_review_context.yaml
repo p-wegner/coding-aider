@@ -6,3 +6,9 @@ files:
   readOnly: false
 - path: src/main/kotlin/de/andrena/codingaider/utils/GitDiffUtils.kt
   readOnly: false
+- path: src/test/kotlin/de/andrena/codingaider/actions/git/GitCodeReviewActionTest.kt
+  readOnly: false
+- path: src/test/kotlin/de/andrena/codingaider/dialog/GitCodeReviewDialogTest.kt
+  readOnly: false
+- path: src/test/kotlin/de/andrena/codingaider/utils/GitDiffUtilsTest.kt
+  readOnly: false

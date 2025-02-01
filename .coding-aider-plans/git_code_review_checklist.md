@@ -12,4 +12,7 @@
   - [x] Add Git availability check
   - [x] Handle empty diff results
   - [x] Enhance review prompt structure
-- [ ] Write unit tests and UI tests to validate functionality.
+- [x] Write unit tests and UI tests to validate functionality:
+  - [x] Test GitCodeReviewAction functionality
+  - [x] Test GitCodeReviewDialog behavior
+  - [x] Test GitDiffUtils error handling and file processing
