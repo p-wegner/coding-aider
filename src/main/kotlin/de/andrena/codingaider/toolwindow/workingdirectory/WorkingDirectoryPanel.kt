@@ -50,7 +50,8 @@ class WorkingDirectoryPanel(private val project: Project) {
             .withTitle("Select Working Directory")
             .withDescription("Choose a directory to restrict Aider operations")
 
-        FileChooser.chooseFile(descriptor, project, null) { virtualFile ->
+        val defaultDir = project.basePath?.let { LocalFileSystem.getInstance().findFileByPath(it) }
+        FileChooser.chooseFile(descriptor, project, defaultDir) { virtualFile ->
             val path = virtualFile.path
             if (isValidWorkingDirectory(path)) {
                 settings.workingDirectory = path
