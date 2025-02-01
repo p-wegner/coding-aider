@@ -1,5 +1,6 @@
 package de.andrena.codingaider.dialog
 
+import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
@@ -67,17 +68,23 @@ class GitCodeReviewDialog(private val project: Project) : DialogWrapper(project)
             return
         }
 
-        invokeLater {
-            try {
-                selectedFiles = GitDiffUtils.getChangedFiles(project, baseCommit, targetCommit)
-                super.doOKAction()
-            } catch (e: VcsException) {
-                Messages.showErrorDialog(
-                    project,
-                    e.message ?: "Failed to get changed files",
-                    "Git Error"
-                )
-            }
+        try {
+            ProgressManager.getInstance().runProcessWithProgressSynchronously(
+                {
+                    selectedFiles = GitDiffUtils.getChangedFiles(project, baseCommit, targetCommit)
+                },
+                "Getting Changed Files",
+                true,
+                project
+            )
+            super.doOKAction()
+        } catch (e: VcsException) {
+            Messages.showErrorDialog(
+                project,
+                e.message ?: "Failed to get changed files",
+                "Git Error"
+            )
+            return
         }
     }
 
