@@ -42,8 +42,11 @@ class PersistentFilesPanel(private val project: Project) {
                 if (e.clickCount == 2) {
                     val index = persistentFilesList.locationToIndex(e.point)
                     if (index >= 0) {
-                        val fileData = persistentFilesListModel.getElementAt(index)
-                        openFileInEditor(fileData)
+                        val cellBounds = persistentFilesList.getCellBounds(index, index)
+                        if (cellBounds != null && cellBounds.contains(e.point)) {
+                            val fileData = persistentFilesListModel.getElementAt(index)
+                            openFileInEditor(fileData)
+                        }
                     }
                 }
             }
