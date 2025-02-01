@@ -29,16 +29,21 @@ object GitDiffUtils {
     ): List<FileData> {
         try {
             val handler = GitLineHandler(repository.project, repository.root, GitCommand.DIFF)
-            handler.addParameters("--name-only", baseCommit, targetCommit)
+            handler.addParameters("--name-only", "--no-renames", baseCommit, targetCommit)
             
             val result = Git.getInstance().runCommand(handler)
             if (!result.success()) {
-                throw VcsException("Failed to get changes between commits")
+                throw VcsException("Failed to get changes between commits: ${result.errorOutputAsJoinedString}")
             }
 
+            // Get file paths and ensure they're normalized
             val changedFiles = result.output
                 .filter { it.isNotEmpty() }
-                .map { FileData(repository.root.path + "/" + it, false) }
+                .map { 
+                    val fullPath = repository.root.path + "/" + it
+                    FileData(FileTraversal.normalizedFilePath(fullPath), false) 
+                }
+                .distinctBy { it.normalizedFilePath }
 
             if (changedFiles.isEmpty()) {
                 throw VcsException("No changes found between $baseCommit and $targetCommit")

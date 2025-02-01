@@ -5,7 +5,8 @@
 - [x] Define the new action class for Git code review and place it in the actions package.
 - [x] Create the dialog for branch/tag selection and prompt entry.
 - [x] Integrate Git4Idea APIs to compute file differences between branches/tags.
-- [ ] Bundle the git diff output with the user prompt into a CommandData instance.
+- [ ] Bundle the git diff output with the user prompt into a CommandData instance
+  - [ ] provide the actual git diff in the prompt
 - [x] Implement error handling and edge case management:
   - [x] Add Git reference validation
   - [x] Improve error messages in dialog

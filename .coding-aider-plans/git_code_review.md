@@ -8,7 +8,7 @@ Developers need to efficiently review code changes between branches or commits. 
 
 ## Goals
 - Create a new action accessible from the IDE.
-- Open a dialog for branch or tag selection and text entry for a prompt.
+- Open a dialog for branch or tag selection and text area entry for a prompt.
 - Use Git (or Git4Idea API features) to identify all differing files between the selected points.
 - Bundle the Git diff along with the user's prompt into a single CommandData message.
 - Ensure the new action integrates with the existing Aider workflow seamlessly.

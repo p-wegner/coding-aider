@@ -60,15 +60,20 @@ class GitCodeReviewAction : AnAction() {
             if (!success) return
 
             val settings = AiderSettings.getInstance()
+            // TODO: provide the actual git diff in the prompt
             val commandData = CommandData(
                 message = """Review the code changes between Git refs '$fromRef' and '$toRef'.
-                    |Focus on: $prompt
                     |
-                    |Please provide:
-                    |1. A summary of the changes
-                    |2. Potential issues or concerns
-                    |3. Suggestions for improvements
-                    |4. Code quality assessment""".trimMargin(),
+                    |Pay special attention to:
+                    |$prompt
+                    |
+                    |Please analyze and provide:
+                    |1. A concise summary of the changes
+                    |2. Potential issues, bugs, or security concerns
+                    |3. Specific suggestions for improvements
+                    |4. Code quality assessment (patterns, practices, maintainability)
+                    |5. Performance considerations"""
+                    .trimMargin(),
                 useYesFlag = settings.useYesFlag,
                 llm = settings.llm,
                 additionalArgs = settings.additionalArgs,
