@@ -14,6 +14,15 @@ class GitCodeReviewAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         
+        if (!isGitAvailable(project)) {
+            NotificationUtils.showError(
+                project,
+                "Git Not Available",
+                "This action requires a Git repository"
+            )
+            return
+        }
+        
         try {
             val dialog = GitCodeReviewDialog(project)
             if (!dialog.showAndGet()) return
@@ -32,19 +41,16 @@ class GitCodeReviewAction : AnAction() {
                 return
             }
 
-            if (files.isEmpty()) {
-                NotificationUtils.showWarning(
-                    project,
-                    "No Changes",
-                    "No changes found between $fromRef and $toRef"
-                )
-                return
-            }
-
             val settings = AiderSettings.getInstance()
             val commandData = CommandData(
                 message = """Review the code changes between Git refs '$fromRef' and '$toRef'.
-                    |Focus on: $prompt""".trimMargin(),
+                    |Focus on: $prompt
+                    |
+                    |Please provide:
+                    |1. A summary of the changes
+                    |2. Potential issues or concerns
+                    |3. Suggestions for improvements
+                    |4. Code quality assessment""".trimMargin(),
                 useYesFlag = settings.useYesFlag,
                 llm = settings.llm,
                 additionalArgs = settings.additionalArgs,
@@ -54,7 +60,8 @@ class GitCodeReviewAction : AnAction() {
                 editFormat = settings.editFormat,
                 projectPath = project.basePath ?: "",
                 options = CommandOptions(
-                    commitHashToCompareWith = fromRef
+                    commitHashToCompareWith = fromRef,
+                    summarizedOutput = true
                 ),
                 sidecarMode = settings.useSidecarMode
             )
@@ -67,6 +74,14 @@ class GitCodeReviewAction : AnAction() {
                 "Git Review Error",
                 "An error occurred during code review: ${ex.message}"
             )
+        }
+    }
+
+    private fun isGitAvailable(project: Project): Boolean {
+        return try {
+            GitUtil.getRepositoryManager(project).repositories.isNotEmpty()
+        } catch (e: Exception) {
+            false
         }
     }
 }

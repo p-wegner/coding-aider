@@ -52,15 +52,28 @@ class GitCodeReviewDialog(private val project: Project) : DialogWrapper(project)
     }
 
     override fun doOKAction() {
-        baseCommit = baseCommitField.text
-        val targetCommit = targetCommitField.text
+        baseCommit = baseCommitField.text.trim()
+        val targetCommit = targetCommitField.text.trim()
         
         if (baseCommit.isBlank() || targetCommit.isBlank()) {
+            Messages.showErrorDialog(
+                project,
+                "Both base and target commits/branches must be specified",
+                "Invalid Input"
+            )
             return
         }
 
-        selectedFiles = GitDiffUtils.getChangedFiles(project, baseCommit, targetCommit)
-        super.doOKAction()
+        try {
+            selectedFiles = GitDiffUtils.getChangedFiles(project, baseCommit, targetCommit)
+            super.doOKAction()
+        } catch (e: VcsException) {
+            Messages.showErrorDialog(
+                project,
+                e.message ?: "Failed to get changed files",
+                "Git Error"
+            )
+        }
     }
 
     fun getPrompt(): String = promptArea.text.ifBlank {
