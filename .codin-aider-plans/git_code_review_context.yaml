@@ -1,0 +1,8 @@
+---
+files:
+- path: src/main/kotlin/de/andrena/codingaider/actions/git/GitCodeReviewAction.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/dialog/GitCodeReviewDialog.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/utils/GitDiffUtils.kt
+  readOnly: false
