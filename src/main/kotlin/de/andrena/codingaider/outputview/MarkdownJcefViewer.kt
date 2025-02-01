@@ -218,13 +218,17 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         val renderer = HtmlRenderer.builder(options).build()
         var html = renderer.render(document)
 
-        // Process aider blocks with proper whitespace and HTML escaping
+        // Process aider blocks with proper markdown rendering
         html = html.replace(
             Regex("(?s)<aider-intention>\\s*(.*?)\\s*</aider-intention>")) { matchResult ->
-                "<div class=\"aider-intention\">${escapeHtml(matchResult.groupValues[1])}</div>"
+                val intentionContent = matchResult.groupValues[1].trim()
+                val renderedContent = renderer.render(parser.parse(intentionContent))
+                "<div class=\"aider-intention\">$renderedContent</div>"
         }.replace(
             Regex("(?s)<aider-summary>\\s*(.*?)\\s*</aider-summary>")) { matchResult ->
-                "<div class=\"aider-summary\">${escapeHtml(matchResult.groupValues[1])}</div>"
+                val summaryContent = matchResult.groupValues[1].trim()
+                val renderedContent = renderer.render(parser.parse(summaryContent))
+                "<div class=\"aider-summary\">$renderedContent</div>"
         }
         val isDark = !com.intellij.ui.JBColor.isBright()
         val colors = if (isDark) {
