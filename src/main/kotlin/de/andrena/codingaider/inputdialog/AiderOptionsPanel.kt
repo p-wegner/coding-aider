@@ -44,7 +44,6 @@ class AiderOptionsPanel(
     val reasoningEffortComboBox = ComboBox(arrayOf("", "low", "medium", "high")).apply {
         preferredSize = Dimension(100, preferredSize.height)
         toolTipText = "Set the reasoning effort level for the LLM"
-        selectedItem = AiderSettings.getInstance().reasoningEffort
     }
 
     private val customProviderService = CustomLlmProviderService.getInstance()
@@ -56,8 +55,9 @@ class AiderOptionsPanel(
         customProviderService.addSettingsChangeListener(customProviderListener)
         defaultProviderService.addChangeListener(defaultProviderListener)
         setupUI()
-        // Set initial selection from settings
+        // Set initial selections from settings
         llmComboBox.selectedItem = llmOptions.find { it.name == settings.llm }
+        reasoningEffortComboBox.selectedItem = settings.reasoningEffort
         //TODO: decide whether to use this or not
 //        llmComboBox.addActionListener {
 //            val selected = llmComboBox.selectedItem as? LlmSelection
