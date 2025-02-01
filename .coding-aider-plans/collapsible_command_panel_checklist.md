@@ -6,3 +6,4 @@
 - [x] Style collapsible panel
 - [x] Update markdown parsing logic
 - [x] Update documentation
+- [ ] investigate why the command section is not being parsed correctly and fix it
