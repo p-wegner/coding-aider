@@ -37,11 +37,11 @@ class GitCodeReviewAction : AnAction() {
             val (fromRef, toRef) = dialog.getSelectedRefs()
             val prompt = dialog.getPrompt()
 
-            val files = mutableListOf<FileData>()
+            var diffResult: GitDiffUtils.DiffResult? = null
             val success = ProgressManager.getInstance().runProcessWithProgressSynchronously(
                 {
                     try {
-                        files.addAll(GitDiffUtils.getChangedFiles(project, fromRef, toRef))
+                        diffResult = GitDiffUtils.getChangedFiles(project, fromRef, toRef)
                     } catch (ex: VcsException) {
                         showNotification(
                             project,
@@ -60,7 +60,6 @@ class GitCodeReviewAction : AnAction() {
             if (!success) return
 
             val settings = AiderSettings.getInstance()
-            // TODO: provide the actual git diff in the prompt
             val commandData = CommandData(
                 message = """Review the code changes between Git refs '$fromRef' and '$toRef'.
                     |
@@ -72,12 +71,18 @@ class GitCodeReviewAction : AnAction() {
                     |2. Potential issues, bugs, or security concerns
                     |3. Specific suggestions for improvements
                     |4. Code quality assessment (patterns, practices, maintainability)
-                    |5. Performance considerations"""
+                    |5. Performance considerations
+                    |
+                    |Here are the changes to review:
+                    |
+                    |```diff
+                    |${diffResult?.diffContent ?: "No diff content available"}
+                    |```"""
                     .trimMargin(),
                 useYesFlag = settings.useYesFlag,
                 llm = settings.llm,
                 additionalArgs = settings.additionalArgs,
-                files = files,
+                files = diffResult?.files ?: emptyList(),
                 lintCmd = settings.lintCmd,
                 deactivateRepoMap = settings.deactivateRepoMap,
                 editFormat = settings.editFormat,
