@@ -107,7 +107,12 @@ the [Aider documentation](https://aider.chat/docs/llms/openai-compat.html).
 13. **Working Directory Support**:
     - Configure a specific working directory for Aider operations
     - Files outside the working directory are not included in the context and won't be seen by Aider
-    - Might help working with large repositories
+    - Automatically enables subtree-only mode to focus operations
+    - Improves performance with large repositories
+    - Validates directory selection:
+      - Must be within project directory
+      - Must be an existing directory
+      - Shows clear error messages for invalid selections
 14. **Structured Mode and Plans**: 
     - Break down complex features into manageable tasks
     - Track implementation progress with checklists
