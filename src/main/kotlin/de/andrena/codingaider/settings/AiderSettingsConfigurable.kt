@@ -55,8 +55,8 @@ class AiderSettingsConfigurable() : Configurable {
     private val alwaysIncludeOpenFilesCheckBox = JBCheckBox("Always include open files in context")
     private val alwaysIncludePlanContextFilesCheckBox = JBCheckBox("Always include plan context files")
     private val enableAutoPlanContinueCheckBox = JBCheckBox("Enable automatic plan continuation")
-    private val documentationLlmComboBox =
-        ComboBox(apiKeyChecker.getAllLlmOptions().toTypedArray())
+    private val reasoningEffortComboBox = ComboBox(arrayOf("", "low", "medium", "high"))
+    private val documentationLlmComboBox = ComboBox(apiKeyChecker.getAllLlmOptions().toTypedArray())
     private val summarizedOutputCheckBox = JBCheckBox("Enable summarized output")
 
     override fun getDisplayName(): String = "Aider"
@@ -215,6 +215,13 @@ class AiderSettingsConfigurable() : Configurable {
                             "If enabled, plans will automatically continue when there are open checklist items"
                     }
                 }
+                row("Reasoning Effort:") {
+                    cell(reasoningEffortComboBox)
+                        .component
+                        .apply {
+                            toolTipText = "Set the default reasoning effort level for the LLM"
+                        }
+                }
                 row("Documentation LLM Model:") {
                     cell(documentationLlmComboBox).component.apply {
                         renderer = LlmComboBoxRenderer()
@@ -265,6 +272,7 @@ class AiderSettingsConfigurable() : Configurable {
                 enableAutoPlanContinueCheckBox.isSelected != settings.enableAutoPlanContinue ||
                 documentationLlmComboBox.selectedItem.asSelectedItemName() != settings.documentationLlm ||
                 summarizedOutputCheckBox.isSelected != settings.summarizedOutput ||
+                reasoningEffortComboBox.selectedItem as String != settings.reasoningEffort ||
                 aiderSetupPanel.isModified()
 
     }
@@ -301,6 +309,7 @@ class AiderSettingsConfigurable() : Configurable {
         settings.enableAutoPlanContinue = enableAutoPlanContinueCheckBox.isSelected
         settings.documentationLlm = documentationLlmComboBox.selectedItem.asSelectedItemName()
         settings.summarizedOutput = summarizedOutputCheckBox.isSelected
+        settings.reasoningEffort = reasoningEffortComboBox.selectedItem as String
         aiderSetupPanel.apply()
         settings.notifySettingsChanged()
     }
@@ -335,6 +344,7 @@ class AiderSettingsConfigurable() : Configurable {
         enableAutoPlanContinueCheckBox.isSelected = settings.enableAutoPlanContinue
         documentationLlmComboBox.selectedItem = apiKeyChecker.getLlmSelectionForName(settings.documentationLlm)
         summarizedOutputCheckBox.isSelected = settings.summarizedOutput
+        reasoningEffortComboBox.selectedItem = settings.reasoningEffort
         aiderSetupPanel.reset()
         settings.notifySettingsChanged()
     }
