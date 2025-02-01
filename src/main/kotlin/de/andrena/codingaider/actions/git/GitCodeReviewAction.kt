@@ -59,6 +59,21 @@ class GitCodeReviewAction : AnAction() {
             if (!success) return
 
             val settings = AiderSettings.getInstance()
+            // Save diff content to file
+            val diffFile = File("${project.basePath}/.coding-aider-plans/git_code_review_diff.md")
+            diffFile.parentFile.mkdirs()
+            diffFile.writeText("""[Git Code Review Diff]
+
+This file contains the git diff content for code review analysis.
+
+```diff
+${diffResult?.diffContent ?: "No diff content available"}
+```""")
+
+            // Create command data including the diff file
+            val allFiles = (diffResult?.files ?: emptyList()) + 
+                FileData(diffFile.absolutePath, true)
+            
             val commandData = CommandData(
                 message = """Review the code changes between Git refs '$fromRef' and '$toRef'.
                     |
@@ -72,11 +87,7 @@ class GitCodeReviewAction : AnAction() {
                     |4. Code quality assessment (patterns, practices, maintainability)
                     |5. Performance considerations
                     |
-                    |Here are the changes to review:
-                    |
-                    |```diff
-                    |${diffResult?.diffContent ?: "No diff content available"}
-                    |```"""
+                    |The git diff content is available in the git_code_review_diff.md file."""
                     .trimMargin(),
                 useYesFlag = settings.useYesFlag,
                 llm = settings.llm,
