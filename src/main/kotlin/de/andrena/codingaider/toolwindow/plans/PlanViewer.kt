@@ -154,6 +154,7 @@ class PlanViewer(private val project: Project) {
                                 animateTreeExpansion(plan, planId)
                             } else if (e.clickCount == 2) {
                                 // Double click to open plan file
+                                plansList.selectedIndex = index
                                 plan.mainPlanFile?.let { fileData ->
                                     val virtualFile = LocalFileSystem.getInstance().findFileByPath(fileData.filePath)
                                     virtualFile?.let {
