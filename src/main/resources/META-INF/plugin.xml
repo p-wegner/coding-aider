@@ -219,7 +219,7 @@
                     class="de.andrena.codingaider.actions.workingdirectory.SetWorkingDirectoryAction"
                     text="Set as Aider Working Directory"
                     description="Set this directory as the working directory for Aider operations">
-                <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="de.andrena.codingaider.AiderActionGroup"/>
+                <keyboard-shortcut keymap="$default" first-keystroke="alt G"/>
             </action>
             <action id="de.andrena.codingaider.actions.aider.AiderClipboardImageAction"
                     class="de.andrena.codingaider.actions.aider.AiderClipboardImageAction"

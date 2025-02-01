@@ -15,4 +15,4 @@
 - [ ] style aider system message (aider -m ...) with newlines and/or differentiate between output and command
 - [ ] show last command should bring existing dialog to front and not open more than one dialog
 - [ ] o3 mini support, reasoning effort setting
-- 
+- [ ] refine plan doesn't show plan

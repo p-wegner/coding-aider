@@ -6,6 +6,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.ui.dsl.builder.panel
+import de.andrena.codingaider.actions.workingdirectory.WorkingDirectoryListener
+import de.andrena.codingaider.actions.workingdirectory.WorkingDirectoryTopic
 import de.andrena.codingaider.settings.AiderProjectSettings
 import de.andrena.codingaider.utils.FileTraversal
 import java.io.File
