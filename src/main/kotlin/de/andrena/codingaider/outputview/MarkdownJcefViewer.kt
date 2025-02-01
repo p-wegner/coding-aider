@@ -514,8 +514,8 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     private fun processSearchReplaceBlocks(html: String): String {
         var processedHtml = html
 
-        // Process initialization output
-        val initPattern = """Aider v[\d.]+ [^\n]*(?:\n(?:(?!Added).)*)*(?:\nAdded [^\n]*)*""".toRegex(RegexOption.DOT_MATCHES_ALL)
+        // Process initialization output - matches version, model info, git info, and added files
+        val initPattern = """Aider v[\d.]+ [^\n]*(?:\n(?:[^\n]+))*(?:\nAdded [^\n]+)*""".toRegex(RegexOption.DOT_MATCHES_ALL)
         processedHtml = processedHtml.replace(initPattern) { matchResult ->
             """
             <div class="collapsible-panel expanded">
