@@ -312,15 +312,16 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     
                     .aider-intention {
                         background: ${if (isDark) "#1a2733" else "#f0f7ff"};
-                        border: 3px solid ${if (isDark) "#2c4356" else "#bcd6f5"};
+                        border: 2px solid ${if (isDark) "#2c4356" else "#bcd6f5"};
                         color: ${if (isDark) "#a8c7f0" else "#0066cc"};
+                        box-shadow: 0 2px 8px ${if (isDark) "rgba(0,0,0,0.3)" else "rgba(0,0,0,0.1)"};
                     }
                     
                     .aider-summary {
                         background: ${if (isDark) "#2d2d2d" else "#fafafa"};
-                        border: 3px solid ${if (isDark) "#454545" else "#e5e5e5"};
+                        border: 2px solid ${if (isDark) "#454545" else "#e5e5e5"};
                         color: ${if (isDark) "#e8e8e8" else "#2b2b2b"};
-                        box-shadow: 0 4px 8px ${if (isDark) "rgba(0,0,0,0.3)" else "rgba(0,0,0,0.1)"};
+                        box-shadow: 0 2px 8px ${if (isDark) "rgba(0,0,0,0.2)" else "rgba(0,0,0,0.08)"};
                         transition: all 0.2s ease;
                     }
                     
@@ -382,12 +383,12 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         display: block;
                         font-weight: bold;
                         font-size: 17px;
-                        margin: -12px -16px 16px -16px;
-                        padding: 12px 16px;
+                        margin: -24px -24px 16px -24px;
+                        padding: 16px 24px;
                         letter-spacing: 0.5px;
                         border-bottom: 2px solid;
                         background: ${if (isDark) "rgba(255,255,255,0.05)" else "rgba(0,0,0,0.03)"};
-                        border-radius: 10px 10px 0 0;
+                        border-radius: 12px 12px 0 0;
                     }
                     
                     .aider-intention::before {
