@@ -515,16 +515,16 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         var processedHtml = html
 
         // Process initialization output
-        val initPattern = """Aider v[\d.]+ .*?(?=\n\n|\Z)""".toRegex(RegexOption.DOT_MATCHES_ALL)
+        val initPattern = """Aider v[\d.]+ [^\n]*(?:\n(?:(?!Added).)*)*(?:\nAdded [^\n]*)*""".toRegex(RegexOption.DOT_MATCHES_ALL)
         processedHtml = processedHtml.replace(initPattern) { matchResult ->
             """
             <div class="collapsible-panel expanded">
                 <div class="collapsible-header" onclick="this.parentElement.classList.toggle('expanded')">
                     <span class="collapsible-title">Initialization Details</span>
-                    <span class="collapsible-arrow">^</span>
+                    <span class="collapsible-arrow">▼</span>
                 </div>
                 <div class="collapsible-content">
-                    <pre><code>${escapeHtml(matchResult.value.trim())}</code></pre>
+                    <pre><code>${escapeHtml(matchResult.value.trim()).replace("\n", "<br>")}</code></pre>
                 </div>
             </div>
             """.trimIndent()
