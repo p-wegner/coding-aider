@@ -54,6 +54,7 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
                 add("--no-pretty")
                 add("--no-fancy-input")
                 add("--no-detect-urls")
+                add("--no-check-update")
             }
             if (commandData.additionalArgs.isNotEmpty()) {
                 addAll(commandData.additionalArgs.split(" "))
