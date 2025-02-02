@@ -9,6 +9,7 @@ import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.outputview.MarkdownJcefViewer
 import de.andrena.codingaider.services.plans.AiderPlan
 import de.andrena.codingaider.services.plans.AiderPlanService
+import java.awt.BorderLayout
 import java.awt.Dimension
 import javax.swing.*
 
@@ -22,8 +23,7 @@ class AiderPlanRefinementDialog(
         wrapStyleWord = true
         font = UIManager.getFont("TextField.font")
         border = BorderFactory.createEmptyBorder(4, 4, 4, 4)
-        columns = 40
-        rows = 8
+        minimumSize = Dimension(400, 100)
         text = """Enter your plan refinement request here.
             
 Examples:
@@ -44,17 +44,30 @@ Examples:
             setDarkTheme(!JBColor.isBright())
             setMarkdown(plan.plan)
         }
-        val previewScrollPane = JScrollPane(planViewer.component).apply {
-            preferredSize = Dimension(600, 300)
+
+        // Create scroll panes with minimum sizes
+        val previewScrollPane = JBScrollPane(planViewer.component).apply {
+            minimumSize = Dimension(400, 200)
+            preferredSize = Dimension(800, 400)
         }
-        val inputScrollPane = JScrollPane(refinementInput).apply {
-            preferredSize = Dimension(600, 150)
+        val inputScrollPane = JBScrollPane(refinementInput).apply {
+            minimumSize = Dimension(400, 100)
+            preferredSize = Dimension(800, 200)
         }
-        // Create a split pane with preview at top and input below.
-        val splitPane = JSplitPane(JSplitPane.VERTICAL_SPLIT, previewScrollPane, inputScrollPane)
-        splitPane.dividerLocation = 300
-        splitPane.resizeWeight = 0.5
-        return splitPane
+
+        // Create a responsive split pane
+        val splitPane = JSplitPane(JSplitPane.VERTICAL_SPLIT, previewScrollPane, inputScrollPane).apply {
+            dividerLocation = 400
+            resizeWeight = 0.7 // Give more space to preview by default
+            border = BorderFactory.createEmptyBorder()
+        }
+
+        // Create wrapper panel for proper sizing
+        return JPanel(BorderLayout()).apply {
+            add(splitPane, BorderLayout.CENTER)
+            minimumSize = Dimension(400, 300)
+            preferredSize = Dimension(800, 600)
+        }
     }
 
     fun getMessage(): String = refinementInput.text.trim()

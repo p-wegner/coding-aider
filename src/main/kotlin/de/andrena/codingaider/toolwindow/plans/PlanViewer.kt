@@ -546,39 +546,6 @@ class PlanViewer(private val project: Project) {
         }
     }
 
-    inner class RefinePlanAction : AnAction(
-        "Refine Plan",
-        "Refine and extend the selected plan",
-        SuggestedRefactoringBulb
-    ) {
-        override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
-
-        override fun actionPerformed(e: AnActionEvent) {
-            val selectedPlan = plansList.selectedValue ?: return
-
-            val dialog = AiderPlanRefinementDialog(project, selectedPlan)
-
-            if (dialog.showAndGet()) {
-                val message = dialog.getMessage()
-                if (message.isNotBlank()) {
-                    val promptService = project.service<AiderPlanPromptService>()
-                    val refinementPrompt = promptService.createPlanRefinementPrompt(selectedPlan, message)
-                    val commandData = AiderAction.collectCommandData(
-                        selectedPlan.allFiles,
-                        refinementPrompt,
-                        project,
-                        AiderMode.NORMAL
-                    )
-                    AiderAction.executeAiderActionWithCommandData(project, commandData)
-                }
-            }
-        }
-
-
-        override fun update(e: AnActionEvent) {
-            e.presentation.isEnabled = plansList.selectedValue != null
-        }
-    }
 
     inner class ArchivePlanAction : AnAction(
         "Archive Plan",

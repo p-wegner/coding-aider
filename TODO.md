@@ -17,3 +17,4 @@
 - [x] o3 mini support, reasoning effort setting
 - [ ] Feature: implement todo inspection
 - [ ] refine plan doesn't show plan
+- [ ] Feature: open dialog on same screen as ide
