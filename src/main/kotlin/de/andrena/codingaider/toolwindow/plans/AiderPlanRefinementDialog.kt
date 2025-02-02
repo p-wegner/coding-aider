@@ -22,6 +22,15 @@ class AiderPlanRefinementDialog(
         wrapStyleWord = true
         font = UIManager.getFont("TextField.font")
         border = BorderFactory.createEmptyBorder(4, 4, 4, 4)
+        columns = 40
+        rows = 8
+        text = """Enter your plan refinement request here.
+            
+Examples:
+- Add new requirements or features
+- Break down complex tasks into subplans
+- Modify implementation details
+- Extend the plan based on feedback"""
     }
 
     init {
