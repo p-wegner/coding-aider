@@ -2,6 +2,7 @@
 files:
 - path: src/main/kotlin/de/andrena/codingaider/toolwindow/plans/AiderPlanRefinementDialog.kt
   readOnly: false
+  description: "Dialog for refining existing plans"
 - path: src/main/kotlin/de/andrena/codingaider/toolwindow/plans/PlanViewer.kt
   readOnly: false
 - path: src/main/kotlin/de/andrena/codingaider/services/plans/AiderPlanPromptService.kt

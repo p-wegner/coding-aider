@@ -1,12 +1,12 @@
 [Coding Aider Plan - Checklist]
 
 ## Core Dialog Implementation
-- [ ] Create AiderPlanRefinementDialog class extending DialogWrapper
-- [ ] Implement split view with current plan preview and refinement input
-- [ ] Add markdown preview support using MarkdownJcefViewer
-- [ ] Handle theme changes for preview panel
-- [ ] Add refinement request text input area
-- [ ] Create descriptive labels and help text
+- [x] Create AiderPlanRefinementDialog class extending DialogWrapper
+- [x] Implement split view with current plan preview and refinement input
+- [x] Add markdown preview support using MarkdownJcefViewer
+- [x] Handle theme changes for preview panel
+- [x] Add refinement request text input area
+- [x] Create descriptive labels and help text
 
 ## Plan Viewer Integration
 - [ ] Add "Refine Plan" action to PlanViewer toolbar
