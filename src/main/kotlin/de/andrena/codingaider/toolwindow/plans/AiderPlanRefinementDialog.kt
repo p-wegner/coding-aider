@@ -40,19 +40,20 @@ class AiderPlanRefinementDialog(
             markdownViewer.setDarkTheme(!JBColor.isBright())
             markdownViewer.setMarkdown(plan.plan)
             isMarkdownLoaded = true
+            // Force layout update to ensure the markdown viewer is displayed properly
+            (markdownViewer.component.parent as? JComponent)?.revalidate()
         }
     }
 
     override fun createCenterPanel(): JComponent {
         val panel = JPanel(GridBagLayout())
-        val constraints = GridBagConstraints()
-
-        // Configure markdown viewer panel
+        
+        // Configure markdown viewer panel with its own constraints
         val previewScrollPane = JBScrollPane(markdownViewer.component).apply {
             minimumSize = Dimension(400, 200)
             preferredSize = Dimension(600, 300)
         }
-        constraints.apply {
+        val constraints1 = GridBagConstraints().apply {
             gridx = 0
             gridy = 0
             weightx = 1.0
@@ -60,19 +61,23 @@ class AiderPlanRefinementDialog(
             fill = GridBagConstraints.BOTH
             anchor = GridBagConstraints.NORTH
         }
-        panel.add(createGroupPanel("Current Plan", previewScrollPane), constraints)
-
-        // Configure message area panel
+        panel.add(createGroupPanel("Current Plan", previewScrollPane), constraints1)
+        
+        // Configure message area panel with separate constraints
         val messageScrollPane = JBScrollPane(messageArea).apply {
             minimumSize = Dimension(400, 100)
             preferredSize = Dimension(600, 150)
         }
-        constraints.apply {
+        val constraints2 = GridBagConstraints().apply {
+            gridx = 0
             gridy = 1
+            weightx = 1.0
             weighty = 0.3
+            fill = GridBagConstraints.BOTH
+            anchor = GridBagConstraints.NORTH
         }
-        panel.add(createGroupPanel("Refinement Request:", messageScrollPane, createCommentLabel()), constraints)
-
+        panel.add(createGroupPanel("Refinement Request:", messageScrollPane, createCommentLabel()), constraints2)
+        
         return panel
     }
 
