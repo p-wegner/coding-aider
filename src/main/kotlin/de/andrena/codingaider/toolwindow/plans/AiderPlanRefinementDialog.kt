@@ -39,39 +39,22 @@ Examples:
     }
 
     override fun createCenterPanel(): JComponent {
-        val markdownViewer = MarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
+        // Create a Markdown viewer to show the current plan content.
+        val planViewer = MarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
             setDarkTheme(!JBColor.isBright())
             setMarkdown(plan.plan)
         }
-
-        val previewScrollPane = JBScrollPane(markdownViewer.component).apply {
+        val previewScrollPane = JScrollPane(planViewer.component).apply {
             preferredSize = Dimension(600, 300)
         }
-
-        val inputScrollPane = JBScrollPane(refinementInput).apply {
+        val inputScrollPane = JScrollPane(refinementInput).apply {
             preferredSize = Dimension(600, 150)
         }
-
-        return panel {
-            group("Current Plan") {
-                row {
-                    cell(previewScrollPane)
-                        .align(Align.FILL)
-                        .resizableColumn()
-                }.resizableRow()
-            }
-            
-            group("Refinement Request") {
-                row {
-                    label("Enter your plan refinement request:")
-                }
-                row {
-                    cell(inputScrollPane)
-                        .align(Align.FILL)
-                        .resizableColumn()
-                }.resizableRow()
-            }
-        }
+        // Create a split pane with preview at top and input below.
+        val splitPane = JSplitPane(JSplitPane.VERTICAL_SPLIT, previewScrollPane, inputScrollPane)
+        splitPane.dividerLocation = 300
+        splitPane.resizeWeight = 0.5
+        return splitPane
     }
 
     fun getMessage(): String = refinementInput.text.trim()
