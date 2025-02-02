@@ -38,12 +38,15 @@ class AiderPlanRefinementDialog(
     }
 
     override fun createCenterPanel(): JComponent {
+        if (!isMarkdownLoaded) {
+            markdownViewer.setDarkTheme(!JBColor.isBright())
+            markdownViewer.setMarkdown(plan.plan)
+            isMarkdownLoaded = true
+        }
         val panel = JPanel(GridBagLayout())
         
         // Configure markdown viewer panel with its own constraints
-        val previewScrollPane = JBScrollPane(markdownViewer.component).apply {
-            minimumSize = Dimension(400, 200)
-        }
+        val previewScrollPane = JBScrollPane(markdownViewer.component)
         val constraints1 = GridBagConstraints().apply {
             gridx = 0
             gridy = 0
@@ -55,9 +58,7 @@ class AiderPlanRefinementDialog(
         panel.add(createGroupPanel("Current Plan", previewScrollPane), constraints1)
         
         // Configure message area panel with separate constraints
-        val messageScrollPane = JBScrollPane(messageArea).apply {
-            minimumSize = Dimension(400, 100)
-        }
+        val messageScrollPane = JBScrollPane(messageArea)
         val constraints2 = GridBagConstraints().apply {
             gridx = 0
             gridy = 1
@@ -67,14 +68,6 @@ class AiderPlanRefinementDialog(
             anchor = GridBagConstraints.CENTER
         }
         panel.add(createGroupPanel("Refinement Request:", messageScrollPane, createCommentLabel()), constraints2)
-        
-        if (!isMarkdownLoaded) {
-            markdownViewer.setDarkTheme(!JBColor.isBright())
-            markdownViewer.setMarkdown(plan.plan)
-            isMarkdownLoaded = true
-            markdownViewer.component.revalidate()
-            markdownViewer.component.repaint()
-        }
         
         return panel
     }
