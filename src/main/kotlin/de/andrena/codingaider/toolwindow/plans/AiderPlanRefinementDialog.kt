@@ -1,3 +1,5 @@
+package de.andrena.codingaider.toolwindow.plans
+
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.JBColor
@@ -8,13 +10,13 @@ import de.andrena.codingaider.outputview.MarkdownJcefViewer
 import de.andrena.codingaider.services.plans.AiderPlan
 import de.andrena.codingaider.services.plans.AiderPlanService
 import java.awt.Dimension
-import javax.swing.JComponent
-import javax.swing.JTextArea
-import javax.swing.UIManager
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
+import javax.swing.*
 
 class AiderPlanRefinementDialog(
     project: Project,
-    plan: AiderPlan
+    private val plan: AiderPlan
 ) : DialogWrapper(project) {
     private val messageArea = JTextArea().apply {
         lineWrap = true
@@ -23,44 +25,83 @@ class AiderPlanRefinementDialog(
         font = UIManager.getFont("TextField.font")
         border = UIManager.getBorder("TextField.border")
     }
-    private val markdownViewer = MarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
-        setDarkTheme(!JBColor.isBright())
-        setMarkdown(plan.plan)
-    }
+    private val markdownViewer = MarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER))
+    private var isMarkdownLoaded = false
 
     init {
         title = "Refine Plan"
         init()
     }
 
+    override fun show() {
+        super.show()
+        // Set markdown content after dialog is shown to ensure JCEF is initialized
+        if (!isMarkdownLoaded) {
+            markdownViewer.setDarkTheme(!JBColor.isBright())
+            markdownViewer.setMarkdown(plan.plan)
+            isMarkdownLoaded = true
+        }
+    }
+
     override fun createCenterPanel(): JComponent {
-        val messageScrollPane = JBScrollPane(messageArea)
+        val panel = JPanel(GridBagLayout())
+        val constraints = GridBagConstraints()
+
+        // Configure markdown viewer panel
         val previewScrollPane = JBScrollPane(markdownViewer.component).apply {
+            minimumSize = Dimension(400, 200)
             preferredSize = Dimension(600, 300)
         }
+        constraints.apply {
+            gridx = 0
+            gridy = 0
+            weightx = 1.0
+            weighty = 0.7
+            fill = GridBagConstraints.BOTH
+            anchor = GridBagConstraints.NORTH
+        }
+        panel.add(createGroupPanel("Current Plan", previewScrollPane), constraints)
 
+        // Configure message area panel
+        val messageScrollPane = JBScrollPane(messageArea).apply {
+            minimumSize = Dimension(400, 100)
+            preferredSize = Dimension(600, 150)
+        }
+        constraints.apply {
+            gridy = 1
+            weighty = 0.3
+        }
+        panel.add(createGroupPanel("Refinement Request:", messageScrollPane, createCommentLabel()), constraints)
+
+        return panel
+    }
+
+    private fun createGroupPanel(title: String, component: JComponent, extraComponent: JComponent? = null): JPanel {
         return panel {
-            group("Current Plan") {
+            group(title) {
                 row {
-                    cell(previewScrollPane)
+                    cell(component)
                         .align(Align.FILL)
                         .resizableColumn()
                 }.resizableRow()
+                
+                extraComponent?.let {
+                    row {
+                        cell(it)
+                            .align(Align.FILL)
+                    }
+                }
             }
+        }
+    }
 
-            group("Refinement Request:") {
-                row {
-                    cell(messageScrollPane)
-                        .align(Align.FILL)
-                        .resizableColumn()
-                        .comment(
-                            """
-                                        Describe how you want to refine or extend the plan.
-                                        This may create subplans if the changes are substantial or if you prompt the LLM to do so.
-                                    """.trimIndent()
-                        )
-                }.resizableRow()
-            }
+    private fun createCommentLabel(): JLabel {
+        return JLabel("""
+            <html>Describe how you want to refine or extend the plan.<br>
+            This may create subplans if the changes are substantial or if you prompt the LLM to do so.</html>
+        """.trimIndent()).apply {
+            border = BorderFactory.createEmptyBorder(5, 0, 5, 0)
+            foreground = UIManager.getColor("Label.infoForeground")
         }
     }
 
