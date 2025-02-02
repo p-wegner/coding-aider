@@ -35,15 +35,6 @@ class AiderPlanRefinementDialog(
 
     override fun show() {
         super.show()
-        SwingUtilities.invokeLater {
-            if (!isMarkdownLoaded) {
-                markdownViewer.setDarkTheme(!JBColor.isBright())
-                markdownViewer.setMarkdown(plan.plan)
-                isMarkdownLoaded = true
-                markdownViewer.component.revalidate()
-                markdownViewer.component.repaint()
-            }
-        }
     }
 
     override fun createCenterPanel(): JComponent {
@@ -59,7 +50,7 @@ class AiderPlanRefinementDialog(
             weightx = 1.0
             weighty = 0.7
             fill = GridBagConstraints.BOTH
-            anchor = GridBagConstraints.NORTH
+            anchor = GridBagConstraints.CENTER
         }
         panel.add(createGroupPanel("Current Plan", previewScrollPane), constraints1)
         
@@ -73,9 +64,17 @@ class AiderPlanRefinementDialog(
             weightx = 1.0
             weighty = 0.3
             fill = GridBagConstraints.BOTH
-            anchor = GridBagConstraints.NORTH
+            anchor = GridBagConstraints.CENTER
         }
         panel.add(createGroupPanel("Refinement Request:", messageScrollPane, createCommentLabel()), constraints2)
+        
+        if (!isMarkdownLoaded) {
+            markdownViewer.setDarkTheme(!JBColor.isBright())
+            markdownViewer.setMarkdown(plan.plan)
+            isMarkdownLoaded = true
+            markdownViewer.component.revalidate()
+            markdownViewer.component.repaint()
+        }
         
         return panel
     }
