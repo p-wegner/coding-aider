@@ -1,5 +1,6 @@
 package de.andrena.codingaider.toolwindow.plans
 
+import AiderPlanRefinementDialog
 import com.intellij.icons.AllIcons
 import com.intellij.icons.AllIcons.Actions.SuggestedRefactoringBulb
 import com.intellij.openapi.actionSystem.ActionUpdateThread
@@ -556,61 +557,7 @@ class PlanViewer(private val project: Project) {
         override fun actionPerformed(e: AnActionEvent) {
             val selectedPlan = plansList.selectedValue ?: return
 
-            val dialog = object : DialogWrapper(project) {
-                private val messageArea = JTextArea().apply {
-                    lineWrap = true
-                    wrapStyleWord = true
-                    rows = 5
-                    font = UIManager.getFont("TextField.font")
-                    border = UIManager.getBorder("TextField.border")
-                }
-                private val markdownViewer = MarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
-                    setDarkTheme(!JBColor.isBright())
-                    setMarkdown(selectedPlan.plan)
-                }
-
-                init {
-                    title = "Refine Plan"
-                    init()
-                }
-
-                override fun createCenterPanel(): JComponent {
-                    val messageScrollPane = JBScrollPane(messageArea)
-                    val previewScrollPane = JBScrollPane(markdownViewer.component).apply {
-                        preferredSize = Dimension(600, 300)
-                    }
-
-                    return panel {
-                        group("Current Plan") {
-                            row {
-                                cell(previewScrollPane)
-                                    .align(Align.FILL)
-                                    .resizableColumn()
-                            }.resizableRow()
-                        }
-
-                        group("Refinement Request:") {
-                            row {
-                                cell(messageScrollPane)
-                                    .align(Align.FILL)
-                                    .resizableColumn()
-                                    .comment(
-                                        """
-                                        Describe how you want to refine or extend the plan.
-                                        This may create subplans if the changes are substantial or if you prompt the LLM to do so.
-                                    """.trimIndent()
-                                    )
-                            }.resizableRow()
-                        }
-                    }
-                }
-
-                override fun getPreferredFocusedComponent(): JComponent = messageArea
-
-                fun getMessage(): String {
-                    return messageArea.text.trim()
-                }
-            }
+            val dialog = AiderPlanRefinementDialog(project, selectedPlan)
 
             if (dialog.showAndGet()) {
                 val message = dialog.getMessage()
@@ -627,6 +574,7 @@ class PlanViewer(private val project: Project) {
                 }
             }
         }
+
 
         override fun update(e: AnActionEvent) {
             e.presentation.isEnabled = plansList.selectedValue != null
