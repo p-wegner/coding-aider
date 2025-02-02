@@ -35,13 +35,14 @@ class AiderPlanRefinementDialog(
 
     override fun show() {
         super.show()
-        // Set markdown content after dialog is shown to ensure JCEF is initialized
-        if (!isMarkdownLoaded) {
-            markdownViewer.setDarkTheme(!JBColor.isBright())
-            markdownViewer.setMarkdown(plan.plan)
-            isMarkdownLoaded = true
-            // Force layout update to ensure the markdown viewer is displayed properly
-            (markdownViewer.component.parent as? JComponent)?.revalidate()
+        SwingUtilities.invokeLater {
+            if (!isMarkdownLoaded) {
+                markdownViewer.setDarkTheme(!JBColor.isBright())
+                markdownViewer.setMarkdown(plan.plan)
+                isMarkdownLoaded = true
+                markdownViewer.component.revalidate()
+                markdownViewer.component.repaint()
+            }
         }
     }
 
@@ -51,7 +52,6 @@ class AiderPlanRefinementDialog(
         // Configure markdown viewer panel with its own constraints
         val previewScrollPane = JBScrollPane(markdownViewer.component).apply {
             minimumSize = Dimension(400, 200)
-            preferredSize = Dimension(600, 300)
         }
         val constraints1 = GridBagConstraints().apply {
             gridx = 0
@@ -66,7 +66,6 @@ class AiderPlanRefinementDialog(
         // Configure message area panel with separate constraints
         val messageScrollPane = JBScrollPane(messageArea).apply {
             minimumSize = Dimension(400, 100)
-            preferredSize = Dimension(600, 150)
         }
         val constraints2 = GridBagConstraints().apply {
             gridx = 0
