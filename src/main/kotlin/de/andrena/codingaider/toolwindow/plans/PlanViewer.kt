@@ -1,6 +1,5 @@
 package de.andrena.codingaider.toolwindow.plans
 
-import AiderPlanRefinementDialog
 import com.intellij.icons.AllIcons
 import com.intellij.icons.AllIcons.Actions.SuggestedRefactoringBulb
 import com.intellij.openapi.actionSystem.ActionUpdateThread
