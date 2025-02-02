@@ -9,10 +9,10 @@
 - [x] Create descriptive labels and help text
 
 ## Plan Viewer Integration
-- [ ] Add "Refine Plan" action to PlanViewer toolbar
-- [ ] Create icon and tooltip for refinement action
-- [ ] Implement action update logic for enabled/disabled states
-- [ ] Handle plan selection and validation
+- [x] Add "Refine Plan" action to PlanViewer toolbar
+- [x] Create icon and tooltip for refinement action
+- [x] Implement action update logic for enabled/disabled states
+- [x] Handle plan selection and validation
 
 ## Refinement Processing
 - [ ] Create refinement prompt template in AiderPlanPromptService
