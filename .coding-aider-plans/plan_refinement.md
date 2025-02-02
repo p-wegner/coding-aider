@@ -25,8 +25,3 @@ Currently, plans are static once created. There's no built-in way to:
 - Refinement requests should be processed by the LLM
 - Must maintain proper plan file structure and naming conventions
 - Should handle both simple refinements and complex subplan creation
-
-## References
-- [JetBrains Platform UI Guidelines](https://jetbrains.design/intellij/principles/platform_theme_colors/)
-- [DialogWrapper Documentation](https://plugins.jetbrains.com/docs/intellij/dialog-wrapper.html)
-- [JCEF Browser Integration](https://plugins.jetbrains.com/docs/intellij/jcef.html)
