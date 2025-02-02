@@ -42,7 +42,7 @@ Examples:
         // Create a Markdown viewer to show the current plan content.
         val planViewer = MarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
             setDarkTheme(!JBColor.isBright())
-            setMarkdown(plan.plan)
+            setMarkdown(plan.mainPlanFile?.content ?: "")
         }
 
         // Create scroll panes with minimum sizes
