@@ -15,53 +15,88 @@ import java.awt.Dimension
 import javax.swing.*
 
 class GitCodeReviewDialog(private val project: Project) : DialogWrapper(project) {
-    private val baseCommitField = JBTextField()
-    private val targetCommitField = JBTextField()
+    private val baseRefComboBox = GitRefComboBox(project)
+    private val targetRefComboBox = GitRefComboBox(project)
+    private val baseRefTypeCombo = JComboBox(GitRefComboBox.RefType.values())
+    private val targetRefTypeCombo = JComboBox(GitRefComboBox.RefType.values())
+    
     private val promptArea = JBTextArea().apply {
         lineWrap = true
         wrapStyleWord = true
+        text = """Review focusing on:
+            |1. Code quality and best practices
+            |2. Potential bugs or issues
+            |3. Performance implications
+            |4. Security considerations
+            |5. Design patterns and architecture
+            |6. Test coverage
+            |7. Documentation needs""".trimMargin()
     }
+    
     private var selectedFiles: List<FileData> = emptyList()
     private var baseCommit: String = ""
 
     init {
         title = "Git Code Review"
+        setupRefTypeListeners()
         init()
+    }
+
+    private fun setupRefTypeListeners() {
+        baseRefTypeCombo.addActionListener {
+            baseRefComboBox.setMode(baseRefTypeCombo.selectedItem as GitRefComboBox.RefType)
+        }
+        targetRefTypeCombo.addActionListener {
+            targetRefComboBox.setMode(targetRefTypeCombo.selectedItem as GitRefComboBox.RefType)
+        }
     }
 
     override fun createCenterPanel(): JComponent {
         val panel = JPanel(BorderLayout(10, 10))
-        panel.preferredSize = Dimension(500, 300)
+        panel.preferredSize = Dimension(800, 600)
 
         val inputPanel = JPanel().apply {
             layout = BoxLayout(this, BoxLayout.Y_AXIS)
-            add(createLabeledComponent("Base Branch/Commit:", baseCommitField))
+            
+            // Base ref selection
+            add(createRefSelectionPanel("Base:", baseRefTypeCombo, baseRefComboBox))
             add(Box.createVerticalStrut(10))
-            add(createLabeledComponent("Target Branch/Commit:", targetCommitField))
+            
+            // Target ref selection
+            add(createRefSelectionPanel("Target:", targetRefTypeCombo, targetRefComboBox))
             add(Box.createVerticalStrut(10))
+            
+            // Prompt area
             add(JLabel("Review Prompt:"))
-            add(JBScrollPane(promptArea))
+            add(JBScrollPane(promptArea).apply {
+                preferredSize = Dimension(750, 400)
+            })
         }
 
         panel.add(inputPanel, BorderLayout.CENTER)
         return panel
     }
 
-    private fun createLabeledComponent(label: String, component: JComponent): JPanel {
-        return JPanel(BorderLayout()).apply {
+    private fun createRefSelectionPanel(
+        label: String, 
+        typeCombo: JComboBox<GitRefComboBox.RefType>,
+        refCombo: GitRefComboBox
+    ): JPanel {
+        return JPanel(BorderLayout(5, 0)).apply {
             add(JLabel(label), BorderLayout.WEST)
-            add(component, BorderLayout.CENTER)
+            add(typeCombo, BorderLayout.CENTER)
+            add(refCombo.getComponent(), BorderLayout.EAST)
         }
     }
 
     override fun doOKAction() {
-        baseCommit = baseCommitField.text.trim()
-        val targetCommit = targetCommitField.text.trim()
+        baseCommit = baseRefComboBox.getText().trim()
+        val targetCommit = targetRefComboBox.getText().trim()
 
         if (baseCommit.isBlank() || targetCommit.isBlank()) {
             Messages.showErrorDialog(
                 project,
-                "Both base and target commits/branches must be specified",
+                "Both base and target refs must be specified",
                 "Invalid Input"
             )
             return
@@ -87,18 +122,8 @@ class GitCodeReviewDialog(private val project: Project) : DialogWrapper(project)
         }
     }
 
-    fun getPrompt(): String {
-        val defaultPrompt = """
-            Review focusing on:
-            1. Code quality and best practices
-            2. Potential bugs or issues
-            3. Performance implications
-            4. Security considerations
-            """.trimIndent()
-
-        return promptArea.text.ifBlank { defaultPrompt }
-    }
+    fun getPrompt(): String = promptArea.text.trim()
 
     fun getSelectedRefs(): Pair<String, String> =
-        Pair(baseCommitField.text.trim(), targetCommitField.text.trim())
+        Pair(baseRefComboBox.getText().trim(), targetRefComboBox.getText().trim())
 }
