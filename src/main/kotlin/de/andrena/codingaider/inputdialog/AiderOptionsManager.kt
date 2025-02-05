@@ -23,7 +23,5 @@ class AiderOptionsManager(
             }
         }.apply { expanded = !projectSettings.isOptionsCollapsed }
             .addExpandedListener { projectSettings.isOptionsCollapsed = !it }
-//        expanded(!projectSettings.isOptionsCollapsed)
-//            .onIsModified { projectSettings.isOptionsCollapsed = !it }
     }
 }
