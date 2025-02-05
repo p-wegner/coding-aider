@@ -4,8 +4,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBScrollPane
-import com.intellij.ui.dsl.builder.Align
-import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.outputview.MarkdownJcefViewer
 import de.andrena.codingaider.services.plans.AiderPlan
 import de.andrena.codingaider.services.plans.AiderPlanService
@@ -42,7 +40,7 @@ Examples:
         // Create a Markdown viewer to show the current plan content.
         val planViewer = MarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
             setDarkTheme(!JBColor.isBright())
-            setMarkdown(plan.mainPlanFile?.content ?: "")
+            setMarkdown(plan.plan)
         }
 
         // Create scroll panes with minimum sizes
