@@ -4,6 +4,9 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBScrollPane
+import com.intellij.ui.dsl.builder.AlignX
+import com.intellij.ui.dsl.builder.AlignY
+import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.outputview.MarkdownJcefViewer
 import de.andrena.codingaider.services.plans.AiderPlan
 import de.andrena.codingaider.services.plans.AiderPlanService
@@ -16,6 +19,9 @@ class AiderPlanRefinementDialog(
     private val plan: AiderPlan
 ) : DialogWrapper(project) {
 
+    private val planViewer = MarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
+        setDarkTheme(!JBColor.isBright())
+    }
     private val refinementInput = JTextArea().apply {
         lineWrap = true
         wrapStyleWord = true
@@ -36,17 +42,25 @@ Examples:
         init()
     }
 
+    override fun init() {
+        super.init()
+        planViewer.setMarkdown(plan.plan)
+    }
+
     override fun createCenterPanel(): JComponent {
-        // Create a Markdown viewer to show the current plan content.
-        val planViewer = MarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
+        // Create scroll panes with minimum sizes
+        val markdownViewer = MarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
             setDarkTheme(!JBColor.isBright())
-            setMarkdown(plan.plan)
         }
 
-        // Create scroll panes with minimum sizes
-        val previewScrollPane = JBScrollPane(planViewer.component).apply {
-            minimumSize = Dimension(400, 200)
-            preferredSize = Dimension(800, 400)
+        val scrollPane = JBScrollPane(markdownViewer.component).apply {
+            verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
+            horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
+            border = BorderFactory.createEmptyBorder()
+
+            // Set minimum size for better initial layout
+            minimumSize = Dimension(400, 300)
+            preferredSize = Dimension(800, 600)
         }
         val inputScrollPane = JBScrollPane(refinementInput).apply {
             minimumSize = Dimension(400, 100)
@@ -54,18 +68,41 @@ Examples:
         }
 
         // Create a responsive split pane
-        val splitPane = JSplitPane(JSplitPane.VERTICAL_SPLIT, previewScrollPane, inputScrollPane).apply {
+        val splitPane = JSplitPane(JSplitPane.VERTICAL_SPLIT, scrollPane, inputScrollPane).apply {
             dividerLocation = 400
             resizeWeight = 0.7 // Give more space to preview by default
             border = BorderFactory.createEmptyBorder()
         }
+        return panel {
+            row {
+                cell(scrollPane)
+                    .align(AlignX.FILL)
+                    .align(AlignY.FILL)
+                    .resizableColumn()
+            }.resizableRow()
+            row {
+//                label("Plan:")
+                cell(inputScrollPane)
+                    .align(AlignX.FILL)
+            }
+        }.apply {
+            border = BorderFactory.createEmptyBorder(8, 8, 8, 8)
+
+            // Calculate optimal size based on screen dimensions
+            val screenSize = java.awt.Toolkit.getDefaultToolkit().screenSize
+            val optimalWidth = (screenSize.width * 0.7).toInt().coerceIn(600, 1200)
+            val optimalHeight = (screenSize.height * 0.8).toInt().coerceIn(400, 800)
+
+            preferredSize = Dimension(optimalWidth, optimalHeight)
+            minimumSize = Dimension(500, 400)
+        }
 
         // Create wrapper panel for proper sizing
-        return JPanel(BorderLayout()).apply {
-            add(splitPane, BorderLayout.CENTER)
-            minimumSize = Dimension(400, 300)
-            preferredSize = Dimension(800, 600)
-        }
+//        return JPanel(BorderLayout()).apply {
+//            add(splitPane, BorderLayout.CENTER)
+//            minimumSize = Dimension(400, 300)
+//            preferredSize = Dimension(800, 600)
+//        }
     }
 
     fun getMessage(): String = refinementInput.text.trim()
