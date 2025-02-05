@@ -13,6 +13,7 @@ import de.andrena.codingaider.services.RunningCommandService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileRefresher
 import de.andrena.codingaider.utils.GitUtils
+import com.intellij.openapi.wm.WindowManager
 import java.awt.EventQueue.invokeLater
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicReference
@@ -45,6 +46,11 @@ class IDEBasedExecutor(
             displayString = project.service<CommandSummaryService>().generateSummary(commandData),
             commandData = commandData
         ).apply {
+            // Position dialog relative to IDE window
+            val ideFrame = WindowManager.getInstance().getIdeFrame(project)
+            ideFrame?.component?.let { parent ->
+                setLocationRelativeTo(parent)
+            }
             isVisible = true
             focus()
             updateProgress("Initializing Aider command...", "Aider Command Starting")
