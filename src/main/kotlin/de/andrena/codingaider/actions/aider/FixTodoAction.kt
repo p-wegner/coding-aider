@@ -103,7 +103,7 @@ class FixTodoAction : BaseFixTodoAction() {
         fun fixTodo(project: Project, psiFile: PsiFile) {
             val todoText = getTodoText(project, psiFile)
             val files = getFiles(psiFile, project)
-            val commandData = createCommandData(project, files, fixTodoPrompt(todoText, psiFile.name), true)
+            val commandData = createCommandData(project, files, fixTodoPrompt(todoText), true)
             IDEBasedExecutor(project, commandData).execute()
         }
     }
