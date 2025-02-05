@@ -249,6 +249,14 @@
                icon="MyIcons.Tool"
                description="Group of actions to fix compile errors with Aider"
                popup="true">
+            <action id="de.andrena.codingaider.actions.aider.FixTodoAction"
+                    class="de.andrena.codingaider.actions.aider.FixTodoAction"
+                    text="Quick Fix TODO"
+                    description="Fix TODO with Aider"/>
+            <action id="de.andrena.codingaider.actions.aider.FixTodoInteractive"
+                    class="de.andrena.codingaider.actions.aider.FixTodoInteractive"
+                    text="Fix TODO (Interactive)"
+                    description="Fix TODO with Aider interactively"/>
             <action id="de.andrena.codingaider.actions.aider.FixCompileErrorAction"
                     class="de.andrena.codingaider.actions.aider.FixCompileErrorAction"
                     text="Quick Fix Compile Error"
@@ -312,6 +320,16 @@
             <language></language>
             <className>de.andrena.codingaider.actions.aider.FixCompileErrorInteractive$Intention</className>
             <category>Errors</category>
+        </intentionAction>
+        <intentionAction>
+            <language></language>
+            <className>de.andrena.codingaider.actions.aider.FixTodoAction$Intention</className>
+            <category>TODOs</category>
+        </intentionAction>
+        <intentionAction>
+            <language></language>
+            <className>de.andrena.codingaider.actions.aider.FixTodoInteractive$Intention</className>
+            <category>TODOs</category>
         </intentionAction>
     </extensions>
     <extensions defaultExtensionNs="com.intellij">
