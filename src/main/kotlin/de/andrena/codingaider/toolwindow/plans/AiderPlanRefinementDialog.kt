@@ -18,9 +18,6 @@ class AiderPlanRefinementDialog(
     private val plan: AiderPlan
 ) : DialogWrapper(project) {
 
-    private val planViewer = MarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
-        setDarkTheme(!JBColor.isBright())
-    }
     private val refinementInput = JTextArea().apply {
         lineWrap = true
         wrapStyleWord = true
@@ -43,19 +40,13 @@ Examples:
 
     override fun init() {
         super.init()
-        // TODO: do in background thread
-        SwingUtilities.invokeLater {
-            // wait 200ms to ensure the plan is loaded
-            planViewer.setMarkdown(plan.plan)
-            Thread.sleep(200)
-            planViewer.setMarkdown(plan.plan)
-        }
     }
 
     override fun createCenterPanel(): JComponent {
-        // Create scroll panes with minimum sizes
+        // Create markdown viewer and scroll pane
         val markdownViewer = MarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
             setDarkTheme(!JBColor.isBright())
+            setMarkdown(plan.plan)
         }
 
         val scrollPane = JBScrollPane(markdownViewer.component).apply {
