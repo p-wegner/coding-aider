@@ -9,6 +9,7 @@ import de.andrena.codingaider.toolwindow.persistentfiles.PersistentFilesPanel
 import de.andrena.codingaider.toolwindow.plans.PlansPanel
 import de.andrena.codingaider.toolwindow.runningcommands.RunningCommandsPanel
 import de.andrena.codingaider.toolwindow.workingdirectory.WorkingDirectoryPanel
+import com.intellij.ui.components.JBScrollPane
 import javax.swing.JComponent
 
 class CodingAiderToolWindow : ToolWindowFactory {
@@ -30,7 +31,7 @@ class CodingAiderToolWindowContent(project: Project) {
     private val workingDirectoryPanel = WorkingDirectoryPanel(project)
 
     fun getContent(): JComponent {
-        return panel {
+        val contentPanel = panel {
             indent {
                 collapsibleGroup("Persistent Files") {
                     row {
@@ -72,5 +73,6 @@ class CodingAiderToolWindowContent(project: Project) {
                     .topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
             }
         }
+        return JBScrollPane(contentPanel)
     }
 }
