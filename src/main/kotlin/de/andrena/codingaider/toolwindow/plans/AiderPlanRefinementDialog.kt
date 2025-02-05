@@ -64,16 +64,18 @@ Examples:
         }
         // Create a responsive split pane
         return panel {
-            row {
-                cell(scrollPane)
-                    .align(AlignX.FILL)
-                    .align(AlignY.FILL)
-                    .resizableColumn()
-            }.resizableRow()
+            row { label("Plan: ${plan.id}") }
+//            row {
+//                cell(scrollPane)
+//                    .align(AlignX.FILL)
+//                    .align(AlignY.FILL)
+//                    .resizableColumn()
+//            }.resizableRow()
             row {
 //                label("Plan:")
                 cell(inputScrollPane)
                     .align(AlignX.FILL)
+                    .align(AlignY.FILL)
             }
         }.apply {
             border = BorderFactory.createEmptyBorder(8, 8, 8, 8)
