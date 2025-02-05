@@ -77,6 +77,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         val baseHtml = """
         <html>
           <head>
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
             <meta charset="UTF-8"/>
             <title>Markdown Viewer</title>
             <style>
@@ -113,7 +114,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     private fun createFallbackComponent() {
         // The user does not have JCEF support, fallback to JEditorPane
         fallbackEditor = JEditorPane().apply {
-            contentType = "text/html"
+            contentType = "text/html; charset=UTF-8"
             isEditable = false
             putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true)
             putClientProperty("JEditorPane.honorDisplayProperties", true)
