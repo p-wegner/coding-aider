@@ -4,7 +4,6 @@ import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.components.service
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
@@ -18,7 +17,6 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.AiderInputDialog
-import de.andrena.codingaider.services.FileDataCollectionService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 
 class FixTodoActionGroup : DefaultActionGroup() {
