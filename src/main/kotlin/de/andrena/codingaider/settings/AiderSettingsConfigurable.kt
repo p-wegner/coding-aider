@@ -4,7 +4,6 @@ import com.intellij.ide.BrowserUtil
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.ui.ComboBox
-import com.intellij.openapi.ui.Messages
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.Align
@@ -30,11 +29,6 @@ class AiderSettingsConfigurable() : Configurable {
     private val llmComboBox: JComboBox<LlmSelection>
     private val customProviderService = CustomLlmProviderService.getInstance()
     private val customProviderListener: () -> Unit = { updateLlmOptions() }
-    private val manageProvidersButton = JButton("Manage Providers...").apply {
-        addActionListener {
-            CustomLlmProviderDialog().show()
-        }
-    }
     private val additionalArgsField = JBTextField()
     private val lintCmdField = JBTextField()
     private val showGitComparisonToolCheckBox = JBCheckBox("Show git comparison tool after execution")
