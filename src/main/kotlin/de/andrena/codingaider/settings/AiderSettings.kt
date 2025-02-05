@@ -52,6 +52,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var enableAutoPlanContinuationInPlanFamily: Boolean = AiderDefaults.ENABLE_AUTO_PLAN_CONTINUATION_IN_FAMILY,
         var optionsPanelCollapsed: Boolean = true,
         var enableLocalModelCostMap: Boolean = false,
+        var enableLocalModelCostMap: Boolean = false,
     )
 
 
@@ -71,6 +72,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.documentationLlm
         set(value) {
             myState.documentationLlm = value
+        }
+
+    var enableLocalModelCostMap: Boolean
+        get() = myState.enableLocalModelCostMap
+        set(value) {
+            myState.enableLocalModelCostMap = value
         }
 
     var enableLocalModelCostMap: Boolean

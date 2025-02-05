@@ -50,6 +50,7 @@ class AiderSettingsConfigurable() : Configurable {
     private val alwaysIncludePlanContextFilesCheckBox = JBCheckBox("Always include plan context files")
     private val enableAutoPlanContinueCheckBox = JBCheckBox("Enable automatic plan continuation")
     private val reasoningEffortComboBox = ComboBox(arrayOf("", "low", "medium", "high"))
+    private val enableLocalModelCostMapCheckBox = JBCheckBox("Enable local model cost mapping")
     private val documentationLlmComboBox = ComboBox(apiKeyChecker.getAllLlmOptions().toTypedArray())
     private val summarizedOutputCheckBox = JBCheckBox("Enable summarized output")
 
@@ -230,6 +231,13 @@ class AiderSettingsConfigurable() : Configurable {
                                 "When enabled, Aider will include XML-tagged summaries of changes in its output"
                         }
                 }
+                row {
+                    cell(enableLocalModelCostMapCheckBox)
+                        .applyToComponent {
+                            toolTipText =
+                                "When enabled, local model cost mapping will be activated"
+                        }
+                }
 
             }
 
@@ -266,6 +274,7 @@ class AiderSettingsConfigurable() : Configurable {
                 enableAutoPlanContinueCheckBox.isSelected != settings.enableAutoPlanContinue ||
                 documentationLlmComboBox.selectedItem.asSelectedItemName() != settings.documentationLlm ||
                 summarizedOutputCheckBox.isSelected != settings.summarizedOutput ||
+                enableLocalModelCostMapCheckBox.isSelected != settings.enableLocalModelCostMap ||
                 reasoningEffortComboBox.selectedItem as String != settings.reasoningEffort ||
                 aiderSetupPanel.isModified()
 
@@ -303,6 +312,7 @@ class AiderSettingsConfigurable() : Configurable {
         settings.enableAutoPlanContinue = enableAutoPlanContinueCheckBox.isSelected
         settings.documentationLlm = documentationLlmComboBox.selectedItem.asSelectedItemName()
         settings.summarizedOutput = summarizedOutputCheckBox.isSelected
+        settings.enableLocalModelCostMap = enableLocalModelCostMapCheckBox.isSelected
         settings.reasoningEffort = reasoningEffortComboBox.selectedItem as String
         aiderSetupPanel.apply()
         settings.notifySettingsChanged()
@@ -338,6 +348,7 @@ class AiderSettingsConfigurable() : Configurable {
         enableAutoPlanContinueCheckBox.isSelected = settings.enableAutoPlanContinue
         documentationLlmComboBox.selectedItem = apiKeyChecker.getLlmSelectionForName(settings.documentationLlm)
         summarizedOutputCheckBox.isSelected = settings.summarizedOutput
+        enableLocalModelCostMapCheckBox.isSelected = settings.enableLocalModelCostMap
         reasoningEffortComboBox.selectedItem = settings.reasoningEffort
         aiderSetupPanel.reset()
         settings.notifySettingsChanged()
