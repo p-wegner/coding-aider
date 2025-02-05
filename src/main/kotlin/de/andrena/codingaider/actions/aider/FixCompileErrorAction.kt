@@ -61,7 +61,7 @@ abstract class BaseFixCompileErrorAction : AnAction() {
             return result
         }
 
-        fun fixErrorPrompt(errorMessage: String) = "Fix the compile error in this file:\n$errorMessage"
+        fun fixErrorPrompt(errorMessage: String, fileName: String) = "Fix the compile error in file '$fileName':\n$errorMessage"
 
         fun hasCompileErrors(project: Project, psiFile: PsiFile): Boolean =
             getCompileErrors(project, psiFile).isNotEmpty()
@@ -111,7 +111,7 @@ class FixCompileErrorAction : BaseFixCompileErrorAction() {
         fun fixCompileError(project: Project, psiFile: PsiFile) {
             val errorMessage = getErrorMessage(project, psiFile)
             val files = getFiles(psiFile, project)
-            val commandData = createCommandData(project, files, fixErrorPrompt(errorMessage), true)
+            val commandData = createCommandData(project, files, fixErrorPrompt(errorMessage, psiFile.name), true)
             IDEBasedExecutor(project, commandData).execute()
         }
 
@@ -163,7 +163,7 @@ class FixCompileErrorInteractive : BaseFixCompileErrorAction() {
                 val dialog = AiderInputDialog(
                     project,
                     files,
-                    fixErrorPrompt(errorMessage)
+                    fixErrorPrompt(errorMessage,psiFile.name)
                 )
 
                 if (dialog.showAndGet()) {
