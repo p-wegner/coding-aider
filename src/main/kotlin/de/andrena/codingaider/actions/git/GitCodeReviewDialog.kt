@@ -2,12 +2,12 @@ package de.andrena.codingaider.actions.git
 
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vcs.VcsException
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
-import com.intellij.ui.components.JBTextField
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.utils.GitDiffUtils
 import java.awt.BorderLayout
@@ -17,8 +17,8 @@ import javax.swing.*
 class GitCodeReviewDialog(private val project: Project) : DialogWrapper(project) {
     private val baseRefComboBox = GitRefComboBox(project)
     private val targetRefComboBox = GitRefComboBox(project)
-    private val baseRefTypeCombo = JComboBox(GitRefComboBox.RefType.values())
-    private val targetRefTypeCombo = JComboBox(GitRefComboBox.RefType.values())
+    private val baseRefTypeCombo = ComboBox(GitRefComboBox.RefType.values())
+    private val targetRefTypeCombo = ComboBox(GitRefComboBox.RefType.values())
     
     private val promptArea = JBTextArea().apply {
         lineWrap = true
