@@ -22,6 +22,7 @@ import de.andrena.codingaider.utils.FilePathConverter
 import org.cef.browser.CefBrowser
 import org.cef.browser.CefFrame
 import org.cef.handler.CefLoadHandlerAdapter
+import java.nio.charset.StandardCharsets
 
 class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
 
