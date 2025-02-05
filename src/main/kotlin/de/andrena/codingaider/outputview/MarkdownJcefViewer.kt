@@ -79,6 +79,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
           <head>
             <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
             <meta charset="UTF-8"/>
+            <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data:"/>
             <title>Markdown Viewer</title>
             <style>
               html, body {
@@ -108,7 +109,8 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         </html>
     """.trimIndent()
 
-        val encodedBase = Base64.getEncoder().encodeToString(baseHtml.toByteArray(Charsets.UTF_8))
+        // Ensure proper UTF-8 encoding for base HTML
+        val encodedBase = Base64.getEncoder().encodeToString(baseHtml.toByteArray(StandardCharsets.UTF_8))
         jbCefBrowser.loadURL("data:text/html;base64,$encodedBase")
     }
     private fun createFallbackComponent() {
@@ -146,7 +148,8 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             isBasePageLoaded = true
         }
 
-        val encodedHtml = Base64.getEncoder().encodeToString(html.toByteArray(Charsets.UTF_8))
+        // Ensure proper UTF-8 encoding for content HTML
+        val encodedHtml = Base64.getEncoder().encodeToString(html.toByteArray(StandardCharsets.UTF_8))
 
         // We'll do the wasAtBottom check, replace container content, and scroll if needed.
         val script = """
