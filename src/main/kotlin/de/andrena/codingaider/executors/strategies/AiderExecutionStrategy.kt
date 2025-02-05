@@ -97,7 +97,8 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
                 add("--commit-prompt")
                 add(getCommitPrompt())
             }
-            if (settings.reasoningEffort.isNotEmpty()) {
+
+            if (isReasoningModel(commandData.llm) && settings.reasoningEffort.isNotEmpty()) {
                 add("--reasoning-effort")
                 add(settings.reasoningEffort)
             }
@@ -131,6 +132,8 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
             }
         }.toMutableList()
     }
+
+     fun isReasoningModel(llm: String): Boolean = llm.equals("o1") || llm.equals("r1") || llm.equals("r2") || llm.equals("o3-mini")
 
 
 }
