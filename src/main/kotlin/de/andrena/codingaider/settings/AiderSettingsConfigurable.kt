@@ -235,7 +235,7 @@ class AiderSettingsConfigurable() : Configurable {
                     cell(enableLocalModelCostMapCheckBox)
                         .applyToComponent {
                             toolTipText =
-                                "When enabled, local model cost mapping will be activated"
+                                "When enabled, local model cost mapping will be activated. This will save some http requests on aider startup but may have outdated price information."
                         }
                 }
 
