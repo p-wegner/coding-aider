@@ -44,7 +44,9 @@ Examples:
 
     override fun init() {
         super.init()
-        planViewer.setMarkdown(plan.plan)
+        SwingUtilities.invokeLater {
+            planViewer.setMarkdown(plan.plan)
+        }
     }
 
     override fun createCenterPanel(): JComponent {
