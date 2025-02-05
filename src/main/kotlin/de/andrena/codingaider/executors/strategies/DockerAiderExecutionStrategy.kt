@@ -54,6 +54,11 @@ class DockerAiderExecutionStrategy(
             dockerArgs.addAll(listOf("-e", "$keyName=$value"))
         }
 
+        // Add local model cost mapping if enabled
+        if (settings.enableLocalModelCostMap) {
+            dockerArgs.addAll(listOf("-e", "LITELLM_LOCAL_MODEL_COST_MAP=True"))
+        }
+
         // Add provider-specific Docker configurations
         val customProvider = service<CustomLlmProviderService>().getProvider(commandData.llm)
         when (customProvider?.type) {

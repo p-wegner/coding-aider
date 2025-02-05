@@ -14,7 +14,9 @@ class SidecarAiderExecutionStrategy(
     }
 
     override fun prepareEnvironment(processBuilder: ProcessBuilder, commandData: CommandData) {
-        // No special environment prep needed for sidecar mode
+        if (settings.enableLocalModelCostMap) {
+            processBuilder.environment()["LITELLM_LOCAL_MODEL_COST_MAP"] = "True"
+        }
     }
 
     override fun cleanupAfterExecution() {

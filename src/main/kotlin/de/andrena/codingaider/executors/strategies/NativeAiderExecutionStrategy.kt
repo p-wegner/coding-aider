@@ -81,6 +81,11 @@ class NativeAiderExecutionStrategy(
                         environment[keyName] = value
                     }
                 }
+
+                // Add local model cost mapping if enabled
+                if (settings.enableLocalModelCostMap) {
+                    environment["LITELLM_LOCAL_MODEL_COST_MAP"] = "True"
+                }
             }
         }
 
