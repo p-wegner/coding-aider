@@ -41,11 +41,6 @@ class AiderOptionsPanel(
         preferredSize = Dimension(200, preferredSize.height)
     }
 
-    val reasoningEffortComboBox = ComboBox(arrayOf("", "low", "medium", "high")).apply {
-        preferredSize = Dimension(100, preferredSize.height)
-        toolTipText = "Set the reasoning effort level for the LLM"
-    }
-
     private val customProviderService = CustomLlmProviderService.getInstance()
     private val defaultProviderService = service<DefaultProviderSettings>()
     private val customProviderListener: () -> Unit = { updateLlmOptions() }
@@ -57,12 +52,6 @@ class AiderOptionsPanel(
         setupUI()
         // Set initial selections from settings
         llmComboBox.selectedItem = llmOptions.find { it.name == settings.llm }
-        reasoningEffortComboBox.selectedItem = settings.reasoningEffort
-        //TODO: decide whether to use this or not
-//        llmComboBox.addActionListener {
-//            val selected = llmComboBox.selectedItem as? LlmSelection
-//            selected?.let { settings.llm = it.name }
-//        }
     }
 
     fun dispose() {
@@ -126,23 +115,5 @@ class AiderOptionsPanel(
             fill = GridBagConstraints.HORIZONTAL
         })
 
-        // Reasoning effort dropdown
-        add(JBLabel("Reasoning:").apply {
-            displayedMnemonic = KeyEvent.VK_R
-            labelFor = reasoningEffortComboBox
-            toolTipText = "Set the reasoning effort level that will be used for reasoning models"
-        }, gbc.apply {
-            gridx = 5
-            gridy = 0
-            weightx = 0.0
-            insets.left = 10
-        })
-
-        add(reasoningEffortComboBox, gbc.apply {
-            gridx = 6
-            gridy = 0
-            weightx = 0.2
-            fill = GridBagConstraints.HORIZONTAL
-        })
     }
 }
