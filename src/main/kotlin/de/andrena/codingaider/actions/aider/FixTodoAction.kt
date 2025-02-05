@@ -53,7 +53,7 @@ abstract class BaseFixTodoAction : AnAction() {
                 .filter { it.text.contains("TODO", ignoreCase = true) }
         }
 
-        fun fixTodoPrompt(todoText: String) = "Fix the TODO in ${psiFile.name}:\n$todoText"
+        fun fixTodoPrompt(todoText: String, psiFile: PsiFile) = "Fix the TODO in ${psiFile.name}:\n$todoText"
 
         fun hasTodos(project: Project, psiFile: PsiFile): Boolean =
             getTodos(project, psiFile).isNotEmpty()
@@ -103,7 +103,7 @@ class FixTodoAction : BaseFixTodoAction() {
         fun fixTodo(project: Project, psiFile: PsiFile) {
             val todoText = getTodoText(project, psiFile)
             val files = getFiles(psiFile, project)
-            val commandData = createCommandData(project, files, fixTodoPrompt(todoText), true)
+            val commandData = createCommandData(project, files, fixTodoPrompt(todoText, psiFile), true)
             IDEBasedExecutor(project, commandData).execute()
         }
     }
@@ -152,7 +152,7 @@ class FixTodoInteractive : BaseFixTodoAction() {
                 val dialog = AiderInputDialog(
                     project,
                     files,
-                    fixTodoPrompt(todoText)
+                    fixTodoPrompt(todoText, psiFile)
                 )
 
                 if (dialog.showAndGet()) {

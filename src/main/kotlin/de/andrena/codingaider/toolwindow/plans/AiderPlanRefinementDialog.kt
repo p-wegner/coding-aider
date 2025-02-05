@@ -10,7 +10,6 @@ import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.outputview.MarkdownJcefViewer
 import de.andrena.codingaider.services.plans.AiderPlan
 import de.andrena.codingaider.services.plans.AiderPlanService
-import java.awt.BorderLayout
 import java.awt.Dimension
 import javax.swing.*
 
@@ -44,7 +43,11 @@ Examples:
 
     override fun init() {
         super.init()
+        // TODO: do in background thread
         SwingUtilities.invokeLater {
+            // wait 200ms to ensure the plan is loaded
+            planViewer.setMarkdown(plan.plan)
+            Thread.sleep(200)
             planViewer.setMarkdown(plan.plan)
         }
     }
@@ -68,13 +71,7 @@ Examples:
             minimumSize = Dimension(400, 100)
             preferredSize = Dimension(800, 200)
         }
-
         // Create a responsive split pane
-        val splitPane = JSplitPane(JSplitPane.VERTICAL_SPLIT, scrollPane, inputScrollPane).apply {
-            dividerLocation = 400
-            resizeWeight = 0.7 // Give more space to preview by default
-            border = BorderFactory.createEmptyBorder()
-        }
         return panel {
             row {
                 cell(scrollPane)
@@ -99,12 +96,6 @@ Examples:
             minimumSize = Dimension(500, 400)
         }
 
-        // Create wrapper panel for proper sizing
-//        return JPanel(BorderLayout()).apply {
-//            add(splitPane, BorderLayout.CENTER)
-//            minimumSize = Dimension(400, 300)
-//            preferredSize = Dimension(800, 600)
-//        }
     }
 
     fun getMessage(): String = refinementInput.text.trim()

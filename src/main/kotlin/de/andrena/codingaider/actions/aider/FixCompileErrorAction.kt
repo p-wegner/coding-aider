@@ -136,17 +136,10 @@ class FixCompileErrorAction : BaseFixCompileErrorAction() {
 
 }
 
-private fun getFiles(psiFile: PsiFile, project: Project): List<FileData> {
-    val elements = psiFile.virtualFile?.let { arrayOf(it) } ?: emptyArray()
-    val files = project.service<FileDataCollectionService>().collectAllFiles(elements)
-    return files
-}
-
 class FixCompileErrorInteractive : BaseFixCompileErrorAction() {
     init {
         templatePresentation.text = "Fix Compile Error (Interactive)"
     }
-
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val psiFile = e.getData(CommonDataKeys.PSI_FILE) ?: return
@@ -194,7 +187,6 @@ class FixCompileErrorInteractive : BaseFixCompileErrorAction() {
     class Intention : PsiElementBaseIntentionAction(), IntentionAction {
         override fun getFamilyName(): String = "Fix compile error with Aider"
         override fun getText(): String = "Fix compile error with Aider (Interactive)"
-
         override fun isAvailable(project: Project, editor: Editor?, element: PsiElement): Boolean {
             val psiFile = element.containingFile
             return editor != null && psiFile != null && hasCompileErrors(project, psiFile)
@@ -205,5 +197,13 @@ class FixCompileErrorInteractive : BaseFixCompileErrorAction() {
             if (element.containingFile.virtualFile == null) return
             FixCompileErrorInteractive().showDialogInBGT(project, element.containingFile)
         }
+
     }
+
+}
+
+fun getFiles(psiFile: PsiFile, project: Project): List<FileData> {
+    val elements = psiFile.virtualFile?.let { arrayOf(it) } ?: emptyArray()
+    val files = project.service<FileDataCollectionService>().collectAllFiles(elements)
+    return files
 }
