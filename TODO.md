@@ -19,3 +19,4 @@
 - [ ] refine plan doesn't show plan
 - [ ] Feature: open dialog on same screen as ide
 - [x] fix compile error prompt optimization
+- [ ] Bug: fix encoding issues with markdown viewer

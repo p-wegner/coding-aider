@@ -59,7 +59,7 @@ class AiderHistoryService(private val project: Project) {
     fun getLastChatHistory(): String {
         if (!chatHistoryFile.exists()) return "No chat history available."
 
-        val chatContent = chatHistoryFile.readText()
+        val chatContent = chatHistoryFile.readText(Charsets.UTF_8)
         val contentParts = chatContent.split("# aider chat started at .*".toRegex())
         val lastChat = contentParts.lastOrNull()?.trim() ?: return "No chat history available."
         if (!containsXmlPrompts(lastChat)) {

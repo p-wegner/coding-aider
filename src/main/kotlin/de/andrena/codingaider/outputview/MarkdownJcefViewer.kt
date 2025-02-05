@@ -141,7 +141,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         fallbackEditor?.let { editor ->
             editor.putClientProperty("charset", StandardCharsets.UTF_8.name())
             editor.text = html
-            it.caretPosition = 0
+            editor.caretPosition = 0
             return
         }
 
