@@ -12,6 +12,9 @@ import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.utils.GitDiffUtils
 import java.awt.BorderLayout
 import java.awt.Dimension
+import java.awt.GridBagConstraints
+import java.awt.GridBagLayout
+import java.awt.Insets
 import javax.swing.*
 
 class GitCodeReviewDialog(private val project: Project) : DialogWrapper(project) {
@@ -52,41 +55,85 @@ class GitCodeReviewDialog(private val project: Project) : DialogWrapper(project)
     }
 
     override fun createCenterPanel(): JComponent {
-        val panel = JPanel(BorderLayout(10, 10))
-        panel.preferredSize = Dimension(800, 600)
-
-        val inputPanel = JPanel().apply {
-            layout = BoxLayout(this, BoxLayout.Y_AXIS)
-            
-            // Base ref selection
-            add(createRefSelectionPanel("Base:", baseRefTypeCombo, baseRefComboBox))
-            add(Box.createVerticalStrut(10))
-            
-            // Target ref selection
-            add(createRefSelectionPanel("Target:", targetRefTypeCombo, targetRefComboBox))
-            add(Box.createVerticalStrut(10))
-            
-            // Prompt area
-            add(JLabel("Review Prompt:"))
-            add(JBScrollPane(promptArea).apply {
-                preferredSize = Dimension(750, 400)
-            })
+        val panel = JPanel(GridBagLayout())
+        panel.border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
+        panel.preferredSize = Dimension(900, 700)
+        
+        val gbc = GridBagConstraints().apply {
+            fill = GridBagConstraints.HORIZONTAL
+            insets = Insets(5, 5, 5, 5)
         }
 
-        panel.add(inputPanel, BorderLayout.CENTER)
+        // Reference Selection Section
+        val refSelectionPanel = JPanel(GridBagLayout()).apply {
+            border = BorderFactory.createCompoundBorder(
+                BorderFactory.createTitledBorder("Git References"),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)
+            )
+        }
+        
+        // Base Reference
+        gbc.apply {
+            gridx = 0; gridy = 0
+            weightx = 0.0; anchor = GridBagConstraints.LINE_START
+        }
+        refSelectionPanel.add(JLabel("Base:"), gbc)
+        
+        gbc.apply {
+            gridx = 1; weightx = 0.3
+        }
+        refSelectionPanel.add(baseRefTypeCombo, gbc)
+        
+        gbc.apply {
+            gridx = 2; weightx = 0.7
+        }
+        refSelectionPanel.add(baseRefComboBox.getComponent(), gbc)
+
+        // Target Reference
+        gbc.apply {
+            gridx = 0; gridy = 1
+            weightx = 0.0
+        }
+        refSelectionPanel.add(JLabel("Target:"), gbc)
+        
+        gbc.apply {
+            gridx = 1; weightx = 0.3
+        }
+        refSelectionPanel.add(targetRefTypeCombo, gbc)
+        
+        gbc.apply {
+            gridx = 2; weightx = 0.7
+        }
+        refSelectionPanel.add(targetRefComboBox.getComponent(), gbc)
+
+        // Add Reference Selection Panel to main panel
+        gbc.apply {
+            gridx = 0; gridy = 0
+            weightx = 1.0; weighty = 0.0
+            fill = GridBagConstraints.HORIZONTAL
+        }
+        panel.add(refSelectionPanel, gbc)
+
+        // Prompt Section
+        val promptPanel = JPanel(BorderLayout()).apply {
+            border = BorderFactory.createCompoundBorder(
+                BorderFactory.createTitledBorder("Review Focus Areas"),
+                BorderFactory.createEmptyBorder(5, 5, 5, 5)
+            )
+        }
+        
+        promptArea.font = UIManager.getFont("TextField.font")
+        promptPanel.add(JBScrollPane(promptArea), BorderLayout.CENTER)
+
+        gbc.apply {
+            gridy = 1
+            weighty = 1.0
+            fill = GridBagConstraints.BOTH
+            insets = Insets(10, 5, 5, 5)
+        }
+        panel.add(promptPanel, gbc)
+
         return panel
-    }
-
-    private fun createRefSelectionPanel(
-        label: String, 
-        typeCombo: JComboBox<GitRefComboBox.RefType>,
-        refCombo: GitRefComboBox
-    ): JPanel {
-        return JPanel(BorderLayout(5, 0)).apply {
-            add(JLabel(label), BorderLayout.WEST)
-            add(typeCombo, BorderLayout.CENTER)
-            add(refCombo.getComponent(), BorderLayout.EAST)
-        }
     }
 
     override fun doOKAction() {

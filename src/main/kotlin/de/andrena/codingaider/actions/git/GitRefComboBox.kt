@@ -2,7 +2,6 @@ package de.andrena.codingaider.actions.git
 
 import com.intellij.openapi.project.Project
 import com.intellij.ui.TextFieldWithAutoCompletion
-import com.intellij.ui.components.JBTextField
 import git4idea.GitUtil
 import git4idea.repo.GitRepository
 import javax.swing.JComponent
@@ -42,16 +41,12 @@ class GitRefComboBox(project: Project) {
     private fun getRefList(): List<String> {
         return when (currentMode) {
             RefType.BRANCH -> repository?.branches?.localBranches?.map { it.name } ?: emptyList()
-            RefType.TAG -> repository?.tags?.map { it.name } ?: emptyList()
+            RefType.TAG ->  emptyList()
         }
     }
 
     private class CompletionProvider(private val repository: GitRepository?) : 
-        TextFieldWithAutoCompletion.StringsCompletionProvider(emptyList(), null) {
+        TextFieldWithAutoCompletion.StringsCompletionProvider(repository?.branches?.localBranches?.map { it.name } ?: emptyList(), null) {
         
-        override fun getItems(prefix: String?, cached: Boolean, 
-                            pattern: TextFieldWithAutoCompletion.CompletionPattern): Collection<String> {
-            return repository?.branches?.localBranches?.map { it.name } ?: emptyList()
-        }
     }
 }
