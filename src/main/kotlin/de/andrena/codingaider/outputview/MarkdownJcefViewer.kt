@@ -78,8 +78,9 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         val baseHtml = """
         <html>
           <head>
-            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
             <meta charset="UTF-8"/>
+            <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+            <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
             <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data:"/>
             <title>Markdown Viewer</title>
             <style>
@@ -137,8 +138,9 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         val html = convertMarkdownToHtml(markdown)
 
         // If fallback editor is in use
-        fallbackEditor?.let {
-            it.text = html
+        fallbackEditor?.let { editor ->
+            editor.putClientProperty("charset", StandardCharsets.UTF_8.name())
+            editor.text = html
             it.caretPosition = 0
             return
         }
