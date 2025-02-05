@@ -76,7 +76,8 @@ Examples:
                 cell(inputScrollPane)
                     .align(AlignX.FILL)
                     .align(AlignY.FILL)
-            }
+                    .resizableColumn()
+            }.resizableRow()
         }.apply {
             border = BorderFactory.createEmptyBorder(8, 8, 8, 8)
 
