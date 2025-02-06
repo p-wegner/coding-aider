@@ -7,6 +7,7 @@
 - [x] Update LlmProviderType constructor parameters for LMStudio
 - [x] Set correct authentication type and requirements
 - [x] Configure model name prefix handling
+- [ ] Proper Api Key and url handling
 
 ## Documentation
 - [x] Update settings documentation to include LMStudio configuration
@@ -16,5 +17,3 @@
 - [x] Ensure CustomLlmProvider properly handles LMStudio type
 - [x] Verify AiderExecutionStrategy works with LMStudio configuration
 
-## Status
-✅ Implementation Complete
