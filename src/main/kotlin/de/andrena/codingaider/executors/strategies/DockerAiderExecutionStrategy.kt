@@ -105,7 +105,7 @@ class DockerAiderExecutionStrategy(
                 // For LMStudio, we need to ensure network access to the host
                 dockerArgs.addAll(listOf("--network", "host"))
                 customProvider.baseUrl.takeIf { it.isNotEmpty() }?.let { baseUrl ->
-                    dockerArgs.addAll(listOf("-e", "OPENAI_API_BASE=$baseUrl"))
+                    dockerArgs.addAll(listOf("-e", "LM_STUDIO_API_BASE=$baseUrl"))
                 }
             }
         }
