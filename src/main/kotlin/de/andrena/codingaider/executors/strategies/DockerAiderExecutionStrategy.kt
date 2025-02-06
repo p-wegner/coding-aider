@@ -59,6 +59,19 @@ class DockerAiderExecutionStrategy(
             dockerArgs.addAll(listOf("-e", "LITELLM_LOCAL_MODEL_COST_MAP=True"))
         }
 
+        // Add LM Studio environment variables if using LM Studio provider
+        customProvider?.takeIf { it.type == LlmProviderType.LMSTUDIO }?.let { provider ->
+            if (provider.baseUrl.isNotEmpty()) {
+                dockerArgs.addAll(listOf("-e", "OPENAI_API_BASE=${provider.baseUrl}"))
+            }
+            ApiKeyManager.getCustomModelKey(provider.name)?.let { apiKey ->
+                dockerArgs.addAll(listOf(
+                    "-e", "OPENAI_API_KEY=$apiKey",
+                    "-e", "LM_STUDIO_API_KEY=$apiKey"
+                ))
+            }
+        }
+
         // Add provider-specific Docker configurations
         val customProvider = service<CustomLlmProviderService>().getProvider(commandData.llm)
         when (customProvider?.type) {

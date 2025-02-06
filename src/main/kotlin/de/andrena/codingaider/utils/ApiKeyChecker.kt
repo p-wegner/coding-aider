@@ -57,7 +57,7 @@ class DefaultApiKeyChecker : ApiKeyChecker {
                 "VERTEXAI_LOCATION"
             )
             LlmProviderType.CUSTOM_AIDERMODEL -> emptyList()
-            LlmProviderType.LMSTUDIO -> emptyList() // LMStudio doesn't require an API key
+            LlmProviderType.LMSTUDIO -> listOf("OPENAI_API_KEY", "LM_STUDIO_API_KEY") // LMStudio uses OpenAI-compatible endpoints
         }
     }
 

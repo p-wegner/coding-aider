@@ -79,6 +79,7 @@ class NativeAiderExecutionStrategy(
                         // Add API key if provided (optional for LMStudio)
                         ApiKeyManager.getCustomModelKey(customProvider.name)?.let { apiKey ->
                             environment["OPENAI_API_KEY"] = apiKey
+                            environment["LM_STUDIO_API_KEY"] = apiKey
                         }
                     }
                 }
