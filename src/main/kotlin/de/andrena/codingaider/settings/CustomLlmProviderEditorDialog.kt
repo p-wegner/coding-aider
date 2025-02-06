@@ -105,11 +105,16 @@ class CustomLlmProviderEditorDialog(
                 projectIdField.isEnabled = true
                 locationField.isEnabled = true
             }
+            LlmProviderType.LMSTUDIO -> {
+                if (existingProvider == null) {
+                    baseUrlField.text = "http://127.0.0.1:1234"
+                }
+            }
 
             else -> {
                 baseUrlField.isEnabled = true
                 baseUrlField.toolTipText = "API endpoint URL"
-                apiKeyField.isEnabled = true
+                apiKeyField.isEnabled = selectedType.supportsApiKey
                 apiKeyField.toolTipText = "API key"
                 projectIdField.isEnabled = false
                 locationField.isEnabled = false
@@ -118,7 +123,7 @@ class CustomLlmProviderEditorDialog(
 
         // Update row visibility and tooltips based on provider requirements
         baseUrlRow.visible(selectedType.requiresBaseUrl)
-        apiKeyRow.visible(selectedType.requiresApiKey)
+        apiKeyRow.visible(selectedType.supportsApiKey)
         projectIdRow.visible(selectedType == LlmProviderType.VERTEX_EXPERIMENTAL)
         locationRow.visible(selectedType == LlmProviderType.VERTEX_EXPERIMENTAL)
 
@@ -210,8 +215,7 @@ class CustomLlmProviderEditorDialog(
             }
         }
 
-        // Validate API key for providers that require it (except Vertex AI)
-        if (selectedType.requiresApiKey && selectedType != LlmProviderType.VERTEX_EXPERIMENTAL) {
+        if (selectedType.supportsApiKey && !selectedType.apiKeyOptional ) {
             val apiKeyText = String(apiKeyField.password)
             // For new providers or when a new key is being set
             if (existingProvider == null || apiKeyText != "*".repeat(16)) {
@@ -284,7 +288,7 @@ class CustomLlmProviderEditorDialog(
         )
 
         // Save API key if provided and not masked, except for Ollama and Vertex AI
-        if (type.requiresApiKey && type != LlmProviderType.VERTEX_EXPERIMENTAL) {
+        if (type.supportsApiKey && type != LlmProviderType.VERTEX_EXPERIMENTAL) {
             val apiKeyText = String(apiKeyField.password)
             if (apiKeyText.isNotBlank() && apiKeyText != "*".repeat(16)) {
                 // New key entered

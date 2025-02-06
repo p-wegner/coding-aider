@@ -72,7 +72,7 @@ class DefaultApiKeyChecker : ApiKeyChecker {
         val customProvider = getCustomProvider(llm)
         if (customProvider != null) {
             // Check if provider requires API key
-            if (!customProvider.type.requiresApiKey) {
+            if (!customProvider.type.supportsApiKey) {
                 return true
             }
 
@@ -173,7 +173,7 @@ class DefaultApiKeyChecker : ApiKeyChecker {
             }
 
         val customKeys = service<CustomLlmProviderService>().getAllProviders()
-            .filter { it.type.requiresApiKey }
+            .filter { it.type.supportsApiKey }
             .flatMap { provider ->
                 val keyNames = getProviderApiKeyName(provider)
                 keyNames.mapNotNull { keyName ->

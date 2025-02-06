@@ -49,7 +49,6 @@ class DockerAiderExecutionStrategy(
             }
         }
 
-        // Add API key environment variables to Docker run command
         apiKeyChecker.getApiKeysForDocker().forEach { (keyName, value) ->
             dockerArgs.addAll(listOf("-e", "$keyName=$value"))
         }
@@ -57,19 +56,6 @@ class DockerAiderExecutionStrategy(
         // Add local model cost mapping if enabled
         if (settings.enableLocalModelCostMap) {
             dockerArgs.addAll(listOf("-e", "LITELLM_LOCAL_MODEL_COST_MAP=True"))
-        }
-
-        // Add LM Studio environment variables if using LM Studio provider
-        customProvider?.takeIf { it.type == LlmProviderType.LMSTUDIO }?.let { provider ->
-            if (provider.baseUrl.isNotEmpty()) {
-                dockerArgs.addAll(listOf("-e", "OPENAI_API_BASE=${provider.baseUrl}"))
-            }
-            ApiKeyManager.getCustomModelKey(provider.name)?.let { apiKey ->
-                dockerArgs.addAll(listOf(
-                    "-e", "OPENAI_API_KEY=$apiKey",
-                    "-e", "LM_STUDIO_API_KEY=$apiKey"
-                ))
-            }
         }
 
         // Add provider-specific Docker configurations
@@ -117,6 +103,10 @@ class DockerAiderExecutionStrategy(
             LlmProviderType.LMSTUDIO -> {
                 // For LMStudio, we need to ensure network access to the host
                 dockerArgs.addAll(listOf("--network", "host"))
+                ApiKeyManager.getCustomModelKey(customProvider.name)?.let { apiKey ->
+                    dockerArgs.addAll(listOf("-e", "LM_STUDIO_API_KEY=$apiKey"))
+                }
+
                 customProvider.baseUrl.takeIf { it.isNotEmpty() }?.let { baseUrl ->
                     dockerArgs.addAll(listOf("-e", "LM_STUDIO_API_BASE=$baseUrl"))
                 }

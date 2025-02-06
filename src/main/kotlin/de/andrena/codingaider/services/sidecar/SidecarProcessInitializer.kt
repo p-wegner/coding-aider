@@ -53,6 +53,7 @@ class SidecarProcessInitializer(private val project: Project, private val cs: Co
         val command = strategy.buildCommand(createInitializationCommandData(planId))
 
         val workingDir = project.basePath ?: System.getProperty("user.home")
+        // TODO: set env as needed
         processManager.startProcess(
             command,
             workingDir,

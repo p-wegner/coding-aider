@@ -10,12 +10,4 @@ data class CustomLlmProvider(
     var projectId: String = "",  // For Vertex AI: GCP project ID
     var location: String = ""    // For Vertex AI: GCP region
 ) {
-    val prefixedModelName: String
-        get() {
-            // Don't add prefix for providers that don't use it
-            if (!type.requiresModelPrefix) return modelName
-            // Don't duplicate prefix
-            if (modelName.startsWith("${type.modelNamePrefix}/")) return modelName
-            return "${type.modelNamePrefix}/${modelName}"
-        }
 }
