@@ -34,6 +34,14 @@ enum class LlmProviderType(
         exampleModels = "Examples: claude-3-sonnet@latest, gemini-pro@latest, claude-3-opus@latest",
         authType = AuthType.GCLOUD,
         requiresModelPrefix = false  // Vertex AI doesn't use model prefixes
+    ),
+    LMSTUDIO(
+        "LM Studio",
+        requiresApiKey = false,
+        requiresBaseUrl = true,
+        modelNamePrefix = "lm_studio",
+        exampleModels = "Examples: mistral-7b, llama2-13b",
+        authType = AuthType.NONE
     );
 
     enum class AuthType {

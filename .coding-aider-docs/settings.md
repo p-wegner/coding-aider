@@ -35,6 +35,13 @@ You can add custom providers through the "Manage Custom Providers" dialog:
    - Supports Gemini and other Google AI models
    - Model names should include @latest suffix (e.g., "gemini-pro@latest")
 
+5. LM Studio:
+   - Requires: Base URL
+   - No API key needed - uses local authentication
+   - Perfect for local model deployment
+   - Uses OpenAI-compatible API endpoints
+   - Model names can be prefixed with "lm_studio/" or left unprefixed
+
 ### API Key Management
 - API keys are stored securely in IntelliJ's credential store
 - Keys can be provided through:
