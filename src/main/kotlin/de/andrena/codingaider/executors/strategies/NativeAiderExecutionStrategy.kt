@@ -71,6 +71,8 @@ class NativeAiderExecutionStrategy(
 
                     LlmProviderType.CUSTOM_AIDERMODEL -> {
                     }
+
+                    LlmProviderType.LMSTUDIO -> TODO()
                 }
             }
 

@@ -101,6 +101,7 @@ class DockerAiderExecutionStrategy(
             }
 
             LlmProviderType.CUSTOM_AIDERMODEL, null -> {} // No special configuration needed
+            LlmProviderType.LMSTUDIO -> TODO()
         }
 
         // Mount files outside the project
