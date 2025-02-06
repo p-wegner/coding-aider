@@ -104,6 +104,13 @@ class OpenAiderActionGroup : AnAction(), DumbAware {
         )
         addQuickAccessAction(
             popupActionGroup,
+            "de.andrena.codingaider.actions.git.GitCodeReviewAction",
+            "Git Code Review",
+            AllIcons.Vcs.History,
+            'G'
+        )
+        addQuickAccessAction(
+            popupActionGroup,
             "de.andrena.codingaider.actions.ide.ShowLastCommandResultAction",
             "Show Last Command Result",
             AllIcons.Actions.Preview,
