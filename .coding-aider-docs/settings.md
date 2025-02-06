@@ -36,11 +36,14 @@ You can add custom providers through the "Manage Custom Providers" dialog:
    - Model names should include @latest suffix (e.g., "gemini-pro@latest")
 
 5. LM Studio:
-   - Requires: Base URL
-   - No API key needed - uses local authentication
+   - Requires: Base URL (default: http://localhost:1234/v1)
+   - Optional: API Key for secured instances
    - Perfect for local model deployment
    - Uses OpenAI-compatible API endpoints
    - Model names can be prefixed with "lm_studio/" or left unprefixed
+   - Environment Variables:
+     - LMSTUDIO_API_BASE: Base URL for LM Studio instance
+     - LMSTUDIO_API_KEY: Optional API key if authentication is enabled
 
 ### API Key Management
 - API keys are stored securely in IntelliJ's credential store

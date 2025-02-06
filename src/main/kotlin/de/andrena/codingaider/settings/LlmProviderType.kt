@@ -37,17 +37,18 @@ enum class LlmProviderType(
     ),
     LMSTUDIO(
         "LM Studio",
-        requiresApiKey = false,
+        requiresApiKey = true,  // Changed to true to allow optional API key
         requiresBaseUrl = true,
         modelNamePrefix = "lm_studio",
         exampleModels = "Examples: mistral-7b, llama2-13b",
-        authType = AuthType.NONE
+        authType = AuthType.OPTIONAL  // New auth type for optional API keys
     );
 
     enum class AuthType {
         API_KEY,    // Standard API key authentication
         NONE,       // No authentication required
-        GCLOUD      // Uses Google Cloud authentication
+        GCLOUD,     // Uses Google Cloud authentication
+        OPTIONAL    // Optional API key authentication
     }
 
     fun getApiKeyName(): String {
