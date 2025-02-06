@@ -7,7 +7,7 @@
 - [x] Update LlmProviderType constructor parameters for LMStudio
 - [x] Set correct authentication type and requirements
 - [x] Configure model name prefix handling
-- [ ] Proper Api Key and url handling
+- [x] Proper Api Key and url handling
 
 ## Documentation
 - [x] Update settings documentation to include LMStudio configuration

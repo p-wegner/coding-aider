@@ -76,6 +76,10 @@ class NativeAiderExecutionStrategy(
                         if (customProvider.baseUrl.isNotEmpty()) {
                             environment["OPENAI_API_BASE"] = customProvider.baseUrl
                         }
+                        // Add API key if provided (optional for LMStudio)
+                        ApiKeyManager.getCustomModelKey(customProvider.name)?.let { apiKey ->
+                            environment["OPENAI_API_KEY"] = apiKey
+                        }
                     }
                 }
             }
