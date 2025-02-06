@@ -19,6 +19,7 @@ import java.util.Timer
 import javax.swing.*
 import kotlin.concurrent.schedule
 import kotlin.concurrent.scheduleAtFixedRate
+import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.pow
 
@@ -353,7 +354,7 @@ class MarkdownDialog(
 
         val startValue = scrollBar.value
         // Don't animate if the distance is too small
-        if (Math.abs(targetValue - startValue) < 10) {
+        if (abs(targetValue - startValue) < 10) {
             scrollBar.value = targetValue
             lastScrollPosition = targetValue
             return

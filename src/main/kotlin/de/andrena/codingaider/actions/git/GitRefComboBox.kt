@@ -11,12 +11,12 @@ class GitRefComboBox(project: Project) {
     private var currentMode: RefType = RefType.BRANCH
     
     enum class RefType {
-        BRANCH, TAG
+        BRANCH, ANY_REF
     }
 
     private val completionField = TextFieldWithAutoCompletion(
         project,
-        CompletionProvider(repository),
+        BranchCompletionProvider(repository),
         false,
         ""
     )
@@ -25,9 +25,6 @@ class GitRefComboBox(project: Project) {
 
     fun getText(): String = completionField.text
 
-    fun setText(text: String) {
-        completionField.text = text
-    }
 
     fun setMode(mode: RefType) {
         currentMode = mode
@@ -41,11 +38,11 @@ class GitRefComboBox(project: Project) {
     private fun getRefList(): List<String> {
         return when (currentMode) {
             RefType.BRANCH -> repository?.branches?.localBranches?.map { it.name } ?: emptyList()
-            RefType.TAG ->  emptyList()
+            RefType.ANY_REF ->  emptyList()
         }
     }
 
-    private class CompletionProvider(private val repository: GitRepository?) : 
+    private class BranchCompletionProvider(private val repository: GitRepository?) :
         TextFieldWithAutoCompletion.StringsCompletionProvider(repository?.branches?.localBranches?.map { it.name } ?: emptyList(), null) {
         
     }

@@ -14,7 +14,6 @@ import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
-import java.awt.Insets
 import javax.swing.*
 
 class GitCodeReviewDialog(private val project: Project) : DialogWrapper(project) {
@@ -61,7 +60,7 @@ class GitCodeReviewDialog(private val project: Project) : DialogWrapper(project)
         
         val gbc = GridBagConstraints().apply {
             fill = GridBagConstraints.HORIZONTAL
-            insets = Insets(5, 5, 5, 5)
+            insets = com.intellij.util.ui.JBUI.insets(5)
         }
 
         // Reference Selection Section
@@ -129,7 +128,7 @@ class GitCodeReviewDialog(private val project: Project) : DialogWrapper(project)
             gridy = 1
             weighty = 1.0
             fill = GridBagConstraints.BOTH
-            insets = Insets(10, 5, 5, 5)
+            insets = com.intellij.util.ui.JBUI.insets(10, 5, 5, 5)
         }
         panel.add(promptPanel, gbc)
 
