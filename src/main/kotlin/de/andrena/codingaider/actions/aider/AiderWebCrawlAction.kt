@@ -76,9 +76,9 @@ class AiderWebCrawlAction : AnAction() {
                     files = listOf(FileData(filePath, false)),
                     lintCmd = "",
                     projectPath = project.basePath ?: "",
-                    editFormat = AiderEditFormat.DIFF_FENCED.value,
+                    editFormat = AiderEditFormat.WHOLE.value,
                     aiderMode = AiderMode.NORMAL,
-                    options = CommandOptions(autoCommit = false, dirtyCommits = false),
+                    options = CommandOptions(autoCommit = false, dirtyCommits = false, summarizedOutput = false),
                 )
                 if (settings.activateIdeExecutorAfterWebcrawl) {
                     IDEBasedExecutor(project, commandData).execute()
