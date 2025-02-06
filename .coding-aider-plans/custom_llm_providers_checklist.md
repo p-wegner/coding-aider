@@ -6,7 +6,7 @@
 - [x] Update LlmProviderType to support API key optional providers
 - [x] Modify CustomLlmProvider to handle API key optional status
 - [x] Update model name handling in CustomLlmProvider
-- [ ] Implement Strategy and APiKeyChecker related when cases for LMStudio 
+- [x] Implement Strategy and APiKeyChecker related when cases for LMStudio 
 
 ## UI Changes
 - [x] Update CustomLlmProviderDialog to handle API key optional providers

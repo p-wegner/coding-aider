@@ -57,7 +57,7 @@ class DefaultApiKeyChecker : ApiKeyChecker {
                 "VERTEXAI_LOCATION"
             )
             LlmProviderType.CUSTOM_AIDERMODEL -> emptyList()
-            LlmProviderType.LMSTUDIO -> TODO()
+            LlmProviderType.LMSTUDIO -> emptyList() // LMStudio doesn't require an API key
         }
     }
 

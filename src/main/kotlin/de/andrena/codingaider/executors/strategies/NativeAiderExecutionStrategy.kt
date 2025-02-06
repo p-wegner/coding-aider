@@ -72,7 +72,11 @@ class NativeAiderExecutionStrategy(
                     LlmProviderType.CUSTOM_AIDERMODEL -> {
                     }
 
-                    LlmProviderType.LMSTUDIO -> TODO()
+                    LlmProviderType.LMSTUDIO -> {
+                        if (customProvider.baseUrl.isNotEmpty()) {
+                            environment["OPENAI_API_BASE"] = customProvider.baseUrl
+                        }
+                    }
                 }
             }
 

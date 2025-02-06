@@ -101,7 +101,13 @@ class DockerAiderExecutionStrategy(
             }
 
             LlmProviderType.CUSTOM_AIDERMODEL, null -> {} // No special configuration needed
-            LlmProviderType.LMSTUDIO -> TODO()
+            LlmProviderType.LMSTUDIO -> {
+                // For LMStudio, we need to ensure network access to the host
+                dockerArgs.addAll(listOf("--network", "host"))
+                customProvider.baseUrl.takeIf { it.isNotEmpty() }?.let { baseUrl ->
+                    dockerArgs.addAll(listOf("-e", "OPENAI_API_BASE=$baseUrl"))
+                }
+            }
         }
 
         // Mount files outside the project
