@@ -46,11 +46,6 @@ class IDEBasedExecutor(
             displayString = project.service<CommandSummaryService>().generateSummary(commandData),
             commandData = commandData
         ).apply {
-            // Position dialog relative to IDE window
-            val ideFrame = WindowManager.getInstance().getIdeFrame(project)
-            ideFrame?.component?.let { parent ->
-                setLocationRelativeTo(parent)
-            }
             isVisible = true
             focus()
             updateProgress("Initializing Aider command...", "Aider Command Starting")

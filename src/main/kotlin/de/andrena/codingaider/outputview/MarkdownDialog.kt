@@ -2,6 +2,7 @@ package de.andrena.codingaider.outputview
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.wm.WindowManager
 import com.intellij.ui.components.JBScrollPane
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.services.RunningCommandService
@@ -215,6 +216,7 @@ class MarkdownDialog(
             }
         })
         markdownViewer.setMarkdown(initialText)
+        positionOnSameScreen()
     }
 
     private var lastContent = ""
@@ -408,4 +410,12 @@ class MarkdownDialog(
             1 - (-2 * x + 2).pow(5) / 2
         }
     }
+    fun positionOnSameScreen() {
+        // Position dialog relative to IDE window
+        val ideFrame = WindowManager.getInstance().getIdeFrame(project)
+        ideFrame?.component?.let { parent ->
+            setLocationRelativeTo(parent)
+        }
+    }
+
 }

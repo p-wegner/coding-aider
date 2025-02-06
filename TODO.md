@@ -16,7 +16,8 @@
 - [x] show last command should bring existing dialog to front and not open more than one dialog
 - [x] o3 mini support, reasoning effort setting
 - [x] Feature: implement todo inspection
-- [ ] refine plan doesn't show plan
-- [ ] Feature: open dialog on same screen as ide
+- [x] refine plan doesn't show plan
+- [x] Feature: open dialog on same screen as ide
 - [x] fix compile error prompt optimization
 - [ ] Bug: fix encoding issues with markdown viewer
+- [ ] chat and input history files are created at git root not project root => fix history /last command parsing
