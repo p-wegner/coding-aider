@@ -2,6 +2,7 @@ package de.andrena.codingaider.settings
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.*
+import de.andrena.codingaider.inputdialog.AiderMode
 
 @Service(Service.Level.APP)
 @State(
@@ -52,6 +53,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var enableAutoPlanContinuationInPlanFamily: Boolean = AiderDefaults.ENABLE_AUTO_PLAN_CONTINUATION_IN_FAMILY,
         var optionsPanelCollapsed: Boolean = true,
         var enableLocalModelCostMap: Boolean = false,
+        var defaultMode: AiderMode = AiderDefaults.DEFAULT_MODE,
     )
 
 
@@ -78,6 +80,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.enableLocalModelCostMap
         set(value) {
             myState.enableLocalModelCostMap = value
+        }
+
+    var defaultMode: AiderMode
+        get() = myState.defaultMode
+        set(value) {
+            myState.defaultMode = value
         }
 
     var enableAutoPlanContinue: Boolean

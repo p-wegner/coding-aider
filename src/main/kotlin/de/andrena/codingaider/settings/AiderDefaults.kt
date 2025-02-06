@@ -1,5 +1,7 @@
 package de.andrena.codingaider.settings
 
+import de.andrena.codingaider.inputdialog.AiderMode
+
 object AiderDefaults {
     const val REASONING_EFFORT = "" // Can be: "", "low", "medium", "high"
     const val SUMMARIZED_OUTPUT = false
@@ -26,6 +28,7 @@ object AiderDefaults {
     const val ENABLE_MARKDOWN_DIALOG_AUTOCLOSE = true
     const val MOUNT_AIDER_CONF_IN_DOCKER = true
     const val INCLUDE_CHANGE_CONTEXT = false
+    val DEFAULT_MODE = AiderMode.NORMAL
     val AUTO_COMMITS = AiderSettings.AutoCommitSetting.DEFAULT
     val DIRTY_COMMITS = AiderSettings.DirtyCommitSetting.DEFAULT
     const val DOCKER_IMAGE: String = "paulgauthier/aider:v0.72.3"

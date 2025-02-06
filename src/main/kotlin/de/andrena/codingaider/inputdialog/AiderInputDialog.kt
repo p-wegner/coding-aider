@@ -151,7 +151,7 @@ class AiderInputDialog(
 
     private val projectSettings = AiderProjectSettings.getInstance(project)
     private val optionsPanel = AiderOptionsPanel(apiKeyChecker = apiKeyChecker)
-    private var initialMode = AiderMode.NORMAL
+    private var initialMode = getInstance().defaultMode
 
     private var modeSegmentedButton: SegmentedButton<AiderMode>? = null
     fun selectMode(mode: AiderMode) {

@@ -8,6 +8,7 @@ import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
+import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
 import java.awt.Component
@@ -50,6 +51,7 @@ class AiderSettingsConfigurable() : Configurable {
     private val alwaysIncludePlanContextFilesCheckBox = JBCheckBox("Always include plan context files")
     private val enableAutoPlanContinueCheckBox = JBCheckBox("Enable automatic plan continuation")
     private val reasoningEffortComboBox = ComboBox(arrayOf("", "low", "medium", "high"))
+    private val defaultModeComboBox = ComboBox(AiderMode.values())
     private val enableLocalModelCostMapCheckBox = JBCheckBox("Enable local model cost mapping")
     private val documentationLlmComboBox = ComboBox(apiKeyChecker.getAllLlmOptions().toTypedArray())
     private val summarizedOutputCheckBox = JBCheckBox("Enable summarized output")
@@ -231,6 +233,13 @@ class AiderSettingsConfigurable() : Configurable {
                                 "When enabled, Aider will include XML-tagged summaries of changes in its output"
                         }
                 }
+                row("Default Mode:") {
+                    cell(defaultModeComboBox)
+                        .component
+                        .apply {
+                            toolTipText = "Select the default mode for Aider dialogs"
+                        }
+                }
                 row {
                     cell(enableLocalModelCostMapCheckBox)
                         .applyToComponent {
@@ -276,6 +285,7 @@ class AiderSettingsConfigurable() : Configurable {
                 summarizedOutputCheckBox.isSelected != settings.summarizedOutput ||
                 enableLocalModelCostMapCheckBox.isSelected != settings.enableLocalModelCostMap ||
                 reasoningEffortComboBox.selectedItem as String != settings.reasoningEffort ||
+                defaultModeComboBox.selectedItem != settings.defaultMode ||
                 aiderSetupPanel.isModified()
 
     }
@@ -314,6 +324,7 @@ class AiderSettingsConfigurable() : Configurable {
         settings.summarizedOutput = summarizedOutputCheckBox.isSelected
         settings.enableLocalModelCostMap = enableLocalModelCostMapCheckBox.isSelected
         settings.reasoningEffort = reasoningEffortComboBox.selectedItem as String
+        settings.defaultMode = defaultModeComboBox.selectedItem as AiderMode
         aiderSetupPanel.apply()
         settings.notifySettingsChanged()
     }
@@ -350,6 +361,7 @@ class AiderSettingsConfigurable() : Configurable {
         summarizedOutputCheckBox.isSelected = settings.summarizedOutput
         enableLocalModelCostMapCheckBox.isSelected = settings.enableLocalModelCostMap
         reasoningEffortComboBox.selectedItem = settings.reasoningEffort
+        defaultModeComboBox.selectedItem = settings.defaultMode
         aiderSetupPanel.reset()
         settings.notifySettingsChanged()
     }
