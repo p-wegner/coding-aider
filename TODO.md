@@ -20,5 +20,5 @@
 - [x] Feature: open dialog on same screen as ide
 - [x] fix compile error prompt optimization
 - [ ] Bug: fix encoding issues with markdown viewer
-- [ ] chat and input history files are created at git root not project root => fix history /last command parsing
+- [x] chat and input history files are created at git root not project root => fix history /last command parsing
 - [ ] Bug: (sidecar) verify env vars (api keys) for sidecar mode properly set
