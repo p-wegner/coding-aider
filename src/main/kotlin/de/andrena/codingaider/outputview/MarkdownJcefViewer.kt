@@ -549,7 +549,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             """
             <div class="collapsible-panel">
                 <div class="collapsible-header" onclick="this.parentElement.classList.toggle('expanded')">
-                    <span class="collapsible-title">Initial Command</span>
+                    <span class="collapsible-title">Aider Command</span>
                     <span class="collapsible-arrow"> ^ </span>
                 </div>
                 <div class="collapsible-content">
