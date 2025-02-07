@@ -328,8 +328,8 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         margin: 16px 0;
                         position: relative;
                         font-size: 14px;
-                        line-height: 1.5;
-                        box-shadow: 0 4px 12px ${if (isDark) "rgba(0,0,0,0.4)" else "rgba(0,0,0,0.15)"};
+                        line-height: 1.3;
+                        box-shadow: 0 2px 8px ${if (isDark) "rgba(0,0,0,0.3)" else "rgba(0,0,0,0.1)"};
                         white-space: pre-wrap;
                         word-wrap: break-word;
                         overflow-wrap: break-word;
@@ -337,16 +337,18 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     
                     .aider-intention {
                         background: ${if (isDark) "#1a2733" else "#f0f7ff"};
-                        border: 2px solid ${if (isDark) "#2c4356" else "#bcd6f5"};
+                        border: 1px solid ${if (isDark) "#2c4356" else "#bcd6f5"};
                         color: ${if (isDark) "#a8c7f0" else "#0066cc"};
-                        box-shadow: 0 2px 8px ${if (isDark) "rgba(0,0,0,0.3)" else "rgba(0,0,0,0.1)"};
+                        padding: 12px;
+                        margin: 12px 0;
                     }
                     
                     .aider-summary {
                         background: ${if (isDark) "#2d2d2d" else "#fafafa"};
-                        border: 2px solid ${if (isDark) "#454545" else "#e5e5e5"};
+                        border: 1px solid ${if (isDark) "#454545" else "#e5e5e5"};
                         color: ${if (isDark) "#e8e8e8" else "#2b2b2b"};
-                        box-shadow: 0 2px 8px ${if (isDark) "rgba(0,0,0,0.2)" else "rgba(0,0,0,0.08)"};
+                        padding: 12px;
+                        margin: 12px 0;
                         transition: all 0.2s ease;
                     }
                     
@@ -412,13 +414,13 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     .aider-summary::before {
                         display: block;
                         font-weight: bold;
-                        font-size: 15px;
-                        margin: -16px -16px 12px -16px;
-                        padding: 12px 16px;
-                        letter-spacing: 0.3px;
+                        font-size: 13px;
+                        margin: -12px -12px 8px -12px;
+                        padding: 8px 12px;
+                        letter-spacing: 0.2px;
                         border-bottom: 1px solid;
                         background: ${if (isDark) "rgba(255,255,255,0.05)" else "rgba(0,0,0,0.03)"};
-                        border-radius: 12px 12px 0 0;
+                        border-radius: 6px 6px 0 0;
                     }
                     
                     .aider-intention::before {
@@ -458,8 +460,8 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     
                     .aider-intention p,
                     .aider-summary p {
-                        margin: 12px 0;
-                        line-height: 1.8;
+                        margin: 8px 0;
+                        line-height: 1.4;
                     }
                     
                     .aider-intention code,
