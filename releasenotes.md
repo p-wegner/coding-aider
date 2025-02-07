@@ -32,6 +32,7 @@
 - UI Enhancements:
   - Collapsible command panels in output (currently only used for logged command)
   - Dialog positioning on same screen as IDE
+  - Some styling adjustments for the output viewer
 
 - Performance & Reliability:
   - Option to enable Local model cost mapping (prevents http requests on aider startup)
