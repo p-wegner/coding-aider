@@ -1,6 +1,7 @@
 package de.andrena.codingaider.services
 
 import com.intellij.openapi.components.Service
+import de.andrena.codingaider.utils.GitUtils
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.services.plans.AiderPlanService.Companion.STRUCTURED_MODE_MARKER
 import java.io.File
@@ -9,8 +10,9 @@ import java.time.format.DateTimeFormatter
 
 @Service(Service.Level.PROJECT)
 class AiderHistoryService(private val project: Project) {
-    private val inputHistoryFile = File(project.basePath, ".aider.input.history")
-    private val chatHistoryFile = File(project.basePath, ".aider.chat.history.md")
+    private val gitRoot = GitUtils.findGitRoot(File(project.basePath!!))
+    private val inputHistoryFile = File(gitRoot?.path ?: project.basePath, ".aider.input.history")
+    private val chatHistoryFile = File(gitRoot?.path ?: project.basePath, ".aider.chat.history.md")
     private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
 
     fun getInputHistory(): List<Pair<LocalDateTime, List<String>>> {
