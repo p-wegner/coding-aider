@@ -559,6 +559,16 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             """.trimIndent()
         }
 
+        // Process intention and summary blocks to remove extra newlines
+        processedHtml = processedHtml.replace(
+            Regex("""<div class="aider-intention">\s*<p>\s*(.*?)\s*</p>\s*</div>""", RegexOption.DOT_MATCHES_ALL)) { matchResult ->
+                "<div class=\"aider-intention\">${matchResult.groupValues[1].trim()}</div>"
+        }
+        processedHtml = processedHtml.replace(
+            Regex("""<div class="aider-summary">\s*<p>\s*(.*?)\s*</p>\s*</div>""", RegexOption.DOT_MATCHES_ALL)) { matchResult ->
+                "<div class=\"aider-summary\">${matchResult.groupValues[1].trim()}</div>"
+        }
+
         // Process search/replace blocks
         return processedHtml.replace(
             Regex("""(?s)<pre><code>(.+?)<<<<<<< SEARCH\n(.*?)=======\n(.*?)>>>>>>> REPLACE\n</code></pre>"""),
