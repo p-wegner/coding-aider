@@ -9,56 +9,79 @@
 ## 🚀 New Features
 
 - LM Studio Provider Support:
-  - OpenAI-compatible API endpoints integration
+  - LM Studio API endpoint support
   - Optional API key support for secured instances
-  - Default local URL configuration (http://localhost:1234/v1)
-  - Docker network host mode support
 
 - Git Code Review:
   - Branch and commit comparison
-  - Customizable review focus areas
-  - Detailed diff analysis
-  - Summarized feedback with actionable insights
+  - will use persistent files, git diff and current files that were changed between refs as context
+  - free-form prompt to allow different use cases, e.g. code review feedback or release note generation
 
 - Working Directory Enhancements:
-  - Improved directory validation
-  - Visual feedback in tool window
-  - Path normalization and canonical path handling
-  - Proper error messages for invalid selections
+  - Action in project view to directly set working directory to a selected folder 
 
 - TODO Management:
   - Quick fix action for TODOs
   - Interactive mode with custom prompts
   - File context awareness
   - Integration with existing inspection system
-
+- Reintroduce option for default AiderMode
+- 
 ## 💡 Improvements
 
-- Image Handling:
-  - Enhanced drag & drop support
-  - Visual feedback during drag operations
-  - Better file type detection
-  - Improved error handling
-
 - UI Enhancements:
-  - Collapsible command panels in output
-  - Better UTF-8 handling in markdown viewer
+  - Collapsible command panels in output (currently only used for logged command)
   - Dialog positioning on same screen as IDE
-  - Improved scroll behavior
 
 - Performance & Reliability:
-  - Local model cost mapping option
-  - Reasoning effort settings for specific models
+  - Option to enable Local model cost mapping (prevents http requests on aider startup)
+  - Reasoning effort settings for built-in reasoning models 
   - Better error handling in Git operations
-  - Improved file system operations
 
 ## 🔧 Bug Fixes
-- Fixed encoding issues with UTF-8 in markdown viewer
-- Fixed dialog positioning across multiple screens
 - Improved file path handling in persistent files
-- Enhanced error messages for Git operations
 
 ## Previous Versions
+# Coding-Aider Plugin Release Notes - v1.2.7
+
+## 🌟 Key Highlight
+
+Enhanced Plan Mode stands out as the most significant feature, introducing:
+- Hierarchical plan management with parent-child relationships
+- Visual tree representation for better plan organization
+- Improved plan continuation and refinement capabilities
+- Archive system for completed plans
+  This feature dramatically improves project organization and execution workflow.
+
+## 🚀 New Features
+
+- Working Directory Support:
+  - Configure specific working directory for Aider operations
+  - Files outside working directory are excluded from context
+  - Working directory panel in tool window
+- Improved Markdown Output Viewer (Running Command and Last Command Result):
+  - Replaced Swing Browser with Chromium based JCEF Browser for better css support
+  - Improved scrolling behavior and layout responsiveness
+  - Better styling for code blocks and search/replace sections
+  - Autoscrolling with manual scroll position saving
+  - Improved Parsing for Last Command Result
+- Enhanced Plan Mode:
+  - Support for hierarchical plans with parent-child relationships
+  - Tree visualization (experimental) for plan hierarchy
+  - Reworked system prompt
+  - Plan refinement capabilities
+  - Improved plan continuation logic
+  - Archive functionality for completed plans
+- Experimental Sidecar Mode for plan execution
+  - Ideally an aider process can be used until the plan is finished
+- Setting for structured xml output blocks for summary and intention
+- Support for custom "aider model", e.g. simple way to add aider supported llms like `r1` to dropdown without additional api key setup
+- Added action to add files from a (plan) yaml file to the persistent file list
+-
+## 🔧 Fixes and Improvements
+- Duplicate aider executeable path in settings fix
+- Customize used docker image and tag in settings
+- Removed Api Key setup for vertex ai provider
 
 # Coding-Aider Plugin Release Notes - v1.2.5
 
