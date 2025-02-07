@@ -289,23 +289,30 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     pre {
                         background: ${colors["preBg"]};
                         border: 1px solid ${colors["preBorder"]};
-                        padding: 16px;
-                        margin: 16px 0;
-                        border-radius: 8px;
-                        box-shadow: 0 2px 4px ${if (isDark) "rgba(0,0,0,0.3)" else "rgba(0,0,0,0.1)"};
+                        padding: 20px;
+                        margin: 20px 0;
+                        border-radius: 10px;
+                        box-shadow: 0 3px 6px ${if (isDark) "rgba(0,0,0,0.4)" else "rgba(0,0,0,0.15)"};
                         overflow-x: auto;
                         max-width: 100%;
                         white-space: pre-wrap;
                         word-wrap: break-word;
                         box-sizing: border-box;
-                        width: calc(100% - 32px); /* Account for padding */
+                        width: calc(100% - 40px);
+                        transition: all 0.2s ease;
+                    }
+
+                    pre:hover {
+                        box-shadow: 0 5px 12px ${if (isDark) "rgba(0,0,0,0.5)" else "rgba(0,0,0,0.2)"};
+                        transform: translateY(-1px);
                     }
                     
                     pre code {
                         font-family: 'JetBrains Mono', Consolas, Monaco, 'Courier New', monospace;
-                        font-size: 14px;
-                        line-height: 1.5;
+                        font-size: 15px;
+                        line-height: 1.6;
                         tab-size: 4;
+                        letter-spacing: 0.3px;
                     }
                     .search-block {
                         background: ${colors["searchBg"]};
@@ -360,10 +367,10 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     .collapsible-panel {
                         background: ${if (isDark) "#2d2d2d" else "#f8f8f8"};
                         border: 1px solid ${if (isDark) "#404040" else "#e0e0e0"};
-                        border-radius: 6px;
-                        margin: 10px 0;
+                        border-radius: 8px;
+                        margin: 16px 0;
                         overflow: hidden;
-                        transition: all 0.3s ease;
+                        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                     }
 
                     .collapsible-panel.expanded {
@@ -397,8 +404,13 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     .collapsible-content {
                         max-height: 0;
                         overflow: hidden;
-                        transition: max-height 0.3s ease-out;
+                        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
                         padding: 0 15px;
+                        opacity: 0;
+                    }
+
+                    .collapsible-panel.expanded .collapsible-content {
+                        opacity: 1;
                     }
 
                     .collapsible-panel.expanded .collapsible-arrow {
