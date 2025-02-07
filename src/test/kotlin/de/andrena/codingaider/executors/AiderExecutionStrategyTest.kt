@@ -113,6 +113,7 @@ class AiderExecutionStrategyTest : BasePlatformTestCase() {
             "--no-pretty",
             "--no-fancy-input",
             "--no-detect-urls",
+            "--no-check-update",
             "--verbose",
             "--lint-cmd",
             "lint",
@@ -139,6 +140,7 @@ class AiderExecutionStrategyTest : BasePlatformTestCase() {
             "--no-pretty",
             "--no-fancy-input",
             "--no-detect-urls",
+            "--no-check-update",
             "--verbose",
             "--lint-cmd",
             "lint",
@@ -159,11 +161,11 @@ class AiderExecutionStrategyTest : BasePlatformTestCase() {
             "-w", "/app",
             "--cidfile", "/tmp/docker.cid",
             "-v", "/project:/app",
-            "paulgauthier/aider:v0.72.3",
+            "paulgauthier/aider:v0.74.0",
             "--4o",
             "--file", "/app/file1.txt", "--yes", "--edit-format", "diff",
             "--no-suggest-shell-commands", "--no-pretty",
-            "--no-fancy-input", "--no-detect-urls", "--verbose", "--lint-cmd", "lint",
+            "--no-fancy-input", "--no-detect-urls","--no-check-update", "--verbose", "--lint-cmd", "lint",
             "--map-tokens", "0", "-m", "Test message"
         )
     }
@@ -177,10 +179,10 @@ class AiderExecutionStrategyTest : BasePlatformTestCase() {
             "-w", "/app",
             "--cidfile", "/tmp/docker.cid",
             "-v", "/project:/app",
-            "paulgauthier/aider:v0.72.3",
+            "paulgauthier/aider:v0.74.0",
             "--file", "/app/file1.txt", "--yes", "--edit-format", "diff",
             "--no-suggest-shell-commands", "--no-pretty",
-            "--no-fancy-input", "--no-detect-urls", "--verbose", "--lint-cmd", "lint",
+            "--no-fancy-input", "--no-detect-urls","--no-check-update", "--verbose", "--lint-cmd", "lint",
             "--map-tokens", "0", "-m", "Test message"
         )
     }

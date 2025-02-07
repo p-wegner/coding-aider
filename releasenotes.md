@@ -2,7 +2,7 @@
 
 ## 🌟 Key Highlights
 
-- **LM Studio Integration**: Full support for local LM Studio instances with OpenAI-compatible API endpoints
+- **LM Studio Integration**: Full support for LM Studio instances with  LM Studio API endpoints
 - **Git Code Review**: New feature for AI-powered code review between branches/commits
 - **Enhanced TODO Management**: Quick and interactive TODO fix actions
 
@@ -19,6 +19,7 @@
 
 - Working Directory Enhancements:
   - Action in project view to directly set working directory to a selected folder 
+  - Input and Chat History parsing features will use git root as base path (aider uses git root, even when started in subdir)
 
 - TODO Management:
   - Quick fix action for TODOs
@@ -26,7 +27,8 @@
   - File context awareness
   - Integration with existing inspection system
 - Reintroduce option for default AiderMode
-- 
+
+
 ## 💡 Improvements
 
 - UI Enhancements:
