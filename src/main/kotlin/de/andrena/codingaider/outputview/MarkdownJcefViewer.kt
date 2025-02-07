@@ -572,13 +572,15 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         }
 
         // Process intention and summary blocks to remove extra newlines
+        // Process intention blocks - preserve intended line breaks but remove extra whitespace
         processedHtml = processedHtml.replace(
-            Regex("""<div class="aider-intention">\s*<p>\s*(.*?)\s*</p>\s*</div>""", RegexOption.DOT_MATCHES_ALL)) { matchResult ->
-                "<div class=\"aider-intention\">${matchResult.groupValues[1].trim()}</div>"
+            Regex("""<div class="aider-intention">\s*<p>(.*?)</p>\s*</div>""", RegexOption.DOT_MATCHES_ALL)) { matchResult ->
+                "<div class=\"aider-intention\">${matchResult.groupValues[1].replace(Regex("\\s*\n\\s*"), "\n").trim()}</div>"
         }
+        // Process summary blocks similarly
         processedHtml = processedHtml.replace(
-            Regex("""<div class="aider-summary">\s*<p>\s*(.*?)\s*</p>\s*</div>""", RegexOption.DOT_MATCHES_ALL)) { matchResult ->
-                "<div class=\"aider-summary\">${matchResult.groupValues[1].trim()}</div>"
+            Regex("""<div class="aider-summary">\s*<p>(.*?)</p>\s*</div>""", RegexOption.DOT_MATCHES_ALL)) { matchResult ->
+                "<div class=\"aider-summary\">${matchResult.groupValues[1].replace(Regex("\\s*\n\\s*"), "\n").trim()}</div>"
         }
 
         // Process search/replace blocks
