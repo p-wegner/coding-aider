@@ -323,12 +323,12 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         margin: 0;
                     }
                     .aider-intention, .aider-summary {
-                        border-radius: 12px;
-                        padding: 24px;
-                        margin: 32px 0;
+                        border-radius: 8px;
+                        padding: 16px;
+                        margin: 16px 0;
                         position: relative;
-                        font-size: 15px;
-                        line-height: 1.7;
+                        font-size: 14px;
+                        line-height: 1.5;
                         box-shadow: 0 4px 12px ${if (isDark) "rgba(0,0,0,0.4)" else "rgba(0,0,0,0.15)"};
                         white-space: pre-wrap;
                         word-wrap: break-word;
@@ -412,11 +412,11 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     .aider-summary::before {
                         display: block;
                         font-weight: bold;
-                        font-size: 17px;
-                        margin: -24px -24px 16px -24px;
-                        padding: 16px 24px;
-                        letter-spacing: 0.5px;
-                        border-bottom: 2px solid;
+                        font-size: 15px;
+                        margin: -16px -16px 12px -16px;
+                        padding: 12px 16px;
+                        letter-spacing: 0.3px;
+                        border-bottom: 1px solid;
                         background: ${if (isDark) "rgba(255,255,255,0.05)" else "rgba(0,0,0,0.03)"};
                         border-radius: 12px 12px 0 0;
                     }
