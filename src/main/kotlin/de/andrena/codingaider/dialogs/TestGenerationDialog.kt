@@ -63,6 +63,7 @@ class TestGenerationDialog(
         lineWrap = true
         wrapStyleWord = true
         font = font.deriveFont(12f)
+        emptyText.text = "Enter additional instructions (optional)"
     }
 
     init {
@@ -81,7 +82,7 @@ class TestGenerationDialog(
     private fun updatePromptTemplate() {
         val selectedType = getSelectedTestType()
         if (selectedType != null) {
-            promptArea.text = selectedType.promptTemplate
+            promptArea.emptyText.text = selectedType.promptTemplate
         }
     }
 
@@ -183,19 +184,24 @@ class TestGenerationDialog(
         val sourceFileNames = sourceFiles.map { it.filePath }
         val referenceFileNames = referenceFiles.map { it.filePath }
         
-        return """
-            Generate tests for the following files: $sourceFileNames
-            Test type: ${testType.name}
+        val additionalPrompt = getAdditionalPrompt().trim()
+        
+        return buildString {
+            appendLine("Generate tests for the following files: $sourceFileNames")
+            appendLine("Test type: ${testType.name}")
+            appendLine()
+            appendLine("Reference files to use as examples: $referenceFileNames")
+            appendLine("Test files will be generated using pattern: ${testType.testFilePattern}")
+            appendLine()
+            appendLine("Instructions:")
+            appendLine(testType.promptTemplate)
             
-            Reference files to use as examples: $referenceFileNames
-            Test files will be generated using pattern: ${testType.testFilePattern}
-            
-            Use the following template:
-            ${testType.promptTemplate}
-            
-            Additional instructions:
-            ${getAdditionalPrompt()}
-        """.trimIndent()
+            if (additionalPrompt.isNotEmpty()) {
+                appendLine()
+                appendLine("Additional instructions:")
+                appendLine(additionalPrompt)
+            }
+        }.trimEnd()
     }
 
     private fun getSelectedTestType(): TestTypeConfiguration? = testTypeComboBox.selectedItem as? TestTypeConfiguration
