@@ -65,6 +65,8 @@ class TestTypeDialog(
                 cell(nameField)
                     .resizableColumn()
                     .align(com.intellij.ui.dsl.builder.AlignX.FILL)
+                cell(enabledCheckBox)
+                    .align(com.intellij.ui.dsl.builder.AlignX.RIGHT)
             }
             row("Prompt Template:") {
                 cell(JBScrollPane(promptTemplateArea))
@@ -82,29 +84,25 @@ class TestTypeDialog(
                     .resizableColumn()
                     .align(com.intellij.ui.dsl.builder.AlignX.FILL)
             }
-            row {
-                cell(enabledCheckBox)
-            }
             row("Context Files:") {
                 cell(JBScrollPane(contextFilesList))
                     .resizableColumn()
                     .align(com.intellij.ui.dsl.builder.AlignY.FILL)
                     .align(com.intellij.ui.dsl.builder.AlignX.FILL)
-            }
+            }.resizableRow()
             row {
                 button("Add Files") { addContextFiles() }
                 button("Remove Selected") { removeSelectedContextFiles() }
             }
         }
         
-        contentPanel.preferredSize = java.awt.Dimension(600, 400)
+        contentPanel.preferredSize = java.awt.Dimension(800, 600)
         
-        val scrollPane = JBScrollPane(contentPanel).apply {
+        return JBScrollPane(contentPanel).apply {
             horizontalScrollBarPolicy = JBScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
             verticalScrollBarPolicy = JBScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
+            border = null // Remove border for cleaner look
         }
-        
-        return scrollPane
     }
     
     override fun doValidate(): ValidationInfo? {
