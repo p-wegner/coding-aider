@@ -81,4 +81,57 @@ class AiderProjectSettingsTest {
         settings.removeTestType(0)
         assertThat(settings.getTestTypes()).isEmpty()
     }
+
+    @Test
+    fun `test type configuration should handle different test patterns`() {
+        val settings = AiderProjectSettings(null)
+        val configs = listOf(
+            AiderProjectSettings.TestTypeConfiguration(
+                name = "Unit Test",
+                promptTemplate = "Generate unit test",
+                referenceFilePattern = ".*Test\\.kt$",
+                testFilePattern = "*Test.kt",
+                isEnabled = true
+            ),
+            AiderProjectSettings.TestTypeConfiguration(
+                name = "Integration Test",
+                promptTemplate = "Generate integration test",
+                referenceFilePattern = ".*IT\\.kt$",
+                testFilePattern = "*IT.kt",
+                isEnabled = true
+            ),
+            AiderProjectSettings.TestTypeConfiguration(
+                name = "Spec Test",
+                promptTemplate = "Generate spec test",
+                referenceFilePattern = ".*Spec\\.kt$",
+                testFilePattern = "*Spec.kt",
+                isEnabled = false
+            )
+        )
+
+        configs.forEach { settings.addTestType(it) }
+        
+        val savedTypes = settings.getTestTypes()
+        assertThat(savedTypes).hasSize(3)
+        assertThat(savedTypes.filter { it.isEnabled }).hasSize(2)
+        assertThat(savedTypes.map { it.testFilePattern })
+            .containsExactly("*Test.kt", "*IT.kt", "*Spec.kt")
+    }
+
+    @Test
+    fun `test type configuration should handle reference patterns`() {
+        val settings = AiderProjectSettings(null)
+        val config = AiderProjectSettings.TestTypeConfiguration(
+            name = "Complex Pattern",
+            promptTemplate = "Generate test",
+            referenceFilePattern = ".*(Test|IT|Spec)\\.kt$",
+            testFilePattern = "*Test.kt",
+            isEnabled = true
+        )
+
+        settings.addTestType(config)
+        val savedType = settings.getTestTypes().first()
+        
+        assertThat(savedType.referenceFilePattern).isEqualTo(".*(Test|IT|Spec)\\.kt$")
+    }
 }
