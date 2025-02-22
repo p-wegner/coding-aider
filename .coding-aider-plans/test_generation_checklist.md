@@ -15,8 +15,8 @@
 - [x] Add action to plugin.xml configuration
 - [x] Implement test type dropdown population
 - [x] Add prompt template processing
-- [ ] Create test file generation logic
-- [ ] Implement reference file handling
+- [x] Create test file generation logic
+- [x] Implement reference file handling
 
 ## Integration
 - [ ] Add keyboard shortcuts

@@ -67,10 +67,22 @@ class TestGenerationDialog(
         val testType = getSelectedTestType() ?: return
         val allFiles = FileTraversal.traverseFilesOrDirectories(selectedFiles)
         
+        // Create test file paths based on source files
+        val sourceFiles = allFiles.filter { file ->
+            !file.filePath.matches(Regex(testType.referenceFilePattern))
+        }
+        
+        val testFilePaths = sourceFiles.map { sourceFile ->
+            val fileName = java.io.File(sourceFile.filePath).nameWithoutExtension
+            val testFileName = testType.testFilePattern.replace("*", fileName)
+            val sourcePath = java.io.File(sourceFile.filePath).parent
+            "$sourcePath/$testFileName"
+        }
+        
         val commandData = CommandData(
             message = buildPrompt(testType, allFiles),
             useYesFlag = true,
-            files = allFiles,
+            files = allFiles + testFilePaths.map { FileData(it, false) },
             projectPath = project.basePath ?: ""
         )
         
@@ -79,19 +91,25 @@ class TestGenerationDialog(
     }
 
     private fun buildPrompt(testType: TestTypeConfiguration, files: List<FileData>): String {
-        val fileNames = files.map { it.filePath }
+        val (sourceFiles, referenceFiles) = files.partition { file ->
+            !file.filePath.matches(Regex(testType.referenceFilePattern))
+        }
+        
+        val sourceFileNames = sourceFiles.map { it.filePath }
+        val referenceFileNames = referenceFiles.map { it.filePath }
+        
         return """
-            Generate tests for the following files: $fileNames
+            Generate tests for the following files: $sourceFileNames
             Test type: ${testType.name}
+            
+            Reference files to use as examples: $referenceFileNames
+            Test files will be generated using pattern: ${testType.testFilePattern}
             
             Use the following template:
             ${testType.promptTemplate}
             
             Additional instructions:
             ${getAdditionalPrompt()}
-            
-            Reference file pattern: ${testType.referenceFilePattern}
-            Test file pattern: ${testType.testFilePattern}
         """.trimIndent()
     }
 
