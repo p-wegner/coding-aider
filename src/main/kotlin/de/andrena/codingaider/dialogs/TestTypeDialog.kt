@@ -8,6 +8,7 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.panel
+import com.intellij.ui.dsl.builder.rows
 import de.andrena.codingaider.settings.AiderProjectSettings
 import javax.swing.JComponent
 
@@ -46,7 +47,6 @@ class TestTypeDialog(
         row("Prompt Template:") {
             cell(JBScrollPane(promptTemplateArea))
                 .resizableColumn()
-                .rows(3)
         }
         row("Reference File Pattern:") {
             cell(referencePatternField)

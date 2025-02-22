@@ -8,7 +8,9 @@ import com.intellij.ui.components.JBList
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.command.FileData
+import de.andrena.codingaider.dialogs.TestTypeDialog
 import de.andrena.codingaider.services.PersistentFileService
+import java.awt.BorderLayout
 import java.awt.Component
 import javax.swing.*
 

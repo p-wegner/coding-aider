@@ -8,6 +8,7 @@
 - [x] Create UI components for test type management in AiderProjectSettingsConfigurable
 - [x] Implement persistence for test type configurations
 - [x] Add validation for test type settings
+- [x] Add default test type configurations
 
 ## Action Implementation
 - [x] Create GenerateTestAction class
