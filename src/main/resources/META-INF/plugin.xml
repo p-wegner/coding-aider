@@ -168,8 +168,11 @@
             <action id="de.andrena.codingaider.actions.aider.GenerateTestAction"
                     class="de.andrena.codingaider.actions.aider.GenerateTestAction"
                     text="Generate Tests with Aider"
-                    description="Generate tests for selected files using configured test types">
+                    description="Generate tests for selected files using configured test types"
+                    icon="AllIcons.Actions.AddFile">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt T"/>
+                <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+                <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
             </action>
             <action id="de.andrena.codingaider.actions.aider.ApplyDesignPatternAction"
                     class="de.andrena.codingaider.actions.aider.ApplyDesignPatternAction"

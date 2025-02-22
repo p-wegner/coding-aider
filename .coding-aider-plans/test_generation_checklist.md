@@ -19,8 +19,8 @@
 - [x] Implement reference file handling
 
 ## Integration
-- [ ] Add keyboard shortcuts
-- [ ] Add action to relevant menus
+- [x] Add keyboard shortcuts
+- [x] Add action to relevant menus
 - [ ] Implement progress indicators
 - [ ] Add error handling
 - [ ] Add success notifications
