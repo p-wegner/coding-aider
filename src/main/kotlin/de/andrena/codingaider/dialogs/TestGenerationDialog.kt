@@ -81,15 +81,18 @@ class TestGenerationDialog(
             row("Test Type:") {
                 cell(testTypeComboBox)
                     .resizableColumn()
+                    .align(com.intellij.ui.dsl.builder.AlignX.FILL)
             }
             row("Instructions:") {
                 cell(JBScrollPane(promptArea))
                     .resizableColumn()
                     .align(com.intellij.ui.dsl.builder.AlignY.FILL)
-            }
+                    .align(com.intellij.ui.dsl.builder.AlignX.FILL)
+            }.resizableRow()
         }
         
-        panel.preferredSize = java.awt.Dimension(600, 400)
+        panel.preferredSize = java.awt.Dimension(800, 600)
+        panel.minimumSize = java.awt.Dimension(400, 300)
         return panel
     }
 
