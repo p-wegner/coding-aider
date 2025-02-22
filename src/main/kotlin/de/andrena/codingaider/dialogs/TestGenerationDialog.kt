@@ -24,11 +24,32 @@ class TestGenerationDialog(
     private val selectedFiles: Array<VirtualFile>
 ) : DialogWrapper(project) {
     private val settings = AiderProjectSettings.getInstance(project)
-    private val testTypeComboBox = ComboBox<TestTypeConfiguration>()
+    private val testTypeComboBox = ComboBox<TestTypeConfiguration>().apply {
+        renderer = DefaultListCellRenderer().apply {
+            fun getListCellRendererComponent(
+                list: JList<*>?,
+                value: Any?,
+                index: Int,
+                isSelected: Boolean,
+                cellHasFocus: Boolean
+            ): Component {
+                val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
+                if (component is JLabel && value is TestTypeConfiguration) {
+                    text = value.name
+                }
+                return component
+            }
+        }
+        addActionListener {
+            updatePromptTemplate()
+        }
+    }
+    
     private val promptArea = JBTextArea().apply {
-        rows = 5
+        rows = 15
         lineWrap = true
         wrapStyleWord = true
+        font = font.deriveFont(12f)
     }
 
     init {
@@ -44,16 +65,28 @@ class TestGenerationDialog(
             .forEach { testTypeComboBox.addItem(it) }
     }
 
+    private fun updatePromptTemplate() {
+        val selectedType = getSelectedTestType()
+        if (selectedType != null && promptArea.text.isEmpty()) {
+            promptArea.text = selectedType.promptTemplate
+        }
+    }
+
     override fun createCenterPanel(): JComponent {
-        return panel {
+        val panel = panel {
             row("Test Type:") {
                 cell(testTypeComboBox)
-            }
-            row("Additional Instructions:") {
-                cell(JBScrollPane(promptArea))
                     .resizableColumn()
             }
+            row("Instructions:") {
+                cell(JBScrollPane(promptArea))
+                    .resizableColumn()
+                    .align(com.intellij.ui.dsl.builder.AlignY.FILL)
+            }
         }
+        
+        panel.preferredSize = java.awt.Dimension(600, 400)
+        return panel
     }
 
     override fun doValidate(): ValidationInfo? {
