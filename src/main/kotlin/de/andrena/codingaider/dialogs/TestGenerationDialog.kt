@@ -25,8 +25,8 @@ class TestGenerationDialog(
 ) : DialogWrapper(project) {
     private val settings = AiderProjectSettings.getInstance(project)
     private val testTypeComboBox = ComboBox<TestTypeConfiguration>().apply {
-        renderer = DefaultListCellRenderer().apply {
-            fun getListCellRendererComponent(
+        renderer = object : DefaultListCellRenderer() {
+            override fun getListCellRendererComponent(
                 list: JList<*>?,
                 value: Any?,
                 index: Int,
