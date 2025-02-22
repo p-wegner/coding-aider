@@ -28,6 +28,6 @@
 ## Testing
 - [x] Unit tests for TestTypeConfiguration
 - [x] Unit tests for settings persistence
-- [ ] Integration tests for dialog
-- [ ] Test different test type configurations
-- [ ] Test reference file handling
+- [x] Integration tests for dialog
+- [x] Test different test type configurations
+- [x] Test reference file handling
