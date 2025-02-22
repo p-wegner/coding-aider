@@ -180,7 +180,7 @@ class TestGenerationDialog(
             )
         }
     }
-
+// TODO: extrac to a separate service, similar to AiderPlanPromptService
     private fun buildPrompt(testType: TestTypeConfiguration, files: List<FileData>): String {
         val (sourceFiles, referenceFiles) = files.partition { file ->
             !file.filePath.matches(Regex(testType.referenceFilePattern))
