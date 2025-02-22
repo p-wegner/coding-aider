@@ -15,7 +15,8 @@ class AiderProjectSettings(private val project: Project) : PersistentStateCompon
         var promptTemplate: String = "",
         var referenceFilePattern: String = "",
         var testFilePattern: String = "*Test.kt",
-        var isEnabled: Boolean = true
+        var isEnabled: Boolean = true,
+        var contextFiles: List<String> = listOf()
     )
 
     data class State(

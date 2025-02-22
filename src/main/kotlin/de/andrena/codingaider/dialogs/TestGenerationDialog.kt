@@ -149,10 +149,13 @@ class TestGenerationDialog(
         }
 
         try {
+            // Add context files to the file list
+            val contextFiles = testType.contextFiles.map { FileData(it, true) }
+        
             val commandData = CommandData(
                 message = buildPrompt(testType, allFiles),
                 useYesFlag = true,
-                files = allFiles + testFilePaths.map { FileData(it, false) },
+                files = allFiles + testFilePaths.map { FileData(it, false) } + contextFiles,
                 projectPath = project.basePath ?: "",
                 llm = settings.llm,
                 additionalArgs = settings.additionalArgs,

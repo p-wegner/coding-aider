@@ -26,17 +26,36 @@ class TestTypeDialog(
     private val referencePatternField = JBTextField()
     private val testPatternField = JBTextField()
     private val enabledCheckBox = JBCheckBox("Enabled")
+    private val contextFilesList = com.intellij.ui.components.JBList<String>()
+    private val contextFilesModel = javax.swing.DefaultListModel<String>()
     
     init {
         title = if (existing == null) "Add Test Type" else "Edit Test Type"
+        contextFilesList.model = contextFilesModel
+        
         existing?.let {
             nameField.text = it.name
             promptTemplateArea.text = it.promptTemplate
             referencePatternField.text = it.referenceFilePattern
             testPatternField.text = it.testFilePattern
             enabledCheckBox.isSelected = it.isEnabled
+            it.contextFiles.forEach { file -> contextFilesModel.addElement(file) }
         }
         init()
+    }
+
+    private fun addContextFiles() {
+        val descriptor = com.intellij.openapi.fileChooser.FileChooserDescriptor(true, true, false, false, false, true)
+        val files = com.intellij.openapi.fileChooser.FileChooser.chooseFiles(descriptor, project, null)
+        files.forEach { file ->
+            if (!contextFilesModel.contains(file.path)) {
+                contextFilesModel.addElement(file.path)
+            }
+        }
+    }
+
+    private fun removeSelectedContextFiles() {
+        contextFilesList.selectedValuesList.forEach { contextFilesModel.removeElement(it) }
     }
     
     override fun createCenterPanel(): JComponent {
@@ -65,6 +84,16 @@ class TestTypeDialog(
             row {
                 cell(enabledCheckBox)
             }
+            row("Context Files:") {
+                cell(JBScrollPane(contextFilesList))
+                    .resizableColumn()
+                    .align(com.intellij.ui.dsl.builder.AlignY.FILL)
+                    .align(com.intellij.ui.dsl.builder.AlignX.FILL)
+            }
+            row {
+                button("Add Files") { addContextFiles() }
+                button("Remove Selected") { removeSelectedContextFiles() }
+            }
         }
         
         panel.preferredSize = java.awt.Dimension(600, 400)
@@ -86,6 +115,7 @@ class TestTypeDialog(
         promptTemplate = promptTemplateArea.text,
         referenceFilePattern = referencePatternField.text,
         testFilePattern = testPatternField.text,
-        isEnabled = enabledCheckBox.isSelected
+        isEnabled = enabledCheckBox.isSelected,
+        contextFiles = List(contextFilesModel.size()) { contextFilesModel.getElementAt(it) }
     )
 }
