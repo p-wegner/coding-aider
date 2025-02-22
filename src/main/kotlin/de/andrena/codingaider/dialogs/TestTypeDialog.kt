@@ -60,7 +60,7 @@ class TestTypeDialog(
     }
     
     override fun createCenterPanel(): JComponent {
-        val panel = panel {
+        val contentPanel = panel {
             row("Name:") {
                 cell(nameField)
                     .resizableColumn()
@@ -97,9 +97,14 @@ class TestTypeDialog(
             }
         }
         
-        panel.preferredSize = java.awt.Dimension(600, 400)
-        panel.minimumSize = java.awt.Dimension(400, 300)
-        return panel
+        contentPanel.preferredSize = java.awt.Dimension(600, 400)
+        
+        val scrollPane = JBScrollPane(contentPanel).apply {
+            horizontalScrollBarPolicy = JBScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+            verticalScrollBarPolicy = JBScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
+        }
+        
+        return scrollPane
     }
     
     override fun doValidate(): ValidationInfo? {
