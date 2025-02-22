@@ -39,26 +39,37 @@ class TestTypeDialog(
         init()
     }
     
-    override fun createCenterPanel(): JComponent = panel {
-        row("Name:") {
-            cell(nameField)
-                .resizableColumn()
+    override fun createCenterPanel(): JComponent {
+        val panel = panel {
+            row("Name:") {
+                cell(nameField)
+                    .resizableColumn()
+                    .align(com.intellij.ui.dsl.builder.AlignX.FILL)
+            }
+            row("Prompt Template:") {
+                cell(JBScrollPane(promptTemplateArea))
+                    .resizableColumn()
+                    .align(com.intellij.ui.dsl.builder.AlignY.FILL)
+                    .align(com.intellij.ui.dsl.builder.AlignX.FILL)
+            }.resizableRow()
+            row("Reference File Pattern:") {
+                cell(referencePatternField)
+                    .resizableColumn()
+                    .align(com.intellij.ui.dsl.builder.AlignX.FILL)
+            }
+            row("Test File Pattern:") {
+                cell(testPatternField)
+                    .resizableColumn()
+                    .align(com.intellij.ui.dsl.builder.AlignX.FILL)
+            }
+            row {
+                cell(enabledCheckBox)
+            }
         }
-        row("Prompt Template:") {
-            cell(JBScrollPane(promptTemplateArea))
-                .resizableColumn()
-        }
-        row("Reference File Pattern:") {
-            cell(referencePatternField)
-                .resizableColumn()
-        }
-        row("Test File Pattern:") {
-            cell(testPatternField)
-                .resizableColumn()
-        }
-        row {
-            cell(enabledCheckBox)
-        }
+        
+        panel.preferredSize = java.awt.Dimension(600, 400)
+        panel.minimumSize = java.awt.Dimension(400, 300)
+        return panel
     }
     
     override fun doValidate(): ValidationInfo? {
