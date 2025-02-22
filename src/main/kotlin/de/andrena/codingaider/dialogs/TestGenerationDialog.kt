@@ -17,7 +17,11 @@ import de.andrena.codingaider.settings.AiderProjectSettings
 import de.andrena.codingaider.settings.AiderProjectSettings.TestTypeConfiguration
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.FileTraversal
+import java.awt.Component
+import javax.swing.DefaultListCellRenderer
 import javax.swing.JComponent
+import javax.swing.JLabel
+import javax.swing.JList
 
 class TestGenerationDialog(
     private val project: Project,
