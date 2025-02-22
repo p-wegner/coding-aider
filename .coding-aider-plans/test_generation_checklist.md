@@ -26,9 +26,3 @@
 - [x] Add error handling
 - [x] Add success notifications
 
-## Testing
-- [x] Unit tests for TestTypeConfiguration
-- [x] Unit tests for settings persistence
-- [x] Integration tests for dialog
-- [x] Test different test type configurations
-- [x] Test reference file handling

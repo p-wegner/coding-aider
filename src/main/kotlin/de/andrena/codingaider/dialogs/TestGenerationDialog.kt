@@ -1,5 +1,12 @@
 package de.andrena.codingaider.dialogs
 
+import com.intellij.icons.AllIcons
+import com.intellij.openapi.actionSystem.ActionToolbar
+import com.intellij.openapi.actionSystem.AnAction
+import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.Presentation
+import com.intellij.openapi.actionSystem.impl.ActionButton
+import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
@@ -9,6 +16,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.dsl.builder.panel
+import de.andrena.codingaider.settings.AiderProjectSettingsConfigurable
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
@@ -28,6 +36,7 @@ class TestGenerationDialog(
     private val selectedFiles: Array<VirtualFile>
 ) : DialogWrapper(project) {
     private val settings = AiderProjectSettings.getInstance(project)
+    private val settingsButton = createSettingsButton()
     private val testTypeComboBox = ComboBox<TestTypeConfiguration>().apply {
         renderer = object : DefaultListCellRenderer() {
             override fun getListCellRendererComponent(
@@ -76,12 +85,29 @@ class TestGenerationDialog(
         }
     }
 
+    private fun createSettingsButton(): ActionButton {
+        val settingsAction = object : AnAction() {
+            override fun actionPerformed(e: AnActionEvent) {
+                ShowSettingsUtil.getInstance().showSettingsDialog(project, AiderProjectSettingsConfigurable::class.java)
+            }
+        }
+        val presentation = Presentation("Open Settings").apply {
+            icon = AllIcons.General.Settings
+            description = "Open test type settings"
+        }
+        return ActionButton(
+            settingsAction, presentation, "TestTypeSettingsButton", ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
+        )
+    }
+
     override fun createCenterPanel(): JComponent {
         val panel = panel {
             row("Test Type:") {
                 cell(testTypeComboBox)
                     .resizableColumn()
                     .align(com.intellij.ui.dsl.builder.AlignX.FILL)
+                cell(settingsButton)
+                    .align(com.intellij.ui.dsl.builder.AlignX.RIGHT)
             }
             row("Instructions:") {
                 cell(JBScrollPane(promptArea))
