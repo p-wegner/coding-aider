@@ -180,33 +180,10 @@ class TestGenerationDialog(
             )
         }
     }
-// TODO: extrac to a separate service, similar to AiderPlanPromptService
+    private val promptService = TestGenerationPromptService()
+
     private fun buildPrompt(testType: TestTypeConfiguration, files: List<FileData>): String {
-        val (sourceFiles, referenceFiles) = files.partition { file ->
-            !file.filePath.matches(Regex(testType.referenceFilePattern))
-        }
-        
-        val sourceFileNames = sourceFiles.map { it.filePath }
-        val referenceFileNames = referenceFiles.map { it.filePath }
-        
-        val additionalPrompt = getAdditionalPrompt().trim()
-        
-        return buildString {
-            appendLine("Generate tests for the following files: $sourceFileNames")
-            appendLine("Test type: ${testType.name}")
-            appendLine()
-            appendLine("Reference files to use as examples: $referenceFileNames")
-            appendLine("Test files will be generated using pattern: ${testType.testFilePattern}")
-            appendLine()
-            appendLine("Instructions:")
-            appendLine(testType.promptTemplate)
-            
-            if (additionalPrompt.isNotEmpty()) {
-                appendLine()
-                appendLine("Additional instructions:")
-                appendLine(additionalPrompt)
-            }
-        }.trimEnd()
+        return promptService.buildPrompt(testType, files, getAdditionalPrompt())
     }
 
     private fun getSelectedTestType(): TestTypeConfiguration? = testTypeComboBox.selectedItem as? TestTypeConfiguration
