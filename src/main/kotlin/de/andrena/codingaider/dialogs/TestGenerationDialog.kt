@@ -71,7 +71,7 @@ class TestGenerationDialog(
 
     private fun updatePromptTemplate() {
         val selectedType = getSelectedTestType()
-        if (selectedType != null && promptArea.text.isEmpty()) {
+        if (selectedType != null) {
             promptArea.text = selectedType.promptTemplate
         }
     }
