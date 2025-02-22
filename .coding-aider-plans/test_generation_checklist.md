@@ -26,8 +26,8 @@
 - [x] Add success notifications
 
 ## Testing
-- [ ] Unit tests for TestTypeConfiguration
-- [ ] Unit tests for settings persistence
+- [x] Unit tests for TestTypeConfiguration
+- [x] Unit tests for settings persistence
 - [ ] Integration tests for dialog
 - [ ] Test different test type configurations
 - [ ] Test reference file handling
