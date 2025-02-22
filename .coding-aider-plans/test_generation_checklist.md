@@ -21,9 +21,9 @@
 ## Integration
 - [x] Add keyboard shortcuts
 - [x] Add action to relevant menus
-- [ ] Implement progress indicators
-- [ ] Add error handling
-- [ ] Add success notifications
+- [x] Implement progress indicators
+- [x] Add error handling
+- [x] Add success notifications
 
 ## Testing
 - [ ] Unit tests for TestTypeConfiguration

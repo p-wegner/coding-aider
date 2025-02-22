@@ -13,19 +13,27 @@ class GenerateTestAction : AnAction() {
         val project = e.project ?: return
         val files = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY) ?: return
         
-        val settings = AiderProjectSettings.getInstance(project)
-        val enabledTestTypes = settings.getTestTypes().filter { it.isEnabled }
-        
-        if (enabledTestTypes.isEmpty()) {
+        try {
+            val settings = AiderProjectSettings.getInstance(project)
+            val enabledTestTypes = settings.getTestTypes().filter { it.isEnabled }
+            
+            if (enabledTestTypes.isEmpty()) {
+                Messages.showErrorDialog(
+                    project,
+                    "No test types are configured. Please configure test types in Project Settings.",
+                    "No Test Types Available"
+                )
+                return
+            }
+            
+            TestGenerationDialog(project, files).show()
+        } catch (e: Exception) {
             Messages.showErrorDialog(
                 project,
-                "No test types are configured. Please configure test types in Project Settings.",
-                "No Test Types Available"
+                "Failed to generate tests: ${e.message}",
+                "Test Generation Error"
             )
-            return
         }
-        
-        TestGenerationDialog(project, files).show()
     }
 
     override fun update(e: AnActionEvent) {

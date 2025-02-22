@@ -79,15 +79,32 @@ class TestGenerationDialog(
             "$sourcePath/$testFileName"
         }
         
-        val commandData = CommandData(
-            message = buildPrompt(testType, allFiles),
-            useYesFlag = true,
-            files = allFiles + testFilePaths.map { FileData(it, false) },
-            projectPath = project.basePath ?: ""
-        )
-        
-        super.doOKAction()
-        IDEBasedExecutor(project, commandData).execute()
+        try {
+            val commandData = CommandData(
+                message = buildPrompt(testType, allFiles),
+                useYesFlag = true,
+                files = allFiles + testFilePaths.map { FileData(it, false) },
+                projectPath = project.basePath ?: ""
+            )
+            
+            super.doOKAction()
+            val executor = IDEBasedExecutor(project, commandData)
+            executor.execute().apply {
+                addCallback {
+                    Messages.showInfoMessage(
+                        project,
+                        "Test generation completed successfully",
+                        "Tests Generated"
+                    )
+                }
+            }
+        } catch (e: Exception) {
+            Messages.showErrorDialog(
+                project,
+                "Failed to generate tests: ${e.message}",
+                "Test Generation Error"
+            )
+        }
     }
 
     private fun buildPrompt(testType: TestTypeConfiguration, files: List<FileData>): String {
