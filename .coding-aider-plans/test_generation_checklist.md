@@ -3,11 +3,11 @@
 # Test Generation Implementation Checklist
 
 ## Settings Implementation
-- [ ] Create TestTypeConfiguration data class
-- [ ] Add test type settings to AiderProjectSettings
-- [ ] Create UI components for test type management in AiderProjectSettingsConfigurable
-- [ ] Implement persistence for test type configurations
-- [ ] Add validation for test type settings
+- [x] Create TestTypeConfiguration data class
+- [x] Add test type settings to AiderProjectSettings
+- [x] Create UI components for test type management in AiderProjectSettingsConfigurable
+- [x] Implement persistence for test type configurations
+- [x] Add validation for test type settings
 
 ## Action Implementation
 - [x] Create GenerateTestAction class

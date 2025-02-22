@@ -12,3 +12,5 @@ files:
   readOnly: false
 - path: src/main/kotlin/de/andrena/codingaider/actions/aider/GenerateTestAction.kt
   readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/dialogs/TestTypeDialog.kt
+  readOnly: false

@@ -36,6 +36,13 @@ init {
         persistentFilesList.cellRenderer = PersistentFileRenderer()
         loadPersistentFiles()
         settingsComponent = panel {
+            group("Test Types") {
+                row {
+                    scrollCell(createTestTypePanel())
+                        .align(Align.FILL)
+                        .resizableColumn()
+                }
+            }
             group("Persistent Files") {
                 row {
                     scrollCell(persistentFilesList)
@@ -55,8 +62,81 @@ init {
         return settingsComponent!!
     }
 
+    private fun createTestTypePanel(): JPanel {
+        val panel = JPanel(BorderLayout())
+        val listModel = DefaultListModel<AiderProjectSettings.TestTypeConfiguration>()
+        val testTypeList = JBList(listModel)
+        
+        // Add existing test types
+        AiderProjectSettings.getInstance(project).getTestTypes().forEach { 
+            listModel.addElement(it) 
+        }
+        
+        testTypeList.cellRenderer = TestTypeRenderer()
+        
+        val buttonPanel = JPanel().apply {
+            add(JButton("Add").apply {
+                addActionListener { showTestTypeDialog(null) { config ->
+                    listModel.addElement(config)
+                    AiderProjectSettings.getInstance(project).addTestType(config)
+                }}
+            })
+            add(JButton("Edit").apply {
+                addActionListener {
+                    val selected = testTypeList.selectedValue
+                    if (selected != null) {
+                        val index = testTypeList.selectedIndex
+                        showTestTypeDialog(selected) { config ->
+                            listModel.set(index, config)
+                            AiderProjectSettings.getInstance(project).updateTestType(index, config)
+                        }
+                    }
+                }
+            })
+            add(JButton("Remove").apply {
+                addActionListener {
+                    val index = testTypeList.selectedIndex
+                    if (index != -1) {
+                        listModel.remove(index)
+                        AiderProjectSettings.getInstance(project).removeTestType(index)
+                    }
+                }
+            })
+        }
+        
+        panel.add(JScrollPane(testTypeList), BorderLayout.CENTER)
+        panel.add(buttonPanel, BorderLayout.SOUTH)
+        return panel
+    }
+    
+    private fun showTestTypeDialog(
+        existing: AiderProjectSettings.TestTypeConfiguration?,
+        onSave: (AiderProjectSettings.TestTypeConfiguration) -> Unit
+    ) {
+        val dialog = TestTypeDialog(project, existing)
+        if (dialog.showAndGet()) {
+            onSave(dialog.getTestType())
+        }
+    }
+    
+    private inner class TestTypeRenderer : DefaultListCellRenderer() {
+        override fun getListCellRendererComponent(
+            list: JList<*>?,
+            value: Any?,
+            index: Int,
+            isSelected: Boolean,
+            cellHasFocus: Boolean
+        ): Component {
+            val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
+            if (component is JLabel && value is AiderProjectSettings.TestTypeConfiguration) {
+                component.text = "${value.name} ${if (!value.isEnabled) "(Disabled)" else ""}"
+            }
+            return component
+        }
+    }
+
     override fun isModified(): Boolean {
-       return false
+        return false
     }
 
     override fun apply() {
