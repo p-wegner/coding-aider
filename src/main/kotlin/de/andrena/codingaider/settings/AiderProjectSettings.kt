@@ -10,10 +10,19 @@ import de.andrena.codingaider.command.FileData
     storages = [Storage("AiderProjectSettings.xml")]
 )
 class AiderProjectSettings(private val project: Project) : PersistentStateComponent<AiderProjectSettings.State> {
+    data class TestTypeConfiguration(
+        var name: String = "",
+        var promptTemplate: String = "",
+        var referenceFilePattern: String = "",
+        var testFilePattern: String = "*Test.kt",
+        var isEnabled: Boolean = true
+    )
+
     data class State(
         var isOptionsCollapsed: Boolean = true,
         var isContextCollapsed: Boolean = false,
-        var workingDirectory: String? = null
+        var workingDirectory: String? = null,
+        var testTypes: MutableList<TestTypeConfiguration> = mutableListOf()
     )
 
     private var myState = State()
@@ -41,6 +50,24 @@ class AiderProjectSettings(private val project: Project) : PersistentStateCompon
         set(value) {
             myState.workingDirectory = value
         }
+
+    fun getTestTypes(): List<TestTypeConfiguration> = myState.testTypes.toList()
+
+    fun addTestType(testType: TestTypeConfiguration) {
+        myState.testTypes.add(testType)
+    }
+
+    fun updateTestType(index: Int, testType: TestTypeConfiguration) {
+        if (index in 0 until myState.testTypes.size) {
+            myState.testTypes[index] = testType
+        }
+    }
+
+    fun removeTestType(index: Int) {
+        if (index in 0 until myState.testTypes.size) {
+            myState.testTypes.removeAt(index)
+        }
+    }
 
     companion object {
         fun getInstance(project: Project): AiderProjectSettings =

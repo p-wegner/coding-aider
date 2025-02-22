@@ -8,3 +8,5 @@ files:
   readOnly: false
 - path: src/main/resources/META-INF/plugin.xml
   readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/dialogs/TestGenerationDialog.kt
+  readOnly: false
