@@ -165,6 +165,12 @@
                     description="Use Aider to generate documentation for each selected folder">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt shift D"/>
             </action>
+            <action id="de.andrena.codingaider.actions.aider.GenerateTestAction"
+                    class="de.andrena.codingaider.actions.aider.GenerateTestAction"
+                    text="Generate Tests with Aider"
+                    description="Generate tests for selected files using configured test types">
+                <keyboard-shortcut keymap="$default" first-keystroke="alt T"/>
+            </action>
             <action id="de.andrena.codingaider.actions.aider.ApplyDesignPatternAction"
                     class="de.andrena.codingaider.actions.aider.ApplyDesignPatternAction"
                     text="Apply Design Pattern with Aider"
