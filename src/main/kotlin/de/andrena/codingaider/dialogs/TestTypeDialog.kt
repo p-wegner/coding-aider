@@ -1,5 +1,7 @@
 package de.andrena.codingaider.dialogs
 
+import com.intellij.openapi.fileChooser.FileChooser
+import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.ValidationInfo
@@ -8,12 +10,11 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.panel
-import com.intellij.ui.dsl.builder.rows
 import de.andrena.codingaider.settings.AiderProjectSettings
 import javax.swing.JComponent
 
 class TestTypeDialog(
-    project: Project,
+    private val project: Project,
     private val existing: AiderProjectSettings.TestTypeConfiguration?
 ) : DialogWrapper(project) {
     
@@ -45,8 +46,8 @@ class TestTypeDialog(
     }
 
     private fun addContextFiles() {
-        val descriptor = com.intellij.openapi.fileChooser.FileChooserDescriptor(true, true, false, false, false, true)
-        val files = com.intellij.openapi.fileChooser.FileChooser.chooseFiles(descriptor, project, null)
+        val descriptor = FileChooserDescriptor(true, true, false, false, false, true)
+        val files = FileChooser.chooseFiles(descriptor, project, null)
         files.forEach { file ->
             if (!contextFilesModel.contains(file.path)) {
                 contextFilesModel.addElement(file.path)
