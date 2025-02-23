@@ -78,21 +78,26 @@ class AiderHistoryService(private val project: Project) {
 
             // Remove Aider's echo of prompts (marked with #### prefix)
             var filtered = cleanOutput.replace(
-                Regex("""(?m)^#### (?:<SystemPrompt>|<UserPrompt>)[\s\S]*?(?:^#### )?(?:</SystemPrompt>|</UserPrompt>)\s*"""),
+                Regex("""(?m)^#### <(?:System|User)Prompt>[\s\S]*?#### </(?:System|User)Prompt>\s*"""),
                 ""
             )
 
-            // Remove redundant prompt displays
+            // Remove any remaining lines starting with ####
+            filtered = filtered.lines()
+                .filterNot { it.trimStart().startsWith("####") }
+                .joinToString("\n")
+
+            // Remove redundant prompt displays that might appear in the output
             systemPrompt?.let { sysPrompt ->
                 filtered = filtered.replace(
-                    Regex("""(?s)## \*\*System Prompt\*\*\s*```plaintext\s*${Regex.escape(sysPrompt.trim())}\s*```\s*---"""),
+                    Regex("""(?s)## \*\*System Prompt\*\*\s*```plaintext\s*${Regex.escape(sysPrompt.trim())}\s*```\s*---\s*"""),
                     ""
                 )
             }
                 
             userPrompt?.let { usrPrompt ->
                 filtered = filtered.replace(
-                    Regex("""(?s)## User Request\s*```plaintext\s*${Regex.escape(usrPrompt.trim())}\s*```\s*---"""),
+                    Regex("""(?s)## User Request\s*```plaintext\s*${Regex.escape(usrPrompt.trim())}\s*```\s*---\s*"""),
                     ""
                 )
             }
