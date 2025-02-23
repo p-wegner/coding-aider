@@ -27,9 +27,9 @@ class AiderProjectSettings(private val project: Project) : PersistentStateCompon
             TestTypeConfiguration(
                 name = "Unit Test",
                 promptTemplate = """Generate a unit test for the provided code following these guidelines:
-                    |1. Use JUnit 5 annotations and assertions
-                    |2. Follow the given/when/then pattern
-                    |3. Include edge cases and error scenarios
+                    |1. Follow the given/when/then pattern
+                    |2. Include edge cases and error scenarios
+                    |3. Try to adhere to the DRY and KISS principles, e.g. by using helper methods
                     |4. Use descriptive test method names
                     |5. Add comments explaining complex test scenarios""".trimMargin(),
                 referenceFilePattern = ".*Test\\.kt$",
