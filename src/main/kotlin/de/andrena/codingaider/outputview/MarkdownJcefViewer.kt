@@ -426,35 +426,14 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         overflow: visible;
                     }
                     
-                    .aider-intention::before,
-                    .aider-summary::before {
-                        display: block;
-                        font-weight: 600;
-                        font-size: 12px;
-                        margin: -8px -8px 6px -8px;
-                        padding: 4px 8px;
-                        letter-spacing: 0.1px;
-                        border-bottom: 1px solid;
-                        background: ${if (isDark) "rgba(255,255,255,0.07)" else "rgba(0,0,0,0.04)"};
-                        border-radius: 5px 5px 0 0;
-                        opacity: 0.9;
-                    }
                     
                     .collapsible-header.intention {
                         position: relative;
                     }
                     
-                    .collapsible-header.intention::before {
-                        content: "Intention";
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        right: 0;
-                        padding: 4px 15px;
+                    .collapsible-header.intention {
                         background: ${if (isDark) "rgba(136,176,228,0.1)" else "rgba(0,85,204,0.05)"};
                         color: ${if (isDark) "#88b0e4" else "#0055cc"};
-                        font-size: 12px;
-                        font-weight: 600;
                         border-bottom: 1px solid ${if (isDark) "rgba(136,176,228,0.2)" else "rgba(0,85,204,0.1)"};
                     }
                     
@@ -462,17 +441,9 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         position: relative;
                     }
                     
-                    .collapsible-header.summary::before {
-                        content: "Summary";
-                        position: absolute;
-                        top: 0;
-                        left: 0;
-                        right: 0;
-                        padding: 4px 15px;
+                    .collapsible-header.summary {
                         background: ${if (isDark) "rgba(204,204,204,0.1)" else "rgba(102,102,102,0.05)"};
                         color: ${if (isDark) "#cccccc" else "#666666"};
-                        font-size: 12px;
-                        font-weight: 600;
                         border-bottom: 1px solid ${if (isDark) "rgba(204,204,204,0.2)" else "rgba(102,102,102,0.1)"};
                     }
                     
