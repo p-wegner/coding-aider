@@ -65,7 +65,7 @@ class TestGenerationDialog(
         lineWrap = true
         wrapStyleWord = true
         font = font.deriveFont(12f)
-        emptyText.text = "Enter additional instructions (optional)..."
+        emptyText.text = "Enter additional instructions (optional)"
     }
 
     init {
@@ -84,7 +84,14 @@ class TestGenerationDialog(
     private fun updatePromptTemplate() {
         val selectedType = getSelectedTestType()
         if (selectedType != null) {
-            promptArea.emptyText.text = selectedType.promptTemplate
+            val ellipsedTemplate = selectedType.promptTemplate.let { template ->
+                if (template.length > 100) {
+                    template.take(97) + "..."
+                } else {
+                    template
+                }
+            }
+            promptArea.emptyText.text = ellipsedTemplate
         }
     }
 
