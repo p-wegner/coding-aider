@@ -65,12 +65,7 @@ class TestGenerationDialog(
         lineWrap = true
         wrapStyleWord = true
         font = font.deriveFont(12f)
-        emptyText.text = """Enter additional instructions (optional):
-        
-- Specify test scenarios or edge cases
-- Add specific testing requirements
-- Include custom assertions or validations
-- Note any special setup needed"""
+        emptyText.text = "Enter additional instructions (optional)..."
     }
 
     init {
