@@ -626,7 +626,28 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 """.trimIndent()
         }
 
-        // Process search/replace blocks
+        // Process file paths followed by code blocks with search/replace content
+        val filePathCodeBlockPattern = Regex("""(?m)^([^\n]+?)\n```[^\n]*\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n```""", RegexOption.DOT_MATCHES_ALL)
+        processedHtml = processedHtml.replace(filePathCodeBlockPattern) { matchResult ->
+            val (filePath, searchBlock, replaceBlock) = matchResult.destructured
+            """
+            <div class="collapsible-panel expanded">
+                <div class="collapsible-header code" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="collapsible-title">${escapeHtml(filePath.trim())}</span>
+                    <span class="collapsible-arrow">^</span>
+                </div>
+                <div class="collapsible-content">
+                    <pre>
+                    <code class="search-block">${escapeHtml(searchBlock.trim())}</code>
+                    <div class="divider"></div>
+                    <code class="replace-block">${escapeHtml(replaceBlock.trim())}</code>
+                    </pre>
+                </div>
+            </div>
+            """.trimIndent()
+        }
+
+        // Process remaining standard search/replace blocks
         return processedHtml.replace(
             Regex("""(?s)<pre><code>(.+?)<<<<<<< SEARCH\n(.*?)=======\n(.*?)>>>>>>> REPLACE\n</code></pre>"""),
             { matchResult ->
