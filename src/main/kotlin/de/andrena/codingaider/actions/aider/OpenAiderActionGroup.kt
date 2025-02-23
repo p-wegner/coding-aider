@@ -111,7 +111,7 @@ class OpenAiderActionGroup : AnAction(), DumbAware {
         )
         addQuickAccessAction(
             popupActionGroup,
-            "de.andrena.codingaider.actions.git.GenerateTestAction",
+            "de.andrena.codingaider.actions.aider.GenerateTestAction",
             "Generate Tests",
             AllIcons.Icons.Ide.MenuArrow,
             'T'

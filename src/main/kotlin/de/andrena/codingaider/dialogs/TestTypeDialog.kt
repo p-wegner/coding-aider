@@ -11,7 +11,11 @@ import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.settings.AiderProjectSettings
+import java.awt.Component
+import javax.swing.DefaultListCellRenderer
 import javax.swing.JComponent
+import javax.swing.JLabel
+import javax.swing.JList
 
 class TestTypeDialog(
     private val project: Project,
@@ -30,6 +34,24 @@ class TestTypeDialog(
     private val contextFilesList = com.intellij.ui.components.JBList<String>().apply {
         cellRenderer = ContextFileRenderer()
     }
+    private inner class ContextFileRenderer : DefaultListCellRenderer() {
+        override fun getListCellRendererComponent(
+            list: JList<*>?,
+            value: Any?,
+            index: Int,
+            isSelected: Boolean,
+            cellHasFocus: Boolean
+        ): Component {
+            val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
+            if (component is JLabel && value is String) {
+                val file = java.io.File(value)
+                component.text = file.name
+                component.toolTipText = value
+            }
+            return component
+        }
+    }
+
     private val contextFilesModel = javax.swing.DefaultListModel<String>()
     
     init {
@@ -55,23 +77,6 @@ class TestTypeDialog(
                 contextFilesModel.addElement(file.path)
             }
 
-            private inner class ContextFileRenderer : DefaultListCellRenderer() {
-                override fun getListCellRendererComponent(
-                    list: JList<*>?,
-                    value: Any?,
-                    index: Int,
-                    isSelected: Boolean,
-                    cellHasFocus: Boolean
-                ): Component {
-                    val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
-                    if (component is JLabel && value is String) {
-                        val file = java.io.File(value)
-                        component.text = file.name
-                        component.toolTipText = value
-                    }
-                    return component
-                }
-            }
         }
     }
 
