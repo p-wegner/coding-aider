@@ -330,13 +330,13 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         margin: 0;
                     }
                     .aider-intention, .aider-summary {
-                        border-radius: 8px;
-                        padding: 16px;
-                        margin: 16px 0;
+                        border-radius: 6px;
+                        padding: 8px;
+                        margin: 8px 0;
                         position: relative;
-                        font-size: 14px;
-                        line-height: 1.3;
-                        box-shadow: 0 2px 8px ${if (isDark) "rgba(0,0,0,0.3)" else "rgba(0,0,0,0.1)"};
+                        font-size: 13px;
+                        line-height: 1.2;
+                        box-shadow: 0 1px 4px ${if (isDark) "rgba(0,0,0,0.2)" else "rgba(0,0,0,0.08)"};
                         white-space: pre-wrap;
                         word-wrap: break-word;
                         overflow-wrap: break-word;
@@ -361,7 +361,8 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     
                     .aider-summary:hover {
                         border-color: ${if (isDark) "#505050" else "#d0d0d0"};
-                        box-shadow: 0 6px 12px ${if (isDark) "rgba(0,0,0,0.4)" else "rgba(0,0,0,0.15)"};
+                        box-shadow: 0 2px 6px ${if (isDark) "rgba(0,0,0,0.3)" else "rgba(0,0,0,0.1)"};
+                        transform: none; /* Remove transform to prevent movement */
                     }
 
                     .collapsible-panel {
@@ -425,14 +426,15 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     .aider-intention::before,
                     .aider-summary::before {
                         display: block;
-                        font-weight: bold;
-                        font-size: 13px;
-                        margin: -12px -12px 8px -12px;
-                        padding: 8px 12px;
-                        letter-spacing: 0.2px;
+                        font-weight: 600;
+                        font-size: 12px;
+                        margin: -8px -8px 6px -8px;
+                        padding: 4px 8px;
+                        letter-spacing: 0.1px;
                         border-bottom: 1px solid;
-                        background: ${if (isDark) "rgba(255,255,255,0.05)" else "rgba(0,0,0,0.03)"};
-                        border-radius: 6px 6px 0 0;
+                        background: ${if (isDark) "rgba(255,255,255,0.07)" else "rgba(0,0,0,0.04)"};
+                        border-radius: 5px 5px 0 0;
+                        opacity: 0.9;
                     }
                     
                     .aider-intention::before {
@@ -451,13 +453,14 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     .aider-intention ol,
                     .aider-summary ul,
                     .aider-summary ol {
-                        margin: 8px 0;
-                        padding-left: 24px;
+                        margin: 4px 0;
+                        padding-left: 16px;
                     }
                     
                     .aider-intention li,
                     .aider-summary li {
-                        margin: 4px 0;
+                        margin: 2px 0;
+                        padding: 0;
                     }
                     
                     .aider-intention ul li::marker {
@@ -478,10 +481,12 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     
                     .aider-intention code,
                     .aider-summary code {
-                        background: ${if (isDark) "rgba(255,255,255,0.1)" else "rgba(0,0,0,0.05)"};
-                        padding: 2px 6px;
-                        border-radius: 4px;
+                        background: ${if (isDark) "rgba(255,255,255,0.08)" else "rgba(0,0,0,0.04)"};
+                        padding: 2px 4px;
+                        border-radius: 2px;
                         font-family: monospace;
+                        font-size: 12px;
+                        line-height: 1;
                     }
                     
                     /* Custom scrollbar styling */
