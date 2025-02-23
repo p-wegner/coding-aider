@@ -27,7 +27,9 @@ class TestTypeDialog(
     private val referencePatternField = JBTextField()
     private val testPatternField = JBTextField()
     private val enabledCheckBox = JBCheckBox("Enabled")
-    private val contextFilesList = com.intellij.ui.components.JBList<String>()
+    private val contextFilesList = com.intellij.ui.components.JBList<String>().apply {
+        cellRenderer = ContextFileRenderer()
+    }
     private val contextFilesModel = javax.swing.DefaultListModel<String>()
     
     init {
@@ -51,6 +53,24 @@ class TestTypeDialog(
         files.forEach { file ->
             if (!contextFilesModel.contains(file.path)) {
                 contextFilesModel.addElement(file.path)
+            }
+
+            private inner class ContextFileRenderer : DefaultListCellRenderer() {
+                override fun getListCellRendererComponent(
+                    list: JList<*>?,
+                    value: Any?,
+                    index: Int,
+                    isSelected: Boolean,
+                    cellHasFocus: Boolean
+                ): Component {
+                    val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
+                    if (component is JLabel && value is String) {
+                        val file = java.io.File(value)
+                        component.text = file.name
+                        component.toolTipText = value
+                    }
+                    return component
+                }
             }
         }
     }
