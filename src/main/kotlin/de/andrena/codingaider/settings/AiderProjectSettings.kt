@@ -32,8 +32,8 @@ class AiderProjectSettings(private val project: Project) : PersistentStateCompon
                     |3. Try to adhere to the DRY and KISS principles, e.g. by using helper methods
                     |4. Use descriptive test method names
                     |5. Add comments explaining complex test scenarios""".trimMargin(),
-                referenceFilePattern = ".*Test\\.kt$",
-                testFilePattern = "*Test.kt",
+                referenceFilePattern = ".*Test\\.(kt|java|ts|cs|py|go)$",
+                testFilePattern = "*Test.{kt,java,ts,cs,py,go}",
                 isEnabled = true
             ),
             TestTypeConfiguration(
@@ -44,8 +44,8 @@ class AiderProjectSettings(private val project: Project) : PersistentStateCompon
                     |3. Test both success and failure scenarios
                     |4. Use appropriate mocking where needed
                     |5. Consider transaction boundaries""".trimMargin(),
-                referenceFilePattern = ".*IT\\.kt$",
-                testFilePattern = "*IT.kt",
+                referenceFilePattern = ".*IT\\.(kt|java|ts|cs|py|go)$",
+                testFilePattern = "*IT.{kt,java,ts,cs,py,go}",
                 isEnabled = true
             ),
             TestTypeConfiguration(
@@ -56,8 +56,8 @@ class AiderProjectSettings(private val project: Project) : PersistentStateCompon
                     |3. Include scenario outlines for parameterized tests
                     |4. Add clear documentation comments
                     |5. Focus on business requirements""".trimMargin(),
-                referenceFilePattern = ".*Spec\\.kt$",
-                testFilePattern = "*Spec.kt",
+                referenceFilePattern = ".*Spec\\.(kt|java|ts|cs|py|go)$",
+                testFilePattern = "*Spec.{kt,java,ts,cs,py,go}",
                 isEnabled = true
             )
         )
