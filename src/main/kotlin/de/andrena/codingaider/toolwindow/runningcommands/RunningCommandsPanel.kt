@@ -20,7 +20,9 @@ import javax.swing.JComponent
 class RunningCommandsPanel(private val project: Project) {
     private val runningCommandsListModel = project.service<RunningCommandService>().getRunningCommandsListModel()
     private val runningCommandsList = JBList(runningCommandsListModel).apply {
-        preferredSize = java.awt.Dimension(preferredSize.width, 30)
+        val singleRowHeight = getFontMetrics(font).height + 4
+        minimumSize = java.awt.Dimension(minimumSize.width, singleRowHeight)
+        preferredSize = java.awt.Dimension(preferredSize.width, singleRowHeight)
         addMouseListener(object : MouseAdapter() {
             override fun mouseClicked(e: MouseEvent) {
                 if (e.clickCount == 2) {

@@ -25,6 +25,9 @@ class PersistentFilesPanel(private val project: Project) {
     private val persistentFilesListModel = DefaultListModel<FileData>()
     private val persistentFilesList: JBList<FileData> = JBList(persistentFilesListModel).apply {
         disableEmptyText()
+        val singleRowHeight = getFontMetrics(font).height + 4
+        minimumSize = java.awt.Dimension(minimumSize.width, singleRowHeight)
+        preferredSize = java.awt.Dimension(preferredSize.width, singleRowHeight)
         cellRenderer = PersistentFileRenderer()
         addKeyListener(object : java.awt.event.KeyAdapter() {
             override fun keyPressed(e: java.awt.event.KeyEvent) {
