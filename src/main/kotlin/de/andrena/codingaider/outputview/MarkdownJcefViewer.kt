@@ -464,6 +464,27 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         font-weight: 600;
                         border-bottom: 1px solid ${if (isDark) "rgba(169,183,198,0.2)" else "rgba(51,51,51,0.1)"};
                     }
+
+                    .code-block {
+                        background: ${if (isDark) "#2d2d2d" else "#f8f8f8"};
+                        border-radius: 6px;
+                        margin: 8px 0;
+                        overflow: hidden;
+                    }
+
+                    .code-block .file-path {
+                        background: ${if (isDark) "#383838" else "#f0f0f0"};
+                        color: ${if (isDark) "#cccccc" else "#666666"};
+                        padding: 8px 12px;
+                        font-family: monospace;
+                        font-size: 13px;
+                        border-bottom: 1px solid ${if (isDark) "#454545" else "#e5e5e5"};
+                    }
+
+                    .code-block pre {
+                        margin: 0;
+                        border-radius: 0 0 6px 6px;
+                    }
                     
                     .aider-intention ul,
                     .aider-intention ol,
@@ -637,11 +658,13 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     <span class="collapsible-arrow">^</span>
                 </div>
                 <div class="collapsible-content">
-                    <pre>
-                    <code class="search-block">${escapeHtml(searchBlock.trim())}</code>
-                    <div class="divider"></div>
-                    <code class="replace-block">${escapeHtml(replaceBlock.trim())}</code>
-                    </pre>
+                    <div class="code-block">
+                        <div class="file-path">${escapeHtml(filePath.trim())}</div>
+                        <pre>
+                            <code class="search-block">${escapeHtml(searchBlock.trim())}</code>
+                            <code class="replace-block">${escapeHtml(replaceBlock.trim())}</code>
+                        </pre>
+                    </div>
                 </div>
             </div>
             """.trimIndent()
