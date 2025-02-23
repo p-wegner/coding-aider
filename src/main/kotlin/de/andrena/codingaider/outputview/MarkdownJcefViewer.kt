@@ -380,13 +380,14 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
 
                     .collapsible-header {
                         background: ${if (isDark) "#383838" else "#f0f0f0"};
-                        padding: 10px 15px;
+                        padding: 25px 15px 10px;
                         cursor: pointer;
                         display: flex;
                         align-items: center;
                         justify-content: space-between;
                         user-select: none;
                         transition: background-color 0.2s;
+                        position: relative;
                     }
 
                     .collapsible-header:hover {
@@ -437,19 +438,58 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         opacity: 0.9;
                     }
                     
+                    .collapsible-header.intention {
+                        position: relative;
+                    }
+                    
                     .collapsible-header.intention::before {
                         content: "Intention";
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        padding: 4px 15px;
+                        background: ${if (isDark) "rgba(136,176,228,0.1)" else "rgba(0,85,204,0.05)"};
                         color: ${if (isDark) "#88b0e4" else "#0055cc"};
+                        font-size: 12px;
+                        font-weight: 600;
+                        border-bottom: 1px solid ${if (isDark) "rgba(136,176,228,0.2)" else "rgba(0,85,204,0.1)"};
+                    }
+                    
+                    .collapsible-header.summary {
+                        position: relative;
                     }
                     
                     .collapsible-header.summary::before {
                         content: "Summary";
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        padding: 4px 15px;
+                        background: ${if (isDark) "rgba(204,204,204,0.1)" else "rgba(102,102,102,0.05)"};
                         color: ${if (isDark) "#cccccc" else "#666666"};
+                        font-size: 12px;
+                        font-weight: 600;
+                        border-bottom: 1px solid ${if (isDark) "rgba(204,204,204,0.2)" else "rgba(102,102,102,0.1)"};
+                    }
+                    
+                    .collapsible-header.code {
+                        position: relative;
                     }
                     
                     .collapsible-header.code::before {
                         content: "Code Changes";
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        right: 0;
+                        padding: 4px 15px;
+                        background: ${if (isDark) "rgba(169,183,198,0.1)" else "rgba(51,51,51,0.05)"};
                         color: ${if (isDark) "#a9b7c6" else "#333333"};
+                        font-size: 12px;
+                        font-weight: 600;
+                        border-bottom: 1px solid ${if (isDark) "rgba(169,183,198,0.2)" else "rgba(51,51,51,0.1)"};
                     }
                     
                     .aider-intention ul,
