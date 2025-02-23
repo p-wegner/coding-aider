@@ -407,7 +407,8 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         max-height: 0;
                         overflow: hidden;
                         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                        padding: 0 15px;
+                        padding: 0;
+                        margin: 0;
                         opacity: 0;
                     }
 
@@ -420,8 +421,9 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     }
 
                     .collapsible-panel.expanded .collapsible-content {
-                        max-height: 500px;
+                        max-height: none;
                         padding: 15px;
+                        overflow: visible;
                     }
                     
                     .aider-intention::before,
@@ -590,6 +592,8 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         // Process initialization output - matches version, model info, git info, and added files
         val initPattern = """Aider v[\d.]+ [^\n]*(?:\n(?:[^\n]+))*(?:\nAdded [^\n]+)*""".toRegex(RegexOption.DOT_MATCHES_ALL)
         processedHtml = processedHtml.replace(initPattern) { matchResult ->
+            val content = matchResult.value.trim()
+            if (content.isBlank()) return@replace ""
             """
             <div class="collapsible-panel expanded">
                 <div class="collapsible-header" onclick="this.parentElement.classList.toggle('expanded')">
