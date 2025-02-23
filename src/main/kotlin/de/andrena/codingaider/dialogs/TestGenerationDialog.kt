@@ -119,7 +119,7 @@ class TestGenerationDialog(
                 cell(settingsButton)
                     .align(com.intellij.ui.dsl.builder.AlignX.RIGHT)
             }
-            row("Instructions:") {
+            row("Additional Instructions:") {
                 cell(JBScrollPane(promptArea))
                     .resizableColumn()
                     .align(com.intellij.ui.dsl.builder.AlignY.FILL)
