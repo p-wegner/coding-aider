@@ -153,7 +153,7 @@ class PlanViewer(private val project: Project) {
                             // Check if click was in the expand/collapse icon area
                             if (e.x < expandClickWidth && plan.childPlans.isNotEmpty()) {
                                 animateTreeExpansion(plan, planId)
-                            } else if (e.clickCount == 2) {
+                            } else if (e.clickCount >= 2) {
                                 // Double click to open plan file
                                 plansList.selectedIndex = index
                                 plan.mainPlanFile?.let { fileData ->

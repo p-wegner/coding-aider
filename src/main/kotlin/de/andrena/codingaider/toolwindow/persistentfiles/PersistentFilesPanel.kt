@@ -17,6 +17,7 @@ import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.messages.PersistentFilesChangedTopic
 import de.andrena.codingaider.services.PersistentFileService
 import java.awt.Component
+import java.awt.event.KeyAdapter
 import java.io.File
 import javax.swing.*
 
@@ -24,12 +25,8 @@ class PersistentFilesPanel(private val project: Project) {
     private val persistentFileService = project.getService(PersistentFileService::class.java)
     private val persistentFilesListModel = DefaultListModel<FileData>()
     private val persistentFilesList: JBList<FileData> = JBList(persistentFilesListModel).apply {
-        disableEmptyText()
-        val singleRowHeight = getFontMetrics(font).height + 4
-        minimumSize = java.awt.Dimension(minimumSize.width, singleRowHeight)
-        preferredSize = java.awt.Dimension(preferredSize.width, singleRowHeight)
         cellRenderer = PersistentFileRenderer()
-        addKeyListener(object : java.awt.event.KeyAdapter() {
+        addKeyListener(object : KeyAdapter() {
             override fun keyPressed(e: java.awt.event.KeyEvent) {
                 if (e.keyCode == java.awt.event.KeyEvent.VK_DELETE) {
                     removeSelectedFiles()
@@ -43,7 +40,7 @@ class PersistentFilesPanel(private val project: Project) {
         subscribeToChanges()
         persistentFilesList.addMouseListener(object : java.awt.event.MouseAdapter() {
             override fun mouseClicked(e: java.awt.event.MouseEvent) {
-                if (e.clickCount == 2) {
+                if (e.clickCount >= 2) {
                     val index = persistentFilesList.locationToIndex(e.point)
                     if (index >= 0) {
                         val cellBounds = persistentFilesList.getCellBounds(index, index)
@@ -97,7 +94,6 @@ class PersistentFilesPanel(private val project: Project) {
                 scrollCell(persistentFilesList)
                     .align(Align.FILL)
                     .resizableColumn()
-                    .maximumHeight(200)
             }
         }
     }
