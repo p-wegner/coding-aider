@@ -64,11 +64,38 @@ class AiderHistoryService(private val project: Project) {
         val chatContent = chatHistoryFile.readText(Charsets.UTF_8)
         val contentParts = chatContent.split("# aider chat started at .*".toRegex())
         val lastChat = contentParts.lastOrNull()?.trim() ?: return "No chat history available."
-        if (!containsXmlPrompts(lastChat)) {
-            return lastChat
-        }
+        
         // Extract prompts and output from XML blocks
         val (systemPrompt, userPrompt, aiderOutput) = extractXmlPrompts(lastChat)
+        
+        // Filter out Aider's echo of the prompts from the output
+        val filteredOutput = aiderOutput?.let { output ->
+            val cleanOutput = output.trim()
+            
+            // Remove initialization block if it appears in the output
+            var filtered = cleanOutput.replace(
+                Regex("""Aider v[\d.]+ [^\n]*(?:\n(?:[^\n]+))*(?:\nAdded [^\n]+)*""", RegexOption.DOT_MATCHES_ALL),
+                ""
+            )
+            
+            // Remove echoed system prompt if present
+            systemPrompt?.let { sysPrompt ->
+                filtered = filtered.replace(
+                    Regex("""(?s)## \*\*System Prompt\*\*\s*```plaintext\s*${Regex.escape(sysPrompt.trim())}\s*```\s*---"""),
+                    ""
+                )
+            }
+            
+            // Remove echoed user prompt if present
+            userPrompt?.let { usrPrompt ->
+                filtered = filtered.replace(
+                    Regex("""(?s)## User Request\s*```plaintext\s*${Regex.escape(usrPrompt.trim())}\s*```\s*---"""),
+                    ""
+                )
+            }
+            
+            filtered.trim()
+        }
 
         return buildString {
             systemPrompt?.let { prompt ->
@@ -84,7 +111,7 @@ class AiderHistoryService(private val project: Project) {
             }
 
             appendLine("## Aider Execution\n")
-            appendLine("${aiderOutput ?: "<!-- No execution output captured -->"}\n")
+            appendLine("${filteredOutput ?: "<!-- No execution output captured -->"}\n")
         }.trim()
     }
 
