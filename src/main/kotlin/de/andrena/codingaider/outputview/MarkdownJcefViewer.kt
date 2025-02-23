@@ -619,10 +619,9 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             """.trimIndent()
         }
 
-        // Process intention and summary blocks to remove extra newlines
-        // Process intention blocks
+        // Process intention blocks with preserved formatting
         processedHtml = processedHtml.replace(
-            Regex("""<div class="aider-intention">\s*<p>(.*?)</p>\s*</div>""", RegexOption.DOT_MATCHES_ALL)) { matchResult ->
+            Regex("""<div class="aider-intention">(.*?)</div>""", RegexOption.DOT_MATCHES_ALL)) { matchResult ->
                 """
                 <div class="collapsible-panel expanded">
                     <div class="collapsible-header intention" onclick="this.parentElement.classList.toggle('expanded')">
@@ -630,15 +629,15 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         <span class="collapsible-arrow">^</span>
                     </div>
                     <div class="collapsible-content">
-                        ${matchResult.groupValues[1].replace(Regex("\\s*\n\\s*"), "\n").trim()}
+                        ${matchResult.groupValues[1].trim()}
                     </div>
                 </div>
                 """.trimIndent()
         }
         
-        // Process summary blocks
+        // Process summary blocks with preserved formatting
         processedHtml = processedHtml.replace(
-            Regex("""<div class="aider-summary">\s*<p>(.*?)</p>\s*</div>""", RegexOption.DOT_MATCHES_ALL)) { matchResult ->
+            Regex("""<div class="aider-summary">(.*?)</div>""", RegexOption.DOT_MATCHES_ALL)) { matchResult ->
                 """
                 <div class="collapsible-panel expanded">
                     <div class="collapsible-header summary" onclick="this.parentElement.classList.toggle('expanded')">
@@ -646,7 +645,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         <span class="collapsible-arrow">^</span>
                     </div>
                     <div class="collapsible-content">
-                        ${matchResult.groupValues[1].replace(Regex("\\s*\n\\s*"), "\n").trim()}
+                        ${matchResult.groupValues[1].trim()}
                     </div>
                 </div>
                 """.trimIndent()
