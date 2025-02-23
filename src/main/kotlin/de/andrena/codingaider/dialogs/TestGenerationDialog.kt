@@ -113,7 +113,9 @@ class TestGenerationDialog(
     override fun createCenterPanel(): JComponent {
         val panel = panel {
             row {
-                label("Test Type:")
+                label("Select the type of test to generate:")
+            }
+            row {
                 cell(testTypeComboBox)
                     .resizableColumn()
                     .align(com.intellij.ui.dsl.builder.AlignX.FILL)
@@ -121,7 +123,9 @@ class TestGenerationDialog(
                     .align(com.intellij.ui.dsl.builder.AlignX.RIGHT)
             }
             row {
-                label("Additional Instructions:")
+                label("Enter any additional instructions or requirements for the test:")
+            }
+            row {
                 cell(JBScrollPane(promptArea))
                     .resizableColumn()
                     .align(com.intellij.ui.dsl.builder.AlignY.FILL)
