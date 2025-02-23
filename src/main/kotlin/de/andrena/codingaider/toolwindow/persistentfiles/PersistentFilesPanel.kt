@@ -95,9 +95,9 @@ class PersistentFilesPanel(private val project: Project) {
             }
             row {
                 scrollCell(persistentFilesList)
-                    // TODO: this seems to cause empty lists to be huge
                     .align(Align.FILL)
                     .resizableColumn()
+                    .maximumHeight(200)
             }
         }
     }
