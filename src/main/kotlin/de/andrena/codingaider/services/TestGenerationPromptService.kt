@@ -11,18 +11,34 @@ class TestGenerationPromptService {
         files: List<FileData>,
         additionalPrompt: String
     ): String {
-        val (sourceFiles, referenceFiles) = files.partition { file ->
-            !file.filePath.matches(Regex(testType.referenceFilePattern))
-        }
+        // Files selected for test generation
+        val selectedFiles = files.map { it.filePath }
         
-        val sourceFileNames = sourceFiles.map { it.filePath }
-        val referenceFileNames = referenceFiles.map { it.filePath }
-        
+        // Find existing test files that match the pattern
+        val existingTestFiles = files
+            .filter { it.filePath.matches(Regex(testType.referenceFilePattern)) }
+            .map { it.filePath }
+
+        // Get configured reference files
+        val configuredReferenceFiles = testType.contextFiles
+            
         return buildString {
-            appendLine("Generate tests for the following files: $sourceFileNames")
-            appendLine("Test type: ${testType.name}")
+            appendLine("Generate tests for the following files:")
+            selectedFiles.forEach { appendLine("- $it") }
             appendLine()
-            appendLine("Reference files to use as examples: $referenceFileNames")
+            
+            if (existingTestFiles.isNotEmpty()) {
+                appendLine("Use these existing test files as reference for patterns and conventions:")
+                existingTestFiles.forEach { appendLine("- $it") }
+                appendLine()
+            }
+            
+            if (configuredReferenceFiles.isNotEmpty()) {
+                appendLine("Additional reference materials:")
+                configuredReferenceFiles.forEach { appendLine("- $it") }
+                appendLine()
+            }
+            
             appendLine("Test files will be generated using pattern: ${testType.testFilePattern}")
             appendLine()
             appendLine("Instructions:")

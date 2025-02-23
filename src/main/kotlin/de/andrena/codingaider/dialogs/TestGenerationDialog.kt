@@ -142,28 +142,16 @@ class TestGenerationDialog(
     override fun doOKAction() {
         val testType = getSelectedTestType() ?: return
         val allFiles = FileTraversal.traverseFilesOrDirectories(selectedFiles)
-        
-        // Create test file paths based on source files
-        val sourceFiles = allFiles.filter { file ->
-            !file.filePath.matches(Regex(testType.referenceFilePattern))
-        }
-
         val settings = AiderSettings.getInstance()
-        val testFilePaths = sourceFiles.map { sourceFile ->
-            val fileName = java.io.File(sourceFile.filePath).nameWithoutExtension
-            val testFileName = testType.testFilePattern.replace("*", fileName)
-            val sourcePath = java.io.File(sourceFile.filePath).parent
-            "$sourcePath/$testFileName"
-        }
 
         try {
             // Add context files to the file list
-            val contextFiles = testType.contextFiles.map { FileData(it, true) }
+            val contextFiles = testType.contextFiles.map { FileData(it, false) }
         
             val commandData = CommandData(
                 message = buildPrompt(testType, allFiles),
                 useYesFlag = true,
-                files = allFiles + testFilePaths.map { FileData(it, false) } + contextFiles,
+                files = allFiles +  contextFiles,
                 projectPath = project.basePath ?: "",
                 llm = settings.llm,
                 additionalArgs = settings.additionalArgs,
