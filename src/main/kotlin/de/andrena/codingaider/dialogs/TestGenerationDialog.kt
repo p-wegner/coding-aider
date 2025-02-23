@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.impl.ActionButton
+import com.intellij.openapi.components.service
 import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
@@ -21,6 +22,7 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.AiderMode
+import de.andrena.codingaider.services.TestGenerationPromptService
 import de.andrena.codingaider.settings.AiderProjectSettings
 import de.andrena.codingaider.settings.AiderProjectSettings.TestTypeConfiguration
 import de.andrena.codingaider.settings.AiderSettings
@@ -180,10 +182,9 @@ class TestGenerationDialog(
             )
         }
     }
-    private val promptService = TestGenerationPromptService()
 
     private fun buildPrompt(testType: TestTypeConfiguration, files: List<FileData>): String {
-        return promptService.buildPrompt(testType, files, getAdditionalPrompt())
+        return project.service<TestGenerationPromptService>().buildPrompt(testType, files, getAdditionalPrompt())
     }
 
     private fun getSelectedTestType(): TestTypeConfiguration? = testTypeComboBox.selectedItem as? TestTypeConfiguration
