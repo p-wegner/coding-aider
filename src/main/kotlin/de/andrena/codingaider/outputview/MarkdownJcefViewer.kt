@@ -437,16 +437,19 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         opacity: 0.9;
                     }
                     
-                    .aider-intention::before {
+                    .collapsible-header.intention::before {
                         content: "Intention";
-                        border-color: ${if (isDark) "#2c4356" else "#bcd6f5"};
                         color: ${if (isDark) "#88b0e4" else "#0055cc"};
                     }
                     
-                    .aider-summary::before {
+                    .collapsible-header.summary::before {
                         content: "Summary";
-                        border-color: ${if (isDark) "#404040" else "#e0e0e0"};
                         color: ${if (isDark) "#cccccc" else "#666666"};
+                    }
+                    
+                    .collapsible-header.code::before {
+                        content: "Code Changes";
+                        color: ${if (isDark) "#a9b7c6" else "#333333"};
                     }
                     
                     .aider-intention ul,
@@ -577,15 +580,36 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         }
 
         // Process intention and summary blocks to remove extra newlines
-        // Process intention blocks - preserve intended line breaks but remove extra whitespace
+        // Process intention blocks
         processedHtml = processedHtml.replace(
             Regex("""<div class="aider-intention">\s*<p>(.*?)</p>\s*</div>""", RegexOption.DOT_MATCHES_ALL)) { matchResult ->
-                "<div class=\"aider-intention\">${matchResult.groupValues[1].replace(Regex("\\s*\n\\s*"), "\n").trim()}</div>"
+                """
+                <div class="collapsible-panel expanded">
+                    <div class="collapsible-header intention" onclick="this.parentElement.classList.toggle('expanded')">
+                        <span class="collapsible-title">Intention</span>
+                        <span class="collapsible-arrow">^</span>
+                    </div>
+                    <div class="collapsible-content">
+                        ${matchResult.groupValues[1].replace(Regex("\\s*\n\\s*"), "\n").trim()}
+                    </div>
+                </div>
+                """.trimIndent()
         }
-        // Process summary blocks similarly
+        
+        // Process summary blocks
         processedHtml = processedHtml.replace(
             Regex("""<div class="aider-summary">\s*<p>(.*?)</p>\s*</div>""", RegexOption.DOT_MATCHES_ALL)) { matchResult ->
-                "<div class=\"aider-summary\">${matchResult.groupValues[1].replace(Regex("\\s*\n\\s*"), "\n").trim()}</div>"
+                """
+                <div class="collapsible-panel expanded">
+                    <div class="collapsible-header summary" onclick="this.parentElement.classList.toggle('expanded')">
+                        <span class="collapsible-title">Summary</span>
+                        <span class="collapsible-arrow">^</span>
+                    </div>
+                    <div class="collapsible-content">
+                        ${matchResult.groupValues[1].replace(Regex("\\s*\n\\s*"), "\n").trim()}
+                    </div>
+                </div>
+                """.trimIndent()
         }
 
         // Process search/replace blocks
@@ -594,12 +618,19 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             { matchResult ->
                 val (_, filePath, searchBlock, replaceBlock) = matchResult.groupValues
                 """
-                <div class="file-path">${escapeHtml(filePath)}</div>
-                <pre>
-                <code class="search-block">${escapeHtml(searchBlock)}</code>
-                <div class="divider"></div>
-                <code class="replace-block">${escapeHtml(replaceBlock)}</code>
-                </pre>
+                <div class="collapsible-panel expanded">
+                    <div class="collapsible-header code" onclick="this.parentElement.classList.toggle('expanded')">
+                        <span class="collapsible-title">${escapeHtml(filePath)}</span>
+                        <span class="collapsible-arrow">^</span>
+                    </div>
+                    <div class="collapsible-content">
+                        <pre>
+                        <code class="search-block">${escapeHtml(searchBlock)}</code>
+                        <div class="divider"></div>
+                        <code class="replace-block">${escapeHtml(replaceBlock)}</code>
+                        </pre>
+                    </div>
+                </div>
                 """.trimIndent()
             }
         )
