@@ -99,7 +99,7 @@ tasks {
 
     patchPluginXml {
         sinceBuild.set("242")
-        untilBuild.set("243.*")
+        untilBuild.set("244.*")
         version = project.version.toString()
     }
 
