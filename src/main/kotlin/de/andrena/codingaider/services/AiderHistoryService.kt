@@ -71,30 +71,41 @@ class AiderHistoryService(private val project: Project) {
         // Filter out Aider's echo of the prompts from the output
         val filteredOutput = aiderOutput?.let { output ->
             val cleanOutput = output.trim()
-            
-            // Remove initialization block if it appears in the output
+                
+            // Extract and keep initialization info
+            val initInfo = Regex("""Aider v[\d.]+ [^\n]*(?:\n(?:[^\n]+))*(?:\nAdded [^\n]+)*""")
+                .find(cleanOutput)?.value
+
+            // Remove Aider's echo of prompts (marked with #### prefix)
             var filtered = cleanOutput.replace(
-                Regex("""Aider v[\d.]+ [^\n]*(?:\n(?:[^\n]+))*(?:\nAdded [^\n]+)*""", RegexOption.DOT_MATCHES_ALL),
+                Regex("""(?m)^#### (?:<SystemPrompt>|<UserPrompt>)[\s\S]*?(?:^#### )?(?:</SystemPrompt>|</UserPrompt>)\s*"""),
                 ""
             )
-            
-            // Remove echoed system prompt if present
+
+            // Remove redundant prompt displays
             systemPrompt?.let { sysPrompt ->
                 filtered = filtered.replace(
                     Regex("""(?s)## \*\*System Prompt\*\*\s*```plaintext\s*${Regex.escape(sysPrompt.trim())}\s*```\s*---"""),
                     ""
                 )
             }
-            
-            // Remove echoed user prompt if present
+                
             userPrompt?.let { usrPrompt ->
                 filtered = filtered.replace(
                     Regex("""(?s)## User Request\s*```plaintext\s*${Regex.escape(usrPrompt.trim())}\s*```\s*---"""),
                     ""
                 )
             }
-            
-            filtered.trim()
+
+            // Keep only the first occurrence of init info if it exists
+            val finalOutput = if (initInfo != null) {
+                filtered.replace(Regex(Regex.escape(initInfo)), "").trim()
+                    .let { if (it.isNotEmpty()) "$initInfo\n\n$it" else initInfo }
+            } else {
+                filtered
+            }
+                
+            finalOutput.trim()
         }
 
         return buildString {
