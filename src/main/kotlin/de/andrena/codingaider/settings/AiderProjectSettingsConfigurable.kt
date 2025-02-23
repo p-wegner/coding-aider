@@ -104,6 +104,16 @@ init {
                     }
                 }
             })
+            add(JButton("Copy").apply {
+                addActionListener {
+                    val selected = testTypeList.selectedValue
+                    if (selected != null) {
+                        val copy = selected.copy(name = "${selected.name} (Copy)")
+                        listModel.addElement(copy)
+                        AiderProjectSettings.getInstance(project).addTestType(copy)
+                    }
+                }
+            })
         }
         
         panel.add(JScrollPane(testTypeList), BorderLayout.CENTER)
