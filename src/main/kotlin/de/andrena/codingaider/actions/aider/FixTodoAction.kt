@@ -19,23 +19,6 @@ import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.AiderInputDialog
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 
-class FixTodoActionGroup : DefaultActionGroup() {
-    override fun getChildren(e: AnActionEvent?): Array<AnAction> {
-        return arrayOf(
-            FixTodoAction(),
-            FixTodoInteractive()
-        )
-    }
-
-    override fun update(e: AnActionEvent) {
-        val project = e.project
-        val psiFile = e.getData(CommonDataKeys.PSI_FILE)
-        val hasTodos = project != null && psiFile != null && BaseFixTodoAction.hasTodos(project, psiFile)
-        e.presentation.isEnabledAndVisible = hasTodos
-    }
-
-    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
-}
 
 abstract class BaseFixTodoAction : AnAction() {
     override fun update(e: AnActionEvent) {
