@@ -5,6 +5,7 @@ import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 
+// TODO: externalize prompts
 @Service(Service.Level.PROJECT)
 class AiderPlanPromptService(private val project: Project) {
 
@@ -43,10 +44,12 @@ Subplan Requirements:
 
     fun createPlanRefinementPrompt(plan: AiderPlan, refinementRequest: String): String {
         val basePrompt = """<SystemPrompt>
-You are refining an existing plan ${plan.plan}. The plan should be extended or modified based on the refinement request.
+You are refining an existing plan ${plan.plan}. The plan should be extended or modified based on the refinement request. 
+Don't start the implementation until the plan files are committed. The main goal is to modify the plan files and not the implementation.
 Decide whether to use subplans.
 $subplanGuidancePrompt
 $planFileStructurePrompt
+$planFileFormatPrompt
 </SystemPrompt>
 The refinement request is: <UserPrompt>$refinementRequest</UserPrompt>
         """.trimIndent()
@@ -54,14 +57,9 @@ The refinement request is: <UserPrompt>$refinementRequest</UserPrompt>
         return basePrompt
     }
 
-    fun createAiderPlanSystemPrompt(commandData: CommandData): String {
-        val files = commandData.files
-
-        val existingPlan = filterPlanRelevantFiles(files)
-
-        val basePrompt = """
-You are working in a plan based mode with plan files in $AIDER_PLANS_FOLDER:  
-
+    private val planFileFormatPrompt = """
+Plan files are located in $AIDER_PLANS_FOLDER:  
+    
 File Requirements:
 1. Start plans with $AIDER_PLAN_MARKER
 2. Start checklists with $AIDER_PLAN_CHECKLIST_MARKER
@@ -79,7 +77,14 @@ File Requirements:
   - path: "full/path/to/file"
     readOnly: false
 ```    
-        """.trimStartingWhiteSpaces()
+"""
+
+    fun createAiderPlanSystemPrompt(commandData: CommandData): String {
+        val files = commandData.files
+
+        val existingPlan = filterPlanRelevantFiles(files)
+
+        val basePrompt = planFileFormatPrompt.trimStartingWhiteSpaces()
 
         val firstPlan = existingPlan.firstOrNull()
         val relativePlanPath = firstPlan?.filePath?.removePrefix(commandData.projectPath) ?: ""
