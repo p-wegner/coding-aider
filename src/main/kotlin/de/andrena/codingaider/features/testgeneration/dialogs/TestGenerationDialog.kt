@@ -1,4 +1,4 @@
-package de.andrena.codingaider.dialogs
+package de.andrena.codingaider.features.testgeneration.dialogs
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionToolbar
@@ -16,18 +16,21 @@ import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
+import com.intellij.ui.dsl.builder.AlignX
+import com.intellij.ui.dsl.builder.AlignY
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.settings.AiderProjectSettingsConfigurable
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.AiderMode
-import de.andrena.codingaider.services.TestGenerationPromptService
+import de.andrena.codingaider.features.testgeneration.TestGenerationPromptService
 import de.andrena.codingaider.settings.AiderProjectSettings
-import de.andrena.codingaider.settings.AiderProjectSettings.TestTypeConfiguration
 import de.andrena.codingaider.settings.AiderSettings
+import de.andrena.codingaider.features.testgeneration.TestTypeConfiguration
 import de.andrena.codingaider.utils.FileTraversal
 import java.awt.Component
+import java.awt.Dimension
 import javax.swing.DefaultListCellRenderer
 import javax.swing.JComponent
 import javax.swing.JLabel
@@ -118,9 +121,9 @@ class TestGenerationDialog(
             row {
                 cell(testTypeComboBox)
                     .resizableColumn()
-                    .align(com.intellij.ui.dsl.builder.AlignX.FILL)
+                    .align(AlignX.FILL)
                 cell(settingsButton)
-                    .align(com.intellij.ui.dsl.builder.AlignX.RIGHT)
+                    .align(AlignX.RIGHT)
             }
             row {
                 label("Enter any additional instructions or requirements for the test:")
@@ -128,13 +131,13 @@ class TestGenerationDialog(
             row {
                 cell(JBScrollPane(promptArea))
                     .resizableColumn()
-                    .align(com.intellij.ui.dsl.builder.AlignY.FILL)
-                    .align(com.intellij.ui.dsl.builder.AlignX.FILL)
+                    .align(AlignY.FILL)
+                    .align(AlignX.FILL)
             }.resizableRow()
         }
         
-        panel.preferredSize = java.awt.Dimension(800, 600)
-        panel.minimumSize = java.awt.Dimension(400, 300)
+        panel.preferredSize = Dimension(800, 600)
+        panel.minimumSize = Dimension(400, 300)
         return panel
     }
 

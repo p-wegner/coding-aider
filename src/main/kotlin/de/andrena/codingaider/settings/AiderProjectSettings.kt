@@ -2,8 +2,8 @@ package de.andrena.codingaider.settings
 
 import com.intellij.openapi.components.*
 import com.intellij.openapi.project.Project
-import de.andrena.codingaider.settings.testgeneration.DefaultTestTypes
-import de.andrena.codingaider.settings.testgeneration.TestTypeConfiguration
+import de.andrena.codingaider.features.testgeneration.DefaultTestTypes
+import de.andrena.codingaider.features.testgeneration.TestTypeConfiguration
 
 @Service(Service.Level.PROJECT)
 @State(

@@ -5,7 +5,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.ui.Messages
-import de.andrena.codingaider.dialogs.TestGenerationDialog
+import de.andrena.codingaider.features.testgeneration.dialogs.TestGenerationDialog
 import de.andrena.codingaider.settings.AiderProjectSettings
 
 class GenerateTestAction : AnAction() {

@@ -1,8 +1,7 @@
-package de.andrena.codingaider.services
+package de.andrena.codingaider.features.testgeneration
 
 import com.intellij.openapi.components.Service
 import de.andrena.codingaider.command.FileData
-import de.andrena.codingaider.settings.AiderProjectSettings.TestTypeConfiguration
 
 @Service(Service.Level.PROJECT)
 class TestGenerationPromptService {

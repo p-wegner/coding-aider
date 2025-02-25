@@ -1,4 +1,4 @@
-package de.andrena.codingaider.dialogs
+package de.andrena.codingaider.features.testgeneration.dialogs
 
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
@@ -6,20 +6,26 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.components.JBCheckBox
+import com.intellij.ui.components.JBList
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.components.JBTextField
+import com.intellij.ui.dsl.builder.AlignX
+import com.intellij.ui.dsl.builder.AlignY
 import com.intellij.ui.dsl.builder.panel
-import de.andrena.codingaider.settings.AiderProjectSettings
+import de.andrena.codingaider.features.testgeneration.TestTypeConfiguration
 import java.awt.Component
+import java.awt.Dimension
+import java.io.File
 import javax.swing.DefaultListCellRenderer
+import javax.swing.DefaultListModel
 import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JList
 
 class TestTypeDialog(
     private val project: Project,
-    private val existing: AiderProjectSettings.TestTypeConfiguration?
+    private val existing: TestTypeConfiguration?
 ) : DialogWrapper(project) {
     
     private val nameField = JBTextField()
@@ -31,7 +37,7 @@ class TestTypeDialog(
     private val referencePatternField = JBTextField()
     private val testPatternField = JBTextField()
     private val enabledCheckBox = JBCheckBox("Enabled")
-    private val contextFilesList = com.intellij.ui.components.JBList<String>().apply {
+    private val contextFilesList = JBList<String>().apply {
         cellRenderer = ContextFileRenderer()
     }
     private inner class ContextFileRenderer : DefaultListCellRenderer() {
@@ -44,7 +50,7 @@ class TestTypeDialog(
         ): Component {
             val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
             if (component is JLabel && value is String) {
-                val file = java.io.File(value)
+                val file = File(value)
                 component.text = file.name
                 component.toolTipText = value
             }
@@ -52,7 +58,7 @@ class TestTypeDialog(
         }
     }
 
-    private val contextFilesModel = javax.swing.DefaultListModel<String>()
+    private val contextFilesModel = DefaultListModel<String>()
     
     init {
         title = if (existing == null) "Add Test Type" else "Edit Test Type"
@@ -89,31 +95,31 @@ class TestTypeDialog(
             row("Name:") {
                 cell(nameField)
                     .resizableColumn()
-                    .align(com.intellij.ui.dsl.builder.AlignX.FILL)
+                    .align(AlignX.FILL)
                 cell(enabledCheckBox)
-                    .align(com.intellij.ui.dsl.builder.AlignX.RIGHT)
+                    .align(AlignX.RIGHT)
             }
             row("Prompt Template:") {
                 cell(JBScrollPane(promptTemplateArea))
                     .resizableColumn()
-                    .align(com.intellij.ui.dsl.builder.AlignY.FILL)
-                    .align(com.intellij.ui.dsl.builder.AlignX.FILL)
+                    .align(AlignY.FILL)
+                    .align(AlignX.FILL)
             }.resizableRow()
             row("Reference File Pattern:") {
                 cell(referencePatternField)
                     .resizableColumn()
-                    .align(com.intellij.ui.dsl.builder.AlignX.FILL)
+                    .align(AlignX.FILL)
             }
             row("Test File Pattern:") {
                 cell(testPatternField)
                     .resizableColumn()
-                    .align(com.intellij.ui.dsl.builder.AlignX.FILL)
+                    .align(AlignX.FILL)
             }
             row("Context Files:") {
                 cell(JBScrollPane(contextFilesList))
                     .resizableColumn()
-                    .align(com.intellij.ui.dsl.builder.AlignY.FILL)
-                    .align(com.intellij.ui.dsl.builder.AlignX.FILL)
+                    .align(AlignY.FILL)
+                    .align(AlignX.FILL)
             }.resizableRow()
             row {
                 button("Add Files") { addContextFiles() }
@@ -121,7 +127,7 @@ class TestTypeDialog(
             }
         }
         
-        contentPanel.preferredSize = java.awt.Dimension(800, 600)
+        contentPanel.preferredSize = Dimension(800, 600)
         
         return JBScrollPane(contentPanel).apply {
             horizontalScrollBarPolicy = JBScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
@@ -139,7 +145,7 @@ class TestTypeDialog(
         }
     }
     
-    fun getTestType() = AiderProjectSettings.TestTypeConfiguration(
+    fun getTestType() = TestTypeConfiguration(
         name = nameField.text,
         promptTemplate = promptTemplateArea.text,
         referenceFilePattern = referencePatternField.text,

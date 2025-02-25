@@ -1,4 +1,4 @@
-package de.andrena.codingaider.settings.testgeneration
+package de.andrena.codingaider.features.testgeneration
 
 object DefaultTestTypes {
     fun getDefaultTestTypes(): List<TestTypeConfiguration> = listOf(
