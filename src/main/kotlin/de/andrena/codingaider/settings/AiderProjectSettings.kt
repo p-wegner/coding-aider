@@ -2,7 +2,8 @@ package de.andrena.codingaider.settings
 
 import com.intellij.openapi.components.*
 import com.intellij.openapi.project.Project
-import de.andrena.codingaider.command.FileData
+import de.andrena.codingaider.settings.testgeneration.DefaultTestTypes
+import de.andrena.codingaider.settings.testgeneration.TestTypeConfiguration
 
 @Service(Service.Level.PROJECT)
 @State(
@@ -10,15 +11,6 @@ import de.andrena.codingaider.command.FileData
     storages = [Storage("AiderProjectSettings.xml")]
 )
 class AiderProjectSettings(private val project: Project) : PersistentStateComponent<AiderProjectSettings.State> {
-    data class TestTypeConfiguration(
-        var name: String = "",
-        var promptTemplate: String = "",
-        var referenceFilePattern: String = "",
-        var testFilePattern: String = "*Test.kt",
-        var isEnabled: Boolean = true,
-        var contextFiles: List<String> = listOf()
-    )
-
     data class State(
         var isOptionsCollapsed: Boolean = true,
         var isContextCollapsed: Boolean = false,
@@ -74,4 +66,7 @@ class AiderProjectSettings(private val project: Project) : PersistentStateCompon
         fun getInstance(project: Project): AiderProjectSettings =
             project.getService(AiderProjectSettings::class.java)
     }
+
 }
+
+

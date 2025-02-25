@@ -10,6 +10,7 @@ import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.dialogs.TestTypeDialog
 import de.andrena.codingaider.services.PersistentFileService
+import de.andrena.codingaider.settings.testgeneration.TestTypeConfiguration
 import java.awt.BorderLayout
 import java.awt.Component
 import javax.swing.*
@@ -19,19 +20,21 @@ class AiderProjectSettingsConfigurable(private val project: Project) : Configura
     private val persistentFilesListModel: DefaultListModel<FileData>
     private val persistentFilesList: JBList<FileData>
     private val persistentFileService: PersistentFileService
-init {
-    this.persistentFileService = project.getService(PersistentFileService::class.java)
-    this.persistentFilesListModel = DefaultListModel<FileData>()
-    this.persistentFilesList = JBList(persistentFilesListModel).apply {
-        addKeyListener(object : java.awt.event.KeyAdapter() {
-            override fun keyPressed(e: java.awt.event.KeyEvent) {
-                if (e.keyCode == java.awt.event.KeyEvent.VK_DELETE) {
-                    removeSelectedFiles()
+
+    init {
+        this.persistentFileService = project.getService(PersistentFileService::class.java)
+        this.persistentFilesListModel = DefaultListModel<FileData>()
+        this.persistentFilesList = JBList(persistentFilesListModel).apply {
+            addKeyListener(object : java.awt.event.KeyAdapter() {
+                override fun keyPressed(e: java.awt.event.KeyEvent) {
+                    if (e.keyCode == java.awt.event.KeyEvent.VK_DELETE) {
+                        removeSelectedFiles()
+                    }
                 }
-            }
-        })
+            })
+        }
     }
-}
+
     override fun getDisplayName(): String = "Aider Project Settings"
 
     override fun createComponent(): JComponent {
@@ -66,22 +69,24 @@ init {
 
     private fun createTestTypePanel(): JPanel {
         val panel = JPanel(BorderLayout())
-        val listModel = DefaultListModel<AiderProjectSettings.TestTypeConfiguration>()
+        val listModel = DefaultListModel<TestTypeConfiguration>()
         val testTypeList = JBList(listModel)
-        
+
         // Add existing test types
-        AiderProjectSettings.getInstance(project).getTestTypes().forEach { 
-            listModel.addElement(it) 
+        AiderProjectSettings.getInstance(project).getTestTypes().forEach {
+            listModel.addElement(it)
         }
-        
+
         testTypeList.cellRenderer = TestTypeRenderer()
-        
+
         val buttonPanel = JPanel().apply {
             add(JButton("Add").apply {
-                addActionListener { showTestTypeDialog(null) { config ->
-                    listModel.addElement(config)
-                    AiderProjectSettings.getInstance(project).addTestType(config)
-                }}
+                addActionListener {
+                    showTestTypeDialog(null) { config ->
+                        listModel.addElement(config)
+                        AiderProjectSettings.getInstance(project).addTestType(config)
+                    }
+                }
             })
             add(JButton("Edit").apply {
                 addActionListener {
@@ -115,22 +120,22 @@ init {
                 }
             })
         }
-        
+
         panel.add(JScrollPane(testTypeList), BorderLayout.CENTER)
         panel.add(buttonPanel, BorderLayout.SOUTH)
         return panel
     }
-    
+
     private fun showTestTypeDialog(
-        existing: AiderProjectSettings.TestTypeConfiguration?,
-        onSave: (AiderProjectSettings.TestTypeConfiguration) -> Unit
+        existing: TestTypeConfiguration?,
+        onSave: (TestTypeConfiguration) -> Unit
     ) {
         val dialog = TestTypeDialog(project, existing)
         if (dialog.showAndGet()) {
             onSave(dialog.getTestType())
         }
     }
-    
+
     private inner class TestTypeRenderer : DefaultListCellRenderer() {
         override fun getListCellRendererComponent(
             list: JList<*>?,
@@ -140,7 +145,7 @@ init {
             cellHasFocus: Boolean
         ): Component {
             val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
-            if (component is JLabel && value is AiderProjectSettings.TestTypeConfiguration) {
+            if (component is JLabel && value is TestTypeConfiguration) {
                 component.text = "${value.name} ${if (!value.isEnabled) "(Disabled)" else ""}"
             }
             return component
@@ -157,6 +162,7 @@ init {
     override fun reset() {
         loadPersistentFiles()
     }
+
     private fun addPersistentFiles() {
         val descriptor = FileChooserDescriptor(true, true, false, false, false, true)
         val files = FileChooser.chooseFiles(descriptor, project, null)
@@ -192,8 +198,6 @@ init {
             persistentFilesListModel.addElement(file)
         }
     }
-
-
 
 
     private inner class PersistentFileRenderer : DefaultListCellRenderer() {

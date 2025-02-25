@@ -1,8 +1,8 @@
-package de.andrena.codingaider.settings
+package de.andrena.codingaider.settings.testgeneration
 
 object DefaultTestTypes {
-    fun getDefaultTestTypes(): List<AiderProjectSettings.TestTypeConfiguration> = listOf(
-        AiderProjectSettings.TestTypeConfiguration(
+    fun getDefaultTestTypes(): List<TestTypeConfiguration> = listOf(
+        TestTypeConfiguration(
             name = "Unit Test",
             promptTemplate = """Generate a unit test for the provided code following these guidelines:
                 |1. Follow the given/when/then pattern
@@ -14,7 +14,7 @@ object DefaultTestTypes {
             testFilePattern = "*Test.{kt,java,ts,cs,py,go}",
             isEnabled = true
         ),
-        AiderProjectSettings.TestTypeConfiguration(
+        TestTypeConfiguration(
             name = "Integration Test",
             promptTemplate = """Generate an integration test focusing on component interaction:
                 |1. Test the integration between multiple components
@@ -26,7 +26,7 @@ object DefaultTestTypes {
             testFilePattern = "*IT.{kt,java,ts,cs,py,go}",
             isEnabled = true
         ),
-        AiderProjectSettings.TestTypeConfiguration(
+        TestTypeConfiguration(
             name = "BDD Specification",
             promptTemplate = """Generate a BDD-style test specification:
                 |1. Use descriptive feature/scenario language
