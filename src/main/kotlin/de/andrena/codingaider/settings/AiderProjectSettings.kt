@@ -47,12 +47,14 @@ class AiderProjectSettings(private val project: Project) : PersistentStateCompon
     fun getTestTypes(): List<TestTypeConfiguration> = myState.testTypes.toList()
 
     fun addTestType(testType: TestTypeConfiguration) {
-        myState.testTypes.add(testType)
+        val relativePathTestType = testType.withRelativePaths(project.basePath ?: "")
+        myState.testTypes.add(relativePathTestType)
     }
 
     fun updateTestType(index: Int, testType: TestTypeConfiguration) {
         if (index in 0 until myState.testTypes.size) {
-            myState.testTypes[index] = testType
+            val relativePathTestType = testType.withRelativePaths(project.basePath ?: "")
+            myState.testTypes[index] = relativePathTestType
         }
     }
 

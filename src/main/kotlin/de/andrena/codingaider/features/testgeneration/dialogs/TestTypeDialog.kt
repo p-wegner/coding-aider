@@ -53,6 +53,13 @@ class TestTypeDialog(
                 val file = File(value)
                 component.text = file.name
                 component.toolTipText = value
+                
+                // Show a visual indicator for relative vs absolute paths
+                if (!file.isAbsolute) {
+                    component.text = "${file.name} (relative)"
+                } else {
+                    component.text = "${file.name} (absolute)"
+                }
             }
             return component
         }
@@ -78,11 +85,22 @@ class TestTypeDialog(
     private fun addContextFiles() {
         val descriptor = FileChooserDescriptor(true, true, false, false, false, true)
         val files = FileChooser.chooseFiles(descriptor, project, null)
+        val projectPath = project.basePath ?: ""
+        
         files.forEach { file ->
-            if (!contextFilesModel.contains(file.path)) {
-                contextFilesModel.addElement(file.path)
+            // Store paths relative to project root
+            val relativePath = try {
+                val rootPath = File(projectPath).toPath()
+                val filePath = File(file.path).toPath()
+                rootPath.relativize(filePath).toString().replace('\\', '/')
+            } catch (e: IllegalArgumentException) {
+                // If the path can't be relativized (e.g., different drive on Windows), use absolute path
+                file.path
             }
-
+            
+            if (!contextFilesModel.contains(relativePath)) {
+                contextFilesModel.addElement(relativePath)
+            }
         }
     }
 

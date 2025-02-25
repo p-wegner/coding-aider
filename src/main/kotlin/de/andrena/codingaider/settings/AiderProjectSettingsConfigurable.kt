@@ -130,7 +130,10 @@ class AiderProjectSettingsConfigurable(private val project: Project) : Configura
         existing: TestTypeConfiguration?,
         onSave: (TestTypeConfiguration) -> Unit
     ) {
-        val dialog = TestTypeDialog(project, existing)
+        // If we have an existing configuration with relative paths, convert to absolute for editing
+        val configForEditing = existing?.withAbsolutePaths(project.basePath ?: "")
+        
+        val dialog = TestTypeDialog(project, configForEditing)
         if (dialog.showAndGet()) {
             onSave(dialog.getTestType())
         }

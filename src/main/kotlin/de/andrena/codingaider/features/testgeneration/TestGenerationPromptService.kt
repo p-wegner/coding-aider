@@ -18,8 +18,8 @@ class TestGenerationPromptService {
             .filter { it.filePath.matches(Regex(testType.referenceFilePattern)) }
             .map { it.filePath }
 
-        // Get configured reference files
-        val configuredReferenceFiles = testType.contextFiles
+        // Get configured reference files - ensure they're absolute paths
+        val configuredReferenceFiles = testType.withAbsolutePaths(files.firstOrNull()?.filePath?.substringBefore("src") ?: "").contextFiles
             
         return buildString {
             appendLine("Generate tests for the following files:")

@@ -156,8 +156,9 @@ class TestGenerationDialog(
         val settings = AiderSettings.getInstance()
 
         try {
-            // Add context files to the file list
-            val contextFiles = testType.contextFiles.map { FileData(it, false) }
+            // Add context files to the file list - convert relative paths to absolute
+            val absoluteTestType = testType.withAbsolutePaths(project.basePath ?: "")
+            val contextFiles = absoluteTestType.contextFiles.map { FileData(it, false) }
         
             val commandData = CommandData(
                 message = buildPrompt(testType, allFiles),
