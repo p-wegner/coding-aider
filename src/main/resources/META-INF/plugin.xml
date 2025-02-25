@@ -240,7 +240,7 @@
                     class="de.andrena.codingaider.actions.git.GitCodeReviewAction"
                     text="Git Code Review"
                     description="Review code changes between Git branches or commits"
-                    icon="AllIcons.Vcs.Compare">
+                    icon="AllIcons.Vcs.Changelist">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt R"/>
             </action>
             <separator/>
