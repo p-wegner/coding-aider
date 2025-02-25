@@ -1,9 +1,11 @@
 package de.andrena.codingaider.features.testgeneration.dialogs
 
+import com.intellij.openapi.components.service
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBList
@@ -13,7 +15,13 @@ import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.AlignY
 import com.intellij.ui.dsl.builder.panel
+import de.andrena.codingaider.command.CommandData
+import de.andrena.codingaider.command.FileData
+import de.andrena.codingaider.executors.api.IDEBasedExecutor
+import de.andrena.codingaider.features.testgeneration.TestGenerationPromptService
 import de.andrena.codingaider.features.testgeneration.TestTypeConfiguration
+import de.andrena.codingaider.inputdialog.AiderMode
+import de.andrena.codingaider.settings.AiderSettings
 import java.awt.Component
 import java.awt.Dimension
 import java.io.File
@@ -108,6 +116,52 @@ class TestTypeDialog(
         contextFilesList.selectedValuesList.forEach { contextFilesModel.removeElement(it) }
     }
     
+    private fun evaluateWithAider() {
+        if (!validateFields()) return
+        
+        val testType = getTestType()
+        val projectPath = project.basePath ?: ""
+        
+        // Create a sample file to evaluate against
+        val sampleFiles = listOf(
+            FileData("${projectPath}/src/main/kotlin/SampleFile.kt", false)
+        )
+        
+        try {
+            val promptService = project.service<TestGenerationPromptService>()
+            val prompt = promptService.buildPrompt(testType, sampleFiles, "This is an evaluation request. Please analyze the prompt and context files, then provide feedback on their effectiveness for test generation.")
+            
+            val commandData = CommandData(
+                message = prompt,
+                useYesFlag = false,
+                files = sampleFiles + testType.withAbsolutePaths(projectPath).contextFiles.map { FileData(it, false) },
+                projectPath = projectPath,
+                llm = AiderSettings.getInstance().llm,
+                additionalArgs = AiderSettings.getInstance().additionalArgs,
+                lintCmd = AiderSettings.getInstance().lintCmd,
+                aiderMode = AiderMode.CHAT,
+                sidecarMode = AiderSettings.getInstance().useSidecarMode,
+            )
+            
+            IDEBasedExecutor(project, commandData).execute()
+        } catch (e: Exception) {
+            Messages.showErrorDialog(
+                project,
+                "Failed to evaluate with Aider: ${e.message}",
+                "Evaluation Error"
+            )
+        }
+    }
+    
+    private fun validateFields(): Boolean {
+        val validation = doValidate()
+        if (validation != null) {
+            Messages.showErrorDialog(project, validation.message, "Validation Error")
+            return false
+        }
+        return true
+    }
+    
     override fun createCenterPanel(): JComponent {
         val contentPanel = panel {
             row("Name:") {
@@ -142,6 +196,7 @@ class TestTypeDialog(
             row {
                 button("Add Files") { addContextFiles() }
                 button("Remove Selected") { removeSelectedContextFiles() }
+                button("Evaluate with Aider") { evaluateWithAider() }
             }
         }
         
