@@ -20,21 +20,28 @@ class AiderIgnoreService(private val project: Project) {
         loadIgnorePatterns()
     }
 
+    private fun convertToGlobPattern(pattern: String, projectRoot: String): String {
+        val normalizedPattern = pattern.trim().replace('\\', '/')
+        
+        return when {
+            // Simple filetype pattern (e.g., *.kt)
+            pattern.startsWith("*.") -> "glob:**/*${pattern.substring(1)}"
+            // Absolute patterns (starting with /)
+            normalizedPattern.startsWith("/") -> "glob:$projectRoot$normalizedPattern"
+            // Directory patterns (ending with /)
+            normalizedPattern.endsWith("/") -> "glob:{$projectRoot/$normalizedPattern**,$projectRoot/**/$normalizedPattern**}"
+            // Regular patterns
+            else -> "glob:{$projectRoot/$normalizedPattern,$projectRoot/**/$normalizedPattern}"
+        }
+    }
+
     fun loadIgnorePatterns() {
         if (ignoreFile.exists()) {
             rawPatterns = ignoreFile.readLines().filter { it.isNotBlank() && !it.startsWith("#") }
+            val projectRoot = project.basePath?.replace('\\', '/') ?: ""
+            
             patterns = rawPatterns.map { pattern ->
-                val normalizedPattern = pattern.trim().replace('\\', '/')
-                val projectRoot = project.basePath?.replace('\\', '/') ?: ""
-                
-                // For absolute patterns (starting with /), anchor to project root
-                // For relative patterns, match anywhere under project root
-                val globPattern = when {
-                    normalizedPattern.startsWith("/") -> "glob:$projectRoot$normalizedPattern"
-                    normalizedPattern.endsWith("/") -> "glob:{$projectRoot/$normalizedPattern**,$projectRoot/**/$normalizedPattern**}"
-                    else -> "glob:{$projectRoot/$normalizedPattern,$projectRoot/**/$normalizedPattern}"
-                }
-                FileSystems.getDefault().getPathMatcher(globPattern)
+                FileSystems.getDefault().getPathMatcher(convertToGlobPattern(pattern, projectRoot))
             }
         } else {
             patterns = emptyList()
@@ -45,22 +52,25 @@ class AiderIgnoreService(private val project: Project) {
     fun isIgnored(filePath: String): Boolean {
         if (patterns.isEmpty()) return false
         
-        // Normalize both the file path and project root
+        // Normalize the file path
         val normalizedPath = FileTraversal.normalizedFilePath(filePath)
         val projectRoot = project.basePath?.replace('\\', '/') ?: ""
         
-        // Create absolute path for matching
+        // Create paths for matching
         val absolutePath = Paths.get(normalizedPath)
-        
-        // Create relative path for matching against project-relative patterns
         val relativePath = if (normalizedPath.startsWith(projectRoot)) {
             Paths.get(normalizedPath.substring(projectRoot.length + 1))
         } else {
             Paths.get(normalizedPath)
         }
         
+        // Get just the filename for simple filetype patterns
+        val fileName = absolutePath.fileName.toString()
+        
         return patterns.any { matcher ->
-            matcher.matches(absolutePath) || matcher.matches(relativePath)
+            matcher.matches(absolutePath) || 
+            matcher.matches(relativePath) ||
+            matcher.matches(Paths.get(fileName))
         }
     }
 
