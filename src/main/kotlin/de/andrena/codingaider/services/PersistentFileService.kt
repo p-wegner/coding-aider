@@ -2,6 +2,7 @@ package de.andrena.codingaider.services
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
@@ -18,6 +19,7 @@ class PersistentFileService(private val project: Project) {
     private val filesChanged: PersistentFilesChangedTopic by lazy {
         project.messageBus.syncPublisher(PersistentFilesChangedTopic.PERSISTENT_FILES_CHANGED_TOPIC)
     }
+    private val aiderIgnoreService by lazy { project.service<AiderIgnoreService>() }
 
     init {
         loadPersistentFiles()
@@ -58,7 +60,7 @@ class PersistentFileService(private val project: Project) {
     }
 
     fun addFile(file: FileData) {
-        if (!persistentFiles.any { it.hasSameNormalizedPath(file)}) {
+        if (!persistentFiles.any { it.hasSameNormalizedPath(file)} && !isIgnored(file.filePath)) {
             persistentFiles.add(file)
             savePersistentFilesToContextFile()
         }
@@ -70,10 +72,10 @@ class PersistentFileService(private val project: Project) {
     }
 
     fun getPersistentFiles(): List<FileData> {
-        // Clean up persistent files that no longer exist
+        // Clean up persistent files that no longer exist or are now ignored
         val validFiles = persistentFiles.filter { fileData ->
             val virtualFile = LocalFileSystem.getInstance().findFileByPath(fileData.filePath)
-            virtualFile?.exists() ?: false
+            (virtualFile?.exists() ?: false) && !isIgnored(fileData.filePath)
         }
 
         if (validFiles.size != persistentFiles.size) {
@@ -86,18 +88,19 @@ class PersistentFileService(private val project: Project) {
     }
 
     fun addAllFiles(selectedFiles: List<FileData>) {
-        selectedFiles.forEach { addFile(it) }
+        val nonIgnoredFiles = selectedFiles.filterNot { isIgnored(it.filePath) }
+        nonIgnoredFiles.forEach { addFile(it) }
     }
 
     fun updateFile(updatedFile: FileData) {
         val index = persistentFiles.indexOfFirst { it.filePath == updatedFile.filePath }
         val virtualFile = LocalFileSystem.getInstance().findFileByPath(updatedFile.filePath)
 
-        if (index != -1 && virtualFile?.exists() == true) {
+        if (index != -1 && virtualFile?.exists() == true && !isIgnored(updatedFile.filePath)) {
             persistentFiles[index] = updatedFile
             savePersistentFilesToContextFile()
         } else if (index != -1) {
-            // If file no longer exists, remove it from persistent files
+            // If file no longer exists or is now ignored, remove it from persistent files
             persistentFiles.removeAt(index)
             savePersistentFilesToContextFile()
         }
@@ -114,5 +117,9 @@ class PersistentFileService(private val project: Project) {
     fun removePersistentFiles(filePaths: List<String>) {
         persistentFiles.removeAll { it.filePath in filePaths }
         savePersistentFilesToContextFile()
+    }
+    
+    private fun isIgnored(filePath: String): Boolean {
+        return aiderIgnoreService.isIgnored(filePath)
     }
 }

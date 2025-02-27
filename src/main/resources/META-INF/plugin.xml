@@ -206,6 +206,11 @@
                     description="Start an Aider web crawl action">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt W"/>
             </action>
+            <action id="de.andrena.codingaider.actions.aider.AddToAiderIgnoreAction"
+                    class="de.andrena.codingaider.actions.aider.AddToAiderIgnoreAction"
+                    text="Add to .aiderignore"
+                    description="Add selected files or directories to .aiderignore">
+            </action>
             <action id="de.andrena.codingaider.actions.aider.ContinuePlanAction"
                     class="de.andrena.codingaider.actions.aider.ContinuePlanAction"
                     text="Continue Plan"
@@ -235,6 +240,11 @@
                     text="Aider Clipboard Image"
                     description="Save clipboard image and add to persistent files">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt I"/>
+            </action>
+            <action id="de.andrena.codingaider.actions.aider.AddToAiderIgnoreAction"
+                    class="de.andrena.codingaider.actions.aider.AddToAiderIgnoreAction"
+                    text="Add to .aiderignore"
+                    description="Add selected files or directories to .aiderignore">
             </action>
             <action id="de.andrena.codingaider.actions.git.GitCodeReviewAction"
                     class="de.andrena.codingaider.actions.git.GitCodeReviewAction"

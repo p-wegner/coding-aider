@@ -59,6 +59,12 @@ class AiderContextViewPanel(
                         aiderContextView.addPlanContextFilesToContext()
                     }
                 })
+                popup.addSeparator()
+                popup.add(JMenuItem("Manage .aiderignore").apply {
+                    addActionListener {
+                        manageAiderIgnore()
+                    }
+                })
 
                 val component = e.inputEvent?.component
                 popup.show(component, 0, component?.height ?: 0)
@@ -149,14 +155,31 @@ class AiderContextViewPanel(
 
         if (fileChooser.showOpenDialog(this) == javax.swing.JFileChooser.APPROVE_OPTION) {
             val selectedFiles = fileChooser.selectedFiles
+            val aiderIgnoreService = project.service<AiderIgnoreService>()
+            
             val fileDataList = selectedFiles.flatMap { file ->
                 if (file.isDirectory) {
-                    file.walkTopDown().filter { it.isFile }.map { FileData(it.absolutePath, false) }.toList()
+                    file.walkTopDown()
+                        .filter { it.isFile && !aiderIgnoreService.isIgnored(it.absolutePath) }
+                        .map { FileData(it.absolutePath, false) }
+                        .toList()
                 } else {
-                    listOf(FileData(file.absolutePath, false))
+                    if (!aiderIgnoreService.isIgnored(file.absolutePath)) {
+                        listOf(FileData(file.absolutePath, false))
+                    } else {
+                        emptyList()
+                    }
                 }
             }
             aiderContextView.addFilesToContext(fileDataList)
         }
+    }
+    
+    private fun manageAiderIgnore() {
+        val aiderIgnoreService = project.service<AiderIgnoreService>()
+        val ignoreFile = aiderIgnoreService.createIgnoreFileIfNeeded()
+        
+        // Open the .aiderignore file in the editor
+        com.intellij.openapi.fileEditor.FileEditorManager.getInstance(project).openFile(ignoreFile, true)
     }
 }
