@@ -117,29 +117,22 @@ class TestTypeDialog(
     }
     
     private fun evaluateWithAider() {
-        if (!validateFields()) return
-        
         val testType = getTestType()
         val projectPath = project.basePath ?: ""
         
-        // Create a sample file to evaluate against
-        val sampleFiles = listOf(
-            FileData("${projectPath}/src/main/kotlin/SampleFile.kt", false)
-        )
-        
         try {
             val promptService = project.service<TestGenerationPromptService>()
-            val prompt = promptService.buildPrompt(testType, sampleFiles, "This is an evaluation request. Please analyze the prompt and context files, then provide feedback on their effectiveness for test generation.")
+            val prompt = promptService.buildTestAbstractionPrompt(testType )
             
             val commandData = CommandData(
                 message = prompt,
-                useYesFlag = false,
-                files = sampleFiles + testType.withAbsolutePaths(projectPath).contextFiles.map { FileData(it, false) },
+                useYesFlag = AiderSettings.getInstance().useYesFlag,
+                files = testType.withAbsolutePaths(projectPath).contextFiles.map { FileData(it, false) },
                 projectPath = projectPath,
                 llm = AiderSettings.getInstance().llm,
                 additionalArgs = AiderSettings.getInstance().additionalArgs,
                 lintCmd = AiderSettings.getInstance().lintCmd,
-                aiderMode = AiderMode.CHAT,
+                aiderMode = AiderMode.NORMAL,
                 sidecarMode = AiderSettings.getInstance().useSidecarMode,
             )
             
@@ -153,14 +146,6 @@ class TestTypeDialog(
         }
     }
     
-    private fun validateFields(): Boolean {
-        val validation = doValidate()
-        if (validation != null) {
-            Messages.showErrorDialog(project, validation.message, "Validation Error")
-            return false
-        }
-        return true
-    }
     
     override fun createCenterPanel(): JComponent {
         val contentPanel = panel {
@@ -196,7 +181,7 @@ class TestTypeDialog(
             row {
                 button("Add Files") { addContextFiles() }
                 button("Remove Selected") { removeSelectedContextFiles() }
-                button("Evaluate with Aider") { evaluateWithAider() }
+                button("Abstract Test Strategy Using AI") { evaluateWithAider() }
             }
         }
         
