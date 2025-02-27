@@ -126,8 +126,13 @@ class AiderHistoryService(private val project: Project) {
                 appendLine("\n---")
             }
 
-            appendLine("## Aider Execution\n")
-            appendLine("${filteredOutput ?: "<!-- No execution output captured -->"}\n")
+            // Don't include "## Aider Execution" header when there's no output
+            if (filteredOutput != null) {
+                appendLine("## Aider Execution\n")
+                appendLine("$filteredOutput\n")
+            } else {
+                appendLine("<!-- No execution output captured -->")
+            }
         }.trim()
     }
 
