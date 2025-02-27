@@ -101,21 +101,18 @@ class PersistentFilesPanel(private val project: Project) {
     }
 
     private fun addPersistentFiles() {
-        val descriptor = FileChooserDescriptor(true, true, false, false, false, true)
+        val descriptor = FileChooserDescriptor(true, true, false, false, false, true).apply {
+            withFileFilter { file -> !persistentFileService.isIgnored(file.path) }
+        }
         val files = FileChooser.chooseFiles(descriptor, project, null)
-        val aiderIgnoreService = project.service<AiderIgnoreService>()
         
         val fileDataList = files.flatMap { file ->
             if (file.isDirectory) {
                 file.children
-                    .filter { it.isValid && !it.isDirectory && !aiderIgnoreService.isIgnored(it.path) }
+                    .filter { it.isValid && !it.isDirectory && !persistentFileService.isIgnored(it.path) }
                     .map { FileData(it.path, false) }
             } else {
-                if (!aiderIgnoreService.isIgnored(file.path)) {
-                    listOf(FileData(file.path, false))
-                } else {
-                    emptyList()
-                }
+                listOf(FileData(file.path, false))
             }
         }
         

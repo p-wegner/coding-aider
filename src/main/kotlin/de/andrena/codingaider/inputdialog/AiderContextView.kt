@@ -347,14 +347,12 @@ class AiderContextView(
     }
 
     fun addFilesToContext(fileDataList: List<FileData>) {
-        val aiderIgnoreService = project.service<AiderIgnoreService>()
-        val nonIgnoredFiles = fileDataList.filterNot { aiderIgnoreService.isIgnored(it.filePath) }
+        val nonIgnoredFiles = fileDataList.filterNot { isFileIgnored(it.filePath) }
         addFilesToTree(nonIgnoredFiles)
     }
     
     fun setFiles(files: List<FileData>) {
-        val aiderIgnoreService = project.service<AiderIgnoreService>()
-        allFiles = files.filterNot { aiderIgnoreService.isIgnored(it.filePath) }
+        allFiles = files.filterNot { isFileIgnored(it.filePath) }
         selectedFilesChanged()
     }
 

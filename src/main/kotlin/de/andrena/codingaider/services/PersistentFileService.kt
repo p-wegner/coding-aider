@@ -66,6 +66,10 @@ class PersistentFileService(private val project: Project) {
         }
     }
 
+    fun isIgnored(filePath: String): Boolean {
+        return aiderIgnoreService.isIgnored(filePath)
+    }
+
     fun removeFile(filePath: String) {
         persistentFiles.removeIf { it.filePath == filePath }
         savePersistentFilesToContextFile()

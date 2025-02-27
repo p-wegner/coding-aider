@@ -244,7 +244,10 @@
             <action id="de.andrena.codingaider.actions.aider.AddToAiderIgnoreAction"
                     class="de.andrena.codingaider.actions.aider.AddToAiderIgnoreAction"
                     text="Add to .aiderignore"
-                    description="Add selected files or directories to .aiderignore">
+                    description="Add selected files or directories to .aiderignore"
+                    icon="AllIcons.Actions.Cancel">
+                <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
+                <add-to-group group-id="EditorPopupMenu" anchor="last"/>
             </action>
             <action id="de.andrena.codingaider.actions.git.GitCodeReviewAction"
                     class="de.andrena.codingaider.actions.git.GitCodeReviewAction"
