@@ -95,20 +95,42 @@ class TestTypeDialog(
         val files = FileChooser.chooseFiles(descriptor, project, null)
         val projectPath = project.basePath ?: ""
         
-        files.forEach { file ->
-            // Store paths relative to project root
-            val relativePath = try {
-                val rootPath = File(projectPath).toPath()
-                val filePath = File(file.path).toPath()
-                rootPath.relativize(filePath).toString().replace('\\', '/')
-            } catch (e: IllegalArgumentException) {
-                // If the path can't be relativized (e.g., different drive on Windows), use absolute path
-                file.path
+        files.forEach { virtualFile ->
+            if (virtualFile.isDirectory) {
+                // Recursively process directories
+                addFilesFromDirectory(virtualFile, projectPath)
+            } else {
+                // Add individual file
+                addSingleFile(virtualFile.path, projectPath)
             }
-            
-            if (!contextFilesModel.contains(relativePath)) {
-                contextFilesModel.addElement(relativePath)
+        }
+    }
+    
+    private fun addFilesFromDirectory(directory: com.intellij.openapi.vfs.VirtualFile, projectPath: String) {
+        directory.children.forEach { child ->
+            if (child.isDirectory) {
+                // Recursively process subdirectories
+                addFilesFromDirectory(child, projectPath)
+            } else {
+                // Add file
+                addSingleFile(child.path, projectPath)
             }
+        }
+    }
+    
+    private fun addSingleFile(filePath: String, projectPath: String) {
+        // Store paths relative to project root
+        val relativePath = try {
+            val rootPath = File(projectPath).toPath()
+            val path = File(filePath).toPath()
+            rootPath.relativize(path).toString().replace('\\', '/')
+        } catch (e: IllegalArgumentException) {
+            // If the path can't be relativized (e.g., different drive on Windows), use absolute path
+            filePath
+        }
+        
+        if (!contextFilesModel.contains(relativePath)) {
+            contextFilesModel.addElement(relativePath)
         }
     }
 
