@@ -24,15 +24,13 @@ class AiderIgnoreService(private val project: Project) {
         if (ignoreFile.exists()) {
             rawPatterns = ignoreFile.readLines().filter { it.isNotBlank() && !it.startsWith("#") }
             patterns = rawPatterns.map { pattern ->
-                val normalizedPattern = pattern.trim()
-                    .replace('\\', '/')
-                    .let {
-                        when {
-                            it.startsWith("/") -> "glob:${project.basePath?.replace('\\', '/')}$it"
-                            else -> "glob:${project.basePath?.replace('\\', '/')}/**/$it"
-                        }
-                    }
-                FileSystems.getDefault().getPathMatcher(normalizedPattern)
+                val normalizedPattern = pattern.trim().replace('\\', '/')
+                val projectRoot = project.basePath?.replace('\\', '/') ?: ""
+                val globPattern = when {
+                    normalizedPattern.startsWith("/") -> "glob:$projectRoot$normalizedPattern"
+                    else -> "glob:$projectRoot/**/$normalizedPattern"
+                }
+                FileSystems.getDefault().getPathMatcher(globPattern)
             }
         } else {
             patterns = emptyList()
@@ -44,8 +42,23 @@ class AiderIgnoreService(private val project: Project) {
         if (patterns.isEmpty()) return false
         
         val normalizedPath = FileTraversal.normalizedFilePath(filePath)
-        val path = Paths.get(normalizedPath)
-        return patterns.any { it.matches(path) }
+        val projectRoot = project.basePath?.replace('\\', '/') ?: ""
+        
+        // If the path is absolute and starts with project root, make it relative
+        val relativePath = if (normalizedPath.startsWith(projectRoot)) {
+            normalizedPath.substring(projectRoot.length).let { 
+                if (it.startsWith("/")) it else "/$it" 
+            }
+        } else {
+            "/$normalizedPath"
+        }
+        
+        val absolutePath = Paths.get(normalizedPath)
+        val relativizedPath = Paths.get(relativePath)
+        
+        return patterns.any { matcher ->
+            matcher.matches(absolutePath) || matcher.matches(relativizedPath)
+        }
     }
 
     fun addPatternToIgnoreFile(pattern: String) {
