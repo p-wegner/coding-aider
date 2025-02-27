@@ -26,9 +26,13 @@ class AiderIgnoreService(private val project: Project) {
             patterns = rawPatterns.map { pattern ->
                 val normalizedPattern = pattern.trim().replace('\\', '/')
                 val projectRoot = project.basePath?.replace('\\', '/') ?: ""
+                
+                // For absolute patterns (starting with /), anchor to project root
+                // For relative patterns, match anywhere under project root
                 val globPattern = when {
                     normalizedPattern.startsWith("/") -> "glob:$projectRoot$normalizedPattern"
-                    else -> "glob:$projectRoot/**/$normalizedPattern"
+                    normalizedPattern.endsWith("/") -> "glob:{$projectRoot/$normalizedPattern**,$projectRoot/**/$normalizedPattern**}"
+                    else -> "glob:{$projectRoot/$normalizedPattern,$projectRoot/**/$normalizedPattern}"
                 }
                 FileSystems.getDefault().getPathMatcher(globPattern)
             }
@@ -41,23 +45,22 @@ class AiderIgnoreService(private val project: Project) {
     fun isIgnored(filePath: String): Boolean {
         if (patterns.isEmpty()) return false
         
+        // Normalize both the file path and project root
         val normalizedPath = FileTraversal.normalizedFilePath(filePath)
         val projectRoot = project.basePath?.replace('\\', '/') ?: ""
         
-        // If the path is absolute and starts with project root, make it relative
+        // Create absolute path for matching
+        val absolutePath = Paths.get(normalizedPath)
+        
+        // Create relative path for matching against project-relative patterns
         val relativePath = if (normalizedPath.startsWith(projectRoot)) {
-            normalizedPath.substring(projectRoot.length).let { 
-                if (it.startsWith("/")) it else "/$it" 
-            }
+            Paths.get(normalizedPath.substring(projectRoot.length + 1))
         } else {
-            "/$normalizedPath"
+            Paths.get(normalizedPath)
         }
         
-        val absolutePath = Paths.get(normalizedPath)
-        val relativizedPath = Paths.get(relativePath)
-        
         return patterns.any { matcher ->
-            matcher.matches(absolutePath) || matcher.matches(relativizedPath)
+            matcher.matches(absolutePath) || matcher.matches(relativePath)
         }
     }
 
