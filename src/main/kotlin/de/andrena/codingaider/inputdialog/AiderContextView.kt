@@ -13,6 +13,7 @@ import com.intellij.util.ui.JBUI
 import com.intellij.util.ui.tree.TreeUtil
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.services.AiderDocsService.Companion.AIDER_DOCS_FOLDER
+import de.andrena.codingaider.services.AiderIgnoreService
 import de.andrena.codingaider.services.FileExtractorService
 import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.services.TokenCountService

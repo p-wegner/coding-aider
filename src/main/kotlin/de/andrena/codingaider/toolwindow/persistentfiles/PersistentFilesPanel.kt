@@ -5,6 +5,7 @@ import com.intellij.openapi.actionSystem.ActionManager
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
+import com.intellij.openapi.components.service
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -15,6 +16,7 @@ import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.messages.PersistentFilesChangedTopic
+import de.andrena.codingaider.services.AiderIgnoreService
 import de.andrena.codingaider.services.PersistentFileService
 import java.awt.Component
 import java.awt.event.KeyAdapter

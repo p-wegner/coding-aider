@@ -7,7 +7,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.utils.FileTraversal
 import java.io.File
 import java.nio.file.FileSystems
-import java.nio.file.Path
 import java.nio.file.PathMatcher
 import java.nio.file.Paths
 
