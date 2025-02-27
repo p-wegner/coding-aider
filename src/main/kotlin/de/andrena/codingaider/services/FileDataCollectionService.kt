@@ -14,12 +14,16 @@ class FileDataCollectionService(private val project: Project) {
 
     private val settings: AiderSettings = getInstance()
 
+    private val aiderIgnoreService = project.service<AiderIgnoreService>()
+
     fun collectAllFiles(
         files: Array<VirtualFile> = emptyArray(),
         includePersistentFiles: Boolean = true
-
     ): List<FileData> {
-        val traversedFiles = FileTraversal.traverseFilesOrDirectories(files).toMutableList()
+        val traversedFiles = FileTraversal.traverseFilesOrDirectories(files)
+            .filterNot { aiderIgnoreService.isIgnored(it.filePath) }
+            .toMutableList()
+            
         if (includePersistentFiles) {
             traversedFiles.addAll(project.service<PersistentFileService>().getPersistentFiles())
         }

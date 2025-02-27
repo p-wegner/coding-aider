@@ -37,10 +37,9 @@ class AiderAction : AnAction() {
             val project: Project? = e.project
             val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
             if (project != null && !files.isNullOrEmpty()) {
-                val aiderIgnoreService = project.service<AiderIgnoreService>()
-                val filteredFiles = files.filterNot { aiderIgnoreService.isIgnored(it.path) }.toTypedArray()
+                val allFiles = project.service<FileDataCollectionService>().collectAllFiles(files)
                 
-                if (filteredFiles.isEmpty()) {
+                if (allFiles.isEmpty()) {
                     com.intellij.openapi.ui.Messages.showInfoMessage(
                         project,
                         "All selected files are ignored by .aiderignore",
@@ -48,8 +47,6 @@ class AiderAction : AnAction() {
                     )
                     return
                 }
-                
-                val allFiles = project.service<FileDataCollectionService>().collectAllFiles(filteredFiles)
 
                 if (directShellMode) {
                     val commandData = collectDefaultShellCommandData(allFiles, project)
