@@ -116,7 +116,7 @@ For the context.yaml, consider all provided files and add relevant files to the 
 Only proceed with changes after creating and committing the plan files.  
 Ensure that you stick to the defined editing format when creating or editing files, e.g. only have the filepath above search blocks.  
 Make sure to commit the creation of all plan files even if you think you need additional files to implement the plan.  
-Don't start the implementation until the plan files are committed.  
+Don't start the implementation until the plan files are committed. Do not ask the user if he wants to proceed with the plan.
             """
 
         return """<SystemPrompt>

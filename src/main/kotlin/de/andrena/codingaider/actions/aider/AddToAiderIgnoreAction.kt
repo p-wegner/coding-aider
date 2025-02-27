@@ -9,7 +9,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.services.AiderIgnoreService
-import java.io.File
 
 class AddToAiderIgnoreAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
@@ -17,7 +16,7 @@ class AddToAiderIgnoreAction : AnAction() {
         val files = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY) ?: return
 
         val aiderIgnoreService = project.service<AiderIgnoreService>()
-        val ignoreFile = aiderIgnoreService.createIgnoreFileIfNeeded()
+        aiderIgnoreService.createIgnoreFileIfNeeded()
 
         for (file in files) {
             val relativePath = getRelativePath(project, file)
