@@ -113,10 +113,15 @@ the [Aider documentation](https://aider.chat/docs/llms/openai-compat.html).
     - Track implementation progress with checklists
     - Maintain context across multiple coding sessions
     - See [Plan Mode](docs/plan-mode.md) for detailed workflow
-14. **Summarized Output**:
+15. **Summarized Output**:
     - Option to enable structured XML summaries of Aider's changes
     - Intention and Summary blocks are included in the output
-15. **Aider Commands and Arguments**:
+16. **.aiderignore Support**:
+    - Specify patterns for files and directories to exclude from Aider operations
+    - Similar to .gitignore, but specifically for Aider
+    - Add files/folders to .aiderignore via context menu
+    - Ignored files won't be added to persistent files or shown in Aider dialogs
+17. **Aider Commands and Arguments**:
     - If needed, you can specify additional [arguments](https://aider.chat/docs/config/options.html) for the Aider
       command in the settings or in the command window.
 
