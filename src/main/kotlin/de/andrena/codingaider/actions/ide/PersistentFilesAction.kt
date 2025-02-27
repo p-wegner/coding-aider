@@ -24,8 +24,7 @@ class PersistentFilesAction : AnAction() {
             val allFiles = FileTraversal.traverseFilesOrDirectories(files, false)
 
             val allFilesContained = allFiles.all { file ->
-                // TODO: make more robust, normalized paths comparison
-                persistentFiles.any { it.filePath == file.filePath }
+                persistentFiles.any { it.hasSameNormalizedPath(file) }
             }
 
             val (message, affectedFiles) = if (allFilesContained) {
