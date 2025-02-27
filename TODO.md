@@ -22,5 +22,5 @@
 - [ ] Bug: fix encoding issues with markdown viewer
 - [x] chat and input history files are created at git root not project root => fix history /last command parsing
 - [ ] Bug: (sidecar) verify env vars (api keys) for sidecar mode properly set
-- [ ] Improve: testconfig context files using relative paths to be able to share project settings
-- [ ] Bug: plan refinement tends to implements changes instead of modifying the plan
+- [x] Improve: testconfig context files using relative paths to be able to share project settings
+- [x] Bug: plan refinement tends to implements changes instead of modifying the plan
