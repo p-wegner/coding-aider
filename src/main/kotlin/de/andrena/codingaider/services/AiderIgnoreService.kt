@@ -83,12 +83,6 @@ class AiderIgnoreService(private val project: Project) {
         }
     }
 
-    fun getIgnoreFile(): VirtualFile? {
-        if (!ignoreFile.exists()) {
-            return null
-        }
-        return LocalFileSystem.getInstance().refreshAndFindFileByIoFile(ignoreFile)
-    }
 
     fun createIgnoreFileIfNeeded(): VirtualFile {
         if (!ignoreFile.exists()) {
@@ -123,5 +117,4 @@ class AiderIgnoreService(private val project: Project) {
         LocalFileSystem.getInstance().refreshAndFindFileByIoFile(ignoreFile)?.refresh(false, false)
     }
 
-    fun getRawPatterns(): List<String> = rawPatterns
 }
