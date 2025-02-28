@@ -3,8 +3,6 @@
 - [ ] Feature: plan system prompt improved testing strategy and feedback mechanism for the llm
 - [ ] Bug: prompt deduplication not working
 - [ ] Feature: Paste Image in aider dialog should call the clipboard image action
-- [ ] Bug: Duplicate entries in persistent files (service missing duplicate detection)
-  - atleast one file new => all files added even if they are contained already
 - [ ] Feature: create plan from previous command 
   - will be used if a feature is too complex to be done in one go
   - ai could give a recommendation if this is needed (use existing ouput summary xml as api for tool calling)
