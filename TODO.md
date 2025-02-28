@@ -10,8 +10,6 @@
   - ai could give a recommendation if this is needed (use existing ouput summary xml as api for tool calling)
   - button directly in the output dialog
   - edge cases: undo changes before creating plan or keep them and integrate in the plan (might degrade quality)
-- [ ] Bug: Bring to front for running commands not working reliably
-- [ ] Bug: open file from persistent file list not working
 - [ ] proper o3 mini support, reasoning effort setting
 - [ ] Bug: fix encoding issues with markdown viewer
 - [ ] Bug: (sidecar) verify env vars (api keys) for sidecar mode properly set
