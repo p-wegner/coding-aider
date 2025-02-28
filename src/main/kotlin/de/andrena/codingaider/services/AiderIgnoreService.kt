@@ -35,7 +35,7 @@ class AiderIgnoreService(private val project: Project) : Disposable {
     private fun setupFileWatcher() {
         val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(ignoreFile)
         if (virtualFile != null) {
-            virtualFile.setBOM(null) // Ensure proper file monitoring
+            virtualFile.bom = null // Ensure proper file monitoring
             fileWatcher = LocalFileSystem.getInstance().addRootToWatch(ignoreFile.path, true)
             virtualFile.refresh(false, false) { handleFileChanges(virtualFile) }
         }
