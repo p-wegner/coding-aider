@@ -24,12 +24,12 @@ class AiderIgnoreService(private val project: Project) : Disposable {
     }
 
     private fun handleFileChanges(virtualFile: VirtualFile) {
-        if (ignoreFile.exists()) {
-            loadIgnorePatterns()
-        } else {
-            patterns = emptyList()
-            rawPatterns = emptyList()
-        }
+        // Always reload patterns when the file changes
+        loadIgnorePatterns()
+        
+        // Notify any services that depend on ignore patterns
+        project.messageBus.syncPublisher(PersistentFilesChangedTopic.PERSISTENT_FILES_CHANGED_TOPIC)
+            .onPersistentFilesChanged()
     }
 
     private fun setupFileWatcher() {
@@ -37,7 +37,32 @@ class AiderIgnoreService(private val project: Project) : Disposable {
         if (virtualFile != null) {
             virtualFile.bom = null // Ensure proper file monitoring
             fileWatcher = LocalFileSystem.getInstance().addRootToWatch(ignoreFile.path, true)
-            virtualFile.refresh(false, false) { handleFileChanges(virtualFile) }
+            
+            // Add a file listener to detect changes
+            virtualFile.fileSystem.addVirtualFileListener(object : com.intellij.openapi.vfs.VirtualFileListener {
+                override fun contentsChanged(event: com.intellij.openapi.vfs.events.VirtualFileEvent) {
+                    if (event.file.path == ignoreFile.path) {
+                        handleFileChanges(event.file)
+                    }
+                }
+                
+                override fun fileCreated(event: com.intellij.openapi.vfs.events.VirtualFileEvent) {
+                    if (event.file.path == ignoreFile.path) {
+                        handleFileChanges(event.file)
+                    }
+                }
+                
+                override fun fileDeleted(event: com.intellij.openapi.vfs.events.VirtualFileEvent) {
+                    if (event.file.path == ignoreFile.path) {
+                        patterns = emptyList()
+                        rawPatterns = emptyList()
+                        handleFileChanges(event.file)
+                    }
+                }
+            })
+            
+            // Initial refresh
+            virtualFile.refresh(false, false)
         }
     }
 
