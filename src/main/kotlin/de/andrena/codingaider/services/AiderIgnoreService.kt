@@ -24,11 +24,21 @@ class AiderIgnoreService(private val project: Project) : Disposable {
     }
 
     private fun setupFileWatcher() {
-        fileWatcher = LocalFileSystem.getInstance().addRootToWatch(
-            ignoreFile.path,
-            true
-        ) {
-            loadIgnorePatterns()
+        val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(ignoreFile)
+        if (virtualFile != null) {
+            fileWatcher = LocalFileSystem.getInstance().addRootToWatch(
+                ignoreFile.path,
+                true
+            ) {
+                if (ignoreFile.exists()) {
+                    virtualFile.refresh(false, false) { 
+                        loadIgnorePatterns()
+                    }
+                } else {
+                    patterns = emptyList()
+                    rawPatterns = emptyList()
+                }
+            }
         }
     }
 
