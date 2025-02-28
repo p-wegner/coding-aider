@@ -4,6 +4,7 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.openapi.Disposable
 import de.andrena.codingaider.utils.FileTraversal
 import java.io.File
 import java.nio.file.FileSystems
@@ -11,13 +12,30 @@ import java.nio.file.PathMatcher
 import java.nio.file.Paths
 
 @Service(Service.Level.PROJECT)
-class AiderIgnoreService(private val project: Project) {
+class AiderIgnoreService(private val project: Project) : Disposable {
     private val ignoreFile = File(project.basePath ?: "", ".aiderignore")
     private var patterns: List<PathMatcher> = emptyList()
     private var rawPatterns: List<String> = emptyList()
+    private var fileWatcher: LocalFileSystem.WatchRequest? = null
 
     init {
         loadIgnorePatterns()
+        setupFileWatcher()
+    }
+
+    private fun setupFileWatcher() {
+        fileWatcher = LocalFileSystem.getInstance().addRootToWatch(
+            ignoreFile.path,
+            true
+        ) {
+            loadIgnorePatterns()
+        }
+    }
+
+    override fun dispose() {
+        fileWatcher?.let {
+            LocalFileSystem.getInstance().removeWatchedRoot(it)
+        }
     }
 
     private fun convertToGlobPattern(pattern: String, projectRoot: String): String {
