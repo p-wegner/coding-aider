@@ -5,6 +5,8 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.vfs.VirtualFileEvent
+import de.andrena.codingaider.messages.PersistentFilesChangedTopic
 import de.andrena.codingaider.utils.FileTraversal
 import java.io.File
 import java.nio.file.FileSystems
@@ -40,19 +42,20 @@ class AiderIgnoreService(private val project: Project) : Disposable {
             
             // Add a file listener to detect changes
             virtualFile.fileSystem.addVirtualFileListener(object : com.intellij.openapi.vfs.VirtualFileListener {
-                override fun contentsChanged(event: com.intellij.openapi.vfs.events.VirtualFileEvent) {
+
+                override fun contentsChanged(event: VirtualFileEvent) {
                     if (event.file.path == ignoreFile.path) {
                         handleFileChanges(event.file)
                     }
                 }
                 
-                override fun fileCreated(event: com.intellij.openapi.vfs.events.VirtualFileEvent) {
+                override fun fileCreated(event: VirtualFileEvent) {
                     if (event.file.path == ignoreFile.path) {
                         handleFileChanges(event.file)
                     }
                 }
                 
-                override fun fileDeleted(event: com.intellij.openapi.vfs.events.VirtualFileEvent) {
+                override fun fileDeleted(event: VirtualFileEvent) {
                     if (event.file.path == ignoreFile.path) {
                         patterns = emptyList()
                         rawPatterns = emptyList()
