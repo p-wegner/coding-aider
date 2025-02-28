@@ -68,7 +68,8 @@ class PersistentFileService(private val project: Project) {
 
 
     fun removeFile(filePath: String) {
-        persistentFiles.removeIf { it.filePath == filePath }
+        val normalizedPath = FileTraversal.normalizedFilePath(filePath)
+        persistentFiles.removeIf { FileTraversal.normalizedFilePath(it.filePath) == normalizedPath }
         savePersistentFilesToContextFile()
     }
 
