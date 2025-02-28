@@ -203,7 +203,7 @@ class TestTypeDialog(
             row {
                 button("Add Files") { addContextFiles() }
                 button("Remove Selected") { removeSelectedContextFiles() }
-                button("Abstract Test Strategy Using AI") { evaluateWithAider() }
+                button("Analyze Rules from Context") { evaluateWithAider() }
             }
         }
         
