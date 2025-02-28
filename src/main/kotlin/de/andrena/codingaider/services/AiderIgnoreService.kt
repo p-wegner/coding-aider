@@ -29,7 +29,7 @@ class AiderIgnoreService(private val project: Project) : Disposable {
     private fun convertToGlobPattern(pattern: String, projectRoot: String): String {
         val normalizedPattern = pattern.trim().replace('\\', '/')
         return when {
-            pattern.startsWith("*.") -> "glob:**${pattern.substring(1)}"
+            normalizedPattern.startsWith("*.") -> "glob:**/*${normalizedPattern.substring(1)}"
             normalizedPattern.startsWith("/") -> "glob:$projectRoot$normalizedPattern"
             normalizedPattern.endsWith("/") -> "glob:$projectRoot/**/$normalizedPattern**"
             else -> "glob:$projectRoot/**/$normalizedPattern"
@@ -77,6 +77,7 @@ class AiderIgnoreService(private val project: Project) : Disposable {
             currentPatterns.add(pattern)
             ignoreFile.writeText(currentPatterns.joinToString("\n"))
             loadIgnorePatterns()
+            LocalFileSystem.getInstance().refreshAndFindFileByIoFile(ignoreFile)?.refresh(false, false)
         }
     }
 
