@@ -25,7 +25,7 @@ class AiderIgnoreService(private val project: Project) {
         
         return when {
             // Simple filetype pattern (e.g., *.kt)
-            pattern.startsWith("*.") -> "glob:**/*${pattern.substring(1)}"
+            pattern.startsWith("*.") -> "glob:**${pattern.substring(1)}"
             // Absolute patterns (starting with /)
             normalizedPattern.startsWith("/") -> "glob:$projectRoot$normalizedPattern"
             // Directory patterns (ending with /)
@@ -64,13 +64,9 @@ class AiderIgnoreService(private val project: Project) {
             Paths.get(normalizedPath)
         }
         
-        // Get just the filename for simple filetype patterns
-        val fileName = absolutePath.fileName.toString()
-        
         return patterns.any { matcher ->
             matcher.matches(absolutePath) || 
-            matcher.matches(relativePath) ||
-            matcher.matches(Paths.get(fileName))
+            matcher.matches(relativePath)
         }
     }
 
