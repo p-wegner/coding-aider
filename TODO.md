@@ -12,15 +12,7 @@
   - edge cases: undo changes before creating plan or keep them and integrate in the plan (might degrade quality)
 - [ ] Bug: Bring to front for running commands not working reliably
 - [ ] Bug: open file from persistent file list not working
-- [x] style aider system message (aider -m ...) with newlines and/or differentiate between output and command
-- [x] show last command should bring existing dialog to front and not open more than one dialog
-- [x] o3 mini support, reasoning effort setting
-- [x] Feature: implement todo inspection
-- [x] refine plan doesn't show plan
-- [x] Feature: open dialog on same screen as ide
-- [x] fix compile error prompt optimization
+- [ ] proper o3 mini support, reasoning effort setting
 - [ ] Bug: fix encoding issues with markdown viewer
-- [x] chat and input history files are created at git root not project root => fix history /last command parsing
 - [ ] Bug: (sidecar) verify env vars (api keys) for sidecar mode properly set
-- [x] Improve: testconfig context files using relative paths to be able to share project settings
-- [x] Bug: plan refinement tends to implements changes instead of modifying the plan
+- [ ] support simple file patterns for aiderignore
