@@ -29,17 +29,30 @@ class AiderIgnoreService(private val project: Project) : Disposable {
     private fun convertToGlobPattern(pattern: String, projectRoot: String): String {
         val normalizedPattern = pattern.trim().replace('\\', '/')
         
+        // Skip empty patterns and comments
+        if (normalizedPattern.isEmpty() || normalizedPattern.startsWith("#")) {
+            return ""
+        }
+
         return when {
             // Handle directory patterns with trailing slash (folder/)
             normalizedPattern.endsWith("/") -> {
                 val dirPattern = normalizedPattern.dropLast(1)
-                "glob:$projectRoot/**/$dirPattern/**"
+                if (dirPattern.startsWith("/")) {
+                    "glob:$projectRoot$dirPattern/**"
+                } else {
+                    "glob:$projectRoot/**/$dirPattern/**"
+                }
             }
             
             // Handle double-star patterns (**/tmp)
             normalizedPattern.startsWith("**/") -> {
                 val restPattern = normalizedPattern.substring(3)
-                "glob:$projectRoot/**/$restPattern"
+                if (restPattern.endsWith("/")) {
+                    "glob:$projectRoot/**/${restPattern.dropLast(1)}/**"
+                } else {
+                    "glob:$projectRoot/**/$restPattern"
+                }
             }
             
             // Handle file extension patterns (*.spec.ts)
@@ -73,7 +86,14 @@ class AiderIgnoreService(private val project: Project) : Disposable {
         
         patterns = ignoreFile.readLines()
             .filter { it.isNotBlank() && !it.startsWith("#") }
-            .map { pattern -> FileSystems.getDefault().getPathMatcher(convertToGlobPattern(pattern, projectRoot)) }
+            .mapNotNull { pattern -> 
+                val globPattern = convertToGlobPattern(pattern, projectRoot)
+                if (globPattern.isNotEmpty()) {
+                    FileSystems.getDefault().getPathMatcher(globPattern)
+                } else {
+                    null
+                }
+            }
 
         // Notify any services that depend on ignore patterns
         project.messageBus.syncPublisher(PersistentFilesChangedTopic.PERSISTENT_FILES_CHANGED_TOPIC)
