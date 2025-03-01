@@ -9,6 +9,7 @@ import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.messages.PersistentFilesChangedTopic
 import de.andrena.codingaider.model.ContextFileHandler
+import de.andrena.codingaider.utils.FileTraversal
 import java.io.File
 import java.io.IOException
 
