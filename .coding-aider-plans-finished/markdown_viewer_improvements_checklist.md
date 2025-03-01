@@ -1,33 +1,26 @@
-[Coding Aider Plan - Checklist] Markdown Viewer Code Block Improvements
+[Coding Aider Plan - Checklist]
 
-## Implementation Checklist
+# Markdown Viewer Improvements Checklist
 
-### Syntax Highlighting
-- [ ] Research and select syntax highlighting library
-- [ ] Integrate library with CustomMarkdownViewer
-- [ ] Support multiple programming languages
-- [ ] Handle language detection and explicit language specification
+## Window Sizing
+- [x] Adjust initial window size calculation
+- [x] Implement dynamic content area sizing
+- [x] Add minimum window size constraints
 
-### Code Block Rendering
-- [ ] Create enhanced CSS for code blocks
-- [ ] Implement line numbering
-- [ ] Design responsive code block layout
-- [ ] Support dark and light theme variations
+## Scroll Position Management
+- [x] Add scroll position tracking
+- [x] Implement smart auto-scroll behavior
+- [x] Add user scroll position override detection
+- [x] Fix scroll reset during content updates
+- [x] Fix scroll behavior when content is updated (currently scrolls to top)
+- [x] Add smooth scrolling animation
+- [x] Improve animation smoothness and reliability
+- [x] Add animation state management
+- [x] Apply smooth scrolling to position restoration
 
-### Interactive Features
-- [ ] Add copy-to-clipboard button
-- [ ] Implement hover effects
-- [ ] Create code block wrapper with metadata display
-
-### Testing and Validation
-- [ ] Unit test code block rendering
-- [ ] Test across different markdown content
-- [ ] Verify performance impact
-- [ ] Cross-theme compatibility check
-
-### Documentation
-- [ ] Update plugin documentation
-- [ ] Create usage examples
-- [ ] Document configuration options
-
-Reference: [markdown_viewer_improvements.md](markdown_viewer_improvements.md)
+## Content Formatting
+- [x] Update summary block CSS styling
+- [x] Update intention block CSS styling
+- [x] Fix line break handling in HTML conversion
+- [x] Improve code block formatting
+- [x] Enhance visual hierarchy with better spacing

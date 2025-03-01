@@ -1,6 +1,6 @@
 ---
 files:
-  - path: src/main/kotlin/de/andrena/codingaider/outputview/CustomMarkdownViewer.kt
-    readOnly: false
-  - path: build.gradle.kts
-    readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/outputview/MarkdownDialog.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/outputview/MarkdownJcefViewer.kt
+  readOnly: false
