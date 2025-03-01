@@ -180,9 +180,5 @@ class AiderHistoryService(private val project: Project) {
         }.trim()
     }
 
-
-    private fun containsXmlPrompts(aiderOutput: String): Boolean {
-        return aiderOutput.contains("<SystemPrompt>") || aiderOutput.contains("<UserPrompt>")
-    }
 }
 
