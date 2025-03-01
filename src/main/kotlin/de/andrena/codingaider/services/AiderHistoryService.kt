@@ -39,23 +39,67 @@ class AiderHistoryService(private val project: Project) {
     }
 
     private fun extractXmlPrompts(chatContent: String): Triple<String?, String?, String?> {
-        val systemPromptRegex = "(?s)<SystemPrompt>\\s*(.*?)\\s*</SystemPrompt>".toRegex()
-        val userPromptRegex = "(?s)<UserPrompt>\\s*(.*?)\\s*</UserPrompt>".toRegex()
+        // More precise regex patterns that handle nested content and #### prefixes
+        val systemPromptRegex = "(?s)(?:####\\s*)?<SystemPrompt>\\s*(.*?)\\s*(?:####\\s*)?</SystemPrompt>".toRegex()
+        val userPromptRegex = "(?s)(?:####\\s*)?<UserPrompt>\\s*(.*?)\\s*(?:####\\s*)?</UserPrompt>".toRegex()
 
-        val systemPrompt = systemPromptRegex.find(chatContent)?.groupValues?.get(1)?.trim()?.takeIf { it.isNotEmpty() }
+        // Extract prompts, handling potential #### prefixes
+        val systemPrompt = systemPromptRegex.findAll(chatContent)
+            .map { it.groupValues[1].trim() }
+            .firstOrNull { it.isNotEmpty() }
+            ?.replace(Regex("^####\\s*"), "")
 
-        val userPrompt = userPromptRegex.find(chatContent)?.groupValues?.get(1)?.trim()
+        val userPrompt = userPromptRegex.findAll(chatContent)
+            .map { it.groupValues[1].trim() }
+            .firstOrNull { it.isNotEmpty() }
+            ?.replace(Regex("^####\\s*"), "")
 
-        // Extract everything after </UserPrompt> until the next chat session or end
-        val outputStart = chatContent.indexOf("</UserPrompt>")
-        val outputEnd =
-            chatContent.indexOf("# aider chat started at", outputStart + 1).takeIf { it >= 0 } ?: chatContent.length
+        // Extract Aider output more precisely
+        val outputStart = chatContent.lastIndexOf("</UserPrompt>")
+        if (outputStart < 0) return Triple(systemPrompt, userPrompt, null)
 
-        val aiderOutput = if (outputStart >= 0) {
-            chatContent.substring(outputStart + 12, outputEnd).trim().takeIf { it.isNotEmpty() }
-        } else null
+        val nextSessionStart = chatContent.indexOf("# aider chat started at", outputStart + 12)
+        val outputEnd = if (nextSessionStart >= 0) nextSessionStart else chatContent.length
 
-        return Triple(systemPrompt, userPrompt, aiderOutput)
+        var output = chatContent.substring(outputStart + 12, outputEnd).trim()
+
+        // Extract and preserve initialization info
+        val initInfoRegex = """Aider v[\d.]+ [^\n]*(?:\n(?:[^\n]+))*(?:\nAdded [^\n]+)*""".toRegex()
+        val initInfo = initInfoRegex.find(output)?.value
+
+        // Clean up the output
+        output = output
+            // Remove XML prompt echoes
+            .replace(Regex("""(?m)^####\s*<(?:System|User)Prompt>[\s\S]*?</(?:System|User)Prompt>\s*"""), "")
+            // Remove lines starting with ####
+            .lines()
+            .filterNot { it.trimStart().startsWith("####") }
+            .joinToString("\n")
+            .trim()
+
+        // Remove redundant prompt displays
+        systemPrompt?.let { sysPrompt ->
+            output = output.replace(
+                Regex("""(?s)## \*\*System Prompt\*\*\s*```plaintext\s*${Regex.escape(sysPrompt.trim())}\s*```\s*---\s*"""),
+                ""
+            )
+        }
+        userPrompt?.let { usrPrompt ->
+            output = output.replace(
+                Regex("""(?s)## User Request\s*```plaintext\s*${Regex.escape(usrPrompt.trim())}\s*```\s*---\s*"""),
+                ""
+            )
+        }
+
+        // Reattach initialization info if present
+        val finalOutput = if (!initInfo.isNullOrBlank()) {
+            val cleanOutput = output.replace(Regex(Regex.escape(initInfo)), "").trim()
+            if (cleanOutput.isNotEmpty()) "$initInfo\n\n$cleanOutput" else initInfo
+        } else {
+            output
+        }
+
+        return Triple(systemPrompt, userPrompt, finalOutput.takeIf { it.isNotEmpty() })
     }
 
     fun getLastChatHistory(): String {
