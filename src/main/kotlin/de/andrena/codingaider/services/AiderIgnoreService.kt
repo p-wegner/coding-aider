@@ -34,20 +34,23 @@ class AiderIgnoreService(private val project: Project) : Disposable {
             return ""
         }
 
+        // Remove leading slash if present to make pattern relative to project root
+        val relativePattern = if (normalizedPattern.startsWith("/")) {
+            normalizedPattern.substring(1)
+        } else {
+            normalizedPattern
+        }
+
         return when {
             // Handle directory patterns with trailing slash (folder/)
-            normalizedPattern.endsWith("/") -> {
-                val dirPattern = normalizedPattern.dropLast(1)
-                if (dirPattern.startsWith("/")) {
-                    "glob:$projectRoot$dirPattern/**"
-                } else {
-                    "glob:$projectRoot/**/$dirPattern/**"
-                }
+            relativePattern.endsWith("/") -> {
+                val dirPattern = relativePattern.dropLast(1)
+                "glob:$projectRoot/$dirPattern/**"
             }
             
             // Handle double-star patterns (**/tmp)
-            normalizedPattern.startsWith("**/") -> {
-                val restPattern = normalizedPattern.substring(3)
+            relativePattern.startsWith("**/") -> {
+                val restPattern = relativePattern.substring(3)
                 if (restPattern.endsWith("/")) {
                     "glob:$projectRoot/**/${restPattern.dropLast(1)}/**"
                 } else {
@@ -56,17 +59,12 @@ class AiderIgnoreService(private val project: Project) : Disposable {
             }
             
             // Handle file extension patterns (*.spec.ts)
-            normalizedPattern.startsWith("*.") -> {
-                "glob:$projectRoot/**/*${normalizedPattern.substring(1)}"
-            }
-            
-            // Handle absolute paths
-            normalizedPattern.startsWith("/") -> {
-                "glob:$projectRoot$normalizedPattern"
+            relativePattern.startsWith("*.") -> {
+                "glob:$projectRoot/**/*${relativePattern.substring(1)}"
             }
             
             // Handle all other patterns
-            else -> "glob:$projectRoot/**/$normalizedPattern"
+            else -> "glob:$projectRoot/$relativePattern"
         }
     }
 
