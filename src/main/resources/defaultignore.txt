@@ -1,0 +1,15 @@
+# Ignore build directories
+build/
+out/
+target/
+
+# Ignore IDE files
+.idea/
+*.iml
+
+# Ignore common generated files
+*.class
+*.jar
+*.war
+node_modules/
+dist/

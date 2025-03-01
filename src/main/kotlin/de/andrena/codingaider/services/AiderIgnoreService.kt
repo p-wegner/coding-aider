@@ -123,25 +123,10 @@ class AiderIgnoreService(private val project: Project) : Disposable {
     fun createIgnoreFileIfNeeded(): VirtualFile {
         if (!ignoreFile.exists()) {
             ignoreFile.createNewFile()
-            val defaultPatterns = listOf(
-                "# Ignore build directories",
-                "build/",
-                "out/",
-                "target/",
-                "",
-                "# Ignore IDE files",
-                ".idea/",
-                "*.iml",
-                "",
-                "# Ignore common generated files",
-                "*.class",
-                "*.jar",
-                "*.war",
-                "node_modules/",
-                "dist/",
-                ""
-            )
-            ignoreFile.writeText(defaultPatterns.joinToString("\n"))
+            val defaultPatternsResource = javaClass.getResourceAsStream("/defaultignore.txt")
+            defaultPatternsResource?.bufferedReader()?.use { reader ->
+                ignoreFile.writeText(reader.readText())
+            }
             loadIgnorePatterns()
         }
         return LocalFileSystem.getInstance().refreshAndFindFileByIoFile(ignoreFile)!!
