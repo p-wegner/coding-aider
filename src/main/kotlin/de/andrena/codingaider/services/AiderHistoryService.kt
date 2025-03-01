@@ -39,18 +39,23 @@ class AiderHistoryService(private val project: Project) {
     }
 
     private fun extractXmlPrompts(chatContent: String): Triple<String?, String?, String?> {
-        // More precise regex patterns that handle nested content and #### prefixes
-        val systemPromptRegex = "(?s)(?:####\\s*)?<SystemPrompt>\\s*(.*?)\\s*(?:####\\s*)?</SystemPrompt>".toRegex()
-        val userPromptRegex = "(?s)(?:####\\s*)?<UserPrompt>\\s*(.*?)\\s*(?:####\\s*)?</UserPrompt>".toRegex()
+        // Handle nested XML and code blocks
+        val systemPromptRegex = """(?s)(?:####\s*)?<SystemPrompt>\s*(.*?)\s*(?:####\s*)?</SystemPrompt>""".toRegex()
+        val userPromptRegex = """(?s)(?:####\s*)?<UserPrompt>\s*(.*?)\s*(?:####\s*)?</UserPrompt>""".toRegex()
+        val codeBlockRegex = """```(?:kotlin|python|plaintext)?\s*(.*?)\s*```""".toRegex(RegexOption.DOT_MATCHES_ALL)
 
-        // Extract prompts, handling potential #### prefixes
+        // Extract prompts from XML blocks or code blocks
+        fun extractPromptContent(content: String): String {
+            return codeBlockRegex.find(content)?.groupValues?.get(1)?.trim() ?: content.trim()
+        }
+
         val systemPrompt = systemPromptRegex.findAll(chatContent)
-            .map { it.groupValues[1].trim() }
+            .map { extractPromptContent(it.groupValues[1]) }
             .firstOrNull { it.isNotEmpty() }
             ?.replace(Regex("^####\\s*"), "")
 
         val userPrompt = userPromptRegex.findAll(chatContent)
-            .map { it.groupValues[1].trim() }
+            .map { extractPromptContent(it.groupValues[1]) }
             .firstOrNull { it.isNotEmpty() }
             ?.replace(Regex("^####\\s*"), "")
 
@@ -69,27 +74,37 @@ class AiderHistoryService(private val project: Project) {
 
         // Clean up the output
         output = output
-            // Remove XML prompt echoes
+            // Remove XML prompt echoes and their code blocks
             .replace(Regex("""(?m)^####\s*<(?:System|User)Prompt>[\s\S]*?</(?:System|User)Prompt>\s*"""), "")
-            // Remove lines starting with ####
+            .replace(Regex("""(?m)^####\s*\*SEARCH/REPLACE block\*\s*Rules:[\s\S]*?(?=\n\S|$)"""), "")
+            // Remove lines starting with #### or >
             .lines()
-            .filterNot { it.trimStart().startsWith("####") }
+            .filterNot { line -> 
+                line.trimStart().startsWith("####") || 
+                line.trimStart().startsWith(">") ||
+                line.trimStart().startsWith("Human:") ||
+                line.trimStart().startsWith("Assistant:")
+            }
             .joinToString("\n")
             .trim()
 
         // Remove redundant prompt displays
         systemPrompt?.let { sysPrompt ->
             output = output.replace(
-                Regex("""(?s)## \*\*System Prompt\*\*\s*```plaintext\s*${Regex.escape(sysPrompt.trim())}\s*```\s*---\s*"""),
+                Regex("""(?s)## \*\*System Prompt\*\*\s*```(?:plaintext)?\s*${Regex.escape(sysPrompt.trim())}\s*```\s*---\s*"""),
                 ""
             )
         }
         userPrompt?.let { usrPrompt ->
             output = output.replace(
-                Regex("""(?s)## User Request\s*```plaintext\s*${Regex.escape(usrPrompt.trim())}\s*```\s*---\s*"""),
+                Regex("""(?s)## User Request\s*```(?:plaintext)?\s*${Regex.escape(usrPrompt.trim())}\s*```\s*---\s*"""),
                 ""
             )
         }
+
+        // Clean up code blocks
+        output = output.replace(Regex("""```\s*\n"""), "```\n")
+            .replace(Regex("""\n\s*```"""), "\n```")
 
         // Reattach initialization info if present
         val finalOutput = if (!initInfo.isNullOrBlank()) {
