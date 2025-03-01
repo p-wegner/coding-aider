@@ -28,10 +28,31 @@ class AiderIgnoreService(private val project: Project) : Disposable {
 
     private fun convertToGlobPattern(pattern: String, projectRoot: String): String {
         val normalizedPattern = pattern.trim().replace('\\', '/')
+        
         return when {
-            normalizedPattern.startsWith("*.") -> "glob:**/*${normalizedPattern.substring(1)}"
-            normalizedPattern.startsWith("/") -> "glob:$projectRoot$normalizedPattern"
-            normalizedPattern.endsWith("/") -> "glob:$projectRoot/**/$normalizedPattern**"
+            // Handle directory patterns with trailing slash (folder/)
+            normalizedPattern.endsWith("/") -> {
+                val dirPattern = normalizedPattern.dropLast(1)
+                "glob:$projectRoot/**/$dirPattern/**"
+            }
+            
+            // Handle double-star patterns (**/tmp)
+            normalizedPattern.startsWith("**/") -> {
+                val restPattern = normalizedPattern.substring(3)
+                "glob:$projectRoot/**/$restPattern"
+            }
+            
+            // Handle file extension patterns (*.spec.ts)
+            normalizedPattern.startsWith("*.") -> {
+                "glob:$projectRoot/**/*${normalizedPattern.substring(1)}"
+            }
+            
+            // Handle absolute paths
+            normalizedPattern.startsWith("/") -> {
+                "glob:$projectRoot$normalizedPattern"
+            }
+            
+            // Handle all other patterns
             else -> "glob:$projectRoot/**/$normalizedPattern"
         }
     }
