@@ -43,6 +43,16 @@ class AiderContextViewPanel(
     }
 
     private fun createFileActionGroup() = DefaultActionGroup().apply {
+        add(object : AnAction("Manage .aiderignore", "Manage .aiderignore file", AllIcons.Actions.Properties) {
+            override fun actionPerformed(e: AnActionEvent) {
+                manageAiderIgnore()
+            }
+
+            override fun getActionUpdateThread() = ActionUpdateThread.BGT
+            override fun update(e: AnActionEvent) {
+                e.presentation.isEnabled = true
+            }
+        })
         add(object : AnAction("Add Files", "Add files to persistent files", LayeredIcon.ADD_WITH_DROPDOWN) {
             override fun actionPerformed(e: AnActionEvent) {
                 val popup = JPopupMenu()
@@ -59,12 +69,6 @@ class AiderContextViewPanel(
                 popup.add(JMenuItem("Add Plan Context Files").apply {
                     addActionListener {
                         aiderContextView.addPlanContextFilesToContext()
-                    }
-                })
-                popup.addSeparator()
-                popup.add(JMenuItem("Manage .aiderignore").apply {
-                    addActionListener {
-                        manageAiderIgnore()
                     }
                 })
 
