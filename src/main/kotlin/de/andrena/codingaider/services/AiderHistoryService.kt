@@ -81,9 +81,7 @@ class AiderHistoryService(private val project: Project) {
             .lines()
             .filterNot { line -> 
                 line.trimStart().startsWith("####") || 
-                line.trimStart().startsWith(">") ||
-                line.trimStart().startsWith("Human:") ||
-                line.trimStart().startsWith("Assistant:")
+                line.trimStart().startsWith(">")
             }
             .joinToString("\n")
             .trim()

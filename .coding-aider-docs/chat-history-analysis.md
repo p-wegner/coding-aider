@@ -12,7 +12,7 @@
 - Markdown format with sections divided by "# aider chat started at" headers
 - Each chat session contains:
   - System prompt (optional, in XML tags)
-  - User prompt (in XML tags)
+  - User prompt (optionally in XML tags)
   - Aider execution output
   - Token usage and cost information
 
@@ -32,7 +32,7 @@
    - Formats output in markdown
 
 ### Edge Cases Handled
-- Different prompt formats (XML vs structured)
+- Different prompt formats (non xml, XML and structured)
 - Nested XML content
 - Multi-line commands
 - Initialization information preservation
@@ -54,17 +54,7 @@
    - Input history should specify encoding
 
 ### Missing Features
-1. Error Handling:
-   - No explicit handling of malformed history entries
-   - Missing validation for timestamp format
-   - No recovery mechanism for corrupted files
-
-2. History Management:
-   - No size limits or rotation
-   - No cleanup of old entries
-   - No compression support
-
-3. Search/Filter Capabilities:
+1. Search/Filter Capabilities:
    - No way to search through history
    - No filtering by date/time
    - No categorization of commands
@@ -73,37 +63,13 @@
 1. Robustness:
    - Add proper error handling and validation
    - Use XML parser instead of regex
-   - Implement file rotation and size limits
 
 2. Features:
    - Add search functionality
-   - Implement history cleanup
    - Add command categorization
 
-3. Performance:
-   - Cache parsed history
-   - Implement lazy loading
-   - Add compression support
 
-4. Testing:
-   - Add unit tests for edge cases
-   - Create test fixtures for different formats
-   - Add performance benchmarks
-
-## Format Requirements
-
-### Input History Entry
-```
-# 2025-03-01 12:25:44
-<SystemPrompt>
-System instructions here
-</SystemPrompt>
-<UserPrompt>
-User command here
-</UserPrompt>
-```
-
-### Chat History Entry
+### Example Chat History Entry
 ```
 # aider chat started at 2025-03-01 12:25:44
 
