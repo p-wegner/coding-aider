@@ -93,15 +93,15 @@ class AiderHistoryService(private val project: Project) {
 
         return buildString {
             systemPrompt?.let { prompt ->
-                appendLine("## **System Prompt**  \n")
-                appendLine("```plaintext\n${prompt.replace("####", "").trim()}\n```")
-                appendLine("\n---")
+                appendLine("<aider-system-prompt>")
+                appendLine(prompt.replace("####", "").trim())
+                appendLine("</aider-system-prompt>")
             }
 
             userPrompt?.let { prompt ->
-                appendLine("## User Request\n")
-                appendLine("```plaintext\n${prompt.replace("####", "").trim()}\n```")
-                appendLine("\n---")
+                appendLine("<aider-user-prompt>")
+                appendLine(prompt.replace("####", "").trim())
+                appendLine("</aider-user-prompt>")
             }
 
             appendLine("## Aider Execution\n")

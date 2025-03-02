@@ -431,6 +431,18 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         position: relative;
                     }
                     
+                    .collapsible-header.system {
+                        background: ${if (isDark) "rgba(103,140,177,0.1)" else "rgba(0,102,204,0.05)"};
+                        color: ${if (isDark) "#678cb1" else "#0066cc"};
+                        border-bottom: 1px solid ${if (isDark) "rgba(103,140,177,0.2)" else "rgba(0,102,204,0.1)"};
+                    }
+
+                    .collapsible-header.user {
+                        background: ${if (isDark) "rgba(144,238,144,0.1)" else "rgba(46,139,87,0.05)"};
+                        color: ${if (isDark) "#90ee90" else "#2e8b57"};
+                        border-bottom: 1px solid ${if (isDark) "rgba(144,238,144,0.2)" else "rgba(46,139,87,0.1)"};
+                    }
+
                     .collapsible-header.intention {
                         background: ${if (isDark) "rgba(136,176,228,0.1)" else "rgba(0,85,204,0.05)"};
                         color: ${if (isDark) "#88b0e4" else "#0055cc"};
@@ -596,6 +608,38 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 </div>
             </div>
             """.trimIndent()
+        }
+
+        // Process system prompt blocks
+        processedHtml = processedHtml.replace(
+            Regex("""<aider-system-prompt>(.*?)</aider-system-prompt>""", RegexOption.DOT_MATCHES_ALL)) { matchResult ->
+                """
+                <div class="collapsible-panel expanded">
+                    <div class="collapsible-header system" onclick="this.parentElement.classList.toggle('expanded')">
+                        <span class="collapsible-title">System Prompt</span>
+                        <span class="collapsible-arrow">^</span>
+                    </div>
+                    <div class="collapsible-content">
+                        <pre><code>${escapeHtml(matchResult.groupValues[1].trim())}</code></pre>
+                    </div>
+                </div>
+                """.trimIndent()
+        }
+
+        // Process user prompt blocks
+        processedHtml = processedHtml.replace(
+            Regex("""<aider-user-prompt>(.*?)</aider-user-prompt>""", RegexOption.DOT_MATCHES_ALL)) { matchResult ->
+                """
+                <div class="collapsible-panel expanded">
+                    <div class="collapsible-header user" onclick="this.parentElement.classList.toggle('expanded')">
+                        <span class="collapsible-title">User Request</span>
+                        <span class="collapsible-arrow">^</span>
+                    </div>
+                    <div class="collapsible-content">
+                        <pre><code>${escapeHtml(matchResult.groupValues[1].trim())}</code></pre>
+                    </div>
+                </div>
+                """.trimIndent()
         }
 
         // Process intention blocks with preserved formatting
