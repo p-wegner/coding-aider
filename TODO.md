@@ -1,7 +1,6 @@
 - [ ] Feature: native gemini support
 - [ ] Feature: plan system prompt include manual stop markers where the user should test something
 - [ ] Feature: plan system prompt improved testing strategy and feedback mechanism for the llm
-- [ ] Bug: prompt deduplication not working
 - [ ] Feature: Paste Image in aider dialog should call the clipboard image action
 - [ ] Feature: create plan from previous command 
   - will be used if a feature is too complex to be done in one go

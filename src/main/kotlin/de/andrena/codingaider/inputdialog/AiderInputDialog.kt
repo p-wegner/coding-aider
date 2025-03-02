@@ -470,7 +470,7 @@ class AiderInputDialog(
                     java.io.File(file.filePath).toPath()
                 ).toString().replace('\\', '/')
                 
-                sb.appendLine("## $relativePath")
+                sb.appendLine(relativePath)
                 sb.appendLine("```")
                 sb.appendLine(virtualFile.contentsToByteArray().toString(Charsets.UTF_8))
                 sb.appendLine("```")
