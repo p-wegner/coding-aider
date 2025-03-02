@@ -321,8 +321,27 @@ class AiderInputDialog(
             insets = JBUI.insetsLeft(10)
         })
 
-        firstRowPanel.add(settingsButton, GridBagConstraints().apply {
+        val copyContextButton = ActionButton(
+            object : AnAction() {
+                override fun actionPerformed(e: AnActionEvent) {
+                    copyContextToClipboard()
+                }
+            }, Presentation("Copy Context to Clipboard").apply {
+                icon = AllIcons.Actions.Copy
+                description = "Copy current context and prompt to clipboard"
+            }, "AiderCopyContextButton", ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
+        )
+
+        firstRowPanel.add(copyContextButton, GridBagConstraints().apply {
             gridx = 7
+            gridy = 0
+            weightx = 0.0
+            fill = GridBagConstraints.NONE
+            insets = JBUI.insetsLeft(10)
+        })
+
+        firstRowPanel.add(settingsButton, GridBagConstraints().apply {
+            gridx = 8
             gridy = 0
             weightx = 0.0
             fill = GridBagConstraints.NONE
@@ -427,6 +446,41 @@ class AiderInputDialog(
         WriteCommandAction.runWriteCommandAction(project) {
             inputTextField.editor?.document?.insertString(inputTextField.editor?.caretModel?.offset ?: 0, text)
         }
+    }
+
+    private fun copyContextToClipboard() {
+        val sb = StringBuilder()
+        
+        // Add the prompt if not empty
+        val prompt = getInputText().trim()
+        if (prompt.isNotEmpty()) {
+            sb.appendLine("# Prompt")
+            sb.appendLine()
+            sb.appendLine(prompt)
+            sb.appendLine()
+        }
+        
+        // Add files
+        sb.appendLine("# Context Files")
+        sb.appendLine()
+        getAllFiles().forEach { file ->
+            val virtualFile = com.intellij.openapi.vfs.LocalFileSystem.getInstance().findFileByPath(file.filePath)
+            if (virtualFile?.exists() == true) {
+                val relativePath = java.io.File(project.basePath!!).toPath().relativize(
+                    java.io.File(file.filePath).toPath()
+                ).toString().replace('\\', '/')
+                
+                sb.appendLine("## $relativePath")
+                sb.appendLine("```")
+                sb.appendLine(virtualFile.contentsToByteArray().toString(Charsets.UTF_8))
+                sb.appendLine("```")
+                sb.appendLine()
+            }
+        }
+
+        // Copy to clipboard
+        val stringSelection = java.awt.datatransfer.StringSelection(sb.toString())
+        java.awt.Toolkit.getDefaultToolkit().systemClipboard.setContents(stringSelection, null)
     }
 
     override fun dispose() {
