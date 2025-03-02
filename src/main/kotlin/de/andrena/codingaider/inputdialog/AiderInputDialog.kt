@@ -106,6 +106,15 @@ class AiderInputDialog(
                         override fun drop(dtde: java.awt.dnd.DropTargetDropEvent) {
                             editor.component.border = null
                             dtde.acceptDrop(java.awt.dnd.DnDConstants.ACTION_COPY)
+                            
+                            val transferable = dtde.transferable
+                            if (transferable.isDataFlavorSupported(java.awt.datatransfer.DataFlavor.imageFlavor)) {
+                                val image = transferable.getTransferData(java.awt.datatransfer.DataFlavor.imageFlavor) as? java.awt.Image
+                                if (image != null) {
+                                    val clipboardAction = AiderClipboardImageAction()
+                                    clipboardAction.saveImageFromPaste(project, image)
+                                }
+                            }
                         }
                     }
                 )
