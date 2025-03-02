@@ -10,4 +10,3 @@
 - [ ] proper o3 mini support, reasoning effort setting
 - [ ] Bug: fix encoding issues with markdown viewer
 - [ ] Bug: (sidecar) verify env vars (api keys) for sidecar mode properly set
-- [ ] support simple file patterns for aiderignore

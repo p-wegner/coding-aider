@@ -113,7 +113,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
 
         // Ensure proper UTF-8 encoding for base HTML
         val encodedBase = Base64.getEncoder().encodeToString(baseHtml.toByteArray(StandardCharsets.UTF_8))
-        jbCefBrowser.loadURL("data:text/html;base64,$encodedBase")
+        jbCefBrowser.loadURL("data:text/html;charset=UTF-8;base64,$encodedBase")
     }
     private fun createFallbackComponent() {
         // The user does not have JCEF support, fallback to JEditorPane
