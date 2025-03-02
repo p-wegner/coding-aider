@@ -581,23 +581,6 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     private fun processSearchReplaceBlocks(html: String): String {
         var processedHtml = html
 
-        // Process initialization output - matches version, model info, git info, and added files
-        val initPattern = """Aider v[\d.]+ [^\n]*(?:\n(?:[^\n]+))*(?:\nAdded [^\n]+)*""".toRegex(RegexOption.DOT_MATCHES_ALL)
-        processedHtml = processedHtml.replace(initPattern) { matchResult ->
-            val content = matchResult.value.trim()
-            if (content.isBlank()) return@replace ""
-            """
-            <div class="collapsible-panel expanded">
-                <div class="collapsible-header" onclick="this.parentElement.classList.toggle('expanded')">
-                    <span class="collapsible-title">Initialization Details</span>
-                    <span class="collapsible-arrow">^</span>
-                </div>
-                <div class="collapsible-content">
-                    <pre><code>${escapeHtml(matchResult.value.trim()).replace("\n", "<br>")}</code></pre>
-                </div>
-            </div>
-            """.trimIndent()
-        }
 
         // Wrap initial command in collapsible panel if present
         val commandPattern = """<aider-command>\s*(.*?)\s*</aider-command>""".toRegex(RegexOption.DOT_MATCHES_ALL)
