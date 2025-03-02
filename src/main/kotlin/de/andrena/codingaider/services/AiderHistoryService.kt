@@ -60,8 +60,23 @@ class AiderHistoryService(private val project: Project) {
     }
 
     private fun stripRedundantLines(aiderOutput: String?): String? {
-        // TODO: implement this
+        if (aiderOutput == null) return null
+        
         return aiderOutput
+            .lines()
+            .filter { line ->
+                // Keep lines that don't match any of these patterns
+                !line.trimStart().startsWith("####") && // Remove #### prefixed lines
+                !line.matches(Regex("^>\\s*Tokens:.*")) && // Remove token info
+                !line.matches(Regex("^>\\s*Cost:.*")) && // Remove cost info
+                !line.matches(Regex("^>\\s*(?:Main|Weak) model:.*")) && // Remove model info
+                !line.matches(Regex("^>\\s*Git repo:.*")) && // Remove git info
+                !line.matches(Regex("^>\\s*Repo-map:.*")) && // Remove repo map info
+                !line.matches(Regex("^>\\s*Added.*to the chat\\.\\s*$")) // Remove file addition info
+            }
+            .joinToString("\n")
+            .trim()
+            .takeIf { it.isNotEmpty() }
     }
 
     fun getLastChatHistory(): String {
