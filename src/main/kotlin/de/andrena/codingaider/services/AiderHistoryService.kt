@@ -39,80 +39,29 @@ class AiderHistoryService(private val project: Project) {
     }
 
     private fun extractXmlPrompts(chatContent: String): Triple<String?, String?, String?> {
-        // Handle nested XML and code blocks
-        val systemPromptRegex = """(?s)(?:####\s*)?<SystemPrompt>\s*(.*?)\s*(?:####\s*)?</SystemPrompt>""".toRegex()
-        val userPromptRegex = """(?s)(?:####\s*)?<UserPrompt>\s*(.*?)\s*(?:####\s*)?</UserPrompt>""".toRegex()
-        val codeBlockRegex = """```(?:kotlin|python|plaintext)?\s*(.*?)\s*```""".toRegex(RegexOption.DOT_MATCHES_ALL)
+        val systemPromptRegex = "(?s)<SystemPrompt>\\s*(.*?)\\s*</SystemPrompt>".toRegex()
+        val userPromptRegex = "(?s)<UserPrompt>\\s*(.*?)\\s*</UserPrompt>".toRegex()
 
-        // Extract prompts from XML blocks or code blocks
-        fun extractPromptContent(content: String): String {
-            return codeBlockRegex.find(content)?.groupValues?.get(1)?.trim() ?: content.trim()
-        }
+        val systemPrompt = systemPromptRegex.find(chatContent)?.groupValues?.get(1)?.trim()?.takeIf { it.isNotEmpty() }
 
-        val systemPrompt = systemPromptRegex.findAll(chatContent)
-            .map { extractPromptContent(it.groupValues[1]) }
-            .firstOrNull { it.isNotEmpty() }
-            ?.replace(Regex("^####\\s*"), "")
+        val userPrompt = userPromptRegex.find(chatContent)?.groupValues?.get(1)?.trim()
 
-        val userPrompt = userPromptRegex.findAll(chatContent)
-            .map { extractPromptContent(it.groupValues[1]) }
-            .firstOrNull { it.isNotEmpty() }
-            ?.replace(Regex("^####\\s*"), "")
+        // Extract everything after </UserPrompt> until the next chat session or end
+        val outputStart = chatContent.indexOf("</UserPrompt>")
+        val outputEnd =
+            chatContent.indexOf("# aider chat started at", outputStart + 1).takeIf { it >= 0 } ?: chatContent.length
 
-        // Extract Aider output more precisely
-        val outputStart = chatContent.lastIndexOf("</UserPrompt>")
-        if (outputStart < 0) return Triple(systemPrompt, userPrompt, null)
+        val aiderOutput = if (outputStart >= 0) {
+            chatContent.substring(outputStart + 12, outputEnd).trim().takeIf { it.isNotEmpty() }
+        } else null
 
-        val nextSessionStart = chatContent.indexOf("# aider chat started at", outputStart + 12)
-        val outputEnd = if (nextSessionStart >= 0) nextSessionStart else chatContent.length
 
-        var output = chatContent.substring(outputStart + 12, outputEnd).trim()
+        return Triple(systemPrompt, userPrompt, stripRedundantLines(aiderOutput))
+    }
 
-        // Extract and preserve initialization info
-        val initInfoRegex = """Aider v[\d.]+ [^\n]*(?:\n(?:[^\n]+))*(?:\nAdded [^\n]+)*""".toRegex()
-        val initInfo = initInfoRegex.find(output)?.value
-
-        // Clean up the output
-        output = output
-            // Remove XML prompt echoes and their code blocks
-            .replace(Regex("""(?m)^####\s*<(?:System|User)Prompt>[\s\S]*?</(?:System|User)Prompt>\s*"""), "")
-            .replace(Regex("""(?m)^####\s*\*SEARCH/REPLACE block\*\s*Rules:[\s\S]*?(?=\n\S|$)"""), "")
-            // Remove lines starting with #### or >
-            .lines()
-            .filterNot { line -> 
-                line.trimStart().startsWith("####") || 
-                line.trimStart().startsWith(">")
-            }
-            .joinToString("\n")
-            .trim()
-
-        // Remove redundant prompt displays
-        systemPrompt?.let { sysPrompt ->
-            output = output.replace(
-                Regex("""(?s)## \*\*System Prompt\*\*\s*```(?:plaintext)?\s*${Regex.escape(sysPrompt.trim())}\s*```\s*---\s*"""),
-                ""
-            )
-        }
-        userPrompt?.let { usrPrompt ->
-            output = output.replace(
-                Regex("""(?s)## User Request\s*```(?:plaintext)?\s*${Regex.escape(usrPrompt.trim())}\s*```\s*---\s*"""),
-                ""
-            )
-        }
-
-        // Clean up code blocks
-        output = output.replace(Regex("""```\s*\n"""), "```\n")
-            .replace(Regex("""\n\s*```"""), "\n```")
-
-        // Reattach initialization info if present
-        val finalOutput = if (!initInfo.isNullOrBlank()) {
-            val cleanOutput = output.replace(Regex(Regex.escape(initInfo)), "").trim()
-            if (cleanOutput.isNotEmpty()) "$initInfo\n\n$cleanOutput" else initInfo
-        } else {
-            output
-        }
-
-        return Triple(systemPrompt, userPrompt, finalOutput.takeIf { it.isNotEmpty() })
+    private fun stripRedundantLines(aiderOutput: String?): String? {
+        // TODO: implement this
+        return aiderOutput
     }
 
     fun getLastChatHistory(): String {
@@ -120,55 +69,12 @@ class AiderHistoryService(private val project: Project) {
 
         val chatContent = chatHistoryFile.readText(Charsets.UTF_8)
         val contentParts = chatContent.split("# aider chat started at .*".toRegex())
-        val lastChat = contentParts.lastOrNull()?.trim() ?: return "No chat history available."
-        
+        val lastChat = contentParts.lastOrNull() ?: return "No chat history available."
+        if (!containsXmlPrompts(lastChat)) {
+            return lastChat
+        }
         // Extract prompts and output from XML blocks
         val (systemPrompt, userPrompt, aiderOutput) = extractXmlPrompts(lastChat)
-        
-        // Filter out Aider's echo of the prompts from the output
-        val filteredOutput = aiderOutput?.let { output ->
-            val cleanOutput = output.trim()
-                
-            // Extract and keep initialization info
-            val initInfo = Regex("""Aider v[\d.]+ [^\n]*(?:\n(?:[^\n]+))*(?:\nAdded [^\n]+)*""")
-                .find(cleanOutput)?.value
-
-            // Remove Aider's echo of prompts (marked with #### prefix)
-            var filtered = cleanOutput.replace(
-                Regex("""(?m)^#### <(?:System|User)Prompt>[\s\S]*?#### </(?:System|User)Prompt>\s*"""),
-                ""
-            )
-
-            // Remove any remaining lines starting with ####
-            filtered = filtered.lines()
-                .filterNot { it.trimStart().startsWith("####") }
-                .joinToString("\n")
-
-            // Remove redundant prompt displays that might appear in the output
-            systemPrompt?.let { sysPrompt ->
-                filtered = filtered.replace(
-                    Regex("""(?s)## \*\*System Prompt\*\*\s*```plaintext\s*${Regex.escape(sysPrompt.trim())}\s*```\s*---\s*"""),
-                    ""
-                )
-            }
-                
-            userPrompt?.let { usrPrompt ->
-                filtered = filtered.replace(
-                    Regex("""(?s)## User Request\s*```plaintext\s*${Regex.escape(usrPrompt.trim())}\s*```\s*---\s*"""),
-                    ""
-                )
-            }
-
-            // Keep only the first occurrence of init info if it exists
-            val finalOutput = if (initInfo != null) {
-                filtered.replace(Regex(Regex.escape(initInfo)), "").trim()
-                    .let { if (it.isNotEmpty()) "$initInfo\n\n$it" else initInfo }
-            } else {
-                filtered
-            }
-                
-            finalOutput.trim()
-        }
 
         return buildString {
             systemPrompt?.let { prompt ->
@@ -183,15 +89,14 @@ class AiderHistoryService(private val project: Project) {
                 appendLine("\n---")
             }
 
-            // Don't include "## Aider Execution" header when there's no output
-            if (filteredOutput != null) {
-                appendLine("## Aider Execution\n")
-                appendLine("$filteredOutput\n")
-            } else {
-                appendLine("<!-- No execution output captured -->")
-            }
+            appendLine("## Aider Execution\n")
+            appendLine("${aiderOutput ?: "<!-- No execution output captured -->"}\n")
         }.trim()
     }
 
+
+    private fun containsXmlPrompts(aiderOutput: String): Boolean {
+        return aiderOutput.contains("<SystemPrompt>") || aiderOutput.contains("<UserPrompt>")
+    }
 }
 
