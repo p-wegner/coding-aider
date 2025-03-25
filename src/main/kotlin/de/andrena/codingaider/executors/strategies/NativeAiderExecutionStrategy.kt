@@ -42,7 +42,7 @@ class NativeAiderExecutionStrategy(
                         ApiKeyManager.getCustomModelKey(customProvider.name)?.let { apiKey ->
                             environment["OPENAI_API_KEY"] = apiKey
                             if (customProvider.baseUrl.isNotEmpty()) {
-                                environment["LM_STUDIO_API_BASE"] = customProvider.baseUrl
+                                environment["OPENAI_API_BASE"] = customProvider.baseUrl
                             }
                         }
                     }
