@@ -58,8 +58,8 @@ The refinement request is: <UserPrompt>$refinementRequest</UserPrompt>
     }
 
     private val planFileFormatPrompt = """
-Plan files are located in $AIDER_PLANS_FOLDER:  
-    
+Plan files are located in $AIDER_PLANS_FOLDER:
+
 File Requirements:
 1. Start plans with $AIDER_PLAN_MARKER
 2. Start checklists with $AIDER_PLAN_CHECKLIST_MARKER
