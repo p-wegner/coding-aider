@@ -69,6 +69,12 @@ class NativeAiderExecutionStrategy(
                         }
                     }
 
+                    LlmProviderType.GEMINI -> {
+                        ApiKeyManager.getCustomModelKey(customProvider.name)?.let { apiKey ->
+                            environment["GEMINI_API_KEY"] = apiKey
+                        }
+                    }
+
                     LlmProviderType.CUSTOM_AIDERMODEL -> {
                     }
 

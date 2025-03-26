@@ -36,6 +36,15 @@ enum class LlmProviderType(
         authType = AuthType.GCLOUD,
         requiresModelPrefix = false  // Vertex AI doesn't use model prefixes
     ),
+    GEMINI(
+        "Gemini",
+        supportsApiKey = true,
+        requiresBaseUrl = false,
+        modelNamePrefix = "gemini",
+        exampleModels = "Examples: gemini-2.5-pro, gemini-1.5-pro, gemini-1.5-flash",
+        authType = AuthType.API_KEY,
+        requiresModelPrefix = false
+    ),
     LMSTUDIO(
         "LM Studio",
         supportsApiKey = true,
@@ -57,6 +66,7 @@ enum class LlmProviderType(
             AuthType.API_KEY -> when (this) {
                 OPENAI -> "OPENAI_API_KEY"
                 OPENROUTER -> "OPENROUTER_API_KEY"
+                GEMINI -> "GEMINI_API_KEY"
                 else -> ""
             }
 

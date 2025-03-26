@@ -30,6 +30,9 @@ class DefaultApiKeyChecker : ApiKeyChecker {
         "o3-mini" to "OPENAI_API_KEY",
         "--deepseek" to "DEEPSEEK_API_KEY",
         "r1" to "DEEPSEEK_API_KEY",
+        "gemini-1.5-pro" to "GEMINI_API_KEY",
+        "gemini-1.5-flash" to "GEMINI_API_KEY",
+        "gemini-2.5-pro" to "GEMINI_API_KEY",
     )
 
     // API Key Cache

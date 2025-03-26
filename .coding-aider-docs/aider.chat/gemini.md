@@ -48,6 +48,14 @@ List Gemini models:
 aider --list-models gemini/
 ```
 
+## Using with CodingAider
+
+CodingAider supports Gemini models natively. You can:
+
+1. Select a Gemini model from the dropdown in the Aider dialog
+2. Configure your API key in the settings
+3. Create a custom Gemini provider with specific settings
+
 ## Additional Resources
 - [GitHub Repository](https://github.com/Aider-AI/aider)
 - [Discord Community](https://discord.gg/Tv2uQnR88V)

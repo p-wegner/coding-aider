@@ -99,6 +99,12 @@ class DockerAiderExecutionStrategy(
                 }
             }
 
+            LlmProviderType.GEMINI -> {
+                ApiKeyManager.getCustomModelKey(customProvider.name)?.let { apiKey ->
+                    dockerArgs.addAll(listOf("-e", "GEMINI_API_KEY=$apiKey"))
+                }
+            }
+
             LlmProviderType.CUSTOM_AIDERMODEL, null -> {} // No special configuration needed
             LlmProviderType.LMSTUDIO -> {
                 // For LMStudio, we need to ensure network access to the host
