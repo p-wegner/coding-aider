@@ -29,6 +29,7 @@
   - Docker container compatibility
 
 
+
 ## 💡 Improvements
 
 - UI Enhancements:
@@ -42,11 +43,14 @@
   - Improved file path handling and normalization
   - More robust pattern matching for ignored files
   - Updated to Aider v0.79.1 compatibility
-
+- Other:
+  - properly use reasoning effort setting for models that support it
+  - rename base llms to aider-compatible names
+  - 
 ## 🔧 Bug Fixes
 - Enhanced file path handling in persistent files
 - Fixed duplicate file detection
-
+- Fixed wrong API key name for custom openAI providers being used
 # Coding-Aider Plugin Release Notes - v1.2.8
 
 ## 🌟 Key Highlights
