@@ -14,13 +14,24 @@ class AiderHistoryService(private val project: Project) {
     private val inputHistoryFile = File(gitRoot?.path ?: project.basePath, ".aider.input.history")
     private val chatHistoryFile = File(gitRoot?.path ?: project.basePath, ".aider.chat.history.md")
     private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSSSSS")
+    private val isoDateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME
 
     fun getInputHistory(): List<Pair<LocalDateTime, List<String>>> {
         if (!inputHistoryFile.exists()) return emptyList()
 
         return inputHistoryFile.readText().split("\n# ").drop(1).map { entry ->
                 val lines = entry.lines()
-                val dateTime = LocalDateTime.parse(lines[0], dateTimeFormatter)
+                val dateTime = try {
+                    LocalDateTime.parse(lines[0], dateTimeFormatter)
+                } catch (e: Exception) {
+                    try {
+                        // Try parsing with ISO format (e.g., 2025-03-19T09:14:55.546Z)
+                        LocalDateTime.parse(lines[0].removeSuffix("Z"), isoDateTimeFormatter)
+                    } catch (e: Exception) {
+                        // If both formats fail, use current time as fallback
+                        LocalDateTime.now()
+                    }
+                }
                 val command = lines.drop(1).joinToString("\n") { it.trim() }.let { fullText ->
                         if (fullText.contains("<SystemPrompt>")) {
                             fullText.substringAfterLast("<UserPrompt>").substringBefore("</UserPrompt>").trim()
