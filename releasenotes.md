@@ -1,3 +1,52 @@
+# Coding-Aider Plugin Release Notes - v1.2.9
+
+## 🌟 Key Highlights
+
+- **Test Generation Feature**: AI-powered test creation with configurable test types
+- **.aiderignore Support**: Easily exclude files from Aider context
+- **Gemini Model Support**: Integration with Google's Gemini models
+- **Enhanced Documentation**: Improved documentation organization and accessibility
+
+## 🚀 New Features
+
+- Test Generation:
+  - Configurable test types with customizable templates
+  - Reference file pattern matching
+  - Context-aware test generation
+  - Support for multiple testing frameworks
+  - Test type management in project settings
+
+- .aiderignore Support:
+  - GitIgnore-style pattern matching
+  - Directory exclusion with trailing slash
+  - Recursive pattern matching with **
+  - File extension filtering
+  - Toolbar integration for quick access
+
+- Gemini Model Integration:
+  - Support for Gemini 2.5 Pro and other Gemini models
+  - API key management
+  - Docker container compatibility
+
+
+## 💡 Improvements
+
+- UI Enhancements:
+  - Improved markdown rendering with better styling
+  - Enhanced code block display
+  - Better XML block formatting for summaries and intentions
+  - Copy context to clipboard functionality
+
+- Performance & Reliability:
+  - Better history parsing and display
+  - Improved file path handling and normalization
+  - More robust pattern matching for ignored files
+  - Updated to Aider v0.79.1 compatibility
+
+## 🔧 Bug Fixes
+- Enhanced file path handling in persistent files
+- Fixed duplicate file detection
+
 # Coding-Aider Plugin Release Notes - v1.2.8
 
 ## 🌟 Key Highlights
