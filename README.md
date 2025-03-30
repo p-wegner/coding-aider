@@ -93,7 +93,9 @@ the [Aider documentation](https://aider.chat/docs/llms/openai-compat.html).
 
 11. **Fix Build and Test Error Action**: Fix build and test errors in the project.
 
-12. **Various Specialized Actions**:
+12. **Clipboard Edit Format Support**: Analyze and apply edit formats (diff, diff-fenced, whole, udiff) from clipboard content.
+
+13. **Various Specialized Actions**:
     - **Commit Action**: Quickly commit changes using Aider.
     - **Document Code Action**: Generate markdown documentation for selected files and directories.
     - **Fix Compile Error Action**: Fix compile errors using Aider's AI capabilities.

@@ -241,6 +241,12 @@
                     description="Save clipboard image and add to persistent files">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt I"/>
             </action>
+            <action id="de.andrena.codingaider.actions.aider.AiderClipboardEditFormatAction"
+                    class="de.andrena.codingaider.actions.aider.AiderClipboardEditFormatAction"
+                    text="Apply Edit Format from Clipboard"
+                    description="Analyze clipboard content for supported edit formats and apply if possible">
+                <keyboard-shortcut keymap="$default" first-keystroke="alt E"/>
+            </action>
             <action id="de.andrena.codingaider.actions.git.GitCodeReviewAction"
                     class="de.andrena.codingaider.actions.git.GitCodeReviewAction"
                     text="Git Code Review"
