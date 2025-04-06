@@ -109,13 +109,25 @@ class MarkdownDialog(
                 try {
                     isEnabled = false
                     text = "Creating Plan..."
-                    // TODO: Implement plan creation from command data
-                    JOptionPane.showMessageDialog(
-                        this@MarkdownDialog,
-                        "Plan creation feature is coming soon!",
-                        "Plan Creation",
-                        JOptionPane.INFORMATION_MESSAGE
+                    val success = project.service<PostActionPlanCreationService>().createPlanFromCommand(
+                        commandData,
+                        lastContent
                     )
+                    if (success) {
+                        JOptionPane.showMessageDialog(
+                            this@MarkdownDialog,
+                            "Plan created successfully.",
+                            "Plan Creation",
+                            JOptionPane.INFORMATION_MESSAGE
+                        )
+                    } else {
+                        JOptionPane.showMessageDialog(
+                            this@MarkdownDialog,
+                            "Failed to create plan.",
+                            "Plan Creation",
+                            JOptionPane.ERROR_MESSAGE
+                        )
+                    }
                     isEnabled = true
                     text = "Create Plan"
                 } catch (e: Exception) {

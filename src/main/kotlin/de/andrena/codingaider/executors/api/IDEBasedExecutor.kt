@@ -131,7 +131,9 @@ class IDEBasedExecutor(
             commandData.options.autoCloseDelay ?: getInstance().markdownDialogAutocloseDelay
         )
         refreshFiles()
-        planExecutionActions.commandCompleted()
+        planExecutionActions.commandCompleted(message)
+        // Store the command data and output for potential plan creation
+        project.service<RunningCommandService>().storeCompletedCommand(commandData, message)
         if (!commandData.options.disablePresentation) {
             presentChanges()
         }
