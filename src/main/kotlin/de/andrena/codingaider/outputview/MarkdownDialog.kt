@@ -100,6 +100,37 @@ class MarkdownDialog(
             }
         }
     }
+    
+    private var createPlanButton = JButton("Create Plan").apply {
+        mnemonic = KeyEvent.VK_P
+        isVisible = false
+        addActionListener {
+            if (isProcessFinished && commandData != null) {
+                try {
+                    isEnabled = false
+                    text = "Creating Plan..."
+                    // TODO: Implement plan creation from command data
+                    JOptionPane.showMessageDialog(
+                        this@MarkdownDialog,
+                        "Plan creation feature is coming soon!",
+                        "Plan Creation",
+                        JOptionPane.INFORMATION_MESSAGE
+                    )
+                    isEnabled = true
+                    text = "Create Plan"
+                } catch (e: Exception) {
+                    isEnabled = true
+                    text = "Create Plan"
+                    JOptionPane.showMessageDialog(
+                        this@MarkdownDialog,
+                        "Error during plan creation: ${e.message}",
+                        "Plan Creation Error",
+                        JOptionPane.ERROR_MESSAGE
+                    )
+                }
+            }
+        }
+    }
     private var isProcessFinished = false
     private var shouldAutoScroll = true
     private var lastManualScrollPosition = 0
@@ -202,6 +233,7 @@ class MarkdownDialog(
         }
         buttonPanel.add(closeButton)
         buttonPanel.add(closeAndContinueButton)
+        buttonPanel.add(createPlanButton)
         buttonPanel.add(keepOpenButton)
         add(buttonPanel, BorderLayout.SOUTH)
 
@@ -329,6 +361,7 @@ class MarkdownDialog(
             closeButton.text = "Close"
             closeButton.mnemonic = KeyEvent.VK_C
             closeAndContinueButton.isVisible = commandData?.structuredMode == true
+            createPlanButton.isVisible = commandData != null && commandData.structuredMode != true
         }
     }
 
