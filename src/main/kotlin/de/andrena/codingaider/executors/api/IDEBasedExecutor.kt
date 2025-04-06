@@ -18,16 +18,17 @@ import java.awt.EventQueue.invokeLater
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.concurrent.thread
-@FunctionalInterface
-fun interface CommandFinishedCallback {
-    fun onCommandFinished(success: Boolean)
-}
 
 class IDEBasedExecutor(
     private val project: Project,
     private val commandData: CommandData,
     private val commandFinishedCallback: CommandFinishedCallback? = null
 ) : CommandObserver, Abortable {
+
+    @FunctionalInterface
+    fun interface CommandFinishedCallback {
+        fun onCommandFinished(success: Boolean)
+    }
     private val log = Logger.getInstance(IDEBasedExecutor::class.java)
     private val planExecutionActions = CommandPlanExecutionHandler(project, commandData)
     private var markdownDialog: MarkdownDialog? = null
