@@ -1,33 +1,23 @@
 package de.andrena.codingaider.services
 
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
-import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.services.plans.AiderPlanService
-import de.andrena.codingaider.services.plans.ChecklistItem
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.*
+import java.util.regex.Pattern
 
 @Service(Service.Level.PROJECT)
 class PostActionPlanCreationService(private val project: Project) {
     
     companion object {
-        private const val PLAN_MARKER = "[Coding Aider Plan]"
-        private const val CHECKLIST_MARKER = "[Coding Aider Plan - Checklist]"
-        private const val PLANS_FOLDER = ".coding-aider-plans"
+        private const val PLANS_FOLDER = AiderPlanService.AIDER_PLANS_FOLDER
+        private const val PLAN_MARKER = AiderPlanService.AIDER_PLAN_MARKER
+        private const val CHECKLIST_MARKER = AiderPlanService.AIDER_PLAN_CHECKLIST_MARKER
     }
     
-    /**
-     * Creates a plan from a completed command and its output
-     * 
-     * @param commandData The command data that was executed
-     * @param output The output from the command execution
-     * @return true if plan creation was successful, false otherwise
-     */
     fun createPlanFromCommand(commandData: CommandData, output: String): Boolean {
         try {
             // Create plans directory if it doesn't exist
@@ -39,12 +29,16 @@ class PostActionPlanCreationService(private val project: Project) {
             // Generate plan name based on command message
             val planName = generatePlanName(commandData.message)
             
-            // Create plan files
-            createMainPlanFile(plansDir, planName, commandData, output)
-            createChecklistFile(plansDir, planName, output)
-            createContextFile(plansDir, planName, commandData.files)
+            // Create the main plan file
+            val planFile = createMainPlanFile(plansDir, planName, commandData, output)
             
-            return true
+            // Create the checklist file
+            val checklistFile = createChecklistFile(plansDir, planName, output)
+            
+            // Create the context file with the files used in the command
+            val contextFile = createContextFile(plansDir, planName, commandData.files)
+            
+            return planFile.exists() && checklistFile.exists() && contextFile.exists()
         } catch (e: Exception) {
             e.printStackTrace()
             return false
@@ -74,27 +68,39 @@ class PostActionPlanCreationService(private val project: Project) {
             appendLine("Plan created from completed action: ${commandData.message}")
             appendLine()
             appendLine("## Problem Description")
-            appendLine("This plan was automatically generated from a completed Aider action.")
-            appendLine("The original command was: `${commandData.message}`")
+            appendLine("This plan was automatically generated from a completed Aider action. The original command was:")
+            appendLine("```")
+            appendLine(commandData.message)
+            appendLine("```")
             appendLine()
             appendLine("## Goals")
-            appendLine("1. Complete the implementation started by the action")
-            appendLine("2. Address any follow-up tasks identified during execution")
+            appendLine("1. Document the changes made by the completed action")
+            appendLine("2. Track any follow-up tasks identified during implementation")
+            appendLine("3. Provide a structured approach for continuing work on this feature")
             appendLine()
             appendLine("## Additional Notes and Constraints")
-            appendLine("- Original command was executed with model: ${commandData.llm}")
-            appendLine("- Command was executed on ${LocalDateTime.now()}")
+            appendLine("- This plan was created from a completed action on ${LocalDateTime.now()}")
+            appendLine("- The original command used the ${commandData.llm} model")
+            appendLine("- ${commandData.files.size} files were included in the original context")
             appendLine()
-            appendLine("## Original Command Output")
-            appendLine("```")
-            appendLine(output.take(2000)) // Limit output size
-            if (output.length > 2000) {
-                appendLine("... (output truncated)")
+            appendLine("## Implementation Summary")
+            appendLine("### Completed Changes")
+            
+            // Extract summary from output if available
+            val summary = extractSummaryFromOutput(output)
+            if (summary.isNotEmpty()) {
+                appendLine(summary)
+            } else {
+                appendLine("The action made the following changes:")
+                appendLine("```")
+                appendLine(output.take(500) + (if (output.length > 500) "..." else ""))
+                appendLine("```")
             }
-            appendLine("```")
+            
             appendLine()
-            appendLine("## Implementation Strategy")
-            appendLine("Continue with the implementation based on the completed action.")
+            appendLine("## References")
+            appendLine("- [Checklist](${planName}_checklist.md)")
+            appendLine("- [Context](${planName}_context.yaml)")
         }
         
         planFile.writeText(planContent)
@@ -111,25 +117,26 @@ class PostActionPlanCreationService(private val project: Project) {
             appendLine(CHECKLIST_MARKER)
             appendLine()
             appendLine("## Main Tasks")
+            appendLine("- [x] Complete initial implementation")
+            
             if (tasks.isNotEmpty()) {
+                appendLine()
+                appendLine("## Follow-up Tasks")
                 tasks.forEach { task ->
                     appendLine("- [ ] $task")
                 }
             } else {
-                appendLine("- [ ] Complete implementation")
-                appendLine("- [ ] Test the implementation")
-                appendLine("- [ ] Update documentation if needed")
+                appendLine("- [ ] Review the implementation for any issues")
+                appendLine("- [ ] Add tests if needed")
+                appendLine("- [ ] Update documentation")
             }
-            appendLine()
-            appendLine("## Dependencies")
-            appendLine("- Original command execution")
         }
         
         checklistFile.writeText(checklistContent)
         return checklistFile
     }
     
-    private fun createContextFile(plansDir: File, planName: String, files: List<FileData>): File {
+    private fun createContextFile(plansDir: File, planName: String, files: List<de.andrena.codingaider.command.FileData>): File {
         val contextFile = File(plansDir, "${planName}_context.yaml")
         
         val contextContent = buildString {
@@ -155,18 +162,67 @@ class PostActionPlanCreationService(private val project: Project) {
             Regex("- \\[ \\]\\s*(.+)")  // Markdown checklist items
         )
         
-        output.lines().forEach { line ->
-            for (pattern in taskPatterns) {
-                val match = pattern.find(line)
-                if (match != null) {
-                    val task = match.groupValues[1].trim()
-                    if (task.length > 10 && !tasks.contains(task)) {
-                        tasks.add(task)
-                    }
+        for (pattern in taskPatterns) {
+            pattern.findAll(output).forEach { matchResult ->
+                val task = matchResult.groupValues[1].trim()
+                if (task.isNotEmpty() && task.length < 100) {  // Avoid overly long "tasks"
+                    tasks.add(task)
                 }
             }
         }
         
-        return tasks.take(10) // Limit to 10 tasks to avoid overwhelming the user
+        // Also look for tasks in XML summary blocks if present
+        extractTasksFromSummaryBlock(output)?.let { tasks.addAll(it) }
+        
+        return tasks.distinct().take(10)  // Limit to 10 tasks to avoid overwhelming the user
+    }
+    
+    private fun extractTasksFromSummaryBlock(output: String): List<String>? {
+        val summaryPattern = Pattern.compile("<aider-summary>(.*?)</aider-summary>", Pattern.DOTALL)
+        val matcher = summaryPattern.matcher(output)
+        
+        if (matcher.find()) {
+            val summaryContent = matcher.group(1).trim()
+            val tasks = mutableListOf<String>()
+            
+            // Look for bullet points or numbered lists in the summary
+            val bulletPattern = Regex("^\\s*[-*]\\s+(.+)$", RegexOption.MULTILINE)
+            bulletPattern.findAll(summaryContent).forEach { 
+                tasks.add(it.groupValues[1].trim())
+            }
+            
+            val numberedPattern = Regex("^\\s*\\d+\\.\\s+(.+)$", RegexOption.MULTILINE)
+            numberedPattern.findAll(summaryContent).forEach {
+                tasks.add(it.groupValues[1].trim())
+            }
+            
+            return tasks.distinct()
+        }
+        
+        return null
+    }
+    
+    private fun extractSummaryFromOutput(output: String): String {
+        // Try to extract the summary from XML tags if present
+        val intentionPattern = Pattern.compile("<aider-intention>(.*?)</aider-intention>", Pattern.DOTALL)
+        val summaryPattern = Pattern.compile("<aider-summary>(.*?)</aider-summary>", Pattern.DOTALL)
+        
+        val intentionMatcher = intentionPattern.matcher(output)
+        val summaryMatcher = summaryPattern.matcher(output)
+        
+        val summary = StringBuilder()
+        
+        if (intentionMatcher.find()) {
+            summary.append("### Intention\n")
+            summary.append(intentionMatcher.group(1).trim())
+            summary.append("\n\n")
+        }
+        
+        if (summaryMatcher.find()) {
+            summary.append("### Summary\n")
+            summary.append(summaryMatcher.group(1).trim())
+        }
+        
+        return summary.toString()
     }
 }
