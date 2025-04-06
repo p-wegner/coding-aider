@@ -40,13 +40,26 @@ class RunningCommandService {
         }
         
         try {
-            // TODO: Implement plan creation from last command
-            JOptionPane.showMessageDialog(
-                null,
-                "Plan creation from previous command feature is coming soon!",
-                "Create Plan",
-                JOptionPane.INFORMATION_MESSAGE
+            val success = project.service<PostActionPlanCreationService>().createPlanFromCommand(
+                lastCompletedCommand!!,
+                lastCommandOutput!!
             )
+            
+            if (success) {
+                JOptionPane.showMessageDialog(
+                    null,
+                    "Plan created successfully from the last command.",
+                    "Create Plan",
+                    JOptionPane.INFORMATION_MESSAGE
+                )
+            } else {
+                JOptionPane.showMessageDialog(
+                    null,
+                    "Failed to create plan from the last command.",
+                    "Create Plan",
+                    JOptionPane.ERROR_MESSAGE
+                )
+            }
         } catch (e: Exception) {
             JOptionPane.showMessageDialog(
                 null,

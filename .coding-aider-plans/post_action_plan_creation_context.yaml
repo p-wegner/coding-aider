@@ -10,3 +10,7 @@ files:
   readOnly: true
 - path: src/main/kotlin/de/andrena/codingaider/services/RunningCommandService.kt
   readOnly: true
+- path: src/main/kotlin/de/andrena/codingaider/services/PostActionPlanCreationService.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/toolwindow/runningcommands/RunningCommandsPanel.kt
+  readOnly: false
