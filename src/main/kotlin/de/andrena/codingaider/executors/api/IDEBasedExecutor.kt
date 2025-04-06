@@ -24,11 +24,6 @@ class IDEBasedExecutor(
     private val commandData: CommandData,
     private val commandFinishedCallback: CommandFinishedCallback? = null
 ) : CommandObserver, Abortable {
-
-    @FunctionalInterface
-    fun interface CommandFinishedCallback {
-        fun onCommandFinished(success: Boolean)
-    }
     private val log = Logger.getInstance(IDEBasedExecutor::class.java)
     private val planExecutionActions = CommandPlanExecutionHandler(project, commandData)
     private var markdownDialog: MarkdownDialog? = null
@@ -153,5 +148,12 @@ class IDEBasedExecutor(
         updateDialogProgress(message, "Aider Command Error")
         markdownDialog?.setProcessFinished()
         markdownDialog?.startAutoCloseTimer(getInstance().markdownDialogAutocloseDelay)
+    }
+    
+    companion object {
+        @FunctionalInterface
+        fun interface CommandFinishedCallback {
+            fun onCommandFinished(success: Boolean)
+        }
     }
 }
