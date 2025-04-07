@@ -2,8 +2,9 @@
 
 ## Main Tasks
 - [x] Complete UI Components implementation
+- [ ] Call aidercommand in structured mode to create plan
 - [x] Complete Action-to-Plan Conversion Logic implementation
-- [x] Complete Integration with Existing Systems implementation
+- [ ] Complete Integration with Existing Systems implementation
 - [ ] Test the complete feature end-to-end
 - [ ] Update documentation to reflect the new feature
 

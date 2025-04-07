@@ -22,19 +22,3 @@ Currently, when users complete an Aider action, there's no built-in way to conve
 
 ## Implementation Strategy
 The implementation will be divided into three main components:
-
-<!-- SUBPLAN:post_action_plan_creation_ui -->
-[Subplan: UI Components for Plan Creation](post_action_plan_creation_ui.md)
-<!-- END_SUBPLAN -->
-
-
-<!-- SUBPLAN:post_action_plan_creation_integration -->
-[Subplan: Integration with Existing Systems](post_action_plan_creation_integration.md)
-<!-- END_SUBPLAN -->
-
-## References
-- CommandData.kt for CommandOptions structure
-- AiderPlanService.kt for plan creation logic
-- CommandExecutor.kt for execution flow
-- MarkdownDialog.kt for output dialog UI modifications
-- RunningCommandService.kt for toolwindow integration
