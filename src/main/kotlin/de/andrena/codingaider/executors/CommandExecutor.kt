@@ -228,8 +228,12 @@ class CommandExecutor(
             val status = if (exitCode == 0) "executed successfully" else "failed with exit code $exitCode"
             val finalOutput = commandLogger.prependCommandToOutput("$output\nAider command $status")
             notifyObservers { it.onCommandComplete(finalOutput, exitCode) }
+            
             // Store the completed command and output for potential plan creation
-            project.service<RunningCommandService>().storeCompletedCommand(commandData, finalOutput)
+            if (exitCode == 0) {
+                project.service<RunningCommandService>().storeCompletedCommand(commandData, finalOutput)
+            }
+            
             return finalOutput
         }
     }

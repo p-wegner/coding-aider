@@ -38,11 +38,25 @@ class PostActionPlanCreationService(private val project: Project) {
             // Create the context file with the files used in the command
             val contextFile = createContextFile(plansDir, planName, commandData.files)
             
+            // Notify the user that the plan was created
+            notifyPlanCreation(planName)
+            
             return planFile.exists() && checklistFile.exists() && contextFile.exists()
         } catch (e: Exception) {
             e.printStackTrace()
             return false
         }
+    }
+    
+    private fun notifyPlanCreation(planName: String) {
+        com.intellij.notification.NotificationGroupManager.getInstance()
+            .getNotificationGroup("Coding Aider Notifications")
+            .createNotification(
+                "Plan Created",
+                "Plan '$planName' was created from a completed command",
+                com.intellij.notification.NotificationType.INFORMATION
+            )
+            .notify(project)
     }
     
     private fun generatePlanName(message: String): String {
@@ -82,6 +96,9 @@ class PostActionPlanCreationService(private val project: Project) {
             appendLine("- This plan was created from a completed action on ${LocalDateTime.now()}")
             appendLine("- The original command used the ${commandData.llm} model")
             appendLine("- ${commandData.files.size} files were included in the original context")
+            if (commandData.additionalArgs.isNotEmpty()) {
+                appendLine("- Additional arguments: ${commandData.additionalArgs}")
+            }
             appendLine()
             appendLine("## Implementation Summary")
             appendLine("### Completed Changes")
@@ -130,6 +147,12 @@ class PostActionPlanCreationService(private val project: Project) {
                 appendLine("- [ ] Add tests if needed")
                 appendLine("- [ ] Update documentation")
             }
+            
+            appendLine()
+            appendLine("## Review")
+            appendLine("- [ ] Code review")
+            appendLine("- [ ] Test coverage")
+            appendLine("- [ ] Documentation completeness")
         }
         
         checklistFile.writeText(checklistContent)

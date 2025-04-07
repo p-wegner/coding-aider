@@ -120,6 +120,8 @@ class MarkdownDialog(
                             "Plan Creation",
                             JOptionPane.INFORMATION_MESSAGE
                         )
+                        // Store the completed command and output for potential future use
+                        project.service<RunningCommandService>().storeCompletedCommand(commandData, lastContent)
                     } else {
                         JOptionPane.showMessageDialog(
                             this@MarkdownDialog,
