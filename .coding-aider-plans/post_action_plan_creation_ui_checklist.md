@@ -14,8 +14,3 @@
 - [ ] Add logic to enable/disable button based on last command availability
 - [ ] Connect button to plan creation logic
 
-## Testing
-- [ ] Test button visibility and enabled states
-- [ ] Test button click handlers
-- [ ] Test integration with plan creation logic
-- [ ] Test error handling and user feedback

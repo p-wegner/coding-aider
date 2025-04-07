@@ -27,9 +27,6 @@ The implementation will be divided into three main components:
 [Subplan: UI Components for Plan Creation](post_action_plan_creation_ui.md)
 <!-- END_SUBPLAN -->
 
-<!-- SUBPLAN:post_action_plan_creation_conversion -->
-[Subplan: Action-to-Plan Conversion Logic](post_action_plan_creation_conversion.md)
-<!-- END_SUBPLAN -->
 
 <!-- SUBPLAN:post_action_plan_creation_integration -->
 [Subplan: Integration with Existing Systems](post_action_plan_creation_integration.md)
