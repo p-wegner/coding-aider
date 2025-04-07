@@ -13,7 +13,6 @@ import de.andrena.codingaider.services.RunningCommandService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileRefresher
 import de.andrena.codingaider.utils.GitUtils
-import com.intellij.openapi.wm.WindowManager
 import java.awt.EventQueue.invokeLater
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicReference
@@ -127,7 +126,7 @@ class IDEBasedExecutor(
             commandData.options.autoCloseDelay ?: getInstance().markdownDialogAutocloseDelay
         )
         refreshFiles()
-        planExecutionActions.commandCompleted(message)
+        planExecutionActions.commandCompleted()
         // Store the command data and output for potential plan creation
         project.service<RunningCommandService>().storeCompletedCommand(commandData, message)
         if (!commandData.options.disablePresentation) {
@@ -150,10 +149,8 @@ class IDEBasedExecutor(
         markdownDialog?.startAutoCloseTimer(getInstance().markdownDialogAutocloseDelay)
     }
     
-    companion object {
-        @FunctionalInterface
-        fun interface CommandFinishedCallback {
-            fun onCommandFinished(success: Boolean)
-        }
-    }
+}
+@FunctionalInterface
+fun interface CommandFinishedCallback {
+    fun onCommandFinished(success: Boolean)
 }

@@ -1,9 +1,11 @@
 package de.andrena.codingaider.services
 
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.outputview.MarkdownDialog
+import de.andrena.codingaider.services.plans.PostActionPlanCreationService
 import javax.swing.DefaultListModel
 import javax.swing.JOptionPane
 

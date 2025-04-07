@@ -13,6 +13,7 @@ import de.andrena.codingaider.executors.strategies.DockerAiderExecutionStrategy
 import de.andrena.codingaider.executors.strategies.NativeAiderExecutionStrategy
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.FileExtractorService
+import de.andrena.codingaider.services.RunningCommandService
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.services.sidecar.AiderProcessManager
 import de.andrena.codingaider.services.sidecar.SidecarProcessInitializer

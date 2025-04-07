@@ -1,17 +1,18 @@
-package de.andrena.codingaider.services
+package de.andrena.codingaider.services.plans
 
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
+import de.andrena.codingaider.executors.api.IDEBasedExecutor.Companion.CommandFinishedCallback
 import de.andrena.codingaider.inputdialog.AiderMode
-import de.andrena.codingaider.services.plans.AiderPlanService
+import de.andrena.codingaider.services.CommandFinishedCallback
 import java.io.File
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
+import java.util.regex.Pattern
 
 @Service(Service.Level.PROJECT)
 class PostActionPlanCreationService(private val project: Project) {
@@ -41,8 +42,8 @@ class PostActionPlanCreationService(private val project: Project) {
             // Execute the command and wait for completion
             val latch = CountDownLatch(1)
             var success = false
-            
-            val executor = IDEBasedExecutor(project, planCreationCommand, object : CommandFinishedCallback {
+
+            val executor = IDEBasedExecutor(project, planCreationCommand, CommandFinishedCallback {
                 override fun onCommandFinished(exitCode: Int) {
                     success = exitCode == 0
                     latch.countDown()
@@ -51,7 +52,7 @@ class PostActionPlanCreationService(private val project: Project) {
             
             // Execute in a separate thread to avoid blocking the UI
             Thread {
-                executor.executeCommand()
+                executor.execute()
             }.start()
             
             // Wait for the command to complete with a timeout
@@ -101,31 +102,31 @@ class PostActionPlanCreationService(private val project: Project) {
     }
     
     private fun notifyPlanCreation(message: String) {
-        com.intellij.notification.NotificationGroupManager.getInstance()
+        NotificationGroupManager.getInstance()
             .getNotificationGroup("Coding Aider Notifications")
             .createNotification(
                 "Plan Created",
                 message,
-                com.intellij.notification.NotificationType.INFORMATION
+                NotificationType.INFORMATION
             )
             .notify(project)
     }
     
     private fun notifyPlanCreationFailure(message: String) {
-        com.intellij.notification.NotificationGroupManager.getInstance()
+        NotificationGroupManager.getInstance()
             .getNotificationGroup("Coding Aider Notifications")
             .createNotification(
                 "Plan Creation Failed",
                 message,
-                com.intellij.notification.NotificationType.ERROR
+                NotificationType.ERROR
             )
             .notify(project)
     }
     
     private fun extractSummaryFromOutput(output: String): String {
         // Try to extract the summary from XML tags if present
-        val intentionPattern = "<aider-intention>(.*?)</aider-intention>".toPattern(java.util.regex.Pattern.DOTALL)
-        val summaryPattern = "<aider-summary>(.*?)</aider-summary>".toPattern(java.util.regex.Pattern.DOTALL)
+        val intentionPattern = "<aider-intention>(.*?)</aider-intention>".toPattern(Pattern.DOTALL)
+        val summaryPattern = "<aider-summary>(.*?)</aider-summary>".toPattern(Pattern.DOTALL)
         
         val intentionMatcher = intentionPattern.matcher(output)
         val summaryMatcher = summaryPattern.matcher(output)
