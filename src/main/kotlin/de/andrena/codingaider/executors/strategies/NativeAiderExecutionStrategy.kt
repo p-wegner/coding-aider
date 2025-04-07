@@ -48,7 +48,7 @@ class NativeAiderExecutionStrategy(
                     }
 
                     LlmProviderType.OLLAMA -> {
-                        environment["OLLAMA_HOST"] = customProvider.baseUrl
+                        environment["OLLAMA_API_BASE"] = customProvider.baseUrl
                     }
 
                     LlmProviderType.OPENROUTER -> {

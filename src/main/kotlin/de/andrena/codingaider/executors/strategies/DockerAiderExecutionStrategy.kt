@@ -65,7 +65,7 @@ class DockerAiderExecutionStrategy(
                 // For Ollama, we need to ensure network access to the host
                 dockerArgs.addAll(listOf("--network", "host"))
                 customProvider.baseUrl.takeIf { it.isNotEmpty() }?.let { baseUrl ->
-                    dockerArgs.addAll(listOf("-e", "OLLAMA_HOST=$baseUrl"))
+                    dockerArgs.addAll(listOf("-e", "OLLAMA_API_BASE=$baseUrl"))
                 }
             }
 
