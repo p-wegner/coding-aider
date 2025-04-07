@@ -1,24 +1,33 @@
 package de.andrena.codingaider.services
 
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
+import de.andrena.codingaider.executors.api.IDEBasedExecutor
+import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.plans.AiderPlanService
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.util.regex.Pattern
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 @Service(Service.Level.PROJECT)
 class PostActionPlanCreationService(private val project: Project) {
     
     companion object {
         private const val PLANS_FOLDER = AiderPlanService.AIDER_PLANS_FOLDER
-        private const val PLAN_MARKER = AiderPlanService.AIDER_PLAN_MARKER
-        private const val CHECKLIST_MARKER = AiderPlanService.AIDER_PLAN_CHECKLIST_MARKER
+        private const val PLAN_CREATION_TIMEOUT_SECONDS = 60L
     }
     
-    fun createPlanFromCommand(commandData: CommandData, output: String): Boolean {
+    /**
+     * Creates a plan from a specific command and its output
+     * @param commandData The command data
+     * @param commandOutput The command output
+     * @return true if plan was created successfully, false otherwise
+     */
+    fun createPlanFromCommand(commandData: CommandData, commandOutput: String): Boolean {
         try {
             // Create plans directory if it doesn't exist
             val plansDir = File(project.basePath, PLANS_FOLDER)
@@ -26,209 +35,97 @@ class PostActionPlanCreationService(private val project: Project) {
                 plansDir.mkdir()
             }
             
-            // Generate plan name based on command message
-            val planName = generatePlanName(commandData.message)
+            // Create a structured mode command to generate the plan
+            val planCreationCommand = createPlanCreationCommand(commandData, commandOutput)
             
-            // Create the main plan file
-            val planFile = createMainPlanFile(plansDir, planName, commandData, output)
+            // Execute the command and wait for completion
+            val latch = CountDownLatch(1)
+            var success = false
             
-            // Create the checklist file
-            val checklistFile = createChecklistFile(plansDir, planName, output)
+            val executor = IDEBasedExecutor(project, planCreationCommand, object : CommandFinishedCallback {
+                override fun onCommandFinished(exitCode: Int) {
+                    success = exitCode == 0
+                    latch.countDown()
+                }
+            })
             
-            // Create the context file with the files used in the command
-            val contextFile = createContextFile(plansDir, planName, commandData.files)
+            // Execute in a separate thread to avoid blocking the UI
+            Thread {
+                executor.executeCommand()
+            }.start()
             
-            // Notify the user that the plan was created
-            notifyPlanCreation(planName)
+            // Wait for the command to complete with a timeout
+            if (!latch.await(PLAN_CREATION_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
+                notifyPlanCreationFailure("Plan creation timed out after $PLAN_CREATION_TIMEOUT_SECONDS seconds")
+                return false
+            }
             
-            return planFile.exists() && checklistFile.exists() && contextFile.exists()
+            if (success) {
+                notifyPlanCreation("Plan created successfully from command")
+            } else {
+                notifyPlanCreationFailure("Failed to create plan from command")
+            }
+            
+            return success
         } catch (e: Exception) {
+            notifyPlanCreationFailure("Error creating plan: ${e.message}")
             e.printStackTrace()
             return false
         }
     }
     
-    private fun notifyPlanCreation(planName: String) {
+    private fun createPlanCreationCommand(commandData: CommandData, commandOutput: String): CommandData {
+        // Create a message that describes the plan to be created
+        val planMessage = buildString {
+            append("Create a plan based on this completed action: ${commandData.message}\n\n")
+            append("The action made the following changes:\n")
+            
+            // Extract summary if available, otherwise use a portion of the output
+            val summary = extractSummaryFromOutput(commandOutput)
+            if (summary.isNotEmpty()) {
+                append(summary)
+            } else {
+                val truncatedOutput = commandOutput.take(1000) + (if (commandOutput.length > 1000) "..." else "")
+                append(truncatedOutput)
+            }
+            
+            append("\n\nCreate a plan that documents these changes and identifies any follow-up tasks.")
+        }
+        
+        // Create a new command data object with structured mode enabled
+        return commandData.copy(
+            message = planMessage,
+            aiderMode = AiderMode.STRUCTURED,
+            planId = null  // Ensure we're creating a new plan, not continuing an existing one
+        )
+    }
+    
+    private fun notifyPlanCreation(message: String) {
         com.intellij.notification.NotificationGroupManager.getInstance()
             .getNotificationGroup("Coding Aider Notifications")
             .createNotification(
                 "Plan Created",
-                "Plan '$planName' was created from a completed command",
+                message,
                 com.intellij.notification.NotificationType.INFORMATION
             )
             .notify(project)
     }
     
-    private fun generatePlanName(message: String): String {
-        // Create a plan name from the message
-        val baseName = message.trim()
-            .take(40)
-            .lowercase()
-            .replace(Regex("[^a-z0-9\\s]"), "")
-            .replace(Regex("\\s+"), "_")
-        
-        // Add timestamp to ensure uniqueness
-        val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd_HHmmss"))
-        return "${baseName}_${timestamp}"
-    }
-    
-    private fun createMainPlanFile(plansDir: File, planName: String, commandData: CommandData, output: String): File {
-        val planFile = File(plansDir, "$planName.md")
-        
-        val planContent = buildString {
-            appendLine(PLAN_MARKER)
-            appendLine()
-            appendLine("## Overview")
-            appendLine("Plan created from completed action: ${commandData.message}")
-            appendLine()
-            appendLine("## Problem Description")
-            appendLine("This plan was automatically generated from a completed Aider action. The original command was:")
-            appendLine("```")
-            appendLine(commandData.message)
-            appendLine("```")
-            appendLine()
-            appendLine("## Goals")
-            appendLine("1. Document the changes made by the completed action")
-            appendLine("2. Track any follow-up tasks identified during implementation")
-            appendLine("3. Provide a structured approach for continuing work on this feature")
-            appendLine()
-            appendLine("## Additional Notes and Constraints")
-            appendLine("- This plan was created from a completed action on ${LocalDateTime.now()}")
-            appendLine("- The original command used the ${commandData.llm} model")
-            appendLine("- ${commandData.files.size} files were included in the original context")
-            if (commandData.additionalArgs.isNotEmpty()) {
-                appendLine("- Additional arguments: ${commandData.additionalArgs}")
-            }
-            appendLine()
-            appendLine("## Implementation Summary")
-            appendLine("### Completed Changes")
-            
-            // Extract summary from output if available
-            val summary = extractSummaryFromOutput(output)
-            if (summary.isNotEmpty()) {
-                appendLine(summary)
-            } else {
-                appendLine("The action made the following changes:")
-                appendLine("```")
-                appendLine(output.take(500) + (if (output.length > 500) "..." else ""))
-                appendLine("```")
-            }
-            
-            appendLine()
-            appendLine("## References")
-            appendLine("- [Checklist](${planName}_checklist.md)")
-            appendLine("- [Context](${planName}_context.yaml)")
-        }
-        
-        planFile.writeText(planContent)
-        return planFile
-    }
-    
-    private fun createChecklistFile(plansDir: File, planName: String, output: String): File {
-        val checklistFile = File(plansDir, "${planName}_checklist.md")
-        
-        // Extract potential tasks from the output
-        val tasks = extractTasksFromOutput(output)
-        
-        val checklistContent = buildString {
-            appendLine(CHECKLIST_MARKER)
-            appendLine()
-            appendLine("## Main Tasks")
-            appendLine("- [x] Complete initial implementation")
-            
-            if (tasks.isNotEmpty()) {
-                appendLine()
-                appendLine("## Follow-up Tasks")
-                tasks.forEach { task ->
-                    appendLine("- [ ] $task")
-                }
-            } else {
-                appendLine("- [ ] Review the implementation for any issues")
-                appendLine("- [ ] Add tests if needed")
-                appendLine("- [ ] Update documentation")
-            }
-            
-            appendLine()
-            appendLine("## Review")
-            appendLine("- [ ] Code review")
-            appendLine("- [ ] Test coverage")
-            appendLine("- [ ] Documentation completeness")
-        }
-        
-        checklistFile.writeText(checklistContent)
-        return checklistFile
-    }
-    
-    private fun createContextFile(plansDir: File, planName: String, files: List<de.andrena.codingaider.command.FileData>): File {
-        val contextFile = File(plansDir, "${planName}_context.yaml")
-        
-        val contextContent = buildString {
-            appendLine("---")
-            appendLine("files:")
-            files.forEach { file ->
-                appendLine("- path: \"${file.filePath}\"")
-                appendLine("  readOnly: ${file.isReadOnly}")
-            }
-        }
-        
-        contextFile.writeText(contextContent)
-        return contextFile
-    }
-    
-    private fun extractTasksFromOutput(output: String): List<String> {
-        val tasks = mutableListOf<String>()
-        
-        // Look for potential tasks in the output
-        val taskPatterns = listOf(
-            Regex("(?:TODO|FIXME|Next steps?|Follow-up|We should)[:;]\\s*(.+)"),
-            Regex("(?:need to|should|could|must)\\s+(.+?)(?:\\.|$)"),
-            Regex("- \\[ \\]\\s*(.+)")  // Markdown checklist items
-        )
-        
-        for (pattern in taskPatterns) {
-            pattern.findAll(output).forEach { matchResult ->
-                val task = matchResult.groupValues[1].trim()
-                if (task.isNotEmpty() && task.length < 100) {  // Avoid overly long "tasks"
-                    tasks.add(task)
-                }
-            }
-        }
-        
-        // Also look for tasks in XML summary blocks if present
-        extractTasksFromSummaryBlock(output)?.let { tasks.addAll(it) }
-        
-        return tasks.distinct().take(10)  // Limit to 10 tasks to avoid overwhelming the user
-    }
-    
-    private fun extractTasksFromSummaryBlock(output: String): List<String>? {
-        val summaryPattern = Pattern.compile("<aider-summary>(.*?)</aider-summary>", Pattern.DOTALL)
-        val matcher = summaryPattern.matcher(output)
-        
-        if (matcher.find()) {
-            val summaryContent = matcher.group(1).trim()
-            val tasks = mutableListOf<String>()
-            
-            // Look for bullet points or numbered lists in the summary
-            val bulletPattern = Regex("^\\s*[-*]\\s+(.+)$", RegexOption.MULTILINE)
-            bulletPattern.findAll(summaryContent).forEach { 
-                tasks.add(it.groupValues[1].trim())
-            }
-            
-            val numberedPattern = Regex("^\\s*\\d+\\.\\s+(.+)$", RegexOption.MULTILINE)
-            numberedPattern.findAll(summaryContent).forEach {
-                tasks.add(it.groupValues[1].trim())
-            }
-            
-            return tasks.distinct()
-        }
-        
-        return null
+    private fun notifyPlanCreationFailure(message: String) {
+        com.intellij.notification.NotificationGroupManager.getInstance()
+            .getNotificationGroup("Coding Aider Notifications")
+            .createNotification(
+                "Plan Creation Failed",
+                message,
+                com.intellij.notification.NotificationType.ERROR
+            )
+            .notify(project)
     }
     
     private fun extractSummaryFromOutput(output: String): String {
         // Try to extract the summary from XML tags if present
-        val intentionPattern = Pattern.compile("<aider-intention>(.*?)</aider-intention>", Pattern.DOTALL)
-        val summaryPattern = Pattern.compile("<aider-summary>(.*?)</aider-summary>", Pattern.DOTALL)
+        val intentionPattern = "<aider-intention>(.*?)</aider-intention>".toPattern(java.util.regex.Pattern.DOTALL)
+        val summaryPattern = "<aider-summary>(.*?)</aider-summary>".toPattern(java.util.regex.Pattern.DOTALL)
         
         val intentionMatcher = intentionPattern.matcher(output)
         val summaryMatcher = summaryPattern.matcher(output)
