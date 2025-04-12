@@ -58,20 +58,6 @@ class RunningCommandsPanel(private val project: Project) {
                                     project.service<RunningCommandService>().hasCompletedCommand()
                             }
                         })
-                        add(object : AnAction(
-                            "Create Plan from Last Command",
-                            "Create a structured plan from the last command",
-                            AllIcons.Actions.CreateNewDirectory
-                        ) {
-                            override fun actionPerformed(e: AnActionEvent) {
-                                project.service<RunningCommandService>().createPlanFromLastCommand(project)
-                            }
-                            
-                            override fun update(e: AnActionEvent) {
-                                e.presentation.isEnabled = 
-                                    project.service<RunningCommandService>().hasCompletedCommand()
-                            }
-                        })
                     },
                     true
                 )
