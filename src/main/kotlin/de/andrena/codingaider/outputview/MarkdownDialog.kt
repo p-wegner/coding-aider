@@ -105,6 +105,8 @@ class MarkdownDialog(
         mnemonic = KeyEvent.VK_P
         isVisible = false
         toolTipText = "Convert this command into a structured plan"
+        icon = AllIcons.Actions.RunAll
+        foreground = JBColor(Color(0, 100, 0), Color(144, 238, 144)) // Dark green/light green
         addActionListener { onCreatePlanClicked() }
     }
 

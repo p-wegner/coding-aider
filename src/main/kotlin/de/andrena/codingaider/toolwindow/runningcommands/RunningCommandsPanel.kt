@@ -49,6 +49,14 @@ class RunningCommandsPanel(private val project: Project) {
                             "Create a structured plan from the last command's output and context",
                             AllIcons.Actions.RunAll
                         ) {
+                            init {
+                                templatePresentation.putClientProperty(
+                                    "ActionButton.smallVariant", 
+                                    true
+                                )
+                                templatePresentation.icon = AllIcons.Actions.RunAll
+                                templatePresentation.disabledIcon = AllIcons.Actions.RunAll
+                            }
                             override fun update(e: AnActionEvent) {
                                 val hasCompletedCommand = project.service<RunningCommandService>().hasCompletedCommand()
                                 e.presentation.isEnabled = hasCompletedCommand
