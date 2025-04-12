@@ -104,35 +104,38 @@ class MarkdownDialog(
     private var createPlanButton = JButton("Create Plan").apply {
         mnemonic = KeyEvent.VK_P
         isVisible = false
-        addActionListener {
-            if (isProcessFinished && commandData != null) {
-                try {
-                    isEnabled = false
-                    text = "Creating Plan..."
-                    
-                    // Store command data and output for plan creation
-                    project.service<RunningCommandService>().storeCompletedCommand(
-                        commandData.copy(
-                            message = "Create plan from: ${commandData.message}",
-                            aiderMode = AiderMode.STRUCTURED
-                        ),
-                        lastContent
-                    )
-                    
-                    // Trigger plan creation with structured mode
-                    project.service<RunningCommandService>().createPlanFromLastCommand(project)
-                    
-                    dispose()
-                } catch (e: Exception) {
-                    isEnabled = true
-                    text = "Create Plan"
-                    JOptionPane.showMessageDialog(
-                        this@MarkdownDialog,
-                        "Error during plan creation: ${e.message}",
-                        "Plan Creation Error",
-                        JOptionPane.ERROR_MESSAGE
-                    )
-                }
+        toolTipText = "Convert this command into a structured plan"
+        addActionListener { onCreatePlanClicked() }
+    }
+
+    private fun onCreatePlanClicked() {
+        if (isProcessFinished && commandData != null) {
+            try {
+                createPlanButton.isEnabled = false
+                createPlanButton.text = "Creating Plan..."
+                
+                // Store command data and output for plan creation
+                project.service<RunningCommandService>().storeCompletedCommand(
+                    commandData.copy(
+                        message = "Create plan from: ${commandData.message}",
+                        aiderMode = AiderMode.STRUCTURED
+                    ),
+                    lastContent
+                )
+                
+                // Trigger plan creation with structured mode
+                project.service<RunningCommandService>().createPlanFromLastCommand(project)
+                
+                dispose()
+            } catch (e: Exception) {
+                createPlanButton.isEnabled = true
+                createPlanButton.text = "Create Plan"
+                JOptionPane.showMessageDialog(
+                    this@MarkdownDialog,
+                    "Error during plan creation: ${e.message}",
+                    "Plan Creation Error",
+                    JOptionPane.ERROR_MESSAGE
+                )
             }
         }
     }

@@ -50,11 +50,16 @@ class RunningCommandsPanel(private val project: Project) {
                             AllIcons.Actions.RunAll
                         ) {
                             override fun update(e: AnActionEvent) {
-                                e.presentation.isEnabled = 
-                                    project.service<RunningCommandService>().hasCompletedCommand()
+                                val hasCompletedCommand = project.service<RunningCommandService>().hasCompletedCommand()
+                                e.presentation.isEnabled = hasCompletedCommand
                                 e.presentation.text = "Create Plan from Last Command"
-                                e.presentation.description = "Create a structured plan from the last command's output and context"
+                                e.presentation.description = if (hasCompletedCommand) {
+                                    "Convert last command into structured plan"
+                                } else {
+                                    "No completed command available to create plan from"
+                                }
                             }
+                            
                             override fun actionPerformed(e: AnActionEvent) {
                                 try {
                                     project.service<RunningCommandService>().createPlanFromLastCommand(project)
@@ -66,13 +71,6 @@ class RunningCommandsPanel(private val project: Project) {
                                         JOptionPane.ERROR_MESSAGE
                                     )
                                 }
-                            }
-                            
-                            override fun update(e: AnActionEvent) {
-                                e.presentation.isEnabled = 
-                                    project.service<RunningCommandService>().hasCompletedCommand()
-                                e.presentation.text = "Create Plan from Last Command"
-                                e.presentation.description = "Convert last command into structured plan"
                             }
                         })
                     },
