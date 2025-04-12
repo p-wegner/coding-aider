@@ -45,7 +45,17 @@ class RunningCommandService {
             
             // Create structured mode command data with all relevant files
             val planCommand = command.copy(
-                message = "Create plan from previous command:\n$output",
+                message = """
+                    Create a structured plan from this command output:
+                    Command: ${command.message}
+                    Output:
+                    $output
+                    
+                    Include:
+                    1. Original command context
+                    2. Implementation steps from output
+                    3. Any follow-up tasks identified
+                """.trimIndent(),
                 aiderMode = AiderMode.STRUCTURED,
                 files = command.files + project.service<AiderPlanService>()
                     .getAiderPlans()

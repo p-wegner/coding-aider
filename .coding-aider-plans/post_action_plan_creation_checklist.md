@@ -7,7 +7,7 @@
 - [ ] Add visual indicators for plan creation availability
 
 ## Core Functionality
-- [x] Create plan conversion service
-- [ ] Implement command output to plan transformation
-- [ ] Add plan saving functionality
-- [ ] Integrate with RunningCommandService
+- [x] Create plan conversion service  
+- [x] Implement command output to plan transformation  
+- [x] Add plan saving functionality  
+- [x] Integrate with RunningCommandService  
