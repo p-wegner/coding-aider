@@ -1,10 +1,14 @@
 ---
 files:
 - path: src/main/kotlin/de/andrena/codingaider/services/RunningCommandService.kt
-  readOnly: true
+  readOnly: false
 - path: src/main/kotlin/de/andrena/codingaider/services/plans/AiderPlan.kt
   readOnly: true
 - path: src/main/kotlin/de/andrena/codingaider/outputview/MarkdownDialog.kt
   readOnly: false
 - path: src/main/kotlin/de/andrena/codingaider/command/CommandData.kt
+  readOnly: true
+- path: src/main/kotlin/de/andrena/codingaider/services/plans/AiderPlanService.kt
+  readOnly: true
+- path: src/main/kotlin/de/andrena/codingaider/services/plans/AiderPlanPromptService.kt
   readOnly: true

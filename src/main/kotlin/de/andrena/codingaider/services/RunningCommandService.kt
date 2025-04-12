@@ -49,7 +49,11 @@ class RunningCommandService {
                 aiderMode = AiderMode.STRUCTURED,
                 files = command.files + project.service<AiderPlanService>()
                     .getAiderPlans()
-                    .flatMap { it.allFiles }
+                    .flatMap { it.allFiles },
+                options = command.options.copy(
+                    disablePresentation = false,
+                    autoCloseDelay = 10
+                )
             )
             
             // Execute the plan creation command in structured mode
@@ -65,6 +69,9 @@ class RunningCommandService {
             )
         }
     }
+
+    fun getLastCommandOutput(): String? = lastCommandOutput
+    fun getLastCommandData(): CommandData? = lastCompletedCommand
     
     fun hasCompletedCommand(): Boolean = lastCompletedCommand != null
 }
