@@ -1,7 +1,7 @@
 [Coding Aider Plan - Checklist]
 
 ## UI Implementation
-- [ ] Add "Create Plan" button to MarkdownDialog
+- [x] Add "Create Plan" button to MarkdownDialog
 - [ ] Add "Convert to Plan" action to running commands toolwindow
 - [ ] Implement action handlers for new UI elements
 - [ ] Add visual indicators for plan creation availability
