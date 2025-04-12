@@ -37,7 +37,7 @@ class AiderSettingsConfigurable() : Configurable {
         JBCheckBox("Activate Post web crawl LLM cleanup (Experimental)")
     private val webCrawlLlmComboBox = ComboBox(apiKeyChecker.getAllLlmOptions().toTypedArray())
     private val deactivateRepoMapCheckBox = JBCheckBox("Deactivate Aider's repo map (--map-tokens 0)")
-    private val editFormatComboBox = ComboBox(arrayOf("", "whole", "diff", "whole-func", "diff-func"))
+    private val editFormatComboBox = ComboBox(arrayOf("", "whole", "diff", "udiff", "diff-fenced"))
     private val verboseCommandLoggingCheckBox = JBCheckBox("Enable verbose Aider command logging")
     private val enableMarkdownDialogAutocloseCheckBox = JBCheckBox("Automatically close Output Dialog")
     private val markdownDialogAutocloseDelayField = JBTextField()
