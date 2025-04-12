@@ -40,13 +40,21 @@ class RunningCommandService {
         }
         
         try {
-            // TODO: Implement plan creation from last command
-            JOptionPane.showMessageDialog(
-                null,
-                "Plan creation from previous command feature is coming soon!",
-                "Create Plan",
-                JOptionPane.INFORMATION_MESSAGE
+            val command = lastCompletedCommand!!
+            val output = lastCommandOutput!!
+            
+            // Create structured mode command data
+            val planCommand = command.copy(
+                message = "Create plan from previous command:\n$output",
+                aiderMode = AiderMode.STRUCTURED,
+                files = command.files + project.service<AiderPlanService>()
+                    .getAiderPlans()
+                    .flatMap { it.allFiles }
             )
+            
+            // Execute the plan creation command
+            CommandExecutor(planCommand, project).executeCommand()
+            
         } catch (e: Exception) {
             JOptionPane.showMessageDialog(
                 null,

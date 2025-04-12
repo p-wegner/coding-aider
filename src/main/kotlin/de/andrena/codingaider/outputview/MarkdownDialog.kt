@@ -109,15 +109,17 @@ class MarkdownDialog(
                 try {
                     isEnabled = false
                     text = "Creating Plan..."
-                    // TODO: Implement plan creation from command data
-                    JOptionPane.showMessageDialog(
-                        this@MarkdownDialog,
-                        "Plan creation feature is coming soon!",
-                        "Plan Creation",
-                        JOptionPane.INFORMATION_MESSAGE
+                    
+                    // Store command data and output for plan creation
+                    project.service<RunningCommandService>().storeCompletedCommand(
+                        commandData.copy(message = "Create plan from: ${commandData.message}"),
+                        lastContent
                     )
-                    isEnabled = true
-                    text = "Create Plan"
+                    
+                    // Trigger plan creation
+                    project.service<RunningCommandService>().createPlanFromLastCommand(project)
+                    
+                    dispose()
                 } catch (e: Exception) {
                     isEnabled = true
                     text = "Create Plan"
