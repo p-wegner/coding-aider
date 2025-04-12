@@ -112,11 +112,14 @@ class MarkdownDialog(
                     
                     // Store command data and output for plan creation
                     project.service<RunningCommandService>().storeCompletedCommand(
-                        commandData.copy(message = "Create plan from: ${commandData.message}"),
+                        commandData.copy(
+                            message = "Create plan from: ${commandData.message}",
+                            aiderMode = AiderMode.STRUCTURED
+                        ),
                         lastContent
                     )
                     
-                    // Trigger plan creation
+                    // Trigger plan creation with structured mode
                     project.service<RunningCommandService>().createPlanFromLastCommand(project)
                     
                     dispose()

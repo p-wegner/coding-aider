@@ -45,17 +45,28 @@ class RunningCommandsPanel(private val project: Project) {
                             }
                         })
                         add(object : AnAction(
-                            "Create Plan from Last Command",
-                            "Create a structured plan from the last command",
+                            "Create Plan from Last Command", 
+                            "Create a structured plan from the last command's output and context",
                             AllIcons.Actions.RunAll
                         ) {
                             override fun actionPerformed(e: AnActionEvent) {
-                                project.service<RunningCommandService>().createPlanFromLastCommand(project)
+                                try {
+                                    project.service<RunningCommandService>().createPlanFromLastCommand(project)
+                                } catch (ex: Exception) {
+                                    JOptionPane.showMessageDialog(
+                                        null,
+                                        "Failed to create plan: ${ex.message}",
+                                        "Plan Creation Error",
+                                        JOptionPane.ERROR_MESSAGE
+                                    )
+                                }
                             }
                             
                             override fun update(e: AnActionEvent) {
                                 e.presentation.isEnabled = 
                                     project.service<RunningCommandService>().hasCompletedCommand()
+                                e.presentation.text = "Create Plan from Last Command"
+                                e.presentation.description = "Convert last command into structured plan"
                             }
                         })
                     },

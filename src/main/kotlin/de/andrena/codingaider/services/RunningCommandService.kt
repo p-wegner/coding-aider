@@ -43,7 +43,7 @@ class RunningCommandService {
             val command = lastCompletedCommand!!
             val output = lastCommandOutput!!
             
-            // Create structured mode command data
+            // Create structured mode command data with all relevant files
             val planCommand = command.copy(
                 message = "Create plan from previous command:\n$output",
                 aiderMode = AiderMode.STRUCTURED,
@@ -52,8 +52,9 @@ class RunningCommandService {
                     .flatMap { it.allFiles }
             )
             
-            // Execute the plan creation command
-            CommandExecutor(planCommand, project).executeCommand()
+            // Execute the plan creation command in structured mode
+            val executor = IDEBasedExecutor(project, planCommand)
+            executor.execute()
             
         } catch (e: Exception) {
             JOptionPane.showMessageDialog(
