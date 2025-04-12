@@ -10,7 +10,20 @@ Currently, when users complete an Aider action, there's no built-in way to conve
 1. Enable user-initiated plan creation from completed Aider actions
 2. Provide UI buttons in both the output dialog and running commands toolwindow
 3. Reuse existing structured mode functionality for plan creation
-4. Preserve action context and results in the generated plan
+    - No need to manually create plan files
+    - aider will automatically create plan files based on the prompt
+4. The prompt to create a plan should include the original command output and context
+
+## Implementation Approach
+1. UI Components:
+   - Add "Create Plan" button to command output dialogs
+   - Add "Convert to Plan" action in running commands toolwindow
+   - Use existing plan creation dialog with pre-filled content
+
+2. Data Flow:
+   - Capture command output and context from RunningCommandService
+   - Create suitable CommandData object for plan creation
+   - Run Plan Creation Command from a service
 
 ## Additional Notes and Constraints
 - Plans should be created in the .coding-aider-plans directory
@@ -19,3 +32,4 @@ Currently, when users complete an Aider action, there's no built-in way to conve
 - Plans should include both what was done and any identified follow-up work
 - The feature must be explicitly triggered by the user, not automatic
 - Provide clear UI affordances for creating plans from completed actions
+- Maintain backward compatibility with existing plans
