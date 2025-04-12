@@ -2,7 +2,7 @@
 
 ## UI Implementation
 - [x] Add "Create Plan" button to MarkdownDialog
-- [ ] Add "Convert to Plan" action to running commands toolwindow
+- [x] Add "Convert to Plan" action to running commands toolwindow
 - [ ] Implement action handlers for new UI elements
 - [ ] Add visual indicators for plan creation availability
 
