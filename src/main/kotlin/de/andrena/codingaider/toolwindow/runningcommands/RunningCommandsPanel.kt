@@ -16,6 +16,7 @@ import de.andrena.codingaider.services.RunningCommandService
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.JComponent
+import javax.swing.JOptionPane
 
 class RunningCommandsPanel(private val project: Project) {
     private val runningCommandsListModel = project.service<RunningCommandService>().getRunningCommandsListModel()

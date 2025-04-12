@@ -1,15 +1,19 @@
 package de.andrena.codingaider.outputview
 
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
+import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBScrollPane
 import de.andrena.codingaider.command.CommandData
+import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.RunningCommandService
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.services.plans.ContinuePlanService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import java.awt.BorderLayout
+import java.awt.Color
 import java.awt.EventQueue.invokeLater
 import java.awt.Frame
 import java.awt.event.KeyEvent
@@ -118,10 +122,7 @@ class MarkdownDialog(
                 
                 // Store command data and output for plan creation
                 project.service<RunningCommandService>().storeCompletedCommand(
-                    commandData.copy(
-                        message = "Create plan from: ${commandData.message}",
-                        aiderMode = AiderMode.STRUCTURED
-                    ),
+                    commandData,
                     lastContent
                 )
                 

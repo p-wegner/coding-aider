@@ -3,6 +3,8 @@ package de.andrena.codingaider.services
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
+import de.andrena.codingaider.executors.api.IDEBasedExecutor
+import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.outputview.MarkdownDialog
 import javax.swing.DefaultListModel
 import javax.swing.JOptionPane
@@ -57,9 +59,7 @@ class RunningCommandService {
                     3. Any follow-up tasks identified
                 """.trimIndent(),
                 aiderMode = AiderMode.STRUCTURED,
-                files = command.files + project.service<AiderPlanService>()
-                    .getAiderPlans()
-                    .flatMap { it.allFiles },
+                files = command.files,
                 options = command.options.copy(
                     disablePresentation = false,
                     autoCloseDelay = 10
