@@ -4,9 +4,17 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+import com.fasterxml.jackson.module.kotlin.KotlinModule
+import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.model.ContextFileHandler
 import java.io.File
+import java.io.IOException
+import java.nio.file.Paths
+import java.text.SimpleDateFormat
+import java.util.Date
 
 
 @Service(Service.Level.PROJECT)
