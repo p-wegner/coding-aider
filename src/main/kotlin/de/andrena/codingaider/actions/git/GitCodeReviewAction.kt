@@ -19,6 +19,7 @@ import java.io.File
 
 class GitCodeReviewAction : AnAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+    
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         
@@ -32,39 +33,64 @@ class GitCodeReviewAction : AnAction() {
         }
         
         try {
+            // Show dialog to select commits
             val dialog = GitCodeReviewDialog(project)
             if (!dialog.showAndGet()) return
 
             val (fromRef, toRef) = dialog.getSelectedRefs()
             val prompt = dialog.getPrompt()
 
-            var diffResult: GitDiffUtils.DiffResult? = null
-            val success = ProgressManager.getInstance().runProcessWithProgressSynchronously(
-                {
-                    try {
-                        diffResult = GitDiffUtils.getChangedFiles(project, fromRef, toRef)
-                    } catch (ex: VcsException) {
-                        showNotification(
-                            project,
-                            "Failed to get changed files: ${ex.message}",
-                            NotificationType.ERROR
-                        )
-                        return@runProcessWithProgressSynchronously
-                    }
-                    true
-                },
-                "Getting Changed Files...",
-                true,
-                project
+            // Perform the review with the selected commits
+            performReview(project, fromRef, toRef, prompt)
+        } catch (ex: Exception) {
+            showNotification(
+                project,
+                "An error occurred during code review: ${ex.message}",
+                NotificationType.ERROR
             )
-            
-            if (!success) return
+        }
+    }
 
-            val settings = AiderSettings.getInstance()
-            // Save diff content to file
-            val diffFile = File("${project.basePath}/.coding-aider-plans/git_code_review_diff.md")
-            diffFile.parentFile.mkdirs()
-            diffFile.writeText("""[Git Code Review Diff]
+    companion object {
+        /**
+         * Performs a code review between two commits.
+         * This method can be called directly from other actions with pre-selected commits.
+         */
+        fun performReview(
+            project: Project, 
+            fromRef: String, 
+            toRef: String, 
+            prompt: String? = null
+        ) {
+            try {
+                var diffResult: GitDiffUtils.DiffResult? = null
+                val success = ProgressManager.getInstance().runProcessWithProgressSynchronously(
+                    {
+                        try {
+                            diffResult = GitDiffUtils.getChangedFiles(project, fromRef, toRef)
+                        } catch (ex: VcsException) {
+                            showNotification(
+                                project,
+                                "Failed to get changed files: ${ex.message}",
+                                NotificationType.ERROR
+                            )
+                            return@runProcessWithProgressSynchronously
+                        }
+                        true
+                    },
+                    "Getting Changed Files...",
+                    true,
+                    project
+                )
+                
+                if (!success) return
+
+                val settings = AiderSettings.getInstance()
+                
+                // Save diff content to file
+                val diffFile = File("${project.basePath}/.coding-aider-plans/git_code_review_diff.md")
+                diffFile.parentFile.mkdirs()
+                diffFile.writeText("""[Git Code Review Diff]
 
 This file contains the git diff content for code review analysis.
 
@@ -72,48 +98,66 @@ This file contains the git diff content for code review analysis.
 ${diffResult?.diffContent ?: "No diff content available"}
 ```""")
 
-            // Create command data including the diff file
-            val allFiles = (diffResult?.files ?: emptyList()) + 
-                FileData(diffFile.absolutePath, true)
-            
-            val commandData = CommandData(
-                message = """Review the code changes between Git refs '$fromRef' and '$toRef'.
-                    |
-                    |Pay special attention to:
-                    |$prompt
-                    |
-                    |Please analyze and provide:
-                    |1. A concise summary of the changes
-                    |2. Potential issues, bugs, or security concerns
-                    |3. Specific suggestions for improvements
-                    |4. Code quality assessment (patterns, practices, maintainability)
-                    |5. Performance considerations
-                    |
-                    |The git diff content is available in the git_code_review_diff.md file."""
-                    .trimMargin(),
-                useYesFlag = settings.useYesFlag,
-                llm = settings.llm,
-                additionalArgs = settings.additionalArgs,
-                files = allFiles,
-                lintCmd = settings.lintCmd,
-                deactivateRepoMap = settings.deactivateRepoMap,
-                editFormat = settings.editFormat,
-                projectPath = project.basePath ?: "",
-                options = CommandOptions(
-                    commitHashToCompareWith = fromRef,
-                    summarizedOutput = true
-                ),
-                sidecarMode = settings.useSidecarMode
-            )
+                // Use default prompt if none provided
+                val reviewPrompt = prompt ?: """
+                    |1. Code quality and best practices
+                    |2. Potential bugs or issues
+                    |3. Performance implications
+                    |4. Security considerations
+                    |5. Design patterns and architecture
+                    |6. Test coverage
+                    |7. Documentation needs
+                """.trimMargin()
 
-            IDEBasedExecutor(project, commandData).execute()
+                // Create command data including the diff file
+                val allFiles = (diffResult?.files ?: emptyList()) + 
+                    FileData(diffFile.absolutePath, true)
+                
+                val commandData = CommandData(
+                    message = """Review the code changes between Git refs '$fromRef' and '$toRef'.
+                        |
+                        |Pay special attention to:
+                        |$reviewPrompt
+                        |
+                        |Please analyze and provide:
+                        |1. A concise summary of the changes
+                        |2. Potential issues, bugs, or security concerns
+                        |3. Specific suggestions for improvements
+                        |4. Code quality assessment (patterns, practices, maintainability)
+                        |5. Performance considerations
+                        |
+                        |The git diff content is available in the git_code_review_diff.md file."""
+                        .trimMargin(),
+                    useYesFlag = settings.useYesFlag,
+                    llm = settings.llm,
+                    additionalArgs = settings.additionalArgs,
+                    files = allFiles,
+                    lintCmd = settings.lintCmd,
+                    deactivateRepoMap = settings.deactivateRepoMap,
+                    editFormat = settings.editFormat,
+                    projectPath = project.basePath ?: "",
+                    options = CommandOptions(
+                        commitHashToCompareWith = fromRef,
+                        summarizedOutput = true
+                    ),
+                    sidecarMode = settings.useSidecarMode
+                )
 
-        } catch (ex: Exception) {
-            showNotification(
-                project,
-                "An error occurred during code review: ${ex.message}",NotificationType.ERROR
+                IDEBasedExecutor(project, commandData).execute()
+            } catch (ex: Exception) {
+                showNotification(
+                    project,
+                    "An error occurred during code review: ${ex.message}",
+                    NotificationType.ERROR
+                )
+            }
+        }
 
-            )
+        private fun showNotification(project: Project, content: String, type: NotificationType) {
+            NotificationGroupManager.getInstance()
+                .getNotificationGroup("Coding Aider Notifications")
+                .createNotification(content, type)
+                .notify(project)
         }
     }
 
@@ -124,11 +168,11 @@ ${diffResult?.diffContent ?: "No diff content available"}
             false
         }
     }
+    
     private fun showNotification(project: Project, content: String, type: NotificationType) {
         NotificationGroupManager.getInstance()
-            .getNotificationGroup("Aider Clipboard Image")
+            .getNotificationGroup("Coding Aider Notifications")
             .createNotification(content, type)
             .notify(project)
     }
-
 }

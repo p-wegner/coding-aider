@@ -16,7 +16,11 @@ import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
 import javax.swing.*
 
-class GitCodeReviewDialog(private val project: Project) : DialogWrapper(project) {
+class GitCodeReviewDialog(
+    private val project: Project,
+    private val preselectedBaseRef: String? = null,
+    private val preselectedTargetRef: String? = null
+) : DialogWrapper(project) {
     private val baseRefComboBox = GitRefComboBox(project)
     private val targetRefComboBox = GitRefComboBox(project)
     private val baseRefTypeCombo = ComboBox(GitRefComboBox.RefType.values())
@@ -41,6 +45,18 @@ class GitCodeReviewDialog(private val project: Project) : DialogWrapper(project)
     init {
         title = "Git Code Review"
         setupRefTypeListeners()
+        
+        // Set preselected values if provided
+        if (preselectedBaseRef != null) {
+            baseRefComboBox.setText(preselectedBaseRef)
+            baseRefTypeCombo.selectedItem = GitRefComboBox.RefType.ANY_REF
+        }
+        
+        if (preselectedTargetRef != null) {
+            targetRefComboBox.setText(preselectedTargetRef)
+            targetRefTypeCombo.selectedItem = GitRefComboBox.RefType.ANY_REF
+        }
+        
         init()
     }
 

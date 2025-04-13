@@ -25,6 +25,9 @@ class GitRefComboBox(project: Project) {
 
     fun getText(): String = completionField.text
 
+    fun setText(text: String) {
+        completionField.text = text
+    }
 
     fun setMode(mode: RefType) {
         currentMode = mode
