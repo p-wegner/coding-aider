@@ -153,7 +153,7 @@ ${diffResult?.diffContent ?: "No diff content available"}
             }
         }
 
-        private fun showNotification(project: Project, content: String, type: NotificationType) {
+        fun showNotification(project: Project, content: String, type: NotificationType) {
             NotificationGroupManager.getInstance()
                 .getNotificationGroup("Coding Aider Notifications")
                 .createNotification(content, type)

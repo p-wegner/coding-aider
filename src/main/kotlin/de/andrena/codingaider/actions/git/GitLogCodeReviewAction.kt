@@ -1,13 +1,10 @@
 package de.andrena.codingaider.actions.git
 
-import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.project.Project
 import com.intellij.vcs.log.VcsLogCommitSelection
-import git4idea.GitUtil
 import com.intellij.vcs.log.VcsLogDataKeys
 
 /**
