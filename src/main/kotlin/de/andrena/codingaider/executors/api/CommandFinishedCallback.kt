@@ -1,5 +1,5 @@
 package de.andrena.codingaider.executors.api
 
-fun interface CommandFinishedCallback {
+interface CommandFinishedCallback {
     fun onCommandFinished(success: Boolean)
 }
