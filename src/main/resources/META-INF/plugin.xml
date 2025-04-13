@@ -312,6 +312,15 @@
                 <add-to-group group-id="TestTreePopupMenu" anchor="first"/>
             </action>
         </group>
+        
+        <!-- Git Log Code Review Action -->
+        <action id="de.andrena.codingaider.actions.git.GitLogCodeReviewAction"
+                class="de.andrena.codingaider.actions.git.GitLogCodeReviewAction"
+                text="Review Changes with Aider"
+                description="Review selected commits with Aider AI"
+                icon="MyIcons.Tool">
+            <add-to-group group-id="Vcs.Log.ContextMenu" anchor="last"/>
+        </action>
 
     </actions>
 
