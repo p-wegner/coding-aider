@@ -42,6 +42,13 @@ Examples:
         super.init()
     }
 
+    override fun createActions(): Array<Action> {
+        val actions = super.createActions()
+        (actions[0] as? DialogWrapperAction)?.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_O)
+        (actions[1] as? DialogWrapperAction)?.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_C)
+        return actions
+    }
+
     override fun createCenterPanel(): JComponent {
         // Create markdown viewer and scroll pane
         val markdownViewer = MarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {

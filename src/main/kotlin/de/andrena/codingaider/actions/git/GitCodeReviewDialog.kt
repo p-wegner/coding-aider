@@ -39,6 +39,13 @@ class GitCodeReviewDialog(
     private var selectedFiles: List<FileData> = emptyList()
     private var baseCommit: String = ""
 
+    override fun createActions(): Array<Action> {
+        val actions = super.createActions()
+        (actions[0] as? DialogWrapperAction)?.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_O)
+        (actions[1] as? DialogWrapperAction)?.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_C)
+        return actions
+    }
+
     init {
         title = "Git Code Review"
         // Set preselected values if provided
