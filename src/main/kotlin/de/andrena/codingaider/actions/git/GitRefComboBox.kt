@@ -32,13 +32,13 @@ class GitRefComboBox(project: Project) {
 
     private class BranchCompletionProvider(private val repository: GitRepository?) :
         TextFieldWithAutoCompletion.StringsCompletionProvider(
-            emptyList(),  // Start empty, we'll update variants dynamically
+            repository?.let { 
+                it.getLocalBranches().emptyOnNull() + it.getTags().emptyOnNull()
+            } ?: emptyList(),
             null
         ) {
-        fun getVariants(): Collection<String> {
-            return repository?.let { 
-                it.getLocalBranches().emptyOnNull() + it.getTags().emptyOnNull() 
-            } ?: emptyList()
+        override fun getVariants(): Collection<String> {
+            return super.getVariants()  // Use the variants we initialized with
         }
 
         override fun getLookupString(prefix: String): String {
