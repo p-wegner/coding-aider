@@ -35,7 +35,7 @@ class GitRefComboBox(project: Project) {
             emptyList(),  // Start empty, we'll update variants dynamically
             null
         ) {
-        override fun getVariants(): Collection<String> {
+        fun getVariants(): Collection<String> {
             return repository?.let { 
                 it.getLocalBranches().emptyOnNull() + it.getTags().emptyOnNull() 
             } ?: emptyList()
