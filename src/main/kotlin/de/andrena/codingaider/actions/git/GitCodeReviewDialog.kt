@@ -92,34 +92,44 @@ class GitCodeReviewDialog(
             gridx = 0; gridy = 0
             weightx = 0.0; anchor = GridBagConstraints.LINE_START
         }
-        refSelectionPanel.add(JLabel("Base:"), gbc)
+        refSelectionPanel.add(JLabel("Base Ref:"), gbc)
         
         gbc.apply {
             gridx = 1; weightx = 0.3
         }
-        refSelectionPanel.add(baseRefTypeCombo, gbc)
+        refSelectionPanel.add(JLabel("Type:"), gbc)
         
         gbc.apply {
             gridx = 2; weightx = 0.7
         }
         refSelectionPanel.add(baseRefComboBox.getComponent(), gbc)
 
+        gbc.apply {
+            gridx = 3; weightx = 0.2
+        }
+        refSelectionPanel.add(baseRefTypeCombo, gbc)
+
         // Target Reference
         gbc.apply {
             gridx = 0; gridy = 1
             weightx = 0.0
         }
-        refSelectionPanel.add(JLabel("Target:"), gbc)
+        refSelectionPanel.add(JLabel("Target Ref:"), gbc)
         
         gbc.apply {
             gridx = 1; weightx = 0.3
         }
-        refSelectionPanel.add(targetRefTypeCombo, gbc)
+        refSelectionPanel.add(JLabel("Type:"), gbc)
         
         gbc.apply {
             gridx = 2; weightx = 0.7
         }
         refSelectionPanel.add(targetRefComboBox.getComponent(), gbc)
+
+        gbc.apply {
+            gridx = 3; weightx = 0.2
+        }
+        refSelectionPanel.add(targetRefTypeCombo, gbc)
 
         // Add Reference Selection Panel to main panel
         gbc.apply {

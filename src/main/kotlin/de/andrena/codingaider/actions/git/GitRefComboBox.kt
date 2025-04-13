@@ -41,12 +41,19 @@ class GitRefComboBox(project: Project) {
     private fun getRefList(): List<String> {
         return when (currentMode) {
             RefType.BRANCH -> repository?.branches?.localBranches?.map { it.name } ?: emptyList()
-            RefType.ANY_REF ->  emptyList()
+            RefType.ANY_REF -> {
+                val tags = repository?.tags?.map { it.name } ?: emptyList()
+                val branches = repository?.branches?.localBranches?.map { it.name } ?: emptyList()
+                tags + branches
+            }
         }
     }
 
     private class BranchCompletionProvider(private val repository: GitRepository?) :
-        TextFieldWithAutoCompletion.StringsCompletionProvider(repository?.branches?.localBranches?.map { it.name } ?: emptyList(), null) {
-        
+        TextFieldWithAutoCompletion.StringsCompletionProvider(
+            (repository?.branches?.localBranches?.map { it.name } ?: emptyList()) + 
+            (repository?.tags?.map { it.name } ?: emptyList()), 
+            null
+        ) {
     }
 }
