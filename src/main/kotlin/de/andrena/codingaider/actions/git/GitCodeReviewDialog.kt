@@ -23,9 +23,6 @@ class GitCodeReviewDialog(
 ) : DialogWrapper(project) {
     private val baseRefComboBox = GitRefComboBox(project)
     private val targetRefComboBox = GitRefComboBox(project)
-    private val baseRefTypeCombo = ComboBox(GitRefComboBox.RefType.values())
-    private val targetRefTypeCombo = ComboBox(GitRefComboBox.RefType.values())
-    
     private val promptArea = JBTextArea().apply {
         lineWrap = true
         wrapStyleWord = true
@@ -44,30 +41,18 @@ class GitCodeReviewDialog(
 
     init {
         title = "Git Code Review"
-        setupRefTypeListeners()
-        
         // Set preselected values if provided
         if (preselectedBaseRef != null) {
             baseRefComboBox.setText(preselectedBaseRef)
-            baseRefTypeCombo.selectedItem = GitRefComboBox.RefType.ANY_REF
         }
         
         if (preselectedTargetRef != null) {
             targetRefComboBox.setText(preselectedTargetRef)
-            targetRefTypeCombo.selectedItem = GitRefComboBox.RefType.ANY_REF
         }
         
         init()
     }
 
-    private fun setupRefTypeListeners() {
-        baseRefTypeCombo.addActionListener {
-            baseRefComboBox.setMode(baseRefTypeCombo.selectedItem as GitRefComboBox.RefType)
-        }
-        targetRefTypeCombo.addActionListener {
-            targetRefComboBox.setMode(targetRefTypeCombo.selectedItem as GitRefComboBox.RefType)
-        }
-    }
 
     override fun createCenterPanel(): JComponent {
         val panel = JPanel(GridBagLayout())
@@ -106,18 +91,6 @@ class GitCodeReviewDialog(
         }
         refSelectionPanel.add(baseRefComboBox.getComponent(), gbc)
 
-        gbc.apply {
-            gridx = 2; gridy = 1
-            weightx = 0.0
-        }
-        refSelectionPanel.add(JLabel("Type:"), gbc)
-
-        gbc.apply {
-            gridx = 3; gridy = 1
-            weightx = 0.3
-        }
-        refSelectionPanel.add(baseRefTypeCombo, gbc)
-
         // Target Reference
         gbc.apply {
             gridx = 0; gridy = 2
@@ -137,18 +110,6 @@ class GitCodeReviewDialog(
         }
         refSelectionPanel.add(targetRefComboBox.getComponent(), gbc)
 
-        gbc.apply {
-            gridx = 2; gridy = 3
-            weightx = 0.0
-        }
-        refSelectionPanel.add(JLabel("Type:"), gbc)
-
-        gbc.apply {
-            gridx = 3; gridy = 3
-            weightx = 0.3
-        }
-        refSelectionPanel.add(targetRefTypeCombo, gbc)
-
         // Help text
         gbc.apply {
             gridx = 0; gridy = 2
@@ -156,7 +117,7 @@ class GitCodeReviewDialog(
             weightx = 1.0
             fill = GridBagConstraints.HORIZONTAL
         }
-        refSelectionPanel.add(JLabel("<html><i>Select 'Any Ref' to choose from both branches and tags</i></html>"), gbc)
+        refSelectionPanel.add(JLabel("<html><i>Enter or select a branch name or tag</i></html>"), gbc)
 
         // Add Reference Selection Panel to main panel
         gbc.apply {

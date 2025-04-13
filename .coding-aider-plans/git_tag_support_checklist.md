@@ -1,6 +1,6 @@
 [Coding Aider Plan - Checklist]
 
-- [ ] Remove ref type dropdown from GitCodeReviewDialog
+- [x] Remove ref type dropdown from GitCodeReviewDialog
 - [ ] Update GitRefComboBox to always show both branches and tags
 - [ ] Add visual indicators for tag vs branch in completion
-- [ ] Update help text to explain tag/branch support
+- [x] Update help text to explain tag/branch support

@@ -8,11 +8,6 @@ import javax.swing.JComponent
 
 class GitRefComboBox(project: Project) {
     private val repository: GitRepository? = GitUtil.getRepositoryManager(project).repositories.firstOrNull()
-    private var currentMode: RefType = RefType.BRANCH
-
-    enum class RefType {
-        BRANCH, ANY_REF
-    }
 
     private val completionField = TextFieldWithAutoCompletion(
         project,
@@ -29,24 +24,10 @@ class GitRefComboBox(project: Project) {
         completionField.text = text
     }
 
-    fun setMode(mode: RefType) {
-        currentMode = mode
-        updateCompletions()
-    }
-
-    private fun updateCompletions() {
-        completionField.setVariants(getRefList())
-    }
-
     private fun getRefList(): List<String> {
-        return when (currentMode) {
-            RefType.BRANCH -> repository?.getLocalBranches().emptyOnNull()
-            RefType.ANY_REF -> {
-                val tags = repository?.getTags().emptyOnNull()
-                val branches = repository?.getLocalBranches().emptyOnNull()
-                tags + branches
-            }
-        }
+        val tags = repository?.getTags().emptyOnNull()
+        val branches = repository?.getLocalBranches().emptyOnNull()
+        return tags + branches
     }
 
     private class BranchCompletionProvider(private val repository: GitRepository?) :
