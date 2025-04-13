@@ -7,10 +7,12 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vcs.VcsDataKeys
 import com.intellij.openapi.vcs.changes.Change
 import com.intellij.vcs.log.VcsCommitMetadata
 import git4idea.GitUtil
+import git4idea.history.browser.CommitMetadata
+import git4idea.vfs.GitVcsRoot
+import com.intellij.vcs.log.VcsLogDataKeys
 
 /**
  * Action that can be triggered from the Git log window to review changes between selected commits.
