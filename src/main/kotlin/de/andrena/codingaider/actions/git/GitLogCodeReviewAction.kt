@@ -20,17 +20,17 @@ class GitLogCodeReviewAction : AnAction() {
 
     override fun update(e: AnActionEvent) {
         val project = e.project
-        val selectedCommits = e.getData(VcsDataKeys.SELECTED_CHANGES_IN_DETAILS)
-
+        val commitSelection = e.getData(VcsLogDataKeys.VCS_LOG_COMMIT_SELECTION)
+        
         // Enable the action only when exactly two commits are selected
-        e.presentation.isEnabled = project != null && selectedCommits != null && selectedCommits.size == 2
+        e.presentation.isEnabled = project != null && commitSelection != null && commitSelection.size() == 2
     }
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        val selectedCommits = e.getData(VcsDataKeys.SELECTED_CHANGES_IN_DETAILS) ?: return
+        val commitSelection = e.getData(VcsLogDataKeys.VCS_LOG_COMMIT_SELECTION) ?: return
 
-        if (selectedCommits.size != 2) {
+        if (commitSelection.size() != 2) {
             showNotification(
                 project,
                 "Please select exactly two commits to compare",
@@ -48,8 +48,12 @@ class GitLogCodeReviewAction : AnAction() {
             return
         }
 
+        // Get commit hashes from selection
+        val commits = commitSelection.cachedMetadata
+        if (commits.size < 2) return
+        
         // Sort commits chronologically (older first)
-        val sortedCommits = selectedCommits.sortedBy { it: Change -> it.afterRevision?.revisionNumber }
+        val sortedCommits = commits.sortedBy { it.commitTime }
         val baseCommit = sortedCommits[0].id.asString()
         val targetCommit = sortedCommits[1].id.asString()
 
