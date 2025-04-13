@@ -92,42 +92,60 @@ class GitCodeReviewDialog(
             gridx = 0; gridy = 0
             weightx = 0.0; anchor = GridBagConstraints.LINE_START
         }
-        refSelectionPanel.add(JLabel("Base Ref:"), gbc)
+        refSelectionPanel.add(JLabel("<html><b>Base Reference:</b></html>"), gbc)
         
         gbc.apply {
-            gridx = 1; weightx = 0.3
+            gridx = 0; gridy = 1
+            weightx = 0.0
         }
-        refSelectionPanel.add(JLabel("Type:"), gbc)
+        refSelectionPanel.add(JLabel("Ref:"), gbc)
         
         gbc.apply {
-            gridx = 2; weightx = 0.7
+            gridx = 1; gridy = 1
+            weightx = 0.7
         }
         refSelectionPanel.add(baseRefComboBox.getComponent(), gbc)
 
         gbc.apply {
-            gridx = 3; weightx = 0.2
+            gridx = 2; gridy = 1
+            weightx = 0.0
+        }
+        refSelectionPanel.add(JLabel("Type:"), gbc)
+
+        gbc.apply {
+            gridx = 3; gridy = 1
+            weightx = 0.3
         }
         refSelectionPanel.add(baseRefTypeCombo, gbc)
 
         // Target Reference
         gbc.apply {
-            gridx = 0; gridy = 1
+            gridx = 0; gridy = 2
             weightx = 0.0
         }
-        refSelectionPanel.add(JLabel("Target Ref:"), gbc)
+        refSelectionPanel.add(JLabel("<html><b>Target Reference:</b></html>"), gbc)
         
         gbc.apply {
-            gridx = 1; weightx = 0.3
+            gridx = 0; gridy = 3
+            weightx = 0.0
         }
-        refSelectionPanel.add(JLabel("Type:"), gbc)
+        refSelectionPanel.add(JLabel("Ref:"), gbc)
         
         gbc.apply {
-            gridx = 2; weightx = 0.7
+            gridx = 1; gridy = 3
+            weightx = 0.7
         }
         refSelectionPanel.add(targetRefComboBox.getComponent(), gbc)
 
         gbc.apply {
-            gridx = 3; weightx = 0.2
+            gridx = 2; gridy = 3
+            weightx = 0.0
+        }
+        refSelectionPanel.add(JLabel("Type:"), gbc)
+
+        gbc.apply {
+            gridx = 3; gridy = 3
+            weightx = 0.3
         }
         refSelectionPanel.add(targetRefTypeCombo, gbc)
 
