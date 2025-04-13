@@ -1,5 +1,6 @@
 [Coding Aider Plan - Checklist]
 
-- [x] Update GitRefComboBox to fetch tags in ANY_REF mode
-- [x] Modify completion provider to handle both branches and tags
-- [x] Improve dialog UI with clear ref type labels
+- [ ] Remove ref type dropdown from GitCodeReviewDialog
+- [ ] Update GitRefComboBox to always show both branches and tags
+- [ ] Add visual indicators for tag vs branch in completion
+- [ ] Update help text to explain tag/branch support

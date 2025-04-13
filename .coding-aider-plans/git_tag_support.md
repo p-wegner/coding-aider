@@ -12,9 +12,9 @@ Currently, the GitCodeReviewDialog only supports selecting branches when compari
 3. Clearly understand what type of reference they're selecting
 
 ## Goals
-1. Modify GitRefComboBox to fetch and display tags
-2. Update the completion provider to handle both branches and tags
-3. Improve the dialog UI to make ref type selection clearer
+1. Modify GitRefComboBox to always show both branches and tags in completion
+2. Update the UI to clearly indicate tag vs branch selections
+3. Remove the ref type dropdown to simplify the interface
 4. Maintain all existing functionality
 5. Ensure consistent behavior with the GitLogCodeReviewAction
 
