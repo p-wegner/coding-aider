@@ -9,7 +9,7 @@ import javax.swing.JComponent
 class GitRefComboBox(project: Project) {
     private val repository: GitRepository? = GitUtil.getRepositoryManager(project).repositories.firstOrNull()
     private var currentMode: RefType = RefType.BRANCH
-    
+
     enum class RefType {
         BRANCH, ANY_REF
     }
@@ -40,10 +40,10 @@ class GitRefComboBox(project: Project) {
 
     private fun getRefList(): List<String> {
         return when (currentMode) {
-            RefType.BRANCH -> repository?.branches?.localBranches?.map { it.name } ?: emptyList()
+            RefType.BRANCH -> repository?.getLocalBranches().emptyOnNull()
             RefType.ANY_REF -> {
-                val tags = repository?.tags?.map { it.name } ?: emptyList()
-                val branches = repository?.branches?.localBranches?.map { it.name } ?: emptyList()
+                val tags = repository?.getTags().emptyOnNull()
+                val branches = repository?.getLocalBranches().emptyOnNull()
                 tags + branches
             }
         }
@@ -54,10 +54,15 @@ class GitRefComboBox(project: Project) {
             emptyList(),  // Start empty, we'll update variants dynamically
             null
         ) {
-        override fun getItems(prefix: String?): MutableCollection<String> {
-            return (repository?.branches?.localBranches?.map { it.name } ?: emptyList()) +
-                   (repository?.tags?.map { it.name } ?: emptyList())
-                   .toMutableList()
+        override fun getLookupString(prefix: String): String {
+            val value: List<String> = repository?.getLocalBranches().emptyOnNull() + repository?.getTags().emptyOnNull()
+            return value.firstOrNull { it.startsWith(prefix) } ?: prefix
         }
+
     }
+
 }
+
+fun List<String>?.emptyOnNull(): List<String> = this ?: emptyList()
+fun GitRepository.getTags(): List<String> = this.tagHolder.getTags().keys.map { it.name }
+fun GitRepository.getLocalBranches(): List<String> = this.branches.localBranches.map { it.name }
