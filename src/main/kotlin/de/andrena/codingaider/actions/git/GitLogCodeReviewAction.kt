@@ -5,13 +5,9 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
-import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.vcs.changes.Change
-import com.intellij.vcs.log.VcsCommitMetadata
+import com.intellij.vcs.log.VcsLogCommitSelection
 import git4idea.GitUtil
-import git4idea.history.browser.CommitMetadata
-import git4idea.vfs.GitVcsRoot
 import com.intellij.vcs.log.VcsLogDataKeys
 
 /**
@@ -22,17 +18,17 @@ class GitLogCodeReviewAction : AnAction() {
 
     override fun update(e: AnActionEvent) {
         val project = e.project
-        val commitSelection = e.getData(VcsLogDataKeys.VCS_LOG_COMMIT_SELECTION)
+        val commitSelection: VcsLogCommitSelection? = e.getData(VcsLogDataKeys.VCS_LOG_COMMIT_SELECTION)
         
         // Enable the action only when exactly two commits are selected
-        e.presentation.isEnabled = project != null && commitSelection != null && commitSelection.size() == 2
+        e.presentation.isEnabled = project != null && commitSelection != null && commitSelection.commits.size == 2
     }
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val commitSelection = e.getData(VcsLogDataKeys.VCS_LOG_COMMIT_SELECTION) ?: return
 
-        if (commitSelection.size() != 2) {
+        if (commitSelection.commits.size != 2) {
             showNotification(
                 project,
                 "Please select exactly two commits to compare",
