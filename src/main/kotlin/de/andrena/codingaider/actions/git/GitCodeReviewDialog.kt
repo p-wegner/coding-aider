@@ -131,6 +131,15 @@ class GitCodeReviewDialog(
         }
         refSelectionPanel.add(targetRefTypeCombo, gbc)
 
+        // Help text
+        gbc.apply {
+            gridx = 0; gridy = 2
+            gridwidth = 4
+            weightx = 1.0
+            fill = GridBagConstraints.HORIZONTAL
+        }
+        refSelectionPanel.add(JLabel("<html><i>Select 'Any Ref' to choose from both branches and tags</i></html>"), gbc)
+
         // Add Reference Selection Panel to main panel
         gbc.apply {
             gridx = 0; gridy = 0
