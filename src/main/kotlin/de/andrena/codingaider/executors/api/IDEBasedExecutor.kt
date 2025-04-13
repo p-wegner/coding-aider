@@ -19,10 +19,6 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.concurrent.thread
 
-fun interface CommandFinishedCallback {
-    fun onCommandFinished(success: Boolean)
-}
-
 class IDEBasedExecutor(
     private val project: Project,
     private val commandData: CommandData,
