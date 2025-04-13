@@ -2,6 +2,8 @@ package de.andrena.codingaider.actions.git
 
 import com.intellij.openapi.project.Project
 import com.intellij.ui.TextFieldWithAutoCompletion
+import de.andrena.codingaider.actions.git.getLocalBranches
+import de.andrena.codingaider.actions.git.getTags
 import git4idea.GitUtil
 import git4idea.repo.GitRepository
 import javax.swing.JComponent
@@ -24,22 +26,14 @@ class GitRefComboBox(project: Project) {
         completionField.text = text
     }
 
-    private fun getRefList(): List<String> {
-        val tags = repository?.getTags().emptyOnNull()
-        val branches = repository?.getLocalBranches().emptyOnNull()
-        return tags + branches
-    }
 
     private class BranchCompletionProvider(private val repository: GitRepository?) :
         TextFieldWithAutoCompletion.StringsCompletionProvider(
-            repository?.let { 
-                it.getLocalBranches().emptyOnNull() + it.getTags().emptyOnNull()
-            } ?: emptyList(),
+            repository?.getLocalBranches().emptyOnNull() + repository?.getTags().emptyOnNull(),
             null
         ) {
-        override fun getVariants(): Collection<String> {
-            return super.getVariants()  // Use the variants we initialized with
-        }
+        fun getVariants() =
+            repository?.getLocalBranches().emptyOnNull() + repository?.getTags().emptyOnNull()  // Use the variants we initialized with
 
         override fun getLookupString(prefix: String): String {
             val variants = getVariants()

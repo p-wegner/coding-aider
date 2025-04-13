@@ -77,8 +77,7 @@ class GitCodeReviewDialog(
             gridx = 0; gridy = 0
             weightx = 0.0; anchor = GridBagConstraints.LINE_START
         }
-        refSelectionPanel.add(JLabel("<html><b>Base Reference:</b></html>"), gbc)
-        
+
         gbc.apply {
             gridx = 0; gridy = 1
             weightx = 0.0
@@ -96,8 +95,7 @@ class GitCodeReviewDialog(
             gridx = 0; gridy = 2
             weightx = 0.0
         }
-        refSelectionPanel.add(JLabel("<html><b>Target Reference:</b></html>"), gbc)
-        
+
         gbc.apply {
             gridx = 0; gridy = 3
             weightx = 0.0
@@ -117,7 +115,7 @@ class GitCodeReviewDialog(
             weightx = 1.0
             fill = GridBagConstraints.HORIZONTAL
         }
-        refSelectionPanel.add(JLabel("<html><i>Enter or select a branch name or tag</i></html>"), gbc)
+        refSelectionPanel.add(JLabel("<html><i>Enter any git ref, i.e. a branch name, tag or commit hash</i></html>"), gbc)
 
         // Add Reference Selection Panel to main panel
         gbc.apply {
