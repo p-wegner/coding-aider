@@ -8,6 +8,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.VcsDataKeys
+import com.intellij.openapi.vcs.changes.Change
 import com.intellij.vcs.log.VcsCommitMetadata
 import git4idea.GitUtil
 
@@ -19,16 +20,16 @@ class GitLogCodeReviewAction : AnAction() {
 
     override fun update(e: AnActionEvent) {
         val project = e.project
-        val selectedCommits = e.getData(VcsDataKeys.VCS_COMMIT_ITEMS_ARRAY)
-        
+        val selectedCommits = e.getData(VcsDataKeys.SELECTED_CHANGES_IN_DETAILS)
+
         // Enable the action only when exactly two commits are selected
         e.presentation.isEnabled = project != null && selectedCommits != null && selectedCommits.size == 2
     }
 
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        val selectedCommits = e.getData(VcsDataKeys.VCS_COMMIT_ITEMS_ARRAY) ?: return
-        
+        val selectedCommits = e.getData(VcsDataKeys.SELECTED_CHANGES_IN_DETAILS) ?: return
+
         if (selectedCommits.size != 2) {
             showNotification(
                 project,
@@ -48,7 +49,7 @@ class GitLogCodeReviewAction : AnAction() {
         }
 
         // Sort commits chronologically (older first)
-        val sortedCommits = selectedCommits.sortedBy { it.commitTime }
+        val sortedCommits = selectedCommits.sortedBy { it: Change -> it.afterRevision?.revisionNumber }
         val baseCommit = sortedCommits[0].id.asString()
         val targetCommit = sortedCommits[1].id.asString()
 
