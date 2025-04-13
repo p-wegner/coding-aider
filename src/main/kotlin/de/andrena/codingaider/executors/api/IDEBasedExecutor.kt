@@ -135,6 +135,8 @@ class IDEBasedExecutor(
         if (!commandData.options.disablePresentation) {
             presentChanges()
         }
+        // Store the completed command data and output
+        project.service<RunningCommandService>().storeCompletedCommand(commandData, message)
         commandFinishedCallback?.onCommandFinished(exitCode == 0)
     }
 

@@ -119,14 +119,8 @@ class MarkdownDialog(
             try {
                 createPlanButton.isEnabled = false
                 createPlanButton.text = "Creating Plan..."
-                
-                // Store command data and output for plan creation
-                project.service<RunningCommandService>().storeCompletedCommand(
-                    commandData,
-                    lastContent
-                )
-                
-                // Trigger plan creation with structured mode
+
+                // Trigger plan creation using the already stored command data and output
                 project.service<RunningCommandService>().createPlanFromLastCommand(project)
                 
                 dispose()
