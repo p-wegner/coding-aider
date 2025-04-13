@@ -80,8 +80,6 @@ class RunningCommandService {
         }
     }
 
-    fun getLastCommandOutput(): String? = lastCommandOutput
-    fun getLastCommandData(): CommandData? = lastCompletedCommand
-    
+
     fun hasCompletedCommand(): Boolean = lastCompletedCommand != null && lastCommandOutput != null
 }
