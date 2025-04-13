@@ -75,18 +75,20 @@ class PersistentFileService(private val project: Project) {
     }
 
     fun getPersistentFiles(): List<FileData> {
-        // Clean up persistent files that no longer exist or are now ignored
-        val validFiles = persistentFiles.filter { fileData ->
-            val virtualFile = LocalFileSystem.getInstance().findFileByPath(fileData.filePath)
-            (virtualFile?.exists() ?: false) && !isIgnored(fileData.filePath)
-        }
+        // Return current list immediately while we check validity in background
+        ApplicationManager.getApplication().executeOnPooledThread {
+            // Clean up persistent files that no longer exist or are now ignored
+            val validFiles = persistentFiles.filter { fileData ->
+                val virtualFile = LocalFileSystem.getInstance().findFileByPath(fileData.filePath)
+                (virtualFile?.exists() ?: false) && !isIgnored(fileData.filePath)
+            }
 
-        if (validFiles.size != persistentFiles.size) {
-            persistentFiles.clear()
-            persistentFiles.addAll(validFiles)
-            savePersistentFilesToContextFile()
+            if (validFiles.size != persistentFiles.size) {
+                persistentFiles.clear()
+                persistentFiles.addAll(validFiles)
+                savePersistentFilesToContextFile()
+            }
         }
-
         return persistentFiles
     }
 
