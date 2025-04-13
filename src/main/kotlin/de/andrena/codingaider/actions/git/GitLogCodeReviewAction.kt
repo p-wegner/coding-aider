@@ -29,18 +29,9 @@ class GitLogCodeReviewAction : AnAction() {
         val commitSelection = e.getData(VcsLogDataKeys.VCS_LOG_COMMIT_SELECTION) ?: return
 
         if (commitSelection.commits.size != 2) {
-            showNotification(
+            GitCodeReviewAction.showNotification(
                 project,
                 "Please select exactly two commits to compare",
-                NotificationType.ERROR
-            )
-            return
-        }
-
-        if (!isGitAvailable(project)) {
-            showNotification(
-                project,
-                "This action requires a Git repository",
                 NotificationType.ERROR
             )
             return
@@ -55,22 +46,15 @@ class GitLogCodeReviewAction : AnAction() {
         val baseCommit = sortedCommits[0].id.asString()
         val targetCommit = sortedCommits[1].id.asString()
 
-        // Launch the code review with the selected commits
-        GitCodeReviewAction.performReview(project, baseCommit, targetCommit)
-    }
-
-    private fun isGitAvailable(project: Project): Boolean {
-        return try {
-            GitUtil.getRepositoryManager(project).repositories.isNotEmpty()
-        } catch (e: Exception) {
-            false
+        // Show dialog with prefilled commits
+        val dialog = GitCodeReviewDialog(project, baseCommit, targetCommit)
+        if (dialog.showAndGet()) {
+            GitCodeReviewAction.performReview(
+                project, 
+                dialog.getSelectedRefs().first,
+                dialog.getSelectedRefs().second,
+                dialog.getPrompt()
+            )
         }
-    }
-
-    private fun showNotification(project: Project, content: String, type: NotificationType) {
-        NotificationGroupManager.getInstance()
-            .getNotificationGroup("Coding Aider Notifications")
-            .createNotification(content, type)
-            .notify(project)
     }
 }
