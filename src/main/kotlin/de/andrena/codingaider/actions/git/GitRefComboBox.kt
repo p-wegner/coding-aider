@@ -51,9 +51,13 @@ class GitRefComboBox(project: Project) {
 
     private class BranchCompletionProvider(private val repository: GitRepository?) :
         TextFieldWithAutoCompletion.StringsCompletionProvider(
-            (repository?.branches?.localBranches?.map { it.name } ?: emptyList()) + 
-            (repository?.tags?.map { it.name } ?: emptyList()), 
+            emptyList(),  // Start empty, we'll update variants dynamically
             null
         ) {
+        override fun getItems(prefix: String?): MutableCollection<String> {
+            return (repository?.branches?.localBranches?.map { it.name } ?: emptyList()) +
+                   (repository?.tags?.map { it.name } ?: emptyList())
+                   .toMutableList()
+        }
     }
 }
