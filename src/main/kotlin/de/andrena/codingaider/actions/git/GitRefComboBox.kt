@@ -35,11 +35,16 @@ class GitRefComboBox(project: Project) {
             emptyList(),  // Start empty, we'll update variants dynamically
             null
         ) {
-        override fun getLookupString(prefix: String): String {
-            val value: List<String> = repository?.getLocalBranches().emptyOnNull() + repository?.getTags().emptyOnNull()
-            return value.firstOrNull { it.startsWith(prefix) } ?: prefix
+        override fun getVariants(): Collection<String> {
+            return repository?.let { 
+                it.getLocalBranches().emptyOnNull() + it.getTags().emptyOnNull() 
+            } ?: emptyList()
         }
 
+        override fun getLookupString(prefix: String): String {
+            val variants = getVariants()
+            return variants.firstOrNull { it.startsWith(prefix) } ?: prefix
+        }
     }
 
 }
