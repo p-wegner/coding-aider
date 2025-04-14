@@ -2,7 +2,6 @@ package de.andrena.codingaider.actions.git
 
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vcs.VcsException
@@ -14,6 +13,7 @@ import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
+import java.awt.event.KeyEvent
 import javax.swing.*
 
 class GitCodeReviewDialog(

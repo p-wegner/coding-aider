@@ -11,6 +11,7 @@ import de.andrena.codingaider.outputview.MarkdownJcefViewer
 import de.andrena.codingaider.services.plans.AiderPlan
 import de.andrena.codingaider.services.plans.AiderPlanService
 import java.awt.Dimension
+import java.awt.event.KeyEvent
 import javax.swing.*
 
 class AiderPlanRefinementDialog(

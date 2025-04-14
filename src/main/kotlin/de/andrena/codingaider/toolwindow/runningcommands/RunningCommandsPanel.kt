@@ -2,6 +2,7 @@ package de.andrena.codingaider.toolwindow.runningcommands
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
@@ -58,6 +59,8 @@ class RunningCommandsPanel(private val project: Project) {
                                 templatePresentation.icon = AllIcons.Actions.RunAll
                                 templatePresentation.disabledIcon = AllIcons.Actions.RunAll
                             }
+
+                            override fun getActionUpdateThread() = ActionUpdateThread.BGT
                             override fun update(e: AnActionEvent) {
                                 val hasCompletedCommand = project.service<RunningCommandService>().hasCompletedCommand()
                                 e.presentation.isEnabled = hasCompletedCommand
