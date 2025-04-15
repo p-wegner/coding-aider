@@ -6,3 +6,4 @@
   - edge cases: undo changes before creating plan or keep them and integrate in the plan (might degrade quality)
 - [ ] Bug: fix encoding issues with markdown viewer
 - [ ] Bug: (sidecar) verify env vars (api keys) for sidecar mode properly set
+- [ ] Bug: refine plan missing prompt?
