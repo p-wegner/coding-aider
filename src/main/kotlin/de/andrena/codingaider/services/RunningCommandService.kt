@@ -121,7 +121,7 @@ class RunningCommandService {
         }
     }
 
-    // TODO: refactor this to use it for an action that opens a dialog with a text area, runs the aider command with the provided text as message and runs a summery command afterwards
+    // TODO: refactor this to use it for an action that opens a dialog with a text area, runs the aider command with the provided text as message and runs a summery command afterwards, similar to docuemntCodeAction
     fun runExampleMultiStepChain(project: Project) {
         if (lastCompletedCommand == null || lastCommandOutput == null) {
             JOptionPane.showMessageDialog(
