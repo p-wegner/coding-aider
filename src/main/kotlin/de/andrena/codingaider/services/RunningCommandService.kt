@@ -59,7 +59,7 @@ class RunningCommandService {
                 chained.commandData
             }
             val executor = IDEBasedExecutor(project, cmd)
-            val dialog = executor.execute()
+            executor.execute()
             // Block until the dialog signals completion
             executor.isFinished().await()
             // After dialog is finished, use the lastCommandOutput
@@ -69,9 +69,6 @@ class RunningCommandService {
         return lastOutput
     }
 
-    /**
-     * Existing plan creation logic, now implemented as a single-step chain for compatibility.
-     */
     fun createPlanFromLastCommand(project: Project) {
         if (lastCompletedCommand == null || lastCommandOutput == null) {
             JOptionPane.showMessageDialog(
@@ -124,10 +121,7 @@ class RunningCommandService {
         }
     }
 
-    /**
-     * Example: Run a multi-step chain of Aider commands.
-     * This can be triggered from UI or API.
-     */
+    // TODO: refactor this to use it for an action that opens a dialog with a text area, runs the aider command with the provided text as message and runs a summery command afterwards
     fun runExampleMultiStepChain(project: Project) {
         if (lastCompletedCommand == null || lastCommandOutput == null) {
             JOptionPane.showMessageDialog(
@@ -150,7 +144,7 @@ class RunningCommandService {
         // Step 2: Create a plan from the summary
         val planMessageBuilder: (String) -> String = { summary: String ->
             """
-            Create a structured plan from this summary:
+            Create a summary of these changes:
             $summary
 
             Include:
@@ -169,7 +163,6 @@ class RunningCommandService {
             )
         )
 
-        // Chain: summarize -> plan
         executeChainedCommands(
             project,
             listOf(
