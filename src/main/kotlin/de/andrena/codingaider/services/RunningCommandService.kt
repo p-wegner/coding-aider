@@ -59,15 +59,11 @@ class RunningCommandService {
                 chained.commandData
             }
             val executor = IDEBasedExecutor(project, cmd)
-            // TODO: this is not blocking but long running, make sure to wait for the dialog to finish and take its output
-            executor.execute()
-            // Wait for command to finish and get output (blocking)
-            // In a real implementation, you might want to make this async/future-based
-            // For now, we rely on the service storing the last output
+            val dialog = executor.execute()
+            // Block until the dialog signals completion
+            executor.isFinished().await()
+            // After dialog is finished, use the lastCommandOutput
             lastCommand = cmd
-            // Wait for the dialog to finish and get output
-            // (This is a simplification; in practice, you may want to hook into the dialog's completion)
-            // Here, we just use the lastCommandOutput after each execution
             lastOutput = lastCommandOutput
         }
         return lastOutput
