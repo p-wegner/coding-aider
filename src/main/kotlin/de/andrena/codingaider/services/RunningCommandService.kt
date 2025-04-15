@@ -15,6 +15,10 @@ class RunningCommandService {
     private var lastCompletedCommand: CommandData? = null
     private var lastCommandOutput: String? = null
 
+    // Store commit hashes for last aider command
+    private var lastAiderCommitBefore: String? = null
+    private var lastAiderCommitAfter: String? = null
+
     fun addRunningCommand(dialog: MarkdownDialog) {
         runningCommandsListModel.addElement(dialog)
     }
@@ -25,9 +29,21 @@ class RunningCommandService {
 
     fun getRunningCommandsListModel(): DefaultListModel<MarkdownDialog> = runningCommandsListModel
 
-    fun storeCompletedCommand(commandData: CommandData?, output: String?) {
+    fun storeCompletedCommand(commandData: CommandData?, output: String?, commitBefore: String? = null, commitAfter: String? = null) {
         lastCompletedCommand = commandData
         lastCommandOutput = output
+        if (commitBefore != null && commitAfter != null) {
+            lastAiderCommitBefore = commitBefore
+            lastAiderCommitAfter = commitAfter
+        }
+    }
+
+    fun getLastAiderCommitHashes(): Pair<String?, String?>? {
+        return if (lastAiderCommitBefore != null && lastAiderCommitAfter != null) {
+            Pair(lastAiderCommitBefore, lastAiderCommitAfter)
+        } else {
+            null
+        }
     }
 
     /**
