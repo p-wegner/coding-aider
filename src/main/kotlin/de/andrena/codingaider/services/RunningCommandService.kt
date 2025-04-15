@@ -151,18 +151,19 @@ class RunningCommandService {
             files = command.files
         )
         // Step 2: Create a plan from the summary
-        val planCommand = command.copy(
-            message = { summary: String ->
-                """
-                Create a structured plan from this summary:
-                $summary
+        val planMessageBuilder: (String) -> String = { summary: String ->
+            """
+            Create a structured plan from this summary:
+            $summary
 
-                Include:
-                1. Original command context
-                2. Implementation steps from summary
-                3. Any follow-up tasks identified
-                """.trimIndent()
-            },
+            Include:
+            1. Original command context
+            2. Implementation steps from summary
+            3. Any follow-up tasks identified
+            """.trimIndent()
+        }
+        val planCommand = command.copy(
+            message = "", // Placeholder, will be set by transformOutputToInput
             aiderMode = AiderMode.STRUCTURED,
             files = command.files,
             options = command.options.copy(
@@ -178,7 +179,7 @@ class RunningCommandService {
                 ChainedAiderCommand(summarizeCommand),
                 ChainedAiderCommand(
                     planCommand,
-                    transformOutputToInput = { summary -> planCommand.message as? (String) -> String ?: { _ -> planCommand.message as String }(summary) }
+                    transformOutputToInput = planMessageBuilder
                 )
             )
         )
