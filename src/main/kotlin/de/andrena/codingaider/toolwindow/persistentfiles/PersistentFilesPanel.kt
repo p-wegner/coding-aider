@@ -10,15 +10,22 @@ import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.DialogWrapper
+import com.intellij.openapi.ui.Messages
+import com.intellij.ui.JBSplitter
 import com.intellij.ui.components.JBList
+import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.Wrapper
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.messages.PersistentFilesChangedTopic
+import de.andrena.codingaider.model.StashInfo
 import de.andrena.codingaider.services.AiderIgnoreService
 import de.andrena.codingaider.services.PersistentFileService
+import java.awt.BorderLayout
 import java.awt.Component
+import java.awt.Dimension
 import java.awt.event.KeyAdapter
 import java.io.File
 import javax.swing.*
@@ -36,9 +43,15 @@ class PersistentFilesPanel(private val project: Project) {
             }
         })
     }
+    
+    private val stashListModel = DefaultListModel<StashInfo>()
+    private val stashList: JBList<StashInfo> = JBList(stashListModel).apply {
+        cellRenderer = StashRenderer()
+    }
 
     init {
         loadPersistentFiles()
+        loadStashes()
         subscribeToChanges()
         persistentFilesList.addMouseListener(object : java.awt.event.MouseAdapter() {
             override fun mouseClicked(e: java.awt.event.MouseEvent) {
@@ -54,20 +67,25 @@ class PersistentFilesPanel(private val project: Project) {
                 }
             }
         })
-
     }
 
     private fun subscribeToChanges() {
         project.messageBus.connect().subscribe(
             PersistentFilesChangedTopic.PERSISTENT_FILES_CHANGED_TOPIC,
             object : PersistentFilesChangedTopic {
-                override fun onPersistentFilesChanged() = loadPersistentFiles()
+                override fun onPersistentFilesChanged() {
+                    loadPersistentFiles()
+                    loadStashes()
+                }
             }
         )
     }
 
     fun getContent(): JComponent {
-        return panel {
+        val mainPanel = JPanel(BorderLayout())
+        
+        // Create files panel
+        val filesPanel = panel {
             row {
                 val toolbar = ActionManager.getInstance().createActionToolbar(
                     "PersistentFilesToolbar",
@@ -83,6 +101,13 @@ class PersistentFilesPanel(private val project: Project) {
                             AnAction("Toggle Read-Only", "Toggle read-only status", AllIcons.Actions.Edit) {
                             override fun actionPerformed(e: AnActionEvent) = toggleReadOnlyMode()
                         })
+                        add(object : 
+                            AnAction("Stash Files", "Stash selected files", AllIcons.Vcs.Shelve) {
+                            override fun actionPerformed(e: AnActionEvent) = stashSelectedFiles()
+                            override fun update(e: AnActionEvent) {
+                                e.presentation.isEnabled = persistentFilesList.selectedIndices.isNotEmpty()
+                            }
+                        })
                         add(object : AnAction("Remove Files", "Remove selected files", AllIcons.General.Remove) {
                             override fun actionPerformed(e: AnActionEvent) = removeSelectedFiles()
                         })
@@ -96,8 +121,50 @@ class PersistentFilesPanel(private val project: Project) {
                 scrollCell(persistentFilesList)
                     .align(Align.FILL)
                     .resizableColumn()
-            }
+            }.resizableRow()
         }
+        
+        // Create stashes panel
+        val stashesPanel = panel {
+            row {
+                val toolbar = ActionManager.getInstance().createActionToolbar(
+                    "StashesToolbar",
+                    DefaultActionGroup().apply {
+                        add(object : 
+                            AnAction("Pop Stash", "Restore files from stash", AllIcons.Vcs.Unshelve) {
+                            override fun actionPerformed(e: AnActionEvent) = popSelectedStash()
+                            override fun update(e: AnActionEvent) {
+                                e.presentation.isEnabled = stashList.selectedIndices.isNotEmpty()
+                            }
+                        })
+                        add(object : 
+                            AnAction("Delete Stash", "Delete selected stash", AllIcons.General.Remove) {
+                            override fun actionPerformed(e: AnActionEvent) = deleteSelectedStash()
+                            override fun update(e: AnActionEvent) {
+                                e.presentation.isEnabled = stashList.selectedIndices.isNotEmpty()
+                            }
+                        })
+                    },
+                    true
+                )
+                toolbar.targetComponent = stashList
+                cell(Wrapper(toolbar.component))
+            }
+            row {
+                scrollCell(stashList)
+                    .align(Align.FILL)
+                    .resizableColumn()
+            }.resizableRow()
+        }
+        
+        // Create splitter with files and stashes
+        val splitter = JBSplitter(true, 0.7f)
+        splitter.firstComponent = filesPanel
+        splitter.secondComponent = stashesPanel
+        splitter.dividerWidth = 3
+        
+        mainPanel.add(splitter, BorderLayout.CENTER)
+        return mainPanel
     }
 
     private fun addPersistentFiles() {
@@ -134,6 +201,59 @@ class PersistentFilesPanel(private val project: Project) {
         persistentFileService.removePersistentFiles(selectedFiles.map { it.filePath })
         loadPersistentFiles()
     }
+    
+    private fun stashSelectedFiles() {
+        val selectedFiles = persistentFilesList.selectedValuesList
+        if (selectedFiles.isEmpty()) return
+        
+        val stashName = Messages.showInputDialog(
+            project,
+            "Enter a name for this stash (optional):",
+            "Stash Files",
+            Messages.getQuestionIcon()
+        ) ?: return
+        
+        try {
+            persistentFileService.stashFiles(selectedFiles, stashName)
+            loadStashes()
+        } catch (e: Exception) {
+            Messages.showErrorDialog(
+                "Failed to stash files: ${e.message}",
+                "Stash Error"
+            )
+        }
+    }
+    
+    private fun popSelectedStash() {
+        val selectedStash = stashList.selectedValue ?: return
+        
+        val result = Messages.showYesNoDialog(
+            "Are you sure you want to restore files from stash '${selectedStash.getDisplayName()}'?",
+            "Pop Stash",
+            Messages.getQuestionIcon()
+        )
+        
+        if (result == Messages.YES) {
+            persistentFileService.popStash(selectedStash)
+            loadStashes()
+            loadPersistentFiles()
+        }
+    }
+    
+    private fun deleteSelectedStash() {
+        val selectedStash = stashList.selectedValue ?: return
+        
+        val result = Messages.showYesNoDialog(
+            "Are you sure you want to delete stash '${selectedStash.getDisplayName()}'?",
+            "Delete Stash",
+            Messages.getQuestionIcon()
+        )
+        
+        if (result == Messages.YES) {
+            persistentFileService.deleteStash(selectedStash)
+            loadStashes()
+        }
+    }
 
     private fun openFileInEditor(fileData: FileData) {
         val file = File(fileData.filePath)
@@ -147,6 +267,13 @@ class PersistentFilesPanel(private val project: Project) {
         persistentFilesListModel.clear()
         persistentFileService.getPersistentFiles().forEach { file ->
             persistentFilesListModel.addElement(file)
+        }
+    }
+    
+    private fun loadStashes() {
+        stashListModel.clear()
+        persistentFileService.getStashes().forEach { stash ->
+            stashListModel.addElement(stash)
         }
     }
 
@@ -170,6 +297,24 @@ class PersistentFilesPanel(private val project: Project) {
                 val file = File(value.filePath)
                 component.text = "${file.nameWithoutExtension} ${if (value.isReadOnly) "(Read-Only)" else ""}"
                 component.toolTipText = value.filePath
+                component.icon = AllIcons.FileTypes.Text
+            }
+            return component
+        }
+    }
+    
+    private inner class StashRenderer : DefaultListCellRenderer() {
+        override fun getListCellRendererComponent(
+            list: JList<*>?,
+            value: Any?,
+            index: Int,
+            isSelected: Boolean,
+            cellHasFocus: Boolean
+        ): Component {
+            val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
+            if (component is JLabel && value is StashInfo) {
+                component.text = "${value.getDisplayName()} (${value.fileCount} files)"
+                component.icon = AllIcons.Vcs.Shelve
             }
             return component
         }
