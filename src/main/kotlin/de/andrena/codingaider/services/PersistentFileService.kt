@@ -174,7 +174,7 @@ class PersistentFileService(private val project: Project) {
             
             // Refresh files in the file system
             ApplicationManager.getApplication().invokeLater {
-                LocalFileSystem.getInstance().refresh(true, false)
+                LocalFileSystem.getInstance().refresh(true)
                 notifyPersistentFilesChanged()
             }
         } catch (e: Exception) {
@@ -187,7 +187,7 @@ class PersistentFileService(private val project: Project) {
         if (stashFile.exists()) {
             stashFile.delete()
             ApplicationManager.getApplication().invokeLater {
-                LocalFileSystem.getInstance().refresh(true, false)
+                LocalFileSystem.getInstance().refresh(true)
                 notifyPersistentFilesChanged()
             }
         }

@@ -1,7 +1,6 @@
 package de.andrena.codingaider.model
 
 import com.intellij.openapi.project.Project
-import de.andrena.codingaider.command.FileData
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
