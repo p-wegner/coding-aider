@@ -2,26 +2,23 @@ package de.andrena.codingaider.toolwindow.persistentfiles
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
-import com.intellij.openapi.components.service
 import com.intellij.openapi.fileChooser.FileChooser
 import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
 import com.intellij.ui.JBSplitter
 import com.intellij.ui.components.JBList
-import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.panels.Wrapper
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.messages.PersistentFilesChangedTopic
 import de.andrena.codingaider.model.StashInfo
-import de.andrena.codingaider.services.AiderIgnoreService
 import de.andrena.codingaider.services.PersistentFileService
 import java.awt.BorderLayout
 import java.awt.Component
@@ -102,11 +99,12 @@ class PersistentFilesPanel(private val project: Project) {
                             override fun actionPerformed(e: AnActionEvent) = toggleReadOnlyMode()
                         })
                         add(object : 
-                            AnAction("Stash Files", "Stash selected files", AllIcons.Vcs.Shelve) {
+                            AnAction("Stash Files", "Stash selected files", AllIcons.Vcs.ShelveSilent) {
                             override fun actionPerformed(e: AnActionEvent) = stashSelectedFiles()
                             override fun update(e: AnActionEvent) {
                                 e.presentation.isEnabled = persistentFilesList.selectedIndices.isNotEmpty()
                             }
+                            override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
                         })
                         add(object : AnAction("Remove Files", "Remove selected files", AllIcons.General.Remove) {
                             override fun actionPerformed(e: AnActionEvent) = removeSelectedFiles()
@@ -136,6 +134,7 @@ class PersistentFilesPanel(private val project: Project) {
                             override fun update(e: AnActionEvent) {
                                 e.presentation.isEnabled = stashList.selectedIndices.isNotEmpty()
                             }
+                            override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
                         })
                         add(object : 
                             AnAction("Delete Stash", "Delete selected stash", AllIcons.General.Remove) {
@@ -143,6 +142,7 @@ class PersistentFilesPanel(private val project: Project) {
                             override fun update(e: AnActionEvent) {
                                 e.presentation.isEnabled = stashList.selectedIndices.isNotEmpty()
                             }
+                            override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
                         })
                     },
                     true
@@ -314,7 +314,7 @@ class PersistentFilesPanel(private val project: Project) {
             val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
             if (component is JLabel && value is StashInfo) {
                 component.text = "${value.getDisplayName()} (${value.fileCount} files)"
-                component.icon = AllIcons.Vcs.Shelve
+                component.icon = AllIcons.Vcs.ShelveSilent
             }
             return component
         }
