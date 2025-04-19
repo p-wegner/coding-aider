@@ -62,7 +62,7 @@ class ClipboardEditService(private val project: Project) {
         return appliedChanges
     }
     
-    private fun <T> applyAllMatches(
+    private fun applyAllMatches(
         text: String, 
         pattern: Pattern, 
         applyFn: (String, String, String) -> Boolean
