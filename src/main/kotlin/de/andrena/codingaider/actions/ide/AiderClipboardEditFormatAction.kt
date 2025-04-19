@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.components.service
 import com.intellij.openapi.ide.CopyPasteManager
+import com.intellij.openapi.project.Project
 import de.andrena.codingaider.services.ClipboardEditService
 import java.awt.datatransfer.DataFlavor
 
