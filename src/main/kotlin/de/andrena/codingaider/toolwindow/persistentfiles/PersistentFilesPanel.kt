@@ -280,7 +280,6 @@ class PersistentFilesPanel(private val project: Project) {
         }
         
         try {
-            // Open only the YAML file itself, not the files referenced in the stash
             val virtualFile = com.intellij.openapi.vfs.LocalFileSystem.getInstance().refreshAndFindFileByIoFile(stashFile)
             virtualFile?.let { FileEditorManager.getInstance(project).openFile(it, true) }
         } catch (e: Exception) {
