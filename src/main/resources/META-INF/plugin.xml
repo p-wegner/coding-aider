@@ -119,8 +119,8 @@
     <depends>org.jetbrains.plugins.terminal</depends>
     <depends>Git4Idea</depends>
     <actions>
-        <action id="de.andrena.codingaider.actions.aider.OpenAiderActionGroup"
-                class="de.andrena.codingaider.actions.aider.OpenAiderActionGroup"
+        <action id="de.andrena.codingaider.actions.ide.OpenAiderActionGroup"
+                class="de.andrena.codingaider.actions.ide.OpenAiderActionGroup"
                 text="Aider Quick Actions"
                 description="Open the Aider Quick Actions popup"
                 icon="AllIcons.Actions.Run_anything">
@@ -188,7 +188,7 @@
             </action>
             <separator/>
             <action id="de.andrena.codingaider.CommitAction"
-                    class="de.andrena.codingaider.actions.aider.CommitAction"
+                    class="de.andrena.codingaider.actions.git.CommitAction"
                     text="Run Aider Commit"
                     description="Run Aider to commit">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt D"/>
@@ -218,13 +218,13 @@
                     icon="AllIcons.Actions.Execute">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt P"/>
             </action>
-            <action id="de.andrena.codingaider.actions.aider.AddContextYamlFilesAction"
-                    class="de.andrena.codingaider.actions.aider.AddContextYamlFilesAction"
+            <action id="de.andrena.codingaider.actions.ide.AddContextYamlFilesAction"
+                    class="de.andrena.codingaider.actions.ide.AddContextYamlFilesAction"
                     text="Add Files from Context YAML"
                     description="Add files from a .context.yaml file to persistent files">
             </action>
-            <action id="de.andrena.codingaider.actions.aider.OpenContextYamlFilesAction"
-                    class="de.andrena.codingaider.actions.aider.OpenContextYamlFilesAction"
+            <action id="de.andrena.codingaider.actions.ide.OpenContextYamlFilesAction"
+                    class="de.andrena.codingaider.actions.ide.OpenContextYamlFilesAction"
                     text="Open Files from Context YAML"
                     description="Open all files referenced in a .context.yaml file">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt O"/>
@@ -235,14 +235,14 @@
                     description="Set this directory as the working directory for Aider operations">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt G"/>
             </action>
-            <action id="de.andrena.codingaider.actions.aider.AiderClipboardImageAction"
-                    class="de.andrena.codingaider.actions.aider.AiderClipboardImageAction"
+            <action id="de.andrena.codingaider.actions.ide.AiderClipboardImageAction"
+                    class="de.andrena.codingaider.actions.ide.AiderClipboardImageAction"
                     text="Aider Clipboard Image"
                     description="Save clipboard image and add to persistent files">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt I"/>
             </action>
-            <action id="de.andrena.codingaider.actions.aider.AiderClipboardEditFormatAction"
-                    class="de.andrena.codingaider.actions.aider.AiderClipboardEditFormatAction"
+            <action id="de.andrena.codingaider.actions.ide.AiderClipboardEditFormatAction"
+                    class="de.andrena.codingaider.actions.ide.AiderClipboardEditFormatAction"
                     text="Apply Edit Format from Clipboard"
                     description="Analyze clipboard content for supported edit formats and apply if possible">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt K"/>

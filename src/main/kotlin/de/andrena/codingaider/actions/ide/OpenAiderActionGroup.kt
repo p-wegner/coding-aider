@@ -1,4 +1,4 @@
-package de.andrena.codingaider.actions.aider
+package de.andrena.codingaider.actions.ide
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionManager
@@ -83,7 +83,7 @@ class OpenAiderActionGroup : AnAction(), DumbAware {
         )
         addQuickAccessAction(
             popupActionGroup,
-            "de.andrena.codingaider.actions.aider.AiderClipboardImageAction",
+            "de.andrena.codingaider.actions.ide.AiderClipboardImageAction",
             "Clipboard Image",
             AllIcons.Actions.Copy,
             'I'
@@ -97,7 +97,7 @@ class OpenAiderActionGroup : AnAction(), DumbAware {
         )
         addQuickAccessAction(
             popupActionGroup,
-            "de.andrena.codingaider.actions.aider.AddContextYamlFilesAction",
+            "de.andrena.codingaider.actions.ide.AddContextYamlFilesAction",
             "Add Files from Context YAML",
             AllIcons.Actions.AddList,
             'F'

@@ -1,4 +1,4 @@
-package de.andrena.codingaider.actions.aider
+package de.andrena.codingaider.actions.ide
 
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.ide.CopyPasteManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -144,7 +145,7 @@ class AiderClipboardEditFormatAction : AnAction() {
         val file = findOrCreateFile(project, filePath) ?: return false
         
         try {
-            val document = com.intellij.openapi.fileEditor.FileDocumentManager.getInstance().getDocument(file)
+            val document = FileDocumentManager.getInstance().getDocument(file)
                 ?: return false
             
             val fileContent = document.text
@@ -177,7 +178,7 @@ class AiderClipboardEditFormatAction : AnAction() {
         val file = findOrCreateFile(project, filePath) ?: return false
         
         try {
-            val document = com.intellij.openapi.fileEditor.FileDocumentManager.getInstance().getDocument(file)
+            val document = FileDocumentManager.getInstance().getDocument(file)
                 ?: return false
             
             WriteCommandAction.runWriteCommandAction(project) {
@@ -199,7 +200,7 @@ class AiderClipboardEditFormatAction : AnAction() {
         val file = findOrCreateFile(project, filePath) ?: return false
         
         try {
-            val document = com.intellij.openapi.fileEditor.FileDocumentManager.getInstance().getDocument(file)
+            val document = FileDocumentManager.getInstance().getDocument(file)
                 ?: return false
             
             val fileContent = document.text

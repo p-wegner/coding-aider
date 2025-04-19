@@ -215,20 +215,20 @@ class RunningCommandService {
             wrapStyleWord = true
             font = javax.swing.UIManager.getFont("TextField.font")
         }
-        val result = javax.swing.JOptionPane.showConfirmDialog(
+        val result = JOptionPane.showConfirmDialog(
             null,
             javax.swing.JScrollPane(promptArea),
             dialogTitle,
-            javax.swing.JOptionPane.OK_CANCEL_OPTION,
-            javax.swing.JOptionPane.PLAIN_MESSAGE
+            JOptionPane.OK_CANCEL_OPTION,
+            JOptionPane.PLAIN_MESSAGE
         )
-        if (result != javax.swing.JOptionPane.OK_OPTION) return
+        if (result != JOptionPane.OK_OPTION) return
 
         val userPrompt = promptArea.text.trim()
         if (userPrompt.isBlank()) return
 
         val settings = de.andrena.codingaider.settings.AiderSettings.getInstance()
-        val commandData = de.andrena.codingaider.command.CommandData(
+        val commandData = CommandData(
             message = userPrompt,
             useYesFlag = settings.useYesFlag,
             llm = settings.llm,
@@ -240,7 +240,7 @@ class RunningCommandService {
             projectPath = project.basePath ?: "",
             sidecarMode = settings.useSidecarMode
         )
-        val executor = de.andrena.codingaider.executors.api.IDEBasedExecutor(project, commandData)
+        val executor = IDEBasedExecutor(project, commandData)
         val dialog = executor.execute()
         // Wait for completion
         executor.isFinished().await()
@@ -251,7 +251,7 @@ class RunningCommandService {
             message = "Summarize the following output:\n$output",
             files = commandData.files
         )
-        val summaryExecutor = de.andrena.codingaider.executors.api.IDEBasedExecutor(project, summaryCommand)
+        val summaryExecutor = IDEBasedExecutor(project, summaryCommand)
         summaryExecutor.execute()
     }
 }
