@@ -280,17 +280,12 @@ class PersistentFilesPanel(private val project: Project) {
         }
         
         try {
-            val stashedFiles = ContextFileHandler.readContextFile(stashFile, project.basePath ?: "")
-            stashedFiles.forEach { fileData ->
-                val file = File(fileData.filePath)
-                if (file.exists()) {
-                    val virtualFile = com.intellij.openapi.vfs.LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file)
-                    virtualFile?.let { FileEditorManager.getInstance(project).openFile(it, true) }
-                }
-            }
+            // Open only the YAML file itself, not the files referenced in the stash
+            val virtualFile = com.intellij.openapi.vfs.LocalFileSystem.getInstance().refreshAndFindFileByIoFile(stashFile)
+            virtualFile?.let { FileEditorManager.getInstance(project).openFile(it, true) }
         } catch (e: Exception) {
             Messages.showErrorDialog(
-                "Error opening files from stash: ${e.message}",
+                "Error opening stash file: ${e.message}",
                 "Stash Error"
             )
         }
