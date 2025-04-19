@@ -143,8 +143,16 @@ class PersistentFilesPanel(private val project: Project) {
                     "StashesToolbar",
                     DefaultActionGroup().apply {
                         add(object : 
-                            AnAction("Pop Stash", "Restore files from stash", AllIcons.Vcs.Unshelve) {
+                            AnAction("Pop Stash", "Restore files from stash and delete stash", AllIcons.Vcs.Unshelve) {
                             override fun actionPerformed(e: AnActionEvent) = popSelectedStash()
+                            override fun update(e: AnActionEvent) {
+                                e.presentation.isEnabled = stashList.selectedIndices.isNotEmpty()
+                            }
+                            override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+                        })
+                        add(object : 
+                            AnAction("Unstash", "Add stashed files without deleting stash", AllIcons.Vcs.Branch) {
+                            override fun actionPerformed(e: AnActionEvent) = unstashSelectedStash()
                             override fun update(e: AnActionEvent) {
                                 e.presentation.isEnabled = stashList.selectedIndices.isNotEmpty()
                             }
@@ -242,7 +250,7 @@ class PersistentFilesPanel(private val project: Project) {
         val selectedStash = stashList.selectedValue ?: return
         
         val result = Messages.showYesNoDialog(
-            "Are you sure you want to restore files from stash '${selectedStash.getDisplayName()}'?",
+            "Are you sure you want to restore files from stash '${selectedStash.getDisplayName()}'?\nThis will delete the stash after restoring.",
             "Pop Stash",
             Messages.getQuestionIcon()
         )
@@ -250,6 +258,21 @@ class PersistentFilesPanel(private val project: Project) {
         if (result == Messages.YES) {
             persistentFileService.popStash(selectedStash)
             loadStashes()
+            loadPersistentFiles()
+        }
+    }
+    
+    private fun unstashSelectedStash() {
+        val selectedStash = stashList.selectedValue ?: return
+        
+        val result = Messages.showYesNoDialog(
+            "Add files from stash '${selectedStash.getDisplayName()}' to persistent files?\nThe stash will be kept.",
+            "Unstash Files",
+            Messages.getQuestionIcon()
+        )
+        
+        if (result == Messages.YES) {
+            persistentFileService.unstashFiles(selectedStash)
             loadPersistentFiles()
         }
     }

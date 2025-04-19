@@ -182,6 +182,25 @@ class PersistentFileService(private val project: Project) {
         }
     }
     
+    fun unstashFiles(stashInfo: StashInfo) {
+        val stashFile = File(project.basePath ?: "", stashInfo.getFileName())
+        if (!stashFile.exists()) return
+        
+        try {
+            val stashedFiles = ContextFileHandler.readContextFile(stashFile, project.basePath ?: "")
+            
+            // Add stashed files to persistent files without deleting the stash
+            addAllFiles(stashedFiles)
+            
+            // Refresh files in the file system
+            ApplicationManager.getApplication().invokeLater {
+                notifyPersistentFilesChanged()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+    
     fun deleteStash(stashInfo: StashInfo) {
         val stashFile = File(project.basePath ?: "", stashInfo.getFileName())
         if (stashFile.exists()) {
