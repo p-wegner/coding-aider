@@ -87,7 +87,9 @@ the [Aider documentation](https://aider.chat/docs/llms/openai-compat.html).
 
 8. **Webcrawl (Experimental)**: Download and convert pages to markdown stored in a .aider-docs folder to add to context.
 
-9. **Clipboard Image Support**: Save clipboard images directly to the project and add them to persistent files.
+9. **Clipboard Support**: 
+   - **Clipboard Image Support**: Save clipboard images directly to the project and add them to persistent files.
+   - **Clipboard Edit Format**: Apply code changes from clipboard containing SEARCH/REPLACE blocks or other edit formats.
 
 10. **Refactor to Clean Code Action**: Refactor code to adhere to clean code principles.
 
