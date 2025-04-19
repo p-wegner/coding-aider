@@ -54,6 +54,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var optionsPanelCollapsed: Boolean = true,
         var enableLocalModelCostMap: Boolean = false,
         var defaultMode: AiderMode = AiderDefaults.DEFAULT_MODE,
+        var pluginBasedEdits: Boolean = AiderDefaults.PLUGIN_BASED_EDITS // Added for plugin-based edits feature
     )
 
 
@@ -242,6 +243,13 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.alwaysIncludePlanContextFiles
         set(value) {
             myState.alwaysIncludePlanContextFiles = value
+        }
+
+    // Added for plugin-based edits feature
+    var pluginBasedEdits: Boolean
+        get() = myState.pluginBasedEdits
+        set(value) {
+            myState.pluginBasedEdits = value
         }
 
 

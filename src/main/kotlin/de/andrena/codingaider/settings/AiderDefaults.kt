@@ -33,4 +33,5 @@ object AiderDefaults {
     val DIRTY_COMMITS = AiderSettings.DirtyCommitSetting.DEFAULT
     const val DOCKER_IMAGE: String = "paulgauthier/aider:v0.79.1"
     const val AIDER_EXECUTABLE_PATH: String = "aider"
+    const val PLUGIN_BASED_EDITS = false // Added for plugin-based edits feature
 }

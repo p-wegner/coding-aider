@@ -55,6 +55,7 @@ class AiderSettingsConfigurable() : Configurable {
     private val enableLocalModelCostMapCheckBox = JBCheckBox("Enable local model cost mapping")
     private val documentationLlmComboBox = ComboBox(apiKeyChecker.getAllLlmOptions().toTypedArray())
     private val summarizedOutputCheckBox = JBCheckBox("Enable summarized output")
+    private val pluginBasedEditsCheckBox = JBCheckBox("Use Plugin-Based Edits (Experimental)") // Added for plugin-based edits
 
     override fun getDisplayName(): String = "Aider"
 
@@ -95,6 +96,13 @@ class AiderSettingsConfigurable() : Configurable {
                         .apply {
                             toolTipText =
                                 "Select the default edit format for Aider. Leave empty to use the default format for the used LLM."
+                        }
+                }
+                row {
+                    cell(pluginBasedEditsCheckBox) // Added checkbox to UI
+                        .component
+                        .apply {
+                            toolTipText = "If enabled, the plugin handles applying edits using /ask and a specific diff format, bypassing Aider's internal edit formats."
                         }
                 }
             }
@@ -286,6 +294,7 @@ class AiderSettingsConfigurable() : Configurable {
                 enableLocalModelCostMapCheckBox.isSelected != settings.enableLocalModelCostMap ||
                 reasoningEffortComboBox.selectedItem as String != settings.reasoningEffort ||
                 defaultModeComboBox.selectedItem != settings.defaultMode ||
+                pluginBasedEditsCheckBox.isSelected != settings.pluginBasedEdits || // Added check for pluginBasedEdits
                 aiderSetupPanel.isModified()
 
     }
@@ -325,6 +334,7 @@ class AiderSettingsConfigurable() : Configurable {
         settings.enableLocalModelCostMap = enableLocalModelCostMapCheckBox.isSelected
         settings.reasoningEffort = reasoningEffortComboBox.selectedItem as String
         settings.defaultMode = defaultModeComboBox.selectedItem as AiderMode
+        settings.pluginBasedEdits = pluginBasedEditsCheckBox.isSelected // Added save for pluginBasedEdits
         aiderSetupPanel.apply()
         settings.notifySettingsChanged()
     }
@@ -362,6 +372,7 @@ class AiderSettingsConfigurable() : Configurable {
         enableLocalModelCostMapCheckBox.isSelected = settings.enableLocalModelCostMap
         reasoningEffortComboBox.selectedItem = settings.reasoningEffort
         defaultModeComboBox.selectedItem = settings.defaultMode
+        pluginBasedEditsCheckBox.isSelected = settings.pluginBasedEdits // Added reset for pluginBasedEdits
         aiderSetupPanel.reset()
         settings.notifySettingsChanged()
     }
