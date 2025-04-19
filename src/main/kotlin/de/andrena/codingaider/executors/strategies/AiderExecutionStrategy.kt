@@ -105,36 +105,30 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
             if (commandData.sidecarMode) {
                 return@buildList
             }
-            // Check if message starts with a slash command
-            if (commandData.message.startsWith("/")) {
-                add("-m")
-                add(commandData.message)
-            } else {
-                when (commandData.aiderMode) {
-                    AiderMode.NORMAL -> {
-                        add("-m")
-                        if (settings.summarizedOutput) {
-                            add(
-                                project.service<AiderOutputSummaryService>()
-                                    .createPrompt(commandData.message)
-                            )
-                        } else {
-                            add(commandData.message)
-                        }
+            when (commandData.aiderMode) {
+                AiderMode.NORMAL -> {
+                    add("-m")
+                    if (settings.summarizedOutput) {
+                        add(
+                            project.service<AiderOutputSummaryService>()
+                                .createPrompt(commandData.message)
+                        )
+                    } else {
+                        add(commandData.message)
                     }
-
-                    AiderMode.STRUCTURED -> {
-                        add("-m")
-                        add(project.service<AiderPlanService>().createAiderPlanSystemPrompt(commandData))
-                    }
-
-                    AiderMode.ARCHITECT -> {
-                        add("-m")
-                        add("/architect ${commandData.message}")
-                    }
-
-                    else -> {}
                 }
+
+                AiderMode.STRUCTURED -> {
+                    add("-m")
+                    add(project.service<AiderPlanService>().createAiderPlanSystemPrompt(commandData))
+                }
+
+                AiderMode.ARCHITECT -> {
+                    add("-m")
+                    add("/architect ${commandData.message}")
+                }
+
+                else -> {}
             }
         }.toMutableList()
     }

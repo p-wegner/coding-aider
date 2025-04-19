@@ -195,11 +195,6 @@ class CommandExecutor(
     }
 
     private fun buildSidecarCommandString(commandData: CommandData): String {
-        // If the message starts with a slash command, preserve it regardless of mode
-        if (commandData.message.startsWith("/")) {
-            return commandData.message
-        }
-        
         return when (commandData.aiderMode) {
             AiderMode.NORMAL -> commandData.message
             AiderMode.STRUCTURED -> project.service<AiderPlanService>().createAiderPlanSystemPrompt(commandData)
