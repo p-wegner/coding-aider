@@ -1,0 +1,22 @@
+[Coding Aider Plan - Checklist]
+
+- [ ] Add `pluginBasedEdits` boolean field to `AiderSettings.State` with a default value of `false` in `AiderDefaults.kt`.
+- [ ] Add corresponding property accessor for `pluginBasedEdits` in `AiderSettings.kt`.
+- [ ] Define a constant for the `diff` format instruction prompt.
+- [ ] Add `pluginBasedEditsCheckBox` JBCheckBox to `AiderSettingsConfigurable.kt`.
+- [ ] Add the `pluginBasedEditsCheckBox` to the UI layout in `AiderSettingsConfigurable.createComponent` (e.g., within "Advanced Settings").
+- [ ] Update `AiderSettingsConfigurable.isModified` to include `pluginBasedEditsCheckBox`.
+- [ ] Update `AiderSettingsConfigurable.apply` to save the state of `pluginBasedEditsCheckBox` to `AiderSettings`.
+- [ ] Update `AiderSettingsConfigurable.reset` to load the state of `pluginBasedEdits` into `pluginBasedEditsCheckBox`.
+- [ ] Modify `AiderExecutionStrategy.buildCommonArgs` to check `settings.pluginBasedEdits`.
+- [ ] If `pluginBasedEdits` is true in `buildCommonArgs`, modify the message construction:
+    - Prepend `/ask ` to the message.
+    - Prepend the `diff` format instruction prompt to the original user message content.
+- [ ] Modify `CommandExecutor.executeSidecarCommand` (or `buildSidecarCommandString`) to check `settings.pluginBasedEdits`.
+- [ ] If `pluginBasedEdits` is true in sidecar mode:
+    - Prepend `/ask ` to the command string sent via `processInteractor`.
+    - Prepend the `diff` format instruction prompt to the original user message content sent after `/ask `.
+- [ ] Verify the `diff` format instructions correctly guide the LLM.
+- [ ] Test functionality with the setting enabled and disabled for normal Aider commands.
+- [ ] Test functionality with the setting enabled and disabled in Docker mode.
+- [ ] Test functionality with the setting enabled and disabled in Sidecar mode.
