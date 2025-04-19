@@ -44,6 +44,20 @@ class PersistentFilesPanel(private val project: Project) {
     private val stashListModel = DefaultListModel<StashInfo>()
     private val stashList: JBList<StashInfo> = JBList(stashListModel).apply {
         cellRenderer = StashRenderer()
+        addMouseListener(object : java.awt.event.MouseAdapter() {
+            override fun mouseClicked(e: java.awt.event.MouseEvent) {
+                if (e.clickCount >= 2) {
+                    val index = stashList.locationToIndex(e.point)
+                    if (index >= 0) {
+                        val cellBounds = stashList.getCellBounds(index, index)
+                        if (cellBounds != null && cellBounds.contains(e.point)) {
+                            val stashInfo = stashListModel.getElementAt(index)
+                            openStashedFiles(stashInfo)
+                        }
+                    }
+                }
+            }
+        })
     }
 
     init {
@@ -252,6 +266,33 @@ class PersistentFilesPanel(private val project: Project) {
         if (result == Messages.YES) {
             persistentFileService.deleteStash(selectedStash)
             loadStashes()
+        }
+    }
+    
+    private fun openStashedFiles(stashInfo: StashInfo) {
+        val stashFile = File(project.basePath ?: "", stashInfo.getFileName())
+        if (!stashFile.exists()) {
+            Messages.showErrorDialog(
+                "Stash file not found: ${stashInfo.getFileName()}",
+                "Error Opening Stash"
+            )
+            return
+        }
+        
+        try {
+            val stashedFiles = ContextFileHandler.readContextFile(stashFile, project.basePath ?: "")
+            stashedFiles.forEach { fileData ->
+                val file = File(fileData.filePath)
+                if (file.exists()) {
+                    val virtualFile = com.intellij.openapi.vfs.LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file)
+                    virtualFile?.let { FileEditorManager.getInstance(project).openFile(it, true) }
+                }
+            }
+        } catch (e: Exception) {
+            Messages.showErrorDialog(
+                "Error opening files from stash: ${e.message}",
+                "Stash Error"
+            )
         }
     }
 
