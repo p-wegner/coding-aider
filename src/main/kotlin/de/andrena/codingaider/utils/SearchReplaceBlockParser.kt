@@ -30,10 +30,26 @@ class SearchReplaceBlockParser(private val project: Project) {
      */
     fun parseBlocks(text: String): List<SearchReplaceBlock> {
         val blocks = mutableListOf<SearchReplaceBlock>()
-        val regex = """(?m)^([^\n]+)\n```([^\n]*)\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n```""".toRegex(RegexOption.DOT_MATCHES_ALL)
         
-        val matches = regex.findAll(text)
-        for (match in matches) {
+        // Match both standard and quadruple backtick formats
+        val standardRegex = """(?m)^([^\n]+)\n```([^\n]*)\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n```""".toRegex(RegexOption.DOT_MATCHES_ALL)
+        val quadrupleRegex = """(?m)^([^\n]+)\n````([^\n]*)\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n````""".toRegex(RegexOption.DOT_MATCHES_ALL)
+        
+        // Process standard format
+        standardRegex.findAll(text).forEach { match ->
+            val (filePath, language, searchContent, replaceContent) = match.destructured
+            blocks.add(
+                SearchReplaceBlock(
+                    filePath = filePath.trim(),
+                    language = language.trim(),
+                    searchContent = searchContent,
+                    replaceContent = replaceContent
+                )
+            )
+        }
+        
+        // Process quadruple backtick format
+        quadrupleRegex.findAll(text).forEach { match ->
             val (filePath, language, searchContent, replaceContent) = match.destructured
             blocks.add(
                 SearchReplaceBlock(

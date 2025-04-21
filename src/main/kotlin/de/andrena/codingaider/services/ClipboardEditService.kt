@@ -14,22 +14,25 @@ import java.util.regex.Pattern
 @Service(Service.Level.PROJECT)
 class ClipboardEditService(private val project: Project) {
     companion object {
-        // Patterns for different edit formats
-        private val DIFF_PATTERN = Pattern.compile(
-            """(.+?)\n```(?:\w*)\n<<<<<<< SEARCH\n([\s\S]*?)=======\n([\s\S]*?)>>>>>>> REPLACE\n```""",
+        // Unified pattern for search/replace blocks with consistent group indices
+        private val SEARCH_REPLACE_PATTERN = Pattern.compile(
+            """(?:(.+?)\n)?```(?:\w*)\n<<<<<<< SEARCH\n([\s\S]*?)=======\n([\s\S]*?)>>>>>>> REPLACE\n```""",
             Pattern.MULTILINE
         )
         
+        // Alternative format with fenced blocks
         private val DIFF_FENCED_PATTERN = Pattern.compile(
             """```\n(.+?)\n<<<<<<< SEARCH\n([\s\S]*?)=======\n([\s\S]*?)>>>>>>> REPLACE\n```""",
             Pattern.MULTILINE
         )
         
+        // Whole file replacement pattern
         private val WHOLE_PATTERN = Pattern.compile(
             """(.+?)\n```(?:\w*)\n([\s\S]*?)\n```""",
             Pattern.MULTILINE
         )
         
+        // Unified diff format pattern
         private val UDIFF_PATTERN = Pattern.compile(
             """```diff\n--- (.+?)\n\+\+\+ \1\n@@ .* @@\n([\s\S]*?)\n```""",
             Pattern.MULTILINE
@@ -43,18 +46,23 @@ class ClipboardEditService(private val project: Project) {
     fun processText(text: String): Int {
         var appliedChanges = 0
         
-        appliedChanges += applyAllMatches(text, DIFF_PATTERN) { filePath, searchText, replaceText ->
-            applyChange(filePath, searchText, replaceText)
+        // Process search/replace blocks (both standard and fenced formats)
+        appliedChanges += applyAllMatches(text, SEARCH_REPLACE_PATTERN) { filePath, searchText, replaceText ->
+            if (filePath.isNotBlank()) {
+                applyChange(filePath, searchText, replaceText)
+            } else false
         }
         
         appliedChanges += applyAllMatches(text, DIFF_FENCED_PATTERN) { filePath, searchText, replaceText ->
             applyChange(filePath, searchText, replaceText)
         }
         
+        // Process whole file replacements
         appliedChanges += applyAllMatches(text, WHOLE_PATTERN) { filePath, newContent, _ ->
             replaceWholeFile(filePath, newContent)
         }
         
+        // Process unified diff format
         appliedChanges += applyAllMatches(text, UDIFF_PATTERN) { filePath, diffContent, _ ->
             applyUdiffChange(filePath, diffContent)
         }

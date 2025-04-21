@@ -593,115 +593,74 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     private fun processSearchReplaceBlocks(html: String): String {
         var processedHtml = html
 
-
-        // Wrap initial command in collapsible panel if present
-        val commandPattern = """<aider-command>\s*(.*?)\s*</aider-command>""".toRegex(RegexOption.DOT_MATCHES_ALL)
-        processedHtml = processedHtml.replace(commandPattern) { matchResult ->
-            """
-            <div class="collapsible-panel">
-                <div class="collapsible-header" onclick="this.parentElement.classList.toggle('expanded')">
-                    <span class="collapsible-title">Aider Command</span>
-                    <span class="collapsible-arrow"> ^ </span>
-                </div>
-                <div class="collapsible-content">
-                    <pre><code>${escapeHtml(matchResult.groupValues[1].trim())}</code></pre>
-                </div>
-            </div>
-            """.trimIndent()
-        }
-
-        // Process system prompt blocks
-        processedHtml = processedHtml.replace(
-            Regex("""<aider-system-prompt>(.*?)</aider-system-prompt>""", RegexOption.DOT_MATCHES_ALL)) { matchResult ->
-                """
-                <div class="collapsible-panel expanded">
-                    <div class="collapsible-header system" onclick="this.parentElement.classList.toggle('expanded')">
-                        <span class="collapsible-title">System Prompt</span>
-                        <span class="collapsible-arrow">^</span>
-                    </div>
-                    <div class="collapsible-content">
-                        <pre><code>${escapeHtml(matchResult.groupValues[1].trim())}</code></pre>
-                    </div>
-                </div>
-                """.trimIndent()
-        }
-
-        // Process user prompt blocks
-        processedHtml = processedHtml.replace(
-            Regex("""<aider-user-prompt>(.*?)</aider-user-prompt>""", RegexOption.DOT_MATCHES_ALL)) { matchResult ->
-                """
-                <div class="collapsible-panel expanded">
-                    <div class="collapsible-header user" onclick="this.parentElement.classList.toggle('expanded')">
-                        <span class="collapsible-title">User Request</span>
-                        <span class="collapsible-arrow">^</span>
-                    </div>
-                    <div class="collapsible-content">
-                        <pre><code>${escapeHtml(matchResult.groupValues[1].trim())}</code></pre>
-                    </div>
-                </div>
-                """.trimIndent()
-        }
-
-        // Process intention blocks with preserved formatting
-        processedHtml = processedHtml.replace(
-            Regex("""<div class="aider-intention">(.*?)</div>""", RegexOption.DOT_MATCHES_ALL)) { matchResult ->
-                """
-                <div class="collapsible-panel expanded">
-                    <div class="collapsible-header intention" onclick="this.parentElement.classList.toggle('expanded')">
-                        <span class="collapsible-title">Intention</span>
-                        <span class="collapsible-arrow">^</span>
-                    </div>
-                    <div class="collapsible-content">
-                        ${matchResult.groupValues[1].trim()}
-                    </div>
-                </div>
-                """.trimIndent()
-        }
-        
-        // Process summary blocks with preserved formatting
-        processedHtml = processedHtml.replace(
-            Regex("""<div class="aider-summary">(.*?)</div>""", RegexOption.DOT_MATCHES_ALL)) { matchResult ->
-                """
-                <div class="collapsible-panel expanded">
-                    <div class="collapsible-header summary" onclick="this.parentElement.classList.toggle('expanded')">
-                        <span class="collapsible-title">Summary</span>
-                        <span class="collapsible-arrow">^</span>
-                    </div>
-                    <div class="collapsible-content">
-                        ${matchResult.groupValues[1].trim()}
-                    </div>
-                </div>
-                """.trimIndent()
-        }
-
-        // Process file paths followed by code blocks with search/replace content
-        val filePathCodeBlockPattern = Regex("""(?m)^([^\n]+?)\n```[^\n]*\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n```""", RegexOption.DOT_MATCHES_ALL)
-        processedHtml = processedHtml.replace(filePathCodeBlockPattern) { matchResult ->
-            val (filePath, searchBlock, replaceBlock) = matchResult.destructured
-            """
-            <div class="collapsible-panel expanded">
-                <div class="collapsible-header code" onclick="this.parentElement.classList.toggle('expanded')">
-                    <span class="collapsible-title">${escapeHtml(filePath.trim())}</span>
+        // Define a helper function to create collapsible panels
+        fun createCollapsiblePanel(
+            title: String, 
+            content: String, 
+            cssClass: String = "", 
+            isEscaped: Boolean = true,
+            isExpanded: Boolean = true
+        ): String {
+            val expandedClass = if (isExpanded) " expanded" else ""
+            val contentHtml = if (isEscaped) "<pre><code>${escapeHtml(content.trim())}</code></pre>" else content.trim()
+            
+            return """
+            <div class="collapsible-panel$expandedClass">
+                <div class="collapsible-header $cssClass" onclick="this.parentElement.classList.toggle('expanded')">
+                    <span class="collapsible-title">$title</span>
                     <span class="collapsible-arrow">^</span>
                 </div>
                 <div class="collapsible-content">
-                    <div class="code-block">
-                        <div class="file-path">${escapeHtml(filePath.trim())}</div>
-                        <pre>
-                            <code class="search-block">${escapeHtml(searchBlock.trim())}</code>
-                            <code class="replace-block">${escapeHtml(replaceBlock.trim())}</code>
-                        </pre>
-                    </div>
+                    $contentHtml
                 </div>
             </div>
             """.trimIndent()
         }
 
-        // Process remaining standard search/replace blocks
-        return processedHtml.replace(
-            Regex("""(?s)<pre><code>(.+?)<<<<<<< SEARCH\n(.*?)=======\n(.*?)>>>>>>> REPLACE\n</code></pre>"""),
-            { matchResult ->
-                val (_, filePath, searchBlock, replaceBlock) = matchResult.groupValues
+        // Process standard blocks with consistent formatting
+        val blockPatterns = mapOf(
+            """<aider-command>\s*(.*?)\s*</aider-command>""" to 
+                { content: String -> createCollapsiblePanel("Aider Command", content, isExpanded = false) },
+            
+            """<aider-system-prompt>(.*?)</aider-system-prompt>""" to 
+                { content: String -> createCollapsiblePanel("System Prompt", content, "system") },
+            
+            """<aider-user-prompt>(.*?)</aider-user-prompt>""" to 
+                { content: String -> createCollapsiblePanel("User Request", content, "user") },
+            
+            """<div class="aider-intention">(.*?)</div>""" to 
+                { content: String -> createCollapsiblePanel("Intention", content, "intention", isEscaped = false) },
+            
+            """<div class="aider-summary">(.*?)</div>""" to 
+                { content: String -> createCollapsiblePanel("Summary", content, "summary", isEscaped = false) }
+        )
+
+        // Apply all standard block patterns
+        blockPatterns.forEach { (pattern, formatter) ->
+            processedHtml = processedHtml.replace(
+                Regex(pattern, RegexOption.DOT_MATCHES_ALL)
+            ) { matchResult ->
+                formatter(matchResult.groupValues[1])
+            }
+        }
+
+        // Process search/replace blocks - both standalone and within pre/code tags
+        val searchReplacePatterns = listOf(
+            // Pattern 1: File path followed by code block with search/replace content
+            Regex("""(?m)^([^\n]+?)\n```[^\n]*\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n```""", 
+                RegexOption.DOT_MATCHES_ALL),
+            
+            // Pattern 2: Already HTML-formatted code blocks with search/replace content
+            Regex("""(?s)<pre><code>(.+?)<<<<<<< SEARCH\n(.*?)=======\n(.*?)>>>>>>> REPLACE\n</code></pre>""")
+        )
+
+        // Process both search/replace patterns with consistent output format
+        searchReplacePatterns.forEach { pattern ->
+            processedHtml = processedHtml.replace(pattern) { matchResult ->
+                val filePath = matchResult.groupValues[1].trim()
+                val searchBlock = matchResult.groupValues[2]
+                val replaceBlock = matchResult.groupValues[3]
+                
                 """
                 <div class="collapsible-panel expanded">
                     <div class="collapsible-header code" onclick="this.parentElement.classList.toggle('expanded')">
@@ -709,16 +668,20 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         <span class="collapsible-arrow">^</span>
                     </div>
                     <div class="collapsible-content">
-                        <pre>
-                        <code class="search-block">${escapeHtml(searchBlock)}</code>
-                        <div class="divider"></div>
-                        <code class="replace-block">${escapeHtml(replaceBlock)}</code>
-                        </pre>
+                        <div class="code-block">
+                            <div class="file-path">${escapeHtml(filePath)}</div>
+                            <pre>
+                                <code class="search-block">${escapeHtml(searchBlock.trim())}</code>
+                                <code class="replace-block">${escapeHtml(replaceBlock.trim())}</code>
+                            </pre>
+                        </div>
                     </div>
                 </div>
                 """.trimIndent()
             }
-        )
+        }
+
+        return processedHtml
     }
 
 }
