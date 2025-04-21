@@ -151,7 +151,7 @@ ${diffResult?.diffContent ?: "No diff content available"}
                     projectPath = project.basePath ?: "",
                     options = CommandOptions(
                         commitHashToCompareWith = fromRef,
-                        summarizedOutput = true
+                        summarizedOutput = settings.summarizedOutput
                     ),
                     sidecarMode = settings.useSidecarMode
                 )
