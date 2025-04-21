@@ -104,6 +104,7 @@ class SearchReplaceBlockParser(private val project: Project) {
                     // Creating a new file
                     file.writeText(block.replaceContent)
                     refreshVirtualFile(absolutePath)
+                    modifiedFiles.add(block.filePath)
                     results.add(BlockResult(block, true, "File created successfully"))
                 } else if (file.exists()) {
                     // Modifying an existing file
@@ -112,6 +113,7 @@ class SearchReplaceBlockParser(private val project: Project) {
                         // Empty search content means append to file
                         file.writeText(content + block.replaceContent)
                         refreshVirtualFile(absolutePath)
+                        modifiedFiles.add(block.filePath)
                         results.add(BlockResult(block, true, "Content appended to file"))
                     } else {
                         // Replace content in file
@@ -119,6 +121,7 @@ class SearchReplaceBlockParser(private val project: Project) {
                         if (content != newContent) {
                             file.writeText(newContent)
                             refreshVirtualFile(absolutePath)
+                            modifiedFiles.add(block.filePath)
                             results.add(BlockResult(block, true, "Content replaced successfully"))
                         } else {
                             val message = "Search content not found in file: ${block.filePath}"
@@ -138,7 +141,8 @@ class SearchReplaceBlockParser(private val project: Project) {
             }
         }
         
-        return results
+        // Convert the list of BlockResult to the expected Map<String, Boolean> format
+        return results.associate { it.block.filePath to it.success }
     }
     
     /**
