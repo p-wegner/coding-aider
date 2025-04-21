@@ -7,9 +7,6 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.vcs.log.VcsLogCommitSelection
 import com.intellij.vcs.log.VcsLogDataKeys
 
-/**
- * Action that can be triggered from the Git log window to review changes between selected commits.
- */
 class GitLogCodeReviewAction : AnAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 

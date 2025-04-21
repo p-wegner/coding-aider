@@ -8,10 +8,12 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.VcsException
+import com.intellij.openapi.vfs.LocalFileSystem
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.CommandOptions
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
+import de.andrena.codingaider.services.FileDataCollectionService
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.GitDiffUtils
 import git4idea.GitUtil
@@ -109,9 +111,20 @@ ${diffResult?.diffContent ?: "No diff content available"}
                     |7. Documentation needs
                 """.trimMargin()
 
-                // Create command data including the diff file
-                val allFiles = (diffResult?.files ?: emptyList()) + 
-                    FileData(diffFile.absolutePath, true)
+                // Get files using FileDataCollectionService to respect AiderIgnore and include persistent files
+                val fileDataCollectionService = project.getService(FileDataCollectionService::class.java)
+                
+                // Start with the changed files from the diff
+                val changedVirtualFiles = diffResult?.files?.mapNotNull { fileData ->
+                    LocalFileSystem.getInstance().findFileByPath(fileData.filePath)
+                }?.toTypedArray() ?: emptyArray()
+                
+                // Collect all files respecting AiderIgnore and including persistent files
+                val allFiles = fileDataCollectionService.collectAllFiles(changedVirtualFiles)
+                    .toMutableList()
+                
+                // Add the diff file with read-only flag
+                allFiles.add(FileData(diffFile.absolutePath, true))
                 
                 val commandData = CommandData(
                     message = """Review the code changes between Git refs '$fromRef' and '$toRef'.
