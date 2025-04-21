@@ -7,3 +7,5 @@
 - [ ] Bug: fix encoding issues with markdown viewer
 - [ ] Bug: (sidecar) verify env vars (api keys) for sidecar mode properly set
 - [ ] Bug: refine plan missing prompt?
+- [ ] Bug: aiderignore not used for every action
+- [ ] Feature: stash in persistent files view in input dialog
