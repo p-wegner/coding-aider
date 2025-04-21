@@ -68,27 +68,27 @@ class PluginBasedEditsService(private val project: Project) {
         if (changesApplied == 0 && blocks.isEmpty()) {
             return llmResponse
         }
-        
         // Generate a concise summary of the changes
         val summary = buildString {
-            appendLine("## Changes Applied")
-            appendLine()
-            
-            // Simple count of changes
-            appendLine("**Applied $changesApplied changes to ${parser.getModifiedFiles().size + clipboardEditService.getModifiedFiles().filter { !modifiedFilesByBlocks.contains(it) }.size} files**")
-            
             // List modified files in a compact format
-            val allModifiedFiles = (parser.getModifiedFiles() + 
+            val allModifiedFiles = (parser.getModifiedFiles() +
                 clipboardEditService.getModifiedFiles().filter { !modifiedFilesByBlocks.contains(it) }).sorted()
-            
+
+
+            appendLine("## Original LLM Response")
+            appendLine()
+            appendLine(llmResponse)
+            appendLine()
             if (allModifiedFiles.isNotEmpty()) {
                 appendLine("**Files:** ${allModifiedFiles.joinToString(", ") { "`$it`" }}")
                 appendLine()
             }
-            
-            appendLine("## Original LLM Response")
+            appendLine("## Changes Applied")
             appendLine()
-            appendLine(llmResponse)
+
+            // Simple count of changes
+            appendLine("**Applied $changesApplied changes to ${parser.getModifiedFiles().size + clipboardEditService.getModifiedFiles().filter { !modifiedFilesByBlocks.contains(it) }.size} files**")
+            
         }
         
         return summary
