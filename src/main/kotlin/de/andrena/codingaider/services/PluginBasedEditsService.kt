@@ -1,8 +1,10 @@
 package de.andrena.codingaider.services
 
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
+import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.SearchReplaceBlockParser
 
 /**
@@ -12,6 +14,8 @@ import de.andrena.codingaider.utils.SearchReplaceBlockParser
 class PluginBasedEditsService(private val project: Project) {
     private val logger = Logger.getInstance(PluginBasedEditsService::class.java)
     private val parser = SearchReplaceBlockParser(project)
+    private val clipboardEditService = project.service<ClipboardEditService>()
+    private val settings = AiderSettings.getInstance()
     
     /**
      * Processes the LLM response and applies any SEARCH/REPLACE blocks
@@ -21,39 +25,64 @@ class PluginBasedEditsService(private val project: Project) {
     fun processLlmResponse(llmResponse: String): String {
         logger.info("Processing LLM response for plugin-based edits")
         
+        // First try to parse and apply SEARCH/REPLACE blocks
         val blocks = parser.parseBlocks(llmResponse)
-        if (blocks.isEmpty()) {
+        var changesApplied = 0
+        
+        if (blocks.isNotEmpty()) {
+            logger.info("Found ${blocks.size} SEARCH/REPLACE blocks in LLM response")
+            val results = parser.applyBlocks(blocks)
+            changesApplied = results.count { it.value }
+        } else {
             logger.info("No SEARCH/REPLACE blocks found in LLM response")
-            return llmResponse
         }
         
-        logger.info("Found ${blocks.size} SEARCH/REPLACE blocks in LLM response")
+        // If lenient edits is enabled, also try to process other edit formats
+        if (settings.lenientEdits) {
+            logger.info("Lenient edits enabled, trying to process other edit formats")
+            val additionalChanges = clipboardEditService.processText(llmResponse)
+            if (additionalChanges > 0) {
+                logger.info("Applied $additionalChanges additional changes using other edit formats")
+                changesApplied += additionalChanges
+            }
+        }
         
-        val results = parser.applyBlocks(blocks)
+        // If no changes were applied and no blocks were found, return the original response
+        if (changesApplied == 0 && blocks.isEmpty()) {
+            return llmResponse
+        }
         
         // Generate a summary of the changes
         val summary = buildString {
             appendLine("## Changes Applied")
             appendLine()
             
-            val successCount = results.count { it.value }
-            val failureCount = results.count { !it.value }
-            
-            appendLine("**Summary:** Applied $successCount changes, $failureCount failed")
-            appendLine()
-            
-            if (successCount > 0) {
-                appendLine("### Successfully Modified Files:")
-                results.filter { it.value }.keys.sorted().forEach { 
-                    appendLine("- `$it`") 
+            if (blocks.isNotEmpty()) {
+                val successCount = blocks.size
+                val failureCount = blocks.size - changesApplied
+                
+                appendLine("**Summary:** Applied $changesApplied changes")
+                if (settings.lenientEdits) {
+                    appendLine("(Using both SEARCH/REPLACE blocks and other edit formats)")
+                } else {
+                    appendLine("(Using SEARCH/REPLACE blocks)")
                 }
                 appendLine()
-            }
-            
-            if (failureCount > 0) {
-                appendLine("### Failed to Modify Files:")
-                results.filter { !it.value }.keys.sorted().forEach { 
-                    appendLine("- `$it`") 
+                
+                if (successCount > 0) {
+                    appendLine("### Modified Files:")
+                    parser.getModifiedFiles().sorted().forEach {
+                        appendLine("- `$it`")
+                    }
+                    appendLine()
+                }
+            } else if (settings.lenientEdits && changesApplied > 0) {
+                appendLine("**Summary:** Applied $changesApplied changes using other edit formats")
+                appendLine()
+                
+                appendLine("### Modified Files:")
+                clipboardEditService.getModifiedFiles().sorted().forEach {
+                    appendLine("- `$it`")
                 }
                 appendLine()
             }

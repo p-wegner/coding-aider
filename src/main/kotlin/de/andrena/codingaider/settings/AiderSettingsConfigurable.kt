@@ -56,6 +56,7 @@ class AiderSettingsConfigurable() : Configurable {
     private val documentationLlmComboBox = ComboBox(apiKeyChecker.getAllLlmOptions().toTypedArray())
     private val summarizedOutputCheckBox = JBCheckBox("Enable summarized output")
     private val pluginBasedEditsCheckBox = JBCheckBox("Use Plugin-Based Edits (Experimental)") // Added for plugin-based edits
+    private val lenientEditsCheckBox = JBCheckBox("Allow Lenient Edits (Process multiple formats)")
 
     override fun getDisplayName(): String = "Aider"
 
@@ -103,6 +104,13 @@ class AiderSettingsConfigurable() : Configurable {
                         .component
                         .apply {
                             toolTipText = "If enabled, the plugin handles applying edits using /ask and a specific diff format, bypassing Aider's internal edit formats."
+                        }
+                }
+                row {
+                    cell(lenientEditsCheckBox)
+                        .component
+                        .apply {
+                            toolTipText = "If enabled, the plugin will process all edit formats (diff, whole, udiff) in a single response, regardless of the configured edit format."
                         }
                 }
             }
@@ -295,6 +303,7 @@ class AiderSettingsConfigurable() : Configurable {
                 reasoningEffortComboBox.selectedItem as String != settings.reasoningEffort ||
                 defaultModeComboBox.selectedItem != settings.defaultMode ||
                 pluginBasedEditsCheckBox.isSelected != settings.pluginBasedEdits || // Added check for pluginBasedEdits
+                lenientEditsCheckBox.isSelected != settings.lenientEdits ||
                 aiderSetupPanel.isModified()
 
     }
@@ -335,6 +344,7 @@ class AiderSettingsConfigurable() : Configurable {
         settings.reasoningEffort = reasoningEffortComboBox.selectedItem as String
         settings.defaultMode = defaultModeComboBox.selectedItem as AiderMode
         settings.pluginBasedEdits = pluginBasedEditsCheckBox.isSelected // Added save for pluginBasedEdits
+        settings.lenientEdits = lenientEditsCheckBox.isSelected
         aiderSetupPanel.apply()
         settings.notifySettingsChanged()
     }
@@ -373,6 +383,7 @@ class AiderSettingsConfigurable() : Configurable {
         reasoningEffortComboBox.selectedItem = settings.reasoningEffort
         defaultModeComboBox.selectedItem = settings.defaultMode
         pluginBasedEditsCheckBox.isSelected = settings.pluginBasedEdits // Added reset for pluginBasedEdits
+        lenientEditsCheckBox.isSelected = settings.lenientEdits
         aiderSetupPanel.reset()
         settings.notifySettingsChanged()
     }

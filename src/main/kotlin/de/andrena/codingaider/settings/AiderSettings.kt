@@ -54,7 +54,8 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var optionsPanelCollapsed: Boolean = true,
         var enableLocalModelCostMap: Boolean = false,
         var defaultMode: AiderMode = AiderDefaults.DEFAULT_MODE,
-        var pluginBasedEdits: Boolean = AiderDefaults.PLUGIN_BASED_EDITS // Added for plugin-based edits feature
+        var pluginBasedEdits: Boolean = AiderDefaults.PLUGIN_BASED_EDITS, // Added for plugin-based edits feature
+        var lenientEdits: Boolean = AiderDefaults.LENIENT_EDITS // Allow processing of multiple edit formats
     )
 
 
@@ -250,6 +251,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.pluginBasedEdits
         set(value) {
             myState.pluginBasedEdits = value
+        }
+
+    var lenientEdits: Boolean
+        get() = myState.lenientEdits
+        set(value) {
+            myState.lenientEdits = value
         }
 
 

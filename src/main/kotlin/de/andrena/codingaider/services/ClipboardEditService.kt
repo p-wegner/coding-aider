@@ -13,6 +13,7 @@ import java.util.regex.Pattern
 
 @Service(Service.Level.PROJECT)
 class ClipboardEditService(private val project: Project) {
+    private val modifiedFiles = mutableSetOf<String>()
     companion object {
         // Unified pattern for search/replace blocks with consistent group indices
         private val SEARCH_REPLACE_PATTERN = Pattern.compile(
@@ -46,25 +47,44 @@ class ClipboardEditService(private val project: Project) {
     fun processText(text: String): Int {
         var appliedChanges = 0
         
+        // Clear the list of modified files
+        clearModifiedFiles()
+        
         // Process search/replace blocks (both standard and fenced formats)
         appliedChanges += applyAllMatches(text, SEARCH_REPLACE_PATTERN) { filePath, searchText, replaceText ->
             if (filePath.isNotBlank()) {
-                applyChange(filePath, searchText, replaceText)
+                val success = applyChange(filePath, searchText, replaceText)
+                if (success) {
+                    modifiedFiles.add(filePath)
+                }
+                success
             } else false
         }
         
         appliedChanges += applyAllMatches(text, DIFF_FENCED_PATTERN) { filePath, searchText, replaceText ->
-            applyChange(filePath, searchText, replaceText)
+            val success = applyChange(filePath, searchText, replaceText)
+            if (success) {
+                modifiedFiles.add(filePath)
+            }
+            success
         }
         
         // Process whole file replacements
         appliedChanges += applyAllMatches(text, WHOLE_PATTERN) { filePath, newContent, _ ->
-            replaceWholeFile(filePath, newContent)
+            val success = replaceWholeFile(filePath, newContent)
+            if (success) {
+                modifiedFiles.add(filePath)
+            }
+            success
         }
         
         // Process unified diff format
         appliedChanges += applyAllMatches(text, UDIFF_PATTERN) { filePath, diffContent, _ ->
-            applyUdiffChange(filePath, diffContent)
+            val success = applyUdiffChange(filePath, diffContent)
+            if (success) {
+                modifiedFiles.add(filePath)
+            }
+            success
         }
         
         return appliedChanges
@@ -239,5 +259,20 @@ class ClipboardEditService(private val project: Project) {
             .getNotificationGroup("Coding Aider Notifications")
             .createNotification(content, type)
             .notify(project)
+    }
+
+    /**
+     * Get the list of files that were modified by the last processText call
+     * @return List of modified file paths
+     */
+    fun getModifiedFiles(): List<String> {
+        return modifiedFiles.toList()
+    }
+
+    /**
+     * Clear the list of modified files
+     */
+    fun clearModifiedFiles() {
+        modifiedFiles.clear()
     }
 }

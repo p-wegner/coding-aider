@@ -12,6 +12,7 @@ import java.nio.file.Paths
  */
 class SearchReplaceBlockParser(private val project: Project) {
     private val logger = Logger.getInstance(SearchReplaceBlockParser::class.java)
+    private val modifiedFiles = mutableSetOf<String>()
 
     /**
      * Represents a parsed SEARCH/REPLACE block
@@ -74,11 +75,21 @@ class SearchReplaceBlockParser(private val project: Project) {
     )
 
     /**
+     * Get the list of files that were modified by the last applyBlocks call
+     * @return List of modified file paths
+     */
+    fun getModifiedFiles(): List<String> {
+        return modifiedFiles.toList()
+    }
+
+    /**
      * Applies the SEARCH/REPLACE blocks to the files
      * @param blocks List of SearchReplaceBlock objects to apply
-     * @return List of BlockResult objects with success/failure status for each block
+     * @return Map of file paths to success/failure status
      */
-    fun applyBlocks(blocks: List<SearchReplaceBlock>): List<BlockResult> {
+    fun applyBlocks(blocks: List<SearchReplaceBlock>): Map<String, Boolean> {
+        // Clear the list of modified files
+        modifiedFiles.clear()
         val results = mutableListOf<BlockResult>()
         
         for (block in blocks) {
