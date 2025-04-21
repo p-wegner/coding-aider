@@ -28,22 +28,39 @@ class PluginBasedEditsService(private val project: Project) {
         // First try to parse and apply SEARCH/REPLACE blocks
         val blocks = parser.parseBlocks(llmResponse)
         var changesApplied = 0
+        val modifiedFilesByBlocks = mutableSetOf<String>()
         
         if (blocks.isNotEmpty()) {
             logger.info("Found ${blocks.size} SEARCH/REPLACE blocks in LLM response")
             val results = parser.applyBlocks(blocks)
             changesApplied = results.count { it.value }
+            
+            // Track which files were modified by SEARCH/REPLACE blocks
+            modifiedFilesByBlocks.addAll(parser.getModifiedFiles())
         } else {
             logger.info("No SEARCH/REPLACE blocks found in LLM response")
         }
         
         // If lenient edits is enabled, also try to process other edit formats
+        // but only for files not already modified by SEARCH/REPLACE blocks
         if (settings.lenientEdits) {
             logger.info("Lenient edits enabled, trying to process other edit formats")
+            
+            // Clear any previous state in the clipboard service
+            clipboardEditService.clearModifiedFiles()
+            
+            // Process the text with the clipboard service
             val additionalChanges = clipboardEditService.processText(llmResponse)
-            if (additionalChanges > 0) {
-                logger.info("Applied $additionalChanges additional changes using other edit formats")
-                changesApplied += additionalChanges
+            
+            // Get the list of files modified by the clipboard service
+            val clipboardModifiedFiles = clipboardEditService.getModifiedFiles()
+            
+            // Count only changes to files not already modified by SEARCH/REPLACE blocks
+            val uniqueAdditionalChanges = clipboardModifiedFiles.count { !modifiedFilesByBlocks.contains(it) }
+            
+            if (uniqueAdditionalChanges > 0) {
+                logger.info("Applied $uniqueAdditionalChanges additional changes using other edit formats")
+                changesApplied += uniqueAdditionalChanges
             }
         }
         
@@ -81,9 +98,13 @@ class PluginBasedEditsService(private val project: Project) {
                 appendLine()
                 
                 appendLine("### Modified Files:")
-                clipboardEditService.getModifiedFiles().sorted().forEach {
-                    appendLine("- `$it`")
-                }
+                // Only show files not already modified by SEARCH/REPLACE blocks
+                clipboardEditService.getModifiedFiles()
+                    .filter { !modifiedFilesByBlocks.contains(it) }
+                    .sorted()
+                    .forEach {
+                        appendLine("- `$it`")
+                    }
                 appendLine()
             }
             
