@@ -146,8 +146,16 @@ class CommandExecutor(
                     }
                 }
                 .collectList().block()?.joinToString("\n") ?: ""
-            notifyObservers { it.onCommandComplete(response, 0) }
-            response
+            
+            // Process the response for plugin-based edits if enabled
+            val finalResponse = if (settings.pluginBasedEdits) {
+                project.service<PluginBasedEditsService>().processLlmResponse(response)
+            } else {
+                response
+            }
+            
+            notifyObservers { it.onCommandComplete(finalResponse, 0) }
+            finalResponse
         } catch (e: Exception) {
             val errorMessage = "Sidecar command failed: ${e.message}"
             logger.error(errorMessage, e)
@@ -234,7 +242,13 @@ class CommandExecutor(
         } else {
             val exitCode = process.exitValue()
             val status = if (exitCode == 0) "executed successfully" else "failed with exit code $exitCode"
-            val finalOutput = commandLogger.prependCommandToOutput("$output\nAider command $status")
+            var finalOutput = commandLogger.prependCommandToOutput("$output\nAider command $status")
+            
+            // Process plugin-based edits if enabled
+            if (settings.pluginBasedEdits && exitCode == 0) {
+                finalOutput = project.service<PluginBasedEditsService>().processLlmResponse(finalOutput)
+            }
+            
             notifyObservers { it.onCommandComplete(finalOutput, exitCode) }
             return finalOutput
         }

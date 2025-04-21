@@ -16,6 +16,10 @@
 - [x] If `pluginBasedEdits` is true in sidecar mode:
     - Prepend `/ask ` to the command string sent via `processInteractor`.
     - Prepend the `diff` format instruction prompt to the original user message content sent after `/ask `.
+- [x] Create a `SearchReplaceBlockParser` class to parse and apply SEARCH/REPLACE blocks.
+- [x] Create a `PluginBasedEditsService` to handle the processing of LLM responses.
+- [x] Modify `CommandExecutor.handleProcessCompletion` to process plugin-based edits.
+- [x] Modify `CommandExecutor.executeSidecarCommand` to process plugin-based edits.
 - [ ] Verify the `diff` format instructions correctly guide the LLM.
 - [ ] Test functionality with the setting enabled and disabled for normal Aider commands.
 - [ ] Test functionality with the setting enabled and disabled in Docker mode.
