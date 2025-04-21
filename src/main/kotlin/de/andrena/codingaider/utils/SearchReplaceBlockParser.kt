@@ -65,12 +65,21 @@ class SearchReplaceBlockParser(private val project: Project) {
     }
 
     /**
+     * Represents the result of applying a search/replace block
+     */
+    data class BlockResult(
+        val block: SearchReplaceBlock,
+        val success: Boolean,
+        val message: String? = null
+    )
+
+    /**
      * Applies the SEARCH/REPLACE blocks to the files
      * @param blocks List of SearchReplaceBlock objects to apply
-     * @return Map of file paths to success/failure status
+     * @return List of BlockResult objects with success/failure status for each block
      */
-    fun applyBlocks(blocks: List<SearchReplaceBlock>): Map<String, Boolean> {
-        val results = mutableMapOf<String, Boolean>()
+    fun applyBlocks(blocks: List<SearchReplaceBlock>): List<BlockResult> {
+        val results = mutableListOf<BlockResult>()
         
         for (block in blocks) {
             try {
@@ -84,7 +93,7 @@ class SearchReplaceBlockParser(private val project: Project) {
                     // Creating a new file
                     file.writeText(block.replaceContent)
                     refreshVirtualFile(absolutePath)
-                    results[block.filePath] = true
+                    results.add(BlockResult(block, true, "File created successfully"))
                 } else if (file.exists()) {
                     // Modifying an existing file
                     val content = file.readText()
@@ -92,26 +101,29 @@ class SearchReplaceBlockParser(private val project: Project) {
                         // Empty search content means append to file
                         file.writeText(content + block.replaceContent)
                         refreshVirtualFile(absolutePath)
-                        results[block.filePath] = true
+                        results.add(BlockResult(block, true, "Content appended to file"))
                     } else {
                         // Replace content in file
                         val newContent = content.replace(block.searchContent, block.replaceContent)
                         if (content != newContent) {
                             file.writeText(newContent)
                             refreshVirtualFile(absolutePath)
-                            results[block.filePath] = true
+                            results.add(BlockResult(block, true, "Content replaced successfully"))
                         } else {
-                            logger.warn("Search content not found in file: ${block.filePath}")
-                            results[block.filePath] = false
+                            val message = "Search content not found in file: ${block.filePath}"
+                            logger.warn(message)
+                            results.add(BlockResult(block, false, message))
                         }
                     }
                 } else {
-                    logger.warn("File not found and search content is not empty: ${block.filePath}")
-                    results[block.filePath] = false
+                    val message = "File not found and search content is not empty: ${block.filePath}"
+                    logger.warn(message)
+                    results.add(BlockResult(block, false, message))
                 }
             } catch (e: Exception) {
-                logger.error("Error applying block to file: ${block.filePath}", e)
-                results[block.filePath] = false
+                val message = "Error applying block to file: ${block.filePath} - ${e.message}"
+                logger.error(message, e)
+                results.add(BlockResult(block, false, message))
             }
         }
         
