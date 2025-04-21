@@ -100,12 +100,18 @@ class SearchReplaceBlockParser(private val project: Project) {
                 // Create parent directories if they don't exist
                 file.parentFile?.mkdirs()
                 
-                if (!file.exists() && block.searchContent.isBlank()) {
-                    // Creating a new file
-                    file.writeText(block.replaceContent)
-                    refreshVirtualFile(absolutePath)
-                    modifiedFiles.add(block.filePath)
-                    results.add(BlockResult(block, true, "File created successfully"))
+                if (!file.exists()) {
+                    if (block.searchContent.isBlank()) {
+                        // Creating a new file with just the replace content
+                        file.writeText(block.replaceContent)
+                        refreshVirtualFile(absolutePath)
+                        modifiedFiles.add(block.filePath)
+                        results.add(BlockResult(block, true, "File created successfully"))
+                    } else {
+                        val message = "File not found and search content is not empty: ${block.filePath}"
+                        logger.warn(message)
+                        results.add(BlockResult(block, false, message))
+                    }
                 } else if (file.exists()) {
                     // Modifying an existing file
                     val content = file.readText()
@@ -129,10 +135,6 @@ class SearchReplaceBlockParser(private val project: Project) {
                             results.add(BlockResult(block, false, message))
                         }
                     }
-                } else {
-                    val message = "File not found and search content is not empty: ${block.filePath}"
-                    logger.warn(message)
-                    results.add(BlockResult(block, false, message))
                 }
             } catch (e: Exception) {
                 val message = "Error applying block to file: ${block.filePath} - ${e.message}"

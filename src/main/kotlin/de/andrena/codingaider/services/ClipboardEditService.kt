@@ -118,7 +118,16 @@ class ClipboardEditService(private val project: Project) {
             val document = FileDocumentManager.getInstance().getDocument(file)
                 ?: return false
             
+            // If search text is empty and the file was just created, replace the entire content
             val fileContent = document.text
+            if (searchText.isEmpty() && fileContent.isEmpty()) {
+                WriteCommandAction.runWriteCommandAction(project) {
+                    document.setText(replaceText)
+                }
+                return true
+            }
+            
+            // Otherwise, perform a normal search and replace
             if (!fileContent.contains(searchText)) {
                 showNotification(
                     "Search text not found in file: $filePath",
