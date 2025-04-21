@@ -6,6 +6,7 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.AiderOutputSummaryService
 import de.andrena.codingaider.services.plans.AiderPlanService
+import de.andrena.codingaider.settings.AiderDefaults
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.settings.CustomLlmProviderService
 
@@ -15,6 +16,9 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
     abstract fun cleanupAfterExecution()
     fun buildCommonArgs(commandData: CommandData, settings: AiderSettings): MutableList<String> {
         return buildList {
+            // Check if plugin-based edits is enabled
+            val isPluginBasedEdits = settings.pluginBasedEdits
+
             // Handle model selection based on provider type
             if (commandData.llm.isNotEmpty()) {
                 val customProvider = CustomLlmProviderService.Companion.getInstance().getProvider(commandData.llm)
@@ -24,11 +28,12 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
                     // Handle model name based on provider type
                     val modelName = customProvider.modelName
                     // Only add prefix if needed and not already prefixed
-                    val prefixedModelName = if (!modelName.startsWith("${customProvider.type.modelNamePrefix}/") && customProvider.type.requiresModelPrefix) {
-                        "${customProvider.type.modelNamePrefix}/$modelName"
-                    } else {
-                        modelName
-                    }
+                    val prefixedModelName =
+                        if (!modelName.startsWith("${customProvider.type.modelNamePrefix}/") && customProvider.type.requiresModelPrefix) {
+                            "${customProvider.type.modelNamePrefix}/$modelName"
+                        } else {
+                            modelName
+                        }
                     add(prefixedModelName)
                 } else {
                     if (commandData.llm.startsWith("--")) {
@@ -108,7 +113,18 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
             when (commandData.aiderMode) {
                 AiderMode.NORMAL -> {
                     add("-m")
-                    if (settings.summarizedOutput) {
+                    if (settings.pluginBasedEdits) {
+                        // If plugin-based edits is enabled, prepend /ask and the instruction prompt
+                        add(
+                            "/ask ${AiderDefaults.PLUGIN_BASED_EDITS_INSTRUCTION}\n\n${
+                                if (settings.summarizedOutput) {
+                                    project.service<AiderOutputSummaryService>().createPrompt(commandData.message)
+                                } else {
+                                    commandData.message
+                                }
+                            }"
+                        )
+                    } else if (settings.summarizedOutput) {
                         add(
                             project.service<AiderOutputSummaryService>()
                                 .createPrompt(commandData.message)
@@ -120,7 +136,16 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
 
                 AiderMode.STRUCTURED -> {
                     add("-m")
-                    add(project.service<AiderPlanService>().createAiderPlanSystemPrompt(commandData))
+                    if (settings.pluginBasedEdits) {
+                        // If plugin-based edits is enabled, prepend /ask and the instruction prompt
+                        add(
+                            "/ask ${AiderDefaults.PLUGIN_BASED_EDITS_INSTRUCTION}\n\n${
+                                project.service<AiderPlanService>().createAiderPlanSystemPrompt(commandData)
+                            }"
+                        )
+                    } else {
+                        add(project.service<AiderPlanService>().createAiderPlanSystemPrompt(commandData))
+                    }
                 }
 
                 AiderMode.ARCHITECT -> {
@@ -133,7 +158,7 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
         }.toMutableList()
     }
 
-     fun isReasoningModel(llm: String): Boolean = llm.equals("o1") || llm.equals("o3-mini")
+    fun isReasoningModel(llm: String): Boolean = llm.equals("o1") || llm.equals("o3-mini")
 
 
 }

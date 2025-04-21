@@ -16,6 +16,7 @@ import de.andrena.codingaider.services.FileExtractorService
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.services.sidecar.AiderProcessManager
 import de.andrena.codingaider.services.sidecar.SidecarProcessInitializer
+import de.andrena.codingaider.settings.AiderDefaults
 import de.andrena.codingaider.settings.AiderProjectSettings
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.ApiKeyChecker
@@ -195,11 +196,18 @@ class CommandExecutor(
     }
 
     private fun buildSidecarCommandString(commandData: CommandData): String {
-        return when (commandData.aiderMode) {
+        val baseMessage = when (commandData.aiderMode) {
             AiderMode.NORMAL -> commandData.message
             AiderMode.STRUCTURED -> project.service<AiderPlanService>().createAiderPlanSystemPrompt(commandData)
             AiderMode.ARCHITECT -> "/architect ${commandData.message}"
             else -> ""
+        }
+        
+        // If plugin-based edits is enabled, prepend /ask and the instruction prompt
+        return if (settings.pluginBasedEdits) {
+            "/ask ${AiderDefaults.PLUGIN_BASED_EDITS_INSTRUCTION}\n\n$baseMessage"
+        } else {
+            baseMessage
         }
     }
 

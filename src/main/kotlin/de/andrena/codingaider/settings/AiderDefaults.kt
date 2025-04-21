@@ -9,6 +9,31 @@ object AiderDefaults {
     const val ENABLE_DOCUMENTATION_LOOKUP = false
     const val ALWAYS_INCLUDE_OPEN_FILES = false
     const val ALWAYS_INCLUDE_PLAN_CONTEXT_FILES = true
+
+    // TODO:  Format instruction for plugin-based edits
+    const val PLUGIN_BASED_EDITS_INSTRUCTION = """
+When making code changes, please format them as SEARCH/REPLACE blocks using this format:
+
+filepath
+```language
+<<<<<<< SEARCH
+code to search for
+=======
+code to replace with
+>>>>>>> REPLACE
+```
+
+For each change:
+1. Start with the relative file path on its own line
+2. Use triple backticks with the language name
+3. Include <<<<<<< SEARCH followed by the exact code to find
+4. Use ======= as a separator
+5. Include the new code after the separator
+6. End with >>>>>>> REPLACE
+7. Close with triple backticks
+
+To create a new file, use an empty SEARCH section.
+Make your changes precise and minimal."""
     // TODO: make enum with off, single plan, family
     const val ENABLE_AUTO_PLAN_CONTINUE = true
     const val ENABLE_AUTO_PLAN_CONTINUATION_IN_FAMILY = false
