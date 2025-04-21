@@ -69,42 +69,20 @@ class PluginBasedEditsService(private val project: Project) {
             return llmResponse
         }
         
-        // Generate a summary of the changes
+        // Generate a concise summary of the changes
         val summary = buildString {
             appendLine("## Changes Applied")
             appendLine()
             
-            if (blocks.isNotEmpty()) {
-                val successCount = blocks.size
-                val failureCount = blocks.size - changesApplied
-                
-                appendLine("**Summary:** Applied $changesApplied changes")
-                if (settings.lenientEdits) {
-                    appendLine("(Using both SEARCH/REPLACE blocks and other edit formats)")
-                } else {
-                    appendLine("(Using SEARCH/REPLACE blocks)")
-                }
-                appendLine()
-                
-                if (successCount > 0) {
-                    appendLine("### Modified Files:")
-                    parser.getModifiedFiles().sorted().forEach {
-                        appendLine("- `$it`")
-                    }
-                    appendLine()
-                }
-            } else if (settings.lenientEdits && changesApplied > 0) {
-                appendLine("**Summary:** Applied $changesApplied changes using other edit formats")
-                appendLine()
-                
-                appendLine("### Modified Files:")
-                // Only show files not already modified by SEARCH/REPLACE blocks
-                clipboardEditService.getModifiedFiles()
-                    .filter { !modifiedFilesByBlocks.contains(it) }
-                    .sorted()
-                    .forEach {
-                        appendLine("- `$it`")
-                    }
+            // Simple count of changes
+            appendLine("**Applied $changesApplied changes to ${parser.getModifiedFiles().size + clipboardEditService.getModifiedFiles().filter { !modifiedFilesByBlocks.contains(it) }.size} files**")
+            
+            // List modified files in a compact format
+            val allModifiedFiles = (parser.getModifiedFiles() + 
+                clipboardEditService.getModifiedFiles().filter { !modifiedFilesByBlocks.contains(it) }).sorted()
+            
+            if (allModifiedFiles.isNotEmpty()) {
+                appendLine("**Files:** ${allModifiedFiles.joinToString(", ") { "`$it`" }}")
                 appendLine()
             }
             
