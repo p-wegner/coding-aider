@@ -27,9 +27,9 @@ class ClipboardEditService(private val project: Project) {
             Pattern.MULTILINE
         )
         
-        // Whole file replacement pattern
+        // Whole file replacement pattern - exclude matches containing SEARCH/REPLACE blocks
         private val WHOLE_PATTERN = Pattern.compile(
-            """(.+?)\n```(?:\w*)\n([\s\S]*?)\n```""",
+            """(.+?)\n```(?:\w*)\n(?!.*?<<<<<<< SEARCH)([\s\S]*?)\n```""",
             Pattern.MULTILINE
         )
         
