@@ -3,6 +3,7 @@ package de.andrena.codingaider.utils
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
@@ -15,6 +16,7 @@ import java.util.regex.Pattern
 /**
  * Parses and applies various edit formats from LLM responses
  */
+@Service(Service.Level.PROJECT)
 class SearchReplaceBlockParser(private val project: Project) {
     private val logger = Logger.getInstance(SearchReplaceBlockParser::class.java)
     private val modifiedFiles = mutableSetOf<String>()
