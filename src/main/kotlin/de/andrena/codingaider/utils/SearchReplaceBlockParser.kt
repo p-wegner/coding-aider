@@ -1,63 +1,136 @@
 package de.andrena.codingaider.utils
 
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
+import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.fileEditor.FileDocumentManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import java.io.File
 import java.nio.file.Paths
+import java.util.regex.Pattern
 
 /**
- * Parses and applies SEARCH/REPLACE blocks from LLM responses
+ * Parses and applies various edit formats from LLM responses
  */
 class SearchReplaceBlockParser(private val project: Project) {
     private val logger = Logger.getInstance(SearchReplaceBlockParser::class.java)
     private val modifiedFiles = mutableSetOf<String>()
 
-    /**
-     * Represents a parsed SEARCH/REPLACE block
-     */
-    data class SearchReplaceBlock(
-        val filePath: String,
-        val language: String,
-        val searchContent: String,
-        val replaceContent: String
-    )
+    companion object {
+        // Standard search/replace block pattern
+        private val STANDARD_REGEX = """(?m)^([^\n]+)\n```([^\n]*)\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n```""".toRegex(RegexOption.DOT_MATCHES_ALL)
+        
+        // Quadruple backtick format
+        private val QUADRUPLE_REGEX = """(?m)^([^\n]+)\n````([^\n]*)\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n````""".toRegex(RegexOption.DOT_MATCHES_ALL)
+        
+        // Alternative format with fenced blocks (diff-fenced)
+        private val DIFF_FENCED_PATTERN = Pattern.compile(
+            """```\n(.+?)\n<<<<<<< SEARCH\n([\s\S]*?)=======\n([\s\S]*?)>>>>>>> REPLACE\n```""",
+            Pattern.MULTILINE
+        )
+        
+        // Whole file replacement pattern - exclude matches containing SEARCH/REPLACE blocks
+        private val WHOLE_PATTERN = Pattern.compile(
+            """(.+?)\n```(?:\w*)\n(?!.*?<<<<<<< SEARCH)([\s\S]*?)\n```""",
+            Pattern.MULTILINE
+        )
+        
+        // Unified diff format pattern
+        private val UDIFF_PATTERN = Pattern.compile(
+            """```diff\n--- (.+?)\n\+\+\+ \1\n@@ .* @@\n([\s\S]*?)\n```""",
+            Pattern.MULTILINE
+        )
+    }
 
     /**
-     * Parses the LLM response text to extract SEARCH/REPLACE blocks
-     * @param text The LLM response text
-     * @return List of parsed SearchReplaceBlock objects
+     * Represents a parsed edit block
      */
-    fun parseBlocks(text: String): List<SearchReplaceBlock> {
-        val blocks = mutableListOf<SearchReplaceBlock>()
+    data class EditBlock(
+        val filePath: String,
+        val language: String = "",
+        val searchContent: String = "",
+        val replaceContent: String = "",
+        val editType: EditType = EditType.SEARCH_REPLACE
+    )
+
+    enum class EditType {
+        SEARCH_REPLACE,
+        WHOLE_FILE,
+        UDIFF
+    }
+
+    /**
+     * Parses the LLM response text to extract all supported edit formats
+     * @param text The LLM response text
+     * @return List of parsed EditBlock objects
+     */
+    fun parseBlocks(text: String): List<EditBlock> {
+        val blocks = mutableListOf<EditBlock>()
         
-        // Match both standard and quadruple backtick formats
-        val standardRegex = """(?m)^([^\n]+)\n```([^\n]*)\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n```""".toRegex(RegexOption.DOT_MATCHES_ALL)
-        val quadrupleRegex = """(?m)^([^\n]+)\n````([^\n]*)\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n````""".toRegex(RegexOption.DOT_MATCHES_ALL)
-        
-        // Process standard format
-        standardRegex.findAll(text).forEach { match ->
+        // Process standard search/replace format
+        STANDARD_REGEX.findAll(text).forEach { match ->
             val (filePath, language, searchContent, replaceContent) = match.destructured
             blocks.add(
-                SearchReplaceBlock(
+                EditBlock(
                     filePath = filePath.trim(),
                     language = language.trim(),
                     searchContent = searchContent,
-                    replaceContent = replaceContent
+                    replaceContent = replaceContent,
+                    editType = EditType.SEARCH_REPLACE
                 )
             )
         }
         
         // Process quadruple backtick format
-        quadrupleRegex.findAll(text).forEach { match ->
+        QUADRUPLE_REGEX.findAll(text).forEach { match ->
             val (filePath, language, searchContent, replaceContent) = match.destructured
             blocks.add(
-                SearchReplaceBlock(
+                EditBlock(
                     filePath = filePath.trim(),
                     language = language.trim(),
                     searchContent = searchContent,
-                    replaceContent = replaceContent
+                    replaceContent = replaceContent,
+                    editType = EditType.SEARCH_REPLACE
+                )
+            )
+        }
+        
+        // Process diff-fenced format
+        val diffFencedMatcher = DIFF_FENCED_PATTERN.matcher(text)
+        while (diffFencedMatcher.find()) {
+            blocks.add(
+                EditBlock(
+                    filePath = diffFencedMatcher.group(1).trim(),
+                    searchContent = diffFencedMatcher.group(2),
+                    replaceContent = diffFencedMatcher.group(3),
+                    editType = EditType.SEARCH_REPLACE
+                )
+            )
+        }
+        
+        // Process whole file replacements
+        val wholeMatcher = WHOLE_PATTERN.matcher(text)
+        while (wholeMatcher.find()) {
+            blocks.add(
+                EditBlock(
+                    filePath = wholeMatcher.group(1).trim(),
+                    replaceContent = wholeMatcher.group(2),
+                    editType = EditType.WHOLE_FILE
+                )
+            )
+        }
+        
+        // Process unified diff format
+        val udiffMatcher = UDIFF_PATTERN.matcher(text)
+        while (udiffMatcher.find()) {
+            blocks.add(
+                EditBlock(
+                    filePath = udiffMatcher.group(1).trim(),
+                    replaceContent = udiffMatcher.group(2),
+                    editType = EditType.UDIFF
                 )
             )
         }
@@ -66,10 +139,10 @@ class SearchReplaceBlockParser(private val project: Project) {
     }
 
     /**
-     * Represents the result of applying a search/replace block
+     * Represents the result of applying an edit block
      */
     data class BlockResult(
-        val block: SearchReplaceBlock,
+        val block: EditBlock,
         val success: Boolean,
         val message: String? = null
     )
@@ -83,58 +156,35 @@ class SearchReplaceBlockParser(private val project: Project) {
     }
 
     /**
-     * Applies the SEARCH/REPLACE blocks to the files
-     * @param blocks List of SearchReplaceBlock objects to apply
+     * Clear the list of modified files
+     */
+    fun clearModifiedFiles() {
+        modifiedFiles.clear()
+    }
+
+    /**
+     * Applies the edit blocks to the files
+     * @param blocks List of EditBlock objects to apply
      * @return Map of file paths to success/failure status
      */
-    fun applyBlocks(blocks: List<SearchReplaceBlock>): Map<String, Boolean> {
+    fun applyBlocks(blocks: List<EditBlock>): Map<String, Boolean> {
         // Clear the list of modified files
         modifiedFiles.clear()
         val results = mutableListOf<BlockResult>()
         
         for (block in blocks) {
             try {
-                val absolutePath = resolveFilePath(block.filePath)
-                val file = File(absolutePath)
+                val success = when (block.editType) {
+                    EditType.SEARCH_REPLACE -> applySearchReplaceBlock(block)
+                    EditType.WHOLE_FILE -> replaceWholeFile(block.filePath, block.replaceContent)
+                    EditType.UDIFF -> applyUdiffChange(block.filePath, block.replaceContent)
+                }
                 
-                // Create parent directories if they don't exist
-                file.parentFile?.mkdirs()
-                
-                if (!file.exists()) {
-                    if (block.searchContent.isBlank()) {
-                        // Creating a new file with just the replace content
-                        file.writeText(block.replaceContent)
-                        refreshVirtualFile(absolutePath)
-                        modifiedFiles.add(block.filePath)
-                        results.add(BlockResult(block, true, "File created successfully"))
-                    } else {
-                        val message = "File not found and search content is not empty: ${block.filePath}"
-                        logger.warn(message)
-                        results.add(BlockResult(block, false, message))
-                    }
-                } else if (file.exists()) {
-                    // Modifying an existing file
-                    val content = file.readText()
-                    if (block.searchContent.isBlank()) {
-                        // Empty search content means append to file
-                        file.writeText(content + block.replaceContent)
-                        refreshVirtualFile(absolutePath)
-                        modifiedFiles.add(block.filePath)
-                        results.add(BlockResult(block, true, "Content appended to file"))
-                    } else {
-                        // Replace content in file
-                        val newContent = content.replace(block.searchContent, block.replaceContent)
-                        if (content != newContent) {
-                            file.writeText(newContent)
-                            refreshVirtualFile(absolutePath)
-                            modifiedFiles.add(block.filePath)
-                            results.add(BlockResult(block, true, "Content replaced successfully"))
-                        } else {
-                            val message = "Search content not found in file: ${block.filePath}"
-                            logger.warn(message)
-                            results.add(BlockResult(block, false, message))
-                        }
-                    }
+                if (success) {
+                    modifiedFiles.add(block.filePath)
+                    results.add(BlockResult(block, true, "Changes applied successfully"))
+                } else {
+                    results.add(BlockResult(block, false, "Failed to apply changes"))
                 }
             } catch (e: Exception) {
                 val message = "Error applying block to file: ${block.filePath} - ${e.message}"
@@ -145,6 +195,160 @@ class SearchReplaceBlockParser(private val project: Project) {
         
         // Convert the list of BlockResult to the expected Map<String, Boolean> format
         return results.associate { it.block.filePath to it.success }
+    }
+    
+    /**
+     * Applies a search/replace block to a file
+     */
+    private fun applySearchReplaceBlock(block: EditBlock): Boolean {
+        val absolutePath = resolveFilePath(block.filePath)
+        val file = File(absolutePath)
+        
+        // Create parent directories if they don't exist
+        file.parentFile?.mkdirs()
+        
+        if (!file.exists()) {
+            if (block.searchContent.isBlank()) {
+                // Creating a new file with just the replace content
+                file.writeText(block.replaceContent)
+                refreshVirtualFile(absolutePath)
+                return true
+            } else {
+                val message = "File not found and search content is not empty: ${block.filePath}"
+                logger.warn(message)
+                showNotification(message, NotificationType.ERROR)
+                return false
+            }
+        } else {
+            // Modifying an existing file
+            val content = file.readText()
+            if (block.searchContent.isBlank()) {
+                // Empty search content means append to file
+                file.writeText(content + block.replaceContent)
+                refreshVirtualFile(absolutePath)
+                return true
+            } else {
+                // Replace content in file
+                val newContent = content.replace(block.searchContent, block.replaceContent)
+                if (content != newContent) {
+                    file.writeText(newContent)
+                    refreshVirtualFile(absolutePath)
+                    return true
+                } else {
+                    val message = "Search content not found in file: ${block.filePath}"
+                    logger.warn(message)
+                    showNotification(message, NotificationType.ERROR)
+                    return false
+                }
+            }
+        }
+    }
+
+    /**
+     * Replaces the entire content of a file
+     */
+    private fun replaceWholeFile(filePath: String, newContent: String): Boolean {
+        val file = findOrCreateFile(filePath) ?: return false
+        
+        try {
+            val document = FileDocumentManager.getInstance().getDocument(file)
+                ?: return false
+            
+            WriteCommandAction.runWriteCommandAction(project) {
+                document.setText(newContent)
+            }
+            
+            return true
+        } catch (e: Exception) {
+            val message = "Error replacing file $filePath: ${e.message}"
+            logger.error(message, e)
+            showNotification(message, NotificationType.ERROR)
+            return false
+        }
+    }
+
+    /**
+     * Applies a unified diff to a file
+     */
+    private fun applyUdiffChange(filePath: String, diffContent: String): Boolean {
+        val file = findOrCreateFile(filePath) ?: return false
+        
+        try {
+            val document = FileDocumentManager.getInstance().getDocument(file)
+                ?: return false
+            
+            val fileContent = document.text
+            val lines = fileContent.lines().toMutableList()
+            
+            // Process diff lines
+            var currentLine = 0
+            val diffLines = diffContent.lines()
+            
+            for (diffLine in diffLines) {
+                when {
+                    diffLine.startsWith("+") && !diffLine.startsWith("+++") -> {
+                        // Add line
+                        val lineContent = diffLine.substring(1)
+                        lines.add(currentLine, lineContent)
+                        currentLine++
+                    }
+                    diffLine.startsWith("-") && !diffLine.startsWith("---") -> {
+                        // Remove line
+                        if (currentLine < lines.size) {
+                            lines.removeAt(currentLine)
+                        }
+                    }
+                    !diffLine.startsWith("@") -> {
+                        // Context line, move to next
+                        currentLine++
+                    }
+                }
+            }
+            
+            WriteCommandAction.runWriteCommandAction(project) {
+                document.setText(lines.joinToString("\n"))
+            }
+            
+            return true
+        } catch (e: Exception) {
+            val message = "Error applying udiff to $filePath: ${e.message}"
+            logger.error(message, e)
+            showNotification(message, NotificationType.ERROR)
+            return false
+        }
+    }
+
+    /**
+     * Finds or creates a file and returns its VirtualFile
+     */
+    private fun findOrCreateFile(filePath: String): VirtualFile? {
+        val absolutePath = resolveFilePath(filePath)
+        val file = File(absolutePath)
+        
+        // Create parent directories if they don't exist
+        file.parentFile?.mkdirs()
+        
+        if (!file.exists()) {
+            try {
+                file.createNewFile()
+            } catch (e: Exception) {
+                val message = "Failed to create file $filePath: ${e.message}"
+                logger.error(message, e)
+                showNotification(message, NotificationType.ERROR)
+                return null
+            }
+        }
+        
+        // Refresh VFS to see the new file
+        val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file)
+        if (virtualFile == null) {
+            val message = "Failed to find or create file: $filePath"
+            logger.error(message)
+            showNotification(message, NotificationType.ERROR)
+            return null
+        }
+        
+        return virtualFile
     }
     
     /**
@@ -168,5 +372,15 @@ class SearchReplaceBlockParser(private val project: Project) {
     private fun refreshVirtualFile(filePath: String) {
         val virtualFile = LocalFileSystem.getInstance().findFileByPath(filePath)
         virtualFile?.refresh(false, false)
+    }
+    
+    /**
+     * Shows a notification in the IDE
+     */
+    private fun showNotification(content: String, type: NotificationType) {
+        NotificationGroupManager.getInstance()
+            .getNotificationGroup("Coding Aider Notifications")
+            .createNotification(content, type)
+            .notify(project)
     }
 }
