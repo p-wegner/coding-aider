@@ -83,6 +83,7 @@ class SearchReplaceBlockParser(private val project: Project) {
         val filteredText = filterInstructionPrompt(text)
         
         // Process standard search/replace format
+        //TODO: currently doesnt match properly
         STANDARD_REGEX.findAll(filteredText).forEach { match ->
             val (filePath, language, searchContent, replaceContent) = match.destructured
             blocks.add(
