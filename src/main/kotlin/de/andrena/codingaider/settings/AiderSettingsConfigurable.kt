@@ -56,7 +56,7 @@ class AiderSettingsConfigurable() : Configurable {
     private val documentationLlmComboBox = ComboBox(apiKeyChecker.getAllLlmOptions().toTypedArray())
     private val summarizedOutputCheckBox = JBCheckBox("Enable summarized output")
     private val pluginBasedEditsCheckBox = JBCheckBox("Use Plugin-Based Edits (Experimental)") // Added for plugin-based edits
-    private val lenientEditsCheckBox = JBCheckBox("Allow Lenient Edits (Process multiple formats)")
+    private val lenientEditsCheckBox = JBCheckBox("Allow Lenient Edits (Process multiple formats) (Experimental)")
 
     override fun getDisplayName(): String = "Aider"
 

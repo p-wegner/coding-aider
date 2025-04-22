@@ -243,7 +243,7 @@
             </action>
             <action id="de.andrena.codingaider.actions.ide.AiderClipboardEditFormatAction"
                     class="de.andrena.codingaider.actions.ide.AiderClipboardEditFormatAction"
-                    text="Apply Edit Format from Clipboard"
+                    text="Apply Code Edits from Clipboard"
                     description="Analyze clipboard content for supported edit formats and apply if possible">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt K"/>
             </action>
