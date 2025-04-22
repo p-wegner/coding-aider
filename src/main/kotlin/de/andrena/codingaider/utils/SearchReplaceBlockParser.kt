@@ -230,10 +230,22 @@ class SearchReplaceBlockParser(private val project: Project) {
                 refreshVirtualFile(absolutePath)
                 return true
             } else {
-                // Replace content in file
-                val newContent = content.replace(block.searchContent, block.replaceContent)
-                if (content != newContent) {
-                    file.writeText(newContent)
+                // Normalize line endings for comparison
+                val normalizedContent = normalizeLineEndings(content)
+                val normalizedSearchContent = normalizeLineEndings(block.searchContent)
+                
+                // First try exact match
+                if (normalizedContent.contains(normalizedSearchContent)) {
+                    // Use the normalized content for replacement
+                    val newContent = normalizedContent.replace(normalizedSearchContent, normalizeLineEndings(block.replaceContent))
+                    // Preserve original line endings when writing back
+                    val finalContent = if (content.contains("\r\n")) {
+                        newContent.replace("\n", "\r\n")
+                    } else {
+                        newContent
+                    }
+                    
+                    file.writeText(finalContent)
                     refreshVirtualFile(absolutePath)
                     return true
                 } else {
@@ -244,6 +256,13 @@ class SearchReplaceBlockParser(private val project: Project) {
                 }
             }
         }
+    }
+    
+    /**
+     * Normalizes line endings to \n for consistent comparison
+     */
+    private fun normalizeLineEndings(text: String): String {
+        return text.replace("\r\n", "\n")
     }
 
     /**
@@ -256,8 +275,23 @@ class SearchReplaceBlockParser(private val project: Project) {
             val document = FileDocumentManager.getInstance().getDocument(file)
                 ?: return false
             
+            // Preserve the original line endings of the file if it exists
+            val finalContent = if (file.exists()) {
+                val existingContent = file.readText()
+                if (existingContent.contains("\r\n")) {
+                    // If the file uses CRLF, ensure the new content does too
+                    normalizeLineEndings(newContent).replace("\n", "\r\n")
+                } else {
+                    // Otherwise use LF
+                    normalizeLineEndings(newContent)
+                }
+            } else {
+                // For new files, use the platform default
+                newContent
+            }
+            
             WriteCommandAction.runWriteCommandAction(project) {
-                document.setText(newContent)
+                document.setText(finalContent)
             }
             
             return true
@@ -280,11 +314,16 @@ class SearchReplaceBlockParser(private val project: Project) {
                 ?: return false
             
             val fileContent = document.text
-            val lines = fileContent.lines().toMutableList()
+            // Determine the line ending style of the original file
+            val lineEnding = if (fileContent.contains("\r\n")) "\r\n" else "\n"
             
-            // Process diff lines
+            // Normalize line endings for processing
+            val normalizedContent = normalizeLineEndings(fileContent)
+            val lines = normalizedContent.lines().toMutableList()
+            
+            // Process diff lines (normalize diff content too)
             var currentLine = 0
-            val diffLines = diffContent.lines()
+            val diffLines = normalizeLineEndings(diffContent).lines()
             
             for (diffLine in diffLines) {
                 when {
@@ -307,8 +346,11 @@ class SearchReplaceBlockParser(private val project: Project) {
                 }
             }
             
+            // Use the original line ending style when joining lines
+            val finalContent = lines.joinToString(lineEnding)
+            
             WriteCommandAction.runWriteCommandAction(project) {
-                document.setText(lines.joinToString("\n"))
+                document.setText(finalContent)
             }
             
             return true
