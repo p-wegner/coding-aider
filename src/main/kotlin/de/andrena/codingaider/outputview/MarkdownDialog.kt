@@ -104,11 +104,13 @@ class MarkdownDialog(
             }
         }
     }
-    
+
     private var createPlanButton = JButton("Create Plan").apply {
         mnemonic = KeyEvent.VK_P
         isVisible = false
-        toolTipText = "Convert this command into a structured plan"
+        toolTipText =
+            "Convert this command and output into a structured plan. " +
+                    "This can help implement more complex features where single requests are not enough."
         icon = AllIcons.Actions.RunAll
         foreground = JBColor(Color(0, 100, 0), Color(144, 238, 144)) // Dark green/light green
         addActionListener { onCreatePlanClicked() }
@@ -122,7 +124,7 @@ class MarkdownDialog(
 
                 // Trigger plan creation using the already stored command data and output
                 project.service<RunningCommandService>().createPlanFromLastCommand(project)
-                
+
                 dispose()
             } catch (e: Exception) {
                 createPlanButton.isEnabled = true
@@ -136,6 +138,7 @@ class MarkdownDialog(
             }
         }
     }
+
     private var isProcessFinished = false
     private var shouldAutoScroll = true
     private var lastManualScrollPosition = 0
@@ -143,7 +146,7 @@ class MarkdownDialog(
     private var lastScrollPosition = 0
     private var scrollAnimationTimer: Timer? = null
     private var resizeTimer: Timer? = null
-    
+
     init {
         title = initialTitle
 
@@ -299,6 +302,7 @@ class MarkdownDialog(
                             shouldAutoScroll && wasAtBottom -> {
                                 smoothScrollTo(scrollBar, scrollBar.maximum)
                             }
+
                             prevContentHeight > 0 && newContentHeight > 0 -> {
                                 val targetPosition = (newMaxScroll * prevScrollRatio).toInt()
                                     .coerceIn(0, newMaxScroll)
@@ -402,7 +406,7 @@ class MarkdownDialog(
         val distance = targetValue - startValue
         val duration = 250L // Slightly faster animation
         val startTime = System.currentTimeMillis()
-        
+
         scrollAnimationTimer = Timer().apply {
             scheduleAtFixedRate(0, 8) { // ~120fps for smoother animation
                 if (!isScrollAnimationInProgress) {
@@ -413,7 +417,7 @@ class MarkdownDialog(
                 val currentTime = System.currentTimeMillis()
                 val elapsed = (currentTime - startTime).toFloat()
                 val progress = (elapsed / duration).coerceIn(0f, 1f)
-                
+
                 if (progress >= 1f) {
                     SwingUtilities.invokeLater {
                         try {
@@ -449,6 +453,7 @@ class MarkdownDialog(
             1 - (-2 * x + 2).pow(5) / 2
         }
     }
+
     fun positionOnSameScreen() {
         // Position dialog relative to IDE window
         val ideFrame = WindowManager.getInstance().getIdeFrame(project)
