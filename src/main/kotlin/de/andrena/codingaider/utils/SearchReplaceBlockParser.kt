@@ -29,6 +29,12 @@ class SearchReplaceBlockParser(private val project: Project) {
         // Quadruple backtick format
         private val QUADRUPLE_REGEX = """(?m)^([^\n]+)\n````([^\n]*)\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n````""".toRegex(RegexOption.DOT_MATCHES_ALL)
         
+        // Pattern to identify the instruction prompt
+        private val INSTRUCTION_PROMPT_PATTERN = Pattern.compile(
+            """When making code changes, please format them as SEARCH/REPLACE blocks using this format:[\s\S]*?Make your changes precise and minimal\.""",
+            Pattern.MULTILINE
+        )
+        
         // Alternative format with fenced blocks (diff-fenced)
         private val DIFF_FENCED_PATTERN = Pattern.compile(
             """```\n(.+?)\n<<<<<<< SEARCH\n([\s\S]*?)=======\n([\s\S]*?)>>>>>>> REPLACE\n```""",
@@ -73,8 +79,11 @@ class SearchReplaceBlockParser(private val project: Project) {
     fun parseBlocks(text: String): List<EditBlock> {
         val blocks = mutableListOf<EditBlock>()
         
+        // Filter out the instruction prompt if it exists in the text
+        val filteredText = filterInstructionPrompt(text)
+        
         // Process standard search/replace format
-        STANDARD_REGEX.findAll(text).forEach { match ->
+        STANDARD_REGEX.findAll(filteredText).forEach { match ->
             val (filePath, language, searchContent, replaceContent) = match.destructured
             blocks.add(
                 EditBlock(
@@ -88,7 +97,7 @@ class SearchReplaceBlockParser(private val project: Project) {
         }
         
         // Process quadruple backtick format
-        QUADRUPLE_REGEX.findAll(text).forEach { match ->
+        QUADRUPLE_REGEX.findAll(filteredText).forEach { match ->
             val (filePath, language, searchContent, replaceContent) = match.destructured
             blocks.add(
                 EditBlock(
@@ -102,7 +111,7 @@ class SearchReplaceBlockParser(private val project: Project) {
         }
         
         // Process diff-fenced format
-        val diffFencedMatcher = DIFF_FENCED_PATTERN.matcher(text)
+        val diffFencedMatcher = DIFF_FENCED_PATTERN.matcher(filteredText)
         while (diffFencedMatcher.find()) {
             blocks.add(
                 EditBlock(
@@ -115,7 +124,7 @@ class SearchReplaceBlockParser(private val project: Project) {
         }
         
         // Process whole file replacements
-        val wholeMatcher = WHOLE_PATTERN.matcher(text)
+        val wholeMatcher = WHOLE_PATTERN.matcher(filteredText)
         while (wholeMatcher.find()) {
             blocks.add(
                 EditBlock(
@@ -127,7 +136,7 @@ class SearchReplaceBlockParser(private val project: Project) {
         }
         
         // Process unified diff format
-        val udiffMatcher = UDIFF_PATTERN.matcher(text)
+        val udiffMatcher = UDIFF_PATTERN.matcher(filteredText)
         while (udiffMatcher.find()) {
             blocks.add(
                 EditBlock(
@@ -139,6 +148,28 @@ class SearchReplaceBlockParser(private val project: Project) {
         }
         
         return blocks
+    }
+    
+    /**
+     * Filters out the instruction prompt from the text
+     * @param text The text to filter
+     * @return The filtered text
+     */
+    private fun filterInstructionPrompt(text: String): String {
+        // Get the instruction prompt from AiderDefaults
+        val instructionPrompt = de.andrena.codingaider.settings.AiderDefaults.PLUGIN_BASED_EDITS_INSTRUCTION.trim()
+        
+        // First try direct string replacement (most efficient)
+        var filteredText = text.replace(instructionPrompt, "")
+        
+        // If that doesn't work well (e.g., if there are whitespace differences),
+        // use regex pattern matching as a fallback
+        val matcher = INSTRUCTION_PROMPT_PATTERN.matcher(filteredText)
+        if (matcher.find()) {
+            filteredText = matcher.replaceAll("")
+        }
+        
+        return filteredText
     }
 
     /**
