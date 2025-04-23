@@ -23,20 +23,23 @@ class SearchReplaceBlockParser(private val project: Project) {
     private val modifiedFiles = mutableSetOf<String>()
 
     companion object {
-        // Standard search/replace block pattern
-        private val STANDARD_REGEX = """(?m)^([^\n]+)\n```+([^\n]*)\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n```+""".toRegex(RegexOption.DOT_MATCHES_ALL)
-        
-        // Quadruple backtick format
-        private val QUADRUPLE_REGEX = """(?m)^([^\n]+)\n````([^\n]*)\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n````""".toRegex(RegexOption.DOT_MATCHES_ALL)
-        
-        // Additional pattern for code blocks with language specified (like in prompt.txt)
-        // Matches: filepath\n```language\n<<<<<<< SEARCH\n...content...\n=======\n...content...\n>>>>>>> REPLACE\n```
-        private val LANGUAGE_CODE_BLOCK_REGEX = """(?m)^([^\n]+)\n```([^\n]*)\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n```""".toRegex(RegexOption.DOT_MATCHES_ALL)
-        
-        // Pattern for format with nested code blocks (less common)
-        private val NESTED_CODE_BLOCK_REGEX = """(?m)^([^\n]+)\n```+([^\n]*)\n```+([^\n]*)\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n```+""".toRegex(RegexOption.DOT_MATCHES_ALL)
-        
-        // Pattern to identify the instruction prompt
+        // --- Refined Search/Replace Regexes ---
+
+        // Quadruple backtick format: filepath\n````lang?\nSEARCH\n...\nREPLACE\n````
+        // Handles optional language, CRLF/LF, DOT_MATCHES_ALL for content, $ anchor.
+        private val QUADRUPLE_REGEX = """(?m)^([^\r\n]+)\r?\n````([^\r\n]*)\r?\n<<<<<<< SEARCH\r?\n(.*?)\r?\n=======\r?\n(.*?)\r?\n>>>>>>> REPLACE\r?\n````$""".toRegex(RegexOption.DOT_MATCHES_ALL)
+
+        // Triple backtick format with mandatory language: filepath\n```lang\nSEARCH\n...\nREPLACE\n```
+        // Handles mandatory language ([^\r\n]+), CRLF/LF, DOT_MATCHES_ALL, $ anchor.
+        private val LANGUAGE_TRIPLE_REGEX = """(?m)^([^\r\n]+)\r?\n```([^\r\n]+)\r?\n<<<<<<< SEARCH\r?\n(.*?)\r?\n=======\r?\n(.*?)\r?\n>>>>>>> REPLACE\r?\n```$""".toRegex(RegexOption.DOT_MATCHES_ALL)
+
+        // Triple backtick format without language: filepath\n```\nSEARCH\n...\nREPLACE\n```
+        // Handles no language, CRLF/LF, DOT_MATCHES_ALL, $ anchor.
+        private val SIMPLE_TRIPLE_REGEX = """(?m)^([^\r\n]+)\r?\n```\r?\n<<<<<<< SEARCH\r?\n(.*?)\r?\n=======\r?\n(.*?)\r?\n>>>>>>> REPLACE\r?\n```$""".toRegex(RegexOption.DOT_MATCHES_ALL)
+
+        // --- Other Formats ---
+
+        // Pattern to identify the instruction prompt (remains the same)
         private val INSTRUCTION_PROMPT_PATTERN = Pattern.compile(
             """When making code changes, please format them as SEARCH/REPLACE blocks using this format:[\s\S]*?Make your changes precise and minimal\.""",
             Pattern.MULTILINE
@@ -92,15 +95,15 @@ class SearchReplaceBlockParser(private val project: Project) {
             processedRanges.add(range)
         }
 
-        // Define the order of regex patterns to try (most specific first)
+        // Define the order of regex patterns to try (most specific SEARCH/REPLACE first)
         val regexPatterns = listOf(
-            QUADRUPLE_REGEX, // ```` ... ````
-            LANGUAGE_CODE_BLOCK_REGEX, // ```lang ... ```
-            NESTED_CODE_BLOCK_REGEX, // ```lang ``` ... ```+ (Nested)
-            STANDARD_REGEX, // ``` ... ``` (General Search/Replace, allows optional lang)
-            DIFF_FENCED_REGEX, // ``` \n path \n <<< ... >>> \n ```
-            WHOLE_REGEX, // path \n ``` content ```
-            UDIFF_REGEX // ```diff ... ```
+            QUADRUPLE_REGEX,           // ````lang? ... ````
+            LANGUAGE_TRIPLE_REGEX,     // ```lang ... ```
+            SIMPLE_TRIPLE_REGEX,       // ``` ... ```
+            // --- Other formats ---
+            DIFF_FENCED_REGEX,         // ``` \n path \n <<< ... >>> \n ```
+            WHOLE_REGEX,               // path \n ``` content ```
+            UDIFF_REGEX                // ```diff ... ```
         )
 
         // Iterate through patterns and find matches
@@ -119,44 +122,36 @@ class SearchReplaceBlockParser(private val project: Project) {
                 if (!isProcessed(match.range)) {
                     try {
                         when (currentRegex) {
-                            STANDARD_REGEX -> {
-                                val (filePath, language, searchContent, replaceContent) = match.destructured
-                                blocks.add(EditBlock(
-                                    filePath = filePath.trim(),
-                                    language = language.trim(),
-                                    searchContent = searchContent,
-                                    replaceContent = replaceContent,
-                                    editType = EditType.SEARCH_REPLACE
-                                ))
-                                addProcessedRange(match.range)
-                            }
                             QUADRUPLE_REGEX -> {
+                                // Groups: 1=filePath, 2=language(optional), 3=search, 4=replace
                                 val (filePath, language, searchContent, replaceContent) = match.destructured
                                 blocks.add(EditBlock(
                                     filePath = filePath.trim(),
-                                    language = language.trim(),
+                                    language = language.trim(), // Language might be empty
                                     searchContent = searchContent,
                                     replaceContent = replaceContent,
                                     editType = EditType.SEARCH_REPLACE
                                 ))
                                 addProcessedRange(match.range)
                             }
-                            LANGUAGE_CODE_BLOCK_REGEX -> {
+                            LANGUAGE_TRIPLE_REGEX -> {
+                                // Groups: 1=filePath, 2=language(mandatory), 3=search, 4=replace
                                 val (filePath, language, searchContent, replaceContent) = match.destructured
                                 blocks.add(EditBlock(
                                     filePath = filePath.trim(),
-                                    language = language.trim(),
+                                    language = language.trim(), // Language is mandatory here
                                     searchContent = searchContent,
                                     replaceContent = replaceContent,
                                     editType = EditType.SEARCH_REPLACE
                                 ))
                                 addProcessedRange(match.range)
                             }
-                            NESTED_CODE_BLOCK_REGEX -> {
-                                val (filePath, outerLanguage, innerLanguage, searchContent, replaceContent) = match.destructured
+                            SIMPLE_TRIPLE_REGEX -> {
+                                // Groups: 1=filePath, 2=search, 3=replace (No language group)
+                                val (filePath, searchContent, replaceContent) = match.destructured
                                 blocks.add(EditBlock(
                                     filePath = filePath.trim(),
-                                    language = innerLanguage.trim().ifEmpty { outerLanguage.trim() },
+                                    language = "", // No language specified
                                     searchContent = searchContent,
                                     replaceContent = replaceContent,
                                     editType = EditType.SEARCH_REPLACE
@@ -165,7 +160,7 @@ class SearchReplaceBlockParser(private val project: Project) {
                             }
                             DIFF_FENCED_REGEX -> {
                                 // Groups: 1=filePath, 2=search, 3=replace
-                                if (match.groups.size > 3) {
+                                if (match.groups.size > 3) { // Check group count
                                     blocks.add(EditBlock(
                                         filePath = match.groupValues[1].trim(),
                                         searchContent = match.groupValues[2],
@@ -314,13 +309,22 @@ class SearchReplaceBlockParser(private val project: Project) {
         file.parentFile?.mkdirs()
         
         if (!file.exists()) {
-            // For new files, we'll create them regardless of search content
-            // This handles both empty search blocks and cases where the search block exists but is effectively empty
-            file.writeText(block.replaceContent)
-            refreshVirtualFile(absolutePath)
-            return true
+            // File does not exist: Create it if search block is empty or effectively empty
+            // This is the standard behavior for creating new files with SEARCH/REPLACE.
+            logger.info("File does not exist, creating: ${block.filePath}")
+            try {
+                file.writeText(block.replaceContent)
+                refreshVirtualFile(absolutePath)
+                logger.info("Successfully created file: ${block.filePath}")
+                return true
+            } catch (e: Exception) {
+                val message = "Failed to create file ${block.filePath}: ${e.message}"
+                logger.error(message, e)
+                showNotification(message, NotificationType.ERROR)
+                return false
+            }
         } else {
-            // Modifying an existing file
+            // File exists: Modifying an existing file
             val content = file.readText()
             if (block.searchContent.isBlank()) {
                 // Standard Aider behavior: Empty search block is for creating NEW files.
