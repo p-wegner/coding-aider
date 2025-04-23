@@ -403,7 +403,7 @@ class SearchReplaceBlockParserTest {
         assertThat(block.searchContent.trim()).isEqualTo("print(\"hello\")")
         assertThat(block.replaceContent.trim()).isEqualTo("print(\"world\")")
     }
-    //TODO: this test is failing, no blocks are parsed
+
     @Test
     fun `parseBlocks should parse new file block from resource`() {
         // Load the test data from the resource file
