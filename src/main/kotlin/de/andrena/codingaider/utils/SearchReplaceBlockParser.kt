@@ -30,7 +30,10 @@ class SearchReplaceBlockParser(private val project: Project) {
         private val QUADRUPLE_REGEX = """(?m)^([^\n]+)\n````([^\n]*)\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n````""".toRegex(RegexOption.DOT_MATCHES_ALL)
         
         // Additional pattern for code blocks with language specified (like in prompt.txt)
-        private val LANGUAGE_CODE_BLOCK_REGEX = """(?m)^([^\n]+)\n```([^\n]+)\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n```""".toRegex(RegexOption.DOT_MATCHES_ALL)
+        private val LANGUAGE_CODE_BLOCK_REGEX = """(?m)^([^\n]+)\n```([^\n]+)\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n```+""".toRegex(RegexOption.DOT_MATCHES_ALL)
+        
+        // Pattern for prompt.txt format with nested code blocks
+        private val PROMPT_TXT_REGEX = """(?m)^([^\n]+)\n```+([^\n]*)\n```+([^\n]*)\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n```+""".toRegex(RegexOption.DOT_MATCHES_ALL)
         
         // Pattern to identify the instruction prompt
         private val INSTRUCTION_PROMPT_PATTERN = Pattern.compile(
@@ -120,6 +123,20 @@ class SearchReplaceBlockParser(private val project: Project) {
                 EditBlock(
                     filePath = filePath.trim(),
                     language = language.trim(),
+                    searchContent = searchContent,
+                    replaceContent = replaceContent,
+                    editType = EditType.SEARCH_REPLACE
+                )
+            )
+        }
+        
+        // Process prompt.txt format with nested code blocks
+        PROMPT_TXT_REGEX.findAll(filteredText).forEach { match ->
+            val (filePath, outerLanguage, innerLanguage, searchContent, replaceContent) = match.destructured
+            blocks.add(
+                EditBlock(
+                    filePath = filePath.trim(),
+                    language = innerLanguage.trim().ifEmpty { outerLanguage.trim() },
                     searchContent = searchContent,
                     replaceContent = replaceContent,
                     editType = EditType.SEARCH_REPLACE
@@ -259,28 +276,11 @@ class SearchReplaceBlockParser(private val project: Project) {
         file.parentFile?.mkdirs()
         
         if (!file.exists()) {
-            if (block.searchContent.isBlank()) {
-                // Creating a new file with just the replace content
-                file.writeText(block.replaceContent)
-                refreshVirtualFile(absolutePath)
-                return true
-            } else {
-                // Special case: If the file doesn't exist but search content is not empty,
-                // check if this is a new file creation pattern with an empty search block
-                // This handles cases where the search block exists but is effectively empty
-                val trimmedSearch = block.searchContent.trim()
-                if (trimmedSearch.isEmpty()) {
-                    // Creating a new file with just the replace content
-                    file.writeText(block.replaceContent)
-                    refreshVirtualFile(absolutePath)
-                    return true
-                } else {
-                    val message = "File not found and search content is not empty: ${block.filePath}"
-                    logger.warn(message)
-                    showNotification(message, NotificationType.ERROR)
-                    return false
-                }
-            }
+            // For new files, we'll create them regardless of search content
+            // This handles both empty search blocks and cases where the search block exists but is effectively empty
+            file.writeText(block.replaceContent)
+            refreshVirtualFile(absolutePath)
+            return true
         } else {
             // Modifying an existing file
             val content = file.readText()
