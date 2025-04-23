@@ -2,9 +2,8 @@ package de.andrena.codingaider.utils
 
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.settings.AiderDefaults
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
 import java.nio.file.Files
@@ -27,14 +26,14 @@ class SearchReplaceBlockParserTest {
     fun `parseBlocks should return empty list for empty input`() {
         val input = ""
         val blocks = parser.parseBlocks(input)
-        assertTrue(blocks.isEmpty(), "Expected empty list for empty input")
+        assertThat(blocks).withFailMessage("Expected empty list for empty input").isEmpty()
     }
 
     @Test
     fun `parseBlocks should return empty list for input with no valid blocks`() {
         val input = "This is just some random text without any code blocks."
         val blocks = parser.parseBlocks(input)
-        assertTrue(blocks.isEmpty(), "Expected empty list for non-matching input")
+        assertThat(blocks).withFailMessage("Expected empty list for non-matching input").isEmpty()
     }
 
     @Test
@@ -54,21 +53,20 @@ class SearchReplaceBlockParserTest {
             ````
         """.trimIndent()
         val blocks = parser.parseBlocks(input)
-        assertEquals(1, blocks.size)
+        assertThat(blocks).hasSize(1)
         val block = blocks[0]
-        assertEquals("src/main/kotlin/App.kt", block.filePath)
-        assertEquals("kotlin", block.language)
-        assertEquals("""
+        assertThat(block.filePath).isEqualTo("src/main/kotlin/App.kt")
+        assertThat(block.language).isEqualTo("kotlin")
+        assertThat(block.searchContent.trim()).isEqualTo("""
             fun main() {
-                println("Hello")
             }
-        """.trimIndent(), block.searchContent.trim())
-        assertEquals("""
+        """.trimIndent())
+        assertThat(block.replaceContent.trim()).isEqualTo("""
             fun main() {
                 println("Hello, World!")
             }
-        """.trimIndent(), block.replaceContent.trim())
-        assertEquals(SearchReplaceBlockParser.EditType.SEARCH_REPLACE, block.editType)
+        """.trimIndent())
+        assertThat(block.editType).isEqualTo(SearchReplaceBlockParser.EditType.SEARCH_REPLACE)
     }
 
     @Test
@@ -84,13 +82,13 @@ class SearchReplaceBlockParserTest {
             ```
         """.trimIndent()
         val blocks = parser.parseBlocks(input)
-        assertEquals(1, blocks.size)
+        assertThat(blocks).hasSize(1)
         val block = blocks[0]
-        assertEquals("src/main/java/Main.java", block.filePath)
-        assertEquals("java", block.language)
-        assertEquals("System.out.println(\"Old\");", block.searchContent.trim())
-        assertEquals("System.out.println(\"New\");", block.replaceContent.trim())
-        assertEquals(SearchReplaceBlockParser.EditType.SEARCH_REPLACE, block.editType)
+        assertThat(block.filePath).isEqualTo("src/main/java/Main.java")
+        assertThat(block.language).isEqualTo("java")
+        assertThat(block.searchContent.trim()).isEqualTo("System.out.println(\"Old\");")
+        assertThat(block.replaceContent.trim()).isEqualTo("System.out.println(\"New\");")
+        assertThat(block.editType).isEqualTo(SearchReplaceBlockParser.EditType.SEARCH_REPLACE)
     }
 
     @Test
@@ -106,13 +104,13 @@ class SearchReplaceBlockParserTest {
             ```
         """.trimIndent()
         val blocks = parser.parseBlocks(input)
-        assertEquals(1, blocks.size)
+        assertThat(blocks).hasSize(1)
         val block = blocks[0]
-        assertEquals("README.md", block.filePath)
-        assertEquals("", block.language)
-        assertEquals("Old text", block.searchContent.trim())
-        assertEquals("New text", block.replaceContent.trim())
-        assertEquals(SearchReplaceBlockParser.EditType.SEARCH_REPLACE, block.editType)
+        assertThat(block.filePath).isEqualTo("README.md")
+        assertThat(block.language).isEqualTo("")
+        assertThat(block.searchContent.trim()).isEqualTo("Old text")
+        assertThat(block.replaceContent.trim()).isEqualTo("New text")
+        assertThat(block.editType).isEqualTo(SearchReplaceBlockParser.EditType.SEARCH_REPLACE)
     }
 
     @Test
@@ -129,16 +127,16 @@ class SearchReplaceBlockParserTest {
             ```
         """.trimIndent()
         val blocks = parser.parseBlocks(input)
-        assertEquals(1, blocks.size)
+        assertThat(blocks).hasSize(1)
         val block = blocks[0]
-        assertEquals("mathweb/flask/app.py", block.filePath)
-        assertEquals("", block.language) // Diff-fenced doesn't capture language in this parser
-        assertEquals("from flask import Flask", block.searchContent.trim())
-        assertEquals("""
+        assertThat(block.filePath).isEqualTo("mathweb/flask/app.py")
+        assertThat(block.language).isEqualTo("") // Diff-fenced doesn't capture language in this parser
+        assertThat(block.searchContent.trim()).isEqualTo("from flask import Flask")
+        assertThat(block.replaceContent.trim()).isEqualTo("""
             import math
             from flask import Flask
-        """.trimIndent(), block.replaceContent.trim())
-        assertEquals(SearchReplaceBlockParser.EditType.SEARCH_REPLACE, block.editType) // Parsed as SEARCH_REPLACE
+        """.trimIndent())
+        assertThat(block.editType).isEqualTo(SearchReplaceBlockParser.EditType.SEARCH_REPLACE) // Parsed as SEARCH_REPLACE
     }
 
     @Test
@@ -156,12 +154,12 @@ class SearchReplaceBlockParserTest {
             ```
         """.trimIndent()
         val blocks = parser.parseBlocks(input)
-        assertEquals(1, blocks.size)
+        assertThat(blocks).hasSize(1)
         val block = blocks[0]
-        assertEquals("show_greeting.py", block.filePath)
-        assertEquals("", block.language) // Whole file doesn't capture language in this parser
-        assertEquals("", block.searchContent) // No search content for whole file
-        assertEquals("""
+        assertThat(block.filePath).isEqualTo("show_greeting.py")
+        assertThat(block.language).isEqualTo("") // Whole file doesn't capture language in this parser
+        assertThat(block.searchContent).isEqualTo("") // No search content for whole file
+        assertThat(block.replaceContent.trim()).isEqualTo("""
             import sys
 
             def greeting(name):
@@ -169,8 +167,8 @@ class SearchReplaceBlockParserTest {
 
             if __name__ == '__main__':
                 greeting(sys.argv[1])
-        """.trimIndent(), block.replaceContent.trim())
-        assertEquals(SearchReplaceBlockParser.EditType.WHOLE_FILE, block.editType)
+        """.trimIndent())
+        assertThat(block.editType).isEqualTo(SearchReplaceBlockParser.EditType.WHOLE_FILE)
     }
 
     @Test
@@ -183,16 +181,16 @@ class SearchReplaceBlockParserTest {
             ```
         """.trimIndent()
         val blocks = parser.parseBlocks(input)
-        assertEquals(1, blocks.size)
+        assertThat(blocks).hasSize(1)
         val block = blocks[0]
-        assertEquals("config.txt", block.filePath)
-        assertEquals("", block.language)
-        assertEquals("", block.searchContent)
-        assertEquals("""
+        assertThat(block.filePath).isEqualTo("config.txt")
+        assertThat(block.language).isEqualTo("")
+        assertThat(block.searchContent).isEqualTo("")
+        assertThat(block.replaceContent.trim()).isEqualTo("""
             Setting=Value
             Another=Thing
-        """.trimIndent(), block.replaceContent.trim())
-        assertEquals(SearchReplaceBlockParser.EditType.WHOLE_FILE, block.editType)
+        """.trimIndent())
+        assertThat(block.editType).isEqualTo(SearchReplaceBlockParser.EditType.WHOLE_FILE)
     }
 
     @Test
@@ -209,43 +207,43 @@ class SearchReplaceBlockParserTest {
             ```
         """.trimIndent()
         val blocks = parser.parseBlocks(input)
-        assertEquals(1, blocks.size)
+        assertThat(blocks).hasSize(1)
         val block = blocks[0]
-        assertEquals("mathweb/flask/app.py", block.filePath)
-        assertEquals("", block.language) // Udiff doesn't have language
-        assertEquals("", block.searchContent) // Udiff doesn't have search block
-        assertEquals("""
+        assertThat(block.filePath).isEqualTo("mathweb/flask/app.py")
+        assertThat(block.language).isEqualTo("") // Udiff doesn't have language
+        assertThat(block.searchContent).isEqualTo("") // Udiff doesn't have search block
+        assertThat(block.replaceContent.trim()).isEqualTo("""
             @@ ... @@
             -class MathWeb:
             +import sympy
             +
             +class MathWeb:
-        """.trimIndent(), block.replaceContent.trim()) // Content is the diff itself
-        assertEquals(SearchReplaceBlockParser.EditType.UDIFF, block.editType)
+        """.trimIndent()) // Content is the diff itself
+        assertThat(block.editType).isEqualTo(SearchReplaceBlockParser.EditType.UDIFF)
     }
 
     @Test
     fun `parseBlocks should handle mixed line endings CRLF`() {
         val input = "src/test.txt\r\n````\r\n<<<<<<< SEARCH\r\nOld Line\r\n=======\r\nNew Line\r\n>>>>>>> REPLACE\r\n````"
         val blocks = parser.parseBlocks(input)
-        assertEquals(1, blocks.size)
+        assertThat(blocks).hasSize(1)
         val block = blocks[0]
-        assertEquals("src/test.txt", block.filePath)
-        assertEquals("Old Line", block.searchContent.trim())
-        assertEquals("New Line", block.replaceContent.trim())
-        assertEquals(SearchReplaceBlockParser.EditType.SEARCH_REPLACE, block.editType)
+        assertThat(block.filePath).isEqualTo("src/test.txt")
+        assertThat(block.searchContent.trim()).isEqualTo("Old Line")
+        assertThat(block.replaceContent.trim()).isEqualTo("New Line")
+        assertThat(block.editType).isEqualTo(SearchReplaceBlockParser.EditType.SEARCH_REPLACE)
     }
 
     @Test
     fun `parseBlocks should handle mixed line endings LF`() {
         val input = "src/test.txt\n````\n<<<<<<< SEARCH\nOld Line\n=======\nNew Line\n>>>>>>> REPLACE\n````"
         val blocks = parser.parseBlocks(input)
-        assertEquals(1, blocks.size)
+        assertThat(blocks).hasSize(1)
         val block = blocks[0]
-        assertEquals("src/test.txt", block.filePath)
-        assertEquals("Old Line", block.searchContent.trim())
-        assertEquals("New Line", block.replaceContent.trim())
-        assertEquals(SearchReplaceBlockParser.EditType.SEARCH_REPLACE, block.editType)
+        assertThat(block.filePath).isEqualTo("src/test.txt")
+        assertThat(block.searchContent.trim()).isEqualTo("Old Line")
+        assertThat(block.replaceContent.trim()).isEqualTo("New Line")
+        assertThat(block.editType).isEqualTo(SearchReplaceBlockParser.EditType.SEARCH_REPLACE)
     }
 
     @Test
@@ -281,31 +279,31 @@ class SearchReplaceBlockParserTest {
         """.trimIndent()
 
         val blocks = parser.parseBlocks(input)
-        assertEquals(3, blocks.size, "Expected 3 blocks to be parsed")
+        assertThat(blocks).withFailMessage("Expected 3 blocks to be parsed").hasSize(3)
 
         // Block 1: Quadruple Search/Replace
         val block1 = blocks[0]
-        assertEquals("src/main/kotlin/App.kt", block1.filePath)
-        assertEquals("kotlin", block1.language)
-        assertEquals("val x = 1", block1.searchContent.trim())
-        assertEquals("val x = 2", block1.replaceContent.trim())
-        assertEquals(SearchReplaceBlockParser.EditType.SEARCH_REPLACE, block1.editType)
+        assertThat(block1.filePath).isEqualTo("src/main/kotlin/App.kt")
+        assertThat(block1.language).isEqualTo("kotlin")
+        assertThat(block1.searchContent.trim()).isEqualTo("val x = 1")
+        assertThat(block1.replaceContent.trim()).isEqualTo("val x = 2")
+        assertThat(block1.editType).isEqualTo(SearchReplaceBlockParser.EditType.SEARCH_REPLACE)
 
         // Block 2: Whole File
         val block2 = blocks[1]
-        assertEquals("config.properties", block2.filePath)
-        assertEquals("", block2.language)
-        assertEquals("", block2.searchContent)
-        assertEquals("key=value", block2.replaceContent.trim())
-        assertEquals(SearchReplaceBlockParser.EditType.WHOLE_FILE, block2.editType)
+        assertThat(block2.filePath).isEqualTo("config.properties")
+        assertThat(block2.language).isEqualTo("")
+        assertThat(block2.searchContent).isEqualTo("")
+        assertThat(block2.replaceContent.trim()).isEqualTo("key=value")
+        assertThat(block2.editType).isEqualTo(SearchReplaceBlockParser.EditType.WHOLE_FILE)
 
         // Block 3: Udiff
         val block3 = blocks[2]
-        assertEquals("styles.css", block3.filePath)
-        assertEquals("", block3.language)
-        assertEquals("", block3.searchContent)
-        assertTrue(block3.replaceContent.contains("+  color: blue;"))
-        assertEquals(SearchReplaceBlockParser.EditType.UDIFF, block3.editType)
+        assertThat(block3.filePath).isEqualTo("styles.css")
+        assertThat(block3.language).isEqualTo("")
+        assertThat(block3.searchContent).isEqualTo("")
+        assertThat(block3.replaceContent).contains("+  color: blue;")
+        assertThat(block3.editType).isEqualTo(SearchReplaceBlockParser.EditType.UDIFF)
     }
 
     @Test
@@ -326,13 +324,13 @@ class SearchReplaceBlockParserTest {
         """.trimIndent()
 
         val blocks = parser.parseBlocks(input)
-        assertEquals(1, blocks.size, "Expected 1 block after filtering instruction")
+        assertThat(blocks).withFailMessage("Expected 1 block after filtering instruction").hasSize(1)
         val block = blocks[0]
-        assertEquals("src/code.js", block.filePath)
-        assertEquals("javascript", block.language)
-        assertEquals("console.log('old');", block.searchContent.trim())
-        assertEquals("console.log('new');", block.replaceContent.trim())
-        assertEquals(SearchReplaceBlockParser.EditType.SEARCH_REPLACE, block.editType)
+        assertThat(block.filePath).isEqualTo("src/code.js")
+        assertThat(block.language).isEqualTo("javascript")
+        assertThat(block.searchContent.trim()).isEqualTo("console.log('old');")
+        assertThat(block.replaceContent.trim()).isEqualTo("console.log('new');")
+        assertThat(block.editType).isEqualTo(SearchReplaceBlockParser.EditType.SEARCH_REPLACE)
     }
 
     @Test
@@ -348,16 +346,16 @@ class SearchReplaceBlockParserTest {
             ````
         """.trimIndent()
         val blocks = parser.parseBlocks(input)
-        assertEquals(1, blocks.size)
+        assertThat(blocks).hasSize(1)
         val block = blocks[0]
-        assertEquals("src/new_file.txt", block.filePath)
-        assertEquals("", block.language)
-        assertEquals("", block.searchContent.trim(), "Search content should be empty for new file")
-        assertEquals("""
+        assertThat(block.filePath).isEqualTo("src/new_file.txt")
+        assertThat(block.language).isEqualTo("")
+        assertThat(block.searchContent.trim()).withFailMessage("Search content should be empty for new file").isEqualTo("")
+        assertThat(block.replaceContent.trim()).isEqualTo("""
             This is the content of the new file.
             It has multiple lines.
-        """.trimIndent(), block.replaceContent.trim())
-        assertEquals(SearchReplaceBlockParser.EditType.SEARCH_REPLACE, block.editType)
+        """.trimIndent())
+        assertThat(block.editType).isEqualTo(SearchReplaceBlockParser.EditType.SEARCH_REPLACE)
     }
 
     @Test
@@ -375,12 +373,12 @@ class SearchReplaceBlockParserTest {
             ```
         """.trimIndent()
         val blocks = parser.parseBlocks(input)
-        assertEquals(1, blocks.size)
+        assertThat(blocks).hasSize(1)
         val block = blocks[0]
-        assertEquals("some/path/file.txt", block.filePath)
-        assertEquals(SearchReplaceBlockParser.EditType.SEARCH_REPLACE, block.editType) // Should be SEARCH_REPLACE
-        assertEquals("This looks like a whole file block, but it's actually search/replace.", block.searchContent.trim())
-        assertEquals("Replacement content.", block.replaceContent.trim())
+        assertThat(block.filePath).isEqualTo("some/path/file.txt")
+        assertThat(block.editType).isEqualTo(SearchReplaceBlockParser.EditType.SEARCH_REPLACE) // Should be SEARCH_REPLACE
+        assertThat(block.searchContent.trim()).isEqualTo("This looks like a whole file block, but it's actually search/replace.")
+        assertThat(block.replaceContent.trim()).isEqualTo("Replacement content.")
     }
 
     @Test
@@ -398,30 +396,30 @@ class SearchReplaceBlockParserTest {
             ```
         """.trimIndent()
         val blocks = parser.parseBlocks(input)
-        assertEquals(1, blocks.size)
+        assertThat(blocks).hasSize(1)
         val block = blocks[0]
-        assertEquals("another/path.py", block.filePath)
-        assertEquals(SearchReplaceBlockParser.EditType.SEARCH_REPLACE, block.editType) // Must be SEARCH_REPLACE
-        assertEquals("print(\"hello\")", block.searchContent.trim())
-        assertEquals("print(\"world\")", block.replaceContent.trim())
+        assertThat(block.filePath).isEqualTo("another/path.py")
+        assertThat(block.editType).isEqualTo(SearchReplaceBlockParser.EditType.SEARCH_REPLACE) // Must be SEARCH_REPLACE
+        assertThat(block.searchContent.trim()).isEqualTo("print(\"hello\")")
+        assertThat(block.replaceContent.trim()).isEqualTo("print(\"world\")")
     }
 
     @Test
     fun `parseBlocks should parse new file block from resource`() {
         // Load the test data from the resource file
         val resourcePath = Paths.get("src", "test", "resources", "testdata", "new_file_block.txt")
-        assertTrue(Files.exists(resourcePath), "Test resource file not found: ${resourcePath.toAbsolutePath()}")
+        assertThat(Files.exists(resourcePath)).withFailMessage("Test resource file not found: ${resourcePath.toAbsolutePath()}").isTrue()
         val input = Files.readString(resourcePath)
 
         val blocks = parser.parseBlocks(input)
-        assertEquals(1, blocks.size, "Expected one block to be parsed from the resource file")
+        assertThat(blocks).withFailMessage("Expected one block to be parsed from the resource file").hasSize(1)
 
         val block = blocks[0]
-        assertEquals("src/main/java/de/andrena/springai_demo/services/DefaultVotingService.java", block.filePath)
-        assertEquals("java", block.language) // Language is captured by the triple-backtick regex
-        assertEquals("", block.searchContent.trim(), "Search content should be empty for new file block")
-        assertTrue(block.replaceContent.contains("public class DefaultVotingService implements VotingService"), "Replace content seems incorrect")
-        assertTrue(block.replaceContent.contains("package de.andrena.springai_demo.services;"), "Replace content seems incorrect")
-        assertEquals(SearchReplaceBlockParser.EditType.SEARCH_REPLACE, block.editType, "Edit type should be SEARCH_REPLACE for new file creation")
+        assertThat(block.filePath).isEqualTo("src/main/java/de/andrena/springai_demo/services/DefaultVotingService.java")
+        assertThat(block.language).isEqualTo("java") // Language is captured by the triple-backtick regex
+        assertThat(block.searchContent.trim()).withFailMessage("Search content should be empty for new file block").isEqualTo("")
+        assertThat(block.replaceContent).withFailMessage("Replace content seems incorrect").contains("public class DefaultVotingService implements VotingService")
+        assertThat(block.replaceContent).withFailMessage("Replace content seems incorrect").contains("package de.andrena.springai_demo.services;")
+        assertThat(block.editType).withFailMessage("Edit type should be SEARCH_REPLACE for new file creation").isEqualTo(SearchReplaceBlockParser.EditType.SEARCH_REPLACE)
     }
 }
