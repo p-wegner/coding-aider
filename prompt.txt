@@ -1,0 +1,56 @@
+src/main/java/de/andrena/springai_demo/services/DefaultVotingService.java
+```java
+<<<<<<< SEARCH
+=======
+package de.andrena.springai_demo.services;
+
+import de.andrena.springai_demo.entities.Candidate;
+import de.andrena.springai_demo.entities.Vote;
+import de.andrena.springai_demo.repositories.CandidateRepository;
+import de.andrena.springai_demo.repositories.VoteRepository;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+@Service
+public class DefaultVotingService implements VotingService {
+    private final VoteRepository voteRepository;
+    private final CandidateRepository candidateRepository;
+
+    public DefaultVotingService(VoteRepository voteRepository,
+                              CandidateRepository candidateRepository) {
+        this.voteRepository = voteRepository;
+        this.candidateRepository = candidateRepository;
+    }
+
+    @Override
+    @Transactional
+    public Vote castVote(Long candidateId, Long userId) {
+        if (voteRepository.existsByUserId(userId)) {
+            throw new IllegalStateException("User has already voted");
+        }
+
+        Candidate candidate = candidateRepository.findById(candidateId)
+            .orElseThrow(() -> new IllegalArgumentException("Candidate not found"));
+
+        Vote vote = Vote.create(candidate, userId);
+        candidate.getVoteHistory().add(vote);
+        return voteRepository.save(vote);
+    }
+
+    @Override
+    public List<Vote> getVotesByCandidate(Long candidateId) {
+        if (!candidateRepository.existsById(candidateId)) {
+            throw new IllegalArgumentException("Candidate not found");
+        }
+        return voteRepository.findByCandidateId(candidateId);
+    }
+
+    @Override
+    public List<Candidate> getAllCandidates() {
+        return candidateRepository.findAll();
+    }
+}
+>>>>>>> REPLACE
+```
