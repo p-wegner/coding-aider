@@ -29,6 +29,9 @@ class SearchReplaceBlockParser(private val project: Project) {
         // Quadruple backtick format
         private val QUADRUPLE_REGEX = """(?m)^([^\n]+)\n````([^\n]*)\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n````""".toRegex(RegexOption.DOT_MATCHES_ALL)
         
+        // Additional pattern for code blocks with language specified (like in prompt.txt)
+        private val LANGUAGE_CODE_BLOCK_REGEX = """(?m)^([^\n]+)\n```([^\n]+)\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n```""".toRegex(RegexOption.DOT_MATCHES_ALL)
+        
         // Pattern to identify the instruction prompt
         private val INSTRUCTION_PROMPT_PATTERN = Pattern.compile(
             """When making code changes, please format them as SEARCH/REPLACE blocks using this format:[\s\S]*?Make your changes precise and minimal\.""",
@@ -98,6 +101,20 @@ class SearchReplaceBlockParser(private val project: Project) {
         
         // Process quadruple backtick format
         QUADRUPLE_REGEX.findAll(filteredText).forEach { match ->
+            val (filePath, language, searchContent, replaceContent) = match.destructured
+            blocks.add(
+                EditBlock(
+                    filePath = filePath.trim(),
+                    language = language.trim(),
+                    searchContent = searchContent,
+                    replaceContent = replaceContent,
+                    editType = EditType.SEARCH_REPLACE
+                )
+            )
+        }
+        
+        // Process language-specific code block format (like in prompt.txt)
+        LANGUAGE_CODE_BLOCK_REGEX.findAll(filteredText).forEach { match ->
             val (filePath, language, searchContent, replaceContent) = match.destructured
             blocks.add(
                 EditBlock(
@@ -248,10 +265,21 @@ class SearchReplaceBlockParser(private val project: Project) {
                 refreshVirtualFile(absolutePath)
                 return true
             } else {
-                val message = "File not found and search content is not empty: ${block.filePath}"
-                logger.warn(message)
-                showNotification(message, NotificationType.ERROR)
-                return false
+                // Special case: If the file doesn't exist but search content is not empty,
+                // check if this is a new file creation pattern with an empty search block
+                // This handles cases where the search block exists but is effectively empty
+                val trimmedSearch = block.searchContent.trim()
+                if (trimmedSearch.isEmpty()) {
+                    // Creating a new file with just the replace content
+                    file.writeText(block.replaceContent)
+                    refreshVirtualFile(absolutePath)
+                    return true
+                } else {
+                    val message = "File not found and search content is not empty: ${block.filePath}"
+                    logger.warn(message)
+                    showNotification(message, NotificationType.ERROR)
+                    return false
+                }
             }
         } else {
             // Modifying an existing file
