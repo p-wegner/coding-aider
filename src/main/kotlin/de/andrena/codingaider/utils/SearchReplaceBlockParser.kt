@@ -86,8 +86,146 @@ class SearchReplaceBlockParser(private val project: Project) {
         val blocks = mutableListOf<EditBlock>()
         
         // Filter out the instruction prompt if it exists in the text
-        val filteredText = filterInstructionPrompt(text)
-        
+        var remainingText = filterInstructionPrompt(text)
+        val processedRanges = mutableListOf<IntRange>()
+
+        // Function to check if a range overlaps with already processed ranges
+        fun isProcessed(range: IntRange): Boolean {
+            return processedRanges.any { it.first <= range.first && it.last >= range.last || range.first <= it.first && range.last >= it.last || range.first in it || range.last in it }
+        }
+
+        // Function to add a processed range
+        fun addProcessedRange(range: IntRange) {
+            processedRanges.add(range)
+        }
+
+        // Define the order of regex patterns to try (most specific first)
+        val regexPatterns = listOf(
+            QUADRUPLE_REGEX, // ````` ... `````
+            LANGUAGE_CODE_BLOCK_REGEX, // ```lang ... ```+
+            PROMPT_TXT_REGEX, // ```lang ``` ... ```+ (Nested - less likely for prompt.txt example)
+            STANDARD_REGEX, // ```+ ... ```+ (More general)
+            DIFF_FENCED_PATTERN, // ``` \n path \n <<< ... >>> \n ```
+            WHOLE_PATTERN, // path \n ``` content ```
+            UDIFF_PATTERN // ```diff ... ```
+        )
+
+        // Iterate through patterns and find matches
+        regexPatterns.forEach { regex ->
+            regex.findAll(remainingText).forEach { match ->
+                if (!isProcessed(match.range)) {
+                    try {
+                        when (regex) {
+                            STANDARD_REGEX -> {
+                                val (filePath, language, searchContent, replaceContent) = match.destructured
+                                blocks.add(EditBlock(
+                                    filePath = filePath.trim(),
+                                    language = language.trim(),
+                                    searchContent = searchContent,
+                                    replaceContent = replaceContent,
+                                    editType = EditType.SEARCH_REPLACE
+                                ))
+                                addProcessedRange(match.range)
+                            }
+                            QUADRUPLE_REGEX -> {
+                                val (filePath, language, searchContent, replaceContent) = match.destructured
+                                blocks.add(EditBlock(
+                                    filePath = filePath.trim(),
+                                    language = language.trim(),
+                                    searchContent = searchContent,
+                                    replaceContent = replaceContent,
+                                    editType = EditType.SEARCH_REPLACE
+                                ))
+                                addProcessedRange(match.range)
+                            }
+                            LANGUAGE_CODE_BLOCK_REGEX -> {
+                                val (filePath, language, searchContent, replaceContent) = match.destructured
+                                blocks.add(EditBlock(
+                                    filePath = filePath.trim(),
+                                    language = language.trim(),
+                                    searchContent = searchContent,
+                                    replaceContent = replaceContent,
+                                    editType = EditType.SEARCH_REPLACE
+                                ))
+                                addProcessedRange(match.range)
+                            }
+                            PROMPT_TXT_REGEX -> {
+                                val (filePath, outerLanguage, innerLanguage, searchContent, replaceContent) = match.destructured
+                                blocks.add(EditBlock(
+                                    filePath = filePath.trim(),
+                                    language = innerLanguage.trim().ifEmpty { outerLanguage.trim() },
+                                    searchContent = searchContent,
+                                    replaceContent = replaceContent,
+                                    editType = EditType.SEARCH_REPLACE
+                                ))
+                                addProcessedRange(match.range)
+                            }
+                            // Handling for Pattern-based regexes (DIFF_FENCED, WHOLE, UDIFF)
+                            // Note: These need separate handling as they don't use destructuring
+                            // We'll handle them after the Regex-based ones.
+                        }
+                    } catch (e: Exception) {
+                        logger.warn("Error processing match for regex $regex: ${e.message}", e)
+                    }
+                }
+            }
+        }
+
+
+        // Process diff-fenced format (Pattern based)
+        val diffFencedMatcher = DIFF_FENCED_PATTERN.matcher(remainingText)
+        while (diffFencedMatcher.find()) {
+            val range = diffFencedMatcher.start()..diffFencedMatcher.end()
+            if (!isProcessed(range)) {
+                blocks.add(
+                    EditBlock(
+                        filePath = diffFencedMatcher.group(1).trim(),
+                        searchContent = diffFencedMatcher.group(2),
+                        replaceContent = diffFencedMatcher.group(3),
+                        editType = EditType.SEARCH_REPLACE // Diff-fenced is a type of Search/Replace
+                    )
+                )
+                addProcessedRange(range)
+            }
+        }
+
+        // Process whole file replacements (Pattern based)
+        val wholeMatcher = WHOLE_PATTERN.matcher(remainingText)
+        while (wholeMatcher.find()) {
+            val range = wholeMatcher.start()..wholeMatcher.end()
+            // Avoid matching blocks already identified as SEARCH_REPLACE or UDIFF
+            val content = wholeMatcher.group(0)
+            if (!isProcessed(range) && !content.contains("<<<<<<< SEARCH") && !content.startsWith("```diff")) {
+                 blocks.add(
+                    EditBlock(
+                        filePath = wholeMatcher.group(1).trim(),
+                        replaceContent = wholeMatcher.group(2),
+                        editType = EditType.WHOLE_FILE
+                    )
+                )
+                addProcessedRange(range)
+            }
+        }
+
+        // Process unified diff format (Pattern based)
+        val udiffMatcher = UDIFF_PATTERN.matcher(remainingText)
+        while (udiffMatcher.find()) {
+             val range = udiffMatcher.start()..udiffMatcher.end()
+             if (!isProcessed(range)) {
+                blocks.add(
+                    EditBlock(
+                        filePath = udiffMatcher.group(1).trim(),
+                        replaceContent = udiffMatcher.group(2), // The actual diff content
+                        editType = EditType.UDIFF
+                    )
+                )
+                addProcessedRange(range)
+             }
+        }
+
+
+        // --- Remove the old sequential processing logic ---
+        /*
         // Process standard search/replace format
         STANDARD_REGEX.findAll(filteredText).forEach { match ->
             val (filePath, language, searchContent, replaceContent) = match.destructured
