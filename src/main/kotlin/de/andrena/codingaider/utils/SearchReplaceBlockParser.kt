@@ -40,24 +40,16 @@ class SearchReplaceBlockParser(private val project: Project) {
             """When making code changes, please format them as SEARCH/REPLACE blocks using this format:[\s\S]*?Make your changes precise and minimal\.""",
             Pattern.MULTILINE
         )
-        
+
         // Alternative format with fenced blocks (diff-fenced)
-        private val DIFF_FENCED_PATTERN = Pattern.compile(
-            """```\n(.+?)\n<<<<<<< SEARCH\n([\s\S]*?)=======\n([\s\S]*?)>>>>>>> REPLACE\n```""",
-            Pattern.MULTILINE
-        )
-        
+        private val DIFF_FENCED_REGEX = """```\n(.+?)\n<<<<<<< SEARCH\n([\s\S]*?)=======\n([\s\S]*?)>>>>>>> REPLACE\n```""".toRegex(RegexOption.MULTILINE)
+
         // Whole file replacement pattern - exclude matches containing SEARCH/REPLACE blocks
-        private val WHOLE_PATTERN = Pattern.compile(
-            """(.+?)\n```(?:\w*)\n(?!.*?<<<<<<< SEARCH)([\s\S]*?)\n```""",
-            Pattern.MULTILINE
-        )
-        
+        // Note: The negative lookahead (?!.*?<<<<<<< SEARCH) helps, but we add an extra check later
+        private val WHOLE_REGEX = """(.+?)\n```(?:\w*)\n(?!.*?<<<<<<< SEARCH)([\s\S]*?)\n```""".toRegex(RegexOption.MULTILINE)
+
         // Unified diff format pattern
-        private val UDIFF_PATTERN = Pattern.compile(
-            """```diff\n--- (.+?)\n\+\+\+ \1\n@@ .* @@\n([\s\S]*?)\n```""",
-            Pattern.MULTILINE
-        )
+        private val UDIFF_REGEX = """```diff\n--- (.+?)\n\+\+\+ \1\n@@ .* @@\n([\s\S]*?)\n```""".toRegex(RegexOption.MULTILINE)
     }
 
     /**
@@ -103,19 +95,29 @@ class SearchReplaceBlockParser(private val project: Project) {
         val regexPatterns = listOf(
             QUADRUPLE_REGEX, // ````` ... `````
             LANGUAGE_CODE_BLOCK_REGEX, // ```lang ... ```+
-            PROMPT_TXT_REGEX, // ```lang ``` ... ```+ (Nested - less likely for prompt.txt example)
-            STANDARD_REGEX, // ```+ ... ```+ (More general)
-            DIFF_FENCED_PATTERN, // ``` \n path \n <<< ... >>> \n ```
-            WHOLE_PATTERN, // path \n ``` content ```
-            UDIFF_PATTERN // ```diff ... ```
+            PROMPT_TXT_REGEX, // ```lang ``` ... ```+ (Nested)
+            STANDARD_REGEX, // ```+ ... ```+ (General Search/Replace)
+            DIFF_FENCED_REGEX, // ``` \n path \n <<< ... >>> \n ```
+            WHOLE_REGEX, // path \n ``` content ```
+            UDIFF_REGEX // ```diff ... ```
         )
 
         // Iterate through patterns and find matches
         regexPatterns.forEach { regex ->
-            regex.findAll(remainingText).forEach { match ->
+            // Ensure we are calling findAll on Kotlin Regex
+            val currentRegex: Regex = when (regex) {
+                is Regex -> regex
+                // This case should ideally not happen if the list is correctly defined
+                else -> {
+                    logger.warn("Unexpected type in regexPatterns list: ${regex::class.simpleName}")
+                    return@forEach // Skip this pattern
+                }
+            }
+
+            currentRegex.findAll(remainingText).forEach { match ->
                 if (!isProcessed(match.range)) {
                     try {
-                        when (regex) {
+                        when (currentRegex) {
                             STANDARD_REGEX -> {
                                 val (filePath, language, searchContent, replaceContent) = match.destructured
                                 blocks.add(EditBlock(
@@ -160,71 +162,62 @@ class SearchReplaceBlockParser(private val project: Project) {
                                 ))
                                 addProcessedRange(match.range)
                             }
-                            // Handling for Pattern-based regexes (DIFF_FENCED, WHOLE, UDIFF)
-                            // Note: These need separate handling as they don't use destructuring
-                            // We'll handle them after the Regex-based ones.
+                            DIFF_FENCED_REGEX -> {
+                                // Groups: 1=filePath, 2=search, 3=replace
+                                if (match.groups.size > 3) {
+                                    blocks.add(EditBlock(
+                                        filePath = match.groupValues[1].trim(),
+                                        searchContent = match.groupValues[2],
+                                        replaceContent = match.groupValues[3],
+                                        editType = EditType.SEARCH_REPLACE
+                                    ))
+                                    addProcessedRange(match.range)
+                                } else {
+                                     logger.warn("DIFF_FENCED_REGEX match failed group extraction: ${match.value}")
+                                }
+                            }
+                            WHOLE_REGEX -> {
+                                // Groups: 1=filePath, 2=replaceContent
+                                // Extra check: Avoid matching blocks already identified as SEARCH_REPLACE or UDIFF
+                                val content = match.value
+                                if (!content.contains("<<<<<<< SEARCH") && !content.startsWith("```diff")) {
+                                     if (match.groups.size > 2) {
+                                        blocks.add(EditBlock(
+                                            filePath = match.groupValues[1].trim(),
+                                            replaceContent = match.groupValues[2],
+                                            editType = EditType.WHOLE_FILE
+                                        ))
+                                        addProcessedRange(match.range)
+                                     } else {
+                                         logger.warn("WHOLE_REGEX match failed group extraction: ${match.value}")
+                                     }
+                                }
+                            }
+                            UDIFF_REGEX -> {
+                                // Groups: 1=filePath, 2=diffContent
+                                if (match.groups.size > 2) {
+                                    blocks.add(EditBlock(
+                                        filePath = match.groupValues[1].trim(),
+                                        replaceContent = match.groupValues[2], // The actual diff content
+                                        editType = EditType.UDIFF
+                                    ))
+                                    addProcessedRange(match.range)
+                                } else {
+                                    logger.warn("UDIFF_REGEX match failed group extraction: ${match.value}")
+                                }
+                            }
+                            else -> {
+                                // Should not happen if all regexes in the list are handled
+                                logger.warn("Unhandled regex pattern in when block: ${currentRegex.pattern}")
+                            }
                         }
                     } catch (e: Exception) {
-                        logger.warn("Error processing match for regex $regex: ${e.message}", e)
+                        logger.warn("Error processing match for regex ${currentRegex.pattern}: ${e.message}", e)
                     }
                 }
             }
         }
 
-
-        // Process diff-fenced format (Pattern based)
-        val diffFencedMatcher = DIFF_FENCED_PATTERN.matcher(remainingText)
-        while (diffFencedMatcher.find()) {
-            val range = diffFencedMatcher.start()..diffFencedMatcher.end()
-            if (!isProcessed(range)) {
-                blocks.add(
-                    EditBlock(
-                        filePath = diffFencedMatcher.group(1).trim(),
-                        searchContent = diffFencedMatcher.group(2),
-                        replaceContent = diffFencedMatcher.group(3),
-                        editType = EditType.SEARCH_REPLACE // Diff-fenced is a type of Search/Replace
-                    )
-                )
-                addProcessedRange(range)
-            }
-        }
-
-        // Process whole file replacements (Pattern based)
-        val wholeMatcher = WHOLE_PATTERN.matcher(remainingText)
-        while (wholeMatcher.find()) {
-            val range = wholeMatcher.start()..wholeMatcher.end()
-            // Avoid matching blocks already identified as SEARCH_REPLACE or UDIFF
-            val content = wholeMatcher.group(0)
-            if (!isProcessed(range) && !content.contains("<<<<<<< SEARCH") && !content.startsWith("```diff")) {
-                 blocks.add(
-                    EditBlock(
-                        filePath = wholeMatcher.group(1).trim(),
-                        replaceContent = wholeMatcher.group(2),
-                        editType = EditType.WHOLE_FILE
-                    )
-                )
-                addProcessedRange(range)
-            }
-        }
-
-        // Process unified diff format (Pattern based)
-        val udiffMatcher = UDIFF_PATTERN.matcher(remainingText)
-        while (udiffMatcher.find()) {
-             val range = udiffMatcher.start()..udiffMatcher.end()
-             if (!isProcessed(range)) {
-                blocks.add(
-                    EditBlock(
-                        filePath = udiffMatcher.group(1).trim(),
-                        replaceContent = udiffMatcher.group(2), // The actual diff content
-                        editType = EditType.UDIFF
-                    )
-                )
-                addProcessedRange(range)
-             }
-        }
-
-
-        
         return blocks
     }
     
