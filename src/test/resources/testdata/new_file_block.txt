@@ -1,0 +1,3 @@
+src/main/java/de/andrena/springai_demo/services/DefaultVotingService.java
+```java
+<<<<<<< SEARCH

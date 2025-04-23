@@ -2,10 +2,13 @@ package de.andrena.codingaider.utils
 
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.settings.AiderDefaults
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
+import java.nio.file.Files
+import java.nio.file.Paths
 
 class SearchReplaceBlockParserTest {
 
@@ -401,5 +404,24 @@ class SearchReplaceBlockParserTest {
         assertEquals(SearchReplaceBlockParser.EditType.SEARCH_REPLACE, block.editType) // Must be SEARCH_REPLACE
         assertEquals("print(\"hello\")", block.searchContent.trim())
         assertEquals("print(\"world\")", block.replaceContent.trim())
+    }
+
+    @Test
+    fun `parseBlocks should parse new file block from resource`() {
+        // Load the test data from the resource file
+        val resourcePath = Paths.get("src", "test", "resources", "testdata", "new_file_block.txt")
+        assertTrue(Files.exists(resourcePath), "Test resource file not found: ${resourcePath.toAbsolutePath()}")
+        val input = Files.readString(resourcePath)
+
+        val blocks = parser.parseBlocks(input)
+        assertEquals(1, blocks.size, "Expected one block to be parsed from the resource file")
+
+        val block = blocks[0]
+        assertEquals("src/main/java/de/andrena/springai_demo/services/DefaultVotingService.java", block.filePath)
+        assertEquals("java", block.language) // Language is captured by the triple-backtick regex
+        assertEquals("", block.searchContent.trim(), "Search content should be empty for new file block")
+        assertTrue(block.replaceContent.contains("public class DefaultVotingService implements VotingService"), "Replace content seems incorrect")
+        assertTrue(block.replaceContent.contains("package de.andrena.springai_demo.services;"), "Replace content seems incorrect")
+        assertEquals(SearchReplaceBlockParser.EditType.SEARCH_REPLACE, block.editType, "Edit type should be SEARCH_REPLACE for new file creation")
     }
 }
