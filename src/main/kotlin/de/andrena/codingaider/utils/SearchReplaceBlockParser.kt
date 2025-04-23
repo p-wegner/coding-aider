@@ -30,10 +30,11 @@ class SearchReplaceBlockParser(private val project: Project) {
         private val QUADRUPLE_REGEX = """(?m)^([^\n]+)\n````([^\n]*)\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n````""".toRegex(RegexOption.DOT_MATCHES_ALL)
         
         // Additional pattern for code blocks with language specified (like in prompt.txt)
-        private val LANGUAGE_CODE_BLOCK_REGEX = """(?m)^([^\n]+)\n```([^\n]+)\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n```+""".toRegex(RegexOption.DOT_MATCHES_ALL)
+        // Matches: filepath\n```language\n<<<<<<< SEARCH\n...content...\n=======\n...content...\n>>>>>>> REPLACE\n```
+        private val LANGUAGE_CODE_BLOCK_REGEX = """(?m)^([^\n]+)\n```([^\n]*)\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n```""".toRegex(RegexOption.DOT_MATCHES_ALL)
         
-        // Pattern for prompt.txt format with nested code blocks
-        private val PROMPT_TXT_REGEX = """(?m)^([^\n]+)\n```+([^\n]*)\n```+([^\n]*)\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n```+""".toRegex(RegexOption.DOT_MATCHES_ALL)
+        // Pattern for format with nested code blocks (less common)
+        private val NESTED_CODE_BLOCK_REGEX = """(?m)^([^\n]+)\n```+([^\n]*)\n```+([^\n]*)\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n```+""".toRegex(RegexOption.DOT_MATCHES_ALL)
         
         // Pattern to identify the instruction prompt
         private val INSTRUCTION_PROMPT_PATTERN = Pattern.compile(
@@ -93,10 +94,10 @@ class SearchReplaceBlockParser(private val project: Project) {
 
         // Define the order of regex patterns to try (most specific first)
         val regexPatterns = listOf(
-            QUADRUPLE_REGEX, // ````` ... `````
-            LANGUAGE_CODE_BLOCK_REGEX, // ```lang ... ```+
-            PROMPT_TXT_REGEX, // ```lang ``` ... ```+ (Nested)
-            STANDARD_REGEX, // ```+ ... ```+ (General Search/Replace)
+            QUADRUPLE_REGEX, // ```` ... ````
+            LANGUAGE_CODE_BLOCK_REGEX, // ```lang ... ```
+            NESTED_CODE_BLOCK_REGEX, // ```lang ``` ... ```+ (Nested)
+            STANDARD_REGEX, // ``` ... ``` (General Search/Replace, allows optional lang)
             DIFF_FENCED_REGEX, // ``` \n path \n <<< ... >>> \n ```
             WHOLE_REGEX, // path \n ``` content ```
             UDIFF_REGEX // ```diff ... ```
@@ -151,7 +152,7 @@ class SearchReplaceBlockParser(private val project: Project) {
                                 ))
                                 addProcessedRange(match.range)
                             }
-                            PROMPT_TXT_REGEX -> {
+                            NESTED_CODE_BLOCK_REGEX -> {
                                 val (filePath, outerLanguage, innerLanguage, searchContent, replaceContent) = match.destructured
                                 blocks.add(EditBlock(
                                     filePath = filePath.trim(),
@@ -322,10 +323,13 @@ class SearchReplaceBlockParser(private val project: Project) {
             // Modifying an existing file
             val content = file.readText()
             if (block.searchContent.isBlank()) {
-                // Empty search content means append to file
-                file.writeText(content + block.replaceContent)
-                refreshVirtualFile(absolutePath)
-                return true
+                // Standard Aider behavior: Empty search block is for creating NEW files.
+                // Applying an empty search block to an EXISTING file is ambiguous/undefined.
+                val message = "Attempted to apply SEARCH/REPLACE block with empty SEARCH section to existing file: ${block.filePath}. This operation is typically for creating new files. Skipping."
+                logger.warn(message)
+                // Optionally show notification, but might be noisy if LLM makes mistakes often.
+                // showNotification(message, NotificationType.WARNING)
+                return false // Indicate failure/skip
             } else {
                 // Normalize line endings for comparison
                 val normalizedContent = normalizeLineEndings(content)
