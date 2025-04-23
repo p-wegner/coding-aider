@@ -24,7 +24,7 @@ class SearchReplaceBlockParser(private val project: Project) {
 
     companion object {
         // Standard search/replace block pattern
-        private val STANDARD_REGEX = """(?m)^([^\n]+)\n```([^\n]*)\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n```""".toRegex(RegexOption.DOT_MATCHES_ALL)
+        private val STANDARD_REGEX = """(?m)^([^\n]+)\n```+([^\n]*)\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n```+""".toRegex(RegexOption.DOT_MATCHES_ALL)
         
         // Quadruple backtick format
         private val QUADRUPLE_REGEX = """(?m)^([^\n]+)\n````([^\n]*)\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n````""".toRegex(RegexOption.DOT_MATCHES_ALL)
@@ -83,7 +83,6 @@ class SearchReplaceBlockParser(private val project: Project) {
         val filteredText = filterInstructionPrompt(text)
         
         // Process standard search/replace format
-        //TODO: currently doesnt match properly
         STANDARD_REGEX.findAll(filteredText).forEach { match ->
             val (filePath, language, searchContent, replaceContent) = match.destructured
             blocks.add(
