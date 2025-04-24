@@ -213,7 +213,6 @@ class SearchReplaceBlockParserTest {
         assertThat(block.language).isEqualTo("") // Udiff doesn't have language
         assertThat(block.searchContent).isEqualTo("") // Udiff doesn't have search block
         assertThat(block.replaceContent.trim()).isEqualTo("""
-            @@ ... @@
             -class MathWeb:
             +import sympy
             +
