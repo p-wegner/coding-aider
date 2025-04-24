@@ -53,6 +53,17 @@ class AiderContextViewPanel(
                 e.presentation.isEnabled = true
             }
         })
+        add(object : AnAction("Add to .aiderignore", "Add selected files to .aiderignore", AllIcons.Actions.Exclude) {
+            override fun actionPerformed(e: AnActionEvent) {
+                addSelectedFilesToAiderIgnore()
+            }
+
+            override fun getActionUpdateThread() = ActionUpdateThread.BGT
+            override fun update(e: AnActionEvent) {
+                val selectedFiles = aiderContextView.getSelectedFiles()
+                e.presentation.isEnabled = selectedFiles.isNotEmpty()
+            }
+        })
         add(object : AnAction("Add Files", "Add files to persistent files", LayeredIcon.ADD_WITH_DROPDOWN) {
             override fun actionPerformed(e: AnActionEvent) {
                 val popup = JPopupMenu()
@@ -187,5 +198,43 @@ class AiderContextViewPanel(
         
         // Open the .aiderignore file in the editor
         com.intellij.openapi.fileEditor.FileEditorManager.getInstance(project).openFile(ignoreFile, true)
+    }
+    
+    private fun addSelectedFilesToAiderIgnore() {
+        val selectedFiles = aiderContextView.getSelectedFiles()
+        if (selectedFiles.isEmpty()) return
+        
+        val aiderIgnoreService = project.service<AiderIgnoreService>()
+        aiderIgnoreService.createIgnoreFileIfNeeded()
+        
+        val projectPath = project.basePath ?: return
+        
+        for (file in selectedFiles) {
+            val relativePath = getRelativePath(projectPath, file.filePath)
+            val pattern = if (file.filePath.endsWith("/") || java.io.File(file.filePath).isDirectory) {
+                "$relativePath/"
+            } else {
+                relativePath
+            }
+            
+            aiderIgnoreService.addPatternToIgnoreFile(pattern)
+        }
+        
+        // Remove the ignored files from the context view
+        aiderContextView.removeSelectedFiles()
+        
+        com.intellij.openapi.ui.Messages.showInfoMessage(
+            project,
+            "Added ${selectedFiles.size} pattern(s) to .aiderignore file",
+            "AiderIgnore Updated"
+        )
+    }
+    
+    private fun getRelativePath(projectPath: String, filePath: String): String {
+        return if (filePath.startsWith(projectPath)) {
+            filePath.substring(projectPath.length + 1).replace('\\', '/')
+        } else {
+            filePath.replace('\\', '/')
+        }
     }
 }
