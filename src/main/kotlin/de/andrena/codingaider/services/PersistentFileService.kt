@@ -79,19 +79,24 @@ class PersistentFileService(private val project: Project) {
     fun getPersistentFiles(): List<FileData> {
         // Return current list immediately while we check validity in background
         ApplicationManager.getApplication().executeOnPooledThread {
+            // Create a safe copy of the list to avoid ConcurrentModificationException
+            val filesCopy = ArrayList(persistentFiles)
+            
             // Clean up persistent files that no longer exist or are now ignored
-            val validFiles = persistentFiles.filter { fileData ->
+            val validFiles = filesCopy.filter { fileData ->
                 val virtualFile = LocalFileSystem.getInstance().findFileByPath(fileData.filePath)
                 (virtualFile?.exists() ?: false) && !isIgnored(fileData.filePath)
             }
 
-            if (validFiles.size != persistentFiles.size) {
-                persistentFiles.clear()
-                persistentFiles.addAll(validFiles)
-                savePersistentFilesToContextFile()
+            if (validFiles.size != filesCopy.size) {
+                synchronized(persistentFiles) {
+                    persistentFiles.clear()
+                    persistentFiles.addAll(validFiles)
+                    savePersistentFilesToContextFile()
+                }
             }
         }
-        return persistentFiles
+        return ArrayList(persistentFiles) // Return a copy to prevent concurrent modification
     }
 
     fun addAllFiles(selectedFiles: List<FileData>) {
