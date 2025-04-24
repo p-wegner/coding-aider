@@ -4,7 +4,6 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.openapi.Disposable
 import de.andrena.codingaider.messages.PersistentFilesChangedTopic
 import de.andrena.codingaider.utils.FileTraversal
 import java.io.File
@@ -13,7 +12,7 @@ import java.nio.file.PathMatcher
 import java.nio.file.Paths
 
 @Service(Service.Level.PROJECT)
-class AiderIgnoreService(private val project: Project) : Disposable {
+class AiderIgnoreService(private val project: Project) {
     private val ignoreFile = File(project.basePath ?: "", ".aiderignore")
     private var patterns: List<PathMatcher> = emptyList()
     private var lastModified: Long = 0
@@ -22,13 +21,10 @@ class AiderIgnoreService(private val project: Project) : Disposable {
         loadIgnorePatterns()
     }
 
-    override fun dispose() {
-        // Nothing to dispose
-    }
 
     private fun convertToGlobPattern(pattern: String, projectRoot: String): String {
         val normalizedPattern = pattern.trim().replace('\\', '/')
-        
+
         // Skip empty patterns and comments
         if (normalizedPattern.isEmpty() || normalizedPattern.startsWith("#")) {
             return ""
@@ -47,7 +43,7 @@ class AiderIgnoreService(private val project: Project) : Disposable {
                 val dirPattern = relativePattern.dropLast(1)
                 "glob:$projectRoot/$dirPattern/**"
             }
-            
+
             // Handle double-star patterns (**/tmp)
             relativePattern.startsWith("**/") -> {
                 val restPattern = relativePattern.substring(3)
@@ -57,12 +53,12 @@ class AiderIgnoreService(private val project: Project) : Disposable {
                     "glob:$projectRoot/**/$restPattern"
                 }
             }
-            
+
             // Handle file extension patterns (*.spec.ts)
             relativePattern.startsWith("*.") -> {
                 "glob:$projectRoot/**/*${relativePattern.substring(1)}"
             }
-            
+
             // Handle all other patterns
             else -> "glob:$projectRoot/$relativePattern"
         }
@@ -81,10 +77,10 @@ class AiderIgnoreService(private val project: Project) : Disposable {
 
         lastModified = currentLastModified
         val projectRoot = project.basePath?.replace('\\', '/') ?: ""
-        
+
         patterns = ignoreFile.readLines()
             .filter { it.isNotBlank() && !it.startsWith("#") }
-            .mapNotNull { pattern -> 
+            .mapNotNull { pattern ->
                 val globPattern = convertToGlobPattern(pattern, projectRoot)
                 if (globPattern.isNotEmpty()) {
                     FileSystems.getDefault().getPathMatcher(globPattern)
@@ -101,7 +97,7 @@ class AiderIgnoreService(private val project: Project) : Disposable {
     fun isIgnored(filePath: String): Boolean {
         loadIgnorePatterns() // Check for updates
         if (patterns.isEmpty()) return false
-        
+
         val normalizedPath = FileTraversal.normalizedFilePath(filePath)
         return patterns.any { it.matches(Paths.get(normalizedPath)) }
     }
@@ -110,7 +106,7 @@ class AiderIgnoreService(private val project: Project) : Disposable {
         if (!ignoreFile.exists()) {
             ignoreFile.createNewFile()
         }
-        
+
         val currentPatterns = ignoreFile.readLines().toMutableList()
         if (!currentPatterns.contains(pattern)) {
             currentPatterns.add(pattern)

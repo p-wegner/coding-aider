@@ -53,7 +53,7 @@ class AiderContextViewPanel(
                 e.presentation.isEnabled = true
             }
         })
-        add(object : AnAction("Add to .aiderignore", "Add selected files to .aiderignore", AllIcons.Actions.Exclude) {
+        add(object : AnAction("Add to .aiderignore", "Add selected files to .aiderignore", AllIcons.Actions.ToggleVisibility) {
             override fun actionPerformed(e: AnActionEvent) {
                 addSelectedFilesToAiderIgnore()
             }

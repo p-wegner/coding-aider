@@ -11,6 +11,5 @@ import de.andrena.springai_demo.repositories.VoteRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 >>>>>>> REPLACE
 ```

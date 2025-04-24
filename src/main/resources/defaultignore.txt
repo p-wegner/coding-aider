@@ -13,3 +13,4 @@ target/
 *.war
 node_modules/
 dist/
+**/*cpython-*.pyc

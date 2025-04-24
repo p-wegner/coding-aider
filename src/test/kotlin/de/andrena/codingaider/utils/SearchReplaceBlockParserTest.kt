@@ -418,8 +418,8 @@ class SearchReplaceBlockParserTest {
         assertThat(block.filePath).isEqualTo("src/main/java/de/andrena/springai_demo/services/DefaultVotingService.java")
         assertThat(block.language).isEqualTo("java") // Language is captured by the triple-backtick regex
         assertThat(block.searchContent.trim()).withFailMessage("Search content should be empty for new file block").isEqualTo("")
-        assertThat(block.replaceContent).withFailMessage("Replace content seems incorrect").contains("public class DefaultVotingService implements VotingService")
-        assertThat(block.replaceContent).withFailMessage("Replace content seems incorrect").contains("package de.andrena.springai_demo.services;")
+        assertThat(block.replaceContent).contains("import org.springframework.transaction.annotation.Transactional;")
+        assertThat(block.replaceContent).contains("package de.andrena.springai_demo.services;")
         assertThat(block.editType).withFailMessage("Edit type should be SEARCH_REPLACE for new file creation").isEqualTo(SearchReplaceBlockParser.EditType.SEARCH_REPLACE)
     }
 }
