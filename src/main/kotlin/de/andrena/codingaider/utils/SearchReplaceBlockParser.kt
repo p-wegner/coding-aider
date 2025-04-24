@@ -40,6 +40,9 @@ class SearchReplaceBlockParser(private val project: Project) {
         // New file block format: filepath\n```lang?\n<<<<<<< SEARCH\n=======\ncontent\n>>>>>>> REPLACE\n```
         // This format is specifically for creating new files with empty SEARCH section
         private val NEW_FILE_BLOCK_REGEX = """(?m)^([^\r\n]+)\r?\n```([^\r\n]*)\r?\n<<<<<<< SEARCH\r?\n=======\r?\n(.*?)\r?\n>>>>>>> REPLACE\r?\n```$""".toRegex(RegexOption.DOT_MATCHES_ALL)
+        
+        // Quadruple backtick version of new file block format
+        private val QUADRUPLE_NEW_FILE_REGEX = """(?m)^([^\r\n]+)\r?\n````([^\r\n]*)\r?\n<<<<<<< SEARCH\r?\n=======\r?\n(.*?)\r?\n>>>>>>> REPLACE\r?\n````$""".toRegex(RegexOption.DOT_MATCHES_ALL)
 
         // --- Other Formats ---
 
@@ -101,10 +104,11 @@ class SearchReplaceBlockParser(private val project: Project) {
 
         // Define the order of regex patterns to try (most specific SEARCH/REPLACE first)
         val regexPatterns = listOf(
+            QUADRUPLE_NEW_FILE_REGEX,  // ````lang? \n <<< SEARCH \n ======= \n content \n >>> REPLACE \n ````
+            NEW_FILE_BLOCK_REGEX,      // ```lang \n <<< SEARCH \n ======= \n content \n >>> REPLACE \n ```
             QUADRUPLE_REGEX,           // ````lang? ... ````
             LANGUAGE_TRIPLE_REGEX,     // ```lang ... ```
             SIMPLE_TRIPLE_REGEX,       // ``` ... ```
-            NEW_FILE_BLOCK_REGEX,      // ```lang \n <<< SEARCH \n ======= \n content \n >>> REPLACE \n ```
             // --- Other formats ---
             DIFF_FENCED_REGEX,         // ``` \n path \n <<< ... >>> \n ```
             WHOLE_REGEX,               // path \n ``` content ```
@@ -163,7 +167,7 @@ class SearchReplaceBlockParser(private val project: Project) {
                                 ))
                                 addProcessedRange(match.range)
                             }
-                            NEW_FILE_BLOCK_REGEX -> {
+                            NEW_FILE_BLOCK_REGEX, QUADRUPLE_NEW_FILE_REGEX -> {
                                 // Groups: 1=filePath, 2=language, 3=replaceContent (empty search content)
                                 val (filePath, language, replaceContent) = match.destructured
                                 blocks.add(EditBlock(
@@ -175,45 +179,10 @@ class SearchReplaceBlockParser(private val project: Project) {
                                 ))
                                 addProcessedRange(match.range)
                             }
-                            // Also handle quadruple backtick format for new files
-                            QUADRUPLE_REGEX, LANGUAGE_TRIPLE_REGEX, SIMPLE_TRIPLE_REGEX -> {
-                                try {
-                                    // For QUADRUPLE_REGEX: Groups: 1=filePath, 2=language(optional), 3=search, 4=replace
-                                    // For LANGUAGE_TRIPLE_REGEX: Groups: 1=filePath, 2=language(mandatory), 3=search, 4=replace
-                                    // For SIMPLE_TRIPLE_REGEX: Groups: 1=filePath, 2=search, 3=replace (No language group)
-                    
-                                    // Extract the appropriate values based on the regex
-                                    val filePath = match.groupValues[1].trim()
-                                    val language = if (currentRegex == SIMPLE_TRIPLE_REGEX) "" else match.groupValues[2].trim()
-                    
-                                    // Get search content from the appropriate group
-                                    val searchContent = if (currentRegex == SIMPLE_TRIPLE_REGEX) match.groupValues[2] else match.groupValues[3]
-                    
-                                    // Get replace content from the appropriate group
-                                    val replaceContent = if (currentRegex == SIMPLE_TRIPLE_REGEX) match.groupValues[3] else match.groupValues[4]
-                    
-                                    // If search content is empty or just whitespace, treat as new file creation
-                                    if (searchContent.trim().isEmpty()) {
-                                        blocks.add(EditBlock(
-                                            filePath = filePath,
-                                            language = language,
-                                            searchContent = "", // Empty search content for new file
-                                            replaceContent = replaceContent,
-                                            editType = EditType.SEARCH_REPLACE
-                                        ))
-                                    } else {
-                                        blocks.add(EditBlock(
-                                            filePath = filePath,
-                                            language = language,
-                                            searchContent = searchContent,
-                                            replaceContent = replaceContent,
-                                            editType = EditType.SEARCH_REPLACE
-                                        ))
-                                    }
-                                    addProcessedRange(match.range)
-                                } catch (e: Exception) {
-                                    logger.warn("Error processing match for regex ${currentRegex.pattern}: ${e.message}", e)
-                                }
+                            // This case should not be reached as these regexes are already handled above
+                            // This is a fallback in case something goes wrong with the pattern matching
+                            else -> {
+                                logger.warn("Unexpected regex match: ${currentRegex.pattern}")
                             }
                             DIFF_FENCED_REGEX -> {
                                 // Groups: 1=filePath, 2=search, 3=replace
