@@ -59,8 +59,8 @@ class SearchReplaceBlockParser(private val project: Project) {
         // Note: The negative lookahead (?!.*?<<<<<<< SEARCH) helps, but we add an extra check later
         private val WHOLE_REGEX = """(.+?)\n```(?:\w*)\n(?!.*?<<<<<<< SEARCH)([\s\S]*?)\n```""".toRegex(RegexOption.MULTILINE)
 
-        // Unified diff format pattern
-        private val UDIFF_REGEX = """```diff\n--- (.+?)\n\+\+\+ \1\n@@ .* @@\n([\s\S]*?)\n```""".toRegex(RegexOption.MULTILINE)
+        // Unified diff format pattern - improved to avoid capturing descriptive text as filename
+        private val UDIFF_REGEX = """```diff\n--- ([^\n]+?)\n\+\+\+ \1\n@@ .* @@\n([\s\S]*?)\n```""".toRegex(RegexOption.MULTILINE)
     }
 
     /**

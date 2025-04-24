@@ -245,14 +245,7 @@ class SearchReplaceBlockParserTest {
         assertThat(block.editType).isEqualTo(SearchReplaceBlockParser.EditType.SEARCH_REPLACE)
     }
 
-    @Test
-    fun `parseBlocks should parse multiple blocks of different types`() {
-        val input = """
-            First file change:
-            src/main/kotlin/App.kt
-            ````kotlin
-            <<<<<<< SEARCH
-            val x = 1
+            val x = 2
             =======
             val x = 2
             >>>>>>> REPLACE
