@@ -324,7 +324,7 @@ class SearchReplaceBlockParserTest {
         """.trimIndent()
 
         val blocks = parser.parseBlocks(input)
-        assertThat(blocks).withFailMessage("Expected 1 block after filtering instruction").hasSize(1)
+        assertThat(blocks).hasSize(1)
         val block = blocks[0]
         assertThat(block.filePath).isEqualTo("src/code.js")
         assertThat(block.language).isEqualTo("javascript")
