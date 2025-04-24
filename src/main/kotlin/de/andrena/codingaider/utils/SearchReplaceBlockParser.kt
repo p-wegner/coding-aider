@@ -36,6 +36,10 @@ class SearchReplaceBlockParser(private val project: Project) {
         // Triple backtick format without language: filepath\n```\nSEARCH\n...\nREPLACE\n```
         // Handles no language, CRLF/LF, DOT_MATCHES_ALL, $ anchor.
         private val SIMPLE_TRIPLE_REGEX = """(?m)^([^\r\n]+)\r?\n```\r?\n<<<<<<< SEARCH\r?\n(.*?)\r?\n=======\r?\n(.*?)\r?\n>>>>>>> REPLACE\r?\n```$""".toRegex(RegexOption.DOT_MATCHES_ALL)
+        
+        // New file block format: filepath\n```lang\n<<<<<<< SEARCH\n=======\ncontent\n>>>>>>> REPLACE\n```
+        // This format is specifically for creating new files with empty SEARCH section
+        private val NEW_FILE_BLOCK_REGEX = """(?m)^([^\r\n]+)\r?\n```([^\r\n]+)\r?\n<<<<<<< SEARCH\r?\n=======\r?\n(.*?)\r?\n>>>>>>> REPLACE\r?\n```$""".toRegex(RegexOption.DOT_MATCHES_ALL)
 
         // --- Other Formats ---
 
@@ -100,6 +104,7 @@ class SearchReplaceBlockParser(private val project: Project) {
             QUADRUPLE_REGEX,           // ````lang? ... ````
             LANGUAGE_TRIPLE_REGEX,     // ```lang ... ```
             SIMPLE_TRIPLE_REGEX,       // ``` ... ```
+            NEW_FILE_BLOCK_REGEX,      // ```lang \n <<< SEARCH \n ======= \n content \n >>> REPLACE \n ```
             // --- Other formats ---
             DIFF_FENCED_REGEX,         // ``` \n path \n <<< ... >>> \n ```
             WHOLE_REGEX,               // path \n ``` content ```
@@ -153,6 +158,18 @@ class SearchReplaceBlockParser(private val project: Project) {
                                     filePath = filePath.trim(),
                                     language = "", // No language specified
                                     searchContent = searchContent,
+                                    replaceContent = replaceContent,
+                                    editType = EditType.SEARCH_REPLACE
+                                ))
+                                addProcessedRange(match.range)
+                            }
+                            NEW_FILE_BLOCK_REGEX -> {
+                                // Groups: 1=filePath, 2=language, 3=replaceContent (empty search content)
+                                val (filePath, language, replaceContent) = match.destructured
+                                blocks.add(EditBlock(
+                                    filePath = filePath.trim(),
+                                    language = language.trim(),
+                                    searchContent = "", // Empty search content for new file
                                     replaceContent = replaceContent,
                                     editType = EditType.SEARCH_REPLACE
                                 ))
