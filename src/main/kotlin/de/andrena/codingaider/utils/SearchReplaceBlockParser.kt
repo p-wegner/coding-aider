@@ -181,9 +181,6 @@ class SearchReplaceBlockParser(private val project: Project) {
                             }
                             // This case should not be reached as these regexes are already handled above
                             // This is a fallback in case something goes wrong with the pattern matching
-                            else -> {
-                                logger.warn("Unexpected regex match: ${currentRegex.pattern}")
-                            }
                             DIFF_FENCED_REGEX -> {
                                 // Groups: 1=filePath, 2=search, 3=replace
                                 if (match.groups.size > 3) { // Check group count
