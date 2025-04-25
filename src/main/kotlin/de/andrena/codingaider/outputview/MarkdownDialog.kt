@@ -60,13 +60,13 @@ class MarkdownDialog(
         // Track user scrolling to determine auto-scroll behavior
         verticalScrollBar.addAdjustmentListener { e ->
             val scrollBar = verticalScrollBar
-            val isAtBottom = scrollBar.value >= (scrollBar.maximum - scrollBar.visibleAmount - 20)
+            // Use a more generous threshold (30px) to detect "at bottom"
+            val isAtBottom = scrollBar.value >= (scrollBar.maximum - scrollBar.visibleAmount - 30)
             
             // Only update auto-scroll state when user manually scrolls (not programmatic scrolls)
             if (!programmaticScrolling) {
                 // When user is actively adjusting the scrollbar
                 if (e.valueIsAdjusting) {
-                    // Use a more generous threshold (20px) to detect "at bottom"
                     shouldAutoScroll = isAtBottom
                     // Store last manual scroll position when user scrolls away from bottom
                     if (!isAtBottom) {
@@ -277,7 +277,8 @@ class MarkdownDialog(
                     val maxPosition = scrollBar.maximum - scrollBar.visibleAmount
                     
                     // Check if we're at the bottom before updating content
-                    val wasAtBottom = scrollBar.value >= (scrollBar.maximum - scrollBar.visibleAmount - 10)
+                    // Use a more generous threshold (30px) to detect "at bottom"
+                    val wasAtBottom = scrollBar.value >= (scrollBar.maximum - scrollBar.visibleAmount - 30)
                     
                     // Update content
                     markdownViewer.setMarkdown(newContent)
@@ -293,6 +294,7 @@ class MarkdownDialog(
                             
                             if (wasAtBottom || shouldAutoScroll) {
                                 // If we were at the bottom or auto-scroll is enabled, scroll to bottom
+                                // Use maximum value to ensure we're at the very bottom
                                 scrollBar.value = scrollBar.maximum
                                 shouldAutoScroll = true
                             } else {
