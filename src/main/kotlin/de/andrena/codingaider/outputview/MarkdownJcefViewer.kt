@@ -199,7 +199,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     .replace("\n", "\\n")
                     .replace("\r", "\\r")
                 
-                val script = "updateContent('$escapedHtml');"
+                val script = "updateContent('$escapedHtml'); initCollapsiblePanels();"
                 browser.cefBrowser.executeJavaScript(script, browser.cefBrowser.url, 0)
             } catch (e: Exception) {
                 println("Error updating browser content: ${e.message}")
@@ -430,14 +430,24 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         </style>
         
         <script>
-            // Add click handlers to collapsible panels
-            document.addEventListener('DOMContentLoaded', function() {
+            // Function to initialize collapsible panels
+            function initCollapsiblePanels() {
                 document.querySelectorAll('.collapsible-header').forEach(header => {
                     header.addEventListener('click', function() {
                         this.parentElement.classList.toggle('expanded');
                     });
                 });
-            });
+            }
+            
+            // Initialize on DOM content loaded
+            document.addEventListener('DOMContentLoaded', initCollapsiblePanels);
+            
+            // Original update content function
+            function updateContent(html) {
+                document.getElementById('content').innerHTML = html;
+                // Initialize collapsible panels after content update
+                initCollapsiblePanels();
+            }
         </script>
         
         ${processSearchReplaceBlocks(html)}
