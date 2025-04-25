@@ -142,9 +142,6 @@ class MarkdownDialog(
     private var isProcessFinished = false
     private var shouldAutoScroll = true
     private var lastManualScrollPosition = 0
-    private var isScrollAnimationInProgress = false
-    private var lastScrollPosition = 0
-    private var scrollAnimationTimer: Timer? = null
     private var resizeTimer: Timer? = null
 
     init {
@@ -166,17 +163,6 @@ class MarkdownDialog(
                 }
             }
         })
-
-
-        // Start refresh timer
-        refreshTimer = Timer().apply {
-            scheduleAtFixedRate(0, 1000) {
-                invokeLater {
-                    markdownViewer.component.revalidate()
-                    markdownViewer.component.repaint()
-                }
-            }
-        }
         // Set optimal window dimensions based on screen size
         val screenSize = java.awt.Toolkit.getDefaultToolkit().screenSize
         val optimalWidth = (screenSize.width * 0.6).toInt().coerceIn(600, 1200)
@@ -261,86 +247,33 @@ class MarkdownDialog(
     }
 
     private var lastContent = ""
-    private var currentContent = ""
-    private var isUpdating = false
-    private val updateLock = Object()
 
     fun updateProgress(output: String, title: String) {
-        // Use synchronized block to prevent concurrent updates
-        synchronized(updateLock) {
-            if (isUpdating) return
-            isUpdating = true
-        }
-
         com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
             try {
                 val newContent = output.replace("\r\n", "\n")
                 if (newContent != lastContent) {
                     lastContent = newContent
 
-                    // Store scroll state before update
+                    // Store scroll state
                     val scrollBar = scrollPane.verticalScrollBar
                     val wasAtBottom = scrollBar.value >= scrollBar.maximum - scrollBar.visibleAmount - 10
-                    val prevViewportHeight = scrollPane.viewport.viewRect.height
-                    val prevScrollPosition = scrollBar.value
-                    val prevContentHeight = scrollPane.viewport.viewSize.height
-                    val prevScrollRatio = if (prevContentHeight - prevViewportHeight > 0) {
-                        prevScrollPosition.toDouble() / (prevContentHeight - prevViewportHeight)
-                    } else 0.0
-
-                    // Update scroll behavior based on user action
-                    if (!wasAtBottom && shouldAutoScroll) shouldAutoScroll = false
-                    if (wasAtBottom && !shouldAutoScroll) shouldAutoScroll = true
-
+                    
                     // Update content
                     markdownViewer.setMarkdown(newContent)
                     this@MarkdownDialog.title = title
 
-                    // Handle scrolling after content update - ensure this runs on EDT
-                    invokeLater {
-                        try {
-                            val newContentHeight = scrollPane.viewport.viewSize.height
-                            val viewportHeight = scrollPane.viewport.viewRect.height
-                            val newMaxScroll = (newContentHeight - viewportHeight).coerceAtLeast(0)
-
-                            when {
-                                shouldAutoScroll && wasAtBottom -> {
-                                    smoothScrollTo(scrollBar, scrollBar.maximum)
-                                }
-
-                                prevContentHeight > 0 && newContentHeight > 0 -> {
-                                    val targetPosition = (newMaxScroll * prevScrollRatio).toInt()
-                                        .coerceIn(0, newMaxScroll)
-                                    if (Math.abs(targetPosition - scrollBar.value) > viewportHeight / 3) {
-                                        smoothScrollTo(scrollBar, targetPosition)
-                                    } else {
-                                        scrollBar.value = targetPosition
-                                    }
-                                }
-                            }
-
-                            scrollPane.repaint()
-                        } finally {
-                            // Always reset the updating flag, even if an exception occurs
-                            synchronized(updateLock) {
-                                isUpdating = false
-                            }
+                    // Restore scroll position
+                    if (wasAtBottom || shouldAutoScroll) {
+                        invokeLater {
+                            scrollBar.value = scrollBar.maximum
                         }
                     }
                 } else {
-                    // If content hasn't changed, still update the title and reset the flag
                     this@MarkdownDialog.title = title
-                    synchronized(updateLock) {
-                        isUpdating = false
-                    }
                 }
             } catch (e: Exception) {
                 println("Error updating markdown dialog: ${e.message}")
-                e.printStackTrace()
-                // Ensure flag is reset even on exception
-                synchronized(updateLock) {
-                    isUpdating = false
-                }
             }
         }
     }
@@ -407,91 +340,6 @@ class MarkdownDialog(
         }
     }
 
-    private fun smoothScrollTo(scrollBar: JScrollBar, targetValue: Int) {
-        // Prevent multiple animations from running simultaneously
-        scrollAnimationTimer?.cancel()
-        
-        // Use synchronized to prevent race conditions
-        synchronized(this) {
-            if (isScrollAnimationInProgress) {
-                isScrollAnimationInProgress = false
-            }
-        }
-
-        val startValue = scrollBar.value
-        // Don't animate if the distance is too small
-        if (abs(targetValue - startValue) < 10) {
-            scrollBar.value = targetValue
-            lastScrollPosition = targetValue
-            return
-        }
-
-        synchronized(this) {
-            isScrollAnimationInProgress = true
-        }
-        
-        val distance = targetValue - startValue
-        val duration = 250L // Slightly faster animation
-        val startTime = System.currentTimeMillis()
-
-        scrollAnimationTimer = Timer().apply {
-            scheduleAtFixedRate(0, 8) { // ~120fps for smoother animation
-                var shouldCancel = false
-                
-                synchronized(this@MarkdownDialog) {
-                    if (!isScrollAnimationInProgress) {
-                        shouldCancel = true
-                    }
-                }
-                
-                if (shouldCancel) {
-                    cancel()
-                    return@scheduleAtFixedRate
-                }
-
-                val currentTime = System.currentTimeMillis()
-                val elapsed = (currentTime - startTime).toFloat()
-                val progress = (elapsed / duration).coerceIn(0f, 1f)
-
-                if (progress >= 1f) {
-                    invokeLater {
-                        try {
-                            scrollBar.value = targetValue
-                            lastScrollPosition = targetValue
-                        } finally {
-                            synchronized(this@MarkdownDialog) {
-                                isScrollAnimationInProgress = false
-                            }
-                        }
-                    }
-                    cancel()
-                    return@scheduleAtFixedRate
-                }
-
-                val easedProgress = easeInOutQuint(progress)
-                val currentValue = startValue + (distance * easedProgress).toInt()
-
-                invokeLater {
-                    try {
-                        scrollBar.value = currentValue
-                        lastScrollPosition = currentValue
-                    } catch (e: Exception) {
-                        synchronized(this@MarkdownDialog) {
-                            isScrollAnimationInProgress = false
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private fun easeInOutQuint(x: Float): Float {
-        return if (x < 0.5f) {
-            16 * x * x * x * x * x
-        } else {
-            1 - (-2 * x + 2).pow(5) / 2
-        }
-    }
 
     fun positionOnSameScreen() {
         // Position dialog relative to IDE window
