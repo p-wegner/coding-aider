@@ -3,8 +3,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("java")
-    id("org.jetbrains.kotlin.jvm") version "2.0.21"
-    id("org.jetbrains.intellij.platform") version "2.0.1"
+    id("org.jetbrains.kotlin.jvm") version "2.1.10"
+    id("org.jetbrains.intellij.platform") version "2.5.0"
     id("com.github.ben-manes.versions") version "0.51.0"
 }
 
@@ -50,7 +50,7 @@ dependencies {
 
     intellijPlatform {
         testFramework(TestFrameworkType.Platform)
-        intellijIdeaCommunity("2024.2.4")
+        intellijIdeaCommunity("2025.1")
         pluginVerifier()
         instrumentationTools()
         bundledPlugin("org.jetbrains.plugins.terminal")
