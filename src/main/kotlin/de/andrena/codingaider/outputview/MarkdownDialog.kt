@@ -57,21 +57,24 @@ class MarkdownDialog(
         horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
         verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
 
+        // Track user scrolling to determine auto-scroll behavior
         verticalScrollBar.addAdjustmentListener { e ->
-            if (!e.valueIsAdjusting) {
-                val scrollBar = verticalScrollBar
-                val isAtBottom = scrollBar.value >= scrollBar.maximum - scrollBar.visibleAmount - 10
-                // Only update auto-scroll if user has manually scrolled
-                if (shouldAutoScroll != isAtBottom) {
-                    shouldAutoScroll = isAtBottom
-                }
-                // Store last manual scroll position
-                if (!shouldAutoScroll) {
+            val scrollBar = verticalScrollBar
+            val isAtBottom = scrollBar.value >= (scrollBar.maximum - scrollBar.visibleAmount - 20)
+            
+            // Only update auto-scroll state when user manually scrolls (not programmatic scrolls)
+            if (!programmaticScrolling && e.valueIsAdjusting) {
+                shouldAutoScroll = isAtBottom
+                // Store last manual scroll position when user scrolls away from bottom
+                if (!isAtBottom) {
                     lastManualScrollPosition = scrollBar.value
                 }
             }
         }
     }
+    
+    // Flag to track programmatic scrolling to avoid feedback loops
+    private var programmaticScrolling = false
     private var autoCloseTimer: TimerTask? = null
     private var refreshTimer: Timer? = null
     private var keepOpenButton = JButton("Keep Open").apply {
@@ -255,18 +258,38 @@ class MarkdownDialog(
                 if (newContent != lastContent) {
                     lastContent = newContent
 
-                    // Store scroll state
+                    // Store scroll state before updating content
                     val scrollBar = scrollPane.verticalScrollBar
-                    val wasAtBottom = scrollBar.value >= scrollBar.maximum - scrollBar.visibleAmount - 10
+                    val currentPosition = scrollBar.value
+                    val maxPosition = scrollBar.maximum - scrollBar.visibleAmount
                     
                     // Update content
                     markdownViewer.setMarkdown(newContent)
                     this@MarkdownDialog.title = title
 
-                    // Restore scroll position
-                    if (wasAtBottom || shouldAutoScroll) {
-                        invokeLater {
-                            scrollBar.value = scrollBar.maximum
+                    // Restore scroll position after content update
+                    invokeLater {
+                        try {
+                            programmaticScrolling = true
+                            
+                            if (shouldAutoScroll) {
+                                // Scroll to bottom if auto-scroll is enabled
+                                scrollBar.value = scrollBar.maximum
+                            } else {
+                                // Try to maintain relative scroll position
+                                val newMax = scrollBar.maximum - scrollBar.visibleAmount
+                                if (maxPosition > 0 && newMax > 0) {
+                                    // Calculate relative position and apply it
+                                    val relativePosition = currentPosition.toDouble() / maxPosition.toDouble()
+                                    val newPosition = (relativePosition * newMax).toInt()
+                                    scrollBar.value = newPosition.coerceAtMost(newMax)
+                                } else {
+                                    // Fall back to last manual position if available
+                                    scrollBar.value = lastManualScrollPosition.coerceAtMost(newMax)
+                                }
+                            }
+                        } finally {
+                            programmaticScrolling = false
                         }
                     }
                 } else {
