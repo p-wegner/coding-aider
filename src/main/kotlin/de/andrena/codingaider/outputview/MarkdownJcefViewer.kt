@@ -23,6 +23,7 @@ import org.cef.browser.CefBrowser
 import org.cef.browser.CefFrame
 import org.cef.handler.CefLoadHandlerAdapter
 import java.nio.charset.StandardCharsets
+import javax.swing.SwingUtilities
 
 class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
 
