@@ -199,7 +199,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     .replace("\n", "\\n")
                     .replace("\r", "\\r")
                 
-                val script = "updateContent('$escapedHtml'); initCollapsiblePanels();"
+                val script = "updateContent('$escapedHtml');"
                 browser.cefBrowser.executeJavaScript(script, browser.cefBrowser.url, 0)
             } catch (e: Exception) {
                 println("Error updating browser content: ${e.message}")
@@ -403,7 +403,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 padding: 0;
                 max-height: 0;
                 overflow: hidden;
-                transition: max-height 0.3s ease-out;
+                transition: max-height 0.3s ease-out, padding 0.3s ease-out;
             }
             
             .collapsible-panel.expanded .collapsible-content {
@@ -434,7 +434,14 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             function initCollapsiblePanels() {
                 document.querySelectorAll('.collapsible-header').forEach(header => {
                     header.addEventListener('click', function() {
-                        this.parentElement.classList.toggle('expanded');
+                        const panel = this.parentElement;
+                        panel.classList.toggle('expanded');
+                        
+                        // Update arrow indicator
+                        const arrow = this.querySelector('.collapsible-arrow');
+                        if (arrow) {
+                            arrow.textContent = panel.classList.contains('expanded') ? '▼' : '▶';
+                        }
                     });
                 });
             }
@@ -446,7 +453,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             function updateContent(html) {
                 document.getElementById('content').innerHTML = html;
                 // Initialize collapsible panels after content update
-                initCollapsiblePanels();
+                setTimeout(initCollapsiblePanels, 50); // Small delay to ensure DOM is ready
             }
         </script>
         
