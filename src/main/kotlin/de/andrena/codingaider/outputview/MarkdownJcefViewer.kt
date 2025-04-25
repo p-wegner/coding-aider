@@ -39,6 +39,9 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     private var isDarkTheme = false
     private var currentContent = ""
     private var isBasePageLoaded = false
+    private val basePageLoadLock = Object()
+    private var basePageLoadingInProgress = false
+    
     init {
         try {
             if (JBCefApp.isSupported()) {
@@ -52,19 +55,30 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 }
                 // Add the browser component to our mainPanel with BorderLayout.CENTER
                 mainPanel.add(jbCefBrowser.component, BorderLayout.CENTER)
-                // Load the base page exactly once here in init
+                
+                // Set up load handler with proper synchronization
                 jbCefBrowser.cefBrowser.client.addLoadHandler(object : CefLoadHandlerAdapter() {
                     override fun onLoadEnd(browser: CefBrowser?, frame: CefFrame?, httpStatusCode: Int) {
                         // Make sure it's the main frame finishing load
                         if (frame?.isMain == true) {
-                            // Now the #markdown-container definitely exists
-                            // => do your injection
-                            setMarkdown(currentContent)
+                            synchronized(basePageLoadLock) {
+                                isBasePageLoaded = true
+                                basePageLoadingInProgress = false
+                                
+                                // Now the #markdown-container definitely exists
+                                // Use SwingUtilities.invokeLater to ensure we're on EDT
+                                SwingUtilities.invokeLater {
+                                    if (currentContent.isNotEmpty()) {
+                                        updateContentInBrowser(currentContent)
+                                    }
+                                }
+                            }
                         }
                     }
                 })
+                
+                // Initial page load
                 loadBasePage()
-                isBasePageLoaded = true
             } else {
                 createFallbackComponent()
             }
@@ -104,6 +118,23 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 */
               }
             </style>
+            <script>
+              // Add a ready state variable that we can check
+              window.contentLoaded = false;
+              
+              // Add a DOMContentLoaded listener to ensure the container exists
+              document.addEventListener('DOMContentLoaded', function() {
+                // Create the container if it doesn't exist
+                if (!document.getElementById('markdown-container')) {
+                  var container = document.createElement('div');
+                  container.id = 'markdown-container';
+                  document.body.appendChild(container);
+                }
+                
+                // Signal that the DOM is ready
+                window.domReady = true;
+              });
+            </script>
           </head>
           <body>
             <div id="markdown-container"></div>
@@ -111,9 +142,19 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         </html>
     """.trimIndent()
 
-        // Ensure proper UTF-8 encoding for base HTML
-        val encodedBase = Base64.getEncoder().encodeToString(baseHtml.toByteArray(StandardCharsets.UTF_8))
-        jbCefBrowser.loadURL("data:text/html;charset=UTF-8;base64,$encodedBase")
+        try {
+            // Ensure proper UTF-8 encoding for base HTML
+            val encodedBase = Base64.getEncoder().encodeToString(baseHtml.toByteArray(StandardCharsets.UTF_8))
+            jbCefBrowser.loadURL("data:text/html;charset=UTF-8;base64,$encodedBase")
+        } catch (e: Exception) {
+            println("Error loading base page: ${e.message}")
+            e.printStackTrace()
+            
+            // Reset loading state on error
+            synchronized(basePageLoadLock) {
+                basePageLoadingInProgress = false
+            }
+        }
     }
     private fun createFallbackComponent() {
         // The user does not have JCEF support, fallback to JEditorPane
@@ -135,63 +176,85 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     fun setMarkdown(markdown: String) {
         currentContent = markdown
 
-        val html = convertMarkdownToHtml(markdown)
-
         // If fallback editor is in use
         fallbackEditor?.let { editor ->
-            editor.putClientProperty("charset", StandardCharsets.UTF_8.name())
-            editor.text = html
-            editor.caretPosition = 0
+            SwingUtilities.invokeLater {
+                val html = convertMarkdownToHtml(markdown)
+                editor.putClientProperty("charset", StandardCharsets.UTF_8.name())
+                editor.text = html
+                editor.caretPosition = 0
+            }
             return
         }
 
-        // Otherwise, use JCEF and inject the HTML snippet
-        if (!isBasePageLoaded) {
-            loadBasePage()
-            isBasePageLoaded = true
+        // For JCEF browser, handle base page loading state
+        synchronized(basePageLoadLock) {
+            if (!isBasePageLoaded) {
+                if (!basePageLoadingInProgress) {
+                    basePageLoadingInProgress = true
+                    loadBasePage()
+                }
+                // Content will be updated once base page is loaded via the load handler
+                return
+            }
         }
 
-        // Ensure proper UTF-8 encoding for content HTML
-        val encodedHtml = Base64.getEncoder().encodeToString(html.toByteArray(StandardCharsets.UTF_8))
-
-        // We'll do the wasAtBottom check, replace container content, and scroll if needed.
-        val script = """
-        (function() {
-            var container = document.getElementById('markdown-container');
-            if (!container) return;
-
-            // Are we close to bottom already?
-            var scrollPos = container.scrollTop;
-            var clientH = container.clientHeight;
-            var scrollH = container.scrollHeight;
-            var nearBottom = (scrollPos + clientH >= scrollH - 5);
-
-            // Store expansion states before update
-            var expandedPanels = Array.from(document.querySelectorAll('.collapsible-panel.expanded'))
-               .map(panel => panel.querySelector('.collapsible-content').textContent.trim());
+        // Base page is loaded, update content
+        updateContentInBrowser(markdown)
+    }
+    
+    private fun updateContentInBrowser(markdown: String) {
+        try {
+            val html = convertMarkdownToHtml(markdown)
             
-            // Inject new HTML
-            var decoded = atob('$encodedHtml');
-            container.innerHTML = decoded;
-            
-            // Restore expansion states
-            expandedPanels.forEach(content => {
-                var panels = Array.from(document.querySelectorAll('.collapsible-panel'));
-                panels.forEach(panel => {
-                    if (panel.querySelector('.collapsible-content').textContent.trim() === content) {
-                        panel.classList.add('expanded');
-                    }
+            // Ensure proper UTF-8 encoding for content HTML
+            val encodedHtml = Base64.getEncoder().encodeToString(html.toByteArray(StandardCharsets.UTF_8))
+
+            // We'll do the wasAtBottom check, replace container content, and scroll if needed.
+            val script = """
+            (function() {
+                var container = document.getElementById('markdown-container');
+                if (!container) return;
+
+                // Are we close to bottom already?
+                var scrollPos = container.scrollTop;
+                var clientH = container.clientHeight;
+                var scrollH = container.scrollHeight;
+                var nearBottom = (scrollPos + clientH >= scrollH - 5);
+
+                // Store expansion states before update
+                var expandedPanels = Array.from(document.querySelectorAll('.collapsible-panel.expanded'))
+                   .map(panel => panel.querySelector('.collapsible-content').textContent.trim());
+                
+                // Inject new HTML
+                var decoded = atob('$encodedHtml');
+                container.innerHTML = decoded;
+                
+                // Restore expansion states
+                expandedPanels.forEach(content => {
+                    var panels = Array.from(document.querySelectorAll('.collapsible-panel'));
+                    panels.forEach(panel => {
+                        if (panel.querySelector('.collapsible-content').textContent.trim() === content) {
+                            panel.classList.add('expanded');
+                        }
+                    });
                 });
-            });
 
-            // If we were at the bottom before, jump to bottom again
-            if (nearBottom) {
-                container.scrollTop = container.scrollHeight;
-            }
-        })();
-    """.trimIndent()
+                // If we were at the bottom before, jump to bottom again
+                if (nearBottom) {
+                    container.scrollTop = container.scrollHeight;
+                }
+                
+                // Signal that content is loaded
+                window.contentLoaded = true;
+            })();
+            """.trimIndent()
 
-        jbCefBrowser.cefBrowser.executeJavaScript(script, jbCefBrowser.cefBrowser.url, 0)
+            jbCefBrowser.cefBrowser.executeJavaScript(script, jbCefBrowser.cefBrowser.url, 0)
+        } catch (e: Exception) {
+            println("Error updating browser content: ${e.message}")
+            e.printStackTrace()
+        }
     }
 
     fun setDarkTheme(dark: Boolean) {

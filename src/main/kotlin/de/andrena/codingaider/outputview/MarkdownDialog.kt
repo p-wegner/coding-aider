@@ -263,10 +263,14 @@ class MarkdownDialog(
     private var lastContent = ""
     private var currentContent = ""
     private var isUpdating = false
+    private val updateLock = Object()
 
     fun updateProgress(output: String, title: String) {
-        if (isUpdating) return
-        isUpdating = true
+        // Use synchronized block to prevent concurrent updates
+        synchronized(updateLock) {
+            if (isUpdating) return
+            isUpdating = true
+        }
 
         com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
             try {
@@ -292,35 +296,51 @@ class MarkdownDialog(
                     markdownViewer.setMarkdown(newContent)
                     this@MarkdownDialog.title = title
 
-                    // Handle scrolling after content update
-                    SwingUtilities.invokeLater {
-                        val newContentHeight = scrollPane.viewport.viewSize.height
-                        val viewportHeight = scrollPane.viewport.viewRect.height
-                        val newMaxScroll = (newContentHeight - viewportHeight).coerceAtLeast(0)
+                    // Handle scrolling after content update - ensure this runs on EDT
+                    invokeLater {
+                        try {
+                            val newContentHeight = scrollPane.viewport.viewSize.height
+                            val viewportHeight = scrollPane.viewport.viewRect.height
+                            val newMaxScroll = (newContentHeight - viewportHeight).coerceAtLeast(0)
 
-                        when {
-                            shouldAutoScroll && wasAtBottom -> {
-                                smoothScrollTo(scrollBar, scrollBar.maximum)
-                            }
+                            when {
+                                shouldAutoScroll && wasAtBottom -> {
+                                    smoothScrollTo(scrollBar, scrollBar.maximum)
+                                }
 
-                            prevContentHeight > 0 && newContentHeight > 0 -> {
-                                val targetPosition = (newMaxScroll * prevScrollRatio).toInt()
-                                    .coerceIn(0, newMaxScroll)
-                                if (Math.abs(targetPosition - scrollBar.value) > viewportHeight / 3) {
-                                    smoothScrollTo(scrollBar, targetPosition)
-                                } else {
-                                    scrollBar.value = targetPosition
+                                prevContentHeight > 0 && newContentHeight > 0 -> {
+                                    val targetPosition = (newMaxScroll * prevScrollRatio).toInt()
+                                        .coerceIn(0, newMaxScroll)
+                                    if (Math.abs(targetPosition - scrollBar.value) > viewportHeight / 3) {
+                                        smoothScrollTo(scrollBar, targetPosition)
+                                    } else {
+                                        scrollBar.value = targetPosition
+                                    }
                                 }
                             }
-                        }
 
-                        scrollPane.repaint()
+                            scrollPane.repaint()
+                        } finally {
+                            // Always reset the updating flag, even if an exception occurs
+                            synchronized(updateLock) {
+                                isUpdating = false
+                            }
+                        }
+                    }
+                } else {
+                    // If content hasn't changed, still update the title and reset the flag
+                    this@MarkdownDialog.title = title
+                    synchronized(updateLock) {
                         isUpdating = false
                     }
                 }
             } catch (e: Exception) {
                 println("Error updating markdown dialog: ${e.message}")
                 e.printStackTrace()
+                // Ensure flag is reset even on exception
+                synchronized(updateLock) {
+                    isUpdating = false
+                }
             }
         }
     }
@@ -390,8 +410,12 @@ class MarkdownDialog(
     private fun smoothScrollTo(scrollBar: JScrollBar, targetValue: Int) {
         // Prevent multiple animations from running simultaneously
         scrollAnimationTimer?.cancel()
-        if (isScrollAnimationInProgress) {
-            isScrollAnimationInProgress = false
+        
+        // Use synchronized to prevent race conditions
+        synchronized(this) {
+            if (isScrollAnimationInProgress) {
+                isScrollAnimationInProgress = false
+            }
         }
 
         val startValue = scrollBar.value
@@ -402,14 +426,25 @@ class MarkdownDialog(
             return
         }
 
-        isScrollAnimationInProgress = true
+        synchronized(this) {
+            isScrollAnimationInProgress = true
+        }
+        
         val distance = targetValue - startValue
         val duration = 250L // Slightly faster animation
         val startTime = System.currentTimeMillis()
 
         scrollAnimationTimer = Timer().apply {
             scheduleAtFixedRate(0, 8) { // ~120fps for smoother animation
-                if (!isScrollAnimationInProgress) {
+                var shouldCancel = false
+                
+                synchronized(this@MarkdownDialog) {
+                    if (!isScrollAnimationInProgress) {
+                        shouldCancel = true
+                    }
+                }
+                
+                if (shouldCancel) {
                     cancel()
                     return@scheduleAtFixedRate
                 }
@@ -419,12 +454,14 @@ class MarkdownDialog(
                 val progress = (elapsed / duration).coerceIn(0f, 1f)
 
                 if (progress >= 1f) {
-                    SwingUtilities.invokeLater {
+                    invokeLater {
                         try {
                             scrollBar.value = targetValue
                             lastScrollPosition = targetValue
                         } finally {
-                            isScrollAnimationInProgress = false
+                            synchronized(this@MarkdownDialog) {
+                                isScrollAnimationInProgress = false
+                            }
                         }
                     }
                     cancel()
@@ -434,12 +471,14 @@ class MarkdownDialog(
                 val easedProgress = easeInOutQuint(progress)
                 val currentValue = startValue + (distance * easedProgress).toInt()
 
-                SwingUtilities.invokeLater {
+                invokeLater {
                     try {
                         scrollBar.value = currentValue
                         lastScrollPosition = currentValue
                     } catch (e: Exception) {
-                        isScrollAnimationInProgress = false
+                        synchronized(this@MarkdownDialog) {
+                            isScrollAnimationInProgress = false
+                        }
                     }
                 }
             }

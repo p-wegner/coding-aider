@@ -19,23 +19,32 @@ class ShowLastCommandResultAction : AnAction() {
     }
 
     fun showLastCommandFor(project: Project) {
-        // If dialog exists and is still valid, bring it to front
-        activeDialog?.let { dialog ->
-            if (dialog.isDisplayable) {
-                dialog.toFront()
-                return
-            } else {
-                activeDialog = null
+        // Use invokeLater to ensure we're on the EDT
+        invokeLater {
+            // If dialog exists and is still valid, bring it to front
+            activeDialog?.let { dialog ->
+                if (dialog.isDisplayable) {
+                    dialog.toFront()
+                    dialog.requestFocus()
+                    return@invokeLater
+                } else {
+                    activeDialog = null
+                }
+            }
+
+            // Create new dialog if none exists - do this on a background thread to avoid UI freezes
+            com.intellij.openapi.application.ApplicationManager.getApplication().executeOnPooledThread {
+                val historyHandler = project.service<AiderHistoryService>()
+                val lastCommandResult = historyHandler.getLastChatHistory()
+                
+                // Switch back to EDT for UI creation
+                invokeLater {
+                    val dialog = MarkdownDialog.create(project, "Last Aider Command Result", lastCommandResult)
+                    activeDialog = dialog
+                    dialog.isVisible = true
+                }
             }
         }
-
-        // Create new dialog if none exists
-        val historyHandler = project.service<AiderHistoryService>()
-        val lastCommandResult = historyHandler.getLastChatHistory()
-
-        val dialog = MarkdownDialog.create(project, "Last Aider Command Result", lastCommandResult)
-        activeDialog = dialog
-        dialog.isVisible = true
     }
 
     override fun update(e: AnActionEvent) {
