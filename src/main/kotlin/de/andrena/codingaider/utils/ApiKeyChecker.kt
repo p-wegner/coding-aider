@@ -31,7 +31,7 @@ class DefaultApiKeyChecker : ApiKeyChecker {
         "deepseek" to "DEEPSEEK_API_KEY",
         "r1" to "DEEPSEEK_API_KEY",
         "gemini-2.5-pro" to "GEMINI_API_KEY",
-        "gemini-2.0-flash" to "GEMINI_API_KEY",
+        "gemini/gemini-2.5-flash-preview-04-17" to "GEMINI_API_KEY",
     )
 
     // API Key Cache
