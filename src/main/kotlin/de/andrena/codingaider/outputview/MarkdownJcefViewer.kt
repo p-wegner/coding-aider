@@ -152,10 +152,37 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         <body>
             <div id="content"></div>
             <script>
+                // Function to initialize collapsible panels
+                function initCollapsiblePanels() {
+                    document.querySelectorAll('.collapsible-header').forEach(header => {
+                        // Remove existing event listeners to prevent duplicates
+                        header.removeEventListener('click', togglePanel);
+                        // Add click event listener
+                        header.addEventListener('click', togglePanel);
+                    });
+                }
+                
+                // Toggle panel function
+                function togglePanel(event) {
+                    const panel = this.parentElement;
+                    panel.classList.toggle('expanded');
+                    
+                    // Update arrow indicator
+                    const arrow = this.querySelector('.collapsible-arrow');
+                    if (arrow) {
+                        arrow.textContent = panel.classList.contains('expanded') ? '▼' : '▶';
+                    }
+                }
+                
                 // Simple function to update content
                 function updateContent(html) {
                     document.getElementById('content').innerHTML = html;
+                    // Initialize collapsible panels after content update
+                    setTimeout(initCollapsiblePanels, 50); // Small delay to ensure DOM is ready
                 }
+                
+                // Initialize panels when page loads
+                document.addEventListener('DOMContentLoaded', initCollapsiblePanels);
             </script>
         </body>
         </html>
@@ -430,31 +457,8 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         </style>
         
         <script>
-            // Function to initialize collapsible panels
-            function initCollapsiblePanels() {
-                document.querySelectorAll('.collapsible-header').forEach(header => {
-                    header.addEventListener('click', function() {
-                        const panel = this.parentElement;
-                        panel.classList.toggle('expanded');
-                        
-                        // Update arrow indicator
-                        const arrow = this.querySelector('.collapsible-arrow');
-                        if (arrow) {
-                            arrow.textContent = panel.classList.contains('expanded') ? '▼' : '▶';
-                        }
-                    });
-                });
-            }
-            
-            // Initialize on DOM content loaded
-            document.addEventListener('DOMContentLoaded', initCollapsiblePanels);
-            
-            // Original update content function
-            function updateContent(html) {
-                document.getElementById('content').innerHTML = html;
-                // Initialize collapsible panels after content update
-                setTimeout(initCollapsiblePanels, 50); // Small delay to ensure DOM is ready
-            }
+            // This script is included for compatibility with the fallback editor
+            // The main functionality is now in the base HTML template
         </script>
         
         ${processSearchReplaceBlocks(html)}
