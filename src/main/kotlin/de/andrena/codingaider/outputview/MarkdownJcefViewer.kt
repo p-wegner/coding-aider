@@ -374,6 +374,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 border-radius: 4px 4px 0 0;
                 margin: 0;
                 border-bottom: 1px solid ${colors["preBorder"]};
+                display: block;
             }
             
             .replace-block {
@@ -382,6 +383,26 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 padding: 8px 12px;
                 border-radius: 0 0 4px 4px;
                 margin: 0;
+                display: block;
+            }
+            
+            /* Edit format panels */
+            .edit-format-panel {
+                border: 1px solid ${if (isDarkTheme) "#555" else "#ddd"};
+                border-radius: 6px;
+                margin: 15px 0;
+                overflow: hidden;
+            }
+            
+            .edit-format {
+                background: ${if (isDarkTheme) "#3c3f41" else "#f0f0f0"};
+                font-weight: bold;
+                border-bottom: 1px solid ${if (isDarkTheme) "#555" else "#ddd"};
+            }
+            
+            .edit-format-content {
+                margin: 0;
+                padding: 0;
             }
             
             /* Aider blocks */
@@ -525,7 +546,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             }
         }
 
-        // Process search/replace blocks
+        // Process search/replace blocks - improved to better handle edit format blocks
         val searchReplacePattern = Regex("""(?m)^([^\n]+?)\n```[^\n]*\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n```""", 
             RegexOption.DOT_MATCHES_ALL)
         
@@ -535,14 +556,13 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             val replaceBlock = matchResult.groupValues[3]
             
             """
-            <div class="collapsible-panel expanded">
-                <div class="collapsible-header">
+            <div class="collapsible-panel expanded edit-format-panel">
+                <div class="collapsible-header edit-format">
                     <span class="collapsible-title">${escapeHtml(filePath)}</span>
                     <span class="collapsible-arrow">▼</span>
                 </div>
                 <div class="collapsible-content">
-                    <div class="file-path">${escapeHtml(filePath)}</div>
-                    <pre>
+                    <pre class="edit-format-content">
                         <code class="search-block">${escapeHtml(searchBlock.trim())}</code>
                         <code class="replace-block">${escapeHtml(replaceBlock.trim())}</code>
                     </pre>
