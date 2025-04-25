@@ -63,11 +63,22 @@ class MarkdownDialog(
             val isAtBottom = scrollBar.value >= (scrollBar.maximum - scrollBar.visibleAmount - 20)
             
             // Only update auto-scroll state when user manually scrolls (not programmatic scrolls)
-            if (!programmaticScrolling && e.valueIsAdjusting) {
-                shouldAutoScroll = isAtBottom
-                // Store last manual scroll position when user scrolls away from bottom
-                if (!isAtBottom) {
-                    lastManualScrollPosition = scrollBar.value
+            if (!programmaticScrolling) {
+                // When user is actively adjusting the scrollbar
+                if (e.valueIsAdjusting) {
+                    shouldAutoScroll = isAtBottom
+                    // Store last manual scroll position when user scrolls away from bottom
+                    if (!isAtBottom) {
+                        lastManualScrollPosition = scrollBar.value
+                    }
+                }
+                // When scrollbar adjustment completes, check again to handle small adjustments
+                else if (!e.valueIsAdjusting) {
+                    // If we're very close to the bottom, treat it as "at bottom"
+                    val veryCloseToBottom = scrollBar.value >= (scrollBar.maximum - scrollBar.visibleAmount - 5)
+                    if (veryCloseToBottom) {
+                        shouldAutoScroll = true
+                    }
                 }
             }
         }
@@ -287,6 +298,16 @@ class MarkdownDialog(
                                     // Fall back to last manual position if available
                                     scrollBar.value = lastManualScrollPosition.coerceAtMost(newMax)
                                 }
+                            }
+                            
+                            // Check if we're at the bottom after content update
+                            // This helps with cases where the user was at the bottom but small content
+                            // changes caused the scroll position to be slightly off
+                            val isAtBottom = scrollBar.value >= (scrollBar.maximum - scrollBar.visibleAmount - 5)
+                            if (isAtBottom) {
+                                shouldAutoScroll = true
+                                // Make sure we're exactly at the bottom
+                                scrollBar.value = scrollBar.maximum
                             }
                         } finally {
                             programmaticScrolling = false
