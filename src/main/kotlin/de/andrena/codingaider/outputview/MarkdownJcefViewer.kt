@@ -3,6 +3,12 @@ package de.andrena.codingaider.outputview
 import com.intellij.ui.jcef.JBCefApp
 import com.intellij.ui.jcef.JBCefBrowser
 import com.intellij.ui.jcef.JBCefClient
+import org.cef.handler.CefLoadHandler
+import org.cef.browser.CefBrowser
+import org.cef.network.CefRequest
+import org.cef.CefApp
+import org.cef.CefClient
+import org.cef.browser.CefFrame
 import javax.swing.JEditorPane
 import java.awt.Dimension
 import com.intellij.ui.JBColor
@@ -79,10 +85,10 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
 
             // Set a simple load handler
             val client: JBCefClient = this.jbCefClient
-            client.addLoadHandler(object : JBCefLoadHandler {
-                override fun onLoadEnd(browser: JBCefBrowser, frame: cef.CefFrame, httpStatusCode: Int) {
-                    // Only act on main frame
-                    if (frame.isMain) {
+            client.addLoadHandler(object : CefLoadHandler {
+                override fun onLoadEnd(browser: CefBrowser?, frame: CefFrame?, httpStatusCode: Int) {
+                    // Only act on main frame (main frame has no parent)
+                    if (frame != null && frame.parent == null) {
                         contentReady = true
                         if (currentContent.isNotEmpty()) {
                             SwingUtilities.invokeLater {
@@ -91,6 +97,10 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         }
                     }
                 }
+
+                override fun onLoadStart(browser: CefBrowser?, frame: CefFrame?, transitionType: CefRequest.TransitionType?) {}
+                override fun onLoadError(browser: CefBrowser?, frame: CefFrame?, errorCode: CefLoadHandler.ErrorCode?, errorText: String?, failedUrl: String?) {}
+                override fun onLoadingStateChange(browser: CefBrowser?, isLoading: Boolean, canGoBack: Boolean, canGoForward: Boolean) {}
             }, this.cefBrowser)
         }
 
