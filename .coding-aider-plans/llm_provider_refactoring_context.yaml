@@ -1,0 +1,30 @@
+---
+files:
+- path: src/main/kotlin/de/andrena/codingaider/utils/ApiKeyManager.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/settings/CustomLlmProviderService.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/inputdialog/AiderInputDialog.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/executors/strategies/NativeAiderExecutionStrategy.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/settings/CustomLlmProviderDialog.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/settings/LlmSelection.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/executors/strategies/DockerAiderExecutionStrategy.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/settings/CustomLlmProviderEditorDialog.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/executors/strategies/AiderExecutionStrategy.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/utils/ApiKeyChecker.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/settings/CustomLlmProvider.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/settings/LlmProviderType.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/settings/AiderSetupPanel.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/settings/DefaultProviderSettings.kt
+  readOnly: false
