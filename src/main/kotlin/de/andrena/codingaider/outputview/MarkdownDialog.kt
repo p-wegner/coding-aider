@@ -334,8 +334,7 @@ class MarkdownDialog(
                 requestFocus()
                 markdownViewer.component.requestFocusInWindow()
                 // Set dark theme based on current IDE theme
-                currentContent = lastContent
-                markdownViewer.setMarkdown(currentContent)
+                markdownViewer.setMarkdown(lastContent)
             }
         }
     }
