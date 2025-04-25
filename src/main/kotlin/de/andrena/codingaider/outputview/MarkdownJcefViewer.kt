@@ -6,8 +6,6 @@ import com.intellij.ui.jcef.JBCefClient
 import org.cef.handler.CefLoadHandler
 import org.cef.browser.CefBrowser
 import org.cef.network.CefRequest
-import org.cef.CefApp
-import org.cef.CefClient
 import org.cef.browser.CefFrame
 import javax.swing.JEditorPane
 import java.awt.Dimension
@@ -19,7 +17,6 @@ import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension
 import com.vladsch.flexmark.ext.gfm.tasklist.TaskListExtension
 import com.vladsch.flexmark.ext.tables.TablesExtension
 import com.vladsch.flexmark.ext.toc.TocExtension
-import java.util.*
 import javax.swing.JComponent
 import javax.swing.JPanel
 import java.awt.BorderLayout
