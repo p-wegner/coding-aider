@@ -3,7 +3,6 @@ package de.andrena.codingaider.outputview
 import com.intellij.ui.jcef.JBCefApp
 import com.intellij.ui.jcef.JBCefBrowser
 import com.intellij.ui.jcef.JBCefClient
-import com.intellij.ui.jcef.JBCefLoadHandler
 import javax.swing.JEditorPane
 import java.awt.Dimension
 import com.intellij.ui.JBColor
@@ -527,18 +526,3 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         return processedHtml
     }
 }
-<aider-intention>
-Fix unresolved references in MarkdownJcefViewer.kt related to JCEF load handler:
-- Import JBCefLoadHandler, JBCefClient, and use the correct types.
-- Use the correct method signature for onLoadEnd (no 'override' if not implementing an interface with default methods).
-- Use cef.CefFrame for the frame parameter and check frame.isMain for main frame.
-- Use jbCefClient instead of the non-existent jcefClient property.
-</aider-intention>
-<aider-summary>
-The compile errors in MarkdownJcefViewer.kt were fixed by:
-- Importing the correct JCEF classes (JBCefLoadHandler, JBCefClient).
-- Using the correct jbCefClient property of JBCefBrowser.
-- Using cef.CefFrame for the frame parameter.
-- Implementing onLoadEnd with the correct signature and checking frame.isMain.
-- Removing the 'override' annotation if not required.
-</aider-summary>
