@@ -14,6 +14,7 @@ import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBList
+import de.andrena.codingaider.services.PersistentFileService
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
@@ -644,6 +645,110 @@ class PlanViewer(private val project: Project) {
         }
     }
 
+    inner class MoveToPersistentFilesAction : AnAction(
+        "Move to Persistent Files",
+        "Move files from this plan to persistent files",
+        AllIcons.Vcs.Branch
+    ) {
+        override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+
+        override fun actionPerformed(e: AnActionEvent) {
+            val selectedPlan = plansList.selectedValue ?: return
+            
+            // Get context files from the plan
+            val contextFiles = selectedPlan.contextFiles
+            if (contextFiles.isEmpty()) {
+                Messages.showInfoMessage(
+                    project,
+                    "No context files found in this plan. Add files to the plan's context first.",
+                    "No Files to Move"
+                )
+                return
+            }
+            
+            // Show dialog with files to move
+            val dialog = object : DialogWrapper(project) {
+                private val fileListModel = DefaultListModel<FileData>()
+                private val fileList = JBList(fileListModel).apply {
+                    cellRenderer = object : DefaultListCellRenderer() {
+                        override fun getListCellRendererComponent(
+                            list: JList<*>?,
+                            value: Any?,
+                            index: Int,
+                            isSelected: Boolean,
+                            cellHasFocus: Boolean
+                        ): Component {
+                            val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
+                            if (component is JLabel && value is FileData) {
+                                val file = File(value.filePath)
+                                component.text = "${file.nameWithoutExtension} ${if (value.isReadOnly) "(Read-Only)" else ""}"
+                                component.toolTipText = value.filePath
+                                component.icon = AllIcons.FileTypes.Text
+                            }
+                            return component
+                        }
+                    }
+                    selectionMode = ListSelectionModel.MULTIPLE_INTERVAL_SELECTION
+                }
+                
+                init {
+                    title = "Move to Persistent Files"
+                    init()
+                    
+                    // Add all context files to the list
+                    contextFiles.forEach { fileListModel.addElement(it) }
+                }
+                
+                override fun createCenterPanel(): JComponent {
+                    return panel {
+                        group("Select Files to Move to Persistent Files") {
+                            row {
+                                scrollCell(fileList)
+                                    .align(Align.FILL)
+                                    .resizableColumn()
+                            }.resizableRow()
+                            
+                            row {
+                                button("Select All") {
+                                    fileList.selectionInterval = 0 to fileListModel.size() - 1
+                                }
+                                button("Deselect All") {
+                                    fileList.clearSelection()
+                                }
+                            }
+                        }
+                    }.apply {
+                        preferredSize = Dimension(500, 300)
+                    }
+                }
+                
+                fun getSelectedFiles(): List<FileData> {
+                    return fileList.selectedValuesList
+                }
+            }
+            
+            if (dialog.showAndGet()) {
+                val selectedFiles = dialog.getSelectedFiles()
+                if (selectedFiles.isNotEmpty()) {
+                    // Add files to persistent files
+                    val persistentFileService = project.getService(PersistentFileService::class.java)
+                    persistentFileService.addAllFiles(selectedFiles)
+                    
+                    Messages.showInfoMessage(
+                        project,
+                        "${selectedFiles.size} file(s) moved to persistent files.",
+                        "Files Moved"
+                    )
+                }
+            }
+        }
+
+        override fun update(e: AnActionEvent) {
+            val selectedPlan = plansList.selectedValue
+            e.presentation.isEnabled = selectedPlan != null && selectedPlan.contextFiles.isNotEmpty()
+        }
+    }
+    
     inner class DeletePlanAction : AnAction(
         "Delete Plan",
         "Delete this plan",
