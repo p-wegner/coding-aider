@@ -90,11 +90,18 @@ class AutoCommitService(private val project: Project) {
     private fun performGitCommit(filePaths: List<String>, commitMessage: String) {
         val repositoryManager = GitRepositoryManager.getInstance(project)
         val git = Git.getInstance()
+        val projectBasePath = project.basePath ?: throw IllegalStateException("Project base path is null")
 
-        // Convert file paths to VirtualFiles
-        // TODO 26.04.2025 pwegner: file paths will be relative to project root, make sure this is properly handled
+        // Convert file paths to VirtualFiles, handling both absolute and relative paths
         val virtualFiles = filePaths.mapNotNull { path ->
-            LocalFileSystem.getInstance().findFileByIoFile(File(path))
+            val file = File(path)
+            // If the path is not absolute, resolve it relative to the project root
+            val absoluteFile = if (!file.isAbsolute) {
+                File(projectBasePath, path)
+            } else {
+                file
+            }
+            LocalFileSystem.getInstance().findFileByIoFile(absoluteFile)
         }
 
         if (virtualFiles.isEmpty()) {
