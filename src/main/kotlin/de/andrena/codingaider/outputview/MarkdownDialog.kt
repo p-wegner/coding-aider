@@ -59,36 +59,21 @@ class MarkdownDialog(
 
         // Track user scrolling to determine auto-scroll behavior
         verticalScrollBar.addAdjustmentListener { e ->
-            val scrollBar = verticalScrollBar
-            // Use a more generous threshold (30px) to detect "at bottom"
-            val isAtBottom = scrollBar.value >= (scrollBar.maximum - scrollBar.visibleAmount - 30)
-            
-            // Only update auto-scroll state when user manually scrolls (not programmatic scrolls)
-            if (!programmaticScrolling) {
-                // When user is actively adjusting the scrollbar
-                if (e.valueIsAdjusting) {
-                    shouldAutoScroll = isAtBottom
-                    // Store last manual scroll position when user scrolls away from bottom
-                    if (!isAtBottom) {
-                        lastManualScrollPosition = scrollBar.value
-                    }
-                }
-                // When scrollbar adjustment completes, check again to handle small adjustments
-                else if (!e.valueIsAdjusting) {
-                    // If we're very close to the bottom, treat it as "at bottom"
-                    val veryCloseToBottom = scrollBar.value >= (scrollBar.maximum - scrollBar.visibleAmount - 10)
-                    if (veryCloseToBottom) {
-                        shouldAutoScroll = true
-                    }
-                }
+            if (!programmaticScrolling && e.valueIsAdjusting) {
+                val scrollBar = verticalScrollBar
+                // Check if user scrolled near the bottom (within 10 pixels)
+                val isNearBottom = scrollBar.value >= (scrollBar.maximum - scrollBar.visibleAmount - 10)
+                shouldAutoScroll = isNearBottom
             }
         }
     }
-    
+
     // Flag to track programmatic scrolling to avoid feedback loops
     private var programmaticScrolling = false
     private var autoCloseTimer: TimerTask? = null
     private var refreshTimer: Timer? = null
+    // Auto-scroll state - start with auto-scroll enabled
+    private var shouldAutoScroll = true
     private var keepOpenButton = JButton("Keep Open").apply {
         mnemonic = KeyEvent.VK_K
         isVisible = false
@@ -155,9 +140,6 @@ class MarkdownDialog(
     }
 
     private var isProcessFinished = false
-    // Auto-scroll state - start with auto-scroll enabled
-    private var shouldAutoScroll = true 
-    private var lastManualScrollPosition = 0
     private var resizeTimer: Timer? = null
 
     init {
@@ -271,49 +253,34 @@ class MarkdownDialog(
                 if (newContent != lastContent) {
                     lastContent = newContent
 
-                    // Store scroll state before updating content
+                    // Check if scrollbar is near the bottom before updating content
                     val scrollBar = scrollPane.verticalScrollBar
-                    val currentPosition = scrollBar.value
-                    val maxPosition = scrollBar.maximum - scrollBar.visibleAmount
-                    
-                    // Check if we're at the bottom before updating content
-                    // Use a more generous threshold (30px) to detect "at bottom"
-                    val wasAtBottom = scrollBar.value >= (scrollBar.maximum - scrollBar.visibleAmount - 30)
-                    
+                    val wasNearBottom = scrollBar.value >= (scrollBar.maximum - scrollBar.visibleAmount - 10)
+
                     // Update content
                     markdownViewer.setMarkdown(newContent)
                     this@MarkdownDialog.title = title
 
-                    // Restore scroll position after content update
+                    // Schedule scroll adjustment after UI updates
                     invokeLater {
                         try {
-                            programmaticScrolling = true
-                            
-                            // Get updated scrollbar values after content change
+                            programmaticScrolling = true // Prevent listener feedback loop
                             val newMax = scrollBar.maximum - scrollBar.visibleAmount
-                            
-                            if (wasAtBottom || shouldAutoScroll) {
-                                // If we were at the bottom or auto-scroll is enabled, scroll to bottom
-                                // Use maximum value to ensure we're at the very bottom
-                                scrollBar.value = scrollBar.maximum
-                                shouldAutoScroll = true
-                            } else {
-                                // Try to maintain relative scroll position
-                                if (maxPosition > 0 && newMax > 0) {
-                                    // Calculate relative position and apply it
-                                    val relativePosition = currentPosition.toDouble() / maxPosition.toDouble()
-                                    val newPosition = (relativePosition * newMax).toInt()
-                                    scrollBar.value = newPosition.coerceAtMost(newMax)
-                                } else {
-                                    // Fall back to last manual position if available
-                                    scrollBar.value = lastManualScrollPosition.coerceAtMost(newMax)
-                                }
+
+                            // Scroll to bottom if auto-scroll is enabled OR if we were already near the bottom
+                            if (shouldAutoScroll || wasNearBottom) {
+                                scrollBar.value = scrollBar.maximum // Scroll to the very bottom
+                                shouldAutoScroll = true // Ensure auto-scroll stays enabled if we scrolled to bottom
                             }
+                            // Otherwise, the scroll position remains where it was relative to the old content,
+                            // or where the user manually placed it. No explicit restoration needed here.
+
                         } finally {
                             programmaticScrolling = false
                         }
                     }
                 } else {
+                    // Only title changed, no content update needed
                     this@MarkdownDialog.title = title
                 }
             } catch (e: Exception) {
