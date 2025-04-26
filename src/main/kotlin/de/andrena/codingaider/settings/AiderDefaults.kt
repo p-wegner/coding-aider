@@ -61,4 +61,5 @@ Make your changes precise and minimal."""
     const val AIDER_EXECUTABLE_PATH: String = "aider"
     const val PLUGIN_BASED_EDITS = false // Added for plugin-based edits feature
     const val LENIENT_EDITS = false // Allow processing of multiple edit formats in a single response
+    const val AUTO_COMMIT_AFTER_EDITS = false // Auto-commit after plugin-based edits
 }
