@@ -4,7 +4,8 @@ import de.andrena.codingaider.inputdialog.AiderMode
 
 object AiderDefaults {
     const val REASONING_EFFORT = "" // Can be: "", "low", "medium", "high"
-    const val SUMMARIZED_OUTPUT = false
+    const val PROMPT_AUGMENTATION = false
+    const val INCLUDE_COMMIT_MESSAGE_BLOCK = false
     const val USE_SIDECAR_MODE = false
     const val ENABLE_DOCUMENTATION_LOOKUP = false
     const val ALWAYS_INCLUDE_OPEN_FILES = false

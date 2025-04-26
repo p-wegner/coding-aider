@@ -54,7 +54,8 @@ class AiderSettingsConfigurable() : Configurable {
     private val defaultModeComboBox = ComboBox(AiderMode.values())
     private val enableLocalModelCostMapCheckBox = JBCheckBox("Enable local model cost mapping")
     private val documentationLlmComboBox = ComboBox(apiKeyChecker.getAllLlmOptions().toTypedArray())
-    private val summarizedOutputCheckBox = JBCheckBox("Enable summarized output")
+    private val promptAugmentationCheckBox = JBCheckBox("Enable prompt augmentation")
+    private val includeCommitMessageBlockCheckBox = JBCheckBox("Include commit message block")
     private val pluginBasedEditsCheckBox = JBCheckBox("Use Plugin-Based Edits (Experimental)") // Added for plugin-based edits
     private val lenientEditsCheckBox = JBCheckBox("Allow Lenient Edits (Process multiple formats) (Experimental)")
 
@@ -242,12 +243,25 @@ class AiderSettingsConfigurable() : Configurable {
                             "Select the LLM model to use for generating documentation. The default is the LLM model specified in the settings."
                     }
                 }
-                row {
-                    cell(summarizedOutputCheckBox)
-                        .applyToComponent {
-                            toolTipText =
-                                "When enabled, Aider will include XML-tagged summaries of changes in its output"
-                        }
+                group("Prompt Augmentation") {
+                    row {
+                        cell(promptAugmentationCheckBox)
+                            .applyToComponent {
+                                toolTipText =
+                                    "When enabled, Aider will include XML-tagged blocks in the prompt to structure the output"
+                                addItemListener { e ->
+                                    includeCommitMessageBlockCheckBox.isEnabled = e.stateChange == java.awt.event.ItemEvent.SELECTED
+                                }
+                            }
+                    }
+                    row {
+                        cell(includeCommitMessageBlockCheckBox)
+                            .applyToComponent {
+                                toolTipText =
+                                    "When enabled, Aider will include an XML block for commit messages in the prompt"
+                                isEnabled = promptAugmentationCheckBox.isSelected
+                            }
+                    }
                 }
                 row("Default Mode:") {
                     cell(defaultModeComboBox)
@@ -298,7 +312,8 @@ class AiderSettingsConfigurable() : Configurable {
                 alwaysIncludePlanContextFilesCheckBox.isSelected != settings.alwaysIncludePlanContextFiles ||
                 enableAutoPlanContinueCheckBox.isSelected != settings.enableAutoPlanContinue ||
                 documentationLlmComboBox.selectedItem.asSelectedItemName() != settings.documentationLlm ||
-                summarizedOutputCheckBox.isSelected != settings.summarizedOutput ||
+                promptAugmentationCheckBox.isSelected != settings.promptAugmentation ||
+                includeCommitMessageBlockCheckBox.isSelected != settings.includeCommitMessageBlock ||
                 enableLocalModelCostMapCheckBox.isSelected != settings.enableLocalModelCostMap ||
                 reasoningEffortComboBox.selectedItem as String != settings.reasoningEffort ||
                 defaultModeComboBox.selectedItem != settings.defaultMode ||
@@ -339,7 +354,8 @@ class AiderSettingsConfigurable() : Configurable {
         settings.alwaysIncludePlanContextFiles = alwaysIncludePlanContextFilesCheckBox.isSelected
         settings.enableAutoPlanContinue = enableAutoPlanContinueCheckBox.isSelected
         settings.documentationLlm = documentationLlmComboBox.selectedItem.asSelectedItemName()
-        settings.summarizedOutput = summarizedOutputCheckBox.isSelected
+        settings.promptAugmentation = promptAugmentationCheckBox.isSelected
+        settings.includeCommitMessageBlock = includeCommitMessageBlockCheckBox.isSelected
         settings.enableLocalModelCostMap = enableLocalModelCostMapCheckBox.isSelected
         settings.reasoningEffort = reasoningEffortComboBox.selectedItem as String
         settings.defaultMode = defaultModeComboBox.selectedItem as AiderMode
@@ -378,7 +394,9 @@ class AiderSettingsConfigurable() : Configurable {
         alwaysIncludePlanContextFilesCheckBox.isSelected = settings.alwaysIncludePlanContextFiles
         enableAutoPlanContinueCheckBox.isSelected = settings.enableAutoPlanContinue
         documentationLlmComboBox.selectedItem = apiKeyChecker.getLlmSelectionForName(settings.documentationLlm)
-        summarizedOutputCheckBox.isSelected = settings.summarizedOutput
+        promptAugmentationCheckBox.isSelected = settings.promptAugmentation
+        includeCommitMessageBlockCheckBox.isSelected = settings.includeCommitMessageBlock
+        includeCommitMessageBlockCheckBox.isEnabled = settings.promptAugmentation
         enableLocalModelCostMapCheckBox.isSelected = settings.enableLocalModelCostMap
         reasoningEffortComboBox.selectedItem = settings.reasoningEffort
         defaultModeComboBox.selectedItem = settings.defaultMode

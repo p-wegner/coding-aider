@@ -4,7 +4,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.inputdialog.AiderMode
-import de.andrena.codingaider.services.AiderOutputSummaryService
+import de.andrena.codingaider.services.AiderPromptAugmentationService
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.settings.AiderDefaults
 import de.andrena.codingaider.settings.AiderSettings
@@ -117,16 +117,12 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
                         // If plugin-based edits is enabled, prepend /ask and the instruction prompt
                         add(
                             "/ask ${AiderDefaults.PLUGIN_BASED_EDITS_INSTRUCTION}\n\n${
-                                if (settings.summarizedOutput) {
-                                    project.service<AiderOutputSummaryService>().createPrompt(commandData.message)
-                                } else {
-                                    commandData.message
-                                }
+                                project.service<AiderPromptAugmentationService>().createPrompt(commandData.message)
                             }"
                         )
-                    } else if (settings.summarizedOutput) {
+                    } else if (settings.promptAugmentation) {
                         add(
-                            project.service<AiderOutputSummaryService>()
+                            project.service<AiderPromptAugmentationService>()
                                 .createPrompt(commandData.message)
                         )
                     } else {
