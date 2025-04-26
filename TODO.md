@@ -5,3 +5,6 @@
 - [ ] Feature: stash in persistent files view in input dialog
 - [ ] Bug: Properly handle /ask with SystemPrompt for input history parsing
 - [ ] Bug: Compile Error Fix doesn't use persistent files
+- [ ] Bug: Markdown output viewer ux issues
+    - [ ] collapseable panels get opened automatically when content changed
+    - [ ] auto scrolling not working at all
