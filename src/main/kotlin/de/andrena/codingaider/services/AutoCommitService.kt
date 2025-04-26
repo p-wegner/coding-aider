@@ -45,6 +45,9 @@ class AutoCommitService(private val project: Project) {
             return false
         }
 
+        // Store the commit message
+        lastCommitMessage = commitMessage
+        
         // Perform the commit
         return try {
             performGitCommit(modifiedFiles, commitMessage)
@@ -66,16 +69,25 @@ class AutoCommitService(private val project: Project) {
             return false
         }
 
+        // Check if plugin-based edits is enabled (required for auto-commit)
+        if (!settings.pluginBasedEdits) {
+            logger.info("Auto-commit skipped: Plugin-based edits is disabled")
+            return false
+        }
+
+        // Check if prompt augmentation and commit message block are enabled (required for auto-commit)
+        if (!settings.promptAugmentation || !settings.includeCommitMessageBlock) {
+            logger.info("Auto-commit skipped: Prompt augmentation or commit message block is disabled")
+            return false
+        }
+
         // Also check the global auto-commit setting
         val autoCommitSetting = settings.autoCommits
 
         return when (autoCommitSetting) {
             AiderSettings.AutoCommitSetting.ON -> true
             AiderSettings.AutoCommitSetting.OFF -> false
-            AiderSettings.AutoCommitSetting.DEFAULT -> {
-                // For DEFAULT, check if plugin-based edits and prompt augmentation with commit message block are enabled
-                settings.pluginBasedEdits && settings.promptAugmentation && settings.includeCommitMessageBlock
-            }
+            AiderSettings.AutoCommitSetting.DEFAULT -> true // Default is now true if all other conditions are met
         }
     }
 
@@ -133,6 +145,16 @@ class AutoCommitService(private val project: Project) {
             .getNotificationGroup("Coding Aider Notifications")
             .createNotification(content, type)
             .notify(project)
+    }
+    
+    // Store the last commit message for reference
+    private var lastCommitMessage: String? = null
+    
+    /**
+     * Returns the last commit message that was used
+     */
+    fun getLastCommitMessage(): String? {
+        return lastCommitMessage
     }
 }
 

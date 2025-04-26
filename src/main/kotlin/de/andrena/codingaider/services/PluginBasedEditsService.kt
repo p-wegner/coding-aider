@@ -52,18 +52,38 @@ class PluginBasedEditsService(private val project: Project) {
                 appendLine(llmResponse)
                 appendLine()
                 
+                appendLine("## Changes Applied")
+                appendLine()
                 if (modifiedFiles.isNotEmpty()) {
-                    appendLine("**Files:** ${modifiedFiles.joinToString(", ") { "`$it`" }}")
+                    appendLine("**Applied $changesApplied changes to ${modifiedFiles.size} files:**")
+                    appendLine()
+                    modifiedFiles.forEach { file ->
+                        appendLine("- `$file`")
+                    }
+                    appendLine()
+                } else {
+                    appendLine("**No files were modified**")
                     appendLine()
                 }
                 
-                appendLine("## Changes Applied")
-                appendLine()
-                appendLine("**Applied $changesApplied changes to ${modifiedFiles.size} files**")
-                
                 if (commitSuccessful) {
+                    val commitMessage = autoCommitService.getLastCommitMessage() ?: "Unknown commit message"
+                    appendLine("## Git Commit")
                     appendLine()
                     appendLine("**Changes automatically committed to Git repository**")
+                    appendLine()
+                    appendLine("```")
+                    appendLine(commitMessage)
+                    appendLine("```")
+                } else if (settings.autoCommitAfterEdits && modifiedFiles.isNotEmpty()) {
+                    appendLine("## Git Commit")
+                    appendLine()
+                    appendLine("**Auto-commit was enabled but failed**")
+                    appendLine()
+                    appendLine("Possible reasons:")
+                    appendLine("- No commit message found in LLM response")
+                    appendLine("- Git repository issues")
+                    appendLine("- Missing dependencies (prompt augmentation, commit message block)")
                 }
             }
             
