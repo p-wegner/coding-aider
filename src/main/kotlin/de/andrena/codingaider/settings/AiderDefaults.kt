@@ -1,24 +1,4 @@
-package de.andrena.codingaider.settings
-
-import de.andrena.codingaider.inputdialog.AiderMode
-
-object AiderDefaults {
-    const val REASONING_EFFORT = "" // Can be: "", "low", "medium", "high"
-    const val PROMPT_AUGMENTATION = false
-    const val INCLUDE_COMMIT_MESSAGE_BLOCK = false
-    const val USE_SIDECAR_MODE = false
-    const val ENABLE_DOCUMENTATION_LOOKUP = false
-    const val ALWAYS_INCLUDE_OPEN_FILES = false
-    const val ALWAYS_INCLUDE_PLAN_CONTEXT_FILES = true
-
-    // TODO:  Format instruction for plugin-based edits
-    const val PLUGIN_BASED_EDITS_INSTRUCTION = """
-When making code changes, please format them as SEARCH/REPLACE blocks using this format:
-
-filepath
-```language
-<<<<<<< SEARCH
-code to search for
+code to replace with
 =======
 code to replace with
 >>>>>>> REPLACE
