@@ -1,6 +1,7 @@
 package de.andrena.codingaider.settings
 
 import com.intellij.ide.BrowserUtil
+import com.intellij.notification.NotificationGroupManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.ui.ComboBox
@@ -101,6 +102,51 @@ class AiderSettingsConfigurable() : Configurable {
                                 "Select the default edit format for Aider. Leave empty to use the default format for the used LLM."
                         }
                 }
+                group("Prompt Augmentation") {
+                    row {
+                        cell(promptAugmentationCheckBox)
+                            .applyToComponent {
+                                toolTipText =
+                                    "When enabled, Aider will include XML-tagged blocks in the prompt to structure the output"
+                                addItemListener { e ->
+                                    val isSelected = e.stateChange == java.awt.event.ItemEvent.SELECTED
+                                    includeCommitMessageBlockCheckBox.isEnabled = isSelected
+
+                                    // If prompt augmentation is disabled but auto-commit is enabled, show warning
+                                    if (!isSelected && autoCommitAfterEditsCheckBox.isSelected && pluginBasedEditsCheckBox.isSelected) {
+                                        showNotification(
+                                            "Warning: Auto-commit requires prompt augmentation with commit message block",
+                                            com.intellij.notification.NotificationType.WARNING
+                                        )
+                                        // Disable auto-commit if prompt augmentation is disabled
+                                        autoCommitAfterEditsCheckBox.isSelected = false
+                                    }
+                                }
+                            }
+                    }
+                    row {
+                        cell(includeCommitMessageBlockCheckBox)
+                            .applyToComponent {
+                                toolTipText =
+                                    "When enabled, Aider will include an XML block for commit messages in the prompt"
+                                isEnabled = promptAugmentationCheckBox.isSelected
+                                addItemListener { e ->
+                                    val isSelected = e.stateChange == java.awt.event.ItemEvent.SELECTED
+
+                                    // If commit message block is disabled but auto-commit is enabled, show warning
+                                    if (!isSelected && autoCommitAfterEditsCheckBox.isSelected && pluginBasedEditsCheckBox.isSelected) {
+                                        showNotification(
+                                            "Warning: Auto-commit requires prompt augmentation with commit message block",
+                                            com.intellij.notification.NotificationType.WARNING
+                                        )
+                                        // Disable auto-commit if commit message block is disabled
+                                        autoCommitAfterEditsCheckBox.isSelected = false
+                                    }
+                                }
+                            }
+                    }
+                }
+
                 group("Plugin-Based Edits") {
                     row {
                         cell(pluginBasedEditsCheckBox)
@@ -272,50 +318,6 @@ class AiderSettingsConfigurable() : Configurable {
                         renderer = LlmComboBoxRenderer()
                         toolTipText =
                             "Select the LLM model to use for generating documentation. The default is the LLM model specified in the settings."
-                    }
-                }
-                group("Prompt Augmentation") {
-                    row {
-                        cell(promptAugmentationCheckBox)
-                            .applyToComponent {
-                                toolTipText =
-                                    "When enabled, Aider will include XML-tagged blocks in the prompt to structure the output"
-                                addItemListener { e ->
-                                    val isSelected = e.stateChange == java.awt.event.ItemEvent.SELECTED
-                                    includeCommitMessageBlockCheckBox.isEnabled = isSelected
-                                    
-                                    // If prompt augmentation is disabled but auto-commit is enabled, show warning
-                                    if (!isSelected && autoCommitAfterEditsCheckBox.isSelected && pluginBasedEditsCheckBox.isSelected) {
-                                        showNotification(
-                                            "Warning: Auto-commit requires prompt augmentation with commit message block",
-                                            com.intellij.notification.NotificationType.WARNING
-                                        )
-                                        // Disable auto-commit if prompt augmentation is disabled
-                                        autoCommitAfterEditsCheckBox.isSelected = false
-                                    }
-                                }
-                            }
-                    }
-                    row {
-                        cell(includeCommitMessageBlockCheckBox)
-                            .applyToComponent {
-                                toolTipText =
-                                    "When enabled, Aider will include an XML block for commit messages in the prompt"
-                                isEnabled = promptAugmentationCheckBox.isSelected
-                                addItemListener { e ->
-                                    val isSelected = e.stateChange == java.awt.event.ItemEvent.SELECTED
-                                    
-                                    // If commit message block is disabled but auto-commit is enabled, show warning
-                                    if (!isSelected && autoCommitAfterEditsCheckBox.isSelected && pluginBasedEditsCheckBox.isSelected) {
-                                        showNotification(
-                                            "Warning: Auto-commit requires prompt augmentation with commit message block",
-                                            com.intellij.notification.NotificationType.WARNING
-                                        )
-                                        // Disable auto-commit if commit message block is disabled
-                                        autoCommitAfterEditsCheckBox.isSelected = false
-                                    }
-                                }
-                            }
                     }
                 }
                 row("Default Mode:") {
@@ -537,10 +539,11 @@ class AiderSettingsConfigurable() : Configurable {
     }
     
     private fun showNotification(content: String, type: com.intellij.notification.NotificationType) {
-        com.intellij.notification.NotificationGroupManager.getInstance()
+        NotificationGroupManager.getInstance()
             .getNotificationGroup("Coding Aider Notifications")
             .createNotification(content, type)
-            .notify(project)
+            .notify(null)
+
     }
 
     init {
