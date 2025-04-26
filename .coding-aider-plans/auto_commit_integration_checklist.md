@@ -1,7 +1,8 @@
 # [Coding Aider Plan - Checklist]
 
 ## UI Changes
-- [x] Reorganize settings UI to group plugin-based edits, lenient edits, and prompt augmentation together
+- [ ] Reorganize settings UI to group plugin-based edits, lenient edits, and prompt augmentation together
+    - [ ] Implement the depends relation between the settings as needed (without commit messages in augmented prompt, no commit possible)
 - [x] Add a new "Auto Commit" checkbox setting in the appropriate section
 - [x] Update tooltips to clarify the relationship between features
 
