@@ -4,13 +4,14 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
+import de.andrena.codingaider.services.FileDataCollectionService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
-import de.andrena.codingaider.utils.FileTraversal
 import java.io.File
 
 class DocumentCodeAction : AnAction() {
@@ -37,7 +38,7 @@ class DocumentCodeAction : AnAction() {
                 Messages.getQuestionIcon()
             ) ?: return
 
-            val allFiles = FileTraversal.traverseFilesOrDirectories(virtualFiles)
+            val allFiles = project.service<FileDataCollectionService>().collectAllFiles(virtualFiles)
             val fileNames = allFiles.map { File(it.filePath).name }
 
             val settings = getInstance()

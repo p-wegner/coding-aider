@@ -21,10 +21,10 @@ import java.io.File
 
 class GitCodeReviewAction : AnAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
-    
+
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
-        
+
         if (!isGitAvailable(project)) {
             showNotification(
                 project,
@@ -33,7 +33,7 @@ class GitCodeReviewAction : AnAction() {
             )
             return
         }
-        
+
         try {
             // Show dialog to select commits
             val dialog = GitCodeReviewDialog(project)
@@ -59,9 +59,9 @@ class GitCodeReviewAction : AnAction() {
          * This method can be called directly from other actions with pre-selected commits.
          */
         fun performReview(
-            project: Project, 
-            fromRef: String, 
-            toRef: String, 
+            project: Project,
+            fromRef: String,
+            toRef: String,
             prompt: String? = null
         ) {
             try {
@@ -84,21 +84,23 @@ class GitCodeReviewAction : AnAction() {
                     true,
                     project
                 )
-                
+
                 if (!success) return
 
                 val settings = AiderSettings.getInstance()
-                
+
                 // Save diff content to file
                 val diffFile = File("${project.basePath}/.coding-aider-plans/git_code_review_diff.md")
                 diffFile.parentFile.mkdirs()
-                diffFile.writeText("""[Git Code Review Diff]
+                diffFile.writeText(
+                    """[Git Code Review Diff]
 
 This file contains the git diff content for code review analysis.
 
 ```diff
 ${diffResult?.diffContent ?: "No diff content available"}
-```""")
+```"""
+                )
 
                 // Use default prompt if none provided
                 val reviewPrompt = prompt ?: """
@@ -111,21 +113,19 @@ ${diffResult?.diffContent ?: "No diff content available"}
                     |7. Documentation needs
                 """.trimMargin()
 
-                // Get files using FileDataCollectionService to respect AiderIgnore and include persistent files
-                val fileDataCollectionService = project.getService(FileDataCollectionService::class.java)
-                
+
                 // Start with the changed files from the diff
                 val changedVirtualFiles = diffResult?.files?.mapNotNull { fileData ->
                     LocalFileSystem.getInstance().findFileByPath(fileData.filePath)
                 }?.toTypedArray() ?: emptyArray()
-                
-                // Collect all files respecting AiderIgnore and including persistent files
-                val allFiles = fileDataCollectionService.collectAllFiles(changedVirtualFiles)
+
+                val allFiles = project.getService(FileDataCollectionService::class.java)
+                    .collectAllFiles(changedVirtualFiles, true)
                     .toMutableList()
-                
+
                 // Add the diff file with read-only flag
                 allFiles.add(FileData(diffFile.absolutePath, true))
-                
+
                 val commandData = CommandData(
                     message = """Review the code changes between Git refs '$fromRef' and '$toRef'.
                         |
@@ -181,7 +181,7 @@ ${diffResult?.diffContent ?: "No diff content available"}
             false
         }
     }
-    
+
     private fun showNotification(project: Project, content: String, type: NotificationType) {
         NotificationGroupManager.getInstance()
             .getNotificationGroup("Coding Aider Notifications")

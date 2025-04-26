@@ -33,6 +33,10 @@ class FileDataCollectionService(private val project: Project) {
 
         return traversedFiles.distinctBy { normalizePath(it.filePath) }
     }
+    
+    fun isIgnored(filePath: String): Boolean {
+        return aiderIgnoreService.isIgnored(filePath)
+    }
 
     private fun normalizePath(path: String): String = path.replace('\\', '/').replace("//", "/")
 
