@@ -710,7 +710,7 @@ class PlanViewer(private val project: Project) {
                             
                             row {
                                 button("Select All") {
-                                    fileList.selectionInterval = 0 to fileListModel.size() - 1
+                                    fileList.selectionModel.setSelectionInterval(0, fileListModel.size() - 1)
                                 }
                                 button("Deselect All") {
                                     fileList.clearSelection()
