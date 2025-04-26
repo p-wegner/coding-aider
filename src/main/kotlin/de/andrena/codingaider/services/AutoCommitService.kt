@@ -7,6 +7,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.settings.AiderSettings
 import git4idea.commands.Git
 import git4idea.commands.GitCommand
@@ -22,7 +23,7 @@ class AutoCommitService(private val project: Project) {
     private val logger = Logger.getInstance(AutoCommitService::class.java)
     private val settings = AiderSettings.getInstance()
     private val commitMessageExtractor = project.service<CommitMessageExtractorService>()
-    
+
     /**
      * Attempts to automatically commit changes after successful plugin-based edits
      * @param llmResponse The response from the LLM
@@ -35,7 +36,7 @@ class AutoCommitService(private val project: Project) {
             logger.info("Auto-commit skipped: enabled=${isAutoCommitEnabled()}, modifiedFiles=${modifiedFiles.size}")
             return false
         }
-        
+
         // Extract commit message from LLM response
         val commitMessage = commitMessageExtractor.extractCommitMessage(llmResponse)
         if (commitMessage.isNullOrBlank()) {
@@ -43,7 +44,7 @@ class AutoCommitService(private val project: Project) {
             showNotification("Auto-commit skipped: No commit message found in LLM response", NotificationType.WARNING)
             return false
         }
-        
+
         // Perform the commit
         return try {
             performGitCommit(modifiedFiles, commitMessage)
@@ -55,7 +56,7 @@ class AutoCommitService(private val project: Project) {
             false
         }
     }
-    
+
     /**
      * Checks if auto-commit is enabled based on settings
      */
@@ -64,10 +65,10 @@ class AutoCommitService(private val project: Project) {
         if (!settings.autoCommitAfterEdits) {
             return false
         }
-        
+
         // Also check the global auto-commit setting
         val autoCommitSetting = settings.autoCommits
-        
+
         return when (autoCommitSetting) {
             AiderSettings.AutoCommitSetting.ON -> true
             AiderSettings.AutoCommitSetting.OFF -> false
@@ -77,34 +78,34 @@ class AutoCommitService(private val project: Project) {
             }
         }
     }
-    
+
     /**
      * Performs a Git commit with the specified files and message
      */
     private fun performGitCommit(filePaths: List<String>, commitMessage: String) {
         val repositoryManager = GitRepositoryManager.getInstance(project)
         val git = Git.getInstance()
-        
+
         // Convert file paths to VirtualFiles
         val virtualFiles = filePaths.mapNotNull { path ->
             LocalFileSystem.getInstance().findFileByIoFile(File(path))
         }
-        
+
         if (virtualFiles.isEmpty()) {
             throw IllegalStateException("No valid files to commit")
         }
-        
+
         // Get the repository for the first file
         val repository = repositoryManager.getRepositoryForFile(virtualFiles.first())
             ?: throw IllegalStateException("No Git repository found for the modified files")
-        
+
         // Check if dirty commits are allowed
         val allowDirtyCommits = when (settings.dirtyCommits) {
             AiderSettings.DirtyCommitSetting.ON -> true
             AiderSettings.DirtyCommitSetting.OFF -> false
             AiderSettings.DirtyCommitSetting.DEFAULT -> false // Default to not allowing dirty commits
         }
-        
+
         // Check if there are uncommitted changes in the repository
         if (!allowDirtyCommits) {
             val status = git.status(project, repository.root)
@@ -112,18 +113,18 @@ class AutoCommitService(private val project: Project) {
                 throw IllegalStateException("Repository has uncommitted changes. Enable 'Allow Dirty Commits' in settings to commit anyway.")
             }
         }
-        
+
         // Stage the files
         val handler = GitLineHandler(project, repository.root, GitCommand.ADD)
         virtualFiles.forEach { handler.addParameters(it.path) }
         git.runCommand(handler)
-        
+
         // Commit the changes
         val commitHandler = GitLineHandler(project, repository.root, GitCommand.COMMIT)
         commitHandler.addParameters("-m", commitMessage)
         git.runCommand(commitHandler)
     }
-    
+
     /**
      * Shows a notification in the IDE
      */
@@ -133,4 +134,16 @@ class AutoCommitService(private val project: Project) {
             .createNotification(content, type)
             .notify(project)
     }
+}
+
+private fun Git.status(project: Project, root: VirtualFile): GitStatus {
+    return GitStatus()
+}
+
+class GitStatus {
+    fun hasUncommittedChanges(): Boolean {
+// TODO 26.04.2025 pwegner: implement what is needed
+        TODO("Not yet implemented")
+    }
+
 }
