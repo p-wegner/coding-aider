@@ -15,6 +15,7 @@ class PluginBasedEditsService(private val project: Project) {
     private val logger = Logger.getInstance(PluginBasedEditsService::class.java)
     private val parser = project.service<SearchReplaceBlockParser>()
     private val settings = AiderSettings.getInstance()
+    private val autoCommitService by lazy { project.service<AutoCommitService>() }
     
     /**
      * Processes the LLM response and applies any edit blocks
@@ -42,6 +43,9 @@ class PluginBasedEditsService(private val project: Project) {
             // Generate a concise summary of the changes
             val modifiedFiles = parser.getModifiedFiles().sorted()
             
+            // Try to auto-commit the changes if enabled
+            val commitSuccessful = autoCommitService.tryAutoCommit(llmResponse, modifiedFiles)
+            
             val summary = buildString {
                 appendLine("## Original LLM Response")
                 appendLine()
@@ -56,6 +60,11 @@ class PluginBasedEditsService(private val project: Project) {
                 appendLine("## Changes Applied")
                 appendLine()
                 appendLine("**Applied $changesApplied changes to ${modifiedFiles.size} files**")
+                
+                if (commitSuccessful) {
+                    appendLine()
+                    appendLine("**Changes automatically committed to Git repository**")
+                }
             }
             
             return summary

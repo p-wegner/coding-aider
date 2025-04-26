@@ -56,7 +56,8 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var enableLocalModelCostMap: Boolean = false,
         var defaultMode: AiderMode = AiderDefaults.DEFAULT_MODE,
         var pluginBasedEdits: Boolean = AiderDefaults.PLUGIN_BASED_EDITS, // Added for plugin-based edits feature
-        var lenientEdits: Boolean = AiderDefaults.LENIENT_EDITS // Allow processing of multiple edit formats
+        var lenientEdits: Boolean = AiderDefaults.LENIENT_EDITS, // Allow processing of multiple edit formats
+        var autoCommitAfterEdits: Boolean = AiderDefaults.AUTO_COMMIT_AFTER_EDITS // Auto-commit after plugin-based edits
     )
 
 
@@ -264,6 +265,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.lenientEdits
         set(value) {
             myState.lenientEdits = value
+        }
+        
+    var autoCommitAfterEdits: Boolean
+        get() = myState.autoCommitAfterEdits
+        set(value) {
+            myState.autoCommitAfterEdits = value
         }
 
 

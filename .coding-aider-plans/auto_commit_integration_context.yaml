@@ -14,3 +14,7 @@ files:
   readOnly: false
 - path: src\main\kotlin\de\andrena\codingaider\services\ClipboardEditService.kt
   readOnly: false
+- path: src\main\kotlin\de\andrena\codingaider\services\CommitMessageExtractorService.kt
+  readOnly: false
+- path: src\main\kotlin\de\andrena\codingaider\services\AutoCommitService.kt
+  readOnly: false

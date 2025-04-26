@@ -58,6 +58,7 @@ class AiderSettingsConfigurable() : Configurable {
     private val includeCommitMessageBlockCheckBox = JBCheckBox("Include commit message block")
     private val pluginBasedEditsCheckBox = JBCheckBox("Use Plugin-Based Edits (Experimental)") // Added for plugin-based edits
     private val lenientEditsCheckBox = JBCheckBox("Allow Lenient Edits (Process multiple formats) (Experimental)")
+    private val autoCommitAfterEditsCheckBox = JBCheckBox("Auto-commit after plugin-based edits (Experimental)")
 
     override fun getDisplayName(): String = "Aider"
 
@@ -105,6 +106,9 @@ class AiderSettingsConfigurable() : Configurable {
                         .component
                         .apply {
                             toolTipText = "If enabled, the plugin handles applying edits using /ask and a specific diff format, bypassing Aider's internal edit formats."
+                            addItemListener { e ->
+                                autoCommitAfterEditsCheckBox.isEnabled = e.stateChange == java.awt.event.ItemEvent.SELECTED
+                            }
                         }
                 }
                 row {
@@ -112,6 +116,14 @@ class AiderSettingsConfigurable() : Configurable {
                         .component
                         .apply {
                             toolTipText = "If enabled, the plugin will process all edit formats (diff, whole, udiff) in a single response, regardless of the configured edit format."
+                        }
+                }
+                row {
+                    cell(autoCommitAfterEditsCheckBox)
+                        .component
+                        .apply {
+                            toolTipText = "If enabled, changes made by plugin-based edits will be automatically committed to Git with a message extracted from the LLM response."
+                            isEnabled = pluginBasedEditsCheckBox.isSelected
                         }
                 }
             }
@@ -319,6 +331,7 @@ class AiderSettingsConfigurable() : Configurable {
                 defaultModeComboBox.selectedItem != settings.defaultMode ||
                 pluginBasedEditsCheckBox.isSelected != settings.pluginBasedEdits || // Added check for pluginBasedEdits
                 lenientEditsCheckBox.isSelected != settings.lenientEdits ||
+                autoCommitAfterEditsCheckBox.isSelected != settings.autoCommitAfterEdits ||
                 aiderSetupPanel.isModified()
 
     }
@@ -361,6 +374,7 @@ class AiderSettingsConfigurable() : Configurable {
         settings.defaultMode = defaultModeComboBox.selectedItem as AiderMode
         settings.pluginBasedEdits = pluginBasedEditsCheckBox.isSelected // Added save for pluginBasedEdits
         settings.lenientEdits = lenientEditsCheckBox.isSelected
+        settings.autoCommitAfterEdits = autoCommitAfterEditsCheckBox.isSelected
         aiderSetupPanel.apply()
         settings.notifySettingsChanged()
     }
@@ -402,6 +416,8 @@ class AiderSettingsConfigurable() : Configurable {
         defaultModeComboBox.selectedItem = settings.defaultMode
         pluginBasedEditsCheckBox.isSelected = settings.pluginBasedEdits // Added reset for pluginBasedEdits
         lenientEditsCheckBox.isSelected = settings.lenientEdits
+        autoCommitAfterEditsCheckBox.isSelected = settings.autoCommitAfterEdits
+        autoCommitAfterEditsCheckBox.isEnabled = settings.pluginBasedEdits
         aiderSetupPanel.reset()
         settings.notifySettingsChanged()
     }
