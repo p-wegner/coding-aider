@@ -49,7 +49,7 @@ class AutoCommitServiceTest {
         mockSettings = mock(de.andrena.codingaider.settings.AiderSettings::class.java)
 
         // Set up mocks
-        `when`(mockProject.service<CommitMessageExtractorService>()).thenReturn(mockCommitMessageExtractor)
+        whenever(mockProject.service<CommitMessageExtractorService>()).thenReturn(mockCommitMessageExtractor)
         `when`(mockRepository.root).thenReturn(mockRoot)
         `when`(mockRoot.path).thenReturn("/project/root")
         
