@@ -1,11 +1,14 @@
 package de.andrena.codingaider.services
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.LocalFileSystem
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.SearchReplaceBlockParser
+import java.io.File
 
 /**
  * Service for handling plugin-based edits
@@ -42,8 +45,26 @@ class PluginBasedEditsService(private val project: Project) {
             val modifiedFiles = project.service<SearchReplaceBlockParser>().getModifiedFiles().sorted()
             
             // Try to auto-commit the changes if enabled
-            // TODO 26.04.2025 pwegner: ensure fileIO is finished else the files won't be found
-            val commitSuccessful = project.service<AutoCommitService>().tryAutoCommit(llmResponse, modifiedFiles)
+            // Ensure file I/O operations are completed before attempting to commit
+            val commitSuccessful = if (modifiedFiles.isNotEmpty()) {
+                // Force refresh of files to ensure they're up-to-date in the VFS
+                ApplicationManager.getApplication().invokeAndWait {
+                    modifiedFiles.forEach { filePath ->
+                        val file = File(filePath)
+                        if (file.exists()) {
+                            LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file)?.refresh(false, false)
+                        }
+                    }
+                }
+                
+                // Small delay to ensure file system operations are complete
+                Thread.sleep(100)
+                
+                // Now try to commit
+                project.service<AutoCommitService>().tryAutoCommit(llmResponse, modifiedFiles)
+            } else {
+                false
+            }
             
             val summary = buildString {
                 appendLine("## Original LLM Response")
