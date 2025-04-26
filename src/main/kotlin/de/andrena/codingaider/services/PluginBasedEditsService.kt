@@ -13,10 +13,8 @@ import de.andrena.codingaider.utils.SearchReplaceBlockParser
 @Service(Service.Level.PROJECT)
 class PluginBasedEditsService(private val project: Project) {
     private val logger = Logger.getInstance(PluginBasedEditsService::class.java)
-    private val parser = project.service<SearchReplaceBlockParser>()
     private val settings = AiderSettings.getInstance()
-    private val autoCommitService by lazy { project.service<AutoCommitService>() }
-    
+
     /**
      * Processes the LLM response and applies any edit blocks
      * @param llmResponse The response from the LLM
@@ -26,13 +24,13 @@ class PluginBasedEditsService(private val project: Project) {
         logger.info("Processing LLM response for plugin-based edits")
         
         // Parse all edit blocks from the response
-        val blocks = parser.parseBlocks(llmResponse)
+        val blocks = project.service<SearchReplaceBlockParser>().parseBlocks(llmResponse)
         
         if (blocks.isNotEmpty()) {
             logger.info("Found ${blocks.size} edit blocks in LLM response")
             
             // Apply the blocks
-            val results = parser.applyBlocks(blocks)
+            val results = project.service<SearchReplaceBlockParser>().applyBlocks(blocks)
             val changesApplied = results.count { it.value }
             
             // If no changes were applied, return the original response
@@ -41,10 +39,11 @@ class PluginBasedEditsService(private val project: Project) {
             }
             
             // Generate a concise summary of the changes
-            val modifiedFiles = parser.getModifiedFiles().sorted()
+            val modifiedFiles = project.service<SearchReplaceBlockParser>().getModifiedFiles().sorted()
             
             // Try to auto-commit the changes if enabled
-            val commitSuccessful = autoCommitService.tryAutoCommit(llmResponse, modifiedFiles)
+            // TODO 26.04.2025 pwegner: ensure fileIO is finished else the files won't be found
+            val commitSuccessful = project.service<AutoCommitService>().tryAutoCommit(llmResponse, modifiedFiles)
             
             val summary = buildString {
                 appendLine("## Original LLM Response")
@@ -67,7 +66,7 @@ class PluginBasedEditsService(private val project: Project) {
                 }
                 
                 if (commitSuccessful) {
-                    val commitMessage = autoCommitService.getLastCommitMessage() ?: "Unknown commit message"
+                    val commitMessage = project.service<AutoCommitService>().getLastCommitMessage() ?: "Unknown commit message"
                     appendLine("## Git Commit")
                     appendLine()
                     appendLine("**Changes automatically committed to Git repository**")

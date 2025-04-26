@@ -24,12 +24,6 @@ class AutoCommitService(private val project: Project) {
     private val settings = AiderSettings.getInstance()
     private val commitMessageExtractor = project.service<CommitMessageExtractorService>()
 
-    /**
-     * Attempts to automatically commit changes after successful plugin-based edits
-     * @param llmResponse The response from the LLM
-     * @param modifiedFiles List of files that were modified
-     * @return True if a commit was successfully made, false otherwise
-     */
     fun tryAutoCommit(llmResponse: String, modifiedFiles: List<String>): Boolean {
         // Check if auto-commit is enabled and there are modified files
         if (!isAutoCommitEnabled() || modifiedFiles.isEmpty()) {
@@ -37,7 +31,6 @@ class AutoCommitService(private val project: Project) {
             return false
         }
 
-        // Extract commit message from LLM response
         val commitMessage = commitMessageExtractor.extractCommitMessage(llmResponse)
         if (commitMessage.isNullOrBlank()) {
             logger.info("Auto-commit skipped: No commit message found in LLM response")
@@ -99,6 +92,7 @@ class AutoCommitService(private val project: Project) {
         val git = Git.getInstance()
 
         // Convert file paths to VirtualFiles
+        // TODO 26.04.2025 pwegner: file paths will be relative to project root, make sure this is properly handled
         val virtualFiles = filePaths.mapNotNull { path ->
             LocalFileSystem.getInstance().findFileByIoFile(File(path))
         }
