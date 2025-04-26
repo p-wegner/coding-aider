@@ -43,6 +43,7 @@ data class CommandData(
 
 /**
  * Represents the optional parameters for the Aider command.
+ * Parameters that are null will use the value from the Plugins settings.
  *
  * @property useDockerAider If true, uses the Docker Aider image ignoring the settings.
  * @property disablePresentation If true, disables the presentation of changes after command execution.
