@@ -50,7 +50,7 @@ data class CommandData(
  * @property autoCloseDelay If not null, sets the auto close delay for the markdown dialog.
  * @property autoCommit If true, automatically commits the changes after the command execution.
  * @property dirtyCommits If true, will commit changes before the command execution.
- * @property summarizedOutput If true, returns a summarized output in xml tags after usual outputs.
+ * @property promptAugmentation If true, returns a summarized output in xml tags after usual outputs.
  */
 data class CommandOptions(
     val disablePresentation: Boolean = false,
@@ -59,7 +59,7 @@ data class CommandOptions(
     val autoCloseDelay: Int? = null,
     val autoCommit: Boolean? = null,
     val dirtyCommits: Boolean? = null,
-    val summarizedOutput: Boolean? = null,
+    val promptAugmentation: Boolean? = null,
 ) {
 
     companion object {
