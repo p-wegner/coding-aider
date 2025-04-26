@@ -4,3 +4,4 @@
 - [ ] Bug: aiderignore not used for every action
 - [ ] Feature: stash in persistent files view in input dialog
 - [ ] Bug: Properly handle /ask with SystemPrompt for input history parsing
+- [ ] Bug: Compile Error Fix doesn't use persistent files
