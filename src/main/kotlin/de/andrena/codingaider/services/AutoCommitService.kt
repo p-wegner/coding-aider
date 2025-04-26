@@ -137,13 +137,14 @@ class AutoCommitService(private val project: Project) {
 }
 
 private fun Git.status(project: Project, root: VirtualFile): GitStatus {
-    return GitStatus()
+    val handler = git4idea.commands.GitLineHandler(project, root, git4idea.commands.GitCommand.STATUS)
+    handler.addParameters("--porcelain")
+    val result = this.runCommand(handler)
+    return GitStatus(result.output.isNotEmpty())
 }
 
-class GitStatus {
+class GitStatus(private val hasChanges: Boolean) {
     fun hasUncommittedChanges(): Boolean {
-// TODO 26.04.2025 pwegner: implement what is needed
-        TODO("Not yet implemented")
+        return hasChanges
     }
-
 }
