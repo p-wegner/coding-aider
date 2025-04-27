@@ -26,6 +26,8 @@ import com.vladsch.flexmark.util.data.MutableDataSet
 import de.andrena.codingaider.utils.FilePathConverter
 import java.nio.charset.StandardCharsets
 import javax.swing.SwingUtilities
+import java.text.MessageFormat
+import java.util.ResourceBundle
 
 /**
  * A simplified Markdown viewer component that uses JCEF (Chromium Embedded Framework)
@@ -125,7 +127,11 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         mainPanel.add(fallbackEditor!!, BorderLayout.CENTER)
         contentReady = true
     }
-    // TODO 27.04.2025 pwegner: externalize resource for better language support
+    private val resourceBundle = ResourceBundle.getBundle("messages.MarkdownViewerBundle")
+    
+    /**
+     * Creates the base HTML template with proper localization support
+     */
     private fun createBaseHtml(
         backgroundColor: String,
         fontColor: String,
@@ -134,182 +140,16 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         scrollbarHoverColor: String,
         preBackgroundColor: String
     ): String {
-        return """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <style>
-                body {
-                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-                    line-height: 1.6;
-                    margin: 0;
-                    padding: 20px;
-                    background: $backgroundColor;
-                    color: $fontColor;
-                }
-                #content {
-                    max-width: 100%;
-                    overflow-wrap: break-word;
-                }
-                /* Custom scrollbar styling */
-                ::-webkit-scrollbar {
-                    width: 10px;
-                    height: 10px;
-                }
-                ::-webkit-scrollbar-track {
-                    background: $scrollBarColor;
-                    border-radius: 4px;
-                }
-                ::-webkit-scrollbar-thumb {
-                    background: $scrollbarThumbColor;
-                    border-radius: 4px;
-                }
-                ::-webkit-scrollbar-thumb:hover {
-                    background: $scrollbarHoverColor;
-                }
-                pre {
-                    white-space: pre-wrap;
-                    overflow-x: auto;
-                    background: $preBackgroundColor;
-                    padding: 10px;
-                    border-radius: 4px;
-                }
-                code {
-                    font-family: 'JetBrains Mono', Consolas, Monaco, 'Courier New', monospace;
-                }
-            </style>
-        </head>
-        <body>
-            <div id="content"></div>
-            <script>
-                // Store panel expansion states
-                let panelStates = {};
-                
-                // Function to initialize collapsible panels
-                function initCollapsiblePanels() {
-                    document.querySelectorAll('.collapsible-header').forEach(header => {
-                        // Remove existing event listeners to prevent duplicates
-                        header.removeEventListener('click', togglePanel);
-                        // Add click event listener
-                        header.addEventListener('click', togglePanel);
-                        
-                        // Restore panel state if available
-                        const panel = header.parentElement;
-                        const panelId = getPanelId(panel);
-                        if (panelStates[panelId] !== undefined) {
-                            if (panelStates[panelId]) {
-                                panel.classList.add('expanded');
-                                const arrow = header.querySelector('.collapsible-arrow');
-                                if (arrow) arrow.textContent = '▼';
-                            } else {
-                                panel.classList.remove('expanded');
-                                const arrow = header.querySelector('.collapsible-arrow');
-                                if (arrow) arrow.textContent = '▶';
-                            }
-                        }
-                    });
-                }
-                
-                // Generate a unique ID for a panel based on its content
-                function getPanelId(panel) {
-                    const header = panel.querySelector('.collapsible-header');
-                    const title = header ? header.querySelector('.collapsible-title')?.textContent || '' : '';
-                    const contentElement = panel.querySelector('.collapsible-content');
-                    const contentText = contentElement ? contentElement.textContent || '' : '';
-                    const content = contentText.substring(0, Math.min(50, contentText.length));
-                    // Create a safe ID by removing problematic characters
-                    const safeTitle = title.replace(/[^\w-]/g, '');
-                    const safeContent = content.replace(/\s+/g, '').replace(/[^\w-]/g, '');
-                    return `panel-${safeTitle}-${safeContent}`;
-                }
-                
-                // Toggle panel function
-                function togglePanel(event) {
-                    const panel = this.parentElement;
-                    panel.classList.toggle('expanded');
-                    
-                    // Update arrow indicator
-                    const arrow = this.querySelector('.collapsible-arrow');
-                    if (arrow) {
-                        arrow.textContent = panel.classList.contains('expanded') ? '▼' : '▶';
-                    }
-                    
-                    // Save panel state
-                    const panelId = getPanelId(panel);
-                    panelStates[panelId] = panel.classList.contains('expanded');
-                }
-                
-                // Track scroll position
-                let lastScrollPosition = 0;
-                let isUserScrolling = false;
-                let shouldAutoScroll = true;
-                
-                // Initialize scroll tracking
-                function initScrollTracking() {
-                    window.addEventListener('scroll', function() {
-                        if (!isUserScrolling) {
-                            isUserScrolling = true;
-                            return;
-                        }
-                        
-                        const scrollPosition = window.scrollY;
-                        const scrollHeight = document.body.scrollHeight;
-                        const windowHeight = window.innerHeight;
-                        
-                        // Check if user is near the bottom (within 50px)
-                        const isNearBottom = scrollPosition + windowHeight >= scrollHeight - 50;
-                        shouldAutoScroll = isNearBottom;
-                        
-                        lastScrollPosition = scrollPosition;
-                    }, { passive: true });
-                }
-                
-                // Simple function to update content
-                function updateContent(html) {
-                    // Save scroll position and panel states before update
-                    const scrollPosition = window.scrollY;
-                    const scrollHeight = document.body.scrollHeight;
-                    const windowHeight = window.innerHeight;
-                    const wasAtBottom = scrollPosition + windowHeight >= scrollHeight - 50;
-                    
-                    // Store current panel states
-                    document.querySelectorAll('.collapsible-panel').forEach(panel => {
-                        const panelId = getPanelId(panel);
-                        panelStates[panelId] = panel.classList.contains('expanded');
-                    });
-                    
-                    // Update content
-                    document.getElementById('content').innerHTML = html;
-                    
-                    // Initialize collapsible panels after content update
-                    setTimeout(() => {
-                        initCollapsiblePanels();
-                        
-                        // Restore scroll position or scroll to bottom if was at bottom
-                        if (shouldAutoScroll || wasAtBottom) {
-                            window.scrollTo(0, document.body.scrollHeight);
-                        } else {
-                            // Try to maintain relative scroll position
-                            const newScrollHeight = document.body.scrollHeight;
-                            const scrollRatio = scrollPosition / scrollHeight;
-                            window.scrollTo(0, scrollRatio * newScrollHeight);
-                        }
-                        
-                        isUserScrolling = false;
-                    }, 50);
-                }
-                
-                // Initialize panels and scroll tracking when page loads
-                document.addEventListener('DOMContentLoaded', () => {
-                    initCollapsiblePanels();
-                    initScrollTracking();
-                });
-            </script>
-        </body>
-        </html>
-        """.trimIndent()
+        val template = resourceBundle.getString("markdown.viewer.html.template")
+        return MessageFormat.format(
+            template,
+            backgroundColor,
+            fontColor,
+            scrollBarColor,
+            scrollbarThumbColor,
+            scrollbarHoverColor,
+            preBackgroundColor
+        )
     }
 
     val component: JComponent
