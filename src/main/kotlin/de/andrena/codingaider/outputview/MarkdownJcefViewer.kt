@@ -180,14 +180,16 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 retryCount++
                 // Schedule a retry with increasing delay
                 val delay = 500L * retryCount
-                java.util.Timer().schedule(delay) {
-                    SwingUtilities.invokeLater {
-                        if (!contentReady) {
-                            // Try reloading the browser with initial content
-                            jbCefBrowser?.loadHTML(createHtmlWithContent(convertMarkdownToHtml(markdown)))
+                java.util.Timer().schedule(object : TimerTask() {
+                    override fun run() {
+                        SwingUtilities.invokeLater {
+                            if (!contentReady) {
+                                // Try reloading the browser with initial content
+                                jbCefBrowser?.loadHTML(createHtmlWithContent(convertMarkdownToHtml(markdown)))
+                            }
                         }
                     }
-                }
+                }, delay)
             }
         }
         // If not ready, onLoadEnd will handle applying the content later.
