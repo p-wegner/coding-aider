@@ -601,17 +601,11 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         fun createCollapsiblePanel(title: String, content: String, cssClass: String = "", isEscaped: Boolean = true): String {
             val contentHtml = if (isEscaped) "<pre><code>${escapeHtml(content.trim())}</code></pre>" else content.trim()
             
-            return """
-            <div class="collapsible-panel expanded">
-                <div class="collapsible-header $cssClass">
-                    <span class="collapsible-title">$title</span>
-                    <span class="collapsible-arrow">▼</span>
-                </div>
-                <div class="collapsible-content">
-                    $contentHtml
-                </div>
-            </div>
-            """.trimIndent()
+            val template = resourceBundle.getString("markdown.viewer.collapsible.panel")
+            return template
+                .replace("{0}", cssClass)
+                .replace("{1}", title)
+                .replace("{2}", contentHtml)
         }
 
         // Process standard blocks
