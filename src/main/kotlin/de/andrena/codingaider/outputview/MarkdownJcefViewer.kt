@@ -252,6 +252,9 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
 
     private fun updateContent(markdown: String) {
         if (markdown.isBlank()) return
+        
+        // We no longer check against currentContent here since setMarkdown() handles that
+        // This allows us to force updates when needed (e.g., after theme changes)
         val html = convertMarkdownToHtml(markdown)
         val full = createHtmlWithContent(html)
 
