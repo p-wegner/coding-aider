@@ -117,7 +117,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         jcefLoadAttempts++
                         logger.info("Retrying JCEF load, attempt $jcefLoadAttempts of $maxJcefLoadAttempts for error: $errorCode")
                         
-                        // Use exponential backoff for retries (200ms, 400ms, 800ms, etc.)
+                        // Use capped exponential backoff for retries (200ms, 400ms, 800ms, 1600ms, 1600ms, ...)
                         val retryDelay = 200L * minOf(1L shl (jcefLoadAttempts - 1), 8L)
                         
                         logger.info("Scheduling retry in $retryDelay ms")
@@ -150,7 +150,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     switchToFallbackEditor()
                 }
                 override fun onLoadingStateChange(browser: CefBrowser?, isLoading: Boolean, canGoBack: Boolean, canGoForward: Boolean) {}
-            }, this.cefBrowser)
+            }, null) // Pass null to handle all frames, or jbCefBrowser!!.cefBrowser for main frame only
         }
 
         mainPanel.add(jbCefBrowser!!.component, BorderLayout.CENTER)
@@ -236,17 +236,22 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
      * Sets the markdown content to be displayed
      */
     fun setMarkdown(markdown: String) {
-        currentContent = markdown
+        if (markdown.isBlank()) return
+        
+        // Only update if content has changed or we need to force a refresh
+        if (markdown == currentContent) {
+            // Content is identical, but still ensure it's displayed
+            // (useful after theme changes or browser reloads)
+            ensureContentDisplayed()
+            return
+        }
+        
         updateContent(markdown)
+        currentContent = markdown
     }
 
     private fun updateContent(markdown: String) {
         if (markdown.isBlank()) return
-        
-        // Skip processing if content hasn't changed
-        if (markdown == currentContent) return
-        
-        currentContent = markdown                       // keep copy for retries
         val html = convertMarkdownToHtml(markdown)
         val full = createHtmlWithContent(html)
 
@@ -479,7 +484,16 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
 
     private fun escapeHtml(text: String): String {
         // Use Apache Commons Text for HTML escaping (already included in IntelliJ)
-        return org.apache.commons.text.StringEscapeUtils.escapeHtml4(text)
+        return try {
+            org.apache.commons.text.StringEscapeUtils.escapeHtml4(text)
+        } catch (e: NoClassDefFoundError) {
+            // Fallback for 3rd-party IDEs that might not have Apache Commons Text
+            text.replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;")
+                .replace("'", "&#39;")
+        }
     }
 
     /**
@@ -533,8 +547,8 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         }
 
         // Process search/replace blocks - improved to better handle edit format blocks
-        // Use non-greedy quantifiers to prevent catastrophic backtracking
-        val searchReplacePattern = Regex("""(?m)^([^\n]+?)\n```[^\n]*\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n```""", 
+        // Use possessive quantifiers to prevent catastrophic backtracking
+        val searchReplacePattern = Regex("""(?m)^([^\n]++)\n```[^\n]*+\n<<<<<<< SEARCH\n(.*+)\n=======\n(.*+)\n>>>>>>> REPLACE\n```""", 
             RegexOption.DOT_MATCHES_ALL)
         
         processedHtml = processedHtml.replace(searchReplacePattern) { matchResult ->

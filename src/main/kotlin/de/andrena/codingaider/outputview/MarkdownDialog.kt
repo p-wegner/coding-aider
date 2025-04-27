@@ -56,7 +56,6 @@ class MarkdownDialog(
     }
     private var autoCloseTimer: Timer? = null
     private var autoCloseTask: TimerTask? = null
-    // Removed unused refreshTimer property (High Priority Issue #5)
     private var keepOpenButton: JButton
     private var closeButton = JButton(onAbort?.let { "Abort" } ?: "Close").apply {
         mnemonic = onAbort?.let { KeyEvent.VK_A } ?: KeyEvent.VK_C
@@ -120,7 +119,6 @@ class MarkdownDialog(
     }
 
     private var isProcessFinished = false
-    // Removed unused resizeTimer property (High Priority Issue #4)
 
     init {
         title = initialTitle
@@ -145,7 +143,7 @@ class MarkdownDialog(
             // Also handle when the component is shown
             override fun componentShown(e: java.awt.event.ComponentEvent) {
                 // Ensure content is displayed when dialog becomes visible
-                invokeLater {
+                SwingUtilities.invokeLater {
                     markdownViewer.ensureContentDisplayed()
 
                     // Schedule another check after a short delay to catch any initialization issues
@@ -310,7 +308,7 @@ class MarkdownDialog(
             }
         }
 
-        // Schedule the timer task to start after 1 second (Critical Issue #2 fix)
+        // Schedule the timer task to start after 1 second to fix countdown display
         timer.scheduleAtFixedRate(autoCloseTask, 1000, 1000)
     }
 
@@ -341,7 +339,8 @@ class MarkdownDialog(
 
     fun focus(delay: Long = 100) {
         // Use Swing timer instead of java.util.Timer
-        javax.swing.Timer(kotlin.math.min(delay, Int.MAX_VALUE.toLong()).toInt()) { // Applied Medium Issue #9 fix
+        // Prevent potential integer overflow with very large delays
+        javax.swing.Timer(kotlin.math.min(delay, Int.MAX_VALUE.toLong()).toInt()) {
             toFront()
             requestFocus()
             markdownViewer.component.requestFocusInWindow()

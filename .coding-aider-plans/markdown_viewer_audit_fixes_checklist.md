@@ -11,20 +11,20 @@ This checklist details the atomic tasks required to implement the fixes outlined
 
 ## High Priority Issues
 
-- [ ] **#3:** Remove the unused `import com.sun.java.accessibility.util.AWTEventMonitor.addActionListener` from `MarkdownDialog.kt`.
+- [x] **#3:** Remove the unused `import com.sun.java.accessibility.util.AWTEventMonitor.addActionListener` from `MarkdownDialog.kt`.
 - [x] **#4:** Remove the unused `resizeTimer: Timer?` property and its cleanup from `MarkdownDialog.kt`.
 - [x] **#5:** Remove the unused `refreshTimer: Timer?` property and its cleanup from `MarkdownDialog.kt`.
 - [x] **#6:** Modify `MarkdownJcefViewer.updateContent` to compare against a `lastRenderedContent` or similar mechanism to allow re-pushing identical markdown when necessary (e.g., theme change).
-- [ ] **#7:** Correct the second argument passed to `client.addLoadHandler` in `MarkdownJcefViewer.initJcefBrowser` to be `null` or `jbCefBrowser!!.cefBrowser`.
+- [x] **#7:** Correct the second argument passed to `client.addLoadHandler` in `MarkdownJcefViewer.initJcefBrowser` to be `null` or `jbCefBrowser!!.cefBrowser`.
 
 ## Medium Priority Issues
 
-- [ ] **#8:** Update the comment regarding exponential backoff in `MarkdownJcefViewer.initJcefBrowser` to accurately reflect the capped delay, or remove the cap.
+- [x] **#8:** Update the comment regarding exponential backoff in `MarkdownJcefViewer.initJcefBrowser` to accurately reflect the capped delay, or remove the cap.
 - [x] **#9:** Consider using `kotlin.math.min(delay, Int.MAX_VALUE.toLong()).toInt()` in `MarkdownDialog.focus()` to prevent potential `Int` truncation issues with very large delays.
-- [ ] **#10:** Evaluate and potentially improve the regex patterns in `MarkdownJcefViewer.processSearchReplaceBlocks` to mitigate catastrophic backtracking risk, possibly using possessive quantifiers or alternative parsing.
+- [x] **#10:** Evaluate and potentially improve the regex patterns in `MarkdownJcefViewer.processSearchReplaceBlocks` to mitigate catastrophic backtracking risk, possibly using possessive quantifiers or alternative parsing.
 
 ## Low Priority Issues
 
-- [ ] **#11:** (Duplicate of #3) Ensure the unused `ActionListener` import is removed from `MarkdownDialog.kt`.
-- [ ] **#12:** Add defensive error handling (e.g., `try-catch NoClassDefFoundError`) around the use of `org.apache.commons.text.StringEscapeUtils` in `MarkdownJcefViewer.escapeHtml` for compatibility with 3rd-party IDEs.
-- [ ] **#13:** Standardize the usage of `invokeLater` in `MarkdownDialog.kt` and `MarkdownJcefViewer.kt` to either use the static import or `SwingUtilities.invokeLater` consistently.
+- [x] **#11:** (Duplicate of #3) Ensure the unused `ActionListener` import is removed from `MarkdownDialog.kt`.
+- [x] **#12:** Add defensive error handling (e.g., `try-catch NoClassDefFoundError`) around the use of `org.apache.commons.text.StringEscapeUtils` in `MarkdownJcefViewer.escapeHtml` for compatibility with 3rd-party IDEs.
+- [x] **#13:** Standardize the usage of `invokeLater` in `MarkdownDialog.kt` and `MarkdownJcefViewer.kt` to either use the static import or `SwingUtilities.invokeLater` consistently.
