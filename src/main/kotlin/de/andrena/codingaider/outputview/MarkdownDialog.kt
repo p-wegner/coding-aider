@@ -48,7 +48,7 @@ class MarkdownDialog(
     private val markdownViewer = MarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
         setMarkdown(initialText)
     }
-    // Use the component directly without any scrollpane wrapper
+    // Use the component with proper scrolling support
     private val markdownComponent = markdownViewer.component.apply {
         border = null
     }
