@@ -252,9 +252,8 @@ class MarkdownDialog(
         com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
             try {
                 val newContent = output.replace("\r\n", "\n")
-                if (newContent != lastContent) {
+                if (newContent != lastContent || this@MarkdownDialog.title != title) {
                     lastContent = newContent
-
 
                     // Check if scrollbar is near the bottom before updating content
                     val scrollBar = scrollPane.verticalScrollBar
@@ -262,8 +261,8 @@ class MarkdownDialog(
                     val scrollRatio = if (scrollBar.maximum > 0) 
                         scrollBar.value.toDouble() / scrollBar.maximum.toDouble() else 0.0
 
-                    // Update content
-                    markdownViewer.setMarkdown(newContent)
+                    // Update content - ensure we're setting content even if it appears empty
+                    markdownViewer.setMarkdown(newContent.ifEmpty { " " }) // Prevent empty content issues
                     this@MarkdownDialog.title = title
 
                     // Schedule scroll adjustment after UI updates
@@ -291,12 +290,10 @@ class MarkdownDialog(
                             programmaticScrolling = false
                         }
                     }
-                } else {
-                    // Only title changed, no content update needed
-                    this@MarkdownDialog.title = title
                 }
             } catch (e: Exception) {
                 println("Error updating markdown dialog: ${e.message}")
+                e.printStackTrace()
             }
         }
     }

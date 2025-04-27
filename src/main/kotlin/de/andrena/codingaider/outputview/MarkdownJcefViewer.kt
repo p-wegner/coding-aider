@@ -96,7 +96,9 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 }
 
                 override fun onLoadStart(browser: CefBrowser?, frame: CefFrame?, transitionType: CefRequest.TransitionType?) {}
-                override fun onLoadError(browser: CefBrowser?, frame: CefFrame?, errorCode: CefLoadHandler.ErrorCode?, errorText: String?, failedUrl: String?) {}
+                override fun onLoadError(browser: CefBrowser?, frame: CefFrame?, errorCode: CefLoadHandler.ErrorCode?, errorText: String?, failedUrl: String?) {
+                    println("JCEF load error: $errorCode - $errorText for URL: $failedUrl")
+                }
                 override fun onLoadingStateChange(browser: CefBrowser?, isLoading: Boolean, canGoBack: Boolean, canGoForward: Boolean) {}
             }, this.cefBrowser)
         }
@@ -307,6 +309,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         
         if (!contentReady) {
             // Content will be updated when viewer is ready
+            println("Content not ready yet, will update when ready")
             return
         }
         
@@ -337,15 +340,24 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 browser.cefBrowser.executeJavaScript(script, browser.cefBrowser.url, 0)
             } catch (e: Exception) {
                 println("Error updating browser content: ${e.message}")
+                e.printStackTrace()
                 // Fallback to full page reload if JavaScript execution fails
                 browser.loadHTML(createHtmlWithContent(html))
             }
+        } ?: run {
+            println("Warning: Neither fallbackEditor nor jbCefBrowser is initialized")
         }
     }
     
     private fun createHtmlWithContent(content: String): String {
         val baseHtml = createBaseHtml()
-        return baseHtml.replace("<div id=\"content\"></div>", "<div id=\"content\">$content</div>")
+        // Ensure the content div exists and is properly replaced
+        if (baseHtml.contains("<div id=\"content\"></div>")) {
+            return baseHtml.replace("<div id=\"content\"></div>", "<div id=\"content\">$content</div>")
+        } else {
+            // If the div isn't found for some reason, insert content before body closing tag
+            return baseHtml.replace("</body>", "<div id=\"content\">$content</div></body>")
+        }
     }
 
     fun setDarkTheme(dark: Boolean) {
