@@ -28,6 +28,7 @@ import java.nio.charset.StandardCharsets
 import javax.swing.SwingUtilities
 import java.text.MessageFormat
 import java.util.ResourceBundle
+import com.intellij.openapi.diagnostic.Logger
 
 /**
  * A simplified Markdown viewer component that uses JCEF (Chromium Embedded Framework)
@@ -35,6 +36,7 @@ import java.util.ResourceBundle
  */
 class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
 
+    private val logger = Logger.getInstance(MarkdownJcefViewer::class.java)
     private val mainPanel = JPanel(BorderLayout()).apply {
         border = null
         minimumSize = Dimension(200, 100)
