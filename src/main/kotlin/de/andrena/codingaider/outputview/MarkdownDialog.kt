@@ -255,9 +255,7 @@ class MarkdownDialog(
                 if (newContent != lastContent) {
                     lastContent = newContent
 
-                    // Capture panel expansion states before update
-                    capturePanelStates()
-                    
+
                     // Check if scrollbar is near the bottom before updating content
                     val scrollBar = scrollPane.verticalScrollBar
                     val wasNearBottom = scrollBar.value >= (scrollBar.maximum - scrollBar.visibleAmount - 10)
@@ -272,9 +270,6 @@ class MarkdownDialog(
                     invokeLater {
                         try {
                             programmaticScrolling = true // Prevent listener feedback loop
-                            
-                            // Restore panel expansion states
-                            restorePanelStates()
                             
                             // Wait a bit for panel restoration to affect layout
                             Timer().schedule(50) {
@@ -355,29 +350,7 @@ class MarkdownDialog(
         }
     }
 
-    // Helper methods for panel state management
-    private fun capturePanelStates() {
-        try {
-            // For JCEF browser, we rely on JavaScript to handle this
-            // The fallbackEditor is not accessible from this class, so we can't
-            // directly manipulate the HTML document for the JEditorPane implementation
-            
-            // Instead, we'll rely on the JavaScript in the JCEF browser to handle panel states
-            // The panelExpansionStates map is still used for potential future implementations
-        } catch (e: Exception) {
-            // Ignore errors in panel state capture
-        }
-    }
-    
-    private fun restorePanelStates() {
-        try {
-            // For JCEF browser, we rely on JavaScript to handle this
-            // The panel state restoration is handled by the JavaScript in the browser
-            // which maintains its own state between content updates
-        } catch (e: Exception) {
-            // Ignore errors in panel state restoration
-        }
-    }
+
 
     fun focus(delay: Long = 100) {
         Timer().schedule(delay) {
