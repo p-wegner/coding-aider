@@ -27,6 +27,7 @@ import de.andrena.codingaider.utils.FilePathConverter
 import java.nio.charset.StandardCharsets
 import javax.swing.SwingUtilities
 import java.util.ResourceBundle
+import java.util.TimerTask
 
 class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
 
@@ -189,7 +190,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                             }
                         }
                     }
-                }, delay)
+                }, delay.toLong())
             }
         }
         // If not ready, onLoadEnd will handle applying the content later.
@@ -231,24 +232,26 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         browser.cefBrowser.executeJavaScript(script, browser.cefBrowser.url, 0)
                         
                         // Verify content was updated by checking after a short delay
-                        java.util.Timer().schedule(300) {
-                            SwingUtilities.invokeLater {
-                                browser.cefBrowser.executeJavaScript(
-                                    "window.JavaCallback = { contentLength: document.getElementById('content').innerHTML.length };",
-                                    browser.cefBrowser.url, 0
-                                )
-                                
-                                // If content appears empty, try the fallback method
-                                if (html.length > 100) {  // Only check for substantial content
+                        java.util.Timer().schedule(object : TimerTask() {
+                            override fun run() {
+                                SwingUtilities.invokeLater {
                                     browser.cefBrowser.executeJavaScript(
-                                        "if (document.getElementById('content').innerHTML.length < 10) { " +
-                                                "document.getElementById('content').innerHTML = 'Reloading content...'; " +
-                                                "setTimeout(function() { location.reload(); }, 100); }",
+                                        "window.JavaCallback = { contentLength: document.getElementById('content').innerHTML.length };",
                                         browser.cefBrowser.url, 0
                                     )
+                                    
+                                    // If content appears empty, try the fallback method
+                                    if (html.length > 100) {  // Only check for substantial content
+                                        browser.cefBrowser.executeJavaScript(
+                                            "if (document.getElementById('content').innerHTML.length < 10) { " +
+                                                    "document.getElementById('content').innerHTML = 'Reloading content...'; " +
+                                                    "setTimeout(function() { location.reload(); }, 100); }",
+                                            browser.cefBrowser.url, 0
+                                        )
+                                    }
                                 }
                             }
-                        }
+                        }, 300)
                     } catch (e: Exception) {
                         println("Error executing JavaScript: ${e.message}")
                         e.printStackTrace()

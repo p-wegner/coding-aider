@@ -338,7 +338,7 @@ class MarkdownDialog(
                                                         markdownViewer.component.revalidate()
                                                     }
                                                 }
-                                            }, 300 * contentUpdateAttempts)
+                                            }, (300 * contentUpdateAttempts).toLong())
                                         }
                                     }
                                 }
