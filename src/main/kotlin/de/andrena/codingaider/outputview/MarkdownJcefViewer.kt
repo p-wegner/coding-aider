@@ -128,8 +128,6 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
 
                     override fun onLoadStart(browser: CefBrowser?, frame: CefFrame?, transitionType: CefRequest.TransitionType?) {}
                     override fun onLoadError(browser: CefBrowser?, frame: CefFrame?, errorCode: CefLoadHandler.ErrorCode?, errorText: String?, failedUrl: String?) {
-                        logger.warn("JCEF load error: $errorCode - $errorText for URL: $failedUrl")
-                        
                         // Only handle main frame errors
                         if (frame == null || frame.parent != null) {
                             return
@@ -138,8 +136,13 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         // Ignore benign ERR_ABORTED errors that happen during normal navigation
                         // when we call loadHTML again and abort the previous load
                         if (errorCode == CefLoadHandler.ErrorCode.ERR_ABORTED) {
+                            // This is expected behavior when navigation is aborted by a new loadHTML call
+                            // Don't log a warning for this case as it's not an actual error
                             return
                         }
+                        
+                        // Log all other errors
+                        logger.warn("JCEF load error: $errorCode - $errorText for URL: $failedUrl")
                         
                         // Handle common transient errors
                         if (errorCode == CefLoadHandler.ErrorCode.ERR_FAILED && 
