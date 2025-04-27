@@ -243,12 +243,13 @@ class MarkdownDialog(
 
             // Check if content actually changed
             val normalizedOutput = output.replace("\r\n", "\n")
-            // Removed the check against lastContent here, as the check is now inside MarkdownJcefViewer.updateContent
-            // if (normalizedOutput == lastContent) return@invokeLater
-
-            lastContent = normalizedOutput // Keep lastContent updated for potential future use or debugging
-            markdownViewer.setMarkdown(lastContent)
-            this@MarkdownDialog.title = title
+            
+            // Only update if content has changed
+            if (normalizedOutput != lastContent) {
+                lastContent = normalizedOutput // Keep lastContent updated for potential future use or debugging
+                markdownViewer.setMarkdown(lastContent)
+                this@MarkdownDialog.title = title
+            }
         }
     }
     fun startAutoCloseTimer(autocloseDelay: Int) {

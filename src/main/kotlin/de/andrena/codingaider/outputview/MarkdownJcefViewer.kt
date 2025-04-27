@@ -302,8 +302,24 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         val html = convertMarkdownToHtml(markdown)
         val full = createHtmlWithContent(html)
 
-        jbCefBrowser?.loadHTML(full)                    // single safe path
-            ?: fallbackEditor?.let { it.text = html }
+        jbCefBrowser?.let { browser ->
+            // Execute JavaScript to get current scroll position before updating content
+            browser.cefBrowser?.executeJavaScript(
+                "window.currentScrollY = window.scrollY || 0;", 
+                browser.cefBrowser?.url ?: "", 
+                0
+            )
+            
+            // Load the new HTML content
+            browser.loadHTML(full)
+            
+            // Restore scroll position after the content is loaded
+            browser.cefBrowser?.executeJavaScript(
+                "if (window.currentScrollY) { window.scrollTo(0, window.currentScrollY); }",
+                browser.cefBrowser?.url ?: "",
+                0
+            )
+        } ?: fallbackEditor?.let { it.text = html }
     }
 
     private fun createHtmlWithContent(content: String): String {
