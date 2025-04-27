@@ -55,6 +55,8 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     private var useFallbackMode = false
 
     init {
+        // Remove any border from the main panel
+        mainPanel.border = null
         initializeViewer()
     }
 
@@ -92,6 +94,8 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 // Ensure scrolling is enabled and use native browser scrolling
                 putClientProperty("JBCefBrowser.wrapperPanel.scrollable", true)
                 putClientProperty("JBCefBrowser.useNativeScrollbar", true)
+                // Disable JBScrollPane wrapping
+                putClientProperty("JBCefBrowser.parentScrollPane", false)
             }
 
             // Create the initial HTML with empty content

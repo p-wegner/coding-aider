@@ -48,10 +48,9 @@ class MarkdownDialog(
     private val markdownViewer = MarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
         setMarkdown(initialText)
     }
-    private val scrollPane = JBScrollPane(markdownViewer.component).apply {
+    // Use the component directly without a JBScrollPane wrapper
+    private val markdownComponent = markdownViewer.component.apply {
         border = null
-        verticalScrollBarPolicy = JBScrollPane.VERTICAL_SCROLLBAR_ALWAYS
-        horizontalScrollBarPolicy = JBScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
     }
     private var autoCloseTimer: Timer? = null
     private var autoCloseTask: TimerTask? = null
@@ -125,10 +124,8 @@ class MarkdownDialog(
         // Add resize listener with debouncing using Swing timer
         addComponentListener(object : java.awt.event.ComponentAdapter() {
             private val resizeSwingTimer = javax.swing.Timer(200) {
-                markdownViewer.component.revalidate()
-                markdownViewer.component.repaint()
-                scrollPane.revalidate()
-                scrollPane.repaint()
+                markdownComponent.revalidate()
+                markdownComponent.repaint()
             }.apply {
                 isRepeats = false
             }
@@ -157,7 +154,7 @@ class MarkdownDialog(
         // Add content panel with proper weighting
         val contentPanel = JPanel(BorderLayout(0, 0)).apply {
             border = javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5)
-            add(scrollPane, BorderLayout.CENTER)
+            add(markdownComponent, BorderLayout.CENTER)
         }
         add(contentPanel, BorderLayout.CENTER)
 
