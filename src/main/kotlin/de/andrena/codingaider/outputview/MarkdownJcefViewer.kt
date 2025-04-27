@@ -297,28 +297,12 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     private fun updateContent(markdown: String) {
         if (markdown.isBlank()) return
         
-        // We no longer check against currentContent here since setMarkdown() handles that
-        // This allows us to force updates when needed (e.g., after theme changes)
         val html = convertMarkdownToHtml(markdown)
         val full = createHtmlWithContent(html)
 
         jbCefBrowser?.let { browser ->
-            // Execute JavaScript to get current scroll position before updating content
-            browser.cefBrowser?.executeJavaScript(
-                "window.currentScrollY = window.scrollY || 0;", 
-                browser.cefBrowser?.url ?: "", 
-                0
-            )
-            
-            // Load the new HTML content
+            // Simply load the new HTML content without scroll position management
             browser.loadHTML(full)
-            
-            // Restore scroll position after the content is loaded
-            browser.cefBrowser?.executeJavaScript(
-                "if (window.currentScrollY) { window.scrollTo(0, window.currentScrollY); }",
-                browser.cefBrowser?.url ?: "",
-                0
-            )
         } ?: fallbackEditor?.let { it.text = html }
     }
 
@@ -332,13 +316,8 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             if (this@MarkdownJcefViewer.isDarkTheme) "#1e1e1e" else "#f5f5f5"
         )
         
-        // Ensure the content div exists and is properly replaced
-        if (baseHtml.contains("<div id=\"content\"></div>")) {
-            return baseHtml.replace("<div id=\"content\"></div>", "<div id=\"content\">$content</div>")
-        } else {
-            // If the div isn't found for some reason, insert content before body closing tag
-            return baseHtml.replace("</body>", "<div id=\"content\">$content</div></body>")
-        }
+        // Simple content replacement
+        return baseHtml.replace("<div id=\"content\"></div>", "<div id=\"content\">$content</div>")
     }
     
     /**
@@ -357,32 +336,6 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 if (jcefLoadAttempts >= maxJcefLoadAttempts && !useFallbackMode) {
                     logger.info("Too many JCEF load attempts ($jcefLoadAttempts), switching to fallback")
                     switchToFallbackEditor()
-                    return@invokeLater
-                }
-                
-                // If using JCEF and not in fallback mode, try forcing a direct HTML load
-                if (!useFallbackMode) {
-                    jbCefBrowser?.let { browser ->
-                        try {
-                            logger.info("Ensuring content is displayed in JCEF browser")
-                            val html = convertMarkdownToHtml(currentContent)
-                            browser.loadHTML(createHtmlWithContent(html))
-                        } catch (e: Exception) {
-                            logger.warn("Error during forced content display: ${e.message}", e)
-                            switchToFallbackEditor()
-                        }
-                    }
-                }
-                
-                // If using fallback editor, try direct update
-                fallbackEditor?.let { editor ->
-                    try {
-                        logger.info("Updating fallback editor content")
-                        val html = convertMarkdownToHtml(currentContent)
-                        editor.text = html
-                    } catch (e: Exception) {
-                        logger.warn("Error updating fallback editor: ${e.message}", e)
-                    }
                 }
             }
         }

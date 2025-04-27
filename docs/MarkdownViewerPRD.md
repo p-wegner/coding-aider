@@ -28,12 +28,9 @@ The Markdown Viewer System is a sophisticated component within the CodingAider I
 - **Smooth Animations**: Transition effects when expanding/collapsing
 - used for code blocks and structured segments
 
-#### Smart Scrolling
-- [ ] **Position Memory**: Remembers user's manual scroll position
-- [ ] **Auto-Scroll Detection**: Intelligently detects when user is at the bottom of content
-- [ ] **Scroll State Preservation**: Maintains scroll position during content updates
-- [ ] **Bottom-Following**: Automatically scrolls to bottom for new content when appropriate
-- [ ] preserves Collapsible Panels expansion state
+#### Simplified Scrolling
+- [x] **Native Scrolling**: Uses browser's native scrolling behavior
+- [x] **Collapsible Panels**: Preserves panel expansion state during content updates
 
 
 ### Dialog Management

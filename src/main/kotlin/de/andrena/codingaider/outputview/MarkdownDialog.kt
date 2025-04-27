@@ -129,8 +129,6 @@ class MarkdownDialog(
                 markdownViewer.component.repaint()
                 scrollPane.revalidate()
                 scrollPane.repaint()
-                // Ensure content is displayed after resize
-                markdownViewer.ensureContentDisplayed()
             }.apply {
                 isRepeats = false
             }
@@ -144,14 +142,6 @@ class MarkdownDialog(
                 // Ensure content is displayed when dialog becomes visible
                 SwingUtilities.invokeLater {
                     markdownViewer.ensureContentDisplayed()
-
-                    // Schedule another check after a short delay to catch any initialization issues
-                    javax.swing.Timer(500) {
-                        markdownViewer.ensureContentDisplayed()
-                    }.apply {
-                        isRepeats = false
-                        start()
-                    }
                 }
             }
         })
@@ -344,10 +334,8 @@ class MarkdownDialog(
             toFront()
             requestFocus()
             markdownViewer.component.requestFocusInWindow()
-            // Set dark theme based on current IDE theme and ensure content is displayed
+            // Set dark theme based on current IDE theme
             markdownViewer.setDarkTheme(com.intellij.openapi.editor.colors.EditorColorsManager.getInstance().isDarkEditor)
-            // No need to call setMarkdown here, ensureContentDisplayed handles it if needed
-            markdownViewer.ensureContentDisplayed()
         }.apply {
             isRepeats = false
             start()
