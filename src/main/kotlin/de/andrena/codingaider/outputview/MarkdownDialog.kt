@@ -21,11 +21,8 @@ import java.awt.event.WindowEvent
 import java.util.*
 import java.util.Timer
 import javax.swing.*
-import kotlin.concurrent.schedule
 import kotlin.concurrent.scheduleAtFixedRate
-import kotlin.math.abs
 import kotlin.math.max
-import kotlin.math.pow
 
 
 class MarkdownDialog(
@@ -52,12 +49,13 @@ class MarkdownDialog(
     private val markdownViewer = MarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
         setMarkdown(initialText)
     }
+    private val scrollPane = JBScrollPane(markdownViewer.component).apply {
+        border = null
+        verticalScrollBarPolicy = JBScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
+        horizontalScrollBarPolicy = JBScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+    }
     private var autoCloseTimer: TimerTask? = null
     private var refreshTimer: Timer? = null
-    // Auto-scroll state - start with auto-scroll enabled
-    private var shouldAutoScroll = true
-    // Store panel expansion states between updates
-    private val panelExpansionStates = mutableMapOf<String, Boolean>()
     private var keepOpenButton = JButton("Keep Open").apply {
         mnemonic = KeyEvent.VK_K
         isVisible = false
@@ -180,7 +178,7 @@ class MarkdownDialog(
         // Add content panel with proper weighting
         val contentPanel = JPanel(BorderLayout(0, 0)).apply {
             border = javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5)
-            add(markdownViewer.component, BorderLayout.CENTER)
+            add(scrollPane, BorderLayout.CENTER)
         }
         add(contentPanel, BorderLayout.CENTER)
 
