@@ -7,6 +7,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBScrollPane
+import com.sun.java.accessibility.util.AWTEventMonitor.addActionListener
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.services.RunningCommandService
 import de.andrena.codingaider.services.plans.AiderPlanService
@@ -16,6 +17,7 @@ import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.EventQueue.invokeLater
 import java.awt.Frame
+import java.awt.event.ActionListener
 import java.awt.event.KeyEvent
 import java.awt.event.WindowEvent
 import java.util.*
@@ -57,7 +59,6 @@ class MarkdownDialog(
     private var autoCloseTimer: Timer? = null
     private var autoCloseTask: TimerTask? = null
     private var refreshTimer: Timer? = null
-    private var resizeTimer: Timer? = null
     private var keepOpenButton: JButton
     private var closeButton = JButton(onAbort?.let { "Abort" } ?: "Close").apply {
         mnemonic = onAbort?.let { KeyEvent.VK_A } ?: KeyEvent.VK_C
@@ -128,7 +129,7 @@ class MarkdownDialog(
 
         // Add resize listener with debouncing using Swing timer
         addComponentListener(object : java.awt.event.ComponentAdapter() {
-            private val resizeSwingTimer = Timer(150, null).apply {
+            private val resizeSwingTimer = Timer().apply {
                 isRepeats = false
                 addActionListener {
                     markdownViewer.component.revalidate()
