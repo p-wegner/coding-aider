@@ -137,6 +137,22 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     max-width: 100%;
                     overflow-wrap: break-word;
                 }
+                /* Custom scrollbar styling */
+                ::-webkit-scrollbar {
+                    width: 10px;
+                    height: 10px;
+                }
+                ::-webkit-scrollbar-track {
+                    background: ${if (isDarkTheme) "#1e1e1e" else "#f1f1f1"};
+                    border-radius: 4px;
+                }
+                ::-webkit-scrollbar-thumb {
+                    background: ${if (isDarkTheme) "#555" else "#c1c1c1"};
+                    border-radius: 4px;
+                }
+                ::-webkit-scrollbar-thumb:hover {
+                    background: ${if (isDarkTheme) "#777" else "#a1a1a1"};
+                }
                 pre {
                     white-space: pre-wrap;
                     overflow-x: auto;
@@ -152,6 +168,9 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         <body>
             <div id="content"></div>
             <script>
+                // Store panel expansion states
+                let panelStates = {};
+                
                 // Function to initialize collapsible panels
                 function initCollapsiblePanels() {
                     document.querySelectorAll('.collapsible-header').forEach(header => {
@@ -159,7 +178,30 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         header.removeEventListener('click', togglePanel);
                         // Add click event listener
                         header.addEventListener('click', togglePanel);
+                        
+                        // Restore panel state if available
+                        const panel = header.parentElement;
+                        const panelId = getPanelId(panel);
+                        if (panelStates[panelId] !== undefined) {
+                            if (panelStates[panelId]) {
+                                panel.classList.add('expanded');
+                                const arrow = header.querySelector('.collapsible-arrow');
+                                if (arrow) arrow.textContent = '▼';
+                            } else {
+                                panel.classList.remove('expanded');
+                                const arrow = header.querySelector('.collapsible-arrow');
+                                if (arrow) arrow.textContent = '▶';
+                            }
+                        }
                     });
+                }
+                
+                // Generate a unique ID for a panel based on its content
+                function getPanelId(panel) {
+                    const header = panel.querySelector('.collapsible-header');
+                    const title = header ? header.querySelector('.collapsible-title').textContent : '';
+                    const content = panel.querySelector('.collapsible-content').textContent.substring(0, 50);
+                    return `${title}-${content.replace(/\s+/g, '')}`;
                 }
                 
                 // Toggle panel function
@@ -172,17 +214,77 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     if (arrow) {
                         arrow.textContent = panel.classList.contains('expanded') ? '▼' : '▶';
                     }
+                    
+                    // Save panel state
+                    const panelId = getPanelId(panel);
+                    panelStates[panelId] = panel.classList.contains('expanded');
+                }
+                
+                // Track scroll position
+                let lastScrollPosition = 0;
+                let isUserScrolling = false;
+                let shouldAutoScroll = true;
+                
+                // Initialize scroll tracking
+                function initScrollTracking() {
+                    window.addEventListener('scroll', function() {
+                        if (!isUserScrolling) {
+                            isUserScrolling = true;
+                            return;
+                        }
+                        
+                        const scrollPosition = window.scrollY;
+                        const scrollHeight = document.body.scrollHeight;
+                        const windowHeight = window.innerHeight;
+                        
+                        // Check if user is near the bottom (within 50px)
+                        const isNearBottom = scrollPosition + windowHeight >= scrollHeight - 50;
+                        shouldAutoScroll = isNearBottom;
+                        
+                        lastScrollPosition = scrollPosition;
+                    }, { passive: true });
                 }
                 
                 // Simple function to update content
                 function updateContent(html) {
+                    // Save scroll position and panel states before update
+                    const scrollPosition = window.scrollY;
+                    const scrollHeight = document.body.scrollHeight;
+                    const windowHeight = window.innerHeight;
+                    const wasAtBottom = scrollPosition + windowHeight >= scrollHeight - 50;
+                    
+                    // Store current panel states
+                    document.querySelectorAll('.collapsible-panel').forEach(panel => {
+                        const panelId = getPanelId(panel);
+                        panelStates[panelId] = panel.classList.contains('expanded');
+                    });
+                    
+                    // Update content
                     document.getElementById('content').innerHTML = html;
+                    
                     // Initialize collapsible panels after content update
-                    setTimeout(initCollapsiblePanels, 50); // Small delay to ensure DOM is ready
+                    setTimeout(() => {
+                        initCollapsiblePanels();
+                        
+                        // Restore scroll position or scroll to bottom if was at bottom
+                        if (shouldAutoScroll || wasAtBottom) {
+                            window.scrollTo(0, document.body.scrollHeight);
+                        } else {
+                            // Try to maintain relative scroll position
+                            const newScrollHeight = document.body.scrollHeight;
+                            const scrollRatio = scrollPosition / scrollHeight;
+                            window.scrollTo(0, scrollRatio * newScrollHeight);
+                        }
+                        
+                        isUserScrolling = false;
+                    }, 50);
                 }
                 
-                // Initialize panels when page loads
-                document.addEventListener('DOMContentLoaded', initCollapsiblePanels);
+                // Initialize panels and scroll tracking when page loads
+                document.addEventListener('DOMContentLoaded', () => {
+                    initCollapsiblePanels();
+                    initScrollTracking();
+                });
             </script>
         </body>
         </html>

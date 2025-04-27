@@ -68,12 +68,14 @@ class MarkdownDialog(
         }
     }
 
-    // Flag to track programmatic scrolling to avoid feedback loops
+    // Flags to track scrolling behavior
     private var programmaticScrolling = false
     private var autoCloseTimer: TimerTask? = null
     private var refreshTimer: Timer? = null
     // Auto-scroll state - start with auto-scroll enabled
     private var shouldAutoScroll = true
+    // Store panel expansion states between updates
+    private val panelExpansionStates = mutableMapOf<String, Boolean>()
     private var keepOpenButton = JButton("Keep Open").apply {
         mnemonic = KeyEvent.VK_K
         isVisible = false
@@ -253,9 +255,14 @@ class MarkdownDialog(
                 if (newContent != lastContent) {
                     lastContent = newContent
 
+                    // Capture panel expansion states before update
+                    capturePanelStates()
+                    
                     // Check if scrollbar is near the bottom before updating content
                     val scrollBar = scrollPane.verticalScrollBar
                     val wasNearBottom = scrollBar.value >= (scrollBar.maximum - scrollBar.visibleAmount - 10)
+                    val scrollRatio = if (scrollBar.maximum > 0) 
+                        scrollBar.value.toDouble() / scrollBar.maximum.toDouble() else 0.0
 
                     // Update content
                     markdownViewer.setMarkdown(newContent)
@@ -265,16 +272,26 @@ class MarkdownDialog(
                     invokeLater {
                         try {
                             programmaticScrolling = true // Prevent listener feedback loop
-                            val newMax = scrollBar.maximum - scrollBar.visibleAmount
-
-                            // Scroll to bottom if auto-scroll is enabled OR if we were already near the bottom
-                            if (shouldAutoScroll || wasNearBottom) {
-                                scrollBar.value = scrollBar.maximum // Scroll to the very bottom
-                                shouldAutoScroll = true // Ensure auto-scroll stays enabled if we scrolled to bottom
+                            
+                            // Restore panel expansion states
+                            restorePanelStates()
+                            
+                            // Wait a bit for panel restoration to affect layout
+                            Timer().schedule(50) {
+                                invokeLater {
+                                    val newMax = scrollBar.maximum - scrollBar.visibleAmount
+                                    
+                                    // Scroll to bottom if auto-scroll is enabled OR if we were already near the bottom
+                                    if (shouldAutoScroll || wasNearBottom) {
+                                        scrollBar.value = scrollBar.maximum // Scroll to the very bottom
+                                        shouldAutoScroll = true // Ensure auto-scroll stays enabled if we scrolled to bottom
+                                    } else if (scrollBar.maximum > 0) {
+                                        // Try to maintain relative scroll position
+                                        val targetValue = (scrollRatio * scrollBar.maximum).toInt()
+                                        scrollBar.value = targetValue.coerceIn(0, scrollBar.maximum)
+                                    }
+                                }
                             }
-                            // Otherwise, the scroll position remains where it was relative to the old content,
-                            // or where the user manually placed it. No explicit restoration needed here.
-
                         } finally {
                             programmaticScrolling = false
                         }
@@ -335,6 +352,53 @@ class MarkdownDialog(
             closeButton.mnemonic = KeyEvent.VK_C
             closeAndContinueButton.isVisible = commandData?.structuredMode == true
             createPlanButton.isVisible = commandData != null && commandData.structuredMode != true
+        }
+    }
+
+    // Helper methods for panel state management
+    private fun capturePanelStates() {
+        try {
+            // For JCEF browser, we rely on JavaScript to handle this
+            // This is a fallback for the JEditorPane implementation
+            val document = fallbackEditor?.document as? javax.swing.text.html.HTMLDocument ?: return
+            val elements = document.getAllElements()
+            val enumeration = elements.asIterator()
+            while (enumeration.hasNext()) {
+                val element = enumeration.next()
+                if (element.attributes.getAttribute(javax.swing.text.html.HTML.Attribute.CLASS) == "collapsible-panel") {
+                    val id = element.attributes.getAttribute(javax.swing.text.html.HTML.Attribute.ID)?.toString() ?: continue
+                    val isExpanded = element.attributes.getAttribute(javax.swing.text.html.HTML.Attribute.CLASS).toString().contains("expanded")
+                    panelExpansionStates[id] = isExpanded
+                }
+            }
+        } catch (e: Exception) {
+            // Ignore errors in panel state capture
+        }
+    }
+    
+    private fun restorePanelStates() {
+        try {
+            // For JCEF browser, we rely on JavaScript to handle this
+            // This is a fallback for the JEditorPane implementation
+            val document = fallbackEditor?.document as? javax.swing.text.html.HTMLDocument ?: return
+            val elements = document.getAllElements()
+            val enumeration = elements.asIterator()
+            while (enumeration.hasNext()) {
+                val element = enumeration.next()
+                if (element.attributes.getAttribute(javax.swing.text.html.HTML.Attribute.CLASS) == "collapsible-panel") {
+                    val id = element.attributes.getAttribute(javax.swing.text.html.HTML.Attribute.ID)?.toString() ?: continue
+                    val shouldBeExpanded = panelExpansionStates[id] ?: continue
+                    
+                    // Apply the expansion state
+                    if (shouldBeExpanded) {
+                        document.setOuterHTML(element, element.outerHTML.replace("collapsible-panel", "collapsible-panel expanded"))
+                    } else {
+                        document.setOuterHTML(element, element.outerHTML.replace("collapsible-panel expanded", "collapsible-panel"))
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            // Ignore errors in panel state restoration
         }
     }
 
