@@ -137,9 +137,7 @@ class MarkdownDialog(
                 resizeSwingTimer.restart()
             }
 
-            // Also handle when the component is shown
             override fun componentShown(e: java.awt.event.ComponentEvent) {
-                // Ensure content is displayed when dialog becomes visible
                 SwingUtilities.invokeLater {
                     markdownViewer.ensureContentDisplayed()
                 }
@@ -231,13 +229,13 @@ class MarkdownDialog(
             // Check if dialog is still displayable before updating UI
             if (!isDisplayable) return@invokeLater
 
-            // Check if content actually changed
+            // Normalize line endings
             val normalizedOutput = output.replace("\r\n", "\n")
             
             // Only update if content has changed
             if (normalizedOutput != lastContent) {
-                lastContent = normalizedOutput // Keep lastContent updated for potential future use or debugging
-                markdownViewer.setMarkdown(lastContent)
+                lastContent = normalizedOutput
+                markdownViewer.setMarkdown(normalizedOutput)
                 this@MarkdownDialog.title = title
             }
         }
@@ -328,13 +326,11 @@ class MarkdownDialog(
 
 
     fun focus(delay: Long = 100) {
-        // Use Swing timer instead of java.util.Timer
-        // Prevent potential integer overflow with very large delays
+        // Use Swing timer with safe delay value
         javax.swing.Timer(kotlin.math.min(delay, Int.MAX_VALUE.toLong()).toInt()) {
             toFront()
             requestFocus()
             markdownViewer.component.requestFocusInWindow()
-            // Set dark theme based on current IDE theme
             markdownViewer.setDarkTheme(com.intellij.openapi.editor.colors.EditorColorsManager.getInstance().isDarkEditor)
         }.apply {
             isRepeats = false

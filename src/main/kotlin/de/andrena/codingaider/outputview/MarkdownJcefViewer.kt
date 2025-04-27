@@ -122,10 +122,6 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         if (frame != null && frame.parent == null) {
                             // Reset the load attempts counter on successful load
                             jcefLoadAttempts = 0
-                            SwingUtilities.invokeLater {
-                                // Render whatever we have at this moment
-                                currentContent.takeIf { it.isNotEmpty() }?.let { updateContent(it) }
-                            }
                         }
                     }
 
@@ -139,8 +135,6 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         // Ignore benign ERR_ABORTED errors that happen during normal navigation
                         // when we call loadHTML again and abort the previous load
                         if (errorCode == CefLoadHandler.ErrorCode.ERR_ABORTED) {
-                            // This is expected behavior when navigation is aborted by a new loadHTML call
-                            // Don't log a warning for this case as it's not an actual error
                             return
                         }
                         
@@ -154,17 +148,14 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                             jcefLoadAttempts++
                             logger.info("Retrying JCEF load, attempt $jcefLoadAttempts of $maxJcefLoadAttempts for error: $errorCode")
                             
-                            // Use capped exponential backoff for retries (200ms, 400ms, 800ms, 1600ms, 1600ms, ...)
+                            // Use capped exponential backoff for retries
                             val retryDelay = 200L * minOf(1L shl (jcefLoadAttempts - 1), 8L)
-                            
-                            logger.info("Scheduling retry in $retryDelay ms")
                             
                             // Schedule a retry after a delay with exponential backoff
                             Timer().schedule(object : TimerTask() {
                                 override fun run() {
                                     SwingUtilities.invokeLater {
                                         try {
-                                            logger.info("Executing retry attempt $jcefLoadAttempts")
                                             // Try reloading the content with a fresh HTML template
                                             val html = convertMarkdownToHtml(currentContent)
                                             val fullHtml = createHtmlWithContent(html)
@@ -282,26 +273,17 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     fun setMarkdown(markdown: String) {
         if (markdown.isBlank()) return
         
-        // Only update if content has changed or we need to force a refresh
+        // Only update if content has changed
         if (markdown == currentContent) {
-            // Content is identical, but still ensure it's displayed
-            // (useful after theme changes or browser reloads)
-            ensureContentDisplayed()
             return
         }
         
-        updateContent(markdown)
         currentContent = markdown
-    }
-
-    private fun updateContent(markdown: String) {
-        if (markdown.isBlank()) return
         
         val html = convertMarkdownToHtml(markdown)
         val full = createHtmlWithContent(html)
 
         jbCefBrowser?.let { browser ->
-            // Simply load the new HTML content without scroll position management
             browser.loadHTML(full)
         } ?: fallbackEditor?.let { it.text = html }
     }
@@ -321,20 +303,18 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     }
     
     /**
-     * Ensures the browser is properly initialized and content is displayed
+     * Ensures the browser is properly initialized
      */
     fun ensureContentDisplayed() {
         SwingUtilities.invokeLater {
             if (currentContent.isNotEmpty()) {
-                // If browser isn't ready yet but we have content, try to initialize and load
+                // If browser isn't ready yet but we have content, try to initialize
                 if (jbCefBrowser == null && fallbackEditor == null) {
-                    logger.info("No viewer initialized, initializing now")
                     initializeViewer()
                 }
                 
                 // If we've had too many failures, just use the fallback editor
                 if (jcefLoadAttempts >= maxJcefLoadAttempts && !useFallbackMode) {
-                    logger.info("Too many JCEF load attempts ($jcefLoadAttempts), switching to fallback")
                     switchToFallbackEditor()
                 }
             }
