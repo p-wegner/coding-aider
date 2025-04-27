@@ -228,8 +228,14 @@ class MarkdownDialog(
             // Only update if content has changed
             if (normalizedOutput != lastContent) {
                 lastContent = normalizedOutput
+                
+                // Update content while preserving scroll position
                 markdownViewer.setMarkdown(normalizedOutput)
-                this@MarkdownDialog.title = title
+                
+                // Update title separately to avoid unnecessary reflows
+                if (this@MarkdownDialog.title != title) {
+                    this@MarkdownDialog.title = title
+                }
             }
         }
     }

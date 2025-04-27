@@ -53,6 +53,9 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     
     // Scroll position tracking
     private var isUserScrolled = false
+    private var lastScrollPosition = 0.0
+    private var lastScrollRatio = 0.0
+    private var lastContentHeight = 0
 
     init {
         // Remove any border from the main panel
@@ -129,13 +132,28 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     browser.jbCefClient?.addLoadHandler(object : CefLoadHandler {
                         override fun onLoadEnd(browser: CefBrowser?, frame: CefFrame?, httpStatusCode: Int) {
                             if (frame != null && frame.parent == null) {
-                                // Add scroll event listener after page loads
+                                // Add scroll event listener after page loads with improved metrics
                                 cefBrowser.executeJavaScript("""
                                     window.addEventListener('scroll', function() {
+                                        // Track basic scroll metrics
                                         window.scrollPositionY = window.scrollY;
                                         window.scrollHeight = document.body.scrollHeight;
                                         window.viewportHeight = window.innerHeight;
                                         window.isUserScrolled = true;
+                                        
+                                        // Calculate and store scroll ratio (relative position)
+                                        const maxScroll = Math.max(0, document.body.scrollHeight - window.innerHeight);
+                                        window.lastScrollRatio = maxScroll > 0 ? window.scrollY / maxScroll : 0;
+                                        
+                                        // Track if we're at the bottom (within 20px)
+                                        window.isAtBottom = (document.body.scrollHeight - window.scrollY - window.innerHeight) < 20;
+                                    }, { passive: true });
+                                    
+                                    // Also track resize events as they affect scroll position
+                                    window.addEventListener('resize', function() {
+                                        window.viewportHeight = window.innerHeight;
+                                        // Recalculate "at bottom" state after resize
+                                        window.isAtBottom = (document.body.scrollHeight - window.scrollY - window.innerHeight) < 20;
                                     }, { passive: true });
                                 """.trimIndent(), cefBrowser.url, 0)
                             }
@@ -291,9 +309,44 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         val full = createHtmlWithContent(html)
 
         jbCefBrowser?.let { browser ->
+            // Use a more reliable approach to maintain scroll position
+            // First check if we need to capture the current position
+            captureScrollMetrics(browser)
+            
+            // Then load the new content
             browser.loadHTML(full)
+            
             // Restore scroll position after content loads
             restoreScrollPositionAfterLoad(browser)
+        }
+    }
+    
+    /**
+     * Captures detailed scroll metrics before content update
+     */
+    private fun captureScrollMetrics(browser: JBCefBrowser) {
+        try {
+            browser.cefBrowser?.executeJavaScript("""
+                (function() {
+                    // Get current scroll metrics
+                    const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
+                    const scrollHeight = document.body.scrollHeight || document.documentElement.scrollHeight || 1;
+                    const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 1;
+                    
+                    // Calculate scroll ratio (position relative to scrollable area)
+                    const maxScroll = Math.max(0, scrollHeight - viewportHeight);
+                    const scrollRatio = maxScroll > 0 ? scrollY / maxScroll : 0;
+                    
+                    // Store values in global variables for Java to access
+                    window.lastScrollPosition = scrollY;
+                    window.lastScrollRatio = scrollRatio;
+                    window.lastContentHeight = scrollHeight;
+                    window.lastViewportHeight = viewportHeight;
+                    window.isUserScrolled = window.isUserScrolled === true || scrollY > 0;
+                })();
+            """.trimIndent(), browser.cefBrowser?.url ?: "", 0)
+        } catch (e: Exception) {
+            logger.warn("Error capturing scroll metrics: ${e.message}")
         }
     }
     
@@ -304,18 +357,34 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         try {
             jbCefBrowser?.let { browser ->
                 browser.cefBrowser?.executeJavaScript("""
-                    if (typeof window.scrollPositionY !== 'undefined') {
+                    (function() {
+                        // Get current scroll metrics
+                        const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
+                        const scrollHeight = document.body.scrollHeight || document.documentElement.scrollHeight || 1;
+                        const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 1;
+                        
+                        // Calculate scroll ratio (position relative to scrollable area)
+                        const maxScroll = Math.max(0, scrollHeight - viewportHeight);
+                        const scrollRatio = maxScroll > 0 ? scrollY / maxScroll : 0;
+                        
+                        // Store values in global variables for Java to access
                         window.javaScriptScrollPosition = {
-                            y: window.scrollPositionY,
-                            height: document.body.scrollHeight,
-                            viewportHeight: window.innerHeight,
-                            isUserScrolled: window.isUserScrolled === true
+                            y: scrollY,
+                            height: scrollHeight,
+                            viewportHeight: viewportHeight,
+                            ratio: scrollRatio,
+                            isUserScrolled: window.isUserScrolled === true || scrollY > 0,
+                            isAtBottom: (scrollHeight - scrollY - viewportHeight) < 20
                         };
-                    }
+                        
+                        // Also store in separate variables for redundancy
+                        window.lastScrollPosition = scrollY;
+                        window.lastScrollRatio = scrollRatio;
+                        window.lastContentHeight = scrollHeight;
+                        window.lastViewportHeight = viewportHeight;
+                    })();
                 """.trimIndent(), browser.cefBrowser?.url ?: "", 0)
             }
-            
-            // For fallback editor, position is saved in the setMarkdown method
         } catch (e: Exception) {
             logger.warn("Error saving scroll position: ${e.message}")
         }
@@ -331,27 +400,75 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 browser.jbCefClient?.addLoadHandler(object : CefLoadHandler {
                     override fun onLoadEnd(browser: CefBrowser?, frame: CefFrame?, httpStatusCode: Int) {
                         if (frame != null && frame.parent == null) {
-                            // Restore scroll position using JavaScript
+                            // Restore scroll position using JavaScript with multiple strategies
                             cefBrowser.executeJavaScript("""
                                 (function() {
-                                    // Wait a short time for DOM to be fully ready
-                                    setTimeout(function() {
-                                        if (window.javaScriptScrollPosition) {
-                                            // Only restore if user has scrolled
-                                            if (window.javaScriptScrollPosition.isUserScrolled) {
-                                                // Calculate relative position
-                                                const ratio = window.javaScriptScrollPosition.y / 
-                                                    Math.max(1, window.javaScriptScrollPosition.height - window.javaScriptScrollPosition.viewportHeight);
+                                    // Use a series of timeouts with increasing delays for more reliable restoration
+                                    // as sometimes the DOM needs more time to fully render
+                                    const attemptRestore = (attempt) => {
+                                        // Get stored position data (try both storage methods)
+                                        const scrollData = window.javaScriptScrollPosition || {};
+                                        
+                                        // Determine if we should restore position
+                                        const shouldRestore = scrollData.isUserScrolled || 
+                                                             window.isUserScrolled === true || 
+                                                             window.lastScrollPosition > 0;
+                                        
+                                        if (shouldRestore) {
+                                            // Get current document metrics
+                                            const scrollHeight = document.body.scrollHeight || document.documentElement.scrollHeight || 1;
+                                            const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 1;
+                                            const maxScroll = Math.max(0, scrollHeight - viewportHeight);
+                                            
+                                            // Try multiple restoration strategies
+                                            
+                                            // Strategy 1: Use stored ratio (most reliable for content changes)
+                                            const ratio = scrollData.ratio || window.lastScrollRatio || 0;
+                                            const targetPos1 = Math.round(ratio * maxScroll);
+                                            
+                                            // Strategy 2: Try to maintain absolute position if content similar in size
+                                            const oldPos = scrollData.y || window.lastScrollPosition || 0;
+                                            const heightRatio = scrollHeight / (scrollData.height || window.lastContentHeight || 1);
+                                            const targetPos2 = Math.round(oldPos * heightRatio);
+                                            
+                                            // Strategy 3: Check if user was at bottom and keep at bottom if so
+                                            const wasAtBottom = scrollData.isAtBottom || 
+                                                               ((scrollData.height - scrollData.y - scrollData.viewportHeight) < 20);
+                                            
+                                            // Choose best strategy
+                                            let targetPos;
+                                            if (wasAtBottom) {
+                                                targetPos = maxScroll; // Stay at bottom
+                                            } else {
+                                                // Use ratio-based position as primary strategy
+                                                targetPos = targetPos1;
                                                 
-                                                // Apply to new content height
-                                                const newMaxScroll = document.body.scrollHeight - window.innerHeight;
-                                                window.scrollTo(0, Math.round(ratio * Math.max(0, newMaxScroll)));
-                                                
-                                                // Keep track that this was user scrolled
-                                                window.isUserScrolled = true;
+                                                // If content size is similar, consider absolute position too
+                                                const sizeChange = Math.abs(1 - (scrollHeight / (scrollData.height || 1)));
+                                                if (sizeChange < 0.2) { // If size changed less than 20%
+                                                    // Blend the two strategies
+                                                    targetPos = Math.min(maxScroll, Math.max(0, 
+                                                        Math.round(targetPos * 0.7 + targetPos2 * 0.3)));
+                                                }
+                                            }
+                                            
+                                            // Apply scroll position
+                                            window.scrollTo(0, Math.min(maxScroll, Math.max(0, targetPos)));
+                                            
+                                            // Preserve user scroll state
+                                            window.isUserScrolled = true;
+                                            
+                                            // If we're on the last attempt and still not close to target, try once more
+                                            if (attempt === 2 && Math.abs(window.scrollY - targetPos) > 50) {
+                                                setTimeout(() => window.scrollTo(0, targetPos), 50);
                                             }
                                         }
-                                    }, 50);
+                                    };
+                                    
+                                    // Try restoration at increasing intervals
+                                    setTimeout(() => attemptRestore(0), 10);
+                                    setTimeout(() => attemptRestore(1), 50);
+                                    setTimeout(() => attemptRestore(2), 200);
                                 })();
                             """.trimIndent(), cefBrowser.url, 0)
                         }
