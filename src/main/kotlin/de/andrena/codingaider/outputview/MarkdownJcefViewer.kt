@@ -51,11 +51,12 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     private var isDarkTheme = !JBColor.isBright()
     private var currentContent = ""
     private var contentReady = false
-    
+    private val resourceBundle = ResourceBundle.getBundle("messages.MarkdownViewerBundle")
+
     init {
         initializeViewer()
     }
-    
+
     private fun initializeViewer() {
         try {
             if (JBCefApp.isSupported()) {
@@ -127,8 +128,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         mainPanel.add(fallbackEditor!!, BorderLayout.CENTER)
         contentReady = true
     }
-    private val resourceBundle = ResourceBundle.getBundle("messages.MarkdownViewerBundle")
-    
+
     /**
      * Creates the base HTML template with proper localization support
      */
