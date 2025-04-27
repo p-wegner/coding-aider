@@ -8,7 +8,6 @@ import com.intellij.openapi.wm.WindowManager
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBScrollPane
 import de.andrena.codingaider.command.CommandData
-import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.RunningCommandService
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.services.plans.ContinuePlanService
