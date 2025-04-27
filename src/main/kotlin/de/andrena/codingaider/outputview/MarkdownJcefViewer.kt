@@ -141,8 +141,10 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         preBackgroundColor: String
     ): String {
         val template = resourceBundle.getString("markdown.viewer.html.template")
+        // Escape single quotes to prevent MessageFormat parsing issues
+        val escapedTemplate = template.replace("'", "''")
         return MessageFormat.format(
-            template,
+            escapedTemplate,
             backgroundColor,
             fontColor,
             scrollBarColor,
@@ -325,9 +327,13 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
 
         // Get CSS styles from resource bundle and format with colors
         val cssTemplate = resourceBundle.getString("markdown.viewer.css.styles")
-        // Use array of objects to avoid MessageFormat parsing issues with single quotes
+        
+        // Escape single quotes in the template to prevent MessageFormat parsing issues
+        val escapedCssTemplate = cssTemplate.replace("'", "''")
+        
+        // Format the CSS with color values
         val formattedCss = MessageFormat.format(
-            cssTemplate,
+            escapedCssTemplate,
             colors["bodyBg"],                // {0}
             colors["bodyText"],              // {1}
             colors["preBg"],                 // {2}
