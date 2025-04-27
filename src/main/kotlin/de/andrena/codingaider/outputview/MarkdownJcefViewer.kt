@@ -8,10 +8,8 @@ import org.cef.handler.CefLoadHandler
 import org.cef.browser.CefBrowser
 import org.cef.network.CefRequest
 import org.cef.browser.CefFrame
-import javax.swing.JEditorPane
 import java.awt.Dimension
 import com.intellij.ui.JBColor
-import com.intellij.ui.components.JBScrollPane
 import com.vladsch.flexmark.ext.autolink.AutolinkExtension
 import com.vladsch.flexmark.ext.definition.DefinitionExtension
 import com.vladsch.flexmark.ext.footnotes.FootnoteExtension
@@ -54,7 +52,6 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     private val maxJcefLoadAttempts = 5  // Maximum number of retry attempts
     
     // Scroll position tracking
-    private var lastScrollPosition = 0.0
     private var isUserScrolled = false
 
     init {
@@ -251,7 +248,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                                         } catch (e: Exception) {
                                             logger.warn("Error during JCEF retry: ${e.message}", e)
                                             if (jcefLoadAttempts >= maxJcefLoadAttempts) {
-                                                switchToFallbackEditor()
+                                                showErrorInBrowser("Browser component failed to load content after multiple attempts.")
                                             }
                                         }
                                     }
@@ -278,7 +275,6 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
 
         mainPanel.add(jbCefBrowser!!.component, BorderLayout.CENTER)
     }
-    
 
     /**
      * Creates the base HTML template with proper localization support
@@ -421,11 +417,11 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         SwingUtilities.invokeLater {
             if (currentContent.isNotEmpty()) {
                 // If browser isn't ready yet but we have content, try to initialize
-                if (jbCefBrowser == null && fallbackEditor == null) {
+                if (jbCefBrowser == null) {
                     initializeViewer()
                 }
                 
-                // If we've had too many failures, just use the fallback editor
+                // If we've had too many failures, show error message
                 if (jcefLoadAttempts >= maxJcefLoadAttempts) {
                     showErrorInBrowser("Browser component failed to load content after multiple attempts.")
                 }
@@ -454,12 +450,6 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     
                     // Only update content if we need to
                     setMarkdown(currentContent)
-                    
-                    // Also update fallback editor if it exists
-                    fallbackEditor?.let { editor ->
-                        val html = convertMarkdownToHtml(currentContent)
-                        editor.text = html
-                    }
                 } catch (e: Exception) {
                     logger.warn("Error updating theme: ${e.message}", e)
                 }
