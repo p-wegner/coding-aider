@@ -217,7 +217,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 }
                 
                 initFallbackEditor()
-                updateContent(currentContent)
+                setMarkdown(currentContent)
                 mainPanel.revalidate()
                 mainPanel.repaint()
                 
