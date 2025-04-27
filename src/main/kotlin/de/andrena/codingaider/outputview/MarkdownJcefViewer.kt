@@ -186,6 +186,9 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 logger.error("Exception during JCEF browser initialization: ${e.message}", e)
                 switchToFallbackEditor()
             }
+        } catch (e: Exception) {
+            logger.error("Exception during JCEF browser creation: ${e.message}", e)
+            switchToFallbackEditor()
         }
 
         mainPanel.add(jbCefBrowser!!.component, BorderLayout.CENTER)
