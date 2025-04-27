@@ -45,7 +45,7 @@ class MarkdownDialog(
         return displayString ?: initialTitle
     }
 
-    private val markdownViewer = MarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
+    private val markdownViewer: MarkdownViewer = MarkdownViewerFactory.create(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
         setMarkdown(initialText)
     }
     // Use the component with proper scrolling support

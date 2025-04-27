@@ -30,7 +30,7 @@ import java.util.ResourceBundle
 import java.util.Timer
 import java.util.TimerTask
 
-class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
+class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) : MarkdownViewer {
     private val logger = Logger.getInstance(MarkdownJcefViewer::class.java)
     
     private val mainPanel = JPanel(BorderLayout()).apply {
