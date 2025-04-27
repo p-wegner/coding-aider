@@ -11,6 +11,7 @@ import org.cef.browser.CefFrame
 import javax.swing.JEditorPane
 import java.awt.Dimension
 import com.intellij.ui.JBColor
+import com.intellij.ui.components.JBScrollPane
 import com.vladsch.flexmark.ext.autolink.AutolinkExtension
 import com.vladsch.flexmark.ext.definition.DefinitionExtension
 import com.vladsch.flexmark.ext.footnotes.FootnoteExtension
