@@ -199,8 +199,10 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 // Generate a unique ID for a panel based on its content
                 function getPanelId(panel) {
                     const header = panel.querySelector('.collapsible-header');
-                    const title = header ? header.querySelector('.collapsible-title').textContent : '';
-                    const content = panel.querySelector('.collapsible-content').textContent.substring(0, 50);
+                    const title = header ? header.querySelector('.collapsible-title')?.textContent || '' : '';
+                    const contentElement = panel.querySelector('.collapsible-content');
+                    const contentText = contentElement ? contentElement.textContent || '' : '';
+                    const content = contentText.substring(0, 50);
                     return `${title}-${content.replace(/\s+/g, '')}`;
                 }
                 
