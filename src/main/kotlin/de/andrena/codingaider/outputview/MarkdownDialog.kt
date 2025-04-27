@@ -7,7 +7,6 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBScrollPane
-import com.sun.java.accessibility.util.AWTEventMonitor.addActionListener
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.services.RunningCommandService
 import de.andrena.codingaider.services.plans.AiderPlanService
@@ -17,7 +16,6 @@ import java.awt.BorderLayout
 import java.awt.Color
 import java.awt.EventQueue.invokeLater
 import java.awt.Frame
-import java.awt.event.ActionListener
 import java.awt.event.KeyEvent
 import java.awt.event.WindowEvent
 import java.util.*
@@ -58,7 +56,7 @@ class MarkdownDialog(
     }
     private var autoCloseTimer: Timer? = null
     private var autoCloseTask: TimerTask? = null
-    private var refreshTimer: Timer? = null
+    // Removed unused refreshTimer property (High Priority Issue #5)
     private var keepOpenButton: JButton
     private var closeButton = JButton(onAbort?.let { "Abort" } ?: "Close").apply {
         mnemonic = onAbort?.let { KeyEvent.VK_A } ?: KeyEvent.VK_C
@@ -122,14 +120,14 @@ class MarkdownDialog(
     }
 
     private var isProcessFinished = false
-    private var resizeTimer: Timer? = null
+    // Removed unused resizeTimer property (High Priority Issue #4)
 
     init {
         title = initialTitle
 
         // Add resize listener with debouncing using Swing timer
         addComponentListener(object : java.awt.event.ComponentAdapter() {
-            private val resizeSwingTimer = javax.swing.Timer(200) { 
+            private val resizeSwingTimer = javax.swing.Timer(200) {
                 markdownViewer.component.revalidate()
                 markdownViewer.component.repaint()
                 scrollPane.revalidate()
@@ -139,17 +137,17 @@ class MarkdownDialog(
             }.apply {
                 isRepeats = false
             }
-            
+
             override fun componentResized(e: java.awt.event.ComponentEvent) {
                 resizeSwingTimer.restart()
             }
-            
+
             // Also handle when the component is shown
             override fun componentShown(e: java.awt.event.ComponentEvent) {
                 // Ensure content is displayed when dialog becomes visible
                 invokeLater {
                     markdownViewer.ensureContentDisplayed()
-                    
+
                     // Schedule another check after a short delay to catch any initialization issues
                     javax.swing.Timer(500) {
                         markdownViewer.ensureContentDisplayed()
@@ -183,18 +181,17 @@ class MarkdownDialog(
             override fun windowClosed(e: WindowEvent?) {
                 try {
                     // Clean up all timers
-                    listOf(refreshTimer, autoCloseTimer, resizeTimer).forEach { timer ->
+                    // Removed refreshTimer and resizeTimer from cleanup (High Priority Issues #4 & #5)
+                    listOf(autoCloseTimer).forEach { timer ->
                         timer?.cancel()
                         timer?.purge()
                     }
                     autoCloseTask?.cancel()
-                    
+
                     // Clear references
-                    refreshTimer = null
                     autoCloseTimer = null
                     autoCloseTask = null
-                    resizeTimer = null
-                    
+
                     project.service<RunningCommandService>().removeRunningCommand(this@MarkdownDialog)
                 } catch (ex: Exception) {
                     println("Error during dialog cleanup: ${ex.message}")
@@ -246,12 +243,13 @@ class MarkdownDialog(
         ApplicationManager.getApplication().invokeLater {
             // Check if dialog is still displayable before updating UI
             if (!isDisplayable) return@invokeLater
-            
+
             // Check if content actually changed
             val normalizedOutput = output.replace("\r\n", "\n")
-            if (normalizedOutput == lastContent) return@invokeLater
-            
-            lastContent = normalizedOutput
+            // Removed the check against lastContent here, as the check is now inside MarkdownJcefViewer.updateContent
+            // if (normalizedOutput == lastContent) return@invokeLater
+
+            lastContent = normalizedOutput // Keep lastContent updated for potential future use or debugging
             markdownViewer.setMarkdown(lastContent)
             this@MarkdownDialog.title = title
         }
@@ -259,23 +257,23 @@ class MarkdownDialog(
     fun startAutoCloseTimer(autocloseDelay: Int) {
         val settings = getInstance()
         if (!settings.enableMarkdownDialogAutoclose) return
-        
+
         // Cancel any existing timer
         autoCloseTimer?.cancel()
         autoCloseTask?.cancel()
-        
+
         // Create a new daemon timer
         val timer = Timer(true)
         autoCloseTimer = timer
-        
+
         // Make the keep open button visible
         SwingUtilities.invokeLater {
             keepOpenButton.isVisible = true
         }
-        
+
         // Start with the correct value
         var remainingSeconds = max(1, autocloseDelay)
-        
+
         autoCloseTask = object : TimerTask() {
             override fun run() {
                 SwingUtilities.invokeLater {
@@ -284,13 +282,13 @@ class MarkdownDialog(
                         timer.cancel()
                         return@invokeLater
                     }
-                    
-                    // Decrement first, then update UI
+
+                    // Update UI first, then decrement
+                    title = "$initialTitle - Closing in $remainingSeconds seconds"
+
                     remainingSeconds--
-                    
-                    if (remainingSeconds >= 0) {
-                        title = "$initialTitle - Closing in $remainingSeconds seconds"
-                    } else {
+
+                    if (remainingSeconds < 0) {
                         try {
                             if (isProcessFinished) {
                                 try {
@@ -311,9 +309,9 @@ class MarkdownDialog(
                 }
             }
         }
-        
-        // Schedule the timer task
-        timer.scheduleAtFixedRate(autoCloseTask, 0, 1000)
+
+        // Schedule the timer task to start after 1 second (Critical Issue #2 fix)
+        timer.scheduleAtFixedRate(autoCloseTask, 1000, 1000)
     }
 
     private fun cancelAutoClose() {
@@ -322,7 +320,7 @@ class MarkdownDialog(
         autoCloseTask?.cancel()
         autoCloseTimer = null
         autoCloseTask = null
-        
+
         SwingUtilities.invokeLater {
             keepOpenButton.isVisible = false
             title = initialTitle
@@ -343,13 +341,13 @@ class MarkdownDialog(
 
     fun focus(delay: Long = 100) {
         // Use Swing timer instead of java.util.Timer
-        javax.swing.Timer(delay.toInt()) {
+        javax.swing.Timer(kotlin.math.min(delay, Int.MAX_VALUE.toLong()).toInt()) { // Applied Medium Issue #9 fix
             toFront()
             requestFocus()
             markdownViewer.component.requestFocusInWindow()
             // Set dark theme based on current IDE theme and ensure content is displayed
             markdownViewer.setDarkTheme(com.intellij.openapi.editor.colors.EditorColorsManager.getInstance().isDarkEditor)
-            markdownViewer.setMarkdown(lastContent)
+            // No need to call setMarkdown here, ensureContentDisplayed handles it if needed
             markdownViewer.ensureContentDisplayed()
         }.apply {
             isRepeats = false
