@@ -117,7 +117,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         logger.info("Retrying JCEF load, attempt $jcefLoadAttempts of $maxJcefLoadAttempts for error: $errorCode")
                         
                         // Use exponential backoff for retries (200ms, 400ms, 800ms, etc.)
-                        val retryDelay = 200L * (1 shl (jcefLoadAttempts - 1)).coerceAtMost(8)
+                        val retryDelay = 200L * minOf(1L shl (jcefLoadAttempts - 1), 8L)
                         
                         logger.info("Scheduling retry in $retryDelay ms")
                         
