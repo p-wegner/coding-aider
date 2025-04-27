@@ -99,14 +99,14 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
 
             // Set a simple load handler
             try {
-                val client: JBCefClient? = this.jbCefClient
+                val client: JBCefClient? = browser.jbCefClient
                 if (client == null) {
                     logger.warn("JBCefClient is null, switching to fallback editor")
                     switchToFallbackEditor()
                     return@apply
                 }
                 
-                val cefBrowser = this.cefBrowser
+                val cefBrowser = browser.cefBrowser
                 if (cefBrowser == null) {
                     logger.warn("CefBrowser is null, switching to fallback editor")
                     switchToFallbackEditor()
