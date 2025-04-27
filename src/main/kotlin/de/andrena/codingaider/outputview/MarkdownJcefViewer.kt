@@ -125,7 +125,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         mainPanel.add(fallbackEditor!!, BorderLayout.CENTER)
         contentReady = true
     }
-    
+    // TODO 27.04.2025 pwegner: externalize resource for better language support
     private fun createBaseHtml(
         backgroundColor: String,
         fontColor: String,
