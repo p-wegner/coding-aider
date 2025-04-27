@@ -29,6 +29,7 @@ import javax.swing.SwingUtilities
 import java.util.ResourceBundle
 import java.util.Timer
 import java.util.TimerTask
+import javax.swing.JLabel
 
 class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     private val logger = Logger.getInstance(MarkdownJcefViewer::class.java)
@@ -128,10 +129,6 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             
         } catch (e: Exception) {
             logger.error("Failed to show error message: ${e.message}", e)
-            // If we can't even show the error, create a simple label
-            val errorLabel = JLabel("Error: $errorMessage")
-            errorLabel.horizontalAlignment = SwingConstants.CENTER
-            mainPanel.add(errorLabel, BorderLayout.CENTER)
         }
     }
     
