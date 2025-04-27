@@ -323,146 +323,32 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             )
         }
 
+        // Get CSS styles from resource bundle and format with colors
+        val cssTemplate = resourceBundle.getString("markdown.viewer.css.styles")
+        val formattedCss = MessageFormat.format(
+            cssTemplate,
+            colors["bodyBg"],                // {0}
+            colors["bodyText"],              // {1}
+            colors["preBg"],                 // {2}
+            colors["preBorder"],             // {3}
+            colors["searchBg"],              // {4}
+            colors["searchText"],            // {5}
+            colors["replaceBg"],             // {6}
+            colors["replaceText"],           // {7}
+            if (isDarkTheme) "#555" else "#ddd", // {8}
+            if (isDarkTheme) "#3c3f41" else "#f0f0f0", // {9}
+            colors["intentionBg"],           // {10}
+            colors["intentionBorder"],       // {11}
+            colors["intentionText"],         // {12}
+            colors["summaryBg"],             // {13}
+            colors["summaryBorder"],         // {14}
+            colors["summaryText"]            // {15}
+        )
+
         // Apply CSS styles
-        // TODO 27.04.2025 pwegner: externalize for better language support
         val styledHtml = """
         <style>
-            /* Base styles */
-            body { 
-                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                line-height: 1.6;
-                background: ${colors["bodyBg"]};
-                color: ${colors["bodyText"]};
-                margin: 20px;
-                padding: 0;
-            }
-            
-            /* Code blocks */
-            pre {
-                background: ${colors["preBg"]};
-                border: 1px solid ${colors["preBorder"]};
-                padding: 15px;
-                margin: 15px 0;
-                border-radius: 6px;
-                overflow-x: auto;
-                white-space: pre-wrap;
-            }
-            
-            pre code {
-                font-family: 'JetBrains Mono', Consolas, Monaco, 'Courier New', monospace;
-                font-size: 14px;
-                tab-size: 4;
-            }
-            
-            /* Search/Replace blocks */
-            .search-block {
-                background: ${colors["searchBg"]};
-                color: ${colors["searchText"]};
-                padding: 8px 12px;
-                border-radius: 4px 4px 0 0;
-                margin: 0;
-                border-bottom: 1px solid ${colors["preBorder"]};
-                display: block;
-            }
-            
-            .replace-block {
-                background: ${colors["replaceBg"]};
-                color: ${colors["replaceText"]};
-                padding: 8px 12px;
-                border-radius: 0 0 4px 4px;
-                margin: 0;
-                display: block;
-            }
-            
-            /* Edit format panels */
-            .edit-format-panel {
-                border: 1px solid ${if (isDarkTheme) "#555" else "#ddd"};
-                border-radius: 6px;
-                margin: 15px 0;
-                overflow: hidden;
-            }
-            
-            .edit-format {
-                background: ${if (isDarkTheme) "#3c3f41" else "#f0f0f0"};
-                font-weight: bold;
-                border-bottom: 1px solid ${if (isDarkTheme) "#555" else "#ddd"};
-            }
-            
-            .edit-format-content {
-                margin: 0;
-                padding: 0;
-            }
-            
-            /* Aider blocks */
-            .aider-intention, .aider-summary {
-                border-radius: 6px;
-                padding: 12px;
-                margin: 15px 0;
-                font-size: 14px;
-                line-height: 1.5;
-            }
-            
-            .aider-intention {
-                background: ${colors["intentionBg"]};
-                border: 1px solid ${colors["intentionBorder"]};
-                color: ${colors["intentionText"]};
-            }
-            
-            .aider-summary {
-                background: ${colors["summaryBg"]};
-                border: 1px solid ${colors["summaryBorder"]};
-                color: ${colors["summaryText"]};
-            }
-            
-            /* Collapsible panels */
-            .collapsible-panel {
-                border: 1px solid ${colors["preBorder"]};
-                border-radius: 6px;
-                margin: 15px 0;
-                overflow: hidden;
-            }
-            
-            .collapsible-header {
-                background: ${colors["preBg"]};
-                padding: 10px 15px;
-                cursor: pointer;
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-            }
-            
-            .collapsible-title {
-                font-weight: bold;
-            }
-            
-            .collapsible-content {
-                padding: 0;
-                max-height: 0;
-                overflow: hidden;
-                transition: max-height 0.3s ease-out, padding 0.3s ease-out;
-            }
-            
-            .collapsible-panel.expanded .collapsible-content {
-                max-height: 2000px;
-                padding: 10px 15px;
-            }
-            
-            /* File path styling */
-            .file-path {
-                font-family: monospace;
-                padding: 5px 10px;
-                background: ${colors["preBg"]};
-                border-bottom: 1px solid ${colors["preBorder"]};
-            }
-            
-            /* Lists in aider blocks */
-            .aider-intention ul, .aider-summary ul {
-                padding-left: 20px;
-            }
-            
-            .aider-intention li, .aider-summary li {
-                margin: 5px 0;
-            }
+            $formattedCss
         </style>
         
         <script>
