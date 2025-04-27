@@ -141,17 +141,14 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         preBackgroundColor: String
     ): String {
         val template = resourceBundle.getString("markdown.viewer.html.template")
-        // Escape single quotes to prevent MessageFormat parsing issues
-        val escapedTemplate = template.replace("'", "''")
-        return MessageFormat.format(
-            escapedTemplate,
-            backgroundColor,
-            fontColor,
-            scrollBarColor,
-            scrollbarThumbColor,
-            scrollbarHoverColor,
-            preBackgroundColor
-        )
+        // Replace placeholders directly to avoid MessageFormat parsing issues with CSS/JS braces
+        return template
+            .replace("{0}", backgroundColor)
+            .replace("{1}", fontColor)
+            .replace("{2}", scrollBarColor)
+            .replace("{3}", scrollbarThumbColor)
+            .replace("{4}", scrollbarHoverColor)
+            .replace("{5}", preBackgroundColor)
     }
 
     val component: JComponent
@@ -327,30 +324,25 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
 
         // Get CSS styles from resource bundle and format with colors
         val cssTemplate = resourceBundle.getString("markdown.viewer.css.styles")
-        
-        // Escape single quotes in the template to prevent MessageFormat parsing issues
-        val escapedCssTemplate = cssTemplate.replace("'", "''")
-        
-        // Format the CSS with color values
-        val formattedCss = MessageFormat.format(
-            escapedCssTemplate,
-            colors["bodyBg"],                // {0}
-            colors["bodyText"],              // {1}
-            colors["preBg"],                 // {2}
-            colors["preBorder"],             // {3}
-            colors["searchBg"],              // {4}
-            colors["searchText"],            // {5}
-            colors["replaceBg"],             // {6}
-            colors["replaceText"],           // {7}
-            if (isDarkTheme) "#555" else "#ddd", // {8}
-            if (isDarkTheme) "#3c3f41" else "#f0f0f0", // {9}
-            colors["intentionBg"],           // {10}
-            colors["intentionBorder"],       // {11}
-            colors["intentionText"],         // {12}
-            colors["summaryBg"],             // {13}
-            colors["summaryBorder"],         // {14}
-            colors["summaryText"]            // {15}
-        )
+
+        // Replace placeholders directly to avoid MessageFormat parsing issues with CSS braces
+        val formattedCss = cssTemplate
+            .replace("{0}", colors["bodyBg"] ?: "")
+            .replace("{1}", colors["bodyText"] ?: "")
+            .replace("{2}", colors["preBg"] ?: "")
+            .replace("{3}", colors["preBorder"] ?: "")
+            .replace("{4}", colors["searchBg"] ?: "")
+            .replace("{5}", colors["searchText"] ?: "")
+            .replace("{6}", colors["replaceBg"] ?: "")
+            .replace("{7}", colors["replaceText"] ?: "")
+            .replace("{8}", if (isDarkTheme) "#555" else "#ddd")
+            .replace("{9}", if (isDarkTheme) "#3c3f41" else "#f0f0f0")
+            .replace("{10}", colors["intentionBg"] ?: "")
+            .replace("{11}", colors["intentionBorder"] ?: "")
+            .replace("{12}", colors["intentionText"] ?: "")
+            .replace("{13}", colors["summaryBg"] ?: "")
+            .replace("{14}", colors["summaryBorder"] ?: "")
+            .replace("{15}", colors["summaryText"] ?: "")
 
         // Apply CSS styles
         val styledHtml = """
