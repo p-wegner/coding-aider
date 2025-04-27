@@ -324,6 +324,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         }
 
         // Apply CSS styles
+        // TODO 27.04.2025 pwegner: externalize for better language support
         val styledHtml = """
         <style>
             /* Base styles */
