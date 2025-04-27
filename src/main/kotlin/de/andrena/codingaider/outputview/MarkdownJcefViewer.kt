@@ -25,6 +25,7 @@ import com.vladsch.flexmark.parser.Parser
 import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.util.data.MutableDataSet
 import de.andrena.codingaider.utils.FilePathConverter
+import java.util.Locale
 import javax.swing.SwingUtilities
 import java.util.ResourceBundle
 import java.util.Timer
