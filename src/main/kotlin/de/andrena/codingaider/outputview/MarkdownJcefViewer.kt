@@ -75,15 +75,11 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 background = mainPanel.background
             }
 
+            // Create the initial HTML with empty content
+            val initialHtml = createHtmlWithContent("")
+            
             // Load the initial HTML template directly
-            loadHTML(createBaseHtml(
-                if (this@MarkdownJcefViewer.isDarkTheme) "#2b2b2b" else "#ffffff",
-                if (this@MarkdownJcefViewer.isDarkTheme) "#ffffff" else "#000000",
-                if (this@MarkdownJcefViewer.isDarkTheme) "#1e1e1e" else "#f1f1f1",
-                if (this@MarkdownJcefViewer.isDarkTheme) "#555" else "#c1c1c1",
-                if (this@MarkdownJcefViewer.isDarkTheme) "#777" else "#a1a1a1",
-                if (this@MarkdownJcefViewer.isDarkTheme) "#1e1e1e" else "#f5f5f5"
-            ))
+            loadHTML(initialHtml)
 
             // Set a simple load handler
             val client: JBCefClient = this.jbCefClient
@@ -95,7 +91,9 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         // Always schedule content update once the base frame is ready,
                         // ensuring the stored content is applied.
                         SwingUtilities.invokeLater {
-                            updateContent(currentContent)
+                            if (currentContent.isNotEmpty()) {
+                                updateContent(currentContent)
+                            }
                         }
                     }
                 }
@@ -103,6 +101,12 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 override fun onLoadStart(browser: CefBrowser?, frame: CefFrame?, transitionType: CefRequest.TransitionType?) {}
                 override fun onLoadError(browser: CefBrowser?, frame: CefFrame?, errorCode: CefLoadHandler.ErrorCode?, errorText: String?, failedUrl: String?) {
                     println("JCEF load error: $errorCode - $errorText for URL: $failedUrl")
+                    // Try to recover by using fallback editor
+                    SwingUtilities.invokeLater {
+                        mainPanel.remove(jbCefBrowser!!.component)
+                        initFallbackEditor()
+                        updateContent(currentContent)
+                    }
                 }
                 override fun onLoadingStateChange(browser: CefBrowser?, isLoading: Boolean, canGoBack: Boolean, canGoForward: Boolean) {}
             }, this.cefBrowser)
@@ -163,6 +167,8 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     }
 
     private fun updateContent(markdown: String) {
+        if (markdown.isEmpty()) return
+        
         val html = convertMarkdownToHtml(markdown)
         
         fallbackEditor?.let { editor ->
@@ -182,8 +188,20 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     .replace("\n", "\\n")
                     .replace("\r", "\\r")
                 
-                val script = "updateContent('$escapedHtml');"
-                browser.cefBrowser.executeJavaScript(script, browser.cefBrowser.url, 0)
+                // Make sure we're using the correct JavaScript function
+                val script = "if (typeof updateContent === 'function') { updateContent('$escapedHtml'); } else { document.getElementById('content').innerHTML = '$escapedHtml'; }"
+                
+                // Execute the JavaScript on the main thread
+                SwingUtilities.invokeLater {
+                    try {
+                        browser.cefBrowser.executeJavaScript(script, browser.cefBrowser.url, 0)
+                    } catch (e: Exception) {
+                        println("Error executing JavaScript: ${e.message}")
+                        e.printStackTrace()
+                        // Fallback to full page reload if JavaScript execution fails
+                        browser.loadHTML(createHtmlWithContent(html))
+                    }
+                }
             } catch (e: Exception) {
                 println("Error updating browser content: ${e.message}")
                 e.printStackTrace()
@@ -204,12 +222,24 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             if (this@MarkdownJcefViewer.isDarkTheme) "#777" else "#a1a1a1",
             if (this@MarkdownJcefViewer.isDarkTheme) "#1e1e1e" else "#f5f5f5"
         )
+        
         // Ensure the content div exists and is properly replaced
         if (baseHtml.contains("<div id=\"content\"></div>")) {
             return baseHtml.replace("<div id=\"content\"></div>", "<div id=\"content\">$content</div>")
         } else {
             // If the div isn't found for some reason, insert content before body closing tag
             return baseHtml.replace("</body>", "<div id=\"content\">$content</div></body>")
+        }
+    }
+    
+    /**
+     * Ensures the browser is properly initialized and content is displayed
+     */
+    fun ensureContentDisplayed() {
+        if (contentReady && currentContent.isNotEmpty()) {
+            SwingUtilities.invokeLater {
+                updateContent(currentContent)
+            }
         }
     }
 

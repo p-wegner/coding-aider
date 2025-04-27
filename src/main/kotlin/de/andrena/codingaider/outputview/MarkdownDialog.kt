@@ -158,6 +158,8 @@ class MarkdownDialog(
                             markdownViewer.component.repaint()
                             scrollPane.revalidate()
                             scrollPane.repaint()
+                            // Ensure content is displayed after resize
+                            markdownViewer.ensureContentDisplayed()
                         }
                     }
                 }
@@ -262,7 +264,8 @@ class MarkdownDialog(
                         scrollBar.value.toDouble() / scrollBar.maximum.toDouble() else 0.0
 
                     // Update content - ensure we're setting content even if it appears empty
-                    markdownViewer.setMarkdown(newContent.ifEmpty { " " }) // Prevent empty content issues
+                    val contentToSet = if (newContent.isBlank()) " " else newContent // Prevent empty content issues
+                    markdownViewer.setMarkdown(contentToSet)
                     this@MarkdownDialog.title = title
 
                     // Schedule scroll adjustment after UI updates
@@ -271,8 +274,12 @@ class MarkdownDialog(
                             programmaticScrolling = true // Prevent listener feedback loop
                             
                             // Wait a bit for panel restoration to affect layout
-                            Timer().schedule(50) {
+                            Timer().schedule(100) { // Increased delay for better rendering
                                 invokeLater {
+                                    // Force revalidate to ensure scrollbar values are updated
+                                    scrollPane.revalidate()
+                                    markdownViewer.component.revalidate()
+                                    
                                     val newMax = scrollBar.maximum - scrollBar.visibleAmount
                                     
                                     // Scroll to bottom if auto-scroll is enabled OR if we were already near the bottom
