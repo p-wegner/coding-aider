@@ -202,8 +202,11 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     const title = header ? header.querySelector('.collapsible-title')?.textContent || '' : '';
                     const contentElement = panel.querySelector('.collapsible-content');
                     const contentText = contentElement ? contentElement.textContent || '' : '';
-                    const content = contentText.substring(0, 50);
-                    return `${title}-${content.replace(/\s+/g, '')}`;
+                    const content = contentText.substring(0, Math.min(50, contentText.length));
+                    // Create a safe ID by removing problematic characters
+                    const safeTitle = title.replace(/[^\w-]/g, '');
+                    const safeContent = content.replace(/\s+/g, '').replace(/[^\w-]/g, '');
+                    return `panel-${safeTitle}-${safeContent}`;
                 }
                 
                 // Toggle panel function
