@@ -50,7 +50,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     private var currentContent = ""
     private val resourceBundle = ResourceBundle.getBundle("messages.MarkdownViewerBundle")
     private var jcefLoadAttempts = 0
-    private val maxJcefLoadAttempts = 3
+    private val maxJcefLoadAttempts = 5  // Increased from 3 to 5 for more retry attempts
     private var useFallbackMode = false
 
     init {
@@ -109,31 +109,43 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     }
                     
                     // Handle common transient errors
-                    if (errorCode == CefLoadHandler.ErrorCode.ERR_ABORTED && jcefLoadAttempts < maxJcefLoadAttempts) {
-                        jcefLoadAttempts++
-                        logger.info("Retrying JCEF load, attempt $jcefLoadAttempts of $maxJcefLoadAttempts")
+                    if ((errorCode == CefLoadHandler.ErrorCode.ERR_ABORTED || 
+                         errorCode == CefLoadHandler.ErrorCode.ERR_FAILED) && 
+                        jcefLoadAttempts < maxJcefLoadAttempts) {
                         
-                        // Schedule a retry after a short delay
+                        jcefLoadAttempts++
+                        logger.info("Retrying JCEF load, attempt $jcefLoadAttempts of $maxJcefLoadAttempts for error: $errorCode")
+                        
+                        // Use exponential backoff for retries (200ms, 400ms, 800ms, etc.)
+                        val retryDelay = 200L * (1 shl (jcefLoadAttempts - 1)).coerceAtMost(8)
+                        
+                        logger.info("Scheduling retry in $retryDelay ms")
+                        
+                        // Schedule a retry after a delay with exponential backoff
                         Timer().schedule(object : TimerTask() {
                             override fun run() {
                                 SwingUtilities.invokeLater {
                                     try {
-                                        // Try reloading the content
+                                        logger.info("Executing retry attempt $jcefLoadAttempts")
+                                        // Try reloading the content with a fresh HTML template
                                         val html = convertMarkdownToHtml(currentContent)
-                                        jbCefBrowser?.loadHTML(createHtmlWithContent(html))
+                                        val fullHtml = createHtmlWithContent(html)
+                                        jbCefBrowser?.loadHTML(fullHtml)
                                     } catch (e: Exception) {
                                         logger.warn("Error during JCEF retry: ${e.message}", e)
-                                        switchToFallbackEditor()
+                                        if (jcefLoadAttempts >= maxJcefLoadAttempts) {
+                                            switchToFallbackEditor()
+                                        }
                                     }
                                 }
                             }
-                        }, 200) // Short delay before retry
+                        }, retryDelay)
                         
                         return
                     }
                     
                     // For persistent errors, switch to fallback editor
-                    logger.info("Switching to fallback editor after JCEF error")
+                    logger.info("Switching to fallback editor after JCEF error: $errorCode - $errorText")
                     switchToFallbackEditor()
                 }
                 override fun onLoadingStateChange(browser: CefBrowser?, isLoading: Boolean, canGoBack: Boolean, canGoForward: Boolean) {}
@@ -146,17 +158,31 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     private fun switchToFallbackEditor() {
         SwingUtilities.invokeLater {
             try {
+                if (useFallbackMode) {
+                    logger.info("Already in fallback mode, not switching again")
+                    return@invokeLater
+                }
+                
+                logger.info("Switching to fallback editor mode")
                 useFallbackMode = true
+                
                 jbCefBrowser?.let { browser ->
-                    mainPanel.remove(browser.component)
-                    browser.dispose() // Properly dispose of the browser
-                    jbCefBrowser = null
+                    try {
+                        mainPanel.remove(browser.component)
+                        browser.dispose() // Properly dispose of the browser
+                    } catch (e: Exception) {
+                        logger.warn("Error disposing browser component: ${e.message}", e)
+                    } finally {
+                        jbCefBrowser = null
+                    }
                 }
                 
                 initFallbackEditor()
                 updateContent(currentContent)
                 mainPanel.revalidate()
                 mainPanel.repaint()
+                
+                logger.info("Successfully switched to fallback editor")
             } catch (e: Exception) {
                 logger.error("Error switching to fallback editor: ${e.message}", e)
             }
@@ -247,26 +273,35 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             if (currentContent.isNotEmpty()) {
                 // If browser isn't ready yet but we have content, try to initialize and load
                 if (jbCefBrowser == null && fallbackEditor == null) {
+                    logger.info("No viewer initialized, initializing now")
                     initializeViewer()
                 }
                 
-                // Reset load attempts counter when explicitly ensuring content
-                jcefLoadAttempts = 0
+                // If we've had too many failures, just use the fallback editor
+                if (jcefLoadAttempts >= maxJcefLoadAttempts && !useFallbackMode) {
+                    logger.info("Too many JCEF load attempts ($jcefLoadAttempts), switching to fallback")
+                    switchToFallbackEditor()
+                    return@invokeLater
+                }
                 
-                // If using JCEF, try forcing a direct HTML load
-                jbCefBrowser?.let { browser ->
-                    try {
-                        val html = convertMarkdownToHtml(currentContent)
-                        browser.loadHTML(createHtmlWithContent(html))
-                    } catch (e: Exception) {
-                        logger.warn("Error during forced content display: ${e.message}", e)
-                        switchToFallbackEditor()
+                // If using JCEF and not in fallback mode, try forcing a direct HTML load
+                if (!useFallbackMode) {
+                    jbCefBrowser?.let { browser ->
+                        try {
+                            logger.info("Ensuring content is displayed in JCEF browser")
+                            val html = convertMarkdownToHtml(currentContent)
+                            browser.loadHTML(createHtmlWithContent(html))
+                        } catch (e: Exception) {
+                            logger.warn("Error during forced content display: ${e.message}", e)
+                            switchToFallbackEditor()
+                        }
                     }
                 }
                 
                 // If using fallback editor, try direct update
                 fallbackEditor?.let { editor ->
                     try {
+                        logger.info("Updating fallback editor content")
                         val html = convertMarkdownToHtml(currentContent)
                         editor.text = html
                     } catch (e: Exception) {
