@@ -325,6 +325,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
 
         // Get CSS styles from resource bundle and format with colors
         val cssTemplate = resourceBundle.getString("markdown.viewer.css.styles")
+        // Use array of objects to avoid MessageFormat parsing issues with single quotes
         val formattedCss = MessageFormat.format(
             cssTemplate,
             colors["bodyBg"],                // {0}
