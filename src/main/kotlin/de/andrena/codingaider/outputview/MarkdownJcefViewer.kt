@@ -44,13 +44,8 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     private var fallbackEditor: JEditorPane? = null
     
     // State tracking
-    private var isDarkTheme = !JBColor.isBright()
+    private var isDarkTheme = com.intellij.openapi.editor.colors.EditorColorsManager.getInstance().isDarkEditor
     private var currentContent = ""
-    private var contentReady = false
-    private var contentUpdatePending = false
-    private var pendingContent = ""
-    private var retryCount = 0
-    private val maxRetries = 3
     private val resourceBundle = ResourceBundle.getBundle("messages.MarkdownViewerBundle")
 
     init {
@@ -92,17 +87,9 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 override fun onLoadEnd(browser: CefBrowser?, frame: CefFrame?, httpStatusCode: Int) {
                     // Only act on main frame (main frame has no parent)
                     if (frame != null && frame.parent == null) {
-                        contentReady = true
-                        // Always schedule content update once the base frame is ready,
-                        // ensuring the stored content is applied.
                         SwingUtilities.invokeLater {
-                            if (contentUpdatePending || currentContent.isNotEmpty()) {
-                                val contentToUpdate = if (pendingContent.isNotEmpty()) pendingContent else currentContent
-                                updateContent(contentToUpdate)
-                                contentUpdatePending = false
-                                pendingContent = ""
-                                retryCount = 0
-                            }
+                            // Render whatever we have at this moment
+                            currentContent.takeIf { it.isNotEmpty() }?.let { updateContent(it) }
                         }
                     }
                 }
@@ -134,7 +121,6 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             putClientProperty(JEditorPane.W3C_LENGTH_UNITS, true)
         }
         mainPanel.add(fallbackEditor!!, BorderLayout.CENTER)
-        contentReady = true
     }
 
     /**
@@ -167,39 +153,14 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
      */
     fun setMarkdown(markdown: String) {
         currentContent = markdown
-
-        // Only attempt update if the viewer is ready and browser/editor exists
-        if (contentReady) {
-            updateContent(markdown)
-        } else {
-            // Store pending content to be applied when browser is ready
-            pendingContent = markdown
-            contentUpdatePending = true
-            
-            // If we're using JCEF and it's taking too long to initialize, try forcing a reload
-            if (jbCefBrowser != null && !contentReady && retryCount < maxRetries) {
-                retryCount++
-                // Schedule a retry with increasing delay
-                val delay = 500L * retryCount
-                java.util.Timer().schedule(object : TimerTask() {
-                    override fun run() {
-                        SwingUtilities.invokeLater {
-                            if (!contentReady) {
-                                // Try reloading the browser with initial content
-                                jbCefBrowser?.loadHTML(createHtmlWithContent(convertMarkdownToHtml(markdown)))
-                            }
-                        }
-                    }
-                }, delay.toLong())
-            }
-        }
-        // If not ready, onLoadEnd will handle applying the content later.
+        updateContent(markdown)
     }
 
     private fun updateContent(markdown: String) {
         if (markdown.isEmpty()) return
         
         val html = convertMarkdownToHtml(markdown)
+        val full = createHtmlWithContent(html)
         
         fallbackEditor?.let { editor ->
             SwingUtilities.invokeLater {
@@ -216,64 +177,27 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         }
         
         jbCefBrowser?.let { browser ->
-            try {
-                // Use a simple JavaScript call to update the content
-                val escapedHtml = html.replace("\\", "\\\\")
+            // 60 kB gives us a bit of safety margin
+            if (full.toByteArray().size > 60 * 1024) {
+                // Fast enough in practice and 100% reliable
+                SwingUtilities.invokeLater { browser.loadHTML(full) }
+            } else {
+                val escaped = html
+                    .replace("\\", "\\\\")
                     .replace("'", "\\'")
                     .replace("\n", "\\n")
-                    .replace("\r", "\\r")
+                    .replace("\r", "")
                 
-                // Make sure we're using the correct JavaScript function
-                val script = "if (typeof updateContent === 'function') { updateContent('$escapedHtml'); } else { document.getElementById('content').innerHTML = '$escapedHtml'; }"
+                val js = "window.updateContent && window.updateContent('$escaped');"
                 
-                // Execute the JavaScript on the main thread
                 SwingUtilities.invokeLater {
-                    try {
-                        browser.cefBrowser.executeJavaScript(script, browser.cefBrowser.url, 0)
-                        
-                        // Verify content was updated by checking after a short delay
-                        java.util.Timer().schedule(object : TimerTask() {
-                            override fun run() {
-                                SwingUtilities.invokeLater {
-                                    browser.cefBrowser.executeJavaScript(
-                                        "window.JavaCallback = { contentLength: document.getElementById('content').innerHTML.length };",
-                                        browser.cefBrowser.url, 0
-                                    )
-                                    
-                                    // If content appears empty, try the fallback method
-                                    if (html.length > 100) {  // Only check for substantial content
-                                        browser.cefBrowser.executeJavaScript(
-                                            "if (document.getElementById('content').innerHTML.length < 10) { " +
-                                                    "document.getElementById('content').innerHTML = 'Reloading content...'; " +
-                                                    "setTimeout(function() { location.reload(); }, 100); }",
-                                            browser.cefBrowser.url, 0
-                                        )
-                                    }
-                                }
-                            }
-                        }, 300)
-                    } catch (e: Exception) {
-                        println("Error executing JavaScript: ${e.message}")
-                        e.printStackTrace()
-                        // Fallback to full page reload if JavaScript execution fails
-                        browser.loadHTML(createHtmlWithContent(html))
-                    }
+                    browser.cefBrowser.executeJavaScript(js, browser.cefBrowser.url, 0)
                 }
-            } catch (e: Exception) {
-                println("Error updating browser content: ${e.message}")
-                e.printStackTrace()
-                // Fallback to full page reload if JavaScript execution fails
-                browser.loadHTML(createHtmlWithContent(html))
             }
         } ?: run {
             println("Warning: Neither fallbackEditor nor jbCefBrowser is initialized")
             // If both rendering methods failed, try to reinitialize
-            if (!contentReady) {
-                initializeViewer()
-                // Store content to be applied when viewer is ready
-                pendingContent = markdown
-                contentUpdatePending = true
-            }
+            initializeViewer()
         }
     }
     
@@ -301,17 +225,11 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
      */
     fun ensureContentDisplayed() {
         SwingUtilities.invokeLater {
-            if (contentReady && currentContent.isNotEmpty()) {
-                updateContent(currentContent)
-            } else if (!contentReady && currentContent.isNotEmpty()) {
+            if (currentContent.isNotEmpty()) {
                 // If browser isn't ready yet but we have content, try to initialize and load
                 if (jbCefBrowser == null && fallbackEditor == null) {
                     initializeViewer()
                 }
-                
-                // Store content to be applied when browser is ready
-                pendingContent = currentContent
-                contentUpdatePending = true
                 
                 // If using JCEF, try forcing a direct HTML load
                 jbCefBrowser?.let { browser ->

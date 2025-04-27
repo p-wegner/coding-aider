@@ -52,24 +52,6 @@ class MarkdownDialog(
     private val markdownViewer = MarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
         setMarkdown(initialText)
     }
-    private val scrollPane = JBScrollPane(markdownViewer.component).apply {
-        border = null
-        horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
-        verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
-
-        // Track user scrolling to determine auto-scroll behavior
-        verticalScrollBar.addAdjustmentListener { e ->
-            if (!programmaticScrolling && e.valueIsAdjusting) {
-                val scrollBar = verticalScrollBar
-                // Check if user scrolled near the bottom (within 10 pixels)
-                val isNearBottom = scrollBar.value >= (scrollBar.maximum - scrollBar.visibleAmount - 10)
-                shouldAutoScroll = isNearBottom
-            }
-        }
-    }
-
-    // Flags to track scrolling behavior
-    private var programmaticScrolling = false
     private var autoCloseTimer: TimerTask? = null
     private var refreshTimer: Timer? = null
     // Auto-scroll state - start with auto-scroll enabled
@@ -195,10 +177,10 @@ class MarkdownDialog(
         layout = BorderLayout(10, 10)
         pack()
         setLocationRelativeTo(null)
-        // Add scroll pane with proper weighting
+        // Add content panel with proper weighting
         val contentPanel = JPanel(BorderLayout(0, 0)).apply {
             border = javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5)
-            add(scrollPane, BorderLayout.CENTER)
+            add(markdownViewer.component, BorderLayout.CENTER)
         }
         add(contentPanel, BorderLayout.CENTER)
 
@@ -269,103 +251,17 @@ class MarkdownDialog(
 
     private var lastContent = ""
 
-    private var contentUpdateAttempts = 0
-    private val maxContentUpdateAttempts = 5
-    private var lastUpdateTime = System.currentTimeMillis()
-    private var updateTimer: Timer? = null
-    
     fun updateProgress(output: String, title: String) {
         com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
             try {
                 val newContent = output.replace("\r\n", "\n")
                 if (newContent != lastContent || this@MarkdownDialog.title != title) {
                     lastContent = newContent
-                    lastUpdateTime = System.currentTimeMillis()
-                    contentUpdateAttempts = 0
                     
-                    // Cancel any pending update timer
-                    updateTimer?.cancel()
-                    updateTimer = null
-
-                    // Check if scrollbar is near the bottom before updating content
-                    val scrollBar = scrollPane.verticalScrollBar
-                    val wasNearBottom = scrollBar.value >= (scrollBar.maximum - scrollBar.visibleAmount - 10)
-                    val scrollRatio = if (scrollBar.maximum > 0) 
-                        scrollBar.value.toDouble() / scrollBar.maximum.toDouble() else 0.0
-
                     // Update content - ensure we're setting content even if it appears empty
                     val contentToSet = if (newContent.isBlank()) " " else newContent // Prevent empty content issues
                     markdownViewer.setMarkdown(contentToSet)
                     this@MarkdownDialog.title = title
-
-                    // Schedule scroll adjustment after UI updates
-                    invokeLater {
-                        try {
-                            programmaticScrolling = true // Prevent listener feedback loop
-                            
-                            // Wait a bit for panel restoration to affect layout
-                            Timer().schedule(object : TimerTask() {
-                                override fun run() {
-                                    invokeLater {
-                                        // Force revalidate to ensure scrollbar values are updated
-                                        scrollPane.revalidate()
-                                        markdownViewer.component.revalidate()
-                                        
-                                        val newMax = scrollBar.maximum - scrollBar.visibleAmount
-                                        
-                                        // Scroll to bottom if auto-scroll is enabled OR if we were already near the bottom
-                                        if (shouldAutoScroll || wasNearBottom) {
-                                            scrollBar.value = scrollBar.maximum // Scroll to the very bottom
-                                            shouldAutoScroll = true // Ensure auto-scroll stays enabled if we scrolled to bottom
-                                        } else if (scrollBar.maximum > 0) {
-                                            // Try to maintain relative scroll position
-                                            val targetValue = (scrollRatio * scrollBar.maximum).toInt()
-                                            scrollBar.value = targetValue.coerceIn(0, scrollBar.maximum)
-                                        }
-                                        
-                                        // Verify content was updated by checking component size
-                                        if (markdownViewer.component.height <= 10 && contentUpdateAttempts < maxContentUpdateAttempts) {
-                                            // Content might not have been properly rendered, schedule a retry
-                                            contentUpdateAttempts++
-                                            updateTimer = Timer()
-                                            updateTimer?.schedule(object : TimerTask() {
-                                                override fun run() {
-                                                    invokeLater {
-                                                        println("Retrying content update attempt $contentUpdateAttempts")
-                                                        markdownViewer.setMarkdown(contentToSet)
-                                                        markdownViewer.ensureContentDisplayed()
-                                                        scrollPane.revalidate()
-                                                        markdownViewer.component.revalidate()
-                                                    }
-                                                }
-                                            }, (300 * contentUpdateAttempts).toLong())
-                                        }
-                                    }
-                                }
-                            }, 100) // Increased delay for better rendering
-                        } finally {
-                            programmaticScrolling = false
-                        }
-                    }
-                    
-                    // Set up a verification timer to check if content is visible after a delay
-                    Timer().schedule(object : TimerTask() {
-                        override fun run() {
-                            invokeLater {
-                                // If it's been more than 1 second since our last update and content still looks empty
-                                if (System.currentTimeMillis() - lastUpdateTime >= 1000 && 
-                                    markdownViewer.component.height <= 10 && 
-                                    contentUpdateAttempts < maxContentUpdateAttempts) {
-                                    
-                                    println("Content verification failed, forcing content refresh")
-                                    // Force a complete refresh of the viewer
-                                    markdownViewer.ensureContentDisplayed()
-                                    scrollPane.revalidate()
-                                    markdownViewer.component.revalidate()
-                                }
-                            }
-                        }
-                    }, 1000)
                 }
             } catch (e: Exception) {
                 println("Error updating markdown dialog: ${e.message}")
