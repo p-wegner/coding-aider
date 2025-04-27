@@ -533,8 +533,8 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         }
 
         // Process search/replace blocks - improved to better handle edit format blocks
-        // Use possessive quantifiers to prevent catastrophic backtracking
-        val searchReplacePattern = Regex("""(?m)^([^\n]+?)\n```[^\n]*+\n<<<<<<< SEARCH\n(.*?+)\n=======\n(.*?+)\n>>>>>>> REPLACE\n```""", 
+        // Use non-greedy quantifiers to prevent catastrophic backtracking
+        val searchReplacePattern = Regex("""(?m)^([^\n]+?)\n```[^\n]*\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n```""", 
             RegexOption.DOT_MATCHES_ALL)
         
         processedHtml = processedHtml.replace(searchReplacePattern) { matchResult ->
