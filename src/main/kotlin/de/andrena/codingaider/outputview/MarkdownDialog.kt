@@ -164,6 +164,21 @@ class MarkdownDialog(
                     }
                 }
             }
+            
+            // Also handle when the component is shown
+            override fun componentShown(e: java.awt.event.ComponentEvent) {
+                // Ensure content is displayed when dialog becomes visible
+                invokeLater {
+                    markdownViewer.ensureContentDisplayed()
+                    
+                    // Schedule another check after a short delay to catch any initialization issues
+                    Timer().schedule(500) {
+                        invokeLater {
+                            markdownViewer.ensureContentDisplayed()
+                        }
+                    }
+                }
+            }
         })
         // Set optimal window dimensions based on screen size
         val screenSize = java.awt.Toolkit.getDefaultToolkit().screenSize
@@ -250,12 +265,23 @@ class MarkdownDialog(
 
     private var lastContent = ""
 
+    private var contentUpdateAttempts = 0
+    private val maxContentUpdateAttempts = 5
+    private var lastUpdateTime = System.currentTimeMillis()
+    private var updateTimer: Timer? = null
+    
     fun updateProgress(output: String, title: String) {
         com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
             try {
                 val newContent = output.replace("\r\n", "\n")
                 if (newContent != lastContent || this@MarkdownDialog.title != title) {
                     lastContent = newContent
+                    lastUpdateTime = System.currentTimeMillis()
+                    contentUpdateAttempts = 0
+                    
+                    // Cancel any pending update timer
+                    updateTimer?.cancel()
+                    updateTimer = null
 
                     // Check if scrollbar is near the bottom before updating content
                     val scrollBar = scrollPane.verticalScrollBar
@@ -291,16 +317,56 @@ class MarkdownDialog(
                                         val targetValue = (scrollRatio * scrollBar.maximum).toInt()
                                         scrollBar.value = targetValue.coerceIn(0, scrollBar.maximum)
                                     }
+                                    
+                                    // Verify content was updated by checking component size
+                                    if (markdownViewer.component.height <= 10 && contentUpdateAttempts < maxContentUpdateAttempts) {
+                                        // Content might not have been properly rendered, schedule a retry
+                                        contentUpdateAttempts++
+                                        updateTimer = Timer()
+                                        updateTimer?.schedule(300 * contentUpdateAttempts) {
+                                            invokeLater {
+                                                println("Retrying content update attempt $contentUpdateAttempts")
+                                                markdownViewer.setMarkdown(contentToSet)
+                                                markdownViewer.ensureContentDisplayed()
+                                                scrollPane.revalidate()
+                                                markdownViewer.component.revalidate()
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         } finally {
                             programmaticScrolling = false
                         }
                     }
+                    
+                    // Set up a verification timer to check if content is visible after a delay
+                    Timer().schedule(1000) {
+                        invokeLater {
+                            // If it's been more than 1 second since our last update and content still looks empty
+                            if (System.currentTimeMillis() - lastUpdateTime >= 1000 && 
+                                markdownViewer.component.height <= 10 && 
+                                contentUpdateAttempts < maxContentUpdateAttempts) {
+                                
+                                println("Content verification failed, forcing content refresh")
+                                // Force a complete refresh of the viewer
+                                markdownViewer.ensureContentDisplayed()
+                                scrollPane.revalidate()
+                                markdownViewer.component.revalidate()
+                            }
+                        }
+                    }
                 }
             } catch (e: Exception) {
                 println("Error updating markdown dialog: ${e.message}")
                 e.printStackTrace()
+                
+                // Even if we encounter an error, try to ensure content is displayed
+                try {
+                    markdownViewer.ensureContentDisplayed()
+                } catch (e2: Exception) {
+                    println("Failed to recover from error: ${e2.message}")
+                }
             }
         }
     }
