@@ -359,18 +359,11 @@ class MarkdownDialog(
     private fun capturePanelStates() {
         try {
             // For JCEF browser, we rely on JavaScript to handle this
-            // This is a fallback for the JEditorPane implementation
-            val document = fallbackEditor?.document as? javax.swing.text.html.HTMLDocument ?: return
-            val elements = document.getAllElements()
-            val enumeration = elements.asIterator()
-            while (enumeration.hasNext()) {
-                val element = enumeration.next()
-                if (element.attributes.getAttribute(javax.swing.text.html.HTML.Attribute.CLASS) == "collapsible-panel") {
-                    val id = element.attributes.getAttribute(javax.swing.text.html.HTML.Attribute.ID)?.toString() ?: continue
-                    val isExpanded = element.attributes.getAttribute(javax.swing.text.html.HTML.Attribute.CLASS).toString().contains("expanded")
-                    panelExpansionStates[id] = isExpanded
-                }
-            }
+            // The fallbackEditor is not accessible from this class, so we can't
+            // directly manipulate the HTML document for the JEditorPane implementation
+            
+            // Instead, we'll rely on the JavaScript in the JCEF browser to handle panel states
+            // The panelExpansionStates map is still used for potential future implementations
         } catch (e: Exception) {
             // Ignore errors in panel state capture
         }
@@ -379,24 +372,8 @@ class MarkdownDialog(
     private fun restorePanelStates() {
         try {
             // For JCEF browser, we rely on JavaScript to handle this
-            // This is a fallback for the JEditorPane implementation
-            val document = fallbackEditor?.document as? javax.swing.text.html.HTMLDocument ?: return
-            val elements = document.getAllElements()
-            val enumeration = elements.asIterator()
-            while (enumeration.hasNext()) {
-                val element = enumeration.next()
-                if (element.attributes.getAttribute(javax.swing.text.html.HTML.Attribute.CLASS) == "collapsible-panel") {
-                    val id = element.attributes.getAttribute(javax.swing.text.html.HTML.Attribute.ID)?.toString() ?: continue
-                    val shouldBeExpanded = panelExpansionStates[id] ?: continue
-                    
-                    // Apply the expansion state
-                    if (shouldBeExpanded) {
-                        document.setOuterHTML(element, element.outerHTML.replace("collapsible-panel", "collapsible-panel expanded"))
-                    } else {
-                        document.setOuterHTML(element, element.outerHTML.replace("collapsible-panel expanded", "collapsible-panel"))
-                    }
-                }
-            }
+            // The panel state restoration is handled by the JavaScript in the browser
+            // which maintains its own state between content updates
         } catch (e: Exception) {
             // Ignore errors in panel state restoration
         }
