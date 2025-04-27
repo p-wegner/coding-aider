@@ -17,7 +17,6 @@ The Markdown Viewer System is a sophisticated component within the CodingAider I
 - **Search/Replace Block Visualization**: Custom formatting for code search/replace operations
 - **Theme-Aware Rendering**: Automatically adapts to IDE light/dark theme
 - **Fallback Rendering**: Gracefully degrades to JEditorPane when JCEF (Chromium) is unavailable
-- [ ] native looking scrollbar that fits the content
 
 ### Smart UI Components
 
@@ -28,9 +27,12 @@ The Markdown Viewer System is a sophisticated component within the CodingAider I
 - **Smooth Animations**: Transition effects when expanding/collapsing
 - used for code blocks and structured segments
 
-#### Simplified Scrolling
-- [x] **Native Scrolling**: Uses browser's native scrolling behavior
-- [x] **Collapsible Panels**: Preserves panel expansion state during content updates
+#### Smart Scrolling
+-  **Position Memory**: Remembers user's manual scroll position
+-  **Auto-Scroll Detection**: Intelligently detects when user is at the bottom of content
+-  **Scroll State Preservation**: Maintains scroll position during content updates
+-  **Bottom-Following**: Automatically scrolls to bottom for new content when appropriate
+-  preserves Collapsible Panels expansion state
 
 
 ### Dialog Management
