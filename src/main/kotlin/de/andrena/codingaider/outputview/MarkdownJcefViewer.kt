@@ -286,13 +286,13 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) : 
             .replace("{5}", preBackgroundColor)
     }
 
-    val component: JComponent
+    override val component: JComponent
         get() = mainPanel
 
     /**
      * Sets the markdown content to be displayed
      */
-    fun setMarkdown(markdown: String) {
+    override fun setMarkdown(markdown: String) {
         if (markdown.isBlank()) return
         
         // Only update if content has changed
@@ -500,7 +500,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) : 
     /**
      * Ensures the browser is properly initialized
      */
-    fun ensureContentDisplayed() {
+    override fun ensureContentDisplayed() {
         SwingUtilities.invokeLater {
             if (currentContent.isNotEmpty()) {
                 // If browser isn't ready yet but we have content, try to initialize
@@ -516,8 +516,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) : 
         }
     }
 
-    fun setDarkTheme(dark: Boolean) {
-        // Only reload if theme actually changed
+    override fun setDarkTheme(dark: Boolean) {
         if (isDarkTheme != dark) {
             isDarkTheme = dark
             if (currentContent.isNotEmpty()) {
