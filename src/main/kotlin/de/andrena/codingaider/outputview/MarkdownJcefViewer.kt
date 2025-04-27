@@ -78,7 +78,14 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             }
 
             // Load the initial HTML template directly
-            loadHTML(createBaseHtml())
+            loadHTML(createBaseHtml(
+                if (this@MarkdownJcefViewer.isDarkTheme) "#2b2b2b" else "#ffffff",
+                if (this@MarkdownJcefViewer.isDarkTheme) "#ffffff" else "#000000",
+                if (this@MarkdownJcefViewer.isDarkTheme) "#1e1e1e" else "#f1f1f1",
+                if (this@MarkdownJcefViewer.isDarkTheme) "#555" else "#c1c1c1",
+                if (this@MarkdownJcefViewer.isDarkTheme) "#777" else "#a1a1a1",
+                if (this@MarkdownJcefViewer.isDarkTheme) "#1e1e1e" else "#f5f5f5"
+            ))
 
             // Set a simple load handler
             val client: JBCefClient = this.jbCefClient
@@ -119,7 +126,14 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         contentReady = true
     }
     
-    private fun createBaseHtml(): String {
+    private fun createBaseHtml(
+        backgroundColor: String,
+        fontColor: String,
+        scrollBarColor: String,
+        scrollbarThumbColor: String,
+        scrollbarHoverColor: String,
+        preBackgroundColor: String
+    ): String {
         return """
         <!DOCTYPE html>
         <html>
@@ -132,8 +146,8 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     line-height: 1.6;
                     margin: 0;
                     padding: 20px;
-                    background: ${if (isDarkTheme) "#2b2b2b" else "#ffffff"};
-                    color: ${if (isDarkTheme) "#ffffff" else "#000000"};
+                    background: $backgroundColor;
+                    color: $fontColor;
                 }
                 #content {
                     max-width: 100%;
@@ -145,20 +159,20 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     height: 10px;
                 }
                 ::-webkit-scrollbar-track {
-                    background: ${if (isDarkTheme) "#1e1e1e" else "#f1f1f1"};
+                    background: $scrollBarColor;
                     border-radius: 4px;
                 }
                 ::-webkit-scrollbar-thumb {
-                    background: ${if (isDarkTheme) "#555" else "#c1c1c1"};
+                    background: $scrollbarThumbColor;
                     border-radius: 4px;
                 }
                 ::-webkit-scrollbar-thumb:hover {
-                    background: ${if (isDarkTheme) "#777" else "#a1a1a1"};
+                    background: $scrollbarHoverColor;
                 }
                 pre {
                     white-space: pre-wrap;
                     overflow-x: auto;
-                    background: ${if (isDarkTheme) "#1e1e1e" else "#f5f5f5"};
+                    background: $preBackgroundColor;
                     padding: 10px;
                     border-radius: 4px;
                 }
@@ -350,7 +364,14 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     }
     
     private fun createHtmlWithContent(content: String): String {
-        val baseHtml = createBaseHtml()
+        val baseHtml = createBaseHtml(
+            if (this@MarkdownJcefViewer.isDarkTheme) "#2b2b2b" else "#ffffff",
+            if (this@MarkdownJcefViewer.isDarkTheme) "#ffffff" else "#000000",
+            if (this@MarkdownJcefViewer.isDarkTheme) "#1e1e1e" else "#f1f1f1",
+            if (this@MarkdownJcefViewer.isDarkTheme) "#555" else "#c1c1c1",
+            if (this@MarkdownJcefViewer.isDarkTheme) "#777" else "#a1a1a1",
+            if (this@MarkdownJcefViewer.isDarkTheme) "#1e1e1e" else "#f5f5f5"
+        )
         // Ensure the content div exists and is properly replaced
         if (baseHtml.contains("<div id=\"content\"></div>")) {
             return baseHtml.replace("<div id=\"content\"></div>", "<div id=\"content\">$content</div>")
@@ -365,7 +386,14 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             isDarkTheme = dark
             if (currentContent.isNotEmpty()) {
                 // Reload with new theme
-                jbCefBrowser?.loadHTML(createBaseHtml())
+                jbCefBrowser?.loadHTML(createBaseHtml(
+                    if (this@MarkdownJcefViewer.isDarkTheme) "#2b2b2b" else "#ffffff",
+                    if (this@MarkdownJcefViewer.isDarkTheme) "#ffffff" else "#000000",
+                    if (this@MarkdownJcefViewer.isDarkTheme) "#1e1e1e" else "#f1f1f1",
+                    if (this@MarkdownJcefViewer.isDarkTheme) "#555" else "#c1c1c1",
+                    if (this@MarkdownJcefViewer.isDarkTheme) "#777" else "#a1a1a1",
+                    if (this@MarkdownJcefViewer.isDarkTheme) "#1e1e1e" else "#f5f5f5"
+                ))
                 setMarkdown(currentContent)
             }
         }
