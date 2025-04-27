@@ -53,6 +53,10 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     private var jcefLoadAttempts = 0
     private val maxJcefLoadAttempts = 5  // Increased from 3 to 5 for more retry attempts
     private var useFallbackMode = false
+    
+    // Scroll position tracking
+    private var lastScrollPosition = 0.0
+    private var isUserScrolled = false
 
     init {
         // Remove any border from the main panel
@@ -96,6 +100,33 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 putClientProperty("JBCefBrowser.useNativeScrollbar", true)
                 // Allow JBScrollPane wrapping if needed
                 putClientProperty("JBCefBrowser.parentScrollPane", true)
+            }
+            
+            // Add scroll listener to track user scrolling
+            browser.cefBrowser?.let { cefBrowser ->
+                try {
+                    // Use JavaScript to track scroll position
+                    browser.jbCefClient?.addLoadHandler(object : CefLoadHandler {
+                        override fun onLoadEnd(browser: CefBrowser?, frame: CefFrame?, httpStatusCode: Int) {
+                            if (frame != null && frame.parent == null) {
+                                // Add scroll event listener after page loads
+                                cefBrowser.executeJavaScript("""
+                                    window.addEventListener('scroll', function() {
+                                        window.scrollPositionY = window.scrollY;
+                                        window.scrollHeight = document.body.scrollHeight;
+                                        window.viewportHeight = window.innerHeight;
+                                        window.isUserScrolled = true;
+                                    }, { passive: true });
+                                """.trimIndent(), cefBrowser.url, 0)
+                            }
+                        }
+                        override fun onLoadStart(browser: CefBrowser?, frame: CefFrame?, transitionType: CefRequest.TransitionType?) {}
+                        override fun onLoadError(browser: CefBrowser?, frame: CefFrame?, errorCode: CefLoadHandler.ErrorCode?, errorText: String?, failedUrl: String?) {}
+                        override fun onLoadingStateChange(browser: CefBrowser?, isLoading: Boolean, canGoBack: Boolean, canGoForward: Boolean) {}
+                    }, cefBrowser)
+                } catch (e: Exception) {
+                    logger.warn("Could not add scroll tracking: ${e.message}")
+                }
             }
 
             // Create the initial HTML with empty content
@@ -282,6 +313,9 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             return
         }
         
+        // Save current scroll position before updating content
+        saveScrollPosition()
+        
         currentContent = markdown
         
         val html = convertMarkdownToHtml(markdown)
@@ -289,7 +323,97 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
 
         jbCefBrowser?.let { browser ->
             browser.loadHTML(full)
-        } ?: fallbackEditor?.let { it.text = html }
+            // Restore scroll position after content loads
+            restoreScrollPositionAfterLoad(browser)
+        } ?: fallbackEditor?.let { 
+            val scrollPane = SwingUtilities.getAncestorOfClass(JBScrollPane::class.java, it) as? JBScrollPane
+            val verticalBar = scrollPane?.verticalScrollBar
+            val wasAtBottom = verticalBar?.let { bar -> 
+                bar.value >= (bar.maximum - bar.visibleAmount - 10)
+            } ?: false
+            
+            // Remember if we were at the bottom
+            val currentPosition = verticalBar?.value ?: 0
+            
+            // Update content
+            it.text = html
+            
+            // Restore scroll position
+            SwingUtilities.invokeLater {
+                if (!wasAtBottom && verticalBar != null) {
+                    verticalBar.value = currentPosition
+                }
+            }
+        }
+    }
+    
+    /**
+     * Saves the current scroll position
+     */
+    private fun saveScrollPosition() {
+        try {
+            jbCefBrowser?.let { browser ->
+                browser.cefBrowser?.executeJavaScript("""
+                    if (typeof window.scrollPositionY !== 'undefined') {
+                        window.javaScriptScrollPosition = {
+                            y: window.scrollPositionY,
+                            height: document.body.scrollHeight,
+                            viewportHeight: window.innerHeight,
+                            isUserScrolled: window.isUserScrolled === true
+                        };
+                    }
+                """.trimIndent(), browser.cefBrowser?.url ?: "", 0)
+            }
+            
+            // For fallback editor, position is saved in the setMarkdown method
+        } catch (e: Exception) {
+            logger.warn("Error saving scroll position: ${e.message}")
+        }
+    }
+    
+    /**
+     * Restores the scroll position after content loads
+     */
+    private fun restoreScrollPositionAfterLoad(browser: JBCefBrowser) {
+        try {
+            browser.cefBrowser?.let { cefBrowser ->
+                // Add a load handler to restore position after content loads
+                browser.jbCefClient?.addLoadHandler(object : CefLoadHandler {
+                    override fun onLoadEnd(browser: CefBrowser?, frame: CefFrame?, httpStatusCode: Int) {
+                        if (frame != null && frame.parent == null) {
+                            // Restore scroll position using JavaScript
+                            cefBrowser.executeJavaScript("""
+                                (function() {
+                                    // Wait a short time for DOM to be fully ready
+                                    setTimeout(function() {
+                                        if (window.javaScriptScrollPosition) {
+                                            // Only restore if user has scrolled
+                                            if (window.javaScriptScrollPosition.isUserScrolled) {
+                                                // Calculate relative position
+                                                const ratio = window.javaScriptScrollPosition.y / 
+                                                    Math.max(1, window.javaScriptScrollPosition.height - window.javaScriptScrollPosition.viewportHeight);
+                                                
+                                                // Apply to new content height
+                                                const newMaxScroll = document.body.scrollHeight - window.innerHeight;
+                                                window.scrollTo(0, Math.round(ratio * Math.max(0, newMaxScroll)));
+                                                
+                                                // Keep track that this was user scrolled
+                                                window.isUserScrolled = true;
+                                            }
+                                        }
+                                    }, 50);
+                                })();
+                            """.trimIndent(), cefBrowser.url, 0)
+                        }
+                    }
+                    override fun onLoadStart(browser: CefBrowser?, frame: CefFrame?, transitionType: CefRequest.TransitionType?) {}
+                    override fun onLoadError(browser: CefBrowser?, frame: CefFrame?, errorCode: CefLoadHandler.ErrorCode?, errorText: String?, failedUrl: String?) {}
+                    override fun onLoadingStateChange(browser: CefBrowser?, isLoading: Boolean, canGoBack: Boolean, canGoForward: Boolean) {}
+                }, cefBrowser)
+            }
+        } catch (e: Exception) {
+            logger.warn("Error setting up scroll position restoration: ${e.message}")
+        }
     }
 
     private fun createHtmlWithContent(content: String): String {
