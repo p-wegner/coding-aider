@@ -50,7 +50,7 @@ class MarkdownDialog(
     }
     private val scrollPane = JBScrollPane(markdownViewer.component).apply {
         border = null
-        verticalScrollBarPolicy = JBScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
+        verticalScrollBarPolicy = JBScrollPane.VERTICAL_SCROLLBAR_ALWAYS
         horizontalScrollBarPolicy = JBScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
     }
     private var autoCloseTimer: Timer? = null
