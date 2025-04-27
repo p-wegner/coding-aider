@@ -84,44 +84,18 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             // Create a simple browser with error message
             val browser = JBCefBrowser()
             jbCefBrowser = browser
-            // TODO 27.04.2025 pwegner: externalize errorHtml
-            val errorHtml = """
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <style>
-                        body {
-                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                            background: ${if (isDarkTheme) "#2b2b2b" else "#ffffff"};
-                            color: ${if (isDarkTheme) "#ffffff" else "#000000"};
-                            display: flex;
-                            justify-content: center;
-                            align-items: center;
-                            height: 100vh;
-                            margin: 0;
-                            text-align: center;
-                        }
-                        .error-container {
-                            padding: 20px;
-                            border-radius: 8px;
-                            background: ${if (isDarkTheme) "#3c3f41" else "#f5f5f5"};
-                            border: 1px solid ${if (isDarkTheme) "#555" else "#ddd"};
-                            max-width: 80%;
-                        }
-                        h3 {
-                            margin-top: 0;
-                            color: ${if (isDarkTheme) "#f44336" else "#d32f2f"};
-                        }
-                    </style>
-                </head>
-                <body>
-                    <div class="error-container">
-                        <h3>Markdown Viewer Error</h3>
-                        <p>${errorMessage}</p>
-                    </div>
-                </body>
-                </html>
-            """.trimIndent()
+            
+            // Get error HTML template from resource bundle
+            val errorHtmlTemplate = resourceBundle.getString("markdown.viewer.error.html")
+            
+            // Format the template with theme-specific colors
+            val errorHtml = errorHtmlTemplate
+                .replace("{0}", if (isDarkTheme) "#2b2b2b" else "#ffffff")
+                .replace("{1}", if (isDarkTheme) "#ffffff" else "#000000")
+                .replace("{2}", if (isDarkTheme) "#3c3f41" else "#f5f5f5")
+                .replace("{3}", if (isDarkTheme) "#555" else "#ddd")
+                .replace("{4}", if (isDarkTheme) "#f44336" else "#d32f2f")
+                .replace("{5}", errorMessage)
             
             browser.loadHTML(errorHtml)
             mainPanel.add(browser.component, BorderLayout.CENTER)
