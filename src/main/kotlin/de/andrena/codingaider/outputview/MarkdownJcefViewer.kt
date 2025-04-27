@@ -300,7 +300,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) : 
             return
         }
         
-        // Save current scroll position before updating content
+        // Save current scroll position before updating content with enhanced metrics
         saveScrollPosition()
         
         currentContent = markdown
@@ -309,15 +309,24 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) : 
         val full = createHtmlWithContent(html)
 
         jbCefBrowser?.let { browser ->
-            // Use a more reliable approach to maintain scroll position
-            // First check if we need to capture the current position
-            captureScrollMetrics(browser)
-            
-            // Then load the new content
-            browser.loadHTML(full)
-            
-            // Restore scroll position after content loads
-            restoreScrollPositionAfterLoad(browser)
+            try {
+                // Capture detailed metrics before update
+                captureScrollMetrics(browser)
+                
+                // Load the new content
+                browser.loadHTML(full)
+                
+                // Set up enhanced scroll position restoration
+                restoreScrollPositionAfterLoad(browser)
+            } catch (e: Exception) {
+                logger.warn("Error during markdown update: ${e.message}", e)
+                // Fallback - try simple update if the enhanced approach fails
+                try {
+                    browser.loadHTML(full)
+                } catch (fallbackEx: Exception) {
+                    logger.error("Critical error updating markdown content: ${fallbackEx.message}", fallbackEx)
+                }
+            }
         }
     }
     
@@ -328,8 +337,8 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) : 
         try {
             browser.cefBrowser?.executeJavaScript("""
                 (function() {
-                    // Get current scroll metrics
-                    const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
+                    // Get current scroll metrics with fallbacks for cross-browser compatibility
+                    const scrollY = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
                     const scrollHeight = document.body.scrollHeight || document.documentElement.scrollHeight || 1;
                     const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 1;
                     
@@ -337,12 +346,48 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) : 
                     const maxScroll = Math.max(0, scrollHeight - viewportHeight);
                     const scrollRatio = maxScroll > 0 ? scrollY / maxScroll : 0;
                     
-                    // Store values in global variables for Java to access
+                    // Determine if user is at the bottom of content (within 30px margin)
+                    const isAtBottom = (scrollHeight - scrollY - viewportHeight) < 30;
+                    
+                    // Calculate visible elements and their positions for content fingerprinting
+                    const visibleElements = [];
+                    try {
+                        // Find elements that are currently visible in viewport
+                        const elements = document.querySelectorAll('h1, h2, h3, h4, pre, .collapsible-header');
+                        elements.forEach(el => {
+                            const rect = el.getBoundingClientRect();
+                            // If element is visible in viewport
+                            if (rect.top < viewportHeight && rect.bottom > 0) {
+                                visibleElements.push({
+                                    tag: el.tagName,
+                                    text: el.textContent.substring(0, 50),
+                                    relativeY: rect.top / viewportHeight
+                                });
+                            }
+                        });
+                    } catch (e) {
+                        console.error("Error capturing visible elements:", e);
+                    }
+                    
+                    // Store comprehensive metrics in global variables
+                    window.scrollMetrics = {
+                        position: scrollY,
+                        height: scrollHeight,
+                        viewportHeight: viewportHeight,
+                        ratio: scrollRatio,
+                        isUserScrolled: window.isUserScrolled === true || scrollY > 0,
+                        isAtBottom: isAtBottom,
+                        timestamp: Date.now(),
+                        visibleElements: visibleElements
+                    };
+                    
+                    // Also store in individual variables for backward compatibility
                     window.lastScrollPosition = scrollY;
                     window.lastScrollRatio = scrollRatio;
                     window.lastContentHeight = scrollHeight;
                     window.lastViewportHeight = viewportHeight;
                     window.isUserScrolled = window.isUserScrolled === true || scrollY > 0;
+                    window.isAtBottom = isAtBottom;
                 })();
             """.trimIndent(), browser.cefBrowser?.url ?: "", 0)
         } catch (e: Exception) {
@@ -351,15 +396,15 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) : 
     }
     
     /**
-     * Saves the current scroll position
+     * Saves the current scroll position with enhanced metrics for better restoration
      */
     private fun saveScrollPosition() {
         try {
             jbCefBrowser?.let { browser ->
                 browser.cefBrowser?.executeJavaScript("""
                     (function() {
-                        // Get current scroll metrics
-                        const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
+                        // Get current scroll metrics with fallbacks
+                        const scrollY = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
                         const scrollHeight = document.body.scrollHeight || document.documentElement.scrollHeight || 1;
                         const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 1;
                         
@@ -367,21 +412,76 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) : 
                         const maxScroll = Math.max(0, scrollHeight - viewportHeight);
                         const scrollRatio = maxScroll > 0 ? scrollY / maxScroll : 0;
                         
-                        // Store values in global variables for Java to access
+                        // Determine if user is at the bottom of content (within 30px margin)
+                        const isAtBottom = (scrollHeight - scrollY - viewportHeight) < 30;
+                        
+                        // Enhanced content fingerprinting for better position restoration
+                        const contentFingerprint = {
+                            // Track expanded panels for state preservation
+                            expandedPanels: Array.from(document.querySelectorAll('.collapsible-panel.expanded'))
+                                .map(panel => {
+                                    const header = panel.querySelector('.collapsible-header');
+                                    return header ? header.textContent.trim() : '';
+                                }),
+                            
+                            // Track visible elements for anchor-based restoration
+                            visibleElements: []
+                        };
+                        
+                        try {
+                            // Find elements that are currently visible in viewport
+                            const elements = document.querySelectorAll('h1, h2, h3, h4, pre, .collapsible-header');
+                            elements.forEach(el => {
+                                const rect = el.getBoundingClientRect();
+                                // If element is visible in viewport
+                                if (rect.top < viewportHeight && rect.bottom > 0) {
+                                    contentFingerprint.visibleElements.push({
+                                        tag: el.tagName,
+                                        text: el.textContent.substring(0, 50).trim(),
+                                        relativeY: rect.top / viewportHeight,
+                                        distanceFromTop: rect.top,
+                                        distanceFromViewportCenter: Math.abs(rect.top + rect.height/2 - viewportHeight/2)
+                                    });
+                                }
+                            });
+                            
+                            // Sort by distance from viewport center to find the most relevant element
+                            contentFingerprint.visibleElements.sort((a, b) => 
+                                a.distanceFromViewportCenter - b.distanceFromViewportCenter);
+                                
+                        } catch (e) {
+                            console.error("Error capturing visible elements:", e);
+                        }
+                        
+                        // Store comprehensive metrics in global variables
+                        window.scrollMetrics = {
+                            position: scrollY,
+                            height: scrollHeight,
+                            viewportHeight: viewportHeight,
+                            ratio: scrollRatio,
+                            isUserScrolled: window.isUserScrolled === true || scrollY > 0,
+                            isAtBottom: isAtBottom,
+                            timestamp: Date.now(),
+                            contentFingerprint: contentFingerprint
+                        };
+                        
+                        // Also store in separate variables for redundancy and backward compatibility
                         window.javaScriptScrollPosition = {
                             y: scrollY,
                             height: scrollHeight,
                             viewportHeight: viewportHeight,
                             ratio: scrollRatio,
                             isUserScrolled: window.isUserScrolled === true || scrollY > 0,
-                            isAtBottom: (scrollHeight - scrollY - viewportHeight) < 20
+                            isAtBottom: isAtBottom,
+                            contentFingerprint: contentFingerprint
                         };
                         
-                        // Also store in separate variables for redundancy
                         window.lastScrollPosition = scrollY;
                         window.lastScrollRatio = scrollRatio;
                         window.lastContentHeight = scrollHeight;
                         window.lastViewportHeight = viewportHeight;
+                        window.isUserScrolled = window.isUserScrolled === true || scrollY > 0;
+                        window.isAtBottom = isAtBottom;
                     })();
                 """.trimIndent(), browser.cefBrowser?.url ?: "", 0)
             }
@@ -391,7 +491,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) : 
     }
     
     /**
-     * Restores the scroll position after content loads
+     * Restores the scroll position after content loads with enhanced strategies
      */
     private fun restoreScrollPositionAfterLoad(browser: JBCefBrowser) {
         try {
@@ -400,14 +500,14 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) : 
                 browser.jbCefClient?.addLoadHandler(object : CefLoadHandler {
                     override fun onLoadEnd(browser: CefBrowser?, frame: CefFrame?, httpStatusCode: Int) {
                         if (frame != null && frame.parent == null) {
-                            // Restore scroll position using JavaScript with multiple strategies
+                            // Restore scroll position using JavaScript with enhanced strategies
                             cefBrowser.executeJavaScript("""
                                 (function() {
                                     // Use a series of timeouts with increasing delays for more reliable restoration
                                     // as sometimes the DOM needs more time to fully render
                                     const attemptRestore = (attempt) => {
                                         // Get stored position data (try both storage methods)
-                                        const scrollData = window.javaScriptScrollPosition || {};
+                                        const scrollData = window.scrollMetrics || window.javaScriptScrollPosition || {};
                                         
                                         // Determine if we should restore position
                                         const shouldRestore = scrollData.isUserScrolled || 
@@ -420,55 +520,150 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) : 
                                             const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 1;
                                             const maxScroll = Math.max(0, scrollHeight - viewportHeight);
                                             
-                                            // Try multiple restoration strategies
+                                            // STRATEGY 1: ELEMENT-BASED RESTORATION
+                                            // Try to find the same element that was in view before
+                                            let elementBasedPosition = null;
                                             
-                                            // Strategy 1: Use stored ratio (most reliable for content changes)
-                                            const ratio = scrollData.ratio || window.lastScrollRatio || 0;
-                                            const targetPos1 = Math.round(ratio * maxScroll);
-                                            
-                                            // Strategy 2: Try to maintain absolute position if content similar in size
-                                            const oldPos = scrollData.y || window.lastScrollPosition || 0;
-                                            const heightRatio = scrollHeight / (scrollData.height || window.lastContentHeight || 1);
-                                            const targetPos2 = Math.round(oldPos * heightRatio);
-                                            
-                                            // Strategy 3: Check if user was at bottom and keep at bottom if so
-                                            const wasAtBottom = scrollData.isAtBottom || 
-                                                               ((scrollData.height - scrollData.y - scrollData.viewportHeight) < 20);
-                                            
-                                            // Choose best strategy
-                                            let targetPos;
-                                            if (wasAtBottom) {
-                                                targetPos = maxScroll; // Stay at bottom
-                                            } else {
-                                                // Use ratio-based position as primary strategy
-                                                targetPos = targetPos1;
+                                            if (scrollData.contentFingerprint && scrollData.contentFingerprint.visibleElements && 
+                                                scrollData.contentFingerprint.visibleElements.length > 0) {
                                                 
-                                                // If content size is similar, consider absolute position too
-                                                const sizeChange = Math.abs(1 - (scrollHeight / (scrollData.height || 1)));
-                                                if (sizeChange < 0.2) { // If size changed less than 20%
-                                                    // Blend the two strategies
-                                                    targetPos = Math.min(maxScroll, Math.max(0, 
-                                                        Math.round(targetPos * 0.7 + targetPos2 * 0.3)));
+                                                // Get the most relevant element (closest to viewport center)
+                                                const primaryElement = scrollData.contentFingerprint.visibleElements[0];
+                                                
+                                                // Try to find the same element in the new document
+                                                const elements = document.querySelectorAll('h1, h2, h3, h4, pre, .collapsible-header');
+                                                let bestMatch = null;
+                                                let bestMatchScore = 0;
+                                                
+                                                elements.forEach(el => {
+                                                    const elText = el.textContent.substring(0, 50).trim();
+                                                    if (el.tagName === primaryElement.tag && 
+                                                        (elText === primaryElement.text || 
+                                                         elText.includes(primaryElement.text) || 
+                                                         primaryElement.text.includes(elText))) {
+                                                        
+                                                        // Calculate match score (higher is better)
+                                                        const tagMatch = el.tagName === primaryElement.tag ? 2 : 0;
+                                                        const textSimilarity = elText === primaryElement.text ? 3 : 
+                                                                              (elText.includes(primaryElement.text) || 
+                                                                               primaryElement.text.includes(elText)) ? 1 : 0;
+                                                        const score = tagMatch + textSimilarity;
+                                                        
+                                                        if (score > bestMatchScore) {
+                                                            bestMatch = el;
+                                                            bestMatchScore = score;
+                                                        }
+                                                    }
+                                                });
+                                                
+                                                if (bestMatch) {
+                                                    // Calculate position based on the matched element
+                                                    const rect = bestMatch.getBoundingClientRect();
+                                                    const targetOffset = primaryElement.distanceFromTop || 
+                                                                        (primaryElement.relativeY * viewportHeight);
+                                                    
+                                                    elementBasedPosition = window.scrollY + rect.top - targetOffset;
                                                 }
                                             }
                                             
-                                            // Apply scroll position
-                                            window.scrollTo(0, Math.min(maxScroll, Math.max(0, targetPos)));
+                                            // STRATEGY 2: RATIO-BASED POSITION (reliable for content changes)
+                                            const ratio = scrollData.ratio || window.lastScrollRatio || 0;
+                                            const ratioBasedPosition = Math.round(ratio * maxScroll);
+                                            
+                                            // STRATEGY 3: ABSOLUTE POSITION ADJUSTED FOR CONTENT SIZE CHANGES
+                                            const oldPos = scrollData.position || scrollData.y || window.lastScrollPosition || 0;
+                                            const oldHeight = scrollData.height || window.lastContentHeight || 1;
+                                            const heightRatio = scrollHeight / oldHeight;
+                                            const absolutePosition = Math.round(oldPos * heightRatio);
+                                            
+                                            // STRATEGY 4: BOTTOM PRESERVATION
+                                            // Check if user was at bottom and keep at bottom if so
+                                            const wasAtBottom = scrollData.isAtBottom || window.isAtBottom || 
+                                                               ((oldHeight - oldPos - (scrollData.viewportHeight || window.lastViewportHeight || viewportHeight)) < 30);
+                                            
+                                            // STRATEGY 5: PANEL STATE RESTORATION
+                                            // Restore expanded/collapsed state of panels
+                                            if (scrollData.contentFingerprint && scrollData.contentFingerprint.expandedPanels) {
+                                                try {
+                                                    const expandedTitles = scrollData.contentFingerprint.expandedPanels;
+                                                    document.querySelectorAll('.collapsible-panel').forEach(panel => {
+                                                        const header = panel.querySelector('.collapsible-header');
+                                                        const title = header ? header.textContent.trim() : '';
+                                                        const arrow = header ? header.querySelector('.collapsible-arrow') : null;
+                                                        
+                                                        if (expandedTitles.includes(title)) {
+                                                            panel.classList.add('expanded');
+                                                            if (arrow) arrow.textContent = '▼';
+                                                        } else {
+                                                            panel.classList.remove('expanded');
+                                                            if (arrow) arrow.textContent = '▶';
+                                                        }
+                                                    });
+                                                } catch (e) {
+                                                    console.error("Error restoring panel states:", e);
+                                                }
+                                            }
+                                            
+                                            // CHOOSE BEST STRATEGY
+                                            let targetPos;
+                                            
+                                            if (wasAtBottom) {
+                                                // Strategy 4: Stay at bottom
+                                                targetPos = maxScroll;
+                                                console.log("Using bottom preservation strategy");
+                                            } else if (elementBasedPosition !== null) {
+                                                // Strategy 1: Element-based positioning (most accurate)
+                                                targetPos = elementBasedPosition;
+                                                console.log("Using element-based strategy");
+                                            } else {
+                                                // Blend strategies based on content similarity
+                                                const sizeChange = Math.abs(1 - heightRatio);
+                                                
+                                                if (sizeChange < 0.1) {
+                                                    // Content size very similar - use absolute position with small ratio correction
+                                                    targetPos = Math.round(absolutePosition * 0.8 + ratioBasedPosition * 0.2);
+                                                    console.log("Using absolute position strategy (small change)");
+                                                } else if (sizeChange < 0.3) {
+                                                    // Content size moderately changed - blend both strategies
+                                                    targetPos = Math.round(ratioBasedPosition * 0.6 + absolutePosition * 0.4);
+                                                    console.log("Using blended strategy (moderate change)");
+                                                } else {
+                                                    // Content size significantly changed - rely on ratio
+                                                    targetPos = ratioBasedPosition;
+                                                    console.log("Using ratio strategy (significant change)");
+                                                }
+                                            }
+                                            
+                                            // Apply scroll position with bounds checking
+                                            const safeTargetPos = Math.min(maxScroll, Math.max(0, targetPos));
+                                            window.scrollTo({
+                                                top: safeTargetPos,
+                                                behavior: 'auto' // Use 'auto' for immediate positioning
+                                            });
                                             
                                             // Preserve user scroll state
                                             window.isUserScrolled = true;
                                             
-                                            // If we're on the last attempt and still not close to target, try once more
-                                            if (attempt === 2 && Math.abs(window.scrollY - targetPos) > 50) {
-                                                setTimeout(() => window.scrollTo(0, targetPos), 50);
+                                            // For final attempt, add an extra check with small delay
+                                            if (attempt === 2) {
+                                                setTimeout(() => {
+                                                    // Verify scroll position was applied correctly
+                                                    if (Math.abs(window.scrollY - safeTargetPos) > 50) {
+                                                        console.log("Final position correction");
+                                                        window.scrollTo({
+                                                            top: safeTargetPos,
+                                                            behavior: 'auto'
+                                                        });
+                                                    }
+                                                }, 50);
                                             }
                                         }
                                     };
                                     
-                                    // Try restoration at increasing intervals
-                                    setTimeout(() => attemptRestore(0), 10);
-                                    setTimeout(() => attemptRestore(1), 50);
-                                    setTimeout(() => attemptRestore(2), 200);
+                                    // Try restoration at increasing intervals for better reliability
+                                    setTimeout(() => attemptRestore(0), 10);  // Initial attempt
+                                    setTimeout(() => attemptRestore(1), 100); // Second attempt after more rendering
+                                    setTimeout(() => attemptRestore(2), 300); // Final attempt after full render
                                 })();
                             """.trimIndent(), cefBrowser.url, 0)
                         }
