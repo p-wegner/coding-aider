@@ -230,7 +230,12 @@ class MarkdownDialog(
                 lastContent = normalizedOutput
                 
                 // Update content while preserving scroll position
-                markdownViewer.setMarkdown(normalizedOutput)
+                try {
+                    markdownViewer.setMarkdown(normalizedOutput)
+                } catch (e: Exception) {
+                    // Log error but don't crash on markdown update issues
+                    println("Error updating markdown content: ${e.message}")
+                }
                 
                 // Update title separately to avoid unnecessary reflows
                 if (this@MarkdownDialog.title != title) {
