@@ -48,7 +48,7 @@ class MarkdownDialog(
     private val markdownViewer = MarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
         setMarkdown(initialText)
     }
-    // Use the component directly without a JBScrollPane wrapper
+    // Use the component directly without any scrollpane wrapper
     private val markdownComponent = markdownViewer.component.apply {
         border = null
     }
@@ -151,12 +151,8 @@ class MarkdownDialog(
         layout = BorderLayout(10, 10)
         pack()
         setLocationRelativeTo(null)
-        // Add content panel with proper weighting
-        val contentPanel = JPanel(BorderLayout(0, 0)).apply {
-            border = javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5)
-            add(markdownComponent, BorderLayout.CENTER)
-        }
-        add(contentPanel, BorderLayout.CENTER)
+        // Add content panel with proper weighting - no additional panels that might cause double scrollbars
+        add(markdownComponent, BorderLayout.CENTER)
 
         defaultCloseOperation = DO_NOTHING_ON_CLOSE
         addWindowListener(object : java.awt.event.WindowAdapter() {
