@@ -129,16 +129,15 @@ class MarkdownDialog(
 
         // Add resize listener with debouncing using Swing timer
         addComponentListener(object : java.awt.event.ComponentAdapter() {
-            private val resizeSwingTimer = Timer().apply {
+            private val resizeSwingTimer = javax.swing.Timer(200) { 
+                markdownViewer.component.revalidate()
+                markdownViewer.component.repaint()
+                scrollPane.revalidate()
+                scrollPane.repaint()
+                // Ensure content is displayed after resize
+                markdownViewer.ensureContentDisplayed()
+            }.apply {
                 isRepeats = false
-                addActionListener {
-                    markdownViewer.component.revalidate()
-                    markdownViewer.component.repaint()
-                    scrollPane.revalidate()
-                    scrollPane.repaint()
-                    // Ensure content is displayed after resize
-                    markdownViewer.ensureContentDisplayed()
-                }
             }
             
             override fun componentResized(e: java.awt.event.ComponentEvent) {
@@ -152,9 +151,9 @@ class MarkdownDialog(
                     markdownViewer.ensureContentDisplayed()
                     
                     // Schedule another check after a short delay to catch any initialization issues
-                    Timer(500, ActionListener {
+                    javax.swing.Timer(500) {
                         markdownViewer.ensureContentDisplayed()
-                    }).apply {
+                    }.apply {
                         isRepeats = false
                         start()
                     }
@@ -344,7 +343,7 @@ class MarkdownDialog(
 
     fun focus(delay: Long = 100) {
         // Use Swing timer instead of java.util.Timer
-        Timer(delay.toInt(), ActionListener {
+        javax.swing.Timer(delay.toInt()) {
             toFront()
             requestFocus()
             markdownViewer.component.requestFocusInWindow()
@@ -352,7 +351,7 @@ class MarkdownDialog(
             markdownViewer.setDarkTheme(com.intellij.openapi.editor.colors.EditorColorsManager.getInstance().isDarkEditor)
             markdownViewer.setMarkdown(lastContent)
             markdownViewer.ensureContentDisplayed()
-        }).apply {
+        }.apply {
             isRepeats = false
             start()
         }
