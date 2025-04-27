@@ -29,7 +29,6 @@ import javax.swing.SwingUtilities
 import java.util.ResourceBundle
 import java.util.Timer
 import java.util.TimerTask
-import javax.swing.JLabel
 
 class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     private val logger = Logger.getInstance(MarkdownJcefViewer::class.java)
@@ -85,7 +84,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             // Create a simple browser with error message
             val browser = JBCefBrowser()
             jbCefBrowser = browser
-            
+            // TODO 27.04.2025 pwegner: externalize errorHtml
             val errorHtml = """
                 <!DOCTYPE html>
                 <html>
