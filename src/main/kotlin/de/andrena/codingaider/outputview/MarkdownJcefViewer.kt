@@ -61,21 +61,31 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     private fun initializeViewer() {
         try {
             if (JBCefApp.isSupported() && !useFallbackMode) {
-                initJcefBrowser()
+                try {
+                    initJcefBrowser()
+                } catch (e: Exception) {
+                    logger.warn("Error initializing JCEF browser: ${e.message}", e)
+                    useFallbackMode = true
+                    initFallbackEditor()
+                }
             } else {
                 logger.info("Using fallback editor mode for markdown rendering")
                 initFallbackEditor()
             }
         } catch (e: Exception) {
             logger.warn("Error initializing markdown viewer: ${e.message}", e)
+            useFallbackMode = true
             initFallbackEditor()
         }
     }
     
     private fun initJcefBrowser() {
-        // Create browser with simple load handler
-        jbCefBrowser = JBCefBrowser().apply {
-            component.apply {
+        try {
+            // Create browser with simple load handler
+            val browser = JBCefBrowser()
+            jbCefBrowser = browser
+            
+            browser.component.apply {
                 isFocusable = true
                 minimumSize = Dimension(200, 100)
                 background = mainPanel.background
@@ -85,79 +95,97 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             val initialHtml = createHtmlWithContent("")
             
             // Load the initial HTML template directly
-            loadHTML(initialHtml)
+            browser.loadHTML(initialHtml)
 
             // Set a simple load handler
-            val client: JBCefClient = this.jbCefClient
-            client.addLoadHandler(object : CefLoadHandler {
-                override fun onLoadEnd(browser: CefBrowser?, frame: CefFrame?, httpStatusCode: Int) {
-                    // Only act on main frame (main frame has no parent)
-                    if (frame != null && frame.parent == null) {
-                        // Reset the load attempts counter on successful load
-                        jcefLoadAttempts = 0
-                        SwingUtilities.invokeLater {
-                            // Render whatever we have at this moment
-                            currentContent.takeIf { it.isNotEmpty() }?.let { updateContent(it) }
+            try {
+                val client: JBCefClient? = this.jbCefClient
+                if (client == null) {
+                    logger.warn("JBCefClient is null, switching to fallback editor")
+                    switchToFallbackEditor()
+                    return@apply
+                }
+                
+                val cefBrowser = this.cefBrowser
+                if (cefBrowser == null) {
+                    logger.warn("CefBrowser is null, switching to fallback editor")
+                    switchToFallbackEditor()
+                    return@apply
+                }
+                
+                client.addLoadHandler(object : CefLoadHandler {
+                    override fun onLoadEnd(browser: CefBrowser?, frame: CefFrame?, httpStatusCode: Int) {
+                        // Only act on main frame (main frame has no parent)
+                        if (frame != null && frame.parent == null) {
+                            // Reset the load attempts counter on successful load
+                            jcefLoadAttempts = 0
+                            SwingUtilities.invokeLater {
+                                // Render whatever we have at this moment
+                                currentContent.takeIf { it.isNotEmpty() }?.let { updateContent(it) }
+                            }
                         }
                     }
-                }
 
-                override fun onLoadStart(browser: CefBrowser?, frame: CefFrame?, transitionType: CefRequest.TransitionType?) {}
-                override fun onLoadError(browser: CefBrowser?, frame: CefFrame?, errorCode: CefLoadHandler.ErrorCode?, errorText: String?, failedUrl: String?) {
-                    logger.warn("JCEF load error: $errorCode - $errorText for URL: $failedUrl")
-                    
-                    // Only handle main frame errors
-                    if (frame == null || frame.parent != null) {
-                        return
-                    }
-                    
-                    // Ignore benign ERR_ABORTED errors that happen during normal navigation
-                    // when we call loadHTML again and abort the previous load
-                    if (errorCode == CefLoadHandler.ErrorCode.ERR_ABORTED) {
-                        return
-                    }
-                    
-                    // Handle common transient errors
-                    if (errorCode == CefLoadHandler.ErrorCode.ERR_FAILED && 
-                        jcefLoadAttempts < maxJcefLoadAttempts) {
+                    override fun onLoadStart(browser: CefBrowser?, frame: CefFrame?, transitionType: CefRequest.TransitionType?) {}
+                    override fun onLoadError(browser: CefBrowser?, frame: CefFrame?, errorCode: CefLoadHandler.ErrorCode?, errorText: String?, failedUrl: String?) {
+                        logger.warn("JCEF load error: $errorCode - $errorText for URL: $failedUrl")
                         
-                        jcefLoadAttempts++
-                        logger.info("Retrying JCEF load, attempt $jcefLoadAttempts of $maxJcefLoadAttempts for error: $errorCode")
+                        // Only handle main frame errors
+                        if (frame == null || frame.parent != null) {
+                            return
+                        }
                         
-                        // Use capped exponential backoff for retries (200ms, 400ms, 800ms, 1600ms, 1600ms, ...)
-                        val retryDelay = 200L * minOf(1L shl (jcefLoadAttempts - 1), 8L)
+                        // Ignore benign ERR_ABORTED errors that happen during normal navigation
+                        // when we call loadHTML again and abort the previous load
+                        if (errorCode == CefLoadHandler.ErrorCode.ERR_ABORTED) {
+                            return
+                        }
                         
-                        logger.info("Scheduling retry in $retryDelay ms")
-                        
-                        // Schedule a retry after a delay with exponential backoff
-                        Timer().schedule(object : TimerTask() {
-                            override fun run() {
-                                SwingUtilities.invokeLater {
-                                    try {
-                                        logger.info("Executing retry attempt $jcefLoadAttempts")
-                                        // Try reloading the content with a fresh HTML template
-                                        val html = convertMarkdownToHtml(currentContent)
-                                        val fullHtml = createHtmlWithContent(html)
-                                        jbCefBrowser?.loadHTML(fullHtml)
-                                    } catch (e: Exception) {
-                                        logger.warn("Error during JCEF retry: ${e.message}", e)
-                                        if (jcefLoadAttempts >= maxJcefLoadAttempts) {
-                                            switchToFallbackEditor()
+                        // Handle common transient errors
+                        if (errorCode == CefLoadHandler.ErrorCode.ERR_FAILED && 
+                            jcefLoadAttempts < maxJcefLoadAttempts) {
+                            
+                            jcefLoadAttempts++
+                            logger.info("Retrying JCEF load, attempt $jcefLoadAttempts of $maxJcefLoadAttempts for error: $errorCode")
+                            
+                            // Use capped exponential backoff for retries (200ms, 400ms, 800ms, 1600ms, 1600ms, ...)
+                            val retryDelay = 200L * minOf(1L shl (jcefLoadAttempts - 1), 8L)
+                            
+                            logger.info("Scheduling retry in $retryDelay ms")
+                            
+                            // Schedule a retry after a delay with exponential backoff
+                            Timer().schedule(object : TimerTask() {
+                                override fun run() {
+                                    SwingUtilities.invokeLater {
+                                        try {
+                                            logger.info("Executing retry attempt $jcefLoadAttempts")
+                                            // Try reloading the content with a fresh HTML template
+                                            val html = convertMarkdownToHtml(currentContent)
+                                            val fullHtml = createHtmlWithContent(html)
+                                            jbCefBrowser?.loadHTML(fullHtml)
+                                        } catch (e: Exception) {
+                                            logger.warn("Error during JCEF retry: ${e.message}", e)
+                                            if (jcefLoadAttempts >= maxJcefLoadAttempts) {
+                                                switchToFallbackEditor()
+                                            }
                                         }
                                     }
                                 }
-                            }
-                        }, retryDelay)
+                            }, retryDelay)
+                            
+                            return
+                        }
                         
-                        return
+                        // For persistent errors, switch to fallback editor
+                        logger.info("Switching to fallback editor after JCEF error: $errorCode - $errorText")
+                        switchToFallbackEditor()
                     }
-                    
-                    // For persistent errors, switch to fallback editor
-                    logger.info("Switching to fallback editor after JCEF error: $errorCode - $errorText")
-                    switchToFallbackEditor()
-                }
-                override fun onLoadingStateChange(browser: CefBrowser?, isLoading: Boolean, canGoBack: Boolean, canGoForward: Boolean) {}
-            }, jbCefBrowser!!.cefBrowser) // Pass the browser instance to handle only the main frame
+                    override fun onLoadingStateChange(browser: CefBrowser?, isLoading: Boolean, canGoBack: Boolean, canGoForward: Boolean) {}
+                }, cefBrowser) // Pass the browser instance to handle only the main frame
+            } catch (e: Exception) {
+                logger.error("Exception during JCEF browser initialization: ${e.message}", e)
+                switchToFallbackEditor()
+            }
         }
 
         mainPanel.add(jbCefBrowser!!.component, BorderLayout.CENTER)
