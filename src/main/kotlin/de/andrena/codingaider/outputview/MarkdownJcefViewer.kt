@@ -89,8 +89,9 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 isFocusable = true
                 minimumSize = Dimension(200, 100)
                 background = mainPanel.background
-                // Ensure scrolling is enabled
+                // Ensure scrolling is enabled and use native browser scrolling
                 putClientProperty("JBCefBrowser.wrapperPanel.scrollable", true)
+                putClientProperty("JBCefBrowser.useNativeScrollbar", true)
             }
 
             // Create the initial HTML with empty content
