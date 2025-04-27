@@ -97,10 +97,10 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     // Only act on main frame (main frame has no parent)
                     if (frame != null && frame.parent == null) {
                         contentReady = true
-                        if (currentContent.isNotEmpty()) {
-                            SwingUtilities.invokeLater {
-                                updateContent(currentContent)
-                            }
+                        // Always schedule content update once the base frame is ready,
+                        // ensuring the stored content is applied.
+                        SwingUtilities.invokeLater {
+                            updateContent(currentContent)
                         }
                     }
                 }
@@ -159,16 +159,14 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
      */
     fun setMarkdown(markdown: String) {
         currentContent = markdown
-        
-        if (!contentReady) {
-            // Content will be updated when viewer is ready
-            println("Content not ready yet, will update when ready")
-            return
+
+        // Only attempt update if the viewer is ready and browser/editor exists
+        if (contentReady) {
+           updateContent(markdown)
         }
-        
-        updateContent(markdown)
+        // If not ready, onLoadEnd will handle applying the content later.
     }
-    
+
     private fun updateContent(markdown: String) {
         val html = convertMarkdownToHtml(markdown)
         
