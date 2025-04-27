@@ -157,8 +157,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     switchToFallbackEditor()
                 }
                 override fun onLoadingStateChange(browser: CefBrowser?, isLoading: Boolean, canGoBack: Boolean, canGoForward: Boolean) {}
-                // TODO 27.04.2025 pwegner: this seems to be null!
-            }, jbCefBrowser!!.cefBrowser) // Pass null to handle all frames, or jbCefBrowser!!.cefBrowser for main frame only
+            }, jbCefBrowser!!.cefBrowser) // Pass the browser instance to handle only the main frame
         }
 
         mainPanel.add(jbCefBrowser!!.component, BorderLayout.CENTER)
