@@ -43,17 +43,15 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         background = if (!JBColor.isBright()) JBColor(0x2B2B2B, 0x2B2B2B) else JBColor.WHITE
     }
     
-    // Browser or fallback component
+    // Browser component
     private var jbCefBrowser: JBCefBrowser? = null
-    private var fallbackEditor: JEditorPane? = null
     
     // State tracking
     private var isDarkTheme = com.intellij.openapi.editor.colors.EditorColorsManager.getInstance().isDarkEditor
     private var currentContent = ""
     private val resourceBundle = ResourceBundle.getBundle("messages.MarkdownViewerBundle", Locale.getDefault())
     private var jcefLoadAttempts = 0
-    private val maxJcefLoadAttempts = 5  // Increased from 3 to 5 for more retry attempts
-    private var useFallbackMode = false
+    private val maxJcefLoadAttempts = 5  // Maximum number of retry attempts
     
     // Scroll position tracking
     private var lastScrollPosition = 0.0
@@ -67,22 +65,76 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
 
     private fun initializeViewer() {
         try {
-            if (JBCefApp.isSupported() && !useFallbackMode) {
+            if (JBCefApp.isSupported()) {
                 try {
                     initJcefBrowser()
                 } catch (e: Exception) {
                     logger.warn("Error initializing JCEF browser: ${e.message}", e)
-                    useFallbackMode = true
-                    initFallbackEditor()
+                    showErrorInBrowser("Failed to initialize browser component. Please restart IDE or check logs.")
                 }
             } else {
-                logger.info("Using fallback editor mode for markdown rendering")
-                initFallbackEditor()
+                logger.warn("JCEF is not supported in this environment")
+                showErrorInBrowser("Browser component is not supported in this environment.")
             }
         } catch (e: Exception) {
             logger.warn("Error initializing markdown viewer: ${e.message}", e)
-            useFallbackMode = true
-            initFallbackEditor()
+            showErrorInBrowser("Failed to initialize markdown viewer. Please restart IDE or check logs.")
+        }
+    }
+    
+    private fun showErrorInBrowser(errorMessage: String) {
+        try {
+            // Create a simple browser with error message
+            val browser = JBCefBrowser()
+            jbCefBrowser = browser
+            
+            val errorHtml = """
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        body {
+                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+                            background: ${if (isDarkTheme) "#2b2b2b" else "#ffffff"};
+                            color: ${if (isDarkTheme) "#ffffff" else "#000000"};
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            height: 100vh;
+                            margin: 0;
+                            text-align: center;
+                        }
+                        .error-container {
+                            padding: 20px;
+                            border-radius: 8px;
+                            background: ${if (isDarkTheme) "#3c3f41" else "#f5f5f5"};
+                            border: 1px solid ${if (isDarkTheme) "#555" else "#ddd"};
+                            max-width: 80%;
+                        }
+                        h3 {
+                            margin-top: 0;
+                            color: ${if (isDarkTheme) "#f44336" else "#d32f2f"};
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="error-container">
+                        <h3>Markdown Viewer Error</h3>
+                        <p>${errorMessage}</p>
+                    </div>
+                </body>
+                </html>
+            """.trimIndent()
+            
+            browser.loadHTML(errorHtml)
+            mainPanel.add(browser.component, BorderLayout.CENTER)
+            
+        } catch (e: Exception) {
+            logger.error("Failed to show error message: ${e.message}", e)
+            // If we can't even show the error, create a simple label
+            val errorLabel = JLabel("Error: $errorMessage")
+            errorLabel.horizontalAlignment = SwingConstants.CENTER
+            mainPanel.add(errorLabel, BorderLayout.CENTER)
         }
     }
     
@@ -140,15 +192,15 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             try {
                 val client: JBCefClient? = browser.jbCefClient
                 if (client == null) {
-                    logger.warn("JBCefClient is null, switching to fallback editor")
-                    switchToFallbackEditor()
+                    logger.warn("JBCefClient is null")
+                    showErrorInBrowser("Browser component initialization failed.")
                     return
                 }
                 
                 val cefBrowser = browser.cefBrowser
                 if (cefBrowser == null) {
-                    logger.warn("CefBrowser is null, switching to fallback editor")
-                    switchToFallbackEditor()
+                    logger.warn("CefBrowser is null")
+                    showErrorInBrowser("Browser component initialization failed.")
                     return
                 }
                 
@@ -210,73 +262,23 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         }
                         
                         // For persistent errors, switch to fallback editor
-                        logger.info("Switching to fallback editor after JCEF error: $errorCode - $errorText")
-                        switchToFallbackEditor()
+                        logger.warn("Persistent JCEF error: $errorCode - $errorText")
+                        showErrorInBrowser("Browser component failed to load content after multiple attempts.")
                     }
                     override fun onLoadingStateChange(browser: CefBrowser?, isLoading: Boolean, canGoBack: Boolean, canGoForward: Boolean) {}
                 }, cefBrowser) // Pass the browser instance to handle only the main frame
             } catch (e: Exception) {
                 logger.error("Exception during JCEF browser initialization: ${e.message}", e)
-                switchToFallbackEditor()
+                showErrorInBrowser("Browser component initialization failed.")
             }
         } catch (e: Exception) {
             logger.error("Exception during JCEF browser creation: ${e.message}", e)
-            switchToFallbackEditor()
+            showErrorInBrowser("Browser component initialization failed.")
         }
 
         mainPanel.add(jbCefBrowser!!.component, BorderLayout.CENTER)
     }
     
-    private fun switchToFallbackEditor() {
-        SwingUtilities.invokeLater {
-            try {
-                if (useFallbackMode) {
-                    logger.info("Already in fallback mode, not switching again")
-                    return@invokeLater
-                }
-                
-                logger.info("Switching to fallback editor mode")
-                useFallbackMode = true
-                
-                jbCefBrowser?.let { browser ->
-                    try {
-                        // Check if component is still in the panel before removing
-                        if (browser.component.parent != null) {
-                            mainPanel.remove(browser.component)
-                        }
-                        browser.dispose() // Properly dispose of the browser
-                    } catch (e: Exception) {
-                        logger.warn("Error disposing browser component: ${e.message}", e)
-                    } finally {
-                        jbCefBrowser = null
-                    }
-                }
-                
-                initFallbackEditor()
-                setMarkdown(currentContent)
-                mainPanel.revalidate()
-                mainPanel.repaint()
-                
-                logger.info("Successfully switched to fallback editor")
-            } catch (e: Exception) {
-                logger.error("Error switching to fallback editor: ${e.message}", e)
-            }
-        }
-    }
-    
-    private fun initFallbackEditor() {
-        if (fallbackEditor == null) {
-            fallbackEditor = JEditorPane().apply {
-                contentType = "text/html; charset=UTF-8"
-                isEditable = false
-                putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true)
-                putClientProperty("JEditorPane.honorDisplayProperties", true)
-                putClientProperty("html.disable", false)
-                putClientProperty(JEditorPane.W3C_LENGTH_UNITS, true)
-            }
-            mainPanel.add(fallbackEditor!!, BorderLayout.CENTER)
-        }
-    }
 
     /**
      * Creates the base HTML template with proper localization support
@@ -326,25 +328,6 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             browser.loadHTML(full)
             // Restore scroll position after content loads
             restoreScrollPositionAfterLoad(browser)
-        } ?: fallbackEditor?.let { 
-            val scrollPane = SwingUtilities.getAncestorOfClass(JBScrollPane::class.java, it) as? JBScrollPane
-            val verticalBar = scrollPane?.verticalScrollBar
-            val wasAtBottom = verticalBar?.let { bar -> 
-                bar.value >= (bar.maximum - bar.visibleAmount - 10)
-            } ?: false
-            
-            // Remember if we were at the bottom
-            val currentPosition = verticalBar?.value ?: 0
-            
-            // Update content
-            it.text = html
-            
-            // Restore scroll position
-            SwingUtilities.invokeLater {
-                if (!wasAtBottom && verticalBar != null) {
-                    verticalBar.value = currentPosition
-                }
-            }
         }
     }
     
@@ -443,8 +426,8 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 }
                 
                 // If we've had too many failures, just use the fallback editor
-                if (jcefLoadAttempts >= maxJcefLoadAttempts && !useFallbackMode) {
-                    switchToFallbackEditor()
+                if (jcefLoadAttempts >= maxJcefLoadAttempts) {
+                    showErrorInBrowser("Browser component failed to load content after multiple attempts.")
                 }
             }
         }
