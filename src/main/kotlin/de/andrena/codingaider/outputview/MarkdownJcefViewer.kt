@@ -157,50 +157,15 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     }
 
     private fun updateContent(markdown: String) {
-        if (markdown.isEmpty()) return
-        
+        if (markdown.isBlank()) return
+        currentContent = markdown                       // keep copy for retries
         val html = convertMarkdownToHtml(markdown)
         val full = createHtmlWithContent(html)
-        
-        fallbackEditor?.let { editor ->
-            SwingUtilities.invokeLater {
-                try {
-                    editor.putClientProperty("charset", StandardCharsets.UTF_8.name())
-                    editor.text = html
-                    editor.caretPosition = 0
-                } catch (e: Exception) {
-                    println("Error updating fallback editor: ${e.message}")
-                    e.printStackTrace()
-                }
-            }
-            return
-        }
-        
-        jbCefBrowser?.let { browser ->
-            // 60 kB gives us a bit of safety margin
-            if (full.toByteArray().size > 60 * 1024) {
-                // Fast enough in practice and 100% reliable
-                SwingUtilities.invokeLater { browser.loadHTML(full) }
-            } else {
-                val escaped = html
-                    .replace("\\", "\\\\")
-                    .replace("'", "\\'")
-                    .replace("\n", "\\n")
-                    .replace("\r", "")
-                
-                val js = "window.updateContent && window.updateContent('$escaped');"
-                
-                SwingUtilities.invokeLater {
-                    browser.cefBrowser.executeJavaScript(js, browser.cefBrowser.url, 0)
-                }
-            }
-        } ?: run {
-            println("Warning: Neither fallbackEditor nor jbCefBrowser is initialized")
-            // If both rendering methods failed, try to reinitialize
-            initializeViewer()
-        }
+
+        jbCefBrowser?.loadHTML(full)                    // single safe path
+            ?: fallbackEditor?.let { it.text = html }
     }
-    
+
     private fun createHtmlWithContent(content: String): String {
         val baseHtml = createBaseHtml(
             if (this@MarkdownJcefViewer.isDarkTheme) "#2b2b2b" else "#ffffff",

@@ -1,6 +1,7 @@
 package de.andrena.codingaider.outputview
 
 import com.intellij.icons.AllIcons
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
@@ -250,31 +251,12 @@ class MarkdownDialog(
     private var lastContent = ""
 
     fun updateProgress(output: String, title: String) {
-        com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
-            try {
-                val newContent = output.replace("\r\n", "\n")
-                if (newContent != lastContent || this@MarkdownDialog.title != title) {
-                    lastContent = newContent
-                    
-                    // Update content - ensure we're setting content even if it appears empty
-                    val contentToSet = if (newContent.isBlank()) " " else newContent // Prevent empty content issues
-                    markdownViewer.setMarkdown(contentToSet)
-                    this@MarkdownDialog.title = title
-                }
-            } catch (e: Exception) {
-                println("Error updating markdown dialog: ${e.message}")
-                e.printStackTrace()
-                
-                // Even if we encounter an error, try to ensure content is displayed
-                try {
-                    markdownViewer.ensureContentDisplayed()
-                } catch (e2: Exception) {
-                    println("Failed to recover from error: ${e2.message}")
-                }
-            }
+        ApplicationManager.getApplication().invokeLater {
+            lastContent = output.replace("\r\n", "\n")
+            markdownViewer.setMarkdown(lastContent)      // push even if identical
+            this@MarkdownDialog.title = title
         }
     }
-
     fun startAutoCloseTimer(autocloseDelay: Int) {
         val settings = getInstance()
         if (!settings.enableMarkdownDialogAutoclose) return
