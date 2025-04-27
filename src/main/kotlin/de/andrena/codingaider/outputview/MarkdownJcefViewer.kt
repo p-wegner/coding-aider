@@ -1,5 +1,6 @@
 package de.andrena.codingaider.outputview
 
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.ui.jcef.JBCefApp
 import com.intellij.ui.jcef.JBCefBrowser
 import com.intellij.ui.jcef.JBCefClient
@@ -30,7 +31,8 @@ import java.util.ResourceBundle
 import java.util.TimerTask
 
 class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
-
+    private val logger = Logger.getInstance(MarkdownJcefViewer::class.java)
+    
     private val mainPanel = JPanel(BorderLayout()).apply {
         border = null
         minimumSize = Dimension(200, 100)
@@ -47,6 +49,9 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     private var isDarkTheme = com.intellij.openapi.editor.colors.EditorColorsManager.getInstance().isDarkEditor
     private var currentContent = ""
     private val resourceBundle = ResourceBundle.getBundle("messages.MarkdownViewerBundle")
+    private var jcefLoadAttempts = 0
+    private val maxJcefLoadAttempts = 3
+    private var useFallbackMode = false
 
     init {
         initializeViewer()
@@ -54,14 +59,14 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
 
     private fun initializeViewer() {
         try {
-            if (JBCefApp.isSupported()) {
+            if (JBCefApp.isSupported() && !useFallbackMode) {
                 initJcefBrowser()
             } else {
+                logger.info("Using fallback editor mode for markdown rendering")
                 initFallbackEditor()
             }
         } catch (e: Exception) {
-            println("Error initializing markdown viewer: ${e.message}")
-            e.printStackTrace()
+            logger.warn("Error initializing markdown viewer: ${e.message}", e)
             initFallbackEditor()
         }
     }
@@ -96,13 +101,40 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
 
                 override fun onLoadStart(browser: CefBrowser?, frame: CefFrame?, transitionType: CefRequest.TransitionType?) {}
                 override fun onLoadError(browser: CefBrowser?, frame: CefFrame?, errorCode: CefLoadHandler.ErrorCode?, errorText: String?, failedUrl: String?) {
-                    println("JCEF load error: $errorCode - $errorText for URL: $failedUrl")
-                    // Try to recover by using fallback editor
-                    SwingUtilities.invokeLater {
-                        mainPanel.remove(jbCefBrowser!!.component)
-                        initFallbackEditor()
-                        updateContent(currentContent)
+                    logger.warn("JCEF load error: $errorCode - $errorText for URL: $failedUrl")
+                    
+                    // Only handle main frame errors
+                    if (frame == null || frame.parent != null) {
+                        return
                     }
+                    
+                    // Handle common transient errors
+                    if (errorCode == CefLoadHandler.ErrorCode.ERR_ABORTED && jcefLoadAttempts < maxJcefLoadAttempts) {
+                        jcefLoadAttempts++
+                        logger.info("Retrying JCEF load, attempt $jcefLoadAttempts of $maxJcefLoadAttempts")
+                        
+                        // Schedule a retry after a short delay
+                        Timer().schedule(object : TimerTask() {
+                            override fun run() {
+                                SwingUtilities.invokeLater {
+                                    try {
+                                        // Try reloading the content
+                                        val html = convertMarkdownToHtml(currentContent)
+                                        jbCefBrowser?.loadHTML(createHtmlWithContent(html))
+                                    } catch (e: Exception) {
+                                        logger.warn("Error during JCEF retry: ${e.message}", e)
+                                        switchToFallbackEditor()
+                                    }
+                                }
+                            }
+                        }, 200) // Short delay before retry
+                        
+                        return
+                    }
+                    
+                    // For persistent errors, switch to fallback editor
+                    logger.info("Switching to fallback editor after JCEF error")
+                    switchToFallbackEditor()
                 }
                 override fun onLoadingStateChange(browser: CefBrowser?, isLoading: Boolean, canGoBack: Boolean, canGoForward: Boolean) {}
             }, this.cefBrowser)
@@ -111,16 +143,38 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         mainPanel.add(jbCefBrowser!!.component, BorderLayout.CENTER)
     }
     
-    private fun initFallbackEditor() {
-        fallbackEditor = JEditorPane().apply {
-            contentType = "text/html; charset=UTF-8"
-            isEditable = false
-            putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true)
-            putClientProperty("JEditorPane.honorDisplayProperties", true)
-            putClientProperty("html.disable", false)
-            putClientProperty(JEditorPane.W3C_LENGTH_UNITS, true)
+    private fun switchToFallbackEditor() {
+        SwingUtilities.invokeLater {
+            try {
+                useFallbackMode = true
+                jbCefBrowser?.let { browser ->
+                    mainPanel.remove(browser.component)
+                    browser.dispose() // Properly dispose of the browser
+                    jbCefBrowser = null
+                }
+                
+                initFallbackEditor()
+                updateContent(currentContent)
+                mainPanel.revalidate()
+                mainPanel.repaint()
+            } catch (e: Exception) {
+                logger.error("Error switching to fallback editor: ${e.message}", e)
+            }
         }
-        mainPanel.add(fallbackEditor!!, BorderLayout.CENTER)
+    }
+    
+    private fun initFallbackEditor() {
+        if (fallbackEditor == null) {
+            fallbackEditor = JEditorPane().apply {
+                contentType = "text/html; charset=UTF-8"
+                isEditable = false
+                putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true)
+                putClientProperty("JEditorPane.honorDisplayProperties", true)
+                putClientProperty("html.disable", false)
+                putClientProperty(JEditorPane.W3C_LENGTH_UNITS, true)
+            }
+            mainPanel.add(fallbackEditor!!, BorderLayout.CENTER)
+        }
     }
 
     /**
@@ -196,14 +250,17 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     initializeViewer()
                 }
                 
+                // Reset load attempts counter when explicitly ensuring content
+                jcefLoadAttempts = 0
+                
                 // If using JCEF, try forcing a direct HTML load
                 jbCefBrowser?.let { browser ->
                     try {
                         val html = convertMarkdownToHtml(currentContent)
                         browser.loadHTML(createHtmlWithContent(html))
                     } catch (e: Exception) {
-                        println("Error during forced content display: ${e.message}")
-                        e.printStackTrace()
+                        logger.warn("Error during forced content display: ${e.message}", e)
+                        switchToFallbackEditor()
                     }
                 }
                 
@@ -213,7 +270,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         val html = convertMarkdownToHtml(currentContent)
                         editor.text = html
                     } catch (e: Exception) {
-                        println("Error updating fallback editor: ${e.message}")
+                        logger.warn("Error updating fallback editor: ${e.message}", e)
                     }
                 }
             }
@@ -224,16 +281,29 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         if (isDarkTheme != dark) {
             isDarkTheme = dark
             if (currentContent.isNotEmpty()) {
-                // Reload with new theme
-                jbCefBrowser?.loadHTML(createBaseHtml(
-                    if (this@MarkdownJcefViewer.isDarkTheme) "#2b2b2b" else "#ffffff",
-                    if (this@MarkdownJcefViewer.isDarkTheme) "#ffffff" else "#000000",
-                    if (this@MarkdownJcefViewer.isDarkTheme) "#1e1e1e" else "#f1f1f1",
-                    if (this@MarkdownJcefViewer.isDarkTheme) "#555" else "#c1c1c1",
-                    if (this@MarkdownJcefViewer.isDarkTheme) "#777" else "#a1a1a1",
-                    if (this@MarkdownJcefViewer.isDarkTheme) "#1e1e1e" else "#f5f5f5"
-                ))
-                setMarkdown(currentContent)
+                try {
+                    // Reset load attempts when theme changes
+                    jcefLoadAttempts = 0
+                    
+                    // Reload with new theme
+                    jbCefBrowser?.loadHTML(createBaseHtml(
+                        if (this@MarkdownJcefViewer.isDarkTheme) "#2b2b2b" else "#ffffff",
+                        if (this@MarkdownJcefViewer.isDarkTheme) "#ffffff" else "#000000",
+                        if (this@MarkdownJcefViewer.isDarkTheme) "#1e1e1e" else "#f1f1f1",
+                        if (this@MarkdownJcefViewer.isDarkTheme) "#555" else "#c1c1c1",
+                        if (this@MarkdownJcefViewer.isDarkTheme) "#777" else "#a1a1a1",
+                        if (this@MarkdownJcefViewer.isDarkTheme) "#1e1e1e" else "#f5f5f5"
+                    ))
+                    setMarkdown(currentContent)
+                    
+                    // Also update fallback editor if it exists
+                    fallbackEditor?.let { editor ->
+                        val html = convertMarkdownToHtml(currentContent)
+                        editor.text = html
+                    }
+                } catch (e: Exception) {
+                    logger.warn("Error updating theme: ${e.message}", e)
+                }
             }
         }
     }

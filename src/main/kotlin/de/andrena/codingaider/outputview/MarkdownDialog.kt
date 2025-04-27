@@ -315,8 +315,10 @@ class MarkdownDialog(
                     toFront()
                     requestFocus()
                     markdownViewer.component.requestFocusInWindow()
-                    // Set dark theme based on current IDE theme
+                    // Set dark theme based on current IDE theme and ensure content is displayed
+                    markdownViewer.setDarkTheme(com.intellij.openapi.editor.colors.EditorColorsManager.getInstance().isDarkEditor)
                     markdownViewer.setMarkdown(lastContent)
+                    markdownViewer.ensureContentDisplayed()
                 }
             }
         }, delay)
