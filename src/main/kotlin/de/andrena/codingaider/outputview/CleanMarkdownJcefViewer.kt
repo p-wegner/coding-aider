@@ -17,8 +17,8 @@ import com.vladsch.flexmark.util.data.MutableDataSet
 import de.andrena.codingaider.utils.FilePathConverter
 import org.cef.browser.CefBrowser
 import org.cef.browser.CefFrame
+import org.cef.handler.CefLoadHandler
 import org.cef.handler.CefLoadHandlerAdapter
-import org.cef.network.CefRequest
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.util.Locale

@@ -22,7 +22,7 @@ import de.andrena.codingaider.actions.aider.AiderAction
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.inputdialog.AiderInputDialog
 import de.andrena.codingaider.inputdialog.AiderMode
-import de.andrena.codingaider.outputview.MarkdownJcefViewer
+import de.andrena.codingaider.outputview.CleanMarkdownJcefViewer
 import de.andrena.codingaider.services.FileDataCollectionService
 import de.andrena.codingaider.services.plans.AiderPlan
 import de.andrena.codingaider.services.plans.AiderPlanPromptService
@@ -566,7 +566,7 @@ class PlanViewer(private val project: Project) {
                 }
 
                 override fun createCenterPanel(): JComponent {
-                    val markdownViewer = MarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
+                    val markdownViewer = CleanMarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
                         setDarkTheme(!JBColor.isBright())
                         setMarkdown(selectedPlan.plan)
                     }
@@ -767,7 +767,7 @@ class PlanViewer(private val project: Project) {
                 }
 
                 override fun createCenterPanel(): JComponent {
-                    val markdownViewer = MarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
+                    val markdownViewer = CleanMarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
                         setDarkTheme(!JBColor.isBright())
                         setMarkdown(selectedPlan.plan)
                     }
