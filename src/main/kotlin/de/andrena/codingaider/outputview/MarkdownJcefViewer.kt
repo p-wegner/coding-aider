@@ -93,6 +93,8 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 override fun onLoadEnd(browser: CefBrowser?, frame: CefFrame?, httpStatusCode: Int) {
                     // Only act on main frame (main frame has no parent)
                     if (frame != null && frame.parent == null) {
+                        // Reset the load attempts counter on successful load
+                        jcefLoadAttempts = 0
                         SwingUtilities.invokeLater {
                             // Render whatever we have at this moment
                             currentContent.takeIf { it.isNotEmpty() }?.let { updateContent(it) }
@@ -109,9 +111,14 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         return
                     }
                     
+                    // Ignore benign ERR_ABORTED errors that happen during normal navigation
+                    // when we call loadHTML again and abort the previous load
+                    if (errorCode == CefLoadHandler.ErrorCode.ERR_ABORTED) {
+                        return
+                    }
+                    
                     // Handle common transient errors
-                    if ((errorCode == CefLoadHandler.ErrorCode.ERR_ABORTED || 
-                         errorCode == CefLoadHandler.ErrorCode.ERR_FAILED) && 
+                    if (errorCode == CefLoadHandler.ErrorCode.ERR_FAILED && 
                         jcefLoadAttempts < maxJcefLoadAttempts) {
                         
                         jcefLoadAttempts++
