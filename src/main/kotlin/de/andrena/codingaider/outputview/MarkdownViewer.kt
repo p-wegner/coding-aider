@@ -35,14 +35,14 @@ interface MarkdownViewer {
 
 /**
  * Creates the most appropriate viewer for the current runtime.
- * ‑ If JCEF is available we fall back to the fully‑featured [MarkdownJcefViewer].
+ * ‑ If JCEF is available we use the clean JCEF implementation.
  * ‑ Otherwise we use a lightweight Swing implementation so that the plugin
  *   still works in headless test environments or IDEs where JCEF is disabled.
  */
 object MarkdownViewerFactory {
     @JvmStatic
     fun create(lookupPaths: List<String> = emptyList()): MarkdownViewer =
-        if (JBCefApp.isSupported()) MarkdownJcefViewer(lookupPaths)
+        if (JBCefApp.isSupported()) CleanMarkdownJcefViewer(lookupPaths)
         else SwingMarkdownViewer(lookupPaths)
 }
 
