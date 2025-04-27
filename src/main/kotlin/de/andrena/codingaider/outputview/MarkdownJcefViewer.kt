@@ -48,7 +48,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     // State tracking
     private var isDarkTheme = com.intellij.openapi.editor.colors.EditorColorsManager.getInstance().isDarkEditor
     private var currentContent = ""
-    private val resourceBundle = ResourceBundle.getBundle("messages.MarkdownViewerBundle")
+    private val resourceBundle = ResourceBundle.getBundle("messages.MarkdownViewerBundle", Locale.getDefault())
     private var jcefLoadAttempts = 0
     private val maxJcefLoadAttempts = 5  // Increased from 3 to 5 for more retry attempts
     private var useFallbackMode = false
@@ -168,7 +168,10 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 
                 jbCefBrowser?.let { browser ->
                     try {
-                        mainPanel.remove(browser.component)
+                        // Check if component is still in the panel before removing
+                        if (browser.component.parent != null) {
+                            mainPanel.remove(browser.component)
+                        }
                         browser.dispose() // Properly dispose of the browser
                     } catch (e: Exception) {
                         logger.warn("Error disposing browser component: ${e.message}", e)
@@ -238,6 +241,10 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
 
     private fun updateContent(markdown: String) {
         if (markdown.isBlank()) return
+        
+        // Skip processing if content hasn't changed
+        if (markdown == currentContent) return
+        
         currentContent = markdown                       // keep copy for retries
         val html = convertMarkdownToHtml(markdown)
         val full = createHtmlWithContent(html)
@@ -313,6 +320,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     }
 
     fun setDarkTheme(dark: Boolean) {
+        // Only reload if theme actually changed
         if (isDarkTheme != dark) {
             isDarkTheme = dark
             if (currentContent.isNotEmpty()) {
@@ -329,6 +337,8 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         if (this@MarkdownJcefViewer.isDarkTheme) "#777" else "#a1a1a1",
                         if (this@MarkdownJcefViewer.isDarkTheme) "#1e1e1e" else "#f5f5f5"
                     ))
+                    
+                    // Only update content if we need to
                     setMarkdown(currentContent)
                     
                     // Also update fallback editor if it exists
@@ -360,7 +370,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     private fun convertMarkdownToHtml(markdown: String): String {
         val parser = Parser.builder(markdownOptions).build()
         val project = com.intellij.openapi.project.ProjectManager.getInstance().openProjects.firstOrNull()
-        val basePath = project?.basePath
+        val basePath = project?.let { it.basePath }
         val processedMarkdown = FilePathConverter.convertPathsToMarkdownLinks(markdown, basePath)
         val document = parser.parse(processedMarkdown)
         val renderer = HtmlRenderer.builder(markdownOptions).build()
@@ -467,11 +477,8 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     }
 
     private fun escapeHtml(text: String): String {
-        return text.replace("&", "&amp;")
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
-            .replace("\"", "&quot;")
-            .replace("'", "&#x27;")
+        // Use Apache Commons Text for HTML escaping (already included in IntelliJ)
+        return org.apache.commons.text.StringEscapeUtils.escapeHtml4(text)
     }
 
     /**
@@ -525,7 +532,8 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         }
 
         // Process search/replace blocks - improved to better handle edit format blocks
-        val searchReplacePattern = Regex("""(?m)^([^\n]+?)\n```[^\n]*\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n```""", 
+        // Use possessive quantifiers to prevent catastrophic backtracking
+        val searchReplacePattern = Regex("""(?m)^([^\n]+?)\n```[^\n]*+\n<<<<<<< SEARCH\n(.*?+)\n=======\n(.*?+)\n>>>>>>> REPLACE\n```""", 
             RegexOption.DOT_MATCHES_ALL)
         
         processedHtml = processedHtml.replace(searchReplacePattern) { matchResult ->
