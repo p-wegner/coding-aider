@@ -17,6 +17,7 @@ The Markdown Viewer System is a sophisticated component within the CodingAider I
 - **Search/Replace Block Visualization**: Custom formatting for code search/replace operations
 - **Theme-Aware Rendering**: Automatically adapts to IDE light/dark theme
 - **Fallback Rendering**: Gracefully degrades to JEditorPane when JCEF (Chromium) is unavailable
+- [ ] native looking scrollbar that fits the content
 
 ### Smart UI Components
 
@@ -25,12 +26,15 @@ The Markdown Viewer System is a sophisticated component within the CodingAider I
 - **Visual Indicators**: Arrow indicators showing expanded/collapsed state
 - **Specialized Panel Types**: Different styling for system prompts, user requests, intentions, and summaries
 - **Smooth Animations**: Transition effects when expanding/collapsing
+- used for code blocks and structured segments
 
 #### Smart Scrolling
-- **Position Memory**: Remembers user's manual scroll position
-- **Auto-Scroll Detection**: Intelligently detects when user is at the bottom of content
-- **Scroll State Preservation**: Maintains scroll position during content updates
-- **Bottom-Following**: Automatically scrolls to bottom for new content when appropriate
+- [ ] **Position Memory**: Remembers user's manual scroll position
+- [ ] **Auto-Scroll Detection**: Intelligently detects when user is at the bottom of content
+- [ ] **Scroll State Preservation**: Maintains scroll position during content updates
+- [ ] **Bottom-Following**: Automatically scrolls to bottom for new content when appropriate
+- [ ] preserves Collapsible Panels expansion state
+
 
 ### Dialog Management
 
@@ -86,16 +90,8 @@ The Markdown Viewer System is a sophisticated component within the CodingAider I
 
 ### Interaction Design
 
+
 - **Keyboard Navigation**: Keyboard shortcuts for common actions
 - **Button Mnemonics**: Alt-key shortcuts for buttons
 - **Focus Management**: Proper focus handling
 - **Intuitive Controls**: Self-explanatory UI elements
-
-## Future Enhancements
-
-- **Syntax Highlighting**: Enhanced code block syntax highlighting
-- **Search Within Content**: Allow searching within displayed content
-- **Export Options**: Save content to file or clipboard
-- **Print Support**: Properly formatted printing
-- **Custom Themes**: User-configurable themes beyond light/dark
-- **Annotation Support**: Allow adding annotations to content
