@@ -67,10 +67,8 @@ class PluginBasedEditsService(private val project: Project) {
             }
             
             val summary = buildString {
-                appendLine("## Original LLM Response")
-                appendLine()
                 appendLine(llmResponse)
-                appendLine()
+                appendLine("---")
                 
                 appendLine("## Changes Applied")
                 appendLine()

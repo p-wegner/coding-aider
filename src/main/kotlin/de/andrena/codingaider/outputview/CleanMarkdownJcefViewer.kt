@@ -3,6 +3,7 @@ package de.andrena.codingaider.outputview
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.util.text.StringUtil
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.ui.JBColor
 import com.intellij.ui.jcef.JBCefApp
@@ -594,7 +595,9 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
             val sectionContent = html.substring(end, contentEnd)
             
             // Create a unique ID for this panel
-            val panelId = "panel-" + title.replace(Regex("[^a-zA-Z0-9]"), "-").toLowerCase()
+            val replace = title.replace(Regex("[^a-zA-Z0-9]"), "-")
+            val toLowerCase = StringUtil.toLowerCase(replace)
+            val panelId = "panel-" + toLowerCase
             
             // Create collapsible panel
             val panel = """
