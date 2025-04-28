@@ -3,14 +3,18 @@ package de.andrena.codingaider.outputview
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.project.ProjectManager
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.ui.JBColor
 import com.intellij.ui.jcef.JBCefApp
 import com.intellij.ui.jcef.JBCefBrowser
 import com.intellij.ui.jcef.JBCefJSQuery
 import com.vladsch.flexmark.ext.autolink.AutolinkExtension
+import com.vladsch.flexmark.ext.definition.DefinitionExtension
+import com.vladsch.flexmark.ext.footnotes.FootnoteExtension
 import com.vladsch.flexmark.ext.gfm.strikethrough.StrikethroughExtension
 import com.vladsch.flexmark.ext.gfm.tasklist.TaskListExtension
 import com.vladsch.flexmark.ext.tables.TablesExtension
+import com.vladsch.flexmark.ext.toc.TocExtension
 import com.vladsch.flexmark.html.HtmlRenderer
 import com.vladsch.flexmark.parser.Parser
 import com.vladsch.flexmark.util.data.MutableDataSet
@@ -21,6 +25,7 @@ import org.cef.handler.CefLoadHandler
 import org.cef.handler.CefLoadHandlerAdapter
 import java.awt.BorderLayout
 import java.awt.Dimension
+import java.io.File
 import java.util.Locale
 import java.util.ResourceBundle
 import java.util.Timer
@@ -39,6 +44,8 @@ import javax.swing.SwingUtilities
  * - Collapsible panels for content structure
  * - Correct formatting of search/replace blocks
  * - Theme-aware rendering
+ * - Smart auto-scrolling behavior
+ * - Hierarchical content layout
  */
 class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) : MarkdownViewer {
     private val logger = Logger.getInstance(CleanMarkdownJcefViewer::class.java)
@@ -59,10 +66,11 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
     // State tracking
     private var isInitialized = false
     private var pendingMarkdown: String? = null
-    private var isDarkTheme = true
+    private var isDarkTheme = !JBColor.isBright()
     private var currentContent = ""
     private var loadAttempts = 0
     private val maxLoadAttempts = 3
+    private var autoScrollEnabled = true
     
     // JavaScript bridge for communication with the browser
     private var jsQuery: JBCefJSQuery? = null
@@ -73,7 +81,10 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
             TablesExtension.create(),
             AutolinkExtension.create(),
             StrikethroughExtension.create(),
-            TaskListExtension.create()
+            TaskListExtension.create(),
+            DefinitionExtension.create(),
+            FootnoteExtension.create(),
+            TocExtension.create()
         ))
     }
     private val parser = Parser.builder(options).build()
@@ -83,6 +94,15 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
     // Match both triple and quadruple backtick formats for search/replace blocks
     private val searchReplacePattern = Pattern.compile(
         """(?m)^([^\r\n]+)\r?\n```{1,4}(?:[^\r\n]*)\r?\n<<<<<<< SEARCH\r?\n(.*?)\r?\n=======\r?\n(.*?)\r?\n>>>>>>> REPLACE\r?\n```{1,4}$""",
+        Pattern.DOTALL
+    )
+    
+    // Pattern to detect headings for hierarchical structure
+    private val headingPattern = Pattern.compile("""(?m)^(#{1,6})\s+(.+)$""")
+    
+    // Pattern to detect aider blocks
+    private val aiderBlockPattern = Pattern.compile(
+        """<aider-(intention|summary)>([\s\S]*?)</aider-\1>""",
         Pattern.DOTALL
     )
     
@@ -115,10 +135,10 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
                 background = mainPanel.background
             }
             
-            // Create JS bridge for file path clicks
+            // Create JS bridge for file path clicks and other interactions
             jsQuery = JBCefJSQuery.create(browser).apply {
-                addHandler { filePath ->
-                    handleFilePathClick(filePath)
+                addHandler { payload ->
+                    handleJsBridgeMessage(payload)
                     null
                 }
             }
@@ -175,25 +195,96 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
     private fun connectJsBridge() {
         jsQuery?.let { query ->
             jbCefBrowser?.cefBrowser?.executeJavaScript(
-                "window.filePathClicked = function(path) { ${query.inject("path")} };",
+                """
+                window.jsBridge = {
+                    filePathClicked: function(path) { ${query.inject("'file:' + path")} },
+                    scrollPositionChanged: function(isAtBottom, scrollY) { ${query.inject("'scroll:' + isAtBottom + ':' + scrollY")} },
+                    toggleAutoScroll: function(enabled) { ${query.inject("'autoscroll:' + enabled")} },
+                    panelToggled: function(panelId, isExpanded) { ${query.inject("'panel:' + panelId + ':' + isExpanded")} }
+                };
+                """.trimIndent(),
                 jbCefBrowser?.cefBrowser?.url ?: "",
                 0
             )
         }
     }
     
-    private fun handleFilePathClick(filePath: String) {
-        // Open the file in the editor
+    private fun handleJsBridgeMessage(payload: String) {
         try {
-            val project = ProjectManager.getInstance().openProjects.firstOrNull()
-            if (project != null) {
-                val normalizedPath = filePath.trim()
-                // This would be implemented to open the file in the editor
-                logger.info("File path clicked: $normalizedPath")
+            when {
+                payload.startsWith("file:") -> {
+                    val filePath = payload.substring(5).trim()
+                    openFileInEditor(filePath)
+                }
+                payload.startsWith("scroll:") -> {
+                    val parts = payload.substring(7).split(":")
+                    if (parts.size == 2) {
+                        val isAtBottom = parts[0].toBoolean()
+                        val scrollY = parts[1].toIntOrNull() ?: 0
+                        // Store scroll state for future reference
+                        updateScrollState(isAtBottom, scrollY)
+                    }
+                }
+                payload.startsWith("autoscroll:") -> {
+                    val enabled = payload.substring(11).toBoolean()
+                    autoScrollEnabled = enabled
+                }
+                payload.startsWith("panel:") -> {
+                    val parts = payload.substring(6).split(":")
+                    if (parts.size == 2) {
+                        val panelId = parts[0]
+                        val isExpanded = parts[1].toBoolean()
+                        // Could store panel state if needed
+                        logger.debug("Panel $panelId is now ${if (isExpanded) "expanded" else "collapsed"}")
+                    }
+                }
             }
         } catch (e: Exception) {
-            logger.error("Error handling file path click", e)
+            logger.error("Error handling JS bridge message: $payload", e)
         }
+    }
+    
+    private fun openFileInEditor(filePath: String) {
+        try {
+            val project = ProjectManager.getInstance().openProjects.firstOrNull() ?: return
+            val normalizedPath = filePath.trim()
+            
+            // First try as absolute path
+            var file = File(normalizedPath)
+            
+            // If not absolute and we have lookup paths, try them
+            if (!file.isAbsolute && lookupPaths.isNotEmpty()) {
+                for (lookupPath in lookupPaths) {
+                    val potentialFile = File(lookupPath, normalizedPath)
+                    if (potentialFile.exists()) {
+                        file = potentialFile
+                        break
+                    }
+                }
+            }
+            
+            // If still not found and we have a project, try project base path
+            if (!file.exists() && project.basePath != null) {
+                file = File(project.basePath!!, normalizedPath)
+            }
+            
+            if (file.exists()) {
+                val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(file)
+                if (virtualFile != null) {
+                    com.intellij.openapi.fileEditor.FileEditorManager.getInstance(project).openFile(virtualFile, true)
+                }
+            } else {
+                logger.warn("File not found: $normalizedPath")
+            }
+        } catch (e: Exception) {
+            logger.error("Error opening file in editor: $filePath", e)
+        }
+    }
+    
+    private fun updateScrollState(isAtBottom: Boolean, scrollY: Int) {
+        // This method could be expanded to store scroll state
+        // Currently just logging for debugging
+        logger.debug("Scroll state updated: isAtBottom=$isAtBottom, scrollY=$scrollY")
     }
     
     override val component: JComponent
@@ -215,7 +306,7 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
             // Process the markdown content
             val processedHtml = convertMarkdownToHtml(markdown)
             
-            // Update the browser content
+            // Update the browser content with enhanced script for better scroll handling
             val script = """
                 (function() {
                     const content = document.getElementById('content');
@@ -224,17 +315,14 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
                     // Store scroll position and panel states before update
                     const isAtBottom = (window.innerHeight + window.scrollY) >= document.body.offsetHeight - 50;
                     const scrollY = window.scrollY;
-                    const userScrolled = window.isUserScrolled === true;
+                    const userScrolled = window.userScrolled === true;
                     
                     // Store expanded panels
-                    const expandedPanels = [];
-                    document.querySelectorAll('.collapsible-panel.expanded').forEach(panel => {
-                        const header = panel.querySelector('.collapsible-header');
-                        if (header) {
-                            const title = header.querySelector('.collapsible-title');
-                            if (title) {
-                                expandedPanels.push(title.textContent);
-                            }
+                    const expandedPanels = {};
+                    document.querySelectorAll('.collapsible-panel').forEach(panel => {
+                        const panelId = panel.getAttribute('data-panel-id');
+                        if (panelId) {
+                            expandedPanels[panelId] = panel.classList.contains('expanded');
                         }
                     });
                     
@@ -246,28 +334,53 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
                         initCollapsiblePanels();
                         
                         // Restore expanded panels
-                        expandedPanels.forEach(title => {
-                            document.querySelectorAll('.collapsible-header').forEach(header => {
-                                const headerTitle = header.querySelector('.collapsible-title');
-                                if (headerTitle && headerTitle.textContent === title) {
-                                    const panel = header.parentElement;
-                                    if (panel && !panel.classList.contains('expanded')) {
-                                        panel.classList.add('expanded');
-                                        const arrow = header.querySelector('.collapsible-arrow');
-                                        if (arrow) arrow.textContent = '▼';
-                                    }
+                        document.querySelectorAll('.collapsible-panel').forEach(panel => {
+                            const panelId = panel.getAttribute('data-panel-id');
+                            if (panelId && expandedPanels[panelId]) {
+                                panel.classList.add('expanded');
+                                const arrow = panel.querySelector('.collapsible-arrow');
+                                if (arrow) arrow.textContent = '▼';
+                                
+                                // Ensure content is properly sized
+                                const content = panel.querySelector('.collapsible-content');
+                                if (content) {
+                                    content.style.maxHeight = content.scrollHeight + 'px';
                                 }
-                            });
+                            }
                         });
                     }
                     
-                    // Restore scroll position
+                    // Initialize search/replace blocks
+                    if (typeof initSearchReplaceBlocks === 'function') {
+                        initSearchReplaceBlocks();
+                    }
+                    
+                    // Initialize file path links
+                    if (typeof initFilePathLinks === 'function') {
+                        initFilePathLinks();
+                    }
+                    
+                    // Restore scroll position with improved logic
                     setTimeout(() => {
-                        if (isAtBottom) {
-                            window.scrollTo(0, document.body.scrollHeight);
+                        if (isAtBottom && window.autoScrollEnabled !== false) {
+                            window.scrollTo({
+                                top: document.body.scrollHeight,
+                                behavior: 'smooth'
+                            });
                         } else if (!userScrolled) {
-                            window.scrollTo(0, scrollY);
+                            window.scrollTo({
+                                top: scrollY,
+                                behavior: 'auto'
+                            });
                         }
+                        
+                        // Update scroll state after a short delay to ensure accurate values
+                        setTimeout(() => {
+                            const newIsAtBottom = (window.innerHeight + window.scrollY) >= document.body.offsetHeight - 50;
+                            if (window.jsBridge && window.jsBridge.scrollPositionChanged) {
+                                window.jsBridge.scrollPositionChanged(newIsAtBottom, window.scrollY);
+                            }
+                        }, 100);
                     }, 10);
                 })();
             """.trimIndent()
@@ -342,12 +455,15 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
         val basePath = project?.basePath
         val processedMarkdown = FilePathConverter.convertPathsToMarkdownLinks(markdown, basePath)
         
-        // Process search/replace blocks before Flexmark parsing
-        val preprocessed = processSearchReplaceBlocks(processedMarkdown)
+        // Process special blocks before Flexmark parsing
+        val preprocessed = processSpecialBlocks(processedMarkdown)
         
         // Convert to HTML using Flexmark
         val document = parser.parse(preprocessed)
         var html = renderer.render(document)
+        
+        // Process hierarchical structure and create collapsible panels
+        html = processHierarchicalStructure(html)
         
         // Escape JavaScript special characters
         html = html.replace("\\", "\\\\")
@@ -362,8 +478,22 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
     }
     
     /**
+     * Process special blocks like search/replace and aider blocks
+     */
+    private fun processSpecialBlocks(markdown: String): String {
+        var processed = markdown
+        
+        // Process search/replace blocks
+        processed = processSearchReplaceBlocks(processed)
+        
+        // Process aider blocks
+        processed = processAiderBlocks(processed)
+        
+        return processed
+    }
+    
+    /**
      * Process search/replace blocks to add special formatting
-     * This is now called BEFORE Flexmark parsing, so we need to return markdown
      */
     private fun processSearchReplaceBlocks(markdown: String): String {
         val matcher = searchReplacePattern.matcher(markdown)
@@ -377,7 +507,7 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
             // Create a markdown replacement that will render as a special panel
             val replacement = """
                 <div class="edit-format-panel">
-                <div class="file-path">$filePath</div>
+                <div class="file-path" data-path="$filePath">$filePath</div>
                 <div class="edit-format">SEARCH/REPLACE</div>
                 <div class="edit-format-content">
                 <div class="search-block">
@@ -401,6 +531,93 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
             matcher.appendReplacement(buffer, replacement.replace("$", "\\$"))
         }
         matcher.appendTail(buffer)
+        
+        return buffer.toString()
+    }
+    
+    /**
+     * Process aider blocks (intention, summary)
+     */
+    private fun processAiderBlocks(markdown: String): String {
+        val matcher = aiderBlockPattern.matcher(markdown)
+        val buffer = StringBuffer()
+        
+        while (matcher.find()) {
+            val blockType = matcher.group(1) // intention or summary
+            val content = matcher.group(2)
+            
+            // Create a markdown replacement with special styling
+            val replacement = """
+                <div class="aider-$blockType">
+                <h3>${blockType.capitalize()}</h3>
+                
+                $content
+                
+                </div>
+            """.trimIndent()
+            
+            matcher.appendReplacement(buffer, replacement.replace("$", "\\$"))
+        }
+        matcher.appendTail(buffer)
+        
+        return buffer.toString()
+    }
+    
+    /**
+     * Process HTML to create hierarchical structure with collapsible panels
+     */
+    private fun processHierarchicalStructure(html: String): String {
+        // This is a simplified approach - in a real implementation, you'd want to use
+        // a proper HTML parser to handle this transformation
+        
+        // For now, we'll just wrap sections between h2 tags in collapsible panels
+        val h2Pattern = Pattern.compile("<h2[^>]*>(.*?)</h2>", Pattern.DOTALL)
+        val matcher = h2Pattern.matcher(html)
+        val buffer = StringBuffer()
+        
+        var lastEnd = 0
+        while (matcher.find()) {
+            val title = matcher.group(1)
+            val start = matcher.start()
+            val end = matcher.end()
+            
+            // Add content before this heading
+            if (start > lastEnd) {
+                buffer.append(html.substring(lastEnd, start))
+            }
+            
+            // Find the next h2 or end of document
+            val nextH2 = h2Pattern.matcher(html.substring(end))
+            val contentEnd = if (nextH2.find()) end + nextH2.start() else html.length
+            
+            // Extract content for this section
+            val sectionContent = html.substring(end, contentEnd)
+            
+            // Create a unique ID for this panel
+            val panelId = "panel-" + title.replace(Regex("[^a-zA-Z0-9]"), "-").toLowerCase()
+            
+            // Create collapsible panel
+            val panel = """
+                <div class="collapsible-panel expanded" data-panel-id="$panelId">
+                    <div class="collapsible-header">
+                        <span class="collapsible-title">$title</span>
+                        <span class="collapsible-arrow">▼</span>
+                    </div>
+                    <div class="collapsible-content">
+                        $sectionContent
+                    </div>
+                </div>
+            """.trimIndent()
+            
+            buffer.append(panel)
+            
+            lastEnd = contentEnd
+        }
+        
+        // Add any remaining content
+        if (lastEnd < html.length) {
+            buffer.append(html.substring(lastEnd))
+        }
         
         return buffer.toString()
     }
@@ -432,5 +649,12 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
         } catch (e: Exception) {
             logger.error("Error showing error message", e)
         }
+    }
+    
+    /**
+     * Helper extension to capitalize first letter of a string
+     */
+    private fun String.capitalize(): String {
+        return if (isNotEmpty()) this[0].uppercaseChar() + substring(1) else this
     }
 }
