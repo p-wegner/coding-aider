@@ -59,7 +59,12 @@ private class SwingMarkdownViewer(
         isEditable = false
     }
 
-    override val component: JComponent = JScrollPane(editorPane)
+    // Use a scroll pane with proper settings to avoid double scrollbars
+    override val component: JComponent = JScrollPane(editorPane).apply {
+        border = null
+        verticalScrollBarPolicy = JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
+        horizontalScrollBarPolicy = JScrollPane.HORIZONTAL_SCROLLBAR_NEVER
+    }
 
     private val options = MutableDataSet().apply {
         set(

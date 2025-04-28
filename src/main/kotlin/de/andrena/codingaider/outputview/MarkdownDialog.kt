@@ -48,7 +48,7 @@ class MarkdownDialog(
     private val markdownViewer: MarkdownViewer = MarkdownViewerFactory.create(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
         setMarkdown(initialText)
     }
-    // Use the component with proper scrolling support
+    // Use the component directly without additional scrolling containers
     private val markdownComponent = markdownViewer.component.apply {
         border = null
     }
@@ -147,11 +147,11 @@ class MarkdownDialog(
         preferredSize = java.awt.Dimension(optimalWidth, optimalHeight)
         minimumSize = java.awt.Dimension(500, 400)
 
-        // Use weighted layout for better content scaling
+        // Use simple layout without nested panels to avoid double scrollbars
         layout = BorderLayout(10, 10)
         pack()
         setLocationRelativeTo(null)
-        // Add content panel with proper weighting - no additional panels that might cause double scrollbars
+        // Add content panel directly to avoid nested scrolling containers
         add(markdownComponent, BorderLayout.CENTER)
 
         defaultCloseOperation = DO_NOTHING_ON_CLOSE
@@ -231,7 +231,15 @@ class MarkdownDialog(
                 
                 // Update content while preserving scroll position
                 try {
-                    markdownViewer.setMarkdown(normalizedOutput)
+                    // Force a small delay to ensure proper rendering
+                    SwingUtilities.invokeLater {
+                        markdownViewer.setMarkdown(normalizedOutput)
+                        
+                        // Ensure auto-scroll works by requesting focus
+                        if (markdownComponent.isShowing) {
+                            markdownComponent.requestFocusInWindow()
+                        }
+                    }
                 } catch (e: Exception) {
                     // Log error but don't crash on markdown update issues
                     println("Error updating markdown content: ${e.message}")

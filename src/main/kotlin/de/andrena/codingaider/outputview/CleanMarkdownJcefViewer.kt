@@ -72,6 +72,8 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
     private var loadAttempts = 0
     private val maxLoadAttempts = 3
     private var autoScrollEnabled = true
+    private var lastScrollPosition = 0
+    private var isUserScrolled = false
     
     // JavaScript bridge for communication with the browser
     private var jsQuery: JBCefJSQuery? = null
@@ -288,9 +290,12 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
     }
     
     private fun updateScrollState(isAtBottom: Boolean, scrollY: Int) {
-        // This method could be expanded to store scroll state
-        // Currently just logging for debugging
-        logger.debug("Scroll state updated: isAtBottom=$isAtBottom, scrollY=$scrollY")
+        // Store scroll state for future reference
+        lastScrollPosition = scrollY
+        isUserScrolled = !isAtBottom
+        
+        // Log for debugging
+        logger.debug("Scroll state updated: isAtBottom=$isAtBottom, scrollY=$scrollY, isUserScrolled=$isUserScrolled")
     }
     
     override val component: JComponent
@@ -350,7 +355,7 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
                                 // Ensure content is properly sized
                                 const content = panel.querySelector('.collapsible-content');
                                 if (content) {
-                                    content.style.maxHeight = content.scrollHeight + 'px';
+                                    content.style.maxHeight = '2000px'; // Use fixed value instead of scrollHeight
                                 }
                             }
                         });
@@ -366,14 +371,16 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
                         initFilePathLinks();
                     }
                     
-                    // Restore scroll position with improved logic
+                    // Improved scroll position restoration with better autoscroll
                     setTimeout(() => {
-                        if (isAtBottom && window.autoScrollEnabled !== false) {
+                        // Force scroll to bottom if auto-scroll is enabled and user was at bottom
+                        if ((isAtBottom || !userScrolled) && window.autoScrollEnabled !== false) {
                             window.scrollTo({
                                 top: document.body.scrollHeight,
                                 behavior: 'smooth'
                             });
-                        } else if (!userScrolled) {
+                        } else if (!isAtBottom) {
+                            // Only preserve scroll position if user has explicitly scrolled up
                             window.scrollTo({
                                 top: scrollY,
                                 behavior: 'auto'
