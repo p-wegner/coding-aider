@@ -59,7 +59,7 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
     // State tracking
     private var isInitialized = false
     private var pendingMarkdown: String? = null
-    private var isDarkTheme = com.intellij.openapi.editor.colors.EditorColorsManager.getInstance().schemeForCurrentUITheme.isDark
+    private var isDarkTheme = true
     private var currentContent = ""
     private var loadAttempts = 0
     private val maxLoadAttempts = 3

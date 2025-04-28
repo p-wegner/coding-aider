@@ -1,56 +1,142 @@
-src/main/java/de/andrena/springai_demo/services/DefaultVotingService.java
-```java
+Below is a “for-the-mechanic” walkthrough of the Markdown-viewer part of the plugin.  
+I’ve highlighted *why* the special **SEARCH / REPLACE** formatting never shows up and a handful of smaller problems that emerge from the same root cause.
+
+---
+
+## 1  What you (probably) see in the IDE
+
+| Symptom | Typical trace / note |
+|---------|----------------------|
+| The code-review dialog shows the raw `<<<<<<< SEARCH … >>>>>>> REPLACE` blocks inside regular fenced-code, i.e. **no nice two-tone panel at all** | nothing unusual in the IDE log |
+| File-path lines (`src/Foo.kt`) *are* turned into links, collapsible panels work, dark/light theme works | proves that the Markdown → HTML → JS pipeline itself is alive |
+| Very large command outputs (> 64 kB) occasionally freeze the viewer | CEF silently drops over-large JS messages |
+
+---
+
+## 2  Why the SEARCH/REPLACE beautifier never triggers
+
+### 2.1  The order of operations is wrong
+
+```kotlin
+// CleanMarkdownJcefViewer.kt (line ~230)
+val document = parser.parse(processedMarkdown)   // ① markdown → AST
+var html = renderer.render(document)             // ② AST → HTML
+html = processSearchReplaceBlocks(html)          // ③ try to regex-match the *markdown* pattern in HTML
+```
+
+* `processSearchReplaceBlocks` still tries to match the **markdown** syntax  
+  (`^path\n```.*?<<<<<<< SEARCH … >>>>>>> REPLACE\n```$`) but at ② those
+  markers have already been escaped by Flexmark inside
+
+  ```html
+  <pre><code>&lt;&lt;&lt;&lt;&lt;&lt; SEARCH …</code></pre>
+  ```
+
+* Because the regex never matches, the pretty replacement panel is never
+  generated – every time, for every block.
+
+**Fix (minimal):**
+
+Parse / mutate before the Flexmark renderer:
+
+```kotlin
+val preprocessed = processSearchReplaceBlocks(processedMarkdown) // ↩ here
+val document     = parser.parse(preprocessed)
+val html         = renderer.render(document)
+```
+
+*(You will also have to adjust the replacement routine so it puts back
+plain markdown, not raw HTML.)*
+
+---
+
+### 2.2  Mismatch between viewer and parser regexes
+
+* **Viewer** accepts only **triple-back-tick** fences (` ``` `)  
+  `searchReplacePattern` in *CleanMarkdownJcefViewer.kt*
+* **Parser** understands triple *and* quadruple fences (` ````, “quad”)
+  and a couple of other variations (see `QUADRUPLE_REGEX`, `NEW_FILE_BLOCK_REGEX`…)
+
+If you paste a block that the back-end happily parsed with
+```````` markdown
+file.py
+````python            ← 4 back-ticks
 <<<<<<< SEARCH
+…
+````````               ← 4 back-ticks
+```
+the viewer will still ignore it, even after the ordering bug is fixed.
+
+---
+
+## 3  Secondary problems revealed while digging
+
+| Location | Issue | Impact / Fix |
+|----------|-------|--------------|
+| **`convertMarkdownToHtml`** | `${ … }` in user output is *not* escaped before it is spliced into a JS *template literal* (`content.innerHTML = \`${processedHtml}\`;`).  `${` inside a code sample breaks the script. | Replace `${` → `\${` (or don’t use a template literal at all; inject via `query` instead). |
+| Same method | Backslashes/quotes/newlines are hand-escaped; `</script>` and **size > 64 kB** are still lethal for CEF. | Use `Base64` or `postMessage` instead of “inline JS blob”. |
+| **`EditorColorsManager.getInstance().isDarkEditor`** | Method was deprecated in 2024.2 and removed in 2025.1 – returns **false** on new EAPs. | Switch to `EditorColorsManager.getInstance().schemeForCurrentUITheme.isDark` |
+| **`jsQuery`** | The `JBCefJSQuery` is never `dispose()`d when the dialog closes → memory leak + native callback retained. | Call `jsQuery?.dispose()` from `MarkdownDialog.windowClosed`. |
+| **Timers** | Kotlin/Java `Timer` threads are *daemon=false* by default.  The retry timer in the load-handler can keep the JVM running after the IDE shut down tests. | `Timer(true)` instead, or use `Alarm`. |
+
+None of those prevent the dialog from appearing, but they do bite in long-running IDE sessions or on newest IDE builds.
+
+---
+
+## 4  One-liner test you can run
+
+```markdown
+src/hello.py
+```python
+<<<<<<< SEARCH
+print("Hello")
 =======
-package de.andrena.springai_demo.services;
-
-import de.andrena.springai_demo.entities.Candidate;
-import de.andrena.springai_demo.entities.Vote;
-import de.andrena.springai_demo.repositories.CandidateRepository;
-import de.andrena.springai_demo.repositories.VoteRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-
-@Service
-public class DefaultVotingService implements VotingService {
-    private final VoteRepository voteRepository;
-    private final CandidateRepository candidateRepository;
-
-    public DefaultVotingService(VoteRepository voteRepository,
-                              CandidateRepository candidateRepository) {
-        this.voteRepository = voteRepository;
-        this.candidateRepository = candidateRepository;
-    }
-
-    @Override
-    @Transactional
-    public Vote castVote(Long candidateId, Long userId) {
-        if (voteRepository.existsByUserId(userId)) {
-            throw new IllegalStateException("User has already voted");
-        }
-
-        Candidate candidate = candidateRepository.findById(candidateId)
-            .orElseThrow(() -> new IllegalArgumentException("Candidate not found"));
-
-        Vote vote = Vote.create(candidate, userId);
-        candidate.getVoteHistory().add(vote);
-        return voteRepository.save(vote);
-    }
-
-    @Override
-    public List<Vote> getVotesByCandidate(Long candidateId) {
-        if (!candidateRepository.existsById(candidateId)) {
-            throw new IllegalArgumentException("Candidate not found");
-        }
-        return voteRepository.findByCandidateId(candidateId);
-    }
-
-    @Override
-    public List<Candidate> getAllCandidates() {
-        return candidateRepository.findAll();
-    }
-}
+print("Hello, World!")
 >>>>>>> REPLACE
 ```
+
+*Current behaviour* → plain fenced block.  
+*After ordering fix* → pretty two-pane “SEARCH/REPLACE” panel.
+
+---
+
+## 5  Suggested patch (core part)
+
+```kotlin
+// CleanMarkdownJcefViewer.kt
+override fun setMarkdown(markdown: String) {
+    …
+    val preprocessed   = processSearchReplaceBlocks(   // move ↑
+                          FilePathConverter.convertPathsToMarkdownLinks(markdown, basePath))
+    val document       = parser.parse(preprocessed)
+    var html           = renderer.render(document)
+
+    // only *now* do JS-safe escaping
+    html = escapeForJsString(html)
+    …
+}
+
+private fun escapeForJsString(src: String) = src
+        .replace("\\", "\\\\")
+        .replace("$", "\\$")
+        .replace("`", "\\`")
+        .replace("\n", "\\n")
+```
+
+Add quadruple-fence support by changing
+
+```kotlin
+"""(?m)^([^\r\n]+)\r?\n```{1,2}(?:[^\r\n]*)\r?\n<<<<<<< SEARCH …""".toRegex()
+```
+
+(or just import the same pattern object from `SearchReplaceBlockParser`).
+
+---
+
+### After those two tweaks:
+
+* Panels render correctly in both dark/light themes.  
+* Viewer handles the same variants the back-end can parse.  
+* `${…}` inside code samples no longer crashes the JS injection.
+
+Feel free to ping me if you need a full PR – but these two hotspots are the reason the “broken” viewer never shows its fancy formatting.

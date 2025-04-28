@@ -7,6 +7,7 @@ import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
+import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
@@ -567,7 +568,7 @@ class PlanViewer(private val project: Project) {
 
                 override fun createCenterPanel(): JComponent {
                     val markdownViewer = CleanMarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
-                        setDarkTheme(EditorColorsManager.getInstance().schemeForCurrentUITheme.isDark)
+                        setDarkTheme(true)
                         setMarkdown(selectedPlan.plan)
                     }
                     val previewScrollPane = JBScrollPane(markdownViewer.component).apply {
