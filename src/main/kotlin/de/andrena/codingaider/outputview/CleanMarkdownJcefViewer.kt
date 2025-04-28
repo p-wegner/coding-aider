@@ -434,10 +434,3 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
         }
     }
 }
-    /**
-     * Dispose of the JS query to prevent memory leaks
-     */
-    fun disposeJsQuery() {
-        jsQuery?.dispose()
-        jsQuery = null
-    }
