@@ -53,7 +53,7 @@ Examples:
     override fun createCenterPanel(): JComponent {
         // Create markdown viewer and scroll pane
         val markdownViewer = CleanMarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
-            setDarkTheme(EditorColorsManager.getInstance().schemeForCurrentUITheme.isDark)
+            setDarkTheme(com.intellij.openapi.editor.colors.EditorColorsManager.getInstance().schemeForCurrentUITheme.isDark)
             setMarkdown(plan.plan)
         }
 
