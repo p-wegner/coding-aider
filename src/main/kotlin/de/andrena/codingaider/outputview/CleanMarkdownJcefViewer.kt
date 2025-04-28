@@ -203,6 +203,11 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
                     toggleAutoScroll: function(enabled) { ${query.inject("'autoscroll:' + enabled")} },
                     panelToggled: function(panelId, isExpanded) { ${query.inject("'panel:' + panelId + ':' + isExpanded")} }
                 };
+                
+                // Initialize collapsible panels immediately after bridge is connected
+                if (typeof initCollapsiblePanels === 'function') {
+                    initCollapsiblePanels();
+                }
                 """.trimIndent(),
                 jbCefBrowser?.cefBrowser?.url ?: "",
                 0
@@ -441,6 +446,15 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
                 .replace("{7}", quoteColor)
             
             jbCefBrowser?.loadHTML(html)
+            
+            // Initialize JS bridge after a short delay to ensure the page is loaded
+            Timer(true).schedule(object : TimerTask() {
+                override fun run() {
+                    SwingUtilities.invokeLater {
+                        connectJsBridge()
+                    }
+                }
+            }, 300)
         } catch (e: Exception) {
             logger.error("Error loading HTML template", e)
             showErrorMessage("Failed to load HTML template: ${e.message}")
