@@ -229,11 +229,14 @@ class MarkdownDialog(
             if (normalizedOutput != lastContent) {
                 lastContent = normalizedOutput
                 
+                // Process the output to wrap aider-output blocks in collapsible panels if needed
+                val processedOutput = processAiderOutput(normalizedOutput)
+                
                 // Update content while preserving scroll position
                 try {
                     // Force a small delay to ensure proper rendering
                     SwingUtilities.invokeLater {
-                        markdownViewer.setMarkdown(normalizedOutput)
+                        markdownViewer.setMarkdown(processedOutput)
                         
                         // Ensure auto-scroll works by requesting focus
                         if (markdownComponent.isShowing) {
@@ -251,6 +254,36 @@ class MarkdownDialog(
                 }
             }
         }
+    }
+    
+    /**
+     * Process the output to wrap aider-output blocks in collapsible panels
+     */
+    private fun processAiderOutput(output: String): String {
+        // Check if the output contains an aider-output block
+        if (!output.contains("<aider-output>") || output.contains("<aider-output></aider-output>")) {
+            return output
+        }
+        
+        // Extract the aider-output block
+        val aiderOutputPattern = Pattern.compile("<aider-output>(.*?)</aider-output>", Pattern.DOTALL)
+        val matcher = aiderOutputPattern.matcher(output)
+        
+        if (!matcher.find()) {
+            return output
+        }
+        
+        val aiderOutputContent = matcher.group(1)
+        
+        // Create a replacement with the content wrapped in a collapsible panel
+        val replacement = """
+            <aider-output>
+            $aiderOutputContent
+            </aider-output>
+        """.trimIndent()
+        
+        // Replace the original aider-output block with our processed version
+        return output.substring(0, matcher.start()) + replacement + output.substring(matcher.end())
     }
     fun startAutoCloseTimer(autocloseDelay: Int) {
         val settings = getInstance()

@@ -105,7 +105,7 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
     
     // Pattern to detect aider blocks
     private val aiderBlockPattern = Pattern.compile(
-        """<aider-(intention|summary)>([\s\S]*?)</aider-\1>""",
+        """<aider-(intention|summary|commit-message|output|system-prompt|user-prompt)>([\s\S]*?)</aider-\1>""",
         Pattern.DOTALL
     )
     
@@ -515,7 +515,7 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
     }
     
     /**
-     * Process search/replace blocks to add special formatting
+     * Process search/replace blocks to add special formatting with collapsible panels
      */
     private fun processSearchReplaceBlocks(markdown: String): String {
         val matcher = searchReplacePattern.matcher(markdown)
@@ -526,27 +526,29 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
             val searchContent = matcher.group(2)
             val replaceContent = matcher.group(3)
             
-            // Create a markdown replacement that will render as a special panel
+            // Create a unique panel ID
+            val panelId = "edit-panel-${filePath.replace("/", "-").replace("\\", "-")}-${System.currentTimeMillis()}"
+            
+            // Create a markdown replacement that will render as a collapsible panel
             val replacement = """
-                <div class="edit-format-panel">
-                <div class="file-path" data-path="$filePath">$filePath</div>
-                <div class="edit-format">SEARCH/REPLACE</div>
-                <div class="edit-format-content">
-                <div class="search-block">
-                
-                ```
-                $searchContent
-                ```
-                
-                </div>
-                <div class="replace-block">
-                
-                ```
-                $replaceContent
-                ```
-                
-                </div>
-                </div>
+                <div class="collapsible-panel edit-format-panel expanded" data-panel-id="$panelId">
+                    <div class="collapsible-header edit-format-header">
+                        <span class="file-path" data-path="$filePath">$filePath</span>
+                        <span class="edit-format">SEARCH/REPLACE</span>
+                        <span class="collapsible-arrow">▼</span>
+                    </div>
+                    <div class="collapsible-content">
+                        <div class="edit-format-content">
+                            <div class="search-block">
+                                <div class="search-label">SEARCH:</div>
+                                <pre><code>$searchContent</code></pre>
+                            </div>
+                            <div class="replace-block">
+                                <div class="replace-label">REPLACE:</div>
+                                <pre><code>$replaceContent</code></pre>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             """.trimIndent()
             
@@ -558,23 +560,31 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
     }
     
     /**
-     * Process aider blocks (intention, summary)
+     * Process aider blocks (intention, summary, commit-message, etc.)
      */
     private fun processAiderBlocks(markdown: String): String {
         val matcher = aiderBlockPattern.matcher(markdown)
         val buffer = StringBuffer()
         
         while (matcher.find()) {
-            val blockType = matcher.group(1) // intention or summary
+            val blockType = matcher.group(1) // intention, summary, commit-message, etc.
             val content = matcher.group(2)
             
-            // Create a markdown replacement with special styling
+            // Create a markdown replacement with special styling and collapsible panel
+            val panelId = "aider-${blockType}-${System.currentTimeMillis()}-${Math.random().toString().substring(2, 8)}"
+            val isExpandedByDefault = blockType != "system-prompt" // Keep system prompt collapsed by default
+            
             val replacement = """
-                <div class="aider-$blockType">
-                <h3>${blockType.capitalize()}</h3>
-                
-                $content
-                
+                <div class="collapsible-panel aider-panel ${if (isExpandedByDefault) "expanded" else ""}" data-panel-id="$panelId">
+                    <div class="collapsible-header aider-header aider-${blockType}-header">
+                        <span class="collapsible-title">${blockType.capitalize().replace("-", " ")}</span>
+                        <span class="collapsible-arrow">${if (isExpandedByDefault) "▼" else "▶"}</span>
+                    </div>
+                    <div class="collapsible-content">
+                        <div class="aider-${blockType}-content">
+                            $content
+                        </div>
+                    </div>
                 </div>
             """.trimIndent()
             
