@@ -169,6 +169,9 @@ class MarkdownDialog(
                     // Clear references
                     autoCloseTimer = null
                     autoCloseTask = null
+            
+                    // Dispose of jsQuery to prevent memory leaks
+                    (markdownViewer as? CleanMarkdownJcefViewer)?.disposeJsQuery()
 
                     project.service<RunningCommandService>().removeRunningCommand(this@MarkdownDialog)
                 } catch (ex: Exception) {
@@ -335,7 +338,7 @@ class MarkdownDialog(
             toFront()
             requestFocus()
             markdownViewer.component.requestFocusInWindow()
-            markdownViewer.setDarkTheme(com.intellij.openapi.editor.colors.EditorColorsManager.getInstance().isDarkEditor)
+            markdownViewer.setDarkTheme(com.intellij.openapi.editor.colors.EditorColorsManager.getInstance().schemeForCurrentUITheme.isDark)
         }.apply {
             isRepeats = false
             start()

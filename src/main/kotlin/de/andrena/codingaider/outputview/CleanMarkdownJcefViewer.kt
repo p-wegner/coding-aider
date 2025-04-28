@@ -59,7 +59,7 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
     // State tracking
     private var isInitialized = false
     private var pendingMarkdown: String? = null
-    private var isDarkTheme = EditorColorsManager.getInstance().isDarkEditor
+    private var isDarkTheme = EditorColorsManager.getInstance().schemeForCurrentUITheme.isDark
     private var currentContent = ""
     private var loadAttempts = 0
     private val maxLoadAttempts = 3
@@ -80,8 +80,9 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
     private val renderer = HtmlRenderer.builder(options).build()
     
     // Search/Replace block pattern
+    // Match both triple and quadruple backtick formats for search/replace blocks
     private val searchReplacePattern = Pattern.compile(
-        """(?m)^([^\r\n]+)\r?\n```(?:[^\r\n]*)\r?\n<<<<<<< SEARCH\r?\n(.*?)\r?\n=======\r?\n(.*?)\r?\n>>>>>>> REPLACE\r?\n```$""",
+        """(?m)^([^\r\n]+)\r?\n```{1,4}(?:[^\r\n]*)\r?\n<<<<<<< SEARCH\r?\n(.*?)\r?\n=======\r?\n(.*?)\r?\n>>>>>>> REPLACE\r?\n```{1,4}$""",
         Pattern.DOTALL
     )
     
@@ -341,12 +342,12 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
         val basePath = project?.basePath
         val processedMarkdown = FilePathConverter.convertPathsToMarkdownLinks(markdown, basePath)
         
-        // Convert to HTML using Flexmark
-        val document = parser.parse(processedMarkdown)
-        var html = renderer.render(document)
+        // Process search/replace blocks before Flexmark parsing
+        val preprocessed = processSearchReplaceBlocks(processedMarkdown)
         
-        // Process search/replace blocks
-        html = processSearchReplaceBlocks(html)
+        // Convert to HTML using Flexmark
+        val document = parser.parse(preprocessed)
+        var html = renderer.render(document)
         
         // Escape JavaScript special characters
         html = html.replace("\\", "\\\\")
@@ -355,15 +356,17 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
             .replace("\n", "\\n")
             .replace("\r", "\\r")
             .replace("`", "\\`")
+            .replace("$", "\\$") // Escape $ to prevent ${} template literal issues
         
         return html
     }
     
     /**
      * Process search/replace blocks to add special formatting
+     * This is now called BEFORE Flexmark parsing, so we need to return markdown
      */
-    private fun processSearchReplaceBlocks(html: String): String {
-        val matcher = searchReplacePattern.matcher(html)
+    private fun processSearchReplaceBlocks(markdown: String): String {
+        val matcher = searchReplacePattern.matcher(markdown)
         val buffer = StringBuffer()
         
         while (matcher.find()) {
@@ -371,18 +374,31 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
             val searchContent = matcher.group(2)
             val replaceContent = matcher.group(3)
             
+            // Create a markdown replacement that will render as a special panel
             val replacement = """
                 <div class="edit-format-panel">
-                    <div class="file-path">$filePath</div>
-                    <div class="edit-format">SEARCH/REPLACE</div>
-                    <div class="edit-format-content">
-                        <pre class="search-block"><code>$searchContent</code></pre>
-                        <pre class="replace-block"><code>$replaceContent</code></pre>
-                    </div>
+                <div class="file-path">$filePath</div>
+                <div class="edit-format">SEARCH/REPLACE</div>
+                <div class="edit-format-content">
+                <div class="search-block">
+                
+                ```
+                $searchContent
+                ```
+                
+                </div>
+                <div class="replace-block">
+                
+                ```
+                $replaceContent
+                ```
+                
+                </div>
+                </div>
                 </div>
             """.trimIndent()
             
-            matcher.appendReplacement(buffer, replacement)
+            matcher.appendReplacement(buffer, replacement.replace("$", "\\$"))
         }
         matcher.appendTail(buffer)
         
@@ -418,3 +434,10 @@ class CleanMarkdownJcefViewer(private val lookupPaths: List<String> = emptyList(
         }
     }
 }
+    /**
+     * Dispose of the JS query to prevent memory leaks
+     */
+    fun disposeJsQuery() {
+        jsQuery?.dispose()
+        jsQuery = null
+    }

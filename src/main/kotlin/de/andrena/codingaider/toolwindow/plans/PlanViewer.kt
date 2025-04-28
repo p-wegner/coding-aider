@@ -567,7 +567,7 @@ class PlanViewer(private val project: Project) {
 
                 override fun createCenterPanel(): JComponent {
                     val markdownViewer = CleanMarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
-                        setDarkTheme(!JBColor.isBright())
+                        setDarkTheme(EditorColorsManager.getInstance().schemeForCurrentUITheme.isDark)
                         setMarkdown(selectedPlan.plan)
                     }
                     val previewScrollPane = JBScrollPane(markdownViewer.component).apply {
