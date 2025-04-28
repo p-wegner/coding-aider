@@ -13,6 +13,7 @@ import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.LocalFileSystem
+import com.intellij.ui.Gray
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBList
 import de.andrena.codingaider.services.PersistentFileService
@@ -349,9 +350,9 @@ class PlanViewer(private val project: Project) {
             border = BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(
                     0, 0, 1, 0, if (isDark)
-                        JBColor(Color(60, 60, 60), Color(50, 50, 50))
+                        JBColor(Gray._60, Gray._50)
                     else
-                        JBColor(Color(230, 230, 230), Color(60, 60, 60))
+                        JBColor(Gray._230, Gray._60)
                 ),
                 border
             )

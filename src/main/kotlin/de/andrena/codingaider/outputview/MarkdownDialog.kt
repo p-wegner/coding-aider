@@ -178,7 +178,7 @@ class MarkdownDialog(
                 }
             }
 
-            override fun windowClosing(windowEvent: java.awt.event.WindowEvent?) {
+            override fun windowClosing(windowEvent: WindowEvent?) {
                 if (isProcessFinished || onAbort == null) {
                     dispose()
                 } else {
