@@ -75,6 +75,13 @@ data class FileData(val filePath: String, val isReadOnly: Boolean) {
     fun hasSameNormalizedPath(other: FileData): Boolean = other.normalizedFilePath == normalizedFilePath
 }
 
-
+/**
+ * Data class representing a single step in a multi-step Aider command chain.
+ * Each step can optionally take the previous output as input.
+ */
+data class ChainedAiderCommand(
+    val commandData: CommandData,
+    val transformOutputToInput: ((String) -> String)? = null // If set, will use previous output as input
+)
 
 

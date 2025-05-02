@@ -2,6 +2,8 @@ package de.andrena.codingaider.services
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.components.service
+import de.andrena.codingaider.command.ChainedAiderCommand
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.AiderMode
@@ -46,14 +48,11 @@ class RunningCommandService {
         }
     }
 
-    /**
-     * Data class representing a single step in a multi-step Aider command chain.
-     * Each step can optionally take the previous output as input.
-     */
-    data class ChainedAiderCommand(
-        val commandData: CommandData,
-        val transformOutputToInput: ((String) -> String)? = null // If set, will use previous output as input
-    )
+    fun getLastCompletedCommandData(): CommandData? = lastCompletedCommand
+
+    fun getLastCommandOutput(): String? = lastCommandOutput
+
+
 
     /**
      * Execute a chain of Aider commands, where each command can use the output of the previous as input.
@@ -66,7 +65,7 @@ class RunningCommandService {
     ): String? {
         var lastOutput: String? = null
         var lastCommand: CommandData? = null
-        for ((index, chained) in commands.withIndex()) {
+        for ((_, chained) in commands.withIndex()) {
             val cmd = if (chained.transformOutputToInput != null && lastOutput != null) {
                 chained.commandData.copy(
                     message = chained.transformOutputToInput.invoke(lastOutput)
@@ -85,6 +84,7 @@ class RunningCommandService {
         return lastOutput
     }
 
+    // TODO 02.05.2025 pwegner: use PostActionPlanCreationService here
     fun createPlanFromLastCommand(project: Project) {
         if (lastCompletedCommand == null || lastCommandOutput == null) {
             JOptionPane.showMessageDialog(
@@ -204,3 +204,4 @@ class RunningCommandService {
         summaryExecutor.execute()
     }
 }
+
