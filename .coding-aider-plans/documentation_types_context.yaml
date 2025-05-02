@@ -1,0 +1,20 @@
+---
+files:
+- path: src/main/kotlin/de/andrena/codingaider/features/testgeneration/TestTypeConfiguration.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/features/testgeneration/DefaultTestTypes.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/features/testgeneration/TestGenerationPromptService.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/features/testgeneration/dialogs/TestTypeDialog.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/features/testgeneration/dialogs/TestGenerationDialog.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/settings/AiderProjectSettings.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/settings/AiderProjectSettingsConfigurable.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/actions/aider/DocumentCodeAction.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/actions/aider/DocumentEachFolderAction.kt
+  readOnly: false
