@@ -152,33 +152,97 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         <body>
             <div id="content"></div>
             <script>
+                // Store panel states
+                let panelStates = {};
+                
                 // Function to initialize collapsible panels
                 function initCollapsiblePanels() {
-                    document.querySelectorAll('.collapsible-header').forEach(header => {
+                    document.querySelectorAll('.collapsible-panel').forEach(panel => {
+                        const header = panel.querySelector('.collapsible-header');
+                        const panelId = getPanelId(panel);
+                        
                         // Remove existing event listeners to prevent duplicates
-                        header.removeEventListener('click', togglePanel);
-                        // Add click event listener
-                        header.addEventListener('click', togglePanel);
+                        if (header) {
+                            header.removeEventListener('click', togglePanel);
+                            header.addEventListener('click', togglePanel);
+                            
+                            // Restore panel state if it exists
+                            if (panelStates[panelId] === false) {
+                                panel.classList.remove('expanded');
+                                const arrow = header.querySelector('.collapsible-arrow');
+                                if (arrow) {
+                                    arrow.textContent = '▶';
+                                }
+                            }
+                        }
                     });
+                }
+                
+                // Generate a unique ID for each panel based on its content
+                function getPanelId(panel) {
+                    const header = panel.querySelector('.collapsible-header');
+                    const title = header ? header.querySelector('.collapsible-title').textContent : '';
+                    const content = panel.querySelector('.collapsible-content').textContent.substring(0, 50);
+                    return `${title}-${content.replace(/\s+/g, '')}`;
                 }
                 
                 // Toggle panel function
                 function togglePanel(event) {
                     const panel = this.parentElement;
-                    panel.classList.toggle('expanded');
+                    const isExpanded = panel.classList.toggle('expanded');
                     
                     // Update arrow indicator
                     const arrow = this.querySelector('.collapsible-arrow');
                     if (arrow) {
-                        arrow.textContent = panel.classList.contains('expanded') ? '▼' : '▶';
+                        arrow.textContent = isExpanded ? '▼' : '▶';
                     }
+                    
+                    // Store panel state
+                    const panelId = getPanelId(panel);
+                    panelStates[panelId] = isExpanded;
                 }
                 
-                // Simple function to update content
+                // Function to update content while preserving panel states
                 function updateContent(html) {
+                    // Save current scroll position
+                    const scrollPosition = window.scrollY;
+                    const wasAtBottom = isScrolledToBottom();
+                    
+                    // Store current panel states before updating
+                    storeCurrentPanelStates();
+                    
+                    // Update content
                     document.getElementById('content').innerHTML = html;
-                    // Initialize collapsible panels after content update
-                    setTimeout(initCollapsiblePanels, 50); // Small delay to ensure DOM is ready
+                    
+                    // Initialize panels with restored states
+                    setTimeout(() => {
+                        initCollapsiblePanels();
+                        
+                        // Restore scroll position or scroll to bottom if we were at bottom
+                        if (wasAtBottom) {
+                            scrollToBottom();
+                        } else {
+                            window.scrollTo(0, scrollPosition);
+                        }
+                    }, 50);
+                }
+                
+                // Check if scrolled to bottom
+                function isScrolledToBottom() {
+                    return (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 50);
+                }
+                
+                // Scroll to bottom
+                function scrollToBottom() {
+                    window.scrollTo(0, document.body.scrollHeight);
+                }
+                
+                // Store current panel states
+                function storeCurrentPanelStates() {
+                    document.querySelectorAll('.collapsible-panel').forEach(panel => {
+                        const panelId = getPanelId(panel);
+                        panelStates[panelId] = panel.classList.contains('expanded');
+                    });
                 }
                 
                 // Initialize panels when page loads
@@ -455,8 +519,15 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             }
             
             .collapsible-panel.expanded .collapsible-content {
-                max-height: 2000px;
+                max-height: 10000px; /* Increased to handle larger content */
                 padding: 10px 15px;
+            }
+            
+            /* Ensure arrows are visible */
+            .collapsible-arrow {
+                font-weight: bold;
+                margin-left: 10px;
+                user-select: none;
             }
             
             /* File path styling */
@@ -505,9 +576,10 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         // Helper function to create collapsible panels
         fun createCollapsiblePanel(title: String, content: String, cssClass: String = "", isEscaped: Boolean = true): String {
             val contentHtml = if (isEscaped) "<pre><code>${escapeHtml(content.trim())}</code></pre>" else content.trim()
+            val panelId = "panel-${title.replace(" ", "-").lowercase()}-${content.hashCode()}"
             
             return """
-            <div class="collapsible-panel expanded">
+            <div class="collapsible-panel expanded" data-panel-id="$panelId">
                 <div class="collapsible-header $cssClass">
                     <span class="collapsible-title">$title</span>
                     <span class="collapsible-arrow">▼</span>

@@ -261,15 +261,30 @@ class MarkdownDialog(
                     markdownViewer.setMarkdown(newContent)
                     this@MarkdownDialog.title = title
 
-                    // Schedule scroll adjustment after UI updates
-                    invokeLater {
-                        // Scroll to bottom if auto-scroll is enabled OR if we were already near the bottom
-                        if (shouldAutoScroll || wasNearBottom) {
-                            try {
-                                programmaticScrolling = true // Prevent listener feedback loop
-                                scrollBar.value = scrollBar.maximum // Scroll to the very bottom
-                            } finally {
-                                programmaticScrolling = false
+                    // Schedule scroll adjustment after UI updates with a longer delay
+                    // to ensure the content is fully rendered
+                    Timer().schedule(100) {
+                        invokeLater {
+                            // Scroll to bottom if auto-scroll is enabled OR if we were already near the bottom
+                            if (shouldAutoScroll || wasNearBottom) {
+                                try {
+                                    programmaticScrolling = true // Prevent listener feedback loop
+                                    scrollBar.value = scrollBar.maximum // Scroll to the very bottom
+                                    
+                                    // Sometimes the first scroll doesn't reach the bottom due to rendering delays
+                                    // Try again after a short delay
+                                    Timer().schedule(50) {
+                                        invokeLater {
+                                            if (programmaticScrolling) {
+                                                scrollBar.value = scrollBar.maximum
+                                                programmaticScrolling = false
+                                            }
+                                        }
+                                    }
+                                } catch (e: Exception) {
+                                    programmaticScrolling = false
+                                    println("Error during scrolling: ${e.message}")
+                                }
                             }
                         }
                     }
