@@ -133,6 +133,31 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     background: ${if (isDarkTheme) "#2b2b2b" else "#ffffff"};
                     color: ${if (isDarkTheme) "#ffffff" else "#000000"};
                 }
+                
+                /* Custom scrollbar styling to match IDE native look */
+                ::-webkit-scrollbar {
+                    width: 12px;
+                    height: 12px;
+                }
+                
+                ::-webkit-scrollbar-track {
+                    background: ${if (isDarkTheme) "#3c3f41" else "#f0f0f0"};
+                    border-radius: 0;
+                }
+                
+                ::-webkit-scrollbar-thumb {
+                    background: ${if (isDarkTheme) "#5a5d5e" else "#c9c9c9"};
+                    border-radius: 0;
+                    border: 2px solid ${if (isDarkTheme) "#3c3f41" else "#f0f0f0"};
+                }
+                
+                ::-webkit-scrollbar-thumb:hover {
+                    background: ${if (isDarkTheme) "#6e7071" else "#a0a0a0"};
+                }
+                
+                ::-webkit-scrollbar-corner {
+                    background: ${if (isDarkTheme) "#3c3f41" else "#f0f0f0"};
+                }
                 #content {
                     max-width: 100%;
                     overflow-wrap: break-word;
@@ -432,6 +457,31 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 color: ${colors["bodyText"]};
                 margin: 20px;
                 padding: 0;
+            }
+            
+            /* Custom scrollbar styling to match IDE native look */
+            ::-webkit-scrollbar {
+                width: 12px;
+                height: 12px;
+            }
+            
+            ::-webkit-scrollbar-track {
+                background: ${if (isDarkTheme) "#3c3f41" else "#f0f0f0"};
+                border-radius: 0;
+            }
+            
+            ::-webkit-scrollbar-thumb {
+                background: ${if (isDarkTheme) "#5a5d5e" else "#c9c9c9"};
+                border-radius: 0;
+                border: 2px solid ${if (isDarkTheme) "#3c3f41" else "#f0f0f0"};
+            }
+            
+            ::-webkit-scrollbar-thumb:hover {
+                background: ${if (isDarkTheme) "#6e7071" else "#a0a0a0"};
+            }
+            
+            ::-webkit-scrollbar-corner {
+                background: ${if (isDarkTheme) "#3c3f41" else "#f0f0f0"};
             }
             
             /* Code blocks */
