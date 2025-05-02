@@ -177,8 +177,34 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         <body>
             <div id="content"></div>
             <script>
-                // Store panel states
-                let panelStates = {};
+                // Persistent panel state storage
+                const panelStates = {};
+                
+                // Generate a stable ID for each panel based on its content
+                function getPanelId(panel) {
+                    const header = panel.querySelector('.collapsible-header');
+                    let title = '';
+                    if (header) {
+                        const titleElement = header.querySelector('.collapsible-title');
+                        if (titleElement) {
+                            title = titleElement.textContent || '';
+                        }
+                    }
+                    
+                    // Use panel's data attribute if available
+                    if (panel.dataset.panelId) {
+                        return panel.dataset.panelId;
+                    }
+                    
+                    // Generate a more stable ID based on title and position in document
+                    const allPanels = Array.from(document.querySelectorAll('.collapsible-panel'));
+                    const panelIndex = allPanels.indexOf(panel);
+                    const stableId = title.replace(/[^a-z0-9]/gi, '') + '-' + panelIndex;
+                    
+                    // Store the ID as a data attribute for future reference
+                    panel.dataset.panelId = stableId;
+                    return stableId;
+                }
                 
                 // Function to initialize collapsible panels
                 function initCollapsiblePanels() {
@@ -203,30 +229,10 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     });
                 }
                 
-                // Generate a unique ID for each panel based on its content
-                function getPanelId(panel) {
-                    const header = panel.querySelector('.collapsible-header');
-                    let title = '';
-                    if (header) {
-                        const titleElement = header.querySelector('.collapsible-title');
-                        if (titleElement) {
-                            title = titleElement.textContent || '';
-                        }
-                    }
-                    
-                    const contentElement = panel.querySelector('.collapsible-content');
-                    const content = contentElement ? contentElement.textContent.substring(0, 50) : '';
-                    
-                    // Use panel's data attribute if available, otherwise generate random ID
-                    const randomId = panel.dataset.panelId || Math.random().toString(36).substring(2, 8);
-                    
-                    // Avoid template literals for better compatibility
-                    return title + '-' + content.replace(/\s+/g, '') + '-' + randomId;
-                }
-                
                 // Toggle panel function
                 function togglePanel(event) {
                     const panel = this.parentElement;
+                    const panelId = getPanelId(panel);
                     const isExpanded = panel.classList.toggle('expanded');
                     
                     // Update arrow indicator
@@ -236,8 +242,10 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     }
                     
                     // Store panel state
-                    const panelId = getPanelId(panel);
                     panelStates[panelId] = isExpanded;
+                    
+                    // Prevent event propagation
+                    event.stopPropagation();
                 }
                 
                 // Function to update content while preserving panel states
@@ -252,20 +260,52 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     // Update content
                     document.getElementById('content').innerHTML = html;
                     
-                    // Initialize panels with restored states
+                    // Initialize panels with restored states - use a more reliable approach
+                    // with multiple attempts to ensure states are properly restored
+                    restorePanelStates();
+                    
+                    // Schedule additional restoration attempts to handle race conditions
+                    setTimeout(restorePanelStates, 50);
+                    setTimeout(restorePanelStates, 150);
+                    
+                    // Restore scroll position
                     setTimeout(() => {
-                        initCollapsiblePanels();
-                        
-                        // Restore scroll position or scroll to bottom if we were at bottom
                         if (wasAtBottom) {
-                            // Multiple scroll attempts to ensure we reach the bottom
                             scrollToBottom();
-                            setTimeout(scrollToBottom, 50);
                             setTimeout(scrollToBottom, 100);
                         } else {
                             window.scrollTo(0, scrollPosition);
                         }
                     }, 50);
+                }
+                
+                // More reliable panel state restoration
+                function restorePanelStates() {
+                    document.querySelectorAll('.collapsible-panel').forEach(panel => {
+                        const panelId = getPanelId(panel);
+                        
+                        // Apply stored state if it exists
+                        if (panelStates[panelId] === false) {
+                            panel.classList.remove('expanded');
+                            const arrow = panel.querySelector('.collapsible-arrow');
+                            if (arrow) {
+                                arrow.textContent = '▶';
+                            }
+                        } else if (panelStates[panelId] === true) {
+                            panel.classList.add('expanded');
+                            const arrow = panel.querySelector('.collapsible-arrow');
+                            if (arrow) {
+                                arrow.textContent = '▼';
+                            }
+                        }
+                        
+                        // Ensure event listeners are attached
+                        const header = panel.querySelector('.collapsible-header');
+                        if (header) {
+                            header.removeEventListener('click', togglePanel);
+                            header.addEventListener('click', togglePanel);
+                        }
+                    });
                 }
                 
                 // Check if scrolled to bottom
@@ -293,6 +333,25 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 
                 // Initialize panels when page loads
                 document.addEventListener('DOMContentLoaded', initCollapsiblePanels);
+                
+                // Prevent hover effects during content updates
+                let isUpdatingContent = false;
+                const originalUpdateContent = updateContent;
+                updateContent = function(html) {
+                    isUpdatingContent = true;
+                    
+                    // Add a class to the body during updates to disable hover effects
+                    document.body.classList.add('updating-content');
+                    
+                    // Call the original function
+                    originalUpdateContent(html);
+                    
+                    // Remove the class after the update is complete
+                    setTimeout(() => {
+                        document.body.classList.remove('updating-content');
+                        isUpdatingContent = false;
+                    }, 200);
+                };
             </script>
         </body>
         </html>
@@ -576,6 +635,18 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
+                transition: background-color 0.2s;
+            }
+            
+            /* Disable hover effects during content updates */
+            body.updating-content .collapsible-header:hover {
+                background: ${colors["preBg"]} !important;
+                transition: none !important;
+            }
+            
+            /* Only apply hover effects when not updating */
+            body:not(.updating-content) .collapsible-header:hover {
+                background: ${isDarkTheme ? "#383838" : "#e8e8e8"};
             }
             
             .collapsible-title {

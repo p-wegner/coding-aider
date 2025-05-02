@@ -264,8 +264,8 @@ class MarkdownDialog(
                     this@MarkdownDialog.title = title
 
                     // Schedule scroll adjustment after UI updates with a longer delay
-                    // to ensure the content is fully rendered
-                    Timer().schedule(150) {
+                    // to ensure the content is fully rendered and panel states are preserved
+                    Timer().schedule(200) {
                         invokeLater {
                             // Scroll to bottom if auto-scroll is enabled OR if we were already near the bottom
                             if (shouldAutoScroll || wasNearBottom) {
