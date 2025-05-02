@@ -3,22 +3,24 @@ package de.andrena.codingaider.services.plans
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import de.andrena.codingaider.command.ChainedAiderCommand
 import de.andrena.codingaider.command.CommandData
-import de.andrena.codingaider.executors.api.CommandFinishedCallback
-import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.AiderMode
+import de.andrena.codingaider.services.RunningCommandService
 import java.io.File
-import java.util.concurrent.CountDownLatch
-import java.util.concurrent.TimeUnit
 import java.util.regex.Pattern
 
+/**
+ * Service responsible for creating plans from completed Aider commands.
+ * This service handles the conversion of command outputs into structured plans.
+ */
 @Service(Service.Level.PROJECT)
 class PostActionPlanCreationService(private val project: Project) {
     
     companion object {
         private const val PLANS_FOLDER = AiderPlanService.AIDER_PLANS_FOLDER
-        private const val PLAN_CREATION_TIMEOUT_SECONDS = 60L
     }
     
     /**
@@ -38,27 +40,14 @@ class PostActionPlanCreationService(private val project: Project) {
             // Create a structured mode command to generate the plan
             val planCreationCommand = createPlanCreationCommand(commandData, commandOutput)
             
-            // Execute the command and wait for completion
-            val latch = CountDownLatch(1)
-            var success = false
-
-            val executor = IDEBasedExecutor(project, planCreationCommand, CommandFinishedCallback {
-                fun onCommandFinished(exitCode: Int) {
-                    success = exitCode == 0
-                    latch.countDown()
-                }
-            })
+            // Use the RunningCommandService to execute the command
+            val commandService = project.service<RunningCommandService>()
+            val result = commandService.executeChainedCommands(
+                project,
+                listOf(ChainedAiderCommand(planCreationCommand))
+            )
             
-            // Execute in a separate thread to avoid blocking the UI
-            Thread {
-                executor.execute()
-            }.start()
-            
-            // Wait for the command to complete with a timeout
-            if (!latch.await(PLAN_CREATION_TIMEOUT_SECONDS, TimeUnit.SECONDS)) {
-                notifyPlanCreationFailure("Plan creation timed out after $PLAN_CREATION_TIMEOUT_SECONDS seconds")
-                return false
-            }
+            val success = result != null
             
             if (success) {
                 notifyPlanCreation("Plan created successfully from command")
@@ -96,7 +85,11 @@ class PostActionPlanCreationService(private val project: Project) {
         return commandData.copy(
             message = planMessage,
             aiderMode = AiderMode.STRUCTURED,
-            planId = null  // Ensure we're creating a new plan, not continuing an existing one
+            planId = null,  // Ensure we're creating a new plan, not continuing an existing one
+            options = commandData.options.copy(
+                disablePresentation = false,
+                autoCloseDelay = 10
+            )
         )
     }
     

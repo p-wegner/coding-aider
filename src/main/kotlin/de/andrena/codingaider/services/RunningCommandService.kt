@@ -6,11 +6,18 @@ import com.intellij.openapi.components.service
 import de.andrena.codingaider.command.ChainedAiderCommand
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
-import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.outputview.MarkdownDialog
+import de.andrena.codingaider.services.plans.PostActionPlanCreationService
 import javax.swing.DefaultListModel
 import javax.swing.JOptionPane
 
+/**
+ * Service for tracking and managing running Aider commands.
+ * Responsible for:
+ * - Tracking active command dialogs
+ * - Storing information about the last completed command
+ * - Executing command chains
+ */
 @Service(Service.Level.PROJECT)
 class RunningCommandService {
     private val runningCommandsListModel = DefaultListModel<MarkdownDialog>()
@@ -52,8 +59,6 @@ class RunningCommandService {
 
     fun getLastCommandOutput(): String? = lastCommandOutput
 
-
-
     /**
      * Execute a chain of Aider commands, where each command can use the output of the previous as input.
      * The chain is executed synchronously, and each step's output is passed to the next step if requested.
@@ -64,8 +69,7 @@ class RunningCommandService {
         commands: List<ChainedAiderCommand>
     ): String? {
         var lastOutput: String? = null
-        var lastCommand: CommandData? = null
-        for ((_, chained) in commands.withIndex()) {
+        for (chained in commands) {
             val cmd = if (chained.transformOutputToInput != null && lastOutput != null) {
                 chained.commandData.copy(
                     message = chained.transformOutputToInput.invoke(lastOutput)
@@ -78,13 +82,15 @@ class RunningCommandService {
             // Block until the dialog signals completion
             executor.isFinished().await()
             // After dialog is finished, use the lastCommandOutput
-            lastCommand = cmd
             lastOutput = lastCommandOutput
         }
         return lastOutput
     }
 
-    // TODO 02.05.2025 pwegner: use PostActionPlanCreationService here
+    /**
+     * Creates a plan from the last completed command.
+     * Delegates to PostActionPlanCreationService for the actual plan creation.
+     */
     fun createPlanFromLastCommand(project: Project) {
         if (lastCompletedCommand == null || lastCommandOutput == null) {
             JOptionPane.showMessageDialog(
@@ -97,36 +103,8 @@ class RunningCommandService {
         }
 
         try {
-            val command = lastCompletedCommand!!
-            val output = lastCommandOutput!!
-
-            // Create structured mode command data with all relevant files
-            val planCommand = command.copy(
-                message = """
-                    Create a structured plan from this command output:
-                    Command: ${command.message}
-                    Output:
-                    $output
-
-                    Include:
-                    1. Original command context
-                    2. Implementation steps from output
-                    3. Any follow-up tasks identified
-                """.trimIndent(),
-                aiderMode = AiderMode.STRUCTURED,
-                files = command.files,
-                options = command.options.copy(
-                    disablePresentation = false,
-                    autoCloseDelay = 10
-                )
-            )
-
-            // Use the new chaining mechanism for a single-step chain
-            executeChainedCommands(
-                project,
-                listOf(ChainedAiderCommand(planCommand))
-            )
-
+            val planCreationService = project.service<PostActionPlanCreationService>()
+            planCreationService.createPlanFromCommand(lastCompletedCommand!!, lastCommandOutput!!)
         } catch (e: Exception) {
             JOptionPane.showMessageDialog(
                 null,
@@ -137,11 +115,8 @@ class RunningCommandService {
         }
     }
 
-
     fun hasCompletedCommand(): Boolean = lastCompletedCommand != null && lastCommandOutput != null
 
-    // TODO: refactor this to use it for an action that opens a dialog with a text area,
-    //  runs the aider command with the provided text as message and runs a summery command afterwards
     /**
      * Opens a dialog with a text area for the user to enter a prompt, runs the aider command with the provided text,
      * and then runs a summary command on the output. The summary is shown in a new dialog.
@@ -187,13 +162,14 @@ class RunningCommandService {
             projectPath = project.basePath ?: "",
             sidecarMode = settings.useSidecarMode
         )
+        
+        // Execute the initial command
         val executor = IDEBasedExecutor(project, commandData)
         val dialog = executor.execute()
-        // Wait for completion
         executor.isFinished().await()
         val output = dialog.toString()
 
-        // Now run the summary command
+        // Execute the summary command as a second step
         val summaryCommand = commandData.copy(
             message = "Summarize the following output:\n$output",
             files = commandData.files
