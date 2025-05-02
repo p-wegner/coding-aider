@@ -149,14 +149,12 @@ class RunningCommandService {
      * @param project The current project
      * @param files The files to include in the context for the aider command
      * @param dialogTitle The title for the input dialog
-     * @param summaryTitle The title for the summary dialog
      * @param initialPrompt Optional initial prompt text
      */
     fun runPromptAndSummarize(
         project: Project,
         files: List<de.andrena.codingaider.command.FileData>,
         dialogTitle: String = "Aider Prompt and Summarize",
-        summaryTitle: String = "Aider Summary",
         initialPrompt: String = ""
     ) {
         val promptArea = javax.swing.JTextArea(initialPrompt, 10, 60).apply {
