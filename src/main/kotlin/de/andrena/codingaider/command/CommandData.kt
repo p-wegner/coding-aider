@@ -34,7 +34,8 @@ data class CommandData(
     val options: CommandOptions = CommandOptions.DEFAULT,
     val aiderMode: AiderMode = AiderMode.NORMAL,
     val sidecarMode: Boolean = false,
-    val planId: String? = null
+    val planId: String? = null,
+    val startTime: Long = System.currentTimeMillis()
 ) {
 
     val isShellMode: Boolean get() = aiderMode == AiderMode.SHELL
