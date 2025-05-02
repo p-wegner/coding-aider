@@ -7,4 +7,5 @@
 - [ ] Bug: Compile Error Fix doesn't use persistent files
 - [ ] Bug: Markdown output viewer ux issues
     - [ ] collapseable panels get opened automatically when content changed
-    - [ ] auto scrolling not working at all
+    - [x] auto scrolling not working at all
+- [ ] Feature: Extend documentation actions to allow selecting type of documentation: technical, PRD, ... (make configurable comparable to test creation?)
