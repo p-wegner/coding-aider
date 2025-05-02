@@ -78,7 +78,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             }
 
             // Load the initial HTML template directly
-            loadHTML(createBaseHtml())
+            loadHTML(createBaseHtml(), "http://aider.local/")
 
             // Set a simple load handler
             val client: JBCefClient = this.jbCefClient
