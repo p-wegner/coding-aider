@@ -109,7 +109,8 @@ class MarkdownDialog(
             "Convert this command and output into a structured plan. " +
                     "This can help implement more complex features where single requests are not enough."
         icon = AllIcons.Actions.RunAll
-        foreground = JBColor(Color(0, 100, 0), Color(144, 238, 144)) // Dark green/light green
+        // TODO 02.05.2025 pwegner: think about if colors make sense or where to place the button
+//        foreground = JBColor(Color(0, 100, 0), Color(144, 238, 144)) // Dark green/light green
         addActionListener { onCreatePlanClicked() }
     }
 
