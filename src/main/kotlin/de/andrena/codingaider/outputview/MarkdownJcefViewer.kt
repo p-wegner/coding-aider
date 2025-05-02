@@ -195,7 +195,8 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     // Use panel's data attribute if available, otherwise generate random ID
                     const randomId = panel.dataset.panelId || Math.random().toString(36).substring(2, 8);
                     
-                    return `${title}-${content.replace(/\s+/g, '')}-${randomId}`;
+                    // Avoid template literals for better compatibility
+                    return title + '-' + content.replace(/\s+/g, '') + '-' + randomId;
                 }
                 
                 // Toggle panel function

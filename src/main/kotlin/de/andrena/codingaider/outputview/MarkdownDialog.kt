@@ -7,7 +7,6 @@ import com.intellij.openapi.wm.WindowManager
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBScrollPane
 import de.andrena.codingaider.command.CommandData
-import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.RunningCommandService
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.services.plans.ContinuePlanService
@@ -23,9 +22,7 @@ import java.util.Timer
 import javax.swing.*
 import kotlin.concurrent.schedule
 import kotlin.concurrent.scheduleAtFixedRate
-import kotlin.math.abs
 import kotlin.math.max
-import kotlin.math.pow
 
 
 class MarkdownDialog(
