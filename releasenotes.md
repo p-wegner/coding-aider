@@ -1,3 +1,64 @@
+# Coding-Aider Plugin Release Notes - v1.2.10
+
+## 🌟 Key Highlights
+
+- **Create Plan from previous command**: Create a plan from the last command result
+- **Experimental Plugin-Based Edits**: Advanced code editing with flexible edit formats
+- **Copy Context to clipboard**: Copy context to clipboard for easy pasting into other applications
+- **Stash for persistent files**: Stash for persistent files for quick context switching
+- **Enhanced Clipboard Functionality**: Apply Code edits from clipboard
+- **Git Code Review Enhancements**: More flexible code review options
+
+## 🚀 New Features
+
+- Create Plan from previous command:
+  - New action in Aider output dialog to create a plan from the last command result
+  - Can be used to create plans after a command has run
+  - useful if a request turns out to be too complex for single shot execution
+
+- Experimental Plugin-Based Edits:
+  - Instead of relying on aider to apply edits, the plugin can now apply them directly
+  - Support for multiple edit formats (diff, whole, udiff)
+  - Lenient edit processing across different formats
+  - May be used in future releases to
+    - foundational work for workflows and features that don't rely on aider
+      - e.g. llm decides on edit format
+    - fix aider limitations related to llms failing to conform to edit format (e.g. quadruple fenced ```` blocks when triple fenced ``` is part of the edit)
+  - Auto-Commit Functionality (does not work reliably yet)
+
+- Clipboard Enhancements:
+  - New action to apply code edits from clipboard
+  - may be used to work around limitations of aiders edit format handling
+  - i.e. aider has issues creating markdown plan files => chat history can be used to extract and apply code edits
+  - Support for multiple edit formats in clipboard
+
+- Stash for Persistent Files:
+  - Persistent files can now be stashed for quick context switching
+
+- Copy Context to clipboard
+  - Button in Aider input dialog to copy context to clipboard
+  - Can be used to paste context into other applications
+  - helpful for expensive reasoning models like o3 in subscription based chat interfaces instead of paying for tokens
+
+- Git Code Review:
+  - Ability to review changes directly from Git log
+    - New Git Log Code Review action in git log context menu when 2 commits are selected
+  - Flexible ref selection (branches, tags, commits)
+
+## 💡 Improvements
+## General
+- Restructured prompt augmentation settings
+- Proper handling of aiders slash commands in combination with plugin based prompt augmentation (e.g. structured output, plan mode)
+
+## 🔧 Bug Fixes
+- Enhanced compatibility with different LLM providers (e.g. fixed incorrect api key usage)
+- Resolved issues with persistent file management
+
+## 🛠 Technical Improvements
+- Updated Kotlin version to 2.1.10
+- Compatibility with IntelliJ IDEA 2025.1
+
+
 # Coding-Aider Plugin Release Notes - v1.2.9
 
 ## 🌟 Key Highlights
