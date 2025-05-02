@@ -57,7 +57,7 @@ Make your changes precise and minimal."""
     val DEFAULT_MODE = AiderMode.NORMAL
     val AUTO_COMMITS = AiderSettings.AutoCommitSetting.DEFAULT
     val DIRTY_COMMITS = AiderSettings.DirtyCommitSetting.DEFAULT
-    const val DOCKER_IMAGE: String = "paulgauthier/aider:v0.79.1"
+    const val DOCKER_IMAGE: String = "paulgauthier/aider:v0.82.2"
     const val AIDER_EXECUTABLE_PATH: String = "aider"
     const val PLUGIN_BASED_EDITS = false // Added for plugin-based edits feature
     const val LENIENT_EDITS = false // Allow processing of multiple edit formats in a single response

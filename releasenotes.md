@@ -49,6 +49,8 @@
 ## General
 - Restructured prompt augmentation settings
 - Proper handling of aiders slash commands in combination with plugin based prompt augmentation (e.g. structured output, plan mode)
+- Support Gemini models as predefined models
+- Updated SOTA models to latest versions
 
 ## 🔧 Bug Fixes
 - Enhanced compatibility with different LLM providers (e.g. fixed incorrect api key usage)

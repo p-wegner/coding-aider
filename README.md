@@ -12,7 +12,7 @@ while allowing you complete control over the context utilized by the LLM.
 
 To utilize this plugin, you need either:
 
-1. A functional Aider installation (version 0.79.1 or higher):
+1. A functional Aider installation (version 0.82.2 or higher):
    - On Mac/Linux: Ensure aider is in your PATH or set the path manually in Settings
    - On Windows: Aider should be available in PATH or set manually
    

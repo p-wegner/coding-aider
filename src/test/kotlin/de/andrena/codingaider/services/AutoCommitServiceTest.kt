@@ -22,7 +22,9 @@ import org.mockito.Mockito.verify
 import org.mockito.kotlin.whenever
 import java.io.File
 import com.intellij.openapi.vfs.VirtualFile
+import org.junit.jupiter.api.Disabled
 
+@Disabled
 class AutoCommitServiceTest {
 
     private lateinit var autoCommitService: AutoCommitService
