@@ -4,12 +4,14 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.CommandOptions
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
+import de.andrena.codingaider.services.FileDataCollectionService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileTraversal
 import de.andrena.codingaider.utils.GitUtils
@@ -44,7 +46,7 @@ class DocumentEachFolderAction : AnAction() {
             val documentationLlm =
                 if (settings.documentationLlm == "Default") settings.llm else settings.documentationLlm
             val documentationActions = virtualFiles.filter { it.isDirectory }.map { folder ->
-                val allFiles = FileTraversal.traverseFilesOrDirectories(arrayOf(folder))
+                val allFiles = project.service<FileDataCollectionService>().collectAllFiles(arrayOf(folder))
                 val fileNames = allFiles.map { File(it.filePath).name }
                 val fileDataList = allFiles.map { FileData(it.filePath, it.isReadOnly) }
                 val filename = "${folder.name}.md"

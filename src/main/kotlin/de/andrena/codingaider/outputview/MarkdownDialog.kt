@@ -1,16 +1,18 @@
 package de.andrena.codingaider.outputview
 
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
+import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBScrollPane
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.services.RunningCommandService
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.services.plans.ContinuePlanService
-import de.andrena.codingaider.services.plans.PostActionPlanCreationService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import java.awt.BorderLayout
+import java.awt.Color
 import java.awt.EventQueue.invokeLater
 import java.awt.Frame
 import java.awt.event.KeyEvent
@@ -20,9 +22,7 @@ import java.util.Timer
 import javax.swing.*
 import kotlin.concurrent.schedule
 import kotlin.concurrent.scheduleAtFixedRate
-import kotlin.math.abs
 import kotlin.math.max
-import kotlin.math.pow
 
 
 class MarkdownDialog(
@@ -54,23 +54,23 @@ class MarkdownDialog(
         horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
         verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
 
+        // Track user scrolling to determine auto-scroll behavior
         verticalScrollBar.addAdjustmentListener { e ->
-            if (!e.valueIsAdjusting) {
+            if (!programmaticScrolling && e.valueIsAdjusting) {
                 val scrollBar = verticalScrollBar
-                val isAtBottom = scrollBar.value >= scrollBar.maximum - scrollBar.visibleAmount - 10
-                // Only update auto-scroll if user has manually scrolled
-                if (shouldAutoScroll != isAtBottom) {
-                    shouldAutoScroll = isAtBottom
-                }
-                // Store last manual scroll position
-                if (!shouldAutoScroll) {
-                    lastManualScrollPosition = scrollBar.value
-                }
+                // Check if user scrolled near the bottom (within 10 pixels)
+                val isNearBottom = scrollBar.value >= (scrollBar.maximum - scrollBar.visibleAmount - 10)
+                shouldAutoScroll = isNearBottom
             }
         }
     }
+
+    // Flag to track programmatic scrolling to avoid feedback loops
+    private var programmaticScrolling = false
     private var autoCloseTimer: TimerTask? = null
     private var refreshTimer: Timer? = null
+    // Auto-scroll state - start with auto-scroll enabled
+    private var shouldAutoScroll = true
     private var keepOpenButton = JButton("Keep Open").apply {
         mnemonic = KeyEvent.VK_K
         isVisible = false
@@ -101,59 +101,44 @@ class MarkdownDialog(
             }
         }
     }
-    
+
     private var createPlanButton = JButton("Create Plan").apply {
         mnemonic = KeyEvent.VK_P
         isVisible = false
-        addActionListener {
-            if (isProcessFinished && commandData != null) {
-                try {
-                    isEnabled = false
-                    text = "Creating Plan..."
-                    val success = project.service<PostActionPlanCreationService>().createPlanFromCommand(
-                        commandData,
-                        lastContent
-                    )
-                    if (success) {
-                        JOptionPane.showMessageDialog(
-                            this@MarkdownDialog,
-                            "Plan created successfully.",
-                            "Plan Creation",
-                            JOptionPane.INFORMATION_MESSAGE
-                        )
-                        // Store the completed command and output for potential future use
-                        project.service<RunningCommandService>().storeCompletedCommand(commandData, lastContent)
-                    } else {
-                        JOptionPane.showMessageDialog(
-                            this@MarkdownDialog,
-                            "Failed to create plan.",
-                            "Plan Creation",
-                            JOptionPane.ERROR_MESSAGE
-                        )
-                    }
-                    isEnabled = true
-                    text = "Create Plan"
-                } catch (e: Exception) {
-                    isEnabled = true
-                    text = "Create Plan"
-                    JOptionPane.showMessageDialog(
-                        this@MarkdownDialog,
-                        "Error during plan creation: ${e.message}",
-                        "Plan Creation Error",
-                        JOptionPane.ERROR_MESSAGE
-                    )
-                }
+        toolTipText =
+            "Convert this command and output into a structured plan. " +
+                    "This can help implement more complex features where single requests are not enough."
+        icon = AllIcons.Actions.RunAll
+        foreground = JBColor(Color(0, 100, 0), Color(144, 238, 144)) // Dark green/light green
+        addActionListener { onCreatePlanClicked() }
+    }
+
+    private fun onCreatePlanClicked() {
+        if (isProcessFinished && commandData != null) {
+            try {
+                createPlanButton.isEnabled = false
+                createPlanButton.text = "Creating Plan..."
+
+                // Trigger plan creation using the already stored command data and output
+                project.service<RunningCommandService>().createPlanFromLastCommand(project)
+
+                dispose()
+            } catch (e: Exception) {
+                createPlanButton.isEnabled = true
+                createPlanButton.text = "Create Plan"
+                JOptionPane.showMessageDialog(
+                    this@MarkdownDialog,
+                    "Error during plan creation: ${e.message}",
+                    "Plan Creation Error",
+                    JOptionPane.ERROR_MESSAGE
+                )
             }
         }
     }
+
     private var isProcessFinished = false
-    private var shouldAutoScroll = true
-    private var lastManualScrollPosition = 0
-    private var isScrollAnimationInProgress = false
-    private var lastScrollPosition = 0
-    private var scrollAnimationTimer: Timer? = null
     private var resizeTimer: Timer? = null
-    
+
     init {
         title = initialTitle
 
@@ -173,17 +158,6 @@ class MarkdownDialog(
                 }
             }
         })
-
-
-        // Start refresh timer
-        refreshTimer = Timer().apply {
-            scheduleAtFixedRate(0, 1000) {
-                invokeLater {
-                    markdownViewer.component.revalidate()
-                    markdownViewer.component.repaint()
-                }
-            }
-        }
         // Set optimal window dimensions based on screen size
         val screenSize = java.awt.Toolkit.getDefaultToolkit().screenSize
         val optimalWidth = (screenSize.width * 0.6).toInt().coerceIn(600, 1200)
@@ -268,65 +242,55 @@ class MarkdownDialog(
     }
 
     private var lastContent = ""
-    private var currentContent = ""
-    private var isUpdating = false
 
     fun updateProgress(output: String, title: String) {
-        if (isUpdating) return
-        isUpdating = true
-
         com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
             try {
                 val newContent = output.replace("\r\n", "\n")
                 if (newContent != lastContent) {
                     lastContent = newContent
 
-                    // Store scroll state before update
+                    // Check if scrollbar is near the bottom before updating content
                     val scrollBar = scrollPane.verticalScrollBar
-                    val wasAtBottom = scrollBar.value >= scrollBar.maximum - scrollBar.visibleAmount - 10
-                    val prevViewportHeight = scrollPane.viewport.viewRect.height
-                    val prevScrollPosition = scrollBar.value
-                    val prevContentHeight = scrollPane.viewport.viewSize.height
-                    val prevScrollRatio = if (prevContentHeight - prevViewportHeight > 0) {
-                        prevScrollPosition.toDouble() / (prevContentHeight - prevViewportHeight)
-                    } else 0.0
-
-                    // Update scroll behavior based on user action
-                    if (!wasAtBottom && shouldAutoScroll) shouldAutoScroll = false
-                    if (wasAtBottom && !shouldAutoScroll) shouldAutoScroll = true
+                    val wasNearBottom = scrollBar.value >= (scrollBar.maximum - scrollBar.visibleAmount - 10)
 
                     // Update content
                     markdownViewer.setMarkdown(newContent)
                     this@MarkdownDialog.title = title
 
-                    // Handle scrolling after content update
-                    SwingUtilities.invokeLater {
-                        val newContentHeight = scrollPane.viewport.viewSize.height
-                        val viewportHeight = scrollPane.viewport.viewRect.height
-                        val newMaxScroll = (newContentHeight - viewportHeight).coerceAtLeast(0)
-
-                        when {
-                            shouldAutoScroll && wasAtBottom -> {
-                                smoothScrollTo(scrollBar, scrollBar.maximum)
-                            }
-                            prevContentHeight > 0 && newContentHeight > 0 -> {
-                                val targetPosition = (newMaxScroll * prevScrollRatio).toInt()
-                                    .coerceIn(0, newMaxScroll)
-                                if (Math.abs(targetPosition - scrollBar.value) > viewportHeight / 3) {
-                                    smoothScrollTo(scrollBar, targetPosition)
-                                } else {
-                                    scrollBar.value = targetPosition
+                    // Schedule scroll adjustment after UI updates with a longer delay
+                    // to ensure the content is fully rendered
+                    Timer().schedule(100) {
+                        invokeLater {
+                            // Scroll to bottom if auto-scroll is enabled OR if we were already near the bottom
+                            if (shouldAutoScroll || wasNearBottom) {
+                                try {
+                                    programmaticScrolling = true // Prevent listener feedback loop
+                                    scrollBar.value = scrollBar.maximum // Scroll to the very bottom
+                                    
+                                    // Sometimes the first scroll doesn't reach the bottom due to rendering delays
+                                    // Try again after a short delay
+                                    Timer().schedule(50) {
+                                        invokeLater {
+                                            if (programmaticScrolling) {
+                                                scrollBar.value = scrollBar.maximum
+                                                programmaticScrolling = false
+                                            }
+                                        }
+                                    }
+                                } catch (e: Exception) {
+                                    programmaticScrolling = false
+                                    println("Error during scrolling: ${e.message}")
                                 }
                             }
                         }
-
-                        scrollPane.repaint()
-                        isUpdating = false
                     }
+                } else {
+                    // Only title changed, no content update needed
+                    this@MarkdownDialog.title = title
                 }
             } catch (e: Exception) {
                 println("Error updating markdown dialog: ${e.message}")
-                e.printStackTrace()
             }
         }
     }
@@ -387,78 +351,12 @@ class MarkdownDialog(
                 requestFocus()
                 markdownViewer.component.requestFocusInWindow()
                 // Set dark theme based on current IDE theme
-                currentContent = lastContent
-                markdownViewer.setMarkdown(currentContent)
+                markdownViewer.setMarkdown(lastContent)
             }
         }
     }
 
-    private fun smoothScrollTo(scrollBar: JScrollBar, targetValue: Int) {
-        // Prevent multiple animations from running simultaneously
-        scrollAnimationTimer?.cancel()
-        if (isScrollAnimationInProgress) {
-            isScrollAnimationInProgress = false
-        }
 
-        val startValue = scrollBar.value
-        // Don't animate if the distance is too small
-        if (abs(targetValue - startValue) < 10) {
-            scrollBar.value = targetValue
-            lastScrollPosition = targetValue
-            return
-        }
-
-        isScrollAnimationInProgress = true
-        val distance = targetValue - startValue
-        val duration = 250L // Slightly faster animation
-        val startTime = System.currentTimeMillis()
-        
-        scrollAnimationTimer = Timer().apply {
-            scheduleAtFixedRate(0, 8) { // ~120fps for smoother animation
-                if (!isScrollAnimationInProgress) {
-                    cancel()
-                    return@scheduleAtFixedRate
-                }
-
-                val currentTime = System.currentTimeMillis()
-                val elapsed = (currentTime - startTime).toFloat()
-                val progress = (elapsed / duration).coerceIn(0f, 1f)
-                
-                if (progress >= 1f) {
-                    SwingUtilities.invokeLater {
-                        try {
-                            scrollBar.value = targetValue
-                            lastScrollPosition = targetValue
-                        } finally {
-                            isScrollAnimationInProgress = false
-                        }
-                    }
-                    cancel()
-                    return@scheduleAtFixedRate
-                }
-
-                val easedProgress = easeInOutQuint(progress)
-                val currentValue = startValue + (distance * easedProgress).toInt()
-
-                SwingUtilities.invokeLater {
-                    try {
-                        scrollBar.value = currentValue
-                        lastScrollPosition = currentValue
-                    } catch (e: Exception) {
-                        isScrollAnimationInProgress = false
-                    }
-                }
-            }
-        }
-    }
-
-    private fun easeInOutQuint(x: Float): Float {
-        return if (x < 0.5f) {
-            16 * x * x * x * x * x
-        } else {
-            1 - (-2 * x + 2).pow(5) / 2
-        }
-    }
     fun positionOnSameScreen() {
         // Position dialog relative to IDE window
         val ideFrame = WindowManager.getInstance().getIdeFrame(project)

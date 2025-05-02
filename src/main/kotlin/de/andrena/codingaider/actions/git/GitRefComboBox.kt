@@ -2,17 +2,14 @@ package de.andrena.codingaider.actions.git
 
 import com.intellij.openapi.project.Project
 import com.intellij.ui.TextFieldWithAutoCompletion
+import de.andrena.codingaider.actions.git.getLocalBranches
+import de.andrena.codingaider.actions.git.getTags
 import git4idea.GitUtil
 import git4idea.repo.GitRepository
 import javax.swing.JComponent
 
 class GitRefComboBox(project: Project) {
     private val repository: GitRepository? = GitUtil.getRepositoryManager(project).repositories.firstOrNull()
-    private var currentMode: RefType = RefType.BRANCH
-    
-    enum class RefType {
-        BRANCH, ANY_REF
-    }
 
     private val completionField = TextFieldWithAutoCompletion(
         project,
@@ -25,25 +22,27 @@ class GitRefComboBox(project: Project) {
 
     fun getText(): String = completionField.text
 
-
-    fun setMode(mode: RefType) {
-        currentMode = mode
-        updateCompletions()
+    fun setText(text: String) {
+        completionField.text = text
     }
 
-    private fun updateCompletions() {
-        completionField.setVariants(getRefList())
-    }
 
-    private fun getRefList(): List<String> {
-        return when (currentMode) {
-            RefType.BRANCH -> repository?.branches?.localBranches?.map { it.name } ?: emptyList()
-            RefType.ANY_REF ->  emptyList()
+    private class BranchCompletionProvider(private val repository: GitRepository?) :
+        TextFieldWithAutoCompletion.StringsCompletionProvider(
+            repository?.getLocalBranches().emptyOnNull() + repository?.getTags().emptyOnNull(),
+            null
+        ) {
+        fun getVariants() =
+            repository?.getLocalBranches().emptyOnNull() + repository?.getTags().emptyOnNull()  // Use the variants we initialized with
+
+        override fun getLookupString(prefix: String): String {
+            val variants = getVariants()
+            return variants.firstOrNull { it.startsWith(prefix) } ?: prefix
         }
     }
 
-    private class BranchCompletionProvider(private val repository: GitRepository?) :
-        TextFieldWithAutoCompletion.StringsCompletionProvider(repository?.branches?.localBranches?.map { it.name } ?: emptyList(), null) {
-        
-    }
 }
+
+fun List<String>?.emptyOnNull(): List<String> = this ?: emptyList()
+fun GitRepository.getTags(): List<String> = this.tagHolder.getTags().keys.map { it.name }
+fun GitRepository.getLocalBranches(): List<String> = this.branches.localBranches.map { it.name }

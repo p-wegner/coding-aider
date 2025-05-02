@@ -4,11 +4,37 @@ import de.andrena.codingaider.inputdialog.AiderMode
 
 object AiderDefaults {
     const val REASONING_EFFORT = "" // Can be: "", "low", "medium", "high"
-    const val SUMMARIZED_OUTPUT = false
+    const val PROMPT_AUGMENTATION = false
+    const val INCLUDE_COMMIT_MESSAGE_BLOCK = false
     const val USE_SIDECAR_MODE = false
     const val ENABLE_DOCUMENTATION_LOOKUP = false
     const val ALWAYS_INCLUDE_OPEN_FILES = false
     const val ALWAYS_INCLUDE_PLAN_CONTEXT_FILES = true
+
+    // TODO:  Format instruction for plugin-based edits
+    const val PLUGIN_BASED_EDITS_INSTRUCTION = """
+When making code changes, please format them as SEARCH/REPLACE blocks using this format:
+
+filepath
+```language
+<<<<<<< SEARCH
+code to search for
+=======
+code to replace with
+>>>>>>> REPLACE
+```
+
+For each change:
+1. Start with the relative file path on its own line
+2. Use triple backticks with the language name
+3. Include <<<<<<< SEARCH followed by the exact code to find
+4. Use ======= as a separator
+5. Include the new code after the separator
+6. End with >>>>>>> REPLACE
+7. Close with triple backticks
+
+To create a new file, use an empty SEARCH section.
+Make your changes precise and minimal."""
     // TODO: make enum with off, single plan, family
     const val ENABLE_AUTO_PLAN_CONTINUE = true
     const val ENABLE_AUTO_PLAN_CONTINUATION_IN_FAMILY = false
@@ -33,4 +59,7 @@ object AiderDefaults {
     val DIRTY_COMMITS = AiderSettings.DirtyCommitSetting.DEFAULT
     const val DOCKER_IMAGE: String = "paulgauthier/aider:v0.79.1"
     const val AIDER_EXECUTABLE_PATH: String = "aider"
+    const val PLUGIN_BASED_EDITS = false // Added for plugin-based edits feature
+    const val LENIENT_EDITS = false // Allow processing of multiple edit formats in a single response
+    const val AUTO_COMMIT_AFTER_EDITS = false // Auto-commit after plugin-based edits
 }

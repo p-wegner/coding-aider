@@ -67,9 +67,10 @@ the [Aider documentation](https://aider.chat/docs/llms/openai-compat.html).
     - Use the keyboard shortcut Alt+A for rapid access.
     - Automatically commit all changes with an LLM-generated message using ALT + D
 
-3. **Persistent File Management**: Manage frequently used files for persistent context for Aider operations with
-   Alt+Shift+A,
-   within the Aider Command Window or the Aider Settings.
+3. **Persistent File Management**: 
+   - Manage frequently used files for persistent context for Aider operations with Alt+Shift+A
+   - Temporarily stash files to different contexts and restore them when needed
+   - Organize different file sets for different tasks
 
 4. **Dual Execution Modes**:
     - IDE-based execution for seamless integration.
@@ -87,7 +88,9 @@ the [Aider documentation](https://aider.chat/docs/llms/openai-compat.html).
 
 8. **Webcrawl (Experimental)**: Download and convert pages to markdown stored in a .aider-docs folder to add to context.
 
-9. **Clipboard Image Support**: Save clipboard images directly to the project and add them to persistent files.
+9. **Clipboard Support**: 
+   - **Clipboard Image Support**: Save clipboard images directly to the project and add them to persistent files.
+   - **Clipboard Edit Format**: Apply code changes from clipboard containing SEARCH/REPLACE blocks or other edit formats.
 
 10. **Refactor to Clean Code Action**: Refactor code to adhere to clean code principles.
 

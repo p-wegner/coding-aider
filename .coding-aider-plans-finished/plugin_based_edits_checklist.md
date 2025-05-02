@@ -1,0 +1,26 @@
+[Coding Aider Plan - Checklist]
+
+- [x] Add `pluginBasedEdits` boolean field to `AiderSettings.State` with a default value of `false` in `AiderDefaults.kt`.
+- [x] Add corresponding property accessor for `pluginBasedEdits` in `AiderSettings.kt`.
+- [x] Define a constant for the `diff` format instruction prompt.
+- [x] Add `pluginBasedEditsCheckBox` JBCheckBox to `AiderSettingsConfigurable.kt`.
+- [x] Add the `pluginBasedEditsCheckBox` to the UI layout in `AiderSettingsConfigurable.createComponent` (e.g., within "Advanced Settings").
+- [x] Update `AiderSettingsConfigurable.isModified` to include `pluginBasedEditsCheckBox`.
+- [x] Update `AiderSettingsConfigurable.apply` to save the state of `pluginBasedEditsCheckBox` to `AiderSettings`.
+- [x] Update `AiderSettingsConfigurable.reset` to load the state of `pluginBasedEdits` into `pluginBasedEditsCheckBox`.
+- [x] Modify `AiderExecutionStrategy.buildCommonArgs` to check `settings.pluginBasedEdits`.
+- [x] If `pluginBasedEdits` is true in `buildCommonArgs`, modify the message construction:
+    - Prepend `/ask ` to the message.
+    - Prepend the `diff` format instruction prompt to the original user message content.
+- [x] Modify `CommandExecutor.executeSidecarCommand` (or `buildSidecarCommandString`) to check `settings.pluginBasedEdits`.
+- [x] If `pluginBasedEdits` is true in sidecar mode:
+    - Prepend `/ask ` to the command string sent via `processInteractor`.
+    - Prepend the `diff` format instruction prompt to the original user message content sent after `/ask `.
+- [x] Create a `SearchReplaceBlockParser` class to parse and apply SEARCH/REPLACE blocks.
+- [x] Create a `PluginBasedEditsService` to handle the processing of LLM responses.
+- [x] Modify `CommandExecutor.handleProcessCompletion` to process plugin-based edits.
+- [x] Modify `CommandExecutor.executeSidecarCommand` to process plugin-based edits.
+- [ ] Verify the `diff` format instructions correctly guide the LLM.
+- [ ] Test functionality with the setting enabled and disabled for normal Aider commands.
+- [ ] Test functionality with the setting enabled and disabled in Docker mode.
+- [ ] Test functionality with the setting enabled and disabled in Sidecar mode.

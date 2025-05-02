@@ -1,4 +1,4 @@
-package de.andrena.codingaider.actions.aider
+package de.andrena.codingaider.actions.git
 
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
@@ -7,7 +7,6 @@ import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.CommandData
-import de.andrena.codingaider.command.CommandOptions
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 

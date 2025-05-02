@@ -11,6 +11,7 @@ import de.andrena.codingaider.outputview.MarkdownJcefViewer
 import de.andrena.codingaider.services.plans.AiderPlan
 import de.andrena.codingaider.services.plans.AiderPlanService
 import java.awt.Dimension
+import java.awt.event.KeyEvent
 import javax.swing.*
 
 class AiderPlanRefinementDialog(
@@ -40,6 +41,13 @@ Examples:
 
     override fun init() {
         super.init()
+    }
+
+    override fun createActions(): Array<Action> {
+        val actions = super.createActions()
+        (actions[0] as? DialogWrapperAction)?.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_O)
+        (actions[1] as? DialogWrapperAction)?.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_C)
+        return actions
     }
 
     override fun createCenterPanel(): JComponent {

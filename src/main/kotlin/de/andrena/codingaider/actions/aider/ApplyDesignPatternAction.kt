@@ -8,6 +8,7 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
@@ -15,10 +16,9 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.util.ui.JBUI
 import de.andrena.codingaider.command.CommandData
-import de.andrena.codingaider.command.CommandOptions
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
+import de.andrena.codingaider.services.FileDataCollectionService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
-import de.andrena.codingaider.utils.FileTraversal
 import java.awt.BorderLayout
 import java.awt.Component
 import java.awt.GridBagConstraints
@@ -57,7 +57,7 @@ class ApplyDesignPatternAction : AnAction() {
                 val selectedPattern = dialog.getSelectedPattern()
                 val patternInfo = patterns[selectedPattern] ?: return
 
-                val allFiles = FileTraversal.traverseFilesOrDirectories(virtualFiles)
+                val allFiles = project.service<FileDataCollectionService>().collectAllFiles(virtualFiles)
                 val fileNames = allFiles.map { it.filePath }
 
                 val settings = getInstance()

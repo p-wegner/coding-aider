@@ -1,0 +1,185 @@
+<aider-intention>
+I'll create a Maven pom.xml file that's equivalent to the existing Gradle build.gradle.kts file. This will include:
+
+1. The same dependencies (Spring Boot, JPA, Thymeleaf, Jackson, Kotlin, Spring AI)
+2. The same Java version (17)
+3. The same Spring AI version (1.0.0-M3)
+4. The same group and artifact information
+5. Appropriate Maven plugins for Kotlin support
+</aider-intention>
+
+pom.xml
+```xml
+<<<<<<< SEARCH
+=======
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.5</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
+    <groupId>de.andrena</groupId>
+    <artifactId>springai-demo</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>springai-demo</name>
+    <description>Spring AI Demo Application</description>
+
+    <properties>
+        <java.version>17</java.version>
+        <kotlin.version>1.9.25</kotlin.version>
+        <spring-ai.version>1.0.0-M3</spring-ai.version>
+    </properties>
+
+    <dependencies>
+        <!-- Spring Boot -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+
+        <!-- Kotlin -->
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-reflect</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-stdlib</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-kotlin</artifactId>
+        </dependency>
+
+        <!-- Spring AI -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-openai-spring-boot-starter</artifactId>
+        </dependency>
+
+        <!-- Test Dependencies -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.kotlin</groupId>
+            <artifactId>kotlin-test-junit5</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.mockk</groupId>
+            <artifactId>mockk-spring-boot</artifactId>
+            <version>1.13.11</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.ai</groupId>
+                <artifactId>spring-ai-bom</artifactId>
+                <version>${spring-ai.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <build>
+        <sourceDirectory>${project.basedir}/src/main/kotlin</sourceDirectory>
+        <testSourceDirectory>${project.basedir}/src/test/kotlin</testSourceDirectory>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-maven-plugin</artifactId>
+                <configuration>
+                    <args>
+                        <arg>-Xjsr305=strict</arg>
+                    </args>
+                    <compilerPlugins>
+                        <plugin>spring</plugin>
+                        <plugin>jpa</plugin>
+                    </compilerPlugins>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.jetbrains.kotlin</groupId>
+                        <artifactId>kotlin-maven-allopen</artifactId>
+                        <version>${kotlin.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>org.jetbrains.kotlin</groupId>
+                        <artifactId>kotlin-maven-noarg</artifactId>
+                        <version>${kotlin.version}</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+        </plugins>
+    </build>
+
+    <repositories>
+        <repository>
+            <id>spring-milestones</id>
+            <name>Spring Milestones</name>
+            <url>https://repo.spring.io/milestone</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+</project>
+>>>>>>> REPLACE
+```
+
+<aider-summary>
+I've created a new `pom.xml` file that's equivalent to the existing Gradle build configuration. The Maven file includes:
+
+1. Project metadata (group ID, artifact ID, version) matching the Gradle configuration
+2. Java 17 as the target JVM version
+3. Kotlin version 1.9.25 (same as in Gradle)
+4. Spring Boot version 3.3.5
+5. Spring AI version 1.0.0-M3
+6. All the same dependencies:
+   - Spring Boot starters (web, data-jpa, thymeleaf)
+   - Kotlin dependencies (kotlin-reflect, kotlin-stdlib)
+   - Jackson Kotlin module
+   - Spring AI OpenAI starter
+   - Test dependencies (spring-boot-starter-test, kotlin-test-junit5, mockk)
+
+I've also configured:
+- Kotlin Maven plugin with the same compiler arguments (-Xjsr305=strict)
+- Spring and JPA compiler plugins for Kotlin
+- Spring Milestones repository for accessing the Spring AI dependencies
+- Proper source directory configuration for Kotlin
+</aider-summary>
+
+<aider-commit-message>
+feat: add Maven pom.xml equivalent to Gradle build
+</aider-commit-message>

@@ -23,7 +23,8 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
 
     data class State(
         var reasoningEffort: String = AiderDefaults.REASONING_EFFORT,
-        var summarizedOutput: Boolean = AiderDefaults.SUMMARIZED_OUTPUT,
+        var promptAugmentation: Boolean = AiderDefaults.PROMPT_AUGMENTATION,
+        var includeCommitMessageBlock: Boolean = AiderDefaults.INCLUDE_COMMIT_MESSAGE_BLOCK,
         var enableDocumentationLookup: Boolean = AiderDefaults.ENABLE_DOCUMENTATION_LOOKUP,
         var useYesFlag: Boolean = AiderDefaults.USE_YES_FLAG,
         var llm: String = AiderDefaults.LLM,
@@ -54,6 +55,9 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var optionsPanelCollapsed: Boolean = true,
         var enableLocalModelCostMap: Boolean = false,
         var defaultMode: AiderMode = AiderDefaults.DEFAULT_MODE,
+        var pluginBasedEdits: Boolean = AiderDefaults.PLUGIN_BASED_EDITS, // Added for plugin-based edits feature
+        var lenientEdits: Boolean = AiderDefaults.LENIENT_EDITS, // Allow processing of multiple edit formats
+        var autoCommitAfterEdits: Boolean = AiderDefaults.AUTO_COMMIT_AFTER_EDITS // Auto-commit after plugin-based edits
     )
 
 
@@ -63,10 +67,16 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
             myState.reasoningEffort = value
         }
 
-    var summarizedOutput: Boolean
-        get() = myState.summarizedOutput
+    var promptAugmentation: Boolean
+        get() = myState.promptAugmentation
         set(value) {
-            myState.summarizedOutput = value
+            myState.promptAugmentation = value
+        }
+        
+    var includeCommitMessageBlock: Boolean
+        get() = myState.includeCommitMessageBlock
+        set(value) {
+            myState.includeCommitMessageBlock = value
         }
 
     var documentationLlm: String
@@ -242,6 +252,25 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.alwaysIncludePlanContextFiles
         set(value) {
             myState.alwaysIncludePlanContextFiles = value
+        }
+
+    // Added for plugin-based edits feature
+    var pluginBasedEdits: Boolean
+        get() = myState.pluginBasedEdits
+        set(value) {
+            myState.pluginBasedEdits = value
+        }
+
+    var lenientEdits: Boolean
+        get() = myState.lenientEdits
+        set(value) {
+            myState.lenientEdits = value
+        }
+        
+    var autoCommitAfterEdits: Boolean
+        get() = myState.autoCommitAfterEdits
+        set(value) {
+            myState.autoCommitAfterEdits = value
         }
 
 

@@ -1,0 +1,20 @@
+---
+files:
+  - path: src/main/kotlin/de/andrena/codingaider/settings/AiderSettings.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/settings/AiderSettingsConfigurable.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/executors/strategies/AiderExecutionStrategy.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/executors/CommandExecutor.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/services/ClipboardEditService.kt
+    readOnly: true # Only needed for format definition
+  - path: src/main/kotlin/de/andrena/codingaider/settings/AiderDefaults.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/executors/strategies/NativeAiderExecutionStrategy.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/executors/strategies/DockerAiderExecutionStrategy.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/executors/strategies/SidecarAiderExecutionStrategy.kt
+    readOnly: false # Sidecar strategy might need adjustment if command building differs significantly

@@ -1,6 +1,7 @@
 package de.andrena.codingaider.settings
 
 import com.intellij.ide.BrowserUtil
+import com.intellij.notification.NotificationGroupManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.ui.ComboBox
@@ -37,7 +38,7 @@ class AiderSettingsConfigurable() : Configurable {
         JBCheckBox("Activate Post web crawl LLM cleanup (Experimental)")
     private val webCrawlLlmComboBox = ComboBox(apiKeyChecker.getAllLlmOptions().toTypedArray())
     private val deactivateRepoMapCheckBox = JBCheckBox("Deactivate Aider's repo map (--map-tokens 0)")
-    private val editFormatComboBox = ComboBox(arrayOf("", "whole", "diff", "whole-func", "diff-func"))
+    private val editFormatComboBox = ComboBox(arrayOf("", "whole", "diff", "udiff", "diff-fenced"))
     private val verboseCommandLoggingCheckBox = JBCheckBox("Enable verbose Aider command logging")
     private val enableMarkdownDialogAutocloseCheckBox = JBCheckBox("Automatically close Output Dialog")
     private val markdownDialogAutocloseDelayField = JBTextField()
@@ -54,7 +55,11 @@ class AiderSettingsConfigurable() : Configurable {
     private val defaultModeComboBox = ComboBox(AiderMode.values())
     private val enableLocalModelCostMapCheckBox = JBCheckBox("Enable local model cost mapping")
     private val documentationLlmComboBox = ComboBox(apiKeyChecker.getAllLlmOptions().toTypedArray())
-    private val summarizedOutputCheckBox = JBCheckBox("Enable summarized output")
+    private val promptAugmentationCheckBox = JBCheckBox("Enable prompt augmentation")
+    private val includeCommitMessageBlockCheckBox = JBCheckBox("Include commit message block")
+    private val pluginBasedEditsCheckBox = JBCheckBox("Use Plugin-Based Edits (Experimental)") // Added for plugin-based edits
+    private val lenientEditsCheckBox = JBCheckBox("Allow Lenient Edits (Process multiple formats) (Experimental)")
+    private val autoCommitAfterEditsCheckBox = JBCheckBox("Auto-commit after plugin-based edits (Experimental)")
 
     override fun getDisplayName(): String = "Aider"
 
@@ -96,6 +101,95 @@ class AiderSettingsConfigurable() : Configurable {
                             toolTipText =
                                 "Select the default edit format for Aider. Leave empty to use the default format for the used LLM."
                         }
+                }
+                group("Prompt Augmentation") {
+                    row {
+                        cell(promptAugmentationCheckBox)
+                            .applyToComponent {
+                                toolTipText =
+                                    "When enabled, Aider will include XML-tagged blocks in the prompt to structure the output"
+                                addItemListener { e ->
+                                    val isSelected = e.stateChange == java.awt.event.ItemEvent.SELECTED
+                                    includeCommitMessageBlockCheckBox.isEnabled = isSelected
+
+                                    // If prompt augmentation is disabled but auto-commit is enabled, show warning
+                                    if (!isSelected && autoCommitAfterEditsCheckBox.isSelected && pluginBasedEditsCheckBox.isSelected) {
+                                        showNotification(
+                                            "Warning: Auto-commit requires prompt augmentation with commit message block",
+                                            com.intellij.notification.NotificationType.WARNING
+                                        )
+                                        // Disable auto-commit if prompt augmentation is disabled
+                                        autoCommitAfterEditsCheckBox.isSelected = false
+                                    }
+                                }
+                            }
+                    }
+                    row {
+                        cell(includeCommitMessageBlockCheckBox)
+                            .applyToComponent {
+                                toolTipText =
+                                    "When enabled, Aider will include an XML block for commit messages in the prompt"
+                                isEnabled = promptAugmentationCheckBox.isSelected
+                                addItemListener { e ->
+                                    val isSelected = e.stateChange == java.awt.event.ItemEvent.SELECTED
+
+                                    // If commit message block is disabled but auto-commit is enabled, show warning
+                                    if (!isSelected && autoCommitAfterEditsCheckBox.isSelected && pluginBasedEditsCheckBox.isSelected) {
+                                        showNotification(
+                                            "Warning: Auto-commit requires prompt augmentation with commit message block",
+                                            com.intellij.notification.NotificationType.WARNING
+                                        )
+                                        // Disable auto-commit if commit message block is disabled
+                                        autoCommitAfterEditsCheckBox.isSelected = false
+                                    }
+                                }
+                            }
+                    }
+                }
+
+                group("Plugin-Based Edits") {
+                    row {
+                        cell(pluginBasedEditsCheckBox)
+                            .component
+                            .apply {
+                                toolTipText = "If enabled, the plugin handles applying edits using /ask and a specific diff format, bypassing Aider's internal edit formats."
+                                addItemListener { e ->
+                                    val isSelected = e.stateChange == java.awt.event.ItemEvent.SELECTED
+                                    autoCommitAfterEditsCheckBox.isEnabled = isSelected
+                                    lenientEditsCheckBox.isEnabled = isSelected
+                                    
+                                    // Update commit message block checkbox state based on auto-commit
+                                    if (isSelected && autoCommitAfterEditsCheckBox.isSelected) {
+                                        promptAugmentationCheckBox.isSelected = true
+                                        includeCommitMessageBlockCheckBox.isSelected = true
+                                    }
+                                }
+                            }
+                    }
+                    row {
+                        cell(lenientEditsCheckBox)
+                            .component
+                            .apply {
+                                toolTipText = "If enabled, the plugin will process all edit formats (diff, whole, udiff) in a single response, regardless of the configured edit format."
+                                isEnabled = pluginBasedEditsCheckBox.isSelected
+                            }
+                    }
+                    row {
+                        cell(autoCommitAfterEditsCheckBox)
+                            .component
+                            .apply {
+                                toolTipText = "If enabled, changes made by plugin-based edits will be automatically committed to Git with a message extracted from the LLM response."
+                                isEnabled = pluginBasedEditsCheckBox.isSelected
+                                addItemListener { e ->
+                                    val isSelected = e.stateChange == java.awt.event.ItemEvent.SELECTED
+                                    if (isSelected && pluginBasedEditsCheckBox.isSelected) {
+                                        // Auto-enable prompt augmentation and commit message block when auto-commit is enabled
+                                        promptAugmentationCheckBox.isSelected = true
+                                        includeCommitMessageBlockCheckBox.isSelected = true
+                                    }
+                                }
+                            }
+                    }
                 }
             }
 
@@ -226,13 +320,6 @@ class AiderSettingsConfigurable() : Configurable {
                             "Select the LLM model to use for generating documentation. The default is the LLM model specified in the settings."
                     }
                 }
-                row {
-                    cell(summarizedOutputCheckBox)
-                        .applyToComponent {
-                            toolTipText =
-                                "When enabled, Aider will include XML-tagged summaries of changes in its output"
-                        }
-                }
                 row("Default Mode:") {
                     cell(defaultModeComboBox)
                         .component
@@ -282,10 +369,14 @@ class AiderSettingsConfigurable() : Configurable {
                 alwaysIncludePlanContextFilesCheckBox.isSelected != settings.alwaysIncludePlanContextFiles ||
                 enableAutoPlanContinueCheckBox.isSelected != settings.enableAutoPlanContinue ||
                 documentationLlmComboBox.selectedItem.asSelectedItemName() != settings.documentationLlm ||
-                summarizedOutputCheckBox.isSelected != settings.summarizedOutput ||
+                promptAugmentationCheckBox.isSelected != settings.promptAugmentation ||
+                includeCommitMessageBlockCheckBox.isSelected != settings.includeCommitMessageBlock ||
                 enableLocalModelCostMapCheckBox.isSelected != settings.enableLocalModelCostMap ||
                 reasoningEffortComboBox.selectedItem as String != settings.reasoningEffort ||
                 defaultModeComboBox.selectedItem != settings.defaultMode ||
+                pluginBasedEditsCheckBox.isSelected != settings.pluginBasedEdits || // Added check for pluginBasedEdits
+                lenientEditsCheckBox.isSelected != settings.lenientEdits ||
+                autoCommitAfterEditsCheckBox.isSelected != settings.autoCommitAfterEdits ||
                 aiderSetupPanel.isModified()
 
     }
@@ -321,10 +412,14 @@ class AiderSettingsConfigurable() : Configurable {
         settings.alwaysIncludePlanContextFiles = alwaysIncludePlanContextFilesCheckBox.isSelected
         settings.enableAutoPlanContinue = enableAutoPlanContinueCheckBox.isSelected
         settings.documentationLlm = documentationLlmComboBox.selectedItem.asSelectedItemName()
-        settings.summarizedOutput = summarizedOutputCheckBox.isSelected
+        settings.promptAugmentation = promptAugmentationCheckBox.isSelected
+        settings.includeCommitMessageBlock = includeCommitMessageBlockCheckBox.isSelected
         settings.enableLocalModelCostMap = enableLocalModelCostMapCheckBox.isSelected
         settings.reasoningEffort = reasoningEffortComboBox.selectedItem as String
         settings.defaultMode = defaultModeComboBox.selectedItem as AiderMode
+        settings.pluginBasedEdits = pluginBasedEditsCheckBox.isSelected // Added save for pluginBasedEdits
+        settings.lenientEdits = lenientEditsCheckBox.isSelected
+        settings.autoCommitAfterEdits = autoCommitAfterEditsCheckBox.isSelected
         aiderSetupPanel.apply()
         settings.notifySettingsChanged()
     }
@@ -358,10 +453,17 @@ class AiderSettingsConfigurable() : Configurable {
         alwaysIncludePlanContextFilesCheckBox.isSelected = settings.alwaysIncludePlanContextFiles
         enableAutoPlanContinueCheckBox.isSelected = settings.enableAutoPlanContinue
         documentationLlmComboBox.selectedItem = apiKeyChecker.getLlmSelectionForName(settings.documentationLlm)
-        summarizedOutputCheckBox.isSelected = settings.summarizedOutput
+        promptAugmentationCheckBox.isSelected = settings.promptAugmentation
+        includeCommitMessageBlockCheckBox.isSelected = settings.includeCommitMessageBlock
+        includeCommitMessageBlockCheckBox.isEnabled = settings.promptAugmentation
         enableLocalModelCostMapCheckBox.isSelected = settings.enableLocalModelCostMap
         reasoningEffortComboBox.selectedItem = settings.reasoningEffort
         defaultModeComboBox.selectedItem = settings.defaultMode
+        pluginBasedEditsCheckBox.isSelected = settings.pluginBasedEdits
+        lenientEditsCheckBox.isSelected = settings.lenientEdits
+        lenientEditsCheckBox.isEnabled = settings.pluginBasedEdits
+        autoCommitAfterEditsCheckBox.isSelected = settings.autoCommitAfterEdits
+        autoCommitAfterEditsCheckBox.isEnabled = settings.pluginBasedEdits
         aiderSetupPanel.reset()
         settings.notifySettingsChanged()
     }
@@ -434,6 +536,14 @@ class AiderSettingsConfigurable() : Configurable {
         if (currentSelection != null && llmOptions.contains(currentSelection)) {
             llmSelectionWidget.selectedItem = currentSelection
         }
+    }
+    
+    private fun showNotification(content: String, type: com.intellij.notification.NotificationType) {
+        NotificationGroupManager.getInstance()
+            .getNotificationGroup("Coding Aider Notifications")
+            .createNotification(content, type)
+            .notify(null)
+
     }
 
     init {

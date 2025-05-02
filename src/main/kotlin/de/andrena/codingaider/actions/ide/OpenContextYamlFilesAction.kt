@@ -1,4 +1,4 @@
-package de.andrena.codingaider.actions.aider
+package de.andrena.codingaider.actions.ide
 
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction

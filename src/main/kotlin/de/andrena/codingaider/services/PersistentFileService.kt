@@ -9,6 +9,8 @@ import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.messages.PersistentFilesChangedTopic
 import de.andrena.codingaider.model.ContextFileHandler
+import de.andrena.codingaider.model.StashInfo
+import de.andrena.codingaider.model.StashManager
 import de.andrena.codingaider.utils.FileTraversal
 import java.io.File
 import java.io.IOException
@@ -75,19 +77,26 @@ class PersistentFileService(private val project: Project) {
     }
 
     fun getPersistentFiles(): List<FileData> {
-        // Clean up persistent files that no longer exist or are now ignored
-        val validFiles = persistentFiles.filter { fileData ->
-            val virtualFile = LocalFileSystem.getInstance().findFileByPath(fileData.filePath)
-            (virtualFile?.exists() ?: false) && !isIgnored(fileData.filePath)
-        }
+        // Return current list immediately while we check validity in background
+        ApplicationManager.getApplication().executeOnPooledThread {
+            // Create a safe copy of the list to avoid ConcurrentModificationException
+            val filesCopy = ArrayList(persistentFiles)
+            
+            // Clean up persistent files that no longer exist or are now ignored
+            val validFiles = filesCopy.filter { fileData ->
+                val virtualFile = LocalFileSystem.getInstance().findFileByPath(fileData.filePath)
+                (virtualFile?.exists() ?: false) && !isIgnored(fileData.filePath)
+            }
 
-        if (validFiles.size != persistentFiles.size) {
-            persistentFiles.clear()
-            persistentFiles.addAll(validFiles)
-            savePersistentFilesToContextFile()
+            if (validFiles.size != filesCopy.size) {
+                synchronized(persistentFiles) {
+                    persistentFiles.clear()
+                    persistentFiles.addAll(validFiles)
+                    savePersistentFilesToContextFile()
+                }
+            }
         }
-
-        return persistentFiles
+        return ArrayList(persistentFiles) // Return a copy to prevent concurrent modification
     }
 
     fun addAllFiles(selectedFiles: List<FileData>) {
@@ -124,5 +133,87 @@ class PersistentFileService(private val project: Project) {
     
     fun isIgnored(filePath: String): Boolean {
         return aiderIgnoreService.isIgnored(filePath)
+    }
+    
+    // Stash-related functions
+    fun stashFiles(selectedFiles: List<FileData>, stashName: String = ""): StashInfo {
+        val stashInfo = StashInfo(name = stashName, fileCount = selectedFiles.size)
+        val stashFile = File(project.basePath ?: "", stashInfo.getFileName())
+        
+        try {
+            ContextFileHandler.writeContextFile(stashFile, selectedFiles, project.basePath ?: "")
+            
+            // Remove stashed files from persistent files
+            val filePaths = selectedFiles.map { it.filePath }
+            removePersistentFiles(filePaths)
+            
+            // Refresh files in the file system
+            ApplicationManager.getApplication().invokeLater {
+                LocalFileSystem.getInstance().refreshAndFindFileByIoFile(stashFile)
+                notifyPersistentFilesChanged()
+            }
+            
+            return stashInfo
+        } catch (e: Exception) {
+            e.printStackTrace()
+            throw e
+        }
+    }
+    
+    fun getStashes(): List<StashInfo> {
+        return StashManager.getStashFiles(project).map { StashManager.getStashInfo(it) }
+    }
+    
+    fun popStash(stashInfo: StashInfo) {
+        val stashFile = File(project.basePath ?: "", stashInfo.getFileName())
+        if (!stashFile.exists()) return
+        
+        try {
+            val stashedFiles = ContextFileHandler.readContextFile(stashFile, project.basePath ?: "")
+            
+            // Add stashed files back to persistent files
+            addAllFiles(stashedFiles)
+            
+            // Delete the stash file
+            stashFile.delete()
+            
+            // Refresh files in the file system
+            ApplicationManager.getApplication().invokeLater {
+                LocalFileSystem.getInstance().refresh(true)
+                notifyPersistentFilesChanged()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+    
+    fun unstashFiles(stashInfo: StashInfo) {
+        val stashFile = File(project.basePath ?: "", stashInfo.getFileName())
+        if (!stashFile.exists()) return
+        
+        try {
+            val stashedFiles = ContextFileHandler.readContextFile(stashFile, project.basePath ?: "")
+            
+            // Add stashed files to persistent files without deleting the stash
+            addAllFiles(stashedFiles)
+            
+            // Refresh files in the file system
+            ApplicationManager.getApplication().invokeLater {
+                notifyPersistentFilesChanged()
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+    
+    fun deleteStash(stashInfo: StashInfo) {
+        val stashFile = File(project.basePath ?: "", stashInfo.getFileName())
+        if (stashFile.exists()) {
+            stashFile.delete()
+            ApplicationManager.getApplication().invokeLater {
+                LocalFileSystem.getInstance().refresh(true)
+                notifyPersistentFilesChanged()
+            }
+        }
     }
 }

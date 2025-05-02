@@ -132,6 +132,10 @@ class IDEBasedExecutor(
         if (!commandData.options.disablePresentation) {
             presentChanges()
         }
+        // Store the completed command data and output, including commit hashes
+        val commitBefore = currentCommitHash
+        val commitAfter = GitUtils.getCurrentCommitHash(project)
+        project.service<RunningCommandService>().storeCompletedCommand(commandData, message, commitBefore, commitAfter)
         commandFinishedCallback?.onCommandFinished(exitCode == 0)
     }
 

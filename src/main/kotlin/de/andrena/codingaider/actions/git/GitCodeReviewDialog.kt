@@ -2,7 +2,6 @@ package de.andrena.codingaider.actions.git
 
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.ui.ComboBox
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vcs.VcsException
@@ -14,14 +13,16 @@ import java.awt.BorderLayout
 import java.awt.Dimension
 import java.awt.GridBagConstraints
 import java.awt.GridBagLayout
+import java.awt.event.KeyEvent
 import javax.swing.*
 
-class GitCodeReviewDialog(private val project: Project) : DialogWrapper(project) {
+class GitCodeReviewDialog(
+    private val project: Project,
+    private val preselectedBaseRef: String? = null,
+    private val preselectedTargetRef: String? = null
+) : DialogWrapper(project) {
     private val baseRefComboBox = GitRefComboBox(project)
     private val targetRefComboBox = GitRefComboBox(project)
-    private val baseRefTypeCombo = ComboBox(GitRefComboBox.RefType.values())
-    private val targetRefTypeCombo = ComboBox(GitRefComboBox.RefType.values())
-    
     private val promptArea = JBTextArea().apply {
         lineWrap = true
         wrapStyleWord = true
@@ -38,20 +39,27 @@ class GitCodeReviewDialog(private val project: Project) : DialogWrapper(project)
     private var selectedFiles: List<FileData> = emptyList()
     private var baseCommit: String = ""
 
+    override fun createActions(): Array<Action> {
+        val actions = super.createActions()
+        (actions[0] as? DialogWrapperAction)?.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_O)
+        (actions[1] as? DialogWrapperAction)?.putValue(Action.MNEMONIC_KEY, KeyEvent.VK_C)
+        return actions
+    }
+
     init {
         title = "Git Code Review"
-        setupRefTypeListeners()
+        // Set preselected values if provided
+        if (preselectedBaseRef != null) {
+            baseRefComboBox.setText(preselectedBaseRef)
+        }
+        
+        if (preselectedTargetRef != null) {
+            targetRefComboBox.setText(preselectedTargetRef)
+        }
+        
         init()
     }
 
-    private fun setupRefTypeListeners() {
-        baseRefTypeCombo.addActionListener {
-            baseRefComboBox.setMode(baseRefTypeCombo.selectedItem as GitRefComboBox.RefType)
-        }
-        targetRefTypeCombo.addActionListener {
-            targetRefComboBox.setMode(targetRefTypeCombo.selectedItem as GitRefComboBox.RefType)
-        }
-    }
 
     override fun createCenterPanel(): JComponent {
         val panel = JPanel(GridBagLayout())
@@ -76,34 +84,45 @@ class GitCodeReviewDialog(private val project: Project) : DialogWrapper(project)
             gridx = 0; gridy = 0
             weightx = 0.0; anchor = GridBagConstraints.LINE_START
         }
-        refSelectionPanel.add(JLabel("Base:"), gbc)
-        
+
         gbc.apply {
-            gridx = 1; weightx = 0.3
+            gridx = 0; gridy = 1
+            weightx = 0.0
         }
-        refSelectionPanel.add(baseRefTypeCombo, gbc)
+        refSelectionPanel.add(JLabel("Ref:"), gbc)
         
         gbc.apply {
-            gridx = 2; weightx = 0.7
+            gridx = 1; gridy = 1
+            weightx = 0.7
         }
         refSelectionPanel.add(baseRefComboBox.getComponent(), gbc)
 
         // Target Reference
         gbc.apply {
-            gridx = 0; gridy = 1
+            gridx = 0; gridy = 2
             weightx = 0.0
         }
-        refSelectionPanel.add(JLabel("Target:"), gbc)
-        
+
         gbc.apply {
-            gridx = 1; weightx = 0.3
+            gridx = 0; gridy = 3
+            weightx = 0.0
         }
-        refSelectionPanel.add(targetRefTypeCombo, gbc)
+        refSelectionPanel.add(JLabel("Ref:"), gbc)
         
         gbc.apply {
-            gridx = 2; weightx = 0.7
+            gridx = 1; gridy = 3
+            weightx = 0.7
         }
         refSelectionPanel.add(targetRefComboBox.getComponent(), gbc)
+
+        // Help text
+        gbc.apply {
+            gridx = 0; gridy = 2
+            gridwidth = 4
+            weightx = 1.0
+            fill = GridBagConstraints.HORIZONTAL
+        }
+        refSelectionPanel.add(JLabel("<html><i>Enter any git ref, i.e. a branch name, tag or commit hash</i></html>"), gbc)
 
         // Add Reference Selection Panel to main panel
         gbc.apply {

@@ -1,0 +1,12 @@
+---
+files:
+- path: src/main/kotlin/de/andrena/codingaider/utils/ApiKeyManager.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/utils/ApiKeyChecker.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/settings/LlmProviderType.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/settings/CustomLlmProvider.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/settings/LlmSelection.kt
+  readOnly: false

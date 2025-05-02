@@ -179,7 +179,7 @@ class ActivePlanService(private val project: Project) {
                 planId = selectedPlan.mainPlanFile?.filePath
             )
             setActivePlan(selectedPlan)
-            IDEBasedExecutor(project, commandData, CommandFinishedCallback { handlePlanActionFinished(it) }).execute()
+            IDEBasedExecutor(project, commandData, { handlePlanActionFinished(it) }).execute()
 
         } catch (e: Exception) {
             val errorMessage = when (e) {

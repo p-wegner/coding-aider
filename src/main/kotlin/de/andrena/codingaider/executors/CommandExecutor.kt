@@ -13,10 +13,11 @@ import de.andrena.codingaider.executors.strategies.DockerAiderExecutionStrategy
 import de.andrena.codingaider.executors.strategies.NativeAiderExecutionStrategy
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.FileExtractorService
-import de.andrena.codingaider.services.RunningCommandService
+import de.andrena.codingaider.services.PluginBasedEditsService
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.services.sidecar.AiderProcessManager
 import de.andrena.codingaider.services.sidecar.SidecarProcessInitializer
+import de.andrena.codingaider.settings.AiderDefaults
 import de.andrena.codingaider.settings.AiderProjectSettings
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.ApiKeyChecker
@@ -146,8 +147,16 @@ class CommandExecutor(
                     }
                 }
                 .collectList().block()?.joinToString("\n") ?: ""
-            notifyObservers { it.onCommandComplete(response, 0) }
-            response
+            
+            // Process the response for plugin-based edits if enabled
+            val finalResponse = if (settings.pluginBasedEdits) {
+                project.service<PluginBasedEditsService>().processLlmResponse(response)
+            } else {
+                response
+            }
+            
+            notifyObservers { it.onCommandComplete(finalResponse, 0) }
+            finalResponse
         } catch (e: Exception) {
             val errorMessage = "Sidecar command failed: ${e.message}"
             logger.error(errorMessage, e)
@@ -196,11 +205,18 @@ class CommandExecutor(
     }
 
     private fun buildSidecarCommandString(commandData: CommandData): String {
-        return when (commandData.aiderMode) {
+        val baseMessage = when (commandData.aiderMode) {
             AiderMode.NORMAL -> commandData.message
             AiderMode.STRUCTURED -> project.service<AiderPlanService>().createAiderPlanSystemPrompt(commandData)
             AiderMode.ARCHITECT -> "/architect ${commandData.message}"
             else -> ""
+        }
+        
+        // If plugin-based edits is enabled, prepend /ask and the instruction prompt
+        return if (settings.pluginBasedEdits) {
+            "/ask ${AiderDefaults.PLUGIN_BASED_EDITS_INSTRUCTION}\n\n$baseMessage"
+        } else {
+            baseMessage
         }
     }
 
@@ -227,14 +243,14 @@ class CommandExecutor(
         } else {
             val exitCode = process.exitValue()
             val status = if (exitCode == 0) "executed successfully" else "failed with exit code $exitCode"
-            val finalOutput = commandLogger.prependCommandToOutput("$output\nAider command $status")
-            notifyObservers { it.onCommandComplete(finalOutput, exitCode) }
+            var finalOutput = commandLogger.prependCommandToOutput("$output\nAider command $status")
             
-            // Store the completed command and output for potential plan creation
-            if (exitCode == 0) {
-                project.service<RunningCommandService>().storeCompletedCommand(commandData, finalOutput)
+            // Process plugin-based edits if enabled
+            if (settings.pluginBasedEdits && exitCode == 0) {
+                finalOutput = project.service<PluginBasedEditsService>().processLlmResponse(finalOutput)
             }
             
+            notifyObservers { it.onCommandComplete(finalOutput, exitCode) }
             return finalOutput
         }
     }

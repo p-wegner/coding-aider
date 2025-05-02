@@ -81,13 +81,42 @@ File Requirements:
 
     fun createAiderPlanSystemPrompt(commandData: CommandData): String {
         val files = commandData.files
+        val message = commandData.message
 
+        // Check if message starts with a slash command
+        if (message.startsWith("/")) {
+            // Extract the command part (everything up to the first space)
+            val commandParts = message.split(" ", limit = 2)
+            val command = commandParts[0]
+            val remainingMessage = if (commandParts.size > 1) commandParts[1] else ""
+            
+            // Create the system prompt without the command
+            val systemPrompt = createSystemPromptContent(files, commandData.projectPath)
+            
+            // Return the command followed by the decorated prompt with the remaining message
+            return """$command <SystemPrompt>
+$systemPrompt
+</SystemPrompt>
+$STRUCTURED_MODE_MESSAGE_MARKER $remainingMessage $STRUCTURED_MODE_MESSAGE_END_MARKER
+               """.trimStartingWhiteSpaces()
+        }
+        
+        // Regular case without slash command
+        val systemPrompt = createSystemPromptContent(files, commandData.projectPath)
+        
+        return """<SystemPrompt>
+$systemPrompt
+</SystemPrompt>
+$STRUCTURED_MODE_MESSAGE_MARKER ${commandData.message} $STRUCTURED_MODE_MESSAGE_END_MARKER
+               """.trimStartingWhiteSpaces()
+    }
+    
+    private fun createSystemPromptContent(files: List<FileData>, projectPath: String): String {
         val existingPlan = filterPlanRelevantFiles(files)
-
         val basePrompt = planFileFormatPrompt.trimStartingWhiteSpaces()
-
+        
         val firstPlan = existingPlan.firstOrNull()
-        val relativePlanPath = firstPlan?.filePath?.removePrefix(commandData.projectPath) ?: ""
+        val relativePlanPath = firstPlan?.filePath?.removePrefix(projectPath) ?: ""
         val planSpecificPrompt = firstPlan?.let {
             """
 A plan already exists. Continue implementing the existing plan $relativePlanPath and its checklist step by step.  
@@ -95,12 +124,11 @@ In case subplans are referenced, continue by implementing the subplans that matc
 Start implementing before updating the checklist. If no changes are done, don't update the checklist.  
 In that case inform the user why no changes were made.  
 New files that are not the plan and are not part of the checklist should be created in a suitable location and added to the context.yaml.  
-If no further information is given, use ${commandData.projectPath} as the location.  
+If no further information is given, use ${projectPath} as the location.  
 Update the plan, checklist and context.yaml as needed based on the current progress and any new requirements.  
 Important: Always keep the context.yaml up to date with your changes. If files are created or edited, add them to the context.yaml.  
 If the current instruction doesn't align with the existing plan, update the plan accordingly before proceeding.  
             """
-
         } ?: """
 No plan exists yet. Write a detailed description of the requested feature and the needed changes.  
 The main plan file should include these sections: ## Overview, ## Problem Description, ## Goals, ## Additional Notes and Constraints, ## References  
@@ -118,13 +146,8 @@ Ensure that you stick to the defined editing format when creating or editing fil
 Make sure to commit the creation of all plan files even if you think you need additional files to implement the plan.  
 Don't start the implementation until the plan files are committed. Do not ask the user if he wants to proceed with the plan.
             """
-
-        return """<SystemPrompt>
-${basePrompt.trimStartingWhiteSpaces()}
-${planSpecificPrompt.trimStartingWhiteSpaces()}
-</SystemPrompt>
-$STRUCTURED_MODE_MESSAGE_MARKER ${commandData.message} $STRUCTURED_MODE_MESSAGE_END_MARKER
-               """.trimStartingWhiteSpaces()
+            
+        return "${basePrompt.trimStartingWhiteSpaces()}\n${planSpecificPrompt.trimStartingWhiteSpaces()}"
     }
 
     fun filterPlanRelevantFiles(files: List<FileData>): List<FileData> =
