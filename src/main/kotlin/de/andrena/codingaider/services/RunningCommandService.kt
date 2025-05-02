@@ -137,62 +137,11 @@ class RunningCommandService {
         }
     }
 
-    // TODO: refactor this to use it for an action that opens a dialog with a text area, runs the aider command with the provided text as message and runs a summery command afterwards, similar to documentCodeAction
-    fun runExampleMultiStepChain(project: Project) {
-        if (lastCompletedCommand == null || lastCommandOutput == null) {
-            JOptionPane.showMessageDialog(
-                null,
-                "No completed command available to create a chain from.",
-                "Create Command Chain",
-                JOptionPane.INFORMATION_MESSAGE
-            )
-            return
-        }
-        val command = lastCompletedCommand!!
-        val output = lastCommandOutput!!
-
-        // Step 1: Summarize the output
-        val summarizeCommand = command.copy(
-            message = "Summarize the following output:\n$output",
-            aiderMode = command.aiderMode,
-            files = command.files
-        )
-        // Step 2: Create a plan from the summary
-        val planMessageBuilder: (String) -> String = { summary: String ->
-            """
-            Create a summary of these changes:
-            $summary
-
-            Include:
-            1. Original command context
-            2. Implementation steps from summary
-            3. Any follow-up tasks identified
-            """.trimIndent()
-        }
-        val planCommand = command.copy(
-            message = "", // Placeholder, will be set by transformOutputToInput
-            aiderMode = AiderMode.STRUCTURED,
-            files = command.files,
-            options = command.options.copy(
-                disablePresentation = false,
-                autoCloseDelay = 10
-            )
-        )
-
-        executeChainedCommands(
-            project,
-            listOf(
-                ChainedAiderCommand(summarizeCommand),
-                ChainedAiderCommand(
-                    planCommand,
-                    transformOutputToInput = planMessageBuilder
-                )
-            )
-        )
-    }
 
     fun hasCompletedCommand(): Boolean = lastCompletedCommand != null && lastCommandOutput != null
 
+    // TODO: refactor this to use it for an action that opens a dialog with a text area,
+    //  runs the aider command with the provided text as message and runs a summery command afterwards
     /**
      * Opens a dialog with a text area for the user to enter a prompt, runs the aider command with the provided text,
      * and then runs a summary command on the output. The summary is shown in a new dialog.

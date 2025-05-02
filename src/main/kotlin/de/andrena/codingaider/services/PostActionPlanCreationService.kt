@@ -5,10 +5,9 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
+import de.andrena.codingaider.executors.api.CommandFinishedCallback
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
-import de.andrena.codingaider.executors.api.IDEBasedExecutor.Companion.CommandFinishedCallback
 import de.andrena.codingaider.inputdialog.AiderMode
-import de.andrena.codingaider.services.CommandFinishedCallback
 import java.io.File
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -44,7 +43,7 @@ class PostActionPlanCreationService(private val project: Project) {
             var success = false
 
             val executor = IDEBasedExecutor(project, planCreationCommand, CommandFinishedCallback {
-                override fun onCommandFinished(exitCode: Int) {
+                fun onCommandFinished(exitCode: Int) {
                     success = exitCode == 0
                     latch.countDown()
                 }
