@@ -263,20 +263,14 @@ class MarkdownDialog(
 
                     // Schedule scroll adjustment after UI updates
                     invokeLater {
-                        try {
-                            programmaticScrolling = true // Prevent listener feedback loop
-                            val newMax = scrollBar.maximum - scrollBar.visibleAmount
-
-                            // Scroll to bottom if auto-scroll is enabled OR if we were already near the bottom
-                            if (shouldAutoScroll || wasNearBottom) {
+                        // Scroll to bottom if auto-scroll is enabled OR if we were already near the bottom
+                        if (shouldAutoScroll || wasNearBottom) {
+                            try {
+                                programmaticScrolling = true // Prevent listener feedback loop
                                 scrollBar.value = scrollBar.maximum // Scroll to the very bottom
-                                shouldAutoScroll = true // Ensure auto-scroll stays enabled if we scrolled to bottom
+                            } finally {
+                                programmaticScrolling = false
                             }
-                            // Otherwise, the scroll position remains where it was relative to the old content,
-                            // or where the user manually placed it. No explicit restoration needed here.
-
-                        } finally {
-                            programmaticScrolling = false
                         }
                     }
                 } else {
