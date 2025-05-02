@@ -1,151 +1,367 @@
-# Aider Services Documentation
+# Coding Aider Services Documentation
 
 ## Overview
-The Aider Services module provides a comprehensive set of services for the Coding Aider IntelliJ IDEA plugin, facilitating intelligent code interaction, file management, and project documentation. This module supports advanced features like token counting, persistent file tracking, dialog state management, and dynamic documentation discovery.
+The Services module is the core of the Coding Aider IntelliJ IDEA plugin, providing a comprehensive set of services that enable intelligent code interaction, structured planning, file management, and AI-powered assistance. This module implements the business logic for AI-assisted coding, plan management, file tracking, and command execution, forming the backbone of the plugin's functionality.
 
 ## Module Architecture
 
 ### Service Dependencies
 ```mermaid
 graph TD
-    A[AiderPlanService] --> B[AiderDialogStateService]
-    A --> C[DocumentationFinderService]
-    D[PersistentFileService] --> E[FileExtractorService]
-    F[TokenCountService] --> G[AiderHistoryService]
-    H[AiderDialogStateService] --> D
-    I[CommandSummaryService] --> J[AiderPlanService]
-    K[FileDataCollectionService] --> L[PersistentFileService]
-    M[MarkdownConversionService] --> N[AiderDialogStateService]
-    O[RunningCommandService] --> P[AiderDialogStateService]
+    %% Plan Management
+    AiderPlanService[AiderPlanService] --> AiderPlanPromptService[AiderPlanPromptService]
+    ActivePlanService[ActivePlanService] --> AiderPlanService
+    ActivePlanService --> FileDataCollectionService
+    ContinuePlanService[ContinuePlanService] --> ActivePlanService
+    
+    %% Command Execution
+    CommandSummaryService[CommandSummaryService] --> AiderPlanPromptService
+    RunningCommandService[RunningCommandService] --> PostActionPlanCreationService
+    PostActionPlanCreationService[PostActionPlanCreationService] --> IDEBasedExecutor[IDEBasedExecutor]
+    
+    %% File Management
+    PersistentFileService[PersistentFileService] --> AiderIgnoreService
+    FileDataCollectionService[FileDataCollectionService] --> PersistentFileService
+    FileDataCollectionService --> DocumentationFinderService
+    FileDataCollectionService --> AiderIgnoreService
+    FileExtractorService[FileExtractorService] --> CommandData[CommandData]
+    
+    %% Sidecar Process
+    SidecarProcessInitializer[SidecarProcessInitializer] --> AiderProcessManager
+    AiderProcessManager[AiderProcessManager] --> CommandData
+    
+    %% Edit Services
+    PluginBasedEditsService[PluginBasedEditsService] --> SearchReplaceBlockParser[SearchReplaceBlockParser]
+    PluginBasedEditsService --> AutoCommitService
+    ClipboardEditService[ClipboardEditService] --> SearchReplaceBlockParser
+    AutoCommitService[AutoCommitService] --> CommitMessageExtractorService
+    
+    %% UI and State
+    MarkdownDialog[MarkdownDialog] --> RunningCommandService
+    MarkdownDialog --> ContinuePlanService
+    AiderDialogStateService[AiderDialogStateService] --> CommandData
+    
+    %% Utility Services
+    TokenCountService[TokenCountService] --> CommandData
+    AiderHistoryService[AiderHistoryService] --> CommandData
+    MarkdownConversionService[MarkdownConversionService] --> CommandData
+    ChainCommandService[ChainCommandService] --> IDEBasedExecutor
+    AiderPromptAugmentationService[AiderPromptAugmentationService] --> CommandData
+    
+    %% External Dependencies
+    CommandData --> FileData[FileData]
+    SearchReplaceBlockParser --> LocalFileSystem[LocalFileSystem]
+    AutoCommitService --> Git[Git]
 ```
 
-## Key Services
+## Core Service Groups
 
-### 1. AiderPlanService
-- **Purpose**: Manages structured coding plans and checklists
+### 1. Plan Management Services
+These services handle the creation, tracking, and execution of structured coding plans.
+
+#### [AiderPlanService](plans/AiderPlanService.kt)
+- **Purpose**: Central service for managing structured coding plans
 - **Key Features**:
-  - Generates system prompts for feature implementation
-  - Supports structured mode for plan tracking
-  - Creates plan and checklist markdown files
+  - Parses and processes plan files with checklist items
+  - Manages plan hierarchies with parent-child relationships
+  - Processes markdown references and subplan links
 - **Exceptional Implementation**:
-  - Uses custom markers for plan identification
-  - Dynamically adapts prompts based on existing plans
+  - Custom markdown parsing for checklist extraction
+  - Recursive processing of nested plan references
+  - Hierarchical plan representation with depth tracking
 
-### 2. TokenCountService
-- **Purpose**: Precise token counting for AI interactions
+#### [ActivePlanService](plans/ActivePlanService.kt)
+- **Purpose**: Manages the currently active plan being executed
 - **Key Features**:
-  - Uses `jtokkit` for accurate token estimation
-  - Supports multiple encoding models
-  - Can count tokens in text and files
+  - Tracks plan execution state
+  - Handles plan continuation and completion
+  - Manages plan hierarchy navigation
 - **Exceptional Implementation**:
-  - Configurable encoding registry
-  - Robust error handling during token counting
+  - Automatic cleanup of completed plans
+  - Intelligent selection of next plans in hierarchy
+  - Robust error handling during plan execution
 
-### 3. PersistentFileService
-- **Purpose**: Manages file context across plugin sessions
+#### [ContinuePlanService](plans/ContinuePlanService.kt)
+- **Purpose**: Provides functionality to continue plan execution
 - **Key Features**:
-  - YAML-based persistent file tracking
-  - Supports read-only and editable file states
-  - Provides file change notifications
+  - Simplified interface for plan continuation
+  - Integrates with ActivePlanService
+
+#### [AiderPlanPromptService](plans/AiderPlanPromptService.kt)
+- **Purpose**: Generates prompts for plan creation and refinement
+- **Key Features**:
+  - Creates system prompts for plan creation
+  - Filters plan-relevant files
+  - Provides guidance for plan structure
 - **Exceptional Implementation**:
-  - Uses Jackson for YAML processing
-  - Integrates with IntelliJ's `LocalFileSystem`
-  - Implements a message bus for file change events
+  - Dynamic prompt generation based on existing plans
+  - Structured mode message formatting
 
-### 4. DocumentationFinderService
-- **Purpose**: Intelligent documentation discovery
+### 2. Command Execution Services
+These services handle the execution of AI commands and processing of their results.
+
+#### [CommandSummaryService](CommandSummaryService.kt)
+- **Purpose**: Generates summaries for executed commands
 - **Key Features**:
-  - Recursively finds markdown documentation
-  - Supports project-wide documentation context
+  - Creates concise summaries based on command mode
+  - Supports different AI modes (architect, structured, shell, normal)
 - **Exceptional Implementation**:
-  - Traverses directory hierarchy
-  - Filters documentation files dynamically
+  - Intelligent message abbreviation
+  - Plan-aware summary generation
 
-### 5. AiderDialogStateService
-- **Purpose**: Maintains conversation and interaction state
+#### [RunningCommandService](RunningCommandService.kt)
+- **Purpose**: Tracks and manages running commands
 - **Key Features**:
-  - Stores comprehensive dialog metadata
-  - Supports mode tracking (shell, structured)
+  - Maintains list of active command dialogs
+  - Stores completed command data for reference
+  - Facilitates plan creation from completed commands
 - **Exceptional Implementation**:
-  - Immutable state representation
-  - Project-scoped state management
+  - Tracks Git commit hashes before and after commands
+  - Integrates with PostActionPlanCreationService
 
-### 6. AiderHistoryService
-- **Purpose**: Tracks user interactions and chat history
+#### [PostActionPlanCreationService](PostActionPlanCreationService.kt)
+- **Purpose**: Creates plans from completed command outputs
 - **Key Features**:
-  - Persistent input and chat history
-  - Structured mode aware history parsing
+  - Extracts summaries from command outputs
+  - Generates plan creation commands
 - **Exceptional Implementation**:
-  - Custom timestamp parsing
-  - Structured mode input extraction
+  - XML tag-based summary extraction
+  - Intelligent prompt construction for plan creation
 
-### 7. MarkdownConversionService
-- **Purpose**: Converts HTML content to clean Markdown format
+### 3. File Management Services
+These services handle file tracking, collection, and persistence.
+
+#### [PersistentFileService](PersistentFileService.kt)
+- **Purpose**: Manages persistent file context across sessions
 - **Key Features**:
-  - HTML cleaning and sanitization
-  - Intelligent noise removal
-  - Configurable markdown conversion
+  - YAML-based file tracking
+  - File stashing and unstashing
+  - File validity checking
 - **Exceptional Implementation**:
-  - Uses JSoup for HTML processing
-  - Flexmark for markdown conversion
-  - Extensible conversion options
+  - Thread-safe file operations
+  - Background validation of file existence
+  - Integration with message bus for change notifications
 
-### 8. FileExtractorService
-- **Purpose**: Handles file extraction from various sources
+#### [FileDataCollectionService](FileDataCollectionService.kt)
+- **Purpose**: Collects files for AI context
 - **Key Features**:
-  - JAR file content extraction
+  - Traverses file hierarchies
+  - Filters ignored files
+  - Integrates with documentation finder
+- **Exceptional Implementation**:
+  - Path normalization for cross-platform compatibility
+  - Distinct file collection to avoid duplicates
+
+#### [AiderIgnoreService](AiderIgnoreService.kt)
+- **Purpose**: Manages file ignore patterns
+- **Key Features**:
+  - Parses .aiderignore files
+  - Converts patterns to glob matchers
+  - Checks if files should be ignored
+- **Exceptional Implementation**:
+  - Efficient pattern caching
+  - Support for various ignore pattern formats
+  - Dynamic reload of ignore patterns
+
+#### [FileExtractorService](FileExtractorService.kt)
+- **Purpose**: Extracts files from archives
+- **Key Features**:
+  - JAR file extraction
   - Temporary file management
 - **Exceptional Implementation**:
-  - Dynamic file path handling
-  - Supports extraction from compressed archives
+  - Path-aware extraction
+  - Parent directory creation
 
-### 9. CommandSummaryService
-- **Purpose**: Generates summaries for commands
+#### [DocumentationFinderService](DocumentationFinderService.kt)
+- **Purpose**: Discovers relevant documentation files
 - **Key Features**:
-  - Builds summaries based on command data
-  - Supports different modes (architect, structured, shell, normal)
+  - Recursively finds markdown documentation
+  - Filters documentation by extension
 - **Exceptional Implementation**:
-  - Uses `AiderPlanPromptService` to filter relevant files
-  - Provides abbreviated messages for summaries
+  - Directory hierarchy traversal
+  - Plan-aware documentation filtering
 
-### 10. FileDataCollectionService
-- **Purpose**: Collects and manages file data
-- **Key Features**:
-  - Collects files from various sources
-  - Integrates with `PersistentFileService` and `DocumentationFinderService`
-- **Exceptional Implementation**:
-  - Distinct file collection to avoid duplicates
-  - Supports documentation lookup based on settings
+### 4. Sidecar Process Services
+These services manage the sidecar process for AI command execution.
 
-### 11. RunningCommandService
-- **Purpose**: Manages running commands
+#### [AiderProcessManager](sidecar/AiderProcessManager.kt)
+- **Purpose**: Manages AI sidecar processes
 - **Key Features**:
-  - Tracks running commands using a list model
-  - Provides methods to add and remove running commands
+  - Process lifecycle management
+  - Command sending and response handling
+  - Multi-process support for plans
 - **Exceptional Implementation**:
-  - Uses `DefaultListModel` for managing command dialogs
+  - Reactive process communication with Flux/Mono
+  - Robust process cleanup
+  - Intelligent output parsing with prompt detection
+
+#### [SidecarProcessInitializer](sidecar/SidecarProcessInitializer.kt)
+- **Purpose**: Initializes sidecar processes
+- **Key Features**:
+  - Settings-aware process initialization
+  - Plan-specific process creation
+- **Exceptional Implementation**:
+  - Settings change listener
+  - Coroutine-based initialization
+
+### 5. Edit Services
+These services handle code edits and Git integration.
+
+#### [PluginBasedEditsService](PluginBasedEditsService.kt)
+- **Purpose**: Processes AI-generated code edits
+- **Key Features**:
+  - Parses and applies edit blocks
+  - Generates edit summaries
+  - Integrates with auto-commit
+- **Exceptional Implementation**:
+  - File system synchronization
+  - Detailed change reporting
+
+#### [ClipboardEditService](ClipboardEditService.kt)
+- **Purpose**: Handles clipboard-based code edits
+- **Key Features**:
+  - Processes text with edit blocks
+  - Tracks modified files
+- **Exceptional Implementation**:
+  - Delegates to SearchReplaceBlockParser
+
+#### [AutoCommitService](AutoCommitService.kt)
+- **Purpose**: Automatically commits code changes
+- **Key Features**:
+  - Settings-aware commit behavior
+  - Commit message extraction
+  - Git integration
+- **Exceptional Implementation**:
+  - Repository state validation
+  - Notification system integration
+  - Support for dirty commits
+
+#### [CommitMessageExtractorService](CommitMessageExtractorService.kt)
+- **Purpose**: Extracts commit messages from AI responses
+- **Key Features**:
+  - XML tag-based message extraction
+  - Logging of extracted messages
+
+### 6. UI and State Services
+These services manage UI components and application state.
+
+#### [MarkdownDialog](../outputview/MarkdownDialog.kt)
+- **Purpose**: Displays AI responses in markdown format
+- **Key Features**:
+  - Markdown rendering
+  - Auto-scroll management
+  - Process abort handling
+- **Exceptional Implementation**:
+  - Debounced resize handling
+  - Auto-close timer
+  - Plan continuation integration
+
+#### [AiderDialogStateService](AiderDialogStateService.kt)
+- **Purpose**: Maintains dialog state
+- **Key Features**:
+  - Stores dialog configuration
+  - Preserves state between sessions
+- **Exceptional Implementation**:
+  - Immutable state representation
+
+### 7. Utility Services
+These services provide various utility functions.
+
+#### [TokenCountService](TokenCountService.kt)
+- **Purpose**: Counts tokens for AI interactions
+- **Key Features**:
+  - Text and file token counting
+  - Model-specific encoding
+- **Exceptional Implementation**:
+  - JTokkit integration
+  - File size and type filtering
+
+#### [AiderHistoryService](AiderHistoryService.kt)
+- **Purpose**: Manages command history
+- **Key Features**:
+  - Parses input and chat history
+  - Extracts XML-tagged prompts
+- **Exceptional Implementation**:
+  - Multiple timestamp format support
+  - Structured output cleaning
+
+#### [MarkdownConversionService](MarkdownConversionService.kt)
+- **Purpose**: Converts HTML to markdown
+- **Key Features**:
+  - HTML cleaning and sanitization
+  - Markdown conversion
+- **Exceptional Implementation**:
+  - JSoup integration for HTML processing
+  - Flexmark for markdown conversion
+
+#### [ChainCommandService](ChainCommandService.kt)
+- **Purpose**: Executes chains of commands
+- **Key Features**:
+  - Sequential command execution
+  - Output transformation between steps
+- **Exceptional Implementation**:
+  - Flexible command chaining
+
+#### [AiderPromptAugmentationService](AiderOutputSummaryService.kt)
+- **Purpose**: Augments prompts with system instructions
+- **Key Features**:
+  - XML-tagged prompt formatting
+  - Commit message block inclusion
+- **Exceptional Implementation**:
+  - Slash command handling
+  - Configurable augmentation
+
+#### [ExampleChainCommand](ExampleChainCommand.kt)
+- **Purpose**: Example implementation of command chaining
+- **Key Features**:
+  - Dialog-based prompt collection
+  - Command execution and summarization
+
+#### [AiderEditFormat](AiderEditFormat.kt)
+- **Purpose**: Defines edit format options
+- **Key Features**:
+  - Enumeration of supported edit formats
+
+#### [AiderDocsService](AiderDocsService.kt)
+- **Purpose**: Manages documentation folder
+- **Key Features**:
+  - Defines documentation folder constant
+
+## Data Models
+
+### [CommandData](../command/CommandData.kt)
+- **Purpose**: Core data model for command execution
+- **Key Features**:
+  - Comprehensive command configuration
+  - File list management
+  - Mode tracking
+- **Exceptional Implementation**:
+  - Immutable data representation
+  - Flexible options system
 
 ## Design Patterns
-- **Singleton Pattern**: All services use IntelliJ's service mechanism
-- **Dependency Injection**: Project-scoped service instantiation
-- **Immutable State**: Dialog state representation
+- **Service Pattern**: All components are implemented as services with clear responsibilities
+- **Dependency Injection**: Services are injected via IntelliJ's service mechanism
+- **Observer Pattern**: Used for file change notifications and settings changes
+- **Command Pattern**: Used for executing AI commands
+- **Strategy Pattern**: Different execution strategies for different modes
+- **Builder Pattern**: Used for constructing complex prompts
+- **Reactive Pattern**: Used in process management with Flux/Mono
 
 ## External Dependencies
-- IntelliJ Platform SDK
-- Jackson (YAML processing)
-- JTokkit (Token counting)
-- JSoup (HTML cleaning)
-- Flexmark (Markdown conversion)
+- **IntelliJ Platform SDK**: Core platform integration
+- **Jackson**: YAML processing for context files
+- **JTokkit**: Token counting for AI models
+- **JSoup**: HTML processing for markdown conversion
+- **Flexmark**: Markdown parsing and rendering
+- **Project Reactor**: Reactive programming for process management
+- **Git4Idea**: Git integration for auto-commits
 
-## File References
-- [AiderPlanService.kt](plans/AiderPlanService.kt)
-- [TokenCountService.kt](./TokenCountService.kt)
-- [PersistentFileService.kt](./PersistentFileService.kt)
-- [DocumentationFinderService.kt](./DocumentationFinderService.kt)
-- [AiderDialogStateService.kt](./AiderDialogStateService.kt)
-- [AiderHistoryService.kt](./AiderHistoryService.kt)
-- [FileExtractorService.kt](./FileExtractorService.kt)
-- [CommandSummaryService.kt](./CommandSummaryService.kt)
-- [FileDataCollectionService.kt](./FileDataCollectionService.kt)
-- [RunningCommandService.kt](./RunningCommandService.kt)
-- [MarkdownConversionService.kt](./MarkdownConversionService.kt)
+## Exceptional Features
+1. **Plan Hierarchy Management**: Sophisticated system for managing nested plans with parent-child relationships
+2. **Reactive Process Communication**: Advanced use of Project Reactor for asynchronous process management
+3. **Intelligent File Tracking**: Thread-safe file validation with background processing
+4. **XML-Tagged Response Parsing**: Structured extraction of intentions, summaries, and commit messages
+5. **Auto-Scroll Management**: Smart detection of user scrolling to control auto-scroll behavior
+6. **Multi-Process Support**: Concurrent AI processes for different plans
+7. **Path Normalization**: Cross-platform path handling for consistent file references
