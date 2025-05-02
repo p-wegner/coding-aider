@@ -3,11 +3,8 @@ package de.andrena.codingaider.services
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.components.service
-import de.andrena.codingaider.command.ChainedAiderCommand
 import de.andrena.codingaider.command.CommandData
-import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.outputview.MarkdownDialog
-import de.andrena.codingaider.services.plans.PostActionPlanCreationService
 import javax.swing.DefaultListModel
 import javax.swing.JOptionPane
 
@@ -48,38 +45,6 @@ class RunningCommandService {
         }
     }
 
-    fun getLastCompletedCommandData(): CommandData? = lastCompletedCommand
-
-    fun getLastCommandOutput(): String? = lastCommandOutput
-
-    /**
-     * Execute a chain of Aider commands, where each command can use the output of the previous as input.
-     * The chain is executed synchronously, and each step's output is passed to the next step if requested.
-     * The last output is returned.
-     */
-    fun executeChainedCommands(
-        project: Project,
-        commands: List<ChainedAiderCommand>
-    ): String? {
-        var lastOutput: String? = null
-        for (chained in commands) {
-            val cmd = if (chained.transformOutputToInput != null && lastOutput != null) {
-                chained.commandData.copy(
-                    message = chained.transformOutputToInput.invoke(lastOutput)
-                )
-            } else {
-                chained.commandData
-            }
-            val executor = IDEBasedExecutor(project, cmd)
-            executor.execute()
-            // Block until the dialog signals completion
-            executor.isFinished().await()
-            // After dialog is finished, use the lastCommandOutput
-            lastOutput = lastCommandOutput
-        }
-        return lastOutput
-    }
-
     fun createPlanFromLastCommand(project: Project) {
         if (lastCompletedCommand == null || lastCommandOutput == null) {
             JOptionPane.showMessageDialog(
@@ -106,65 +71,5 @@ class RunningCommandService {
 
     fun hasCompletedCommand(): Boolean = lastCompletedCommand != null && lastCommandOutput != null
 
-    // TODO: refactor this to use it for an action that opens a dialog with a text area,
-    //  runs the aider command with the provided text as message and runs a summery command afterwards
-    /**
-     * Opens a dialog with a text area for the user to enter a prompt, runs the aider command with the provided text,
-     * and then runs a summary command on the output. The summary is shown in a new dialog.
-     *
-     * @param project The current project
-     * @param files The files to include in the context for the aider command
-     * @param dialogTitle The title for the input dialog
-     * @param initialPrompt Optional initial prompt text
-     */
-    fun runPromptAndSummarize(
-        project: Project,
-        files: List<de.andrena.codingaider.command.FileData>,
-        dialogTitle: String = "Aider Prompt and Summarize",
-        initialPrompt: String = ""
-    ) {
-        val promptArea = javax.swing.JTextArea(initialPrompt, 10, 60).apply {
-            lineWrap = true
-            wrapStyleWord = true
-            font = javax.swing.UIManager.getFont("TextField.font")
-        }
-        val result = JOptionPane.showConfirmDialog(
-            null,
-            javax.swing.JScrollPane(promptArea),
-            dialogTitle,
-            JOptionPane.OK_CANCEL_OPTION,
-            JOptionPane.PLAIN_MESSAGE
-        )
-        if (result != JOptionPane.OK_OPTION) return
-
-        val userPrompt = promptArea.text.trim()
-        if (userPrompt.isBlank()) return
-
-        val settings = de.andrena.codingaider.settings.AiderSettings.getInstance()
-        val commandData = CommandData(
-            message = userPrompt,
-            useYesFlag = settings.useYesFlag,
-            llm = settings.llm,
-            additionalArgs = settings.additionalArgs,
-            files = files,
-            lintCmd = settings.lintCmd,
-            deactivateRepoMap = settings.deactivateRepoMap,
-            editFormat = settings.editFormat,
-            projectPath = project.basePath ?: "",
-            sidecarMode = settings.useSidecarMode
-        )
-        
-        val executor = IDEBasedExecutor(project, commandData)
-        val dialog = executor.execute()
-        executor.isFinished().await()
-        val output = dialog.toString()
-
-        val summaryCommand = commandData.copy(
-            message = "Summarize the following output:\n$output",
-            files = commandData.files
-        )
-        val summaryExecutor = IDEBasedExecutor(project, summaryCommand)
-        summaryExecutor.execute()
-    }
 }
 

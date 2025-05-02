@@ -30,7 +30,11 @@ class IDEBasedExecutor(
     private val commandExecutor = AtomicReference<CommandExecutor?>(null)
     private var executionThread: Thread? = null
     private var isFinished: CountDownLatch = CountDownLatch(1)
+    private var finalOutput: String = ""
 
+    fun getFinalOutput(): String {
+        return finalOutput
+    }
 
     fun execute(): MarkdownDialog {
         markdownDialog = MarkdownDialog(
@@ -80,7 +84,6 @@ class IDEBasedExecutor(
             executionThread?.interrupt()
             updateDialogProgress("Aider command aborted by user", "Aider Command Aborted")
             markdownDialog?.setProcessFinished()
-            // Give a small delay to ensure the message is shown before closing
             Thread.sleep(500)
             invokeLater {
                 markdownDialog?.dispose()
@@ -88,7 +91,6 @@ class IDEBasedExecutor(
             isFinished.countDown()
         } catch (e: Exception) {
             log.error("Error during abort", e)
-            // Ensure dialog is closed even if there's an error
             invokeLater {
                 markdownDialog?.dispose()
             }
@@ -127,15 +129,14 @@ class IDEBasedExecutor(
         )
         refreshFiles()
         planExecutionActions.commandCompleted()
-        // Store the command data and output for potential plan creation
         project.service<RunningCommandService>().storeCompletedCommand(commandData, message)
         if (!commandData.options.disablePresentation) {
             presentChanges()
         }
-        // Store the completed command data and output, including commit hashes
         val commitBefore = currentCommitHash
         val commitAfter = GitUtils.getCurrentCommitHash(project)
         project.service<RunningCommandService>().storeCompletedCommand(commandData, message, commitBefore, commitAfter)
+        finalOutput = message
         commandFinishedCallback?.onCommandFinished(exitCode == 0)
     }
 
@@ -152,9 +153,5 @@ class IDEBasedExecutor(
         markdownDialog?.setProcessFinished()
         markdownDialog?.startAutoCloseTimer(getInstance().markdownDialogAutocloseDelay)
     }
-    
-}
-@FunctionalInterface
-fun interface CommandFinishedCallback {
-    fun onCommandFinished(success: Boolean)
+
 }
