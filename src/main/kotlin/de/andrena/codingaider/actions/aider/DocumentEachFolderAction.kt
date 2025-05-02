@@ -45,6 +45,12 @@ class DocumentEachFolderAction : AnAction() {
             val currentCommitHash = GitUtils.getCurrentCommitHash(project)
             val documentationLlm =
                 if (settings.documentationLlm == "Default") settings.llm else settings.documentationLlm
+            
+            // Get the first enabled document type or use the Technical Documentation type
+            val documentType = AiderProjectSettings.getInstance(project).getDocumentTypes()
+                .firstOrNull { it.isEnabled } 
+                ?: de.andrena.codingaider.features.documentation.DefaultDocumentTypes.getDefaultDocumentTypes().first()
+            
             val documentationActions = virtualFiles.filter { it.isDirectory }.map { folder ->
                 val allFiles = project.service<FileDataCollectionService>().collectAllFiles(arrayOf(folder))
                 val fileNames = allFiles.map { File(it.filePath).name }
@@ -59,13 +65,26 @@ class DocumentEachFolderAction : AnAction() {
                 val writableFileDataList = fileDataList + listOf(
                     FileData(markdownFile.path, false)
                 )
+                
+                // Get context files for the document type
+                val absoluteDocumentType = documentType.withAbsolutePaths(project.basePath ?: "")
+                val contextFiles = absoluteDocumentType.contextFiles.map { FileData(it, false) }
+                
+                // Build the prompt using the DocumentationGenerationPromptService
+                val promptService = project.service<de.andrena.codingaider.features.documentation.DocumentationGenerationPromptService>()
+                val prompt = promptService.buildPrompt(
+                    documentType,
+                    allFiles,
+                    markdownFile.path,
+                    getAdditionalPromptForFolder(folder)
+                )
 
                 val commandData = CommandData(
-                    message = getIndividualDocumentationPrompt(fileNames, folder, filename),
+                    message = prompt,
                     useYesFlag = true,
                     llm = documentationLlm,
                     additionalArgs = settings.additionalArgs,
-                    files = writableFileDataList,
+                    files = writableFileDataList + contextFiles,
                     lintCmd = settings.lintCmd,
                     deactivateRepoMap = settings.deactivateRepoMap,
                     editFormat = settings.editFormat,
@@ -128,21 +147,11 @@ class DocumentEachFolderAction : AnAction() {
 |If an overview documentation file is already available, update it instead of creating a new one.
 |""".trimMargin()
 
-        private fun getIndividualDocumentationPrompt(
-            fileNames: List<String>,
-            folder: VirtualFile,
-            filename: String
-        ) =
-            """Generate a markdown documentation for the code in the provided files and directories: $fileNames. 
-|Store the results in $folder/$filename.
-|If there are exceptional implementation details, mention them.
-|
-|Good code documentation should provide a high-level overview of the module's purpose and functionality.
-|Important files should be clearly described and linked in the documentation file.
-|Include details on the module's public interfaces, key classes, and methods, as well as any design patterns used.
-|Document the dependencies between classes in the module $filename and classes of the project outside of the $filename module using a Mermaid diagram embedded in the markdown file.
+        private fun getAdditionalPromptForFolder(folder: VirtualFile): String {
+            return """
+|Document the dependencies between classes in the module ${folder.name} and classes of the project outside of the ${folder.name} module using a Mermaid diagram embedded in the markdown file.
 |Make sure files are linked using relative paths.
-|If the file already exists, update it instead.
 |""".trimMargin()
+        }
     }
 }

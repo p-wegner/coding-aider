@@ -48,6 +48,13 @@ class AiderProjectSettingsConfigurable(private val project: Project) : Configura
                         .resizableColumn()
                 }
             }
+            group("Document Types") {
+                row {
+                    scrollCell(createDocumentTypePanel())
+                        .align(Align.FILL)
+                        .resizableColumn()
+                }
+            }
             group("Persistent Files") {
                 row {
                     scrollCell(persistentFilesList)
@@ -125,6 +132,65 @@ class AiderProjectSettingsConfigurable(private val project: Project) : Configura
         panel.add(buttonPanel, BorderLayout.SOUTH)
         return panel
     }
+    
+    private fun createDocumentTypePanel(): JPanel {
+        val panel = JPanel(BorderLayout())
+        val listModel = DefaultListModel<DocumentTypeConfiguration>()
+        val documentTypeList = JBList(listModel)
+
+        // Add existing document types
+        AiderProjectSettings.getInstance(project).getDocumentTypes().forEach {
+            listModel.addElement(it)
+        }
+
+        documentTypeList.cellRenderer = DocumentTypeRenderer()
+
+        val buttonPanel = JPanel().apply {
+            add(JButton("Add").apply {
+                addActionListener {
+                    showDocumentTypeDialog(null) { config ->
+                        listModel.addElement(config)
+                        AiderProjectSettings.getInstance(project).addDocumentType(config)
+                    }
+                }
+            })
+            add(JButton("Edit").apply {
+                addActionListener {
+                    val selected = documentTypeList.selectedValue
+                    if (selected != null) {
+                        val index = documentTypeList.selectedIndex
+                        showDocumentTypeDialog(selected) { config ->
+                            listModel.set(index, config)
+                            AiderProjectSettings.getInstance(project).updateDocumentType(index, config)
+                        }
+                    }
+                }
+            })
+            add(JButton("Remove").apply {
+                addActionListener {
+                    val index = documentTypeList.selectedIndex
+                    if (index != -1) {
+                        listModel.remove(index)
+                        AiderProjectSettings.getInstance(project).removeDocumentType(index)
+                    }
+                }
+            })
+            add(JButton("Copy").apply {
+                addActionListener {
+                    val selected = documentTypeList.selectedValue
+                    if (selected != null) {
+                        val copy = selected.copy(name = "${selected.name} (Copy)")
+                        listModel.addElement(copy)
+                        AiderProjectSettings.getInstance(project).addDocumentType(copy)
+                    }
+                }
+            })
+        }
+
+        panel.add(JScrollPane(documentTypeList), BorderLayout.CENTER)
+        panel.add(buttonPanel, BorderLayout.SOUTH)
+        return panel
+    }
 
     private fun showTestTypeDialog(
         existing: TestTypeConfiguration?,
@@ -138,6 +204,19 @@ class AiderProjectSettingsConfigurable(private val project: Project) : Configura
             onSave(dialog.getTestType())
         }
     }
+    
+    private fun showDocumentTypeDialog(
+        existing: DocumentTypeConfiguration?,
+        onSave: (DocumentTypeConfiguration) -> Unit
+    ) {
+        // If we have an existing configuration with relative paths, convert to absolute for editing
+        val configForEditing = existing?.withAbsolutePaths(project.basePath ?: "")
+        
+        val dialog = de.andrena.codingaider.features.documentation.dialogs.DocumentTypeDialog(project, configForEditing)
+        if (dialog.showAndGet()) {
+            onSave(dialog.getDocumentType())
+        }
+    }
 
     private inner class TestTypeRenderer : DefaultListCellRenderer() {
         override fun getListCellRendererComponent(
@@ -149,6 +228,22 @@ class AiderProjectSettingsConfigurable(private val project: Project) : Configura
         ): Component {
             val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
             if (component is JLabel && value is TestTypeConfiguration) {
+                component.text = "${value.name} ${if (!value.isEnabled) "(Disabled)" else ""}"
+            }
+            return component
+        }
+    }
+    
+    private inner class DocumentTypeRenderer : DefaultListCellRenderer() {
+        override fun getListCellRendererComponent(
+            list: JList<*>?,
+            value: Any?,
+            index: Int,
+            isSelected: Boolean,
+            cellHasFocus: Boolean
+        ): Component {
+            val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
+            if (component is JLabel && value is DocumentTypeConfiguration) {
                 component.text = "${value.name} ${if (!value.isEnabled) "(Disabled)" else ""}"
             }
             return component

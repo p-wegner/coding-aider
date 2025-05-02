@@ -18,3 +18,13 @@ files:
   readOnly: false
 - path: src/main/kotlin/de/andrena/codingaider/actions/aider/DocumentEachFolderAction.kt
   readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/features/documentation/DocumentTypeConfiguration.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/features/documentation/DefaultDocumentTypes.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/features/documentation/DocumentationGenerationPromptService.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/features/documentation/dialogs/DocumentTypeDialog.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/features/documentation/dialogs/DocumentationGenerationDialog.kt
+  readOnly: false
