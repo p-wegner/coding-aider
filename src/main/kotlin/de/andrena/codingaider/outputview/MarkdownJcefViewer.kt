@@ -26,6 +26,7 @@ import com.vladsch.flexmark.util.data.MutableDataSet
 import de.andrena.codingaider.utils.FilePathConverter
 import java.nio.charset.StandardCharsets
 import javax.swing.SwingUtilities
+import kotlin.text.Regex
 
 /**
  * A simplified Markdown viewer component that uses JCEF (Chromium Embedded Framework)
@@ -40,20 +41,20 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         isOpaque = true
         background = if (!JBColor.isBright()) JBColor(0x2B2B2B, 0x2B2B2B) else JBColor.WHITE
     }
-    
+
     // Browser or fallback component
     private var jbCefBrowser: JBCefBrowser? = null
     private var fallbackEditor: JEditorPane? = null
-    
+
     // State tracking
     private var isDarkTheme = !JBColor.isBright()
     private var currentContent = ""
     private var contentReady = false
-    
+
     init {
         initializeViewer()
     }
-    
+
     private fun initializeViewer() {
         try {
             if (JBCefApp.isSupported()) {
@@ -67,7 +68,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             initFallbackEditor()
         }
     }
-    
+
     private fun initJcefBrowser() {
         // Create browser with simple load handler
         jbCefBrowser = JBCefBrowser().apply {
@@ -95,15 +96,35 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     }
                 }
 
-                override fun onLoadStart(browser: CefBrowser?, frame: CefFrame?, transitionType: CefRequest.TransitionType?) {}
-                override fun onLoadError(browser: CefBrowser?, frame: CefFrame?, errorCode: CefLoadHandler.ErrorCode?, errorText: String?, failedUrl: String?) {}
-                override fun onLoadingStateChange(browser: CefBrowser?, isLoading: Boolean, canGoBack: Boolean, canGoForward: Boolean) {}
+                override fun onLoadStart(
+                    browser: CefBrowser?,
+                    frame: CefFrame?,
+                    transitionType: CefRequest.TransitionType?
+                ) {
+                }
+
+                override fun onLoadError(
+                    browser: CefBrowser?,
+                    frame: CefFrame?,
+                    errorCode: CefLoadHandler.ErrorCode?,
+                    errorText: String?,
+                    failedUrl: String?
+                ) {
+                }
+
+                override fun onLoadingStateChange(
+                    browser: CefBrowser?,
+                    isLoading: Boolean,
+                    canGoBack: Boolean,
+                    canGoForward: Boolean
+                ) {
+                }
             }, this.cefBrowser)
         }
 
         mainPanel.add(jbCefBrowser!!.component, BorderLayout.CENTER)
     }
-    
+
     private fun initFallbackEditor() {
         fallbackEditor = JEditorPane().apply {
             contentType = "text/html; charset=UTF-8"
@@ -116,7 +137,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         mainPanel.add(fallbackEditor!!, BorderLayout.CENTER)
         contentReady = true
     }
-    
+
     private fun createBaseHtml(): String {
         return """
         <!DOCTYPE html>
@@ -366,18 +387,18 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
      */
     fun setMarkdown(markdown: String) {
         currentContent = markdown
-        
+
         if (!contentReady) {
             // Content will be updated when viewer is ready
             return
         }
-        
+
         updateContent(markdown)
     }
-    
+
     private fun updateContent(markdown: String) {
         val html = convertMarkdownToHtml(markdown)
-        
+
         fallbackEditor?.let { editor ->
             SwingUtilities.invokeLater {
                 editor.putClientProperty("charset", StandardCharsets.UTF_8.name())
@@ -386,7 +407,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             }
             return
         }
-        
+
         jbCefBrowser?.let { browser ->
             try {
                 // Use a simple JavaScript call to update the content
@@ -394,7 +415,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                     .replace("'", "\\'")
                     .replace("\n", "\\n")
                     .replace("\r", "\\r")
-                
+
                 val script = "updateContent('$escapedHtml');"
                 browser.cefBrowser.executeJavaScript(script, browser.cefBrowser.url, 0)
             } catch (e: Exception) {
@@ -404,7 +425,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             }
         }
     }
-    
+
     private fun createHtmlWithContent(content: String): String {
         val baseHtml = createBaseHtml()
         return baseHtml.replace("<div id=\"content\"></div>", "<div id=\"content\">$content</div>")
@@ -442,31 +463,33 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         val processedMarkdown = FilePathConverter.convertPathsToMarkdownLinks(markdown, basePath)
         val document = parser.parse(processedMarkdown)
         val renderer = HtmlRenderer.builder(markdownOptions).build()
-        
+
         // Render the basic markdown
         var html = renderer.render(document)
-        
+
         // Process special aider blocks
         html = processAiderBlocks(html, parser, renderer)
-        
+
         // Add styling and process search/replace blocks
         return applyStylesToHtml(html)
     }
-    
+
     private fun processAiderBlocks(html: String, parser: Parser, renderer: HtmlRenderer): String {
         return html.replace(
-            Regex("(?s)<aider-intention>\\s*(.*?)\\s*</aider-intention>")) { matchResult ->
-                val intentionContent = matchResult.groupValues[1].trim()
-                val renderedContent = renderer.render(parser.parse(intentionContent))
-                "<div class=\"aider-intention\">$renderedContent</div>"
+            Regex("(?s)<aider-intention>\\s*(.*?)\\s*</aider-intention>")
+        ) { matchResult ->
+            val intentionContent = matchResult.groupValues[1].trim()
+            val renderedContent = renderer.render(parser.parse(intentionContent))
+            "<div class=\"aider-intention\">$renderedContent</div>"
         }.replace(
-            Regex("(?s)<aider-summary>\\s*(.*?)\\s*</aider-summary>")) { matchResult ->
-                val summaryContent = matchResult.groupValues[1].trim()
-                val renderedContent = renderer.render(parser.parse(summaryContent))
-                "<div class=\"aider-summary\">$renderedContent</div>"
+            Regex("(?s)<aider-summary>\\s*(.*?)\\s*</aider-summary>")
+        ) { matchResult ->
+            val summaryContent = matchResult.groupValues[1].trim()
+            val renderedContent = renderer.render(parser.parse(summaryContent))
+            "<div class=\"aider-summary\">$renderedContent</div>"
         }
     }
-    
+
     private fun applyStylesToHtml(html: String): String {
         // Define colors based on theme
         val colors = if (isDarkTheme) {
@@ -488,12 +511,12 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             )
         } else {
             mapOf(
-                "bodyBg" to "#ffffff", 
+                "bodyBg" to "#ffffff",
                 "bodyText" to "#000000",
                 "preBg" to "#f5f5f5",
                 "preBorder" to "#cccccc",
                 "searchBg" to "#ffedeb",
-                "replaceBg" to "#ebffed", 
+                "replaceBg" to "#ebffed",
                 "searchText" to "#d73a49",
                 "replaceText" to "#28a745",
                 "intentionBg" to "#f0f7ff",
@@ -646,7 +669,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
             
             /* Only apply hover effects when not updating */
             body:not(.updating-content) .collapsible-header:hover {
-                background: ${isDarkTheme ? "#383838" : "#e8e8e8"};
+                background: ${if (isDarkTheme) "#383838" else "#e8e8e8"};
             }
             
             .collapsible-title {
@@ -696,7 +719,7 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         </script>
         
         ${processSearchReplaceBlocks(html)}
-        """
+        """.trimIndent()
 
         return styledHtml
     }
@@ -716,59 +739,64 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
         var processedHtml = html
 
         // Helper function to create collapsible panels
-        fun createCollapsiblePanel(title: String, content: String, cssClass: String = "", isEscaped: Boolean = true): String {
+        fun createCollapsiblePanel(
+            title: String,
+            content: String,
+            cssClass: String = "",
+            isEscaped: Boolean = true
+        ): String {
             val contentHtml = if (isEscaped) "<pre><code>${escapeHtml(content.trim())}</code></pre>" else content.trim()
             val panelId = "panel-${title.replace(" ", "-").lowercase()}-${content.hashCode()}"
-            
+
             return """
-            <div class="collapsible-panel expanded" data-panel-id="$panelId">
-                <div class="collapsible-header $cssClass">
-                    <span class="collapsible-title">$title</span>
-                    <span class="collapsible-arrow">▼</span>
-                </div>
-                <div class="collapsible-content">
-                    $contentHtml
-                </div>
-            </div>
-            """.trimIndent()
+<div class="collapsible-panel expanded" data-panel-id="$panelId">
+    <div class="collapsible-header $cssClass">
+        <span class="collapsible-title">$title</span>
+        <span class="collapsible-arrow">▼</span>
+    </div>
+    <div class="collapsible-content">
+        $contentHtml
+    </div>
+</div>
+""".trimIndent()
         }
 
         // Process standard blocks
         val blockPatterns = mapOf(
-            """<aider-command>\s*(.*?)\s*</aider-command>""" to 
-                { content: String -> createCollapsiblePanel("Aider Command", content) },
-            
-            """<aider-system-prompt>(.*?)</aider-system-prompt>""" to 
-                { content: String -> createCollapsiblePanel("System Prompt", content, "system") },
-            
-            """<aider-user-prompt>(.*?)</aider-user-prompt>""" to 
-                { content: String -> createCollapsiblePanel("User Request", content, "user") },
-            
-            """<div class="aider-intention">(.*?)</div>""" to 
-                { content: String -> createCollapsiblePanel("Intention", content, "intention", isEscaped = false) },
-            
-            """<div class="aider-summary">(.*?)</div>""" to 
-                { content: String -> createCollapsiblePanel("Summary", content, "summary", isEscaped = false) }
+            Regex("""<aider-command>\s*(.*?)\s*</aider-command>""", RegexOption.DOT_MATCHES_ALL) to
+                    { content: String -> createCollapsiblePanel("Aider Command", content) },
+
+            Regex("""<aider-system-prompt>(.*?)</aider-system-prompt>""", RegexOption.DOT_MATCHES_ALL) to
+                    { content: String -> createCollapsiblePanel("System Prompt", content, "system") },
+
+            Regex("""<aider-user-prompt>(.*?)</aider-user-prompt>""", RegexOption.DOT_MATCHES_ALL) to
+                    { content: String -> createCollapsiblePanel("User Request", content, "user") },
+
+            Regex("""<div class="aider-intention">(.*?)</div>""", RegexOption.DOT_MATCHES_ALL) to
+                    { content: String -> createCollapsiblePanel("Intention", content, "intention", isEscaped = false) },
+
+            Regex("""<div class="aider-summary">(.*?)</div>""", RegexOption.DOT_MATCHES_ALL) to
+                    { content: String -> createCollapsiblePanel("Summary", content, "summary", isEscaped = false) }
         )
 
         // Apply block patterns
         blockPatterns.forEach { (pattern, formatter) ->
-            processedHtml = processedHtml.replace(
-                Regex(pattern, RegexOption.DOT_MATCHES_ALL)
-            ) { matchResult ->
+            processedHtml = processedHtml.replace(pattern) { matchResult ->
                 formatter(matchResult.groupValues[1])
             }
         }
 
         // Process search/replace blocks - improved to better handle edit format blocks
-        val searchReplacePattern = Regex("""(?m)^([^\n]+?)\n```[^\n]*\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n```""", 
-            RegexOption.DOT_MATCHES_ALL)
-        
-        processedHtml = processedHtml.replace(searchReplacePattern) { matchResult ->
+        val searchReplacePattern = Regex(
+            """(?m)^([^\n]+?)\n```[^\n]*\n<<<<<<< SEARCH\n(.*?)\n=======\n(.*?)\n>>>>>>> REPLACE\n```""",
+            setOf(RegexOption.DOT_MATCHES_ALL)
+        )
+
+        processedHtml = searchReplacePattern.replace(processedHtml) { matchResult ->
             val filePath = matchResult.groupValues[1].trim()
             val searchBlock = matchResult.groupValues[2]
             val replaceBlock = matchResult.groupValues[3]
-            
+
             """
             <div class="collapsible-panel expanded edit-format-panel">
                 <div class="collapsible-header edit-format">
