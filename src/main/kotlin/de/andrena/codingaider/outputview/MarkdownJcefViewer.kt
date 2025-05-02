@@ -233,7 +233,10 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                         
                         // Restore scroll position or scroll to bottom if we were at bottom
                         if (wasAtBottom) {
+                            // Multiple scroll attempts to ensure we reach the bottom
                             scrollToBottom();
+                            setTimeout(scrollToBottom, 50);
+                            setTimeout(scrollToBottom, 100);
                         } else {
                             window.scrollTo(0, scrollPosition);
                         }
@@ -242,12 +245,17 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
                 
                 // Check if scrolled to bottom
                 function isScrolledToBottom() {
-                    return (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 50);
+                    // More generous threshold (100px) to determine if we're at the bottom
+                    return (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 100);
                 }
                 
                 // Scroll to bottom
                 function scrollToBottom() {
-                    window.scrollTo(0, document.body.scrollHeight);
+                    // Force scroll to absolute bottom
+                    window.scrollTo({
+                        top: document.body.scrollHeight,
+                        behavior: 'auto'
+                    });
                 }
                 
                 // Store current panel states

@@ -56,11 +56,16 @@ class MarkdownDialog(
 
         // Track user scrolling to determine auto-scroll behavior
         verticalScrollBar.addAdjustmentListener { e ->
-            if (!programmaticScrolling && e.valueIsAdjusting) {
+            // Only consider manual scrolling (not programmatic)
+            if (!programmaticScrolling) {
                 val scrollBar = verticalScrollBar
-                // Check if user scrolled near the bottom (within 10 pixels)
-                val isNearBottom = scrollBar.value >= (scrollBar.maximum - scrollBar.visibleAmount - 10)
-                shouldAutoScroll = isNearBottom
+                // Check if user scrolled near the bottom (within 20 pixels)
+                val isNearBottom = scrollBar.value >= (scrollBar.maximum - scrollBar.visibleAmount - 20)
+                
+                // Only update auto-scroll state on actual user interaction
+                if (e.valueIsAdjusting) {
+                    shouldAutoScroll = isNearBottom
+                }
             }
         }
     }
@@ -260,21 +265,28 @@ class MarkdownDialog(
 
                     // Schedule scroll adjustment after UI updates with a longer delay
                     // to ensure the content is fully rendered
-                    Timer().schedule(100) {
+                    Timer().schedule(150) {
                         invokeLater {
                             // Scroll to bottom if auto-scroll is enabled OR if we were already near the bottom
                             if (shouldAutoScroll || wasNearBottom) {
                                 try {
                                     programmaticScrolling = true // Prevent listener feedback loop
-                                    scrollBar.value = scrollBar.maximum // Scroll to the very bottom
                                     
-                                    // Sometimes the first scroll doesn't reach the bottom due to rendering delays
-                                    // Try again after a short delay
+                                    // First scroll attempt
+                                    scrollBar.value = scrollBar.maximum
+                                    
+                                    // Multiple scroll attempts with increasing delays to handle large content
+                                    // This helps ensure we reach the bottom even with dynamic content rendering
                                     Timer().schedule(50) {
                                         invokeLater {
-                                            if (programmaticScrolling) {
-                                                scrollBar.value = scrollBar.maximum
-                                                programmaticScrolling = false
+                                            scrollBar.value = scrollBar.maximum
+                                            
+                                            // Final scroll attempt with cleanup
+                                            Timer().schedule(100) {
+                                                invokeLater {
+                                                    scrollBar.value = scrollBar.maximum
+                                                    programmaticScrolling = false
+                                                }
                                             }
                                         }
                                     }
