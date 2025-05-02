@@ -11,13 +11,6 @@ import de.andrena.codingaider.services.plans.PostActionPlanCreationService
 import javax.swing.DefaultListModel
 import javax.swing.JOptionPane
 
-/**
- * Service for tracking and managing running Aider commands.
- * Responsible for:
- * - Tracking active command dialogs
- * - Storing information about the last completed command
- * - Executing command chains
- */
 @Service(Service.Level.PROJECT)
 class RunningCommandService {
     private val runningCommandsListModel = DefaultListModel<MarkdownDialog>()
@@ -87,10 +80,6 @@ class RunningCommandService {
         return lastOutput
     }
 
-    /**
-     * Creates a plan from the last completed command.
-     * Delegates to PostActionPlanCreationService for the actual plan creation.
-     */
     fun createPlanFromLastCommand(project: Project) {
         if (lastCompletedCommand == null || lastCommandOutput == null) {
             JOptionPane.showMessageDialog(
@@ -117,6 +106,8 @@ class RunningCommandService {
 
     fun hasCompletedCommand(): Boolean = lastCompletedCommand != null && lastCommandOutput != null
 
+    // TODO: refactor this to use it for an action that opens a dialog with a text area,
+    //  runs the aider command with the provided text as message and runs a summery command afterwards
     /**
      * Opens a dialog with a text area for the user to enter a prompt, runs the aider command with the provided text,
      * and then runs a summary command on the output. The summary is shown in a new dialog.
@@ -163,13 +154,11 @@ class RunningCommandService {
             sidecarMode = settings.useSidecarMode
         )
         
-        // Execute the initial command
         val executor = IDEBasedExecutor(project, commandData)
         val dialog = executor.execute()
         executor.isFinished().await()
         val output = dialog.toString()
 
-        // Execute the summary command as a second step
         val summaryCommand = commandData.copy(
             message = "Summarize the following output:\n$output",
             files = commandData.files
