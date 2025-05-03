@@ -189,7 +189,6 @@ class PlanExecutionCostService() {
      */
     private fun createHistoryEntry(costData: ExecutionCostData, commandData: CommandData): String {
         val timestamp = costData.getFormattedTimestamp()
-        val message = commandData.message.take(100).let { if (it.length < commandData.message.length) "$it..." else it }
         
         // Format token counts with k suffix for thousands
         val sentTokens = if (costData.tokensSent >= 1000) 
@@ -204,14 +203,13 @@ class PlanExecutionCostService() {
         
         return """### Execution on $timestamp
             |
-            |**Model:** ${costData.model}
-            |**Tokens:** $sentTokens sent, $receivedTokens received
-            |**Cost:** \$${String.format("%.4f", costData.messageCost)} message, \$${String.format("%.4f", costData.sessionCost)} session
-            |
-            |**Prompt:**
-            |```
-            |$message
-            |```
+            || Metric | Value |
+            || ------ | ----- |
+            || Model | ${costData.model} |
+            || Tokens Sent | $sentTokens |
+            || Tokens Received | $receivedTokens |
+            || Message Cost | \$${String.format("%.4f", costData.messageCost)} |
+            || Session Cost | \$${String.format("%.4f", costData.sessionCost)} |
             |
             |${if (costData.summary.isNotBlank()) "**Summary:**\n${costData.summary}" else ""}
             |""".trimMargin()
