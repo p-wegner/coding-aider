@@ -18,3 +18,5 @@ files:
   readOnly: true
 - path: prompt.txt
   readOnly: true
+- path: src\main\kotlin\de\andrena\codingaider\services\plans\PlanExecutionCostService.kt
+  readOnly: false

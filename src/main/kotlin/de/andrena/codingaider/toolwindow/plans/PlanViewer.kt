@@ -28,6 +28,7 @@ import de.andrena.codingaider.services.plans.AiderPlan
 import de.andrena.codingaider.services.plans.AiderPlanPromptService
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.services.plans.ContinuePlanService
+import de.andrena.codingaider.services.plans.PlanExecutionCostService
 import de.andrena.codingaider.utils.FileRefresher
 import java.awt.*
 import java.awt.event.ActionEvent
@@ -442,8 +443,15 @@ class PlanViewer(private val project: Project) {
                 }
                 statusIcon.toolTipText = tooltip
 
+                // Get cost information
+                val costInfo = value.mainPlanFile?.filePath?.let { planPath ->
+                    val costService = list.project?.service<PlanExecutionCostService>()
+                    val totalCost = costService?.getTotalCost(planPath) ?: 0.0
+                    if (totalCost > 0) " | $${String.format("%.2f", totalCost)}" else ""
+                } ?: ""
+
                 val checkedItems = totalItems - openItems
-                countLabel.text = "($checkedItems/$totalItems)"
+                countLabel.text = "($checkedItems/$totalItems$costInfo)"
                 // Use more subtle progress colors that work well in both themes
                 countLabel.foreground = when {
                     openItems == 0 -> UIManager.getColor("Label.foreground")
@@ -750,6 +758,40 @@ class PlanViewer(private val project: Project) {
         }
     }
     
+    inner class ViewHistoryAction : AnAction(
+        "View Execution History",
+        "View execution history and costs for this plan",
+        AllIcons.Vcs.History
+    ) {
+        override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+
+        override fun actionPerformed(e: AnActionEvent) {
+            val selectedPlan = plansList.selectedValue ?: return
+            val planFile = selectedPlan.mainPlanFile?.filePath ?: return
+            val historyFile = File(planFile.replace(".md", "_history.md"))
+            
+            if (!historyFile.exists()) {
+                Messages.showInfoMessage(
+                    project,
+                    "No execution history found for this plan.",
+                    "No History"
+                )
+                return
+            }
+            
+            // Open history file in editor
+            val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(historyFile)
+            virtualFile?.let {
+                FileEditorManager.getInstance(project).openFile(it, true)
+            }
+        }
+
+        override fun update(e: AnActionEvent) {
+            val selectedPlan = plansList.selectedValue
+            e.presentation.isEnabled = selectedPlan != null && selectedPlan.mainPlanFile != null
+        }
+    }
+
     inner class DeletePlanAction : AnAction(
         "Delete Plan",
         "Delete this plan",

@@ -3,34 +3,34 @@
 ## Implementation Tasks
 
 ### Cost Tracking Service
-- [ ] Create new `PlanExecutionCostService` class
-- [ ] Implement token/cost parsing logic from command output
-- [ ] Add methods to store execution history
-- [ ] Implement file creation and update functionality
-- [ ] Add methods to retrieve cost information for UI display
+- [X] Create new `PlanExecutionCostService` class
+- [X] Implement token/cost parsing logic from command output
+- [X] Add methods to store execution history
+- [X] Implement file creation and update functionality
+- [X] Add methods to retrieve cost information for UI display
 
 ### Data Models
-- [ ] Create `ExecutionCostData` class to store cost information
+- [X] Create `ExecutionCostData` class to store cost information
 - [ ] Create `PlanExecutionHistory` class to manage execution records
-- [ ] Implement serialization/deserialization for history files
+- [X] Implement serialization/deserialization for history files
 
 ### File Management
-- [ ] Implement creation of history markdown files
-- [ ] Create logic to update history files with new executions
-- [ ] Ensure proper formatting of history markdown
-- [ ] Handle file system operations safely
+- [X] Implement creation of history markdown files
+- [X] Create logic to update history files with new executions
+- [X] Ensure proper formatting of history markdown
+- [X] Handle file system operations safely
 
 ### Integration with Execution Flow
 - [ ] Hook into `CommandExecutor` to capture execution output
-- [ ] Add cost extraction to `IDEBasedExecutor` completion handler
-- [ ] Update `PlanViewer` to display cost information
-- [ ] Connect cost tracking to plan continuation flow
+- [X] Add cost extraction to `IDEBasedExecutor` completion handler
+- [X] Update `PlanViewer` to display cost information
+- [X] Connect cost tracking to plan continuation flow
 
 ### UI Updates
-- [ ] Add cost display to plan list items
-- [ ] Create a way to view execution history for a plan
-- [ ] Update tooltips to include cost information
-- [ ] Add total cost tracking to plans panel
+- [X] Add cost display to plan list items
+- [X] Create a way to view execution history for a plan
+- [X] Update tooltips to include cost information
+- [X] Add total cost tracking to plans panel
 
 ### Testing and Validation
 - [ ] Test with various output formats
@@ -39,7 +39,7 @@
 - [ ] Ensure backward compatibility
 
 ### Documentation
-- [ ] Document the cost tracking service API
-- [ ] Add comments explaining the parsing logic
-- [ ] Document the history file format
+- [X] Document the cost tracking service API
+- [X] Add comments explaining the parsing logic
+- [X] Document the history file format
 - [ ] Update user documentation to explain the feature

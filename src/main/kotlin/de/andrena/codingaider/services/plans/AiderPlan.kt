@@ -129,7 +129,22 @@ data class AiderPlan(
         return buildString {
             append("<html><body style='width:400px'>")
             append("<b>${mainPlanFile?.filePath}</b><br>")
-            append("Status: $status | Progress: $checkedItems/${totalChecklistItems()}<br><br>")
+            append("Status: $status | Progress: $checkedItems/${totalChecklistItems()}<br>")
+            
+            // Add cost information if available
+            mainPlanFile?.filePath?.let { planPath ->
+                val costService = com.intellij.openapi.components.service<PlanExecutionCostService>()
+                val totalCost = costService.getTotalCost(planPath)
+                val totalTokens = costService.getTotalTokens(planPath)
+                
+                if (totalCost > 0 || totalTokens > 0) {
+                    append("<br><b>Execution Stats:</b><br>")
+                    append("Total Cost: $${String.format("%.4f", totalCost)} | ")
+                    append("Total Tokens: ${totalTokens/1000}k<br>")
+                }
+            }
+            
+            append("<br>")
             
             if (openItems.isNotEmpty()) {
                 append("<b>Open Items:</b><br>")

@@ -52,6 +52,7 @@ class PlansPanel(private val project: Project) {
                         add(planViewer.ContinuePlanAction())
                         add(planViewer.RefinePlanAction())
                         add(planViewer.EditContextAction())
+                        add(planViewer.ViewHistoryAction())
                         add(planViewer.MoveToPersistentFilesAction())
                         add(planViewer.ArchivePlanAction())
                         add(planViewer.DeletePlanAction())

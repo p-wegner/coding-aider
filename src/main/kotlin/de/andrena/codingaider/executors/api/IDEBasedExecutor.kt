@@ -10,6 +10,8 @@ import de.andrena.codingaider.outputview.Abortable
 import de.andrena.codingaider.outputview.MarkdownDialog
 import de.andrena.codingaider.services.CommandSummaryService
 import de.andrena.codingaider.services.RunningCommandService
+import de.andrena.codingaider.services.plans.AiderPlanService
+import de.andrena.codingaider.services.plans.PlanExecutionCostService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileRefresher
 import de.andrena.codingaider.utils.GitUtils
@@ -130,6 +132,27 @@ class IDEBasedExecutor(
         refreshFiles()
         planExecutionActions.commandCompleted()
         project.service<RunningCommandService>().storeCompletedCommand(commandData, message)
+        
+        // Record execution cost if this is a plan execution
+        if (commandData.planId != null && exitCode == 0) {
+            try {
+                val planService = project.service<AiderPlanService>()
+                val costService = project.service<PlanExecutionCostService>()
+                
+                // Find the plan by ID
+                val plans = planService.getAiderPlans()
+                val plan = plans.flatMap { it.getAllChildPlans() + it }
+                    .find { it.id == commandData.planId }
+                
+                // Record execution cost if plan found
+                plan?.let {
+                    costService.recordExecutionCost(it, message, commandData)
+                }
+            } catch (e: Exception) {
+                log.warn("Failed to record plan execution cost", e)
+            }
+        }
+        
         if (!commandData.options.disablePresentation) {
             presentChanges()
         }
