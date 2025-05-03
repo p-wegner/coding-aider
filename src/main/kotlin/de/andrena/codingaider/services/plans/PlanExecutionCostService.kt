@@ -45,16 +45,16 @@ data class ExecutionCostData(
                 model = it.groupValues[1].trim()
             }
             
-            // Extract token counts
+            // Extract token counts - get the last occurrence
             val tokensRegex = Regex("Tokens:\\s*(\\d+[k]?)\\s*sent,\\s*(\\d+[k]?)\\s*received")
-            tokensRegex.find(output)?.let {
+            tokensRegex.findAll(output).lastOrNull()?.let {
                 tokensSent = parseTokenCount(it.groupValues[1])
                 tokensReceived = parseTokenCount(it.groupValues[2])
             }
             
-            // Extract cost information
+            // Extract cost information - get the last occurrence
             val costRegex = Regex("Cost:\\s*\\$(\\d+\\.\\d+)\\s*message,\\s*\\$(\\d+\\.\\d+)\\s*session")
-            costRegex.find(output)?.let {
+            costRegex.findAll(output).lastOrNull()?.let {
                 messageCost = it.groupValues[1].toDoubleOrNull() ?: 0.0
                 sessionCost = it.groupValues[2].toDoubleOrNull() ?: 0.0
             }
@@ -79,8 +79,8 @@ data class ExecutionCostData(
         private fun parseTokenCount(tokenStr: String): Int {
             return when {
                 tokenStr.endsWith("k") -> {
-                    val value = tokenStr.substring(0, tokenStr.length - 1).toIntOrNull() ?: 0
-                    value * 1000
+                    val value = tokenStr.substring(0, tokenStr.length - 1).toDoubleOrNull() ?: 0.0
+                    (value * 1000).toInt()
                 }
                 else -> tokenStr.toIntOrNull() ?: 0
             }
@@ -191,11 +191,22 @@ class PlanExecutionCostService() {
         val timestamp = costData.getFormattedTimestamp()
         val message = commandData.message.take(100).let { if (it.length < commandData.message.length) "$it..." else it }
         
+        // Format token counts with k suffix for thousands
+        val sentTokens = if (costData.tokensSent >= 1000) 
+            String.format("%.1fk", costData.tokensSent / 1000.0) 
+        else 
+            costData.tokensSent.toString()
+            
+        val receivedTokens = if (costData.tokensReceived >= 1000) 
+            String.format("%.1fk", costData.tokensReceived / 1000.0) 
+        else 
+            costData.tokensReceived.toString()
+        
         return """### Execution on $timestamp
             |
             |**Model:** ${costData.model}
-            |**Tokens:** ${costData.tokensSent} sent, ${costData.tokensReceived} received
-            |**Cost:** \$${costData.messageCost} message, \$${costData.sessionCost} session
+            |**Tokens:** $sentTokens sent, $receivedTokens received
+            |**Cost:** \$${String.format("%.4f", costData.messageCost)} message, \$${String.format("%.4f", costData.sessionCost)} session
             |
             |**Prompt:**
             |```
