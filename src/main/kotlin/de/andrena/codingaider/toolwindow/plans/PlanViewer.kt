@@ -100,20 +100,20 @@ class PlanViewer(private val project: Project) {
 
             addMouseListener(object : MouseAdapter() {
                 private var hoveredPlan: AiderPlan? = null
-                
+
                 override fun mouseMoved(e: MouseEvent) {
                     val index = plansList.locationToIndex(e.point)
                     if (index >= 0) {
                         val plan = plansList.model.getElementAt(index)
                         val planId = plan.mainPlanFile?.filePath ?: return
-                        
+
                         // Calculate if mouse is over expand/collapse area
                         val depth = plan.depth
                         val indentWidth = 20
                         val iconWidth = 16
                         val treeAreaWidth = (depth * indentWidth) + iconWidth
                         val expandClickWidth = treeAreaWidth + 24
-                        
+
                         if (e.x < expandClickWidth && plan.childPlans.isNotEmpty()) {
                             if (hoveredPlan != plan) {
                                 hoveredPlan = plan
@@ -129,7 +129,7 @@ class PlanViewer(private val project: Project) {
                         }
                     }
                 }
-                
+
                 override fun mouseExited(e: MouseEvent) {
                     if (hoveredPlan != null) {
                         hoveredPlan = null
@@ -179,7 +179,7 @@ class PlanViewer(private val project: Project) {
         val timer = Timer(12, null) // Faster animation (approximately 83fps)
         var progress = 0
         val steps = 12 // More steps for smoother animation
-        
+
         // Store initial height for animation
         val initialHeight = plansList.preferredSize.height
         val targetHeight = if (isExpanding) {
@@ -200,7 +200,7 @@ class PlanViewer(private val project: Project) {
             if (progress <= steps) {
                 val normalizedProgress = progress.toFloat() / steps
                 val easedProgress = easeInOutQuad(normalizedProgress)
-                
+
                 if (isExpanding) {
                     expandedPlans.add(planId)
                     updatePlansWithAnimation(
@@ -218,7 +218,7 @@ class PlanViewer(private val project: Project) {
                     expandedPlans.remove(planId)
                     updatePlansWithAnimation(project.getService(AiderPlanService::class.java).getAiderPlans(), 0f)
                 }
-                
+
                 // Final height adjustment
                 plansList.visibleRowCount = minOf(plansListModel.size(), 10)
                 plansList.parent?.let { parent ->
@@ -229,7 +229,7 @@ class PlanViewer(private val project: Project) {
                 }
                 plansList.revalidate()
                 plansList.repaint()
-                
+
                 timer.stop()
             }
         }
@@ -242,35 +242,35 @@ class PlanViewer(private val project: Project) {
 
     private fun updatePlansWithAnimation(plans: List<AiderPlan>, animationProgress: Float = 1f) {
         plansListModel.clear()
-        
+
         // Create a map of all plans by their path
         val plansMap = mutableMapOf<String, AiderPlan>()
         plans.forEach { plan ->
             plansMap[plan.mainPlanFile?.filePath ?: ""] = plan
         }
-        
+
         // Find true root plans (plans that aren't referenced as subplans by any other plan)
         val rootPlans = plans.filter { plan ->
             !plans.any { otherPlan ->
-                otherPlan.childPlans.any { childPlan -> 
+                otherPlan.childPlans.any { childPlan ->
                     childPlan.mainPlanFile?.filePath == plan.mainPlanFile?.filePath
                 }
             }
         }
-        
+
         // Track visited plans to prevent duplicates
         val visitedPlans = mutableSetOf<String>()
-        
+
         // Recursive function to add plans with proper hierarchy
         fun addPlanAndChildren(plan: AiderPlan, depth: Int = 0) {
             val planId = plan.mainPlanFile?.filePath ?: return
             if (planId in visitedPlans) return
             visitedPlans.add(planId)
-            
+
             // Create a copy with correct depth
             val planWithDepth = plan.copy(depth = depth)
             plansListModel.addElement(planWithDepth)
-            
+
             // If expanded, add all children and their descendants
             if (expandedPlans.contains(planId)) {
                 plan.childPlans.forEach { child ->
@@ -281,22 +281,20 @@ class PlanViewer(private val project: Project) {
                 }
             }
         }
-        
+
         // Add all root plans and their hierarchies
-        rootPlans.forEach { plan -> 
+        rootPlans.forEach { plan ->
             addPlanAndChildren(plan)
         }
-        
+
         // Ensure proper tree structure visualization
         plansList.cellRenderer = PlanListCellRenderer(false, expandedPlans)
-        
-        // Ensure proper tree structure visualization
-        plansList.cellRenderer = PlanListCellRenderer(false, expandedPlans)
+
     }
 
     class PlanListCellRenderer(
         private val shortTooltip: Boolean = true,
-        private val expandedPlans: Set<String>
+        private val expandedPlans: Set<String>,
     ) : JPanel(BorderLayout()), ListCellRenderer<AiderPlan> {
         private val label = JLabel()
         private val statusIcon = JLabel()
@@ -369,11 +367,11 @@ class PlanViewer(private val project: Project) {
                 // Calculate tree structure with proper hierarchy visualization
                 val treePrefix = buildString {
                     val ancestors = value.getAncestors()
-                    
+
                     // Draw tree structure
                     val hasChildren = value.childPlans.isNotEmpty()
                     val isExpanded = expandedPlans.contains(value.mainPlanFile?.filePath)
-                    
+
                     // Draw connecting lines for ancestors
                     ancestors.forEach { ancestor ->
                         // Check if this ancestor has siblings after it
@@ -385,9 +383,9 @@ class PlanViewer(private val project: Project) {
 
                     // Check if this is the last child in its parent's children
                     val isLastChild = value.parentPlan?.childPlans?.lastOrNull() == value
-                    
+
                     // Add current node connector with hover effect
-                    val isHovered = value == (list as? JBList<*>)?.let { 
+                    val isHovered = value == (list as? JBList<*>)?.let {
                         val selectedIdx = it.selectedIndex
                         if (selectedIdx >= 0 && selectedIdx < it.model.size) {
                             it.model.getElementAt(selectedIdx)
@@ -395,7 +393,7 @@ class PlanViewer(private val project: Project) {
                             null
                         }
                     }
-                
+
                     // Add expand/collapse indicator if has children
                     if (hasChildren) {
                         val iconColor = if (isHovered) {
@@ -403,9 +401,11 @@ class PlanViewer(private val project: Project) {
                         } else {
                             if (isDark) "#BDBDBD" else "#616161" // Gray color
                         }
-                    
-                        append(if (isExpanded) """<font color="$iconColor">▼</font>""" 
-                               else """<font color="$iconColor">▶</font>""")
+
+                        append(
+                            if (isExpanded) """<font color="$iconColor">▼</font>"""
+                            else """<font color="$iconColor">▶</font>"""
+                        )
                         append(" ")
                     } else {
                         append(if (isLastChild) "└──" else "├──")
@@ -416,7 +416,7 @@ class PlanViewer(private val project: Project) {
                 // Calculate indentation based on depth
                 val baseIndent = 4
                 val depthIndent = value.depth * treeIndentWidth
-                
+
                 // Use standard background color for all levels
                 background = if (isSelected) list?.selectionBackground else list?.background
                 border = BorderFactory.createEmptyBorder(2, baseIndent + depthIndent, 2, 4)
@@ -445,7 +445,7 @@ class PlanViewer(private val project: Project) {
 
                 // Get cost information
                 val costInfo = value.mainPlanFile?.filePath?.let { planPath ->
-                    val costService = list.project?.service<PlanExecutionCostService>()
+                    val costService = service<PlanExecutionCostService>()
                     val totalCost = costService?.getTotalCost(planPath) ?: 0.0
                     if (totalCost > 0) " | $${String.format("%.2f", totalCost)}" else ""
                 } ?: ""
@@ -663,7 +663,7 @@ class PlanViewer(private val project: Project) {
 
         override fun actionPerformed(e: AnActionEvent) {
             val selectedPlan = plansList.selectedValue ?: return
-            
+
             // Get context files from the plan
             val contextFiles = selectedPlan.contextFiles
             if (contextFiles.isEmpty()) {
@@ -674,7 +674,7 @@ class PlanViewer(private val project: Project) {
                 )
                 return
             }
-            
+
             // Show dialog with files to move
             val dialog = object : DialogWrapper(project) {
                 private val fileListModel = DefaultListModel<FileData>()
@@ -687,10 +687,12 @@ class PlanViewer(private val project: Project) {
                             isSelected: Boolean,
                             cellHasFocus: Boolean
                         ): Component {
-                            val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
+                            val component =
+                                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
                             if (component is JLabel && value is FileData) {
                                 val file = File(value.filePath)
-                                component.text = "${file.nameWithoutExtension} ${if (value.isReadOnly) "(Read-Only)" else ""}"
+                                component.text =
+                                    "${file.nameWithoutExtension} ${if (value.isReadOnly) "(Read-Only)" else ""}"
                                 component.toolTipText = value.filePath
                                 component.icon = AllIcons.FileTypes.Text
                             }
@@ -699,15 +701,15 @@ class PlanViewer(private val project: Project) {
                     }
                     selectionMode = ListSelectionModel.MULTIPLE_INTERVAL_SELECTION
                 }
-                
+
                 init {
                     title = "Move to Persistent Files"
                     init()
-                    
+
                     // Add all context files to the list
                     contextFiles.forEach { fileListModel.addElement(it) }
                 }
-                
+
                 override fun createCenterPanel(): JComponent {
                     return panel {
                         group("Select Files to Move to Persistent Files") {
@@ -716,7 +718,7 @@ class PlanViewer(private val project: Project) {
                                     .align(Align.FILL)
                                     .resizableColumn()
                             }.resizableRow()
-                            
+
                             row {
                                 button("Select All") {
                                     fileList.selectionModel.setSelectionInterval(0, fileListModel.size() - 1)
@@ -730,19 +732,19 @@ class PlanViewer(private val project: Project) {
                         preferredSize = Dimension(500, 300)
                     }
                 }
-                
+
                 fun getSelectedFiles(): List<FileData> {
                     return fileList.selectedValuesList
                 }
             }
-            
+
             if (dialog.showAndGet()) {
                 val selectedFiles = dialog.getSelectedFiles()
                 if (selectedFiles.isNotEmpty()) {
                     // Add files to persistent files
                     val persistentFileService = project.getService(PersistentFileService::class.java)
                     persistentFileService.addAllFiles(selectedFiles)
-                    
+
                     Messages.showInfoMessage(
                         project,
                         "${selectedFiles.size} file(s) moved to persistent files.",
@@ -757,7 +759,7 @@ class PlanViewer(private val project: Project) {
             e.presentation.isEnabled = selectedPlan != null && selectedPlan.contextFiles.isNotEmpty()
         }
     }
-    
+
     inner class ViewHistoryAction : AnAction(
         "View Execution History",
         "View execution history and costs for this plan",
@@ -769,7 +771,7 @@ class PlanViewer(private val project: Project) {
             val selectedPlan = plansList.selectedValue ?: return
             val planFile = selectedPlan.mainPlanFile?.filePath ?: return
             val historyFile = File(planFile.replace(".md", "_history.md"))
-            
+
             if (!historyFile.exists()) {
                 Messages.showInfoMessage(
                     project,
@@ -778,7 +780,7 @@ class PlanViewer(private val project: Project) {
                 )
                 return
             }
-            
+
             // Open history file in editor
             val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(historyFile)
             virtualFile?.let {
