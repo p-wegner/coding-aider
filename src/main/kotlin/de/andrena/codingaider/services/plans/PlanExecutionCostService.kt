@@ -91,8 +91,8 @@ data class ExecutionCostData(
 /**
  * Service for tracking plan execution costs
  */
-@Service(Service.Level.PROJECT)
-class PlanExecutionCostService(private val project: Project) {
+@Service(Service.Level.APP)
+class PlanExecutionCostService() {
     private val logger = Logger.getInstance(PlanExecutionCostService::class.java)
     private val executionHistoryCache = mutableMapOf<String, MutableList<ExecutionCostData>>()
     
@@ -206,12 +206,11 @@ class PlanExecutionCostService(private val project: Project) {
             |""".trimMargin()
     }
     
-    /**
-     * Loads execution history from file
-     */
     private fun loadHistoryFromFile(planId: String): List<ExecutionCostData> {
         // This is a placeholder for future implementation
         // Would parse the history file and extract execution records
+        // TODO 03.05.2025 pwegner: implement
+
         return emptyList()
     }
 }
