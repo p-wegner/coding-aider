@@ -46,7 +46,7 @@ data class ExecutionCostData(
             }
             
             // Extract token counts - get the last occurrence
-            val tokensRegex = Regex("Tokens:\\s*(\\d+[k]?)\\s*sent,\\s*(\\d+[k]?)\\s*received")
+            val tokensRegex = Regex("Tokens:\\s*(\\d+(?:\\.\\d+)?[k]?)\\s*sent,\\s*(\\d+(?:\\.\\d+)?[k]?)\\s*received")
             tokensRegex.findAll(output).lastOrNull()?.let {
                 tokensSent = parseTokenCount(it.groupValues[1])
                 tokensReceived = parseTokenCount(it.groupValues[2])
