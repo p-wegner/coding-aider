@@ -121,23 +121,13 @@ class PlanExecutionCostService() {
         }
     }
     
-    /**
-     * Gets the latest execution cost for a plan
-     */
     fun getLatestExecutionCost(planId: String): ExecutionCostData? {
         return executionHistoryCache[planId]?.lastOrNull()
     }
     
-    /**
-     * Gets all execution costs for a plan
-     */
     fun getExecutionHistory(planId: String): List<ExecutionCostData> {
         return executionHistoryCache[planId] ?: loadHistoryFromFile(planId)
     }
-    
-    /**
-     * Gets the total cost for a plan
-     */
     fun getTotalCost(planId: String): Double {
         return getExecutionHistory(planId).sumOf { it.getTotalCost() }
     }
@@ -149,9 +139,6 @@ class PlanExecutionCostService() {
         return getExecutionHistory(planId).sumOf { it.getTotalTokens() }
     }
     
-    /**
-     * Updates the history file for a plan
-     */
     private fun updateHistoryFile(plan: AiderPlan, costData: ExecutionCostData, commandData: CommandData) {
         val planFile = plan.mainPlanFile?.filePath ?: return
         val historyFile = File(planFile.replace(".md", HISTORY_FILE_SUFFIX))
@@ -216,7 +203,6 @@ class PlanExecutionCostService() {
     }
     
     private fun loadHistoryFromFile(planId: String): List<ExecutionCostData> {
-        // This is a placeholder for future implementation
         // Would parse the history file and extract execution records
         // TODO 03.05.2025 pwegner: implement
 
