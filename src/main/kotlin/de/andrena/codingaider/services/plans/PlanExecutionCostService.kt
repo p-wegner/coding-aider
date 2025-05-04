@@ -204,7 +204,7 @@ class PlanExecutionCostService() {
     
     private fun loadHistoryFromFile(planId: String): List<ExecutionCostData> {
         // Would parse the history file and extract execution records
-        // TODO 03.05.2025 pwegner: implement
+        // TODO 03.05.2025 pwegner: simplify structure for parsing (e.g. csv like table in markdown) and implement loading history
 
         return emptyList()
     }
