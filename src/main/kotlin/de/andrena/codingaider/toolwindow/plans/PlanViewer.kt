@@ -455,7 +455,11 @@ class PlanViewer(private val project: Project) {
                 val costInfo = value.mainPlanFile?.filePath?.let { planPath ->
                     val costService = service<PlanExecutionCostService>()
                     val totalCost = costService?.getTotalCost(planPath) ?: 0.0
-                    if (totalCost > 0) " | $${String.format("%.2f", totalCost)}" else ""
+                    val executionCount = costService?.getExecutionHistory(planPath)?.size ?: 0
+                    if (totalCost > 0) {
+                        val costText = String.format("%.2f", totalCost)
+                        " | $${costText} ($executionCount exec${if (executionCount != 1) "s" else ""})"
+                    } else ""
                 } ?: ""
 
                 val checkedItems = totalItems - openItems

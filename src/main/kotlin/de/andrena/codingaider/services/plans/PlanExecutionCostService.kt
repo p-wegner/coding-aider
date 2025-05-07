@@ -144,12 +144,20 @@ class PlanExecutionCostService() {
             if (!executionHistoryCache.containsKey(planId)) {
                 executionHistoryCache[planId] = mutableListOf()
             }
+            
+            // Add the new execution cost data
             executionHistoryCache[planId]?.add(costData)
             
+            // Update the history file with the new execution and updated totals
             updateHistoryFile(plan, costData, commandData)
             
             // Notify listeners that cost data has changed for this plan
             notifyCostChanged(planId)
+            
+            // Log the total cost for this plan
+            val totalCost = getTotalCost(planId)
+            val totalTokens = getTotalTokens(planId)
+            logger.info("Plan $planId: Total cost so far: \$${String.format("%.4f", totalCost)}, Total tokens: $totalTokens")
         } catch (e: Exception) {
             logger.warn("Failed to record execution cost", e)
         }
@@ -344,6 +352,16 @@ class PlanExecutionCostService() {
         else 
             costData.tokensReceived.toString()
         
+        // Get total cost information for the plan
+        val planId = commandData.files.firstOrNull { it.filePath.endsWith(".md") && !it.filePath.endsWith("_checklist.md") }?.filePath
+        val totalCostInfo = if (planId != null) {
+            val totalCost = getTotalCost(planId)
+            val totalTokens = getTotalTokens(planId)
+            
+            """| Total Cost (All Executions) | \$${String.format("%.4f", totalCost)} |
+            || Total Tokens (All Executions) | ${if (totalTokens >= 1000) String.format("%,dk", totalTokens / 1000) else totalTokens} |"""
+        } else ""
+        
         return """### Execution on $timestamp
             |
             || Metric | Value |
@@ -353,6 +371,7 @@ class PlanExecutionCostService() {
             || Tokens Received | $receivedTokens |
             || Message Cost | \$${String.format("%.4f", costData.messageCost)} |
             || Session Cost | \$${String.format("%.4f", costData.sessionCost)} |
+            |$totalCostInfo
             |
             |${if (costData.summary.isNotBlank()) "**Summary:**\n${costData.summary}" else ""}
             |""".trimMargin()

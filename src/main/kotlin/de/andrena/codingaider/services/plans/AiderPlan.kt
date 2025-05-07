@@ -136,11 +136,13 @@ data class AiderPlan(
                 val costService = com.intellij.openapi.components.service<PlanExecutionCostService>()
                 val totalCost = costService.getTotalCost(planPath)
                 val totalTokens = costService.getTotalTokens(planPath)
+                val executionCount = costService.getExecutionHistory(planPath).size
                 
                 if (totalCost > 0 || totalTokens > 0) {
                     append("<br><b>Execution Stats:</b><br>")
                     append("Total Cost: $${String.format("%.4f", totalCost)} | ")
-                    append("Total Tokens: ${totalTokens/1000}k<br>")
+                    append("Total Tokens: ${if (totalTokens >= 1000) String.format("%,dk", totalTokens / 1000) else totalTokens} | ")
+                    append("Executions: $executionCount<br>")
                 }
             }
             
