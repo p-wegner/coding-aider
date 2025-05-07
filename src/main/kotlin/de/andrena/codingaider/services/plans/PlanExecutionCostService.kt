@@ -100,29 +100,20 @@ class PlanExecutionCostService() {
         private const val HISTORY_FILE_SUFFIX = "_history.md"
     }
     
-    /**
-     * Records execution cost for a plan
-     */
     fun recordExecutionCost(plan: AiderPlan, commandOutput: String, commandData: CommandData) {
         try {
             val costData = ExecutionCostData.fromCommandOutput(commandOutput)
             val planId = plan.mainPlanFile?.filePath ?: return
             
-            // Add to in-memory cache
             if (!executionHistoryCache.containsKey(planId)) {
                 executionHistoryCache[planId] = mutableListOf()
             }
             executionHistoryCache[planId]?.add(costData)
             
-            // Update history file
             updateHistoryFile(plan, costData, commandData)
         } catch (e: Exception) {
             logger.warn("Failed to record execution cost", e)
         }
-    }
-    
-    fun getLatestExecutionCost(planId: String): ExecutionCostData? {
-        return executionHistoryCache[planId]?.lastOrNull()
     }
     
     fun getExecutionHistory(planId: String): List<ExecutionCostData> {
@@ -132,9 +123,6 @@ class PlanExecutionCostService() {
         return getExecutionHistory(planId).sumOf { it.getTotalCost() }
     }
     
-    /**
-     * Gets the total tokens used for a plan
-     */
     fun getTotalTokens(planId: String): Int {
         return getExecutionHistory(planId).sumOf { it.getTotalTokens() }
     }
