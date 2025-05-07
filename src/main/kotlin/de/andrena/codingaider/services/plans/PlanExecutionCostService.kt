@@ -157,7 +157,7 @@ class PlanExecutionCostService() {
             // Log the total cost for this plan
             val totalCost = getTotalCost(planId)
             val totalTokens = getTotalTokens(planId)
-            logger.info("Plan $planId: Total cost so far: \$${String.format("%.4f", totalCost)}, Total tokens: $totalTokens")
+            logger.info("Plan $planId: Total cost so far: $${String.format("%.4f", totalCost)}, Total tokens: $totalTokens")
         } catch (e: Exception) {
             logger.warn("Failed to record execution cost", e)
         }
