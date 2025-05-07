@@ -155,23 +155,14 @@ class PlanExecutionCostService() {
         }
     }
     
-    /**
-     * Add a listener to be notified when cost data changes
-     */
     fun addCostChangeListener(listener: (String) -> Unit) {
         costChangeListeners.add(listener)
     }
     
-    /**
-     * Remove a cost change listener
-     */
     fun removeCostChangeListener(listener: (String) -> Unit) {
         costChangeListeners.remove(listener)
     }
     
-    /**
-     * Notify all listeners that cost data has changed for a plan
-     */
     private fun notifyCostChanged(planId: String) {
         costChangeListeners.forEach { it(planId) }
     }
