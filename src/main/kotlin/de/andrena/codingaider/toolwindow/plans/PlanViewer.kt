@@ -454,8 +454,12 @@ class PlanViewer(private val project: Project) {
                 // Get cost information
                 val costInfo = value.mainPlanFile?.filePath?.let { planPath ->
                     val costService = service<PlanExecutionCostService>()
-                    val totalCost = costService?.getTotalCost(planPath) ?: 0.0
-                    val executionCount = costService?.getExecutionHistory(planPath)?.size ?: 0
+                    val executionHistory = costService?.getExecutionHistory(planPath) ?: emptyList()
+                    val executionCount = executionHistory.size
+                    
+                    // Calculate total cost directly from execution history
+                    val totalCost = executionHistory.sumOf { it.sessionCost }
+                    
                     if (totalCost > 0) {
                         val costText = String.format("%.2f", totalCost)
                         " | $${costText} ($executionCount exec${if (executionCount != 1) "s" else ""})"

@@ -178,12 +178,18 @@ class PlanExecutionCostService() {
     fun getExecutionHistory(planId: String): List<ExecutionCostData> {
         return executionHistoryCache[planId] ?: loadHistoryFromFile(planId)
     }
+    /**
+     * Gets the total cost for all executions of a plan
+     */
     fun getTotalCost(planId: String): Double {
-        return getExecutionHistory(planId).sumOf { it.getTotalCost() }
+        return getExecutionHistory(planId).sumOf { it.sessionCost }
     }
     
+    /**
+     * Gets the total tokens (sent + received) for all executions of a plan
+     */
     fun getTotalTokens(planId: String): Int {
-        return getExecutionHistory(planId).sumOf { it.getTotalTokens() }
+        return getExecutionHistory(planId).sumOf { it.tokensSent + it.tokensReceived }
     }
     
     private fun updateHistoryFile(plan: AiderPlan, costData: ExecutionCostData, commandData: CommandData) {
@@ -355,8 +361,16 @@ class PlanExecutionCostService() {
         // Get total cost information for the plan
         val planId = commandData.files.firstOrNull { it.filePath.endsWith(".md") && !it.filePath.endsWith("_checklist.md") }?.filePath
         val totalCostInfo = if (planId != null) {
-            val totalCost = getTotalCost(planId)
-            val totalTokens = getTotalTokens(planId)
+            // Get the updated execution history including the current execution
+            val allExecutions = if (executionHistoryCache.containsKey(planId)) {
+                executionHistoryCache[planId] ?: emptyList()
+            } else {
+                loadHistoryFromFile(planId) + listOf(costData)
+            }
+            
+            // Calculate totals directly from the execution data
+            val totalCost = allExecutions.sumOf { it.sessionCost }
+            val totalTokens = allExecutions.sumOf { it.tokensSent + it.tokensReceived }
             
             """| Total Cost (All Executions) | \$${String.format("%.4f", totalCost)} |
             || Total Tokens (All Executions) | ${if (totalTokens >= 1000) String.format("%,dk", totalTokens / 1000) else totalTokens} |"""

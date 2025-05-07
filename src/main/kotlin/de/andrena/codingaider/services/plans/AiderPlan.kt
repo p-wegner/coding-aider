@@ -134,9 +134,12 @@ data class AiderPlan(
             // Add cost information if available
             mainPlanFile?.filePath?.let { planPath ->
                 val costService = com.intellij.openapi.components.service<PlanExecutionCostService>()
-                val totalCost = costService.getTotalCost(planPath)
-                val totalTokens = costService.getTotalTokens(planPath)
-                val executionCount = costService.getExecutionHistory(planPath).size
+                val executionHistory = costService.getExecutionHistory(planPath)
+                val executionCount = executionHistory.size
+                
+                // Calculate totals directly from the execution history
+                val totalCost = executionHistory.sumOf { it.sessionCost }
+                val totalTokens = executionHistory.sumOf { it.tokensSent + it.tokensReceived }
                 
                 if (totalCost > 0 || totalTokens > 0) {
                     append("<br><b>Execution Stats:</b><br>")
