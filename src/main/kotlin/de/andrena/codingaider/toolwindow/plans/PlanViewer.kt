@@ -43,6 +43,14 @@ class PlanViewer(private val project: Project) {
     val plansList = JBList(plansListModel)
 
     init {
+        // Register for cost updates
+        project.service<PlanExecutionCostService>().addCostChangeListener { planId ->
+            // Refresh the plan list when cost data changes
+            ApplicationManager.getApplication().invokeLater {
+                updatePlans(project.getService(AiderPlanService::class.java).getAiderPlans())
+            }
+        }
+        
         plansList.run {
             cellRenderer = PlanListCellRenderer(false, expandedPlans)
 

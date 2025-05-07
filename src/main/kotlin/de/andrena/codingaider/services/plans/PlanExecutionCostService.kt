@@ -126,6 +126,7 @@ data class ExecutionCostData(
 class PlanExecutionCostService() {
     private val logger = Logger.getInstance(PlanExecutionCostService::class.java)
     private val executionHistoryCache = mutableMapOf<String, MutableList<ExecutionCostData>>()
+    private val costChangeListeners = mutableListOf<(String) -> Unit>()
     
     companion object {
         private const val HISTORY_FILE_SUFFIX = "_history.md"
@@ -146,9 +147,33 @@ class PlanExecutionCostService() {
             executionHistoryCache[planId]?.add(costData)
             
             updateHistoryFile(plan, costData, commandData)
+            
+            // Notify listeners that cost data has changed for this plan
+            notifyCostChanged(planId)
         } catch (e: Exception) {
             logger.warn("Failed to record execution cost", e)
         }
+    }
+    
+    /**
+     * Add a listener to be notified when cost data changes
+     */
+    fun addCostChangeListener(listener: (String) -> Unit) {
+        costChangeListeners.add(listener)
+    }
+    
+    /**
+     * Remove a cost change listener
+     */
+    fun removeCostChangeListener(listener: (String) -> Unit) {
+        costChangeListeners.remove(listener)
+    }
+    
+    /**
+     * Notify all listeners that cost data has changed for a plan
+     */
+    private fun notifyCostChanged(planId: String) {
+        costChangeListeners.forEach { it(planId) }
     }
     
     fun getExecutionHistory(planId: String): List<ExecutionCostData> {
