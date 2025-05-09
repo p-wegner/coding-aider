@@ -130,10 +130,11 @@ class PlanExecutionCostService() {
     
     companion object {
         private const val HISTORY_FILE_SUFFIX = "_history.md"
-        private const val EXECUTION_ENTRY_PREFIX = "<!-- EXECUTION_ENTRY: "
-        private const val EXECUTION_ENTRY_SUFFIX = " -->"
         private const val EXECUTION_HISTORY_START = "<!-- EXECUTION_HISTORY_START -->"
         private const val EXECUTION_HISTORY_END = "<!-- EXECUTION_HISTORY_END -->"
+        private const val EXECUTION_DATA_HEADER = "<!-- timestamp,model,tokensSent,tokensReceived,messageCost,sessionCost,summary -->"
+        private const val EXECUTION_DATA_PREFIX = "<!-- EXEC_DATA: "
+        private const val EXECUTION_DATA_SUFFIX = " -->"
     }
     
     fun recordExecutionCost(plan: AiderPlan, commandOutput: String, commandData: CommandData) {
@@ -195,11 +196,9 @@ class PlanExecutionCostService() {
             createHistoryFile(historyFile, plan)
         }
         
-        // Create the structured entry
-        val structuredEntry = "$EXECUTION_ENTRY_PREFIX${costData.timestamp}|${costData.model}|${costData.tokensSent}|${costData.tokensReceived}|${costData.messageCost}|${costData.sessionCost}|${costData.summary.replace("\n", "\\n")}$EXECUTION_ENTRY_SUFFIX"
-        
-        // Create the human-readable entry
-        val humanReadableEntry = createHistoryEntry(costData, commandData)
+        // Create the structured CSV-style entry
+        val escapedSummary = costData.summary.replace("\n", "\\n").replace(",", "\\,")
+        val structuredEntry = "$EXECUTION_DATA_PREFIX${costData.timestamp},${costData.model},${costData.tokensSent},${costData.tokensReceived},${costData.messageCost},${costData.sessionCost},$escapedSummary$EXECUTION_DATA_SUFFIX"
         
         // If the file exists, update the structured data section
         if (historyFile.exists()) {
@@ -211,24 +210,35 @@ class PlanExecutionCostService() {
                 val endPos = content.indexOf(EXECUTION_HISTORY_END)
                 
                 if (startPos < endPos) {
-                    // Insert the new entry after the start marker
-                    val newContent = StringBuilder(content)
-                    newContent.insert(startPos + 1, structuredEntry + "\n")
-                    
-                    // Append the human-readable part at the end of the file
-                    if (!newContent.endsWith("\n\n")) {
-                        newContent.append(if (newContent.endsWith("\n")) "\n" else "\n\n")
+                    // Insert the new entry after the start marker and header
+                    val headerPos = content.indexOf(EXECUTION_DATA_HEADER, startPos)
+                    val insertPos = if (headerPos > startPos && headerPos < endPos) {
+                        headerPos + EXECUTION_DATA_HEADER.length
+                    } else {
+                        startPos
                     }
-                    newContent.append(humanReadableEntry)
+                    
+                    val newContent = StringBuilder(content)
+                    
+                    // If header doesn't exist, add it
+                    if (headerPos == -1 || headerPos > endPos) {
+                        newContent.insert(startPos + 1, EXECUTION_DATA_HEADER + "\n")
+                        newContent.insert(startPos + EXECUTION_DATA_HEADER.length + 2, structuredEntry + "\n")
+                    } else {
+                        newContent.insert(insertPos + 1, structuredEntry + "\n")
+                    }
+                    
+                    // Update the human-readable table
+                    updateHumanReadableTable(newContent, plan)
                     
                     historyFile.writeText(newContent.toString())
                 } else {
                     // Markers found but in wrong order, recreate the file
-                    recreateHistoryFile(historyFile, plan, costData, commandData)
+                    recreateHistoryFile(historyFile, plan, costData)
                 }
             } else {
                 // Markers not found, recreate the file
-                recreateHistoryFile(historyFile, plan, costData, commandData)
+                recreateHistoryFile(historyFile, plan, costData)
             }
         } else {
             // File doesn't exist, create it
@@ -238,15 +248,86 @@ class PlanExecutionCostService() {
             val content = StringBuilder(historyFile.readText())
             content.insert(
                 content.indexOf(EXECUTION_HISTORY_END), 
-                structuredEntry + "\n"
+                EXECUTION_DATA_HEADER + "\n" + structuredEntry + "\n"
             )
-            content.append("\n\n").append(humanReadableEntry)
+            
+            // Add human-readable table
+            updateHumanReadableTable(content, plan)
             
             historyFile.writeText(content.toString())
         }
         
         // Refresh file in IDE
         LocalFileSystem.getInstance().refreshAndFindFileByIoFile(historyFile)
+    }
+    
+    /**
+     * Updates the human-readable table in the history file
+     */
+    private fun updateHumanReadableTable(content: StringBuilder, plan: AiderPlan) {
+        // Remove existing table if present
+        val tableStartPattern = "\n## Execution Summary\n"
+        val tableStart = content.indexOf(tableStartPattern)
+        if (tableStart != -1) {
+            // Find the end of the table (next heading or end of file)
+            val nextHeading = content.indexOf("\n## ", tableStart + tableStartPattern.length)
+            val tableEnd = if (nextHeading != -1) nextHeading else content.length
+            content.delete(tableStart, tableEnd)
+        }
+        
+        // Get all executions for this plan
+        val planId = plan.mainPlanFile?.filePath ?: return
+        val executions = getExecutionHistory(planId)
+        
+        if (executions.isEmpty()) return
+        
+        // Create a new table with all executions
+        val tableBuilder = StringBuilder()
+        tableBuilder.append("\n## Execution Summary\n\n")
+        tableBuilder.append("| Date | Model | Tokens (Sent/Received) | Cost | Notes |\n")
+        tableBuilder.append("| ---- | ----- | --------------------- | ---- | ----- |\n")
+        
+        // Add each execution as a row
+        executions.sortedByDescending { it.timestamp }.forEach { execution ->
+            val date = execution.getFormattedTimestamp()
+            val model = execution.model.substringAfterLast("-").take(10)
+            
+            // Format tokens with k suffix for thousands
+            val sentTokens = if (execution.tokensSent >= 1000) 
+                String.format("%,dk", execution.tokensSent / 1000) 
+            else 
+                execution.tokensSent.toString()
+                
+            val receivedTokens = if (execution.tokensReceived >= 1000) 
+                String.format("%,dk", execution.tokensReceived / 1000) 
+            else 
+                execution.tokensReceived.toString()
+            
+            val tokens = "$sentTokens / $receivedTokens"
+            val cost = String.format("$%.4f", execution.sessionCost)
+            val notes = execution.summary.takeIf { it.isNotBlank() }?.let {
+                if (it.length > 30) it.take(27) + "..." else it
+            } ?: ""
+            
+            tableBuilder.append("| $date | $model | $tokens | $cost | $notes |\n")
+        }
+        
+        // Add total cost information
+        val totalCost = executions.sumOf { it.sessionCost }
+        val totalTokensSent = executions.sumOf { it.tokensSent }
+        val totalTokensReceived = executions.sumOf { it.tokensReceived }
+        
+        tableBuilder.append("\n**Total Cost:** $${String.format("%.4f", totalCost)} | ")
+        tableBuilder.append("**Total Tokens:** ${formatTokenCount(totalTokensSent)} sent, ")
+        tableBuilder.append("${formatTokenCount(totalTokensReceived)} received | ")
+        tableBuilder.append("**Executions:** ${executions.size}\n")
+        
+        // Append the table to the content
+        content.append(tableBuilder)
+    }
+    
+    private fun formatTokenCount(tokens: Int): String {
+        return if (tokens >= 1000) String.format("%,dk", tokens / 1000) else tokens.toString()
     }
     
     /**
@@ -258,10 +339,8 @@ class PlanExecutionCostService() {
             |
             |This file tracks the execution history and costs for the plan.
             |
-            |## Executions
-            |
             |$EXECUTION_HISTORY_START
-            |<!-- Format: timestamp|model|tokensSent|tokensReceived|messageCost|sessionCost|summary -->
+            |$EXECUTION_DATA_HEADER
             |$EXECUTION_HISTORY_END
             |""".trimMargin()
         
@@ -271,37 +350,31 @@ class PlanExecutionCostService() {
     /**
      * Recreates the history file with proper structure
      */
-    private fun recreateHistoryFile(historyFile: File, plan: AiderPlan, costData: ExecutionCostData, commandData: CommandData) {
+    private fun recreateHistoryFile(historyFile: File, plan: AiderPlan, costData: ExecutionCostData) {
         // First, try to extract any existing entries
         val existingEntries = mutableListOf<ExecutionCostData>()
         if (historyFile.exists()) {
             val content = historyFile.readText()
-            val entryPattern = Regex("$EXECUTION_ENTRY_PREFIX([^$EXECUTION_ENTRY_SUFFIX]+)$EXECUTION_ENTRY_SUFFIX")
             
-            entryPattern.findAll(content).forEach { matchResult ->
+            // Try to parse both old and new format entries
+            val oldEntryPattern = Regex("<!-- EXECUTION_ENTRY: ([^|]+)\\|([^|]*)\\|([^|]*)\\|([^|]*)\\|([^|]*)\\|([^|]*)(?:\\|([^>]*))? -->")
+            val newEntryPattern = Regex("$EXECUTION_DATA_PREFIX([^,]+),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*)(?:,([^>]*))$EXECUTION_DATA_SUFFIX")
+            
+            // Parse old format entries
+            oldEntryPattern.findAll(content).forEach { matchResult ->
                 try {
-                    val parts = matchResult.groupValues[1].split("|")
-                    if (parts.size >= 6) {
-                        val timestamp = try {
-                            LocalDateTime.parse(parts[0].trim())
-                        } catch (e: Exception) {
-                            LocalDateTime.now()
-                        }
-                        
-                        existingEntries.add(
-                            ExecutionCostData(
-                                timestamp,
-                                parts[2].toIntOrNull() ?: 0,
-                                parts[3].toIntOrNull() ?: 0,
-                                parts[4].toDoubleOrNull() ?: 0.0,
-                                parts[5].toDoubleOrNull() ?: 0.0,
-                                parts[1],
-                                if (parts.size > 6) parts[6].replace("\\n", "\n") else ""
-                            )
-                        )
-                    }
+                    parseEntryFromRegexMatch(matchResult, '|', existingEntries)
                 } catch (e: Exception) {
-                    logger.warn("Failed to parse existing entry", e)
+                    logger.warn("Failed to parse existing entry (old format)", e)
+                }
+            }
+            
+            // Parse new format entries
+            newEntryPattern.findAll(content).forEach { matchResult ->
+                try {
+                    parseEntryFromRegexMatch(matchResult, ',', existingEntries)
+                } catch (e: Exception) {
+                    logger.warn("Failed to parse existing entry (new format)", e)
                 }
             }
         }
@@ -309,81 +382,79 @@ class PlanExecutionCostService() {
         // Create a new file
         createHistoryFile(historyFile, plan)
         
-        // Add all existing entries
+        // Add all existing entries plus the new one
+        val allEntries = existingEntries + costData
+        
+        // Add structured data
         val content = StringBuilder(historyFile.readText())
-        existingEntries.forEach { entry ->
-            val structuredEntry = "$EXECUTION_ENTRY_PREFIX${entry.timestamp}|${entry.model}|${entry.tokensSent}|${entry.tokensReceived}|${entry.messageCost}|${entry.sessionCost}|${entry.summary.replace("\n", "\\n")}$EXECUTION_ENTRY_SUFFIX"
+        content.insert(
+            content.indexOf(EXECUTION_HISTORY_END),
+            EXECUTION_DATA_HEADER + "\n"
+        )
+        
+        allEntries.forEach { entry ->
+            val escapedSummary = entry.summary.replace("\n", "\\n").replace(",", "\\,")
+            val structuredEntry = "$EXECUTION_DATA_PREFIX${entry.timestamp},${entry.model},${entry.tokensSent},${entry.tokensReceived},${entry.messageCost},${entry.sessionCost},$escapedSummary$EXECUTION_DATA_SUFFIX"
             content.insert(
                 content.indexOf(EXECUTION_HISTORY_END),
                 structuredEntry + "\n"
             )
-            
-            // Add human-readable entry
-            content.append("\n\n").append(createHistoryEntry(entry, commandData))
         }
         
-        // Add the new entry
-        val structuredEntry = "$EXECUTION_ENTRY_PREFIX${costData.timestamp}|${costData.model}|${costData.tokensSent}|${costData.tokensReceived}|${costData.messageCost}|${costData.sessionCost}|${costData.summary.replace("\n", "\\n")}$EXECUTION_ENTRY_SUFFIX"
-        content.insert(
-            content.indexOf(EXECUTION_HISTORY_END),
-            structuredEntry + "\n"
-        )
-        
-        // Add human-readable entry for the new data
-        content.append("\n\n").append(createHistoryEntry(costData, commandData))
+        // Add human-readable table
+        updateHumanReadableTable(content, plan)
         
         historyFile.writeText(content.toString())
     }
     
     /**
-     * Creates a history entry for an execution
+     * Helper method to parse execution data from regex match
      */
-    private fun createHistoryEntry(costData: ExecutionCostData, commandData: CommandData): String {
-        val timestamp = costData.getFormattedTimestamp()
-        
-        // Format token counts with k suffix for thousands
-        val sentTokens = if (costData.tokensSent >= 1000) 
-            String.format("%,dk", costData.tokensSent / 1000) 
-        else 
-            costData.tokensSent.toString()
+    private fun parseEntryFromRegexMatch(
+        matchResult: MatchResult, 
+        delimiter: Char,
+        entries: MutableList<ExecutionCostData>
+    ) {
+        val groups = matchResult.groupValues
+        if (groups.size >= 7) {
+            val timestampStr = groups[1].trim()
+            val model = groups[2].trim()
+            val tokensSentStr = groups[3].trim()
+            val tokensReceivedStr = groups[4].trim()
+            val messageCostStr = groups[5].trim()
+            val sessionCostStr = groups[6].trim()
+            val summaryEncoded = if (groups.size > 7) groups[7] else ""
             
-        val receivedTokens = if (costData.tokensReceived >= 1000) 
-            String.format("%,dk", costData.tokensReceived / 1000) 
-        else 
-            costData.tokensReceived.toString()
-        
-        // Get total cost information for the plan
-        val planId = commandData.files.firstOrNull { it.filePath.endsWith(".md") && !it.filePath.endsWith("_checklist.md") }?.filePath
-        val totalCostInfo = if (planId != null) {
-            // Get the updated execution history including the current execution
-            val allExecutions = if (executionHistoryCache.containsKey(planId)) {
-                executionHistoryCache[planId] ?: emptyList()
-            } else {
-                loadHistoryFromFile(planId) + listOf(costData)
+            // Parse timestamp
+            val timestamp = try {
+                LocalDateTime.parse(timestampStr)
+            } catch (e: Exception) {
+                LocalDateTime.now() // Fallback if parsing fails
             }
             
-            // Calculate totals directly from the execution data
-            val totalCost = allExecutions.sumOf { it.sessionCost }
-            val totalTokens = allExecutions.sumOf { it.tokensSent + it.tokensReceived }
+            // Parse numeric values with international format support
+            val tokensSent = tokensSentStr.toIntOrNull() ?: 0
+            val tokensReceived = tokensReceivedStr.toIntOrNull() ?: 0
+            val messageCost = messageCostStr.replace(",", ".").toDoubleOrNull() ?: 0.0
+            val sessionCost = sessionCostStr.replace(",", ".").toDoubleOrNull() ?: 0.0
             
-            """| Total Cost (All Executions) | \$${String.format("%.4f", totalCost)} |
-            || Total Tokens (All Executions) | ${if (totalTokens >= 1000) String.format("%,dk", totalTokens / 1000) else totalTokens} |"""
-        } else ""
-        
-        return """### Execution on $timestamp
-            |
-            || Metric | Value |
-            || ------ | ----- |
-            || Model | ${costData.model} |
-            || Tokens Sent | $sentTokens |
-            || Tokens Received | $receivedTokens |
-            || Message Cost | \$${String.format("%.4f", costData.messageCost)} |
-            || Session Cost | \$${String.format("%.4f", costData.sessionCost)} |
-            |$totalCostInfo
-            |
-            |${if (costData.summary.isNotBlank()) "**Summary:**\n${costData.summary}" else ""}
-            |""".trimMargin()
+            // Decode summary (replace \n with actual newlines and \, with commas)
+            val summary = summaryEncoded.replace("\\n", "\n").replace("\\,", ",")
+            
+            entries.add(
+                ExecutionCostData(
+                    timestamp,
+                    tokensSent,
+                    tokensReceived,
+                    messageCost,
+                    sessionCost,
+                    model,
+                    summary
+                )
+            )
+        }
     }
+    
     
     private fun loadHistoryFromFile(planId: String): List<ExecutionCostData> {
         try {
@@ -395,63 +466,37 @@ class PlanExecutionCostService() {
             val content = historyFile.readText()
             val executionEntries = mutableListOf<ExecutionCostData>()
             
-            // Parse structured entries using regex with constant markers
-            val entryPattern = Regex("$EXECUTION_ENTRY_PREFIX([^|]+)\\|([^|]*)\\|([^|]*)\\|([^|]*)\\|([^|]*)\\|([^|]*)(?:\\|([^$EXECUTION_ENTRY_SUFFIX]*))$EXECUTION_ENTRY_SUFFIX")
+            // Try to parse both old and new format entries
+            val oldEntryPattern = Regex("<!-- EXECUTION_ENTRY: ([^|]+)\\|([^|]*)\\|([^|]*)\\|([^|]*)\\|([^|]*)\\|([^|]*)(?:\\|([^>]*))? -->")
+            val newEntryPattern = Regex("$EXECUTION_DATA_PREFIX([^,]+),([^,]*),([^,]*),([^,]*),([^,]*),([^,]*)(?:,([^>]*))$EXECUTION_DATA_SUFFIX")
             
-            entryPattern.findAll(content).forEach { matchResult ->
+            // Parse old format entries
+            oldEntryPattern.findAll(content).forEach { matchResult ->
                 try {
-                    // Handle cases with and without summary
-                    val groups = matchResult.groupValues
-                    val timestampStr = groups[1].trim()
-                    val model = groups[2].trim()
-                    val tokensSentStr = groups[3].trim()
-                    val tokensReceivedStr = groups[4].trim()
-                    val messageCostStr = groups[5].trim()
-                    val sessionCostStr = groups[6].trim()
-                    val summaryEncoded = if (groups.size > 7) groups[7] else ""
-                    
-                    // Parse timestamp
-                    val timestamp = try {
-                        LocalDateTime.parse(timestampStr)
-                    } catch (e: Exception) {
-                        logger.warn("Failed to parse timestamp: $timestampStr", e)
-                        LocalDateTime.now() // Fallback if parsing fails
-                    }
-                    
-                    // Parse numeric values with international format support
-                    val tokensSent = tokensSentStr.toIntOrNull() ?: 0
-                    val tokensReceived = tokensReceivedStr.toIntOrNull() ?: 0
-                    val messageCost = messageCostStr.replace(",", ".").toDoubleOrNull() ?: 0.0
-                    val sessionCost = sessionCostStr.replace(",", ".").toDoubleOrNull() ?: 0.0
-                    
-                    // Decode summary (replace \n with actual newlines)
-                    val summary = summaryEncoded.replace("\\n", "\n")
-                    
-                    executionEntries.add(
-                        ExecutionCostData(
-                            timestamp,
-                            tokensSent,
-                            tokensReceived,
-                            messageCost,
-                            sessionCost,
-                            model,
-                            summary
-                        )
-                    )
+                    parseEntryFromRegexMatch(matchResult, '|', executionEntries)
                 } catch (e: Exception) {
-                    logger.warn("Failed to parse execution entry: ${matchResult.value}", e)
+                    logger.warn("Failed to parse execution entry (old format)", e)
+                }
+            }
+            
+            // Parse new format entries
+            newEntryPattern.findAll(content).forEach { matchResult ->
+                try {
+                    parseEntryFromRegexMatch(matchResult, ',', executionEntries)
+                } catch (e: Exception) {
+                    logger.warn("Failed to parse execution entry (new format)", e)
                 }
             }
             
             // If no structured entries found, try to parse from the table format as fallback
             if (executionEntries.isEmpty()) {
-                val fallbackPattern = Regex("### Execution on ([^\n]+).*?Model \\| ([^\n|]+).*?Tokens Sent \\| ([^\n|]+).*?Tokens Received \\| ([^\n|]+).*?Message Cost \\| \\$([^\n|]+).*?Session Cost \\| \\$([^\n|]+)", RegexOption.DOT_MATCHES_ALL)
+                val tablePattern = Regex("\\| (\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}) \\| ([^|]+) \\| ([^|]+) / ([^|]+) \\| \\$([^|]+) \\|", RegexOption.MULTILINE)
                 
-                fallbackPattern.findAll(content).forEach { matchResult ->
+                tablePattern.findAll(content).forEach { matchResult ->
                     try {
-                        val (timestampStr, model, tokensSentStr, tokensReceivedStr, messageCostStr, sessionCostStr) = matchResult.destructured
+                        val (timestampStr, model, sentTokensStr, receivedTokensStr, costStr) = matchResult.destructured
                         
-                        // Parse timestamp (format: yyyy-MM-dd HH:mm:ss)
+                        // Parse timestamp
                         val timestamp = try {
                             LocalDateTime.parse(
                                 timestampStr.trim(),
@@ -462,26 +507,25 @@ class PlanExecutionCostService() {
                         }
                         
                         // Parse token values (handle k suffix)
-                        val tokensSent = parseTokenCount(tokensSentStr.trim())
-                        val tokensReceived = parseTokenCount(tokensReceivedStr.trim())
+                        val tokensSent = parseTokenCount(sentTokensStr.trim())
+                        val tokensReceived = parseTokenCount(receivedTokensStr.trim())
                         
-                        // Parse cost values with international format support
-                        val messageCost = messageCostStr.trim().replace(",", ".").toDoubleOrNull() ?: 0.0
-                        val sessionCost = sessionCostStr.trim().replace(",", ".").toDoubleOrNull() ?: 0.0
+                        // Parse cost value
+                        val sessionCost = costStr.trim().replace(",", ".").toDoubleOrNull() ?: 0.0
                         
                         executionEntries.add(
                             ExecutionCostData(
                                 timestamp,
                                 tokensSent,
                                 tokensReceived,
-                                messageCost,
+                                sessionCost, // Use session cost as message cost too
                                 sessionCost,
                                 model.trim(),
                                 ""
                             )
                         )
                     } catch (e: Exception) {
-                        logger.warn("Failed to parse execution entry using fallback method", e)
+                        logger.warn("Failed to parse execution entry from table", e)
                     }
                 }
             }
