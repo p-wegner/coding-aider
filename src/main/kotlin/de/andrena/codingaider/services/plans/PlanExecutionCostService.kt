@@ -156,6 +156,14 @@ class PlanExecutionCostService() {
 
             // Notify listeners that cost data has changed for this plan
             notifyCostChanged(planId)
+            
+            // Also notify for the root plan to ensure the entire plan tree is refreshed
+            val rootPlan = plan.findRootPlan()
+            if (rootPlan.mainPlanFile?.filePath != planId) {
+                rootPlan.mainPlanFile?.filePath?.let { rootPlanId ->
+                    notifyCostChanged(rootPlanId)
+                }
+            }
 
             // Log the total cost for this plan
             val totalCost = getTotalCost(planId)
@@ -202,9 +210,10 @@ class PlanExecutionCostService() {
     private fun updateHistoryFile(plan: AiderPlan, costData: ExecutionCostData, commandData: CommandData) {
         val planFile = plan.mainPlanFile?.filePath ?: return
         val historyFile = File(planFile.replace(".md", HISTORY_FILE_SUFFIX))
+        val isNewFile = !historyFile.exists()
 
         // Create history file if it doesn't exist
-        if (!historyFile.exists()) {
+        if (isNewFile) {
             createHistoryFile(historyFile, plan)
         }
 
@@ -272,6 +281,27 @@ class PlanExecutionCostService() {
 
         // Refresh file in IDE
         LocalFileSystem.getInstance().refreshAndFindFileByIoFile(historyFile)
+        
+        // Notify listeners about the change
+        val planId = plan.mainPlanFile?.filePath ?: return
+        notifyCostChanged(planId)
+        
+        // If this was a new file creation, notify for all related plans to ensure UI is updated
+        if (isNewFile) {
+            // Notify for parent plans
+            plan.getAncestors().forEach { ancestor ->
+                ancestor.mainPlanFile?.filePath?.let { ancestorId ->
+                    notifyCostChanged(ancestorId)
+                }
+            }
+            
+            // Notify for child plans
+            plan.getAllChildPlans().forEach { child ->
+                child.mainPlanFile?.filePath?.let { childId ->
+                    notifyCostChanged(childId)
+                }
+            }
+        }
     }
 
     private fun updateHumanReadableTable(content: StringBuilder, plan: AiderPlan) {

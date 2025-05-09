@@ -47,7 +47,10 @@ class PlanViewer(private val project: Project) {
         project.service<PlanExecutionCostService>().addCostChangeListener { planId ->
             // Refresh the plan list when cost data changes
             ApplicationManager.getApplication().invokeLater {
-                updatePlans(project.getService(AiderPlanService::class.java).getAiderPlans())
+                // Get fresh plan data to ensure we have the latest cost information
+                val planService = project.getService(AiderPlanService::class.java)
+                val updatedPlans = planService.getAiderPlans()
+                updatePlans(updatedPlans)
             }
         }
         
