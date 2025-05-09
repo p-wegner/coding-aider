@@ -64,6 +64,21 @@ data class ExecutionCostData(
                 }
             }
             
+            // Extract cost information
+            // Cost: $0.0085 message, $0.0085 session.
+            val costRegex = listOf(
+                Regex("Cost:\\s*\\$(\\d+(?:[\\.,]\\d+)?)\\s*message,\\s*\\$(\\d+(?:[\\.,]\\d+)?)\\s*session"),
+                Regex("\\$(\\d+(?:[\\.,]\\d+)?)\\s*message,\\s*\\$(\\d+(?:[\\.,]\\d+)?)\\s*session")
+            )
+            
+            for (regex in costRegex) {
+                regex.findAll(output).lastOrNull()?.let {
+                    messageCost = parseCostValue(it.groupValues[1])
+                    sessionCost = parseCostValue(it.groupValues[2])
+                    break
+                }
+            }
+            
             // Extract summary if available
             val summaryRegex = Regex("<aider-summary>([\\s\\S]*?)</aider-summary>")
             summaryRegex.find(output)?.let {
@@ -95,6 +110,12 @@ data class ExecutionCostData(
                     normalizedStr.toIntOrNull() ?: 0
                 }
             }
+        }
+        
+        private fun parseCostValue(costStr: String): Double {
+            // Handle international number formats by replacing comma with dot
+            val normalizedStr = costStr.replace(",", ".")
+            return normalizedStr.toDoubleOrNull() ?: 0.0
         }
     }
 }
@@ -160,11 +181,13 @@ class PlanExecutionCostService() {
         return executionHistoryCache[planId] ?: loadHistoryFromFile(planId)
     }
     fun getTotalCost(planId: String): Double {
-        return getExecutionHistory(planId).sumOf { it.sessionCost }
+        val history = getExecutionHistory(planId)
+        return if (history.isEmpty()) 0.0 else history.sumOf { it.sessionCost }
     }
     
     fun getTotalTokens(planId: String): Int {
-        return getExecutionHistory(planId).sumOf { it.tokensSent + it.tokensReceived }
+        val history = getExecutionHistory(planId)
+        return if (history.isEmpty()) 0 else history.sumOf { it.tokensSent + it.tokensReceived }
     }
     
     private fun updateHistoryFile(plan: AiderPlan, costData: ExecutionCostData, commandData: CommandData) {
@@ -345,7 +368,7 @@ class PlanExecutionCostService() {
                 try {
                     parseEntryFromRegexMatch(matchResult, '|', existingEntries)
                 } catch (e: Exception) {
-                    logger.warn("Failed to parse existing entry (old format)", e)
+                    logger.warn("Failed to parse existing entry (old format): ${e.message}")
                 }
             }
             
@@ -354,7 +377,7 @@ class PlanExecutionCostService() {
                 try {
                     parseEntryFromRegexMatch(matchResult, ',', existingEntries)
                 } catch (e: Exception) {
-                    logger.warn("Failed to parse existing entry (new format)", e)
+                    logger.warn("Failed to parse existing entry (new format): ${e.message}")
                 }
             }
         }
@@ -413,10 +436,10 @@ class PlanExecutionCostService() {
             }
             
             // Parse numeric values with international format support
-            val tokensSent = tokensSentStr.toIntOrNull() ?: 0
-            val tokensReceived = tokensReceivedStr.toIntOrNull() ?: 0
-            val messageCost = messageCostStr.replace(",", ".").toDoubleOrNull() ?: 0.0
-            val sessionCost = sessionCostStr.replace(",", ".").toDoubleOrNull() ?: 0.0
+            val tokensSent = parseTokenCount(tokensSentStr)
+            val tokensReceived = parseTokenCount(tokensReceivedStr)
+            val messageCost = parseCostValue(messageCostStr)
+            val sessionCost = parseCostValue(sessionCostStr)
             
             // Decode summary (replace \n with actual newlines and \, with commas)
             val summary = summaryEncoded.replace("\\n", "\n").replace("\\,", ",")
@@ -525,10 +548,10 @@ class PlanExecutionCostService() {
     private fun parseTokenCount(tokenStr: String): Int {
         return when {
             tokenStr.endsWith("k") -> {
-                val value = tokenStr.substring(0, tokenStr.length - 1).toDoubleOrNull() ?: 0.0
+                val value = tokenStr.substring(0, tokenStr.length - 1).replace(",", ".").toDoubleOrNull() ?: 0.0
                 (value * 1000).toInt()
             }
-            else -> tokenStr.toIntOrNull() ?: 0
+            else -> tokenStr.replace(",", ".").toIntOrNull() ?: 0
         }
     }
 }
