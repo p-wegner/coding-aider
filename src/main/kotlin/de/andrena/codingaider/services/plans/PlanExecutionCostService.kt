@@ -178,16 +178,10 @@ class PlanExecutionCostService() {
     fun getExecutionHistory(planId: String): List<ExecutionCostData> {
         return executionHistoryCache[planId] ?: loadHistoryFromFile(planId)
     }
-    /**
-     * Gets the total cost for all executions of a plan
-     */
     fun getTotalCost(planId: String): Double {
         return getExecutionHistory(planId).sumOf { it.sessionCost }
     }
     
-    /**
-     * Gets the total tokens (sent + received) for all executions of a plan
-     */
     fun getTotalTokens(planId: String): Int {
         return getExecutionHistory(planId).sumOf { it.tokensSent + it.tokensReceived }
     }
