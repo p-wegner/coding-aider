@@ -39,11 +39,7 @@ data class ExecutionCostData(
             var model = ""
             var summary = ""
             
-            // Extract model information with a single robust pattern
-            // Handles formats like:
-            // "> Model: claude-3-5-haiku-20241022 with diff edit format"
-            // "Model: gpt-4o"
-            // "> Using model: claude-3-opus"
+            // > Model: claude-3-5-haiku-20241022 with diff edit format
             val modelRegex = Regex("(?:>\\s*)?(?:Model|Using model):\\s*([^\\n]+?)(?:\\s+with\\s+|\\s*$)")
             
             modelRegex.find(output)?.let {
@@ -53,7 +49,7 @@ data class ExecutionCostData(
                 }
             }
             
-            // Extract token counts - get the last occurrence, handle international formats
+            // > Tokens: 7.2k sent, 1.3k received. Cost: $0.01 message, $0.01 session.
             val tokensRegex = listOf(
                 Regex("Tokens:\\s*(\\d+(?:[\\.,]\\d+)?[k]?)\\s*sent,\\s*(\\d+(?:[\\.,]\\d+)?[k]?)\\s*received"),
                 Regex("(\\d+(?:[\\.,]\\d+)?[k]?)\\s*sent,\\s*(\\d+(?:[\\.,]\\d+)?[k]?)\\s*received")
@@ -63,20 +59,6 @@ data class ExecutionCostData(
                 regex.findAll(output).lastOrNull()?.let {
                     tokensSent = parseTokenCount(it.groupValues[1])
                     tokensReceived = parseTokenCount(it.groupValues[2])
-                    break
-                }
-            }
-            
-            // Extract cost information - get the last occurrence, handle international formats
-            val costRegex = listOf(
-                Regex("Cost:\\s*\\$(\\d+[\\.,]\\d+)\\s*message,\\s*\\$(\\d+[\\.,]\\d+)\\s*session"),
-                Regex("\\$(\\d+[\\.,]\\d+)\\s*message,\\s*\\$(\\d+[\\.,]\\d+)\\s*session")
-            )
-            
-            for (regex in costRegex) {
-                regex.findAll(output).lastOrNull()?.let {
-                    messageCost = it.groupValues[1].replace(",", ".").toDoubleOrNull() ?: 0.0
-                    sessionCost = it.groupValues[2].replace(",", ".").toDoubleOrNull() ?: 0.0
                     break
                 }
             }
