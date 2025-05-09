@@ -19,13 +19,8 @@ data class ExecutionCostData(
         return timestamp.format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
     }
 
-    fun getTotalCost(): Double = sessionCost
-
-    fun getTotalTokens(): Int = tokensSent + tokensReceived
-
     companion object {
         fun fromCommandOutput(output: String): ExecutionCostData {
-            // Default values
             var tokensSent = 0
             var tokensReceived = 0
             var messageCost = 0.0
@@ -44,7 +39,6 @@ data class ExecutionCostData(
             }
 
             // > Tokens: 7.2k sent, 1.3k received. Cost: $0.01 message, $0.01 session.
-            // > Tokens: 6.8k sent, 999 received. Cost: $0.0094 message, $0.0094 session.
             val tokensRegex = listOf(
                 Regex("Tokens:\\s*(\\d+(?:[\\.,]\\d+)?[k]?)\\s*sent,\\s*(\\d+(?:[\\.,]\\d+)?[k]?)\\s*received"),
                 Regex("(\\d+(?:[\\.,]\\d+)?[k]?)\\s*sent,\\s*(\\d+(?:[\\.,]\\d+)?[k]?)\\s*received")
@@ -58,7 +52,6 @@ data class ExecutionCostData(
                 }
             }
 
-            // Extract cost information
             // Cost: $0.0085 message, $0.0085 session.
             val costRegex = listOf(
                 Regex("Cost:\\s*\\$(\\d+(?:[\\.,]\\d+)?)\\s*message,\\s*\\$(\\d+(?:[\\.,]\\d+)?)\\s*session"),
