@@ -41,9 +41,9 @@ data class ExecutionCostData(
             
             // Extract model information - handle multiple formats
             val modelRegex = listOf(
-                Regex(">\\s*Model:\\s*([^\\n]+?)(?:\\s+with\\s+|\\s*\\n)"),  // Standard format
-                Regex("Model:\\s*([^\\n]+?)(?:\\s+with\\s+|\\s*\\n)"),       // Without leading >
-                Regex(">\\s*Using model:\\s*([^\\n]+)")                      // Alternative format
+                Regex(">\\s*Model:\\s*([^\\n,]+)(?:\\s+with\\s+|\\s*\\n)"),  // Standard format
+                Regex("Model:\\s*([^\\n,]+)(?:\\s+with\\s+|\\s*\\n)"),       // Without leading >
+                Regex(">\\s*Using model:\\s*([^\\n,]+)")                     // Alternative format
             )
             
             for (regex in modelRegex) {
