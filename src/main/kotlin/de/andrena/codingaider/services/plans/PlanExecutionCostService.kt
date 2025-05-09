@@ -458,6 +458,11 @@ class PlanExecutionCostService() {
         }
     }
     
+    private fun parseCostValue(costStr: String): Double {
+        // Handle international number formats by replacing comma with dot
+        val normalizedStr = costStr.replace(",", ".")
+        return normalizedStr.toDoubleOrNull() ?: 0.0
+    }
     
     private fun loadHistoryFromFile(planId: String): List<ExecutionCostData> {
         try {
