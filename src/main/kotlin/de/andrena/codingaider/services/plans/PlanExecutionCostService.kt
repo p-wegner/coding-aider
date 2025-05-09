@@ -50,6 +50,7 @@ data class ExecutionCostData(
             }
             
             // > Tokens: 7.2k sent, 1.3k received. Cost: $0.01 message, $0.01 session.
+            // > Tokens: 6.8k sent, 999 received. Cost: $0.0094 message, $0.0094 session.
             val tokensRegex = listOf(
                 Regex("Tokens:\\s*(\\d+(?:[\\.,]\\d+)?[k]?)\\s*sent,\\s*(\\d+(?:[\\.,]\\d+)?[k]?)\\s*received"),
                 Regex("(\\d+(?:[\\.,]\\d+)?[k]?)\\s*sent,\\s*(\\d+(?:[\\.,]\\d+)?[k]?)\\s*received")
