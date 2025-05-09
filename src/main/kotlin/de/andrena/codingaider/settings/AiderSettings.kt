@@ -26,6 +26,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var promptAugmentation: Boolean = AiderDefaults.PROMPT_AUGMENTATION,
         var includeCommitMessageBlock: Boolean = AiderDefaults.INCLUDE_COMMIT_MESSAGE_BLOCK,
         var enableDocumentationLookup: Boolean = AiderDefaults.ENABLE_DOCUMENTATION_LOOKUP,
+        var enableSubplans: Boolean = AiderDefaults.ENABLE_SUBPLANS,
         var useYesFlag: Boolean = AiderDefaults.USE_YES_FLAG,
         var llm: String = AiderDefaults.LLM,
         var additionalArgs: String = AiderDefaults.ADDITIONAL_ARGS,
