@@ -14,7 +14,7 @@ import java.time.format.DateTimeFormatter
 @Service(Service.Level.APP)
 class PlanExecutionCostService() {
     private val logger = Logger.getInstance(PlanExecutionCostService::class.java)
-    private val executionHistoryCache = mutableMapOf<String, MutableList<ExecutionCostData>>()
+    // No longer using a cache as we always read from file
     private val costChangeListeners = mutableListOf<(String) -> Unit>()
 
     companion object {
@@ -32,12 +32,7 @@ class PlanExecutionCostService() {
             val costData = ExecutionCostData.fromCommandOutput(commandOutput)
             val planId = plan.mainPlanFile?.filePath ?: return
 
-            if (!executionHistoryCache.containsKey(planId)) {
-                executionHistoryCache[planId] = mutableListOf()
-            }
-
-            // Add the new execution cost data
-            executionHistoryCache[planId]?.add(costData)
+            // We no longer cache entries, just update the history file directly
 
             // Update the history file with the new execution and updated totals
             updateHistoryFile(plan, costData, commandData)
@@ -82,7 +77,8 @@ class PlanExecutionCostService() {
     }
 
     fun getExecutionHistory(planId: String): List<ExecutionCostData> {
-        return executionHistoryCache[planId] ?: loadHistoryFromFile(planId)
+        // Always load from file to ensure we have the latest data
+        return loadHistoryFromFile(planId)
     }
 
     fun getTotalCost(planId: String): Double {
@@ -470,10 +466,7 @@ class PlanExecutionCostService() {
                 }
             }
 
-            // Cache the loaded entries
-            if (executionEntries.isNotEmpty()) {
-                executionHistoryCache[planId] = executionEntries.toMutableList()
-            }
+            // We no longer cache entries as we always read from file
 
             return executionEntries
         } catch (e: Exception) {
