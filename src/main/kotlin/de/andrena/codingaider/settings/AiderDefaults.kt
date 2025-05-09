@@ -10,6 +10,7 @@ object AiderDefaults {
     const val ENABLE_DOCUMENTATION_LOOKUP = false
     const val ALWAYS_INCLUDE_OPEN_FILES = false
     const val ALWAYS_INCLUDE_PLAN_CONTEXT_FILES = true
+    const val ENABLE_SUBPLANS = true
 
     // TODO:  Format instruction for plugin-based edits
     const val PLUGIN_BASED_EDITS_INSTRUCTION = """
