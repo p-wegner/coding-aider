@@ -39,22 +39,17 @@ data class ExecutionCostData(
             var model = ""
             var summary = ""
             
-            // Extract model information - handle multiple formats
-            val modelRegex = listOf(
-                // example: > Tokens: 7.2k sent, 1.3k received. Cost: $0.01 message, $0.01 session.
-                // TODO: only one format is required
-                Regex(">\\s*Model:\\s*([^\\n]+?)(?:\\s+with\\s+|\\s*$)"),  // Standard format
-                Regex("Model:\\s*([^\\n]+?)(?:\\s+with\\s+|\\s*$)"),       // Without leading >
-                Regex(">\\s*Using model:\\s*([^\\n]+)")                    // Alternative format
-            )
+            // Extract model information with a single robust pattern
+            // Handles formats like:
+            // "> Model: claude-3-5-haiku-20241022 with diff edit format"
+            // "Model: gpt-4o"
+            // "> Using model: claude-3-opus"
+            val modelRegex = Regex("(?:>\\s*)?(?:Model|Using model):\\s*([^\\n]+?)(?:\\s+with\\s+|\\s*$)")
             
-            for (regex in modelRegex) {
-                regex.find(output)?.let {
-                    val extractedModel = it.groupValues[1].trim()
-                    if (extractedModel.isNotEmpty()) {
-                        model = extractedModel
-                        break
-                    }
+            modelRegex.find(output)?.let {
+                val extractedModel = it.groupValues[1].trim()
+                if (extractedModel.isNotEmpty()) {
+                    model = extractedModel
                 }
             }
             
