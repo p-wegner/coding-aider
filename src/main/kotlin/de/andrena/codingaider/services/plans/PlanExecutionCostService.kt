@@ -274,9 +274,6 @@ class PlanExecutionCostService() {
         LocalFileSystem.getInstance().refreshAndFindFileByIoFile(historyFile)
     }
 
-    /**
-     * Updates the human-readable table in the history file
-     */
     private fun updateHumanReadableTable(content: StringBuilder, plan: AiderPlan) {
         // Remove existing table if present
         val tableStartPattern = "\n## Execution Summary\n"
