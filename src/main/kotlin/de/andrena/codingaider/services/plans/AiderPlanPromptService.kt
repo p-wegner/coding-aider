@@ -1,9 +1,11 @@
 package de.andrena.codingaider.services.plans
 
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
+import de.andrena.codingaider.settings.AiderSettings
 
 // TODO: externalize prompts
 @Service(Service.Level.PROJECT)
@@ -41,13 +43,27 @@ Subplan Requirements:
 7. Ensure the main plan references all subplans
 8. Only create subplans if necessary
     """.trimIndent()
+    
+    private val noSubplansGuidancePrompt = """
+Create a single comprehensive plan without subplans:
+1. Keep all implementation details in the main plan
+2. Create a detailed checklist with atomic tasks
+3. Include all required files in a single context.yaml
+4. Focus on clear, sequential implementation steps
+    """.trimIndent()
 
     fun createPlanRefinementPrompt(plan: AiderPlan, refinementRequest: String): String {
+        val settings = service<AiderSettings>()
+        val subplanGuidance = if (settings.enableSubplans) {
+            "Consider whether to use subplans for complex parts.\n$subplanGuidancePrompt"
+        } else {
+            "Do not create subplans.\n$noSubplansGuidancePrompt"
+        }
+        
         val basePrompt = """<SystemPrompt>
 You are refining an existing plan ${plan.plan}. The plan should be extended or modified based on the refinement request. 
 Don't start the implementation until the plan files are committed. The main goal is to modify the plan files and not the implementation.
-Decide whether to use subplans.
-$subplanGuidancePrompt
+$subplanGuidance
 $planFileStructurePrompt
 $planFileFormatPrompt
 </SystemPrompt>
@@ -115,6 +131,7 @@ $STRUCTURED_MODE_MESSAGE_MARKER ${commandData.message} $STRUCTURED_MODE_MESSAGE_
         val existingPlan = filterPlanRelevantFiles(files)
         val basePrompt = planFileFormatPrompt.trimStartingWhiteSpaces()
         
+        val settings = service<AiderSettings>()
         val firstPlan = existingPlan.firstOrNull()
         val relativePlanPath = firstPlan?.filePath?.removePrefix(projectPath) ?: ""
         val planSpecificPrompt = firstPlan?.let {
@@ -129,23 +146,36 @@ Update the plan, checklist and context.yaml as needed based on the current progr
 Important: Always keep the context.yaml up to date with your changes. If files are created or edited, add them to the context.yaml.  
 If the current instruction doesn't align with the existing plan, update the plan accordingly before proceeding.  
             """
-        } ?: """
-No plan exists yet. Write a detailed description of the requested feature and the needed changes.  
-The main plan file should include these sections: ## Overview, ## Problem Description, ## Goals, ## Additional Notes and Constraints, ## References  
-Save the plan in a new markdown file with a suitable name in the $AIDER_PLANS_FOLDER directory.  
-
+        } ?: {
+            val subplanGuidance = if (settings.enableSubplans) {
+                """
 Create subplans only if necessary. Use subplans when:
 1. A feature requires many changes across plenty of components
 2. Different team members could work on parts independently
 3. A component needs its own detailed planning
 $subplanGuidancePrompt
 Create separate checklist and context.yaml files for the main plan and each subplan to track the progress of implementing the plan.  
+                """
+            } else {
+                """
+Do not create subplans. Instead:
+$noSubplansGuidancePrompt
+                """
+            }
+            
+            """
+No plan exists yet. Write a detailed description of the requested feature and the needed changes.  
+The main plan file should include these sections: ## Overview, ## Problem Description, ## Goals, ## Additional Notes and Constraints, ## References  
+Save the plan in a new markdown file with a suitable name in the $AIDER_PLANS_FOLDER directory.  
+
+$subplanGuidance
 For the context.yaml, consider all provided files and add relevant files to the affected context.yaml.  
 Only proceed with changes after creating and committing the plan files.  
 Ensure that you stick to the defined editing format when creating or editing files, e.g. only have the filepath above search blocks.  
 Make sure to commit the creation of all plan files even if you think you need additional files to implement the plan.  
 Don't start the implementation until the plan files are committed. Do not ask the user if he wants to proceed with the plan.
             """
+        }()
             
         return "${basePrompt.trimStartingWhiteSpaces()}\n${planSpecificPrompt.trimStartingWhiteSpaces()}"
     }

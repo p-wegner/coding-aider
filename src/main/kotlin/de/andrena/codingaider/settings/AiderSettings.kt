@@ -118,6 +118,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         set(value) {
             myState.enableDocumentationLookup = value
         }
+        
+    var enableSubplans: Boolean
+        get() = myState.enableSubplans
+        set(value) {
+            myState.enableSubplans = value
+        }
 
     override fun getState(): State = myState
 

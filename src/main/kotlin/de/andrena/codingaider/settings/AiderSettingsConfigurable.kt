@@ -51,6 +51,7 @@ class AiderSettingsConfigurable() : Configurable {
     private val alwaysIncludeOpenFilesCheckBox = JBCheckBox("Always include open files in context")
     private val alwaysIncludePlanContextFilesCheckBox = JBCheckBox("Always include plan context files")
     private val enableAutoPlanContinueCheckBox = JBCheckBox("Enable automatic plan continuation")
+    private val enableSubplansCheckBox = JBCheckBox("Enable subplans for complex features")
     private val reasoningEffortComboBox = ComboBox(arrayOf("", "low", "medium", "high"))
     private val defaultModeComboBox = ComboBox(AiderMode.values())
     private val enableLocalModelCostMapCheckBox = JBCheckBox("Enable local model cost mapping")
@@ -306,6 +307,12 @@ class AiderSettingsConfigurable() : Configurable {
                             "If enabled, plans will automatically continue when there are open checklist items"
                     }
                 }
+                row {
+                    cell(enableSubplansCheckBox).component.apply {
+                        toolTipText =
+                            "If enabled, complex features will be broken down into subplans. Disable for simpler, single-file plans."
+                    }
+                }
                 row("Reasoning Effort:") {
                     cell(reasoningEffortComboBox)
                         .component
@@ -368,6 +375,7 @@ class AiderSettingsConfigurable() : Configurable {
                 alwaysIncludeOpenFilesCheckBox.isSelected != settings.alwaysIncludeOpenFiles ||
                 alwaysIncludePlanContextFilesCheckBox.isSelected != settings.alwaysIncludePlanContextFiles ||
                 enableAutoPlanContinueCheckBox.isSelected != settings.enableAutoPlanContinue ||
+                enableSubplansCheckBox.isSelected != settings.enableSubplans ||
                 documentationLlmComboBox.selectedItem.asSelectedItemName() != settings.documentationLlm ||
                 promptAugmentationCheckBox.isSelected != settings.promptAugmentation ||
                 includeCommitMessageBlockCheckBox.isSelected != settings.includeCommitMessageBlock ||
@@ -411,6 +419,7 @@ class AiderSettingsConfigurable() : Configurable {
         settings.alwaysIncludeOpenFiles = alwaysIncludeOpenFilesCheckBox.isSelected
         settings.alwaysIncludePlanContextFiles = alwaysIncludePlanContextFilesCheckBox.isSelected
         settings.enableAutoPlanContinue = enableAutoPlanContinueCheckBox.isSelected
+        settings.enableSubplans = enableSubplansCheckBox.isSelected
         settings.documentationLlm = documentationLlmComboBox.selectedItem.asSelectedItemName()
         settings.promptAugmentation = promptAugmentationCheckBox.isSelected
         settings.includeCommitMessageBlock = includeCommitMessageBlockCheckBox.isSelected
@@ -452,6 +461,7 @@ class AiderSettingsConfigurable() : Configurable {
         alwaysIncludeOpenFilesCheckBox.isSelected = settings.alwaysIncludeOpenFiles
         alwaysIncludePlanContextFilesCheckBox.isSelected = settings.alwaysIncludePlanContextFiles
         enableAutoPlanContinueCheckBox.isSelected = settings.enableAutoPlanContinue
+        enableSubplansCheckBox.isSelected = settings.enableSubplans
         documentationLlmComboBox.selectedItem = apiKeyChecker.getLlmSelectionForName(settings.documentationLlm)
         promptAugmentationCheckBox.isSelected = settings.promptAugmentation
         includeCommitMessageBlockCheckBox.isSelected = settings.includeCommitMessageBlock
