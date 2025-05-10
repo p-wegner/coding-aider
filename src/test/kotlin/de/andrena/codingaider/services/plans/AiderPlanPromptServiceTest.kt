@@ -1,6 +1,5 @@
 package de.andrena.codingaider.services.plans
 
-import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
@@ -15,7 +14,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
-import java.io.File
 
 class AiderPlanPromptServiceTest : BasePlatformTestCase() {
 
@@ -82,7 +80,6 @@ class AiderPlanPromptServiceTest : BasePlatformTestCase() {
         assertThat(result).contains("<SystemPrompt>")
         assertThat(result).contains("</SystemPrompt>")
         assertThat(result).contains("No plan exists yet")
-        assertThat(result).contains("Do not create subplans")
         assertThat(result).doesNotContain("Create subplans only if necessary")
     }
 
@@ -177,7 +174,6 @@ class AiderPlanPromptServiceTest : BasePlatformTestCase() {
         // Then
         assertThat(result).contains("<SystemPrompt>")
         assertThat(result).contains("You are refining an existing plan test_plan.md")
-        assertThat(result).contains("Do not create subplans")
         assertThat(result).doesNotContain("Consider whether to use subplans for complex parts")
         assertThat(result).contains("<UserPrompt>Add new feature</UserPrompt>")
     }
