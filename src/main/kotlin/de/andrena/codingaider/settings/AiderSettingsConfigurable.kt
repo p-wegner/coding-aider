@@ -22,8 +22,7 @@ class AiderSettingsConfigurable() : Configurable {
 
     private val apiKeyChecker: ApiKeyChecker = service<DefaultApiKeyChecker>()
     private var settingsComponent: JPanel? = null
-    // TODO 10.05.2025 pwegner: make sure to use correct public class for this
-    private val tabsComponent = JBEditorTabs(null!!, null!!)
+    private val tabsComponent = JBEditorTabs(null, null)
 
     // Setup panel
     private val aiderSetupPanel = AiderSetupPanel(apiKeyChecker) { useDockerAider ->
