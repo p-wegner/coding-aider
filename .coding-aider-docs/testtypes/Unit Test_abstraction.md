@@ -133,16 +133,6 @@ Tests cover various edge cases:
    commandData = commandData.copy(files = commandData.files + outsideFile)
    ```
 
-## Common Test Scenarios
-
-Common test scenarios include:
-
-1. Testing command building with different parameters
-2. Testing environment preparation
-3. Testing handling of different modes (structured, normal)
-4. Testing with different configuration settings
-5. Testing with multi-line messages and special characters
-
 ## Best Practices
 
 1. Keep tests focused on a single behavior
