@@ -32,7 +32,7 @@ class AiderSettingsConfigurable() : Configurable {
     //	at java.desktop/javax.swing.tree.VariableHeightLayoutCache$TreeStateNode.updatePreferredSize(VariableHeightLayoutCache.java:1344)
     //	at java.desktop/javax.swing.tree.VariableHeightLayoutCache$TreeStateNode.updatePreferredSize(VariableHeightLayoutCache.java:1335)
     //	at java.desktop/javax.swing.tree.VariableHeightLayoutCache.treeNodesChanged(VariableHeightLayoutCache.java:429)
-    private val tabsComponent = JBEditorTabs(null, null!!)
+    private val tabsComponent = JBEditorTabs(null, null)
 
     // Setup panel
     private val aiderSetupPanel = AiderSetupPanel(apiKeyChecker) { useDockerAider ->
