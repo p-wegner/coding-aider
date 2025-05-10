@@ -2,9 +2,11 @@ package de.andrena.codingaider.settings
 
 import com.intellij.ide.BrowserUtil
 import com.intellij.notification.NotificationGroupManager
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.ui.ComboBox
+import com.intellij.openapi.util.Disposer
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.Align
@@ -22,17 +24,9 @@ class AiderSettingsConfigurable() : Configurable {
 
     private val apiKeyChecker: ApiKeyChecker = service<DefaultApiKeyChecker>()
     private var settingsComponent: JPanel? = null
-    // TODO 10.05.2025 pwegner: fix this:
-    //com.intellij.diagnostic.PluginException: Can't instantiate configurable for Aider Settings [Plugin: de.andrena.coding-aider]
-    //	at com.intellij.openapi.options.ex.ConfigurableWrapper.getConfigurable(ConfigurableWrapper.java:120)
-    //	at com.intellij.openapi.options.newEditor.SettingsTreeView.asPromo(SettingsTreeView.java:821)
-    //	at com.intellij.openapi.options.newEditor.SettingsTreeView$MyRenderer.getTreeCellRendererComponent(SettingsTreeView.java:689)
-    //	at java.desktop/javax.swing.plaf.basic.BasicTreeUI$NodeDimensionsHandler.getNodeDimensions(BasicTreeUI.java:3220)
-    //	at java.desktop/javax.swing.tree.AbstractLayoutCache.getNodeDimensions(AbstractLayoutCache.java:497)
-    //	at java.desktop/javax.swing.tree.VariableHeightLayoutCache$TreeStateNode.updatePreferredSize(VariableHeightLayoutCache.java:1344)
-    //	at java.desktop/javax.swing.tree.VariableHeightLayoutCache$TreeStateNode.updatePreferredSize(VariableHeightLayoutCache.java:1335)
-    //	at java.desktop/javax.swing.tree.VariableHeightLayoutCache.treeNodesChanged(VariableHeightLayoutCache.java:429)
-    private val tabsComponent = JBEditorTabs(null, null)
+    private val tabsDisposable: Disposable = Disposer.newDisposable()
+    private val tabsComponent = JBEditorTabs(null, tabsDisposable)
+
 
     // Setup panel
     private val aiderSetupPanel = AiderSetupPanel(apiKeyChecker) { useDockerAider ->
