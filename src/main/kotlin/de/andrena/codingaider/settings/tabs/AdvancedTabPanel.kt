@@ -1,0 +1,200 @@
+package de.andrena.codingaider.settings.tabs
+
+import com.intellij.openapi.ui.ComboBox
+import com.intellij.ui.components.JBCheckBox
+import com.intellij.ui.components.JBTextField
+import com.intellij.ui.dsl.builder.Panel
+import de.andrena.codingaider.settings.LlmComboBoxRenderer
+import de.andrena.codingaider.settings.LlmSelection
+import de.andrena.codingaider.utils.ApiKeyChecker
+import java.awt.event.ItemEvent
+import javax.swing.JComboBox
+
+/**
+ * Advanced settings tab panel
+ */
+class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyChecker) {
+
+    // UI Components
+    private val useSidecarModeCheckBox = JBCheckBox("Use Sidecar Mode (Experimental)")
+    private val sidecarModeVerboseCheckBox = JBCheckBox("Enable verbose logging for sidecar mode")
+    private val activateIdeExecutorAfterWebcrawlCheckBox =
+        JBCheckBox("Activate Post web crawl LLM cleanup (Experimental)")
+    private val webCrawlLlmComboBox: JComboBox<LlmSelection> = ComboBox(apiKeyChecker.getAllLlmOptions().toTypedArray())
+    private val deactivateRepoMapCheckBox = JBCheckBox("Deactivate Aider's repo map (--map-tokens 0)")
+    private val verboseCommandLoggingCheckBox = JBCheckBox("Enable verbose Aider command logging")
+    private val enableMarkdownDialogAutocloseCheckBox = JBCheckBox("Automatically close Output Dialog")
+    private val markdownDialogAutocloseDelayField = JBTextField()
+    private val mountAiderConfInDockerCheckBox = JBCheckBox("Mount Aider configuration file in Docker")
+    private val enableLocalModelCostMapCheckBox = JBCheckBox("Enable local model cost mapping")
+
+    override fun getTabName(): String = "Advanced"
+
+    override fun getTabTooltip(): String = "Advanced settings for Aider"
+
+    override fun createPanel(panel: Panel) {
+        panel.apply {
+            group("Execution Mode") {
+                row {
+                    cell(useSidecarModeCheckBox).component.apply {
+                        toolTipText =
+                            "Run Aider as a persistent process. This is experimental and may improve performance."
+                        addItemListener { e ->
+                            sidecarModeVerboseCheckBox.isEnabled = e.stateChange == ItemEvent.SELECTED
+                        }
+                    }
+                }
+                row {
+                    cell(sidecarModeVerboseCheckBox).component.apply {
+                        toolTipText = "Enable detailed logging for sidecar mode operations"
+                        isEnabled = useSidecarModeCheckBox.isSelected
+                    }
+                }
+                row {
+                    cell(mountAiderConfInDockerCheckBox).component.apply {
+                        toolTipText =
+                            "If enabled, the Aider configuration file will be mounted in the Docker container."
+                    }
+                }
+            }
+
+            group("Web Crawl") {
+                row {
+                    cell(activateIdeExecutorAfterWebcrawlCheckBox)
+                        .component
+                        .apply {
+                            toolTipText = "This option prompts Aider to clean up the crawled markdown. " +
+                                    "Note that this experimental feature may exceed the LLM's token limit and potentially leads to high costs. " +
+                                    "Use it with caution."
+                        }
+                }
+                row("Web Crawl LLM:") {
+                    cell(webCrawlLlmComboBox).component.apply {
+                        renderer = LlmComboBoxRenderer(apiKeyChecker)
+                        toolTipText = "Select the LLM model to use for web crawl operations"
+                    }
+                }
+            }
+
+            group("Performance & Logging") {
+                row {
+                    cell(deactivateRepoMapCheckBox)
+                        .component
+                        .apply {
+                            toolTipText =
+                                "This will deactivate Aider's repo map. Saves time for repo updates, but will give aider less context."
+                        }
+                }
+                row {
+                    cell(verboseCommandLoggingCheckBox)
+                        .component
+                        .apply {
+                            toolTipText =
+                                "If enabled, Aider command details will be logged in the dialog shown to the user. This may show sensitive information."
+                        }
+                }
+                row {
+                    cell(enableLocalModelCostMapCheckBox)
+                        .applyToComponent {
+                            toolTipText =
+                                "When enabled, local model cost mapping will be activated. This will save some http requests on aider startup but may have outdated price information."
+                        }
+                }
+            }
+
+            group("Output Dialog") {
+                row {
+                    cell(enableMarkdownDialogAutocloseCheckBox)
+                        .component
+                        .apply {
+                            toolTipText =
+                                "If enabled, the Output Dialog will automatically close after the specified delay."
+                            addItemListener { e ->
+                                markdownDialogAutocloseDelayField.isEnabled =
+                                    e.stateChange == ItemEvent.SELECTED
+                            }
+                        }
+                }
+                row("Autoclose delay (seconds):") {
+                    cell(markdownDialogAutocloseDelayField)
+                        .component
+                        .apply {
+                            toolTipText =
+                                "Specify the delay in seconds before the Output Dialog closes automatically. Set to 0 for immediate closing."
+                            isEnabled = enableMarkdownDialogAutocloseCheckBox.isSelected
+                        }
+                }
+            }
+        }
+    }
+
+    override fun apply() {
+        settings.useSidecarMode = useSidecarModeCheckBox.isSelected
+        settings.sidecarModeVerbose = sidecarModeVerboseCheckBox.isSelected
+        settings.activateIdeExecutorAfterWebcrawl = activateIdeExecutorAfterWebcrawlCheckBox.isSelected
+        settings.webCrawlLlm = webCrawlLlmComboBox.selectedItem.asSelectedItemName()
+        settings.deactivateRepoMap = deactivateRepoMapCheckBox.isSelected
+        settings.verboseCommandLogging = verboseCommandLoggingCheckBox.isSelected
+        settings.enableLocalModelCostMap = enableLocalModelCostMapCheckBox.isSelected
+        settings.enableMarkdownDialogAutoclose = enableMarkdownDialogAutocloseCheckBox.isSelected
+        settings.markdownDialogAutocloseDelay = markdownDialogAutocloseDelayField.text.toIntOrNull() ?: 10
+        settings.mountAiderConfInDocker = mountAiderConfInDockerCheckBox.isSelected
+    }
+
+    override fun reset() {
+        useSidecarModeCheckBox.isSelected = settings.useSidecarMode
+        sidecarModeVerboseCheckBox.isSelected = settings.sidecarModeVerbose
+        sidecarModeVerboseCheckBox.isEnabled = settings.useSidecarMode
+        activateIdeExecutorAfterWebcrawlCheckBox.isSelected = settings.activateIdeExecutorAfterWebcrawl
+        webCrawlLlmComboBox.selectedItem = apiKeyChecker.getLlmSelectionForName(settings.webCrawlLlm)
+        deactivateRepoMapCheckBox.isSelected = settings.deactivateRepoMap
+        verboseCommandLoggingCheckBox.isSelected = settings.verboseCommandLogging
+        enableLocalModelCostMapCheckBox.isSelected = settings.enableLocalModelCostMap
+        enableMarkdownDialogAutocloseCheckBox.isSelected = settings.enableMarkdownDialogAutoclose
+        markdownDialogAutocloseDelayField.text = settings.markdownDialogAutocloseDelay.toString()
+        markdownDialogAutocloseDelayField.isEnabled = settings.enableMarkdownDialogAutoclose
+        mountAiderConfInDockerCheckBox.isSelected = settings.mountAiderConfInDocker
+    }
+
+    override fun isModified(): Boolean {
+        return useSidecarModeCheckBox.isSelected != settings.useSidecarMode ||
+                sidecarModeVerboseCheckBox.isSelected != settings.sidecarModeVerbose ||
+                activateIdeExecutorAfterWebcrawlCheckBox.isSelected != settings.activateIdeExecutorAfterWebcrawl ||
+                webCrawlLlmComboBox.selectedItem.asSelectedItemName() != settings.webCrawlLlm ||
+                deactivateRepoMapCheckBox.isSelected != settings.deactivateRepoMap ||
+                verboseCommandLoggingCheckBox.isSelected != settings.verboseCommandLogging ||
+                enableLocalModelCostMapCheckBox.isSelected != settings.enableLocalModelCostMap ||
+                enableMarkdownDialogAutocloseCheckBox.isSelected != settings.enableMarkdownDialogAutoclose ||
+                markdownDialogAutocloseDelayField.text.toIntOrNull() != settings.markdownDialogAutocloseDelay ||
+                mountAiderConfInDockerCheckBox.isSelected != settings.mountAiderConfInDocker
+    }
+
+    fun updateLlmOptions(llmOptions: Array<LlmSelection>) {
+        val currentSelection = webCrawlLlmComboBox.selectedItem as? LlmSelection
+        webCrawlLlmComboBox.model = javax.swing.DefaultComboBoxModel(llmOptions)
+        if (currentSelection != null && llmOptions.contains(currentSelection)) {
+            webCrawlLlmComboBox.selectedItem = currentSelection
+        }
+    }
+
+    private fun Any?.asSelectedItemName(): String {
+        val selection = this as? LlmSelection ?: return ""
+        return selection.name.ifBlank { "" }
+    }
+    
+    /**
+     * Disable sidecar mode (used when Docker mode is enabled)
+     */
+    fun disableSidecarMode() {
+        useSidecarModeCheckBox.isSelected = false
+        useSidecarModeCheckBox.isEnabled = false
+        sidecarModeVerboseCheckBox.isEnabled = false
+    }
+    
+    /**
+     * Enable sidecar mode (used when Docker mode is disabled)
+     */
+    fun enableSidecarMode() {
+        useSidecarModeCheckBox.isEnabled = true
+    }
+}

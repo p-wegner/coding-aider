@@ -12,12 +12,12 @@
 - [x] Refactor AiderSettingsConfigurable to use the tabbed interface
 - [x] Group related settings within each tab
 - [x] Improve visual hierarchy with appropriate spacing and grouping
+- [x] Refactor tab creation code for better maintainability
+  - [x] Extract each tab's creation logic into separate classes
+  - [x] Implement a consistent pattern for settings management
+  - [x] Reduce code duplication in event handlers
 
 ## Remaining Tasks
-- [ ] Refactor tab creation code for better maintainability
-  - [ ] Extract each tab's creation logic into separate classes
-  - [ ] Implement a consistent pattern for settings management
-  - [ ] Reduce code duplication in event handlers
 - [ ] Enhance tooltips for clarity and user guidance
   - [ ] Review all tooltips for consistency and clarity
   - [ ] Add more detailed explanations for complex settings

@@ -8,3 +8,19 @@ files:
   readOnly: false
 - path: build.gradle.kts
   readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/settings/tabs/SettingsTabPanel.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/settings/tabs/GeneralSettingsTabPanel.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/settings/tabs/CodeModificationTabPanel.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/settings/tabs/GitTabPanel.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/settings/tabs/PlansDocsTabPanel.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/settings/tabs/AdvancedTabPanel.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/settings/LlmComboBoxRenderer.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/settings/AiderSetupPanel.kt
+  readOnly: false
