@@ -1,5 +1,6 @@
 package de.andrena.codingaider.services.plans
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
@@ -20,7 +21,7 @@ class AiderPlanPromptServiceTest : BasePlatformTestCase() {
     private lateinit var planPromptService: AiderPlanPromptService
     private lateinit var myProjectFixture: IdeaProjectTestFixture
     private val myProject: Project get() = myProjectFixture.project
-    private lateinit var settings: AiderSettings
+    private lateinit var mockSettings: AiderSettings
     private lateinit var commandData: CommandData
     private val projectPath = "/project"
 
@@ -29,9 +30,10 @@ class AiderPlanPromptServiceTest : BasePlatformTestCase() {
         myProjectFixture = IdeaTestFixtureFactory.getFixtureFactory().createFixtureBuilder(getTestName(false)).fixture
         myProjectFixture.setUp()
         
-        // Mock settings
-        settings = mock()
-        myProject.registerServiceInstance(AiderSettings::class.java, settings)
+        // Mock settings as application service
+        mockSettings = mock()
+        val application = ApplicationManager.getApplication()
+        application.registerServiceInstance(AiderSettings::class.java, mockSettings)
         
         // Initialize service
         planPromptService = AiderPlanPromptService(myProject)
@@ -55,7 +57,7 @@ class AiderPlanPromptServiceTest : BasePlatformTestCase() {
     @Test
     fun `createAiderPlanSystemPrompt creates prompt for new plan when no plan files exist`() {
         // Given
-        whenever(settings.enableSubplans).thenReturn(true)
+        whenever(mockSettings.enableSubplans).thenReturn(true)
         
         // When
         val result = planPromptService.createAiderPlanSystemPrompt(commandData)
@@ -71,7 +73,7 @@ class AiderPlanPromptServiceTest : BasePlatformTestCase() {
     @Test
     fun `createAiderPlanSystemPrompt creates prompt for new plan with subplans disabled`() {
         // Given
-        whenever(settings.enableSubplans).thenReturn(false)
+        whenever(mockSettings.enableSubplans).thenReturn(false)
         
         // When
         val result = planPromptService.createAiderPlanSystemPrompt(commandData)
@@ -137,7 +139,7 @@ class AiderPlanPromptServiceTest : BasePlatformTestCase() {
     @Test
     fun `createPlanRefinementPrompt creates prompt with subplans enabled`() {
         // Given
-        whenever(settings.enableSubplans).thenReturn(true)
+        whenever(mockSettings.enableSubplans).thenReturn(true)
         val plan = AiderPlan(
             plan = "test_plan.md",
             checklist = emptyList(),
@@ -159,7 +161,7 @@ class AiderPlanPromptServiceTest : BasePlatformTestCase() {
     @Test
     fun `createPlanRefinementPrompt creates prompt with subplans disabled`() {
         // Given
-        whenever(settings.enableSubplans).thenReturn(false)
+        whenever(mockSettings.enableSubplans).thenReturn(false)
         val plan = AiderPlan(
             plan = "test_plan.md",
             checklist = emptyList(),

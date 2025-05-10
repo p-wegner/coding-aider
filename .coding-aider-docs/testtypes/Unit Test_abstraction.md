@@ -41,7 +41,12 @@ Tests typically include:
 
 2. Mock initialization using:
    ```kotlin
+   // For project-level services
    myProject.registerServiceInstance(ServiceClass::class.java, mock())
+   
+   // For application-level services
+   val application = ApplicationManager.getApplication()
+   application.registerServiceInstance(ServiceClass::class.java, mock())
    ```
 
 3. Test data preparation, often loading from resource files:

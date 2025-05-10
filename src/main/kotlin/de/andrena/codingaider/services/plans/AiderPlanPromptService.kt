@@ -19,7 +19,8 @@ class AiderPlanPromptService(private val project: Project) {
     }
 
     fun createPlanRefinementPrompt(plan: AiderPlan, refinementRequest: String): String {
-        val subplanGuidance = if (service<AiderSettings>().enableSubplans) {
+        val settings = service<AiderSettings>()
+        val subplanGuidance = if (settings.enableSubplans) {
             "Consider whether to use subplans for complex parts.\n${AiderPlanPromptTemplates.subplanGuidancePrompt}"
         } else {
             AiderPlanPromptTemplates.noSubplansGuidancePrompt
