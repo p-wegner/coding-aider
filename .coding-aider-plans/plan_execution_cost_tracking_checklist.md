@@ -11,7 +11,6 @@
 
 ### Data Models
 - [X] Create `ExecutionCostData` class to store cost information
-- [ ] Create `PlanExecutionHistory` class to manage execution records
 - [X] Implement serialization/deserialization for history files
 
 ### File Management
@@ -21,7 +20,6 @@
 - [X] Handle file system operations safely
 
 ### Integration with Execution Flow
-- [ ] Hook into `CommandExecutor` to capture execution output
 - [X] Add cost extraction to `IDEBasedExecutor` completion handler
 - [X] Update `PlanViewer` to display cost information
 - [X] Connect cost tracking to plan continuation flow
@@ -32,14 +30,8 @@
 - [X] Update tooltips to include cost information
 - [X] Add total cost tracking to plans panel
 
-### Testing and Validation
-- [ ] Test with various output formats
-- [ ] Validate cost calculation accuracy
-- [ ] Test with missing cost information
-- [ ] Ensure backward compatibility
 
 ### Documentation
 - [X] Document the cost tracking service API
 - [X] Add comments explaining the parsing logic
 - [X] Document the history file format
-- [ ] Update user documentation to explain the feature
