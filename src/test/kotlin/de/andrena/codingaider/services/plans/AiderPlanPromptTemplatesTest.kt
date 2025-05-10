@@ -40,10 +40,10 @@ class AiderPlanPromptTemplatesTest {
         val prompt = AiderPlanPromptTemplates.noSubplansGuidancePrompt
         
         // When/Then
-        assertThat(prompt).contains("Create a single comprehensive plan without subplans")
-        assertThat(prompt).contains("Keep all implementation details in the main plan")
         assertThat(prompt).contains("Create a detailed checklist with atomic tasks")
-        assertThat(prompt).contains("Include all required files in a single context.yaml")
+        assertThat(prompt).contains("focus on clear, sequential implementation steps")
+        assertThat(prompt).doesNotContain("without subplans")
+        assertThat(prompt).doesNotContain("single comprehensive plan")
     }
 
     @Test
@@ -112,7 +112,11 @@ class AiderPlanPromptTemplatesTest {
         assertThat(prompt).contains("No plan exists yet")
         assertThat(prompt).contains("Write a detailed description")
         assertThat(prompt).contains("The main plan file should include these sections")
-        assertThat(prompt).contains("Do not create subplans")
+        assertThat(prompt).contains("Create the three required files for the plan")
+        assertThat(prompt).contains("A main markdown file with the plan details")
+        assertThat(prompt).contains("A checklist markdown file to track implementation progress")
+        assertThat(prompt).contains("A context.yaml file listing all affected files")
+        assertThat(prompt).doesNotContain("Do not create subplans")
         assertThat(prompt).doesNotContain("Create subplans only if necessary")
         assertThat(prompt).doesNotContain("A feature requires many changes across plenty of components")
     }

@@ -40,11 +40,7 @@ Subplan Requirements:
     """.trimIndent()
     
     val noSubplansGuidancePrompt = """
-Create a single comprehensive plan without subplans:
-1. Keep all implementation details in the main plan
-2. Create a detailed checklist with atomic tasks
-3. Include all required files in a single context.yaml
-4. Focus on clear, sequential implementation steps
+Create a detailed checklist with atomic tasks that focus on clear, sequential implementation steps.
     """.trimIndent()
 
     val planFileFormatPrompt = """
@@ -96,11 +92,13 @@ $subplanGuidancePrompt
 Create separate checklist and context.yaml files for the main plan and each subplan to track the progress of implementing the plan.  
     """
 } else {
-    """
-Do not create subplans. Instead:
-$noSubplansGuidancePrompt
-    """
+    ""
 }}
+Create the three required files for the plan:
+1. A main markdown file with the plan details
+2. A checklist markdown file to track implementation progress
+3. A context.yaml file listing all affected files
+
 For the context.yaml, consider all provided files and add relevant files to the affected context.yaml.  
 Only proceed with changes after creating and committing the plan files.  
 Ensure that you stick to the defined editing format when creating or editing files, e.g. only have the filepath above search blocks.  
