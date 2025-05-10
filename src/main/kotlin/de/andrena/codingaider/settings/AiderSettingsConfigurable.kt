@@ -10,7 +10,9 @@ import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.Panel
 import com.intellij.ui.dsl.builder.panel
+import com.intellij.ui.mac.WindowTabsComponent
 import com.intellij.ui.tabs.TabInfo
+import com.intellij.ui.tabs.impl.JBEditorTabs
 import com.intellij.ui.tabs.impl.JBTabsImpl
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.utils.ApiKeyChecker
@@ -23,7 +25,7 @@ class AiderSettingsConfigurable() : Configurable {
 
     private val apiKeyChecker: ApiKeyChecker = service<DefaultApiKeyChecker>()
     private var settingsComponent: JPanel? = null
-    private val tabsComponent = JBTabsImpl(null, null)
+    private val tabsComponent = JBEditorTabs(null!!, null!!)
     
     // Setup panel
     private val aiderSetupPanel = AiderSetupPanel(apiKeyChecker) { useDockerAider ->
@@ -115,8 +117,8 @@ class AiderSettingsConfigurable() : Configurable {
         }
         
         return TabInfo(setupPanel).apply {
-            text = "Setup"
-            tooltip = "Basic Aider setup and API configuration"
+            setText("Setup")
+            setTooltipText("Basic Aider setup and API configuration")
         }
     }
     
@@ -158,8 +160,8 @@ class AiderSettingsConfigurable() : Configurable {
         }
         
         return TabInfo(generalPanel).apply {
-            text = "General"
-            tooltip = "Basic configuration options for Aider"
+            setText( "General")
+            setTooltipText("Basic configuration options for Aider")
         }
     }
     
@@ -280,8 +282,8 @@ class AiderSettingsConfigurable() : Configurable {
         }
         
         return TabInfo(codeModificationPanel).apply {
-            text = "Code Modification"
-            tooltip = "Settings for code editing and modification"
+            setText("Code Modification")
+            setTooltipText("Settings for code editing and modification")
         }
     }
     
@@ -318,8 +320,8 @@ class AiderSettingsConfigurable() : Configurable {
         }
         
         return TabInfo(gitPanel).apply {
-            text = "Git"
-            tooltip = "Git integration settings"
+            setText("Git")
+            setTooltipText("Git integration settings")
         }
     }
     
@@ -359,8 +361,8 @@ class AiderSettingsConfigurable() : Configurable {
         }
         
         return TabInfo(planPanel).apply {
-            text = "Plans & Docs"
-            tooltip = "Settings for plans and documentation"
+            setText("Plans & Docs")
+            setTooltipText("Settings for plans and documentation")
         }
     }
     
@@ -453,8 +455,8 @@ class AiderSettingsConfigurable() : Configurable {
         }
         
         return TabInfo(advancedPanel).apply {
-            text = "Advanced"
-            tooltip = "Advanced settings for Aider"
+            setText("Advanced")
+            setTooltipText("Advanced settings for Aider")
         }
     }
 
