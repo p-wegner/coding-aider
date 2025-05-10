@@ -35,24 +35,30 @@ You can use:
 - Standard OpenAI models
 - Custom OpenAI-compatible API endpoints (like Azure, Anthropic, or local servers)
 - Ollama models
+- OpenRouter models
+- Gemini models
 - Vertex AI models (experimental)
+- LM Studio models
 
-### Custom Model Configuration
+### Custom LLM Provider Configuration
 
-To configure a custom OpenAI-compatible model:
+To configure a custom LLM provider:
 
 1. Open Settings > Tools > Aider Settings
-2. In the "Custom Model" section:
-    - Enter the API Base URL (e.g., http://localhost:8000/v1)
-    - Enter the Model Name with "openai/" prefix (e.g., openai/gpt-4)
-    - Enter your API Key
-3. The custom model will appear in model selection dropdowns once configured
+2. Click "Manage Providers..." in the Custom Providers section
+3. Click "Add Provider" and configure:
+   - Provider Name: A unique identifier for this provider
+   - Provider Type: Select from OpenAI, Ollama, OpenRouter, Vertex AI, etc.
+   - Base URL: For OpenAI-compatible APIs (e.g., http://localhost:8000/v1)
+   - Model Name: The model to use (format depends on provider type)
+   - API Key: If required by the provider type
+   - Additional fields for specific providers (e.g., Project ID for Vertex AI)
+4. The custom provider will appear in model selection dropdowns once configured
 
-For custom OpenAI-compatible APIs, you can configure:
-
+For OpenAI-compatible APIs, you can configure:
 - Custom API base URL (e.g., http://localhost:8000/v1)
 - Custom API key
-- Model name prefixed with "openai/" (e.g., openai/gpt-4)
+- Model name (e.g., gpt-4, claude-3-opus)
 
 For detailed configuration instructions, refer to
 the [Aider documentation](https://aider.chat/docs/llms/openai-compat.html).
