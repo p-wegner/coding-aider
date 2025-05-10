@@ -8,12 +8,9 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.Align
-import com.intellij.ui.dsl.builder.Panel
 import com.intellij.ui.dsl.builder.panel
-import com.intellij.ui.mac.WindowTabsComponent
 import com.intellij.ui.tabs.TabInfo
 import com.intellij.ui.tabs.impl.JBEditorTabs
-import com.intellij.ui.tabs.impl.JBTabsImpl
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
@@ -25,8 +22,9 @@ class AiderSettingsConfigurable() : Configurable {
 
     private val apiKeyChecker: ApiKeyChecker = service<DefaultApiKeyChecker>()
     private var settingsComponent: JPanel? = null
+    // TODO 10.05.2025 pwegner: make sure to use correct public class for this
     private val tabsComponent = JBEditorTabs(null!!, null!!)
-    
+
     // Setup panel
     private val aiderSetupPanel = AiderSetupPanel(apiKeyChecker) { useDockerAider ->
         if (useDockerAider) {
@@ -34,7 +32,7 @@ class AiderSettingsConfigurable() : Configurable {
         }
         useSidecarModeCheckBox.isEnabled = !useDockerAider
     }
-    
+
     // General settings
     private val useYesFlagCheckBox = JBCheckBox("Use --yes flag by default")
     private var llmOptions = apiKeyChecker.getAllLlmOptions().toTypedArray()
@@ -42,36 +40,37 @@ class AiderSettingsConfigurable() : Configurable {
     private val additionalArgsField = JBTextField()
     private val alwaysIncludeOpenFilesCheckBox = JBCheckBox("Always include open files in context")
     private val defaultModeComboBox = ComboBox(AiderMode.values())
-    
+
     // Code modification settings
     private val lintCmdField = JBTextField()
     private val editFormatComboBox = ComboBox(arrayOf("", "whole", "diff", "udiff", "diff-fenced"))
     private val promptAugmentationCheckBox = JBCheckBox("Enable prompt augmentation")
     private val includeCommitMessageBlockCheckBox = JBCheckBox("Include commit message block")
     private val reasoningEffortComboBox = ComboBox(arrayOf("", "low", "medium", "high"))
-    
+
     // Plugin-based edits settings
     private val pluginBasedEditsCheckBox = JBCheckBox("Use Plugin-Based Edits (Experimental)")
     private val lenientEditsCheckBox = JBCheckBox("Allow Lenient Edits (Process multiple formats) (Experimental)")
     private val autoCommitAfterEditsCheckBox = JBCheckBox("Auto-commit after plugin-based edits (Experimental)")
-    
+
     // Git settings
     private val showGitComparisonToolCheckBox = JBCheckBox("Show git comparison tool after execution")
     private val includeChangeContextCheckBox = JBCheckBox("Include change context in commit messages")
     private val autoCommitsComboBox = ComboBox(arrayOf("Default", "On", "Off"))
     private val dirtyCommitsComboBox = ComboBox(arrayOf("Default", "On", "Off"))
-    
+
     // Plan settings
     private val alwaysIncludePlanContextFilesCheckBox = JBCheckBox("Always include plan context files")
     private val enableAutoPlanContinueCheckBox = JBCheckBox("Enable automatic plan continuation")
     private val enableSubplansCheckBox = JBCheckBox("Enable subplans for complex features")
     private val enableDocumentationLookupCheckBox = JBCheckBox("Enable documentation lookup")
     private val documentationLlmComboBox = ComboBox(apiKeyChecker.getAllLlmOptions().toTypedArray())
-    
+
     // Advanced settings
     private val useSidecarModeCheckBox = JBCheckBox("Use Sidecar Mode (Experimental)")
     private val sidecarModeVerboseCheckBox = JBCheckBox("Enable verbose logging for sidecar mode")
-    private val activateIdeExecutorAfterWebcrawlCheckBox = JBCheckBox("Activate Post web crawl LLM cleanup (Experimental)")
+    private val activateIdeExecutorAfterWebcrawlCheckBox =
+        JBCheckBox("Activate Post web crawl LLM cleanup (Experimental)")
     private val webCrawlLlmComboBox = ComboBox(apiKeyChecker.getAllLlmOptions().toTypedArray())
     private val deactivateRepoMapCheckBox = JBCheckBox("Deactivate Aider's repo map (--map-tokens 0)")
     private val verboseCommandLoggingCheckBox = JBCheckBox("Enable verbose Aider command logging")
@@ -79,7 +78,7 @@ class AiderSettingsConfigurable() : Configurable {
     private val markdownDialogAutocloseDelayField = JBTextField()
     private val mountAiderConfInDockerCheckBox = JBCheckBox("Mount Aider configuration file in Docker")
     private val enableLocalModelCostMapCheckBox = JBCheckBox("Enable local model cost mapping")
-    
+
     private val customProviderService = CustomLlmProviderService.getInstance()
     private val customProviderListener: () -> Unit = { updateLlmOptions() }
 
@@ -87,7 +86,7 @@ class AiderSettingsConfigurable() : Configurable {
 
     override fun createComponent(): JComponent {
         val mainPanel = JPanel(BorderLayout())
-        
+
         // Create tabs
         val setupTab = createSetupTab()
         val generalTab = createGeneralTab()
@@ -95,7 +94,7 @@ class AiderSettingsConfigurable() : Configurable {
         val gitTab = createGitTab()
         val planTab = createPlanTab()
         val advancedTab = createAdvancedTab()
-        
+
         // Add tabs to the tabbed pane
         tabsComponent.addTab(setupTab)
         tabsComponent.addTab(generalTab)
@@ -103,41 +102,46 @@ class AiderSettingsConfigurable() : Configurable {
         tabsComponent.addTab(gitTab)
         tabsComponent.addTab(planTab)
         tabsComponent.addTab(advancedTab)
-        
+
         mainPanel.add(tabsComponent.component, BorderLayout.CENTER)
         mainPanel.border = BorderFactory.createEmptyBorder(10, 10, 10, 10)
-        
+
         settingsComponent = mainPanel
         return settingsComponent!!
     }
-    
+
     private fun createSetupTab(): TabInfo {
         val setupPanel = panel {
             aiderSetupPanel.createPanel(this)
         }
-        
+
         return TabInfo(setupPanel).apply {
             setText("Setup")
             setTooltipText("Basic Aider setup and API configuration")
         }
     }
-    
+
     private fun createGeneralTab(): TabInfo {
         val generalPanel = panel {
             group("Basic Settings") {
-                row { cell(useYesFlagCheckBox).applyToComponent { 
-                    toolTipText = "When enabled, Aider will automatically accept changes without asking for confirmation"
-                }}
+                row {
+                    cell(useYesFlagCheckBox).applyToComponent {
+                        toolTipText =
+                            "When enabled, Aider will automatically accept changes without asking for confirmation"
+                    }
+                }
                 row("Default Mode:") {
                     cell(defaultModeComboBox).component.apply {
                         toolTipText = "Select the default mode for Aider dialogs"
                     }
                 }
-                row { cell(alwaysIncludeOpenFilesCheckBox).applyToComponent {
-                    toolTipText = "When enabled, all currently open files will be included in the context"
-                }}
+                row {
+                    cell(alwaysIncludeOpenFilesCheckBox).applyToComponent {
+                        toolTipText = "When enabled, all currently open files will be included in the context"
+                    }
+                }
             }
-            
+
             group("LLM Configuration") {
                 row("Default LLM Model:") {
                     cell(llmComboBox).component.apply {
@@ -158,13 +162,13 @@ class AiderSettingsConfigurable() : Configurable {
                 }
             }
         }
-        
+
         return TabInfo(generalPanel).apply {
-            setText( "General")
+            setText("General")
             setTooltipText("Basic configuration options for Aider")
         }
     }
-    
+
     private fun createCodeModificationTab(): TabInfo {
         val codeModificationPanel = panel {
             group("Code Editing") {
@@ -180,7 +184,8 @@ class AiderSettingsConfigurable() : Configurable {
                     cell(editFormatComboBox)
                         .component
                         .apply {
-                            toolTipText = "Select the default edit format for Aider. Leave empty to use the default format for the used LLM."
+                            toolTipText =
+                                "Select the default edit format for Aider. Leave empty to use the default format for the used LLM."
                         }
                 }
                 row("Reasoning Effort:") {
@@ -191,12 +196,13 @@ class AiderSettingsConfigurable() : Configurable {
                         }
                 }
             }
-            
+
             group("Prompt Augmentation") {
                 row {
                     cell(promptAugmentationCheckBox)
                         .applyToComponent {
-                            toolTipText = "When enabled, Aider will include XML-tagged blocks in the prompt to structure the output"
+                            toolTipText =
+                                "When enabled, Aider will include XML-tagged blocks in the prompt to structure the output"
                             addItemListener { e ->
                                 val isSelected = e.stateChange == java.awt.event.ItemEvent.SELECTED
                                 includeCommitMessageBlockCheckBox.isEnabled = isSelected
@@ -216,7 +222,8 @@ class AiderSettingsConfigurable() : Configurable {
                 row {
                     cell(includeCommitMessageBlockCheckBox)
                         .applyToComponent {
-                            toolTipText = "When enabled, Aider will include an XML block for commit messages in the prompt"
+                            toolTipText =
+                                "When enabled, Aider will include an XML block for commit messages in the prompt"
                             isEnabled = promptAugmentationCheckBox.isSelected
                             addItemListener { e ->
                                 val isSelected = e.stateChange == java.awt.event.ItemEvent.SELECTED
@@ -240,12 +247,13 @@ class AiderSettingsConfigurable() : Configurable {
                     cell(pluginBasedEditsCheckBox)
                         .component
                         .apply {
-                            toolTipText = "If enabled, the plugin handles applying edits using /ask and a specific diff format, bypassing Aider's internal edit formats."
+                            toolTipText =
+                                "If enabled, the plugin handles applying edits using /ask and a specific diff format, bypassing Aider's internal edit formats."
                             addItemListener { e ->
                                 val isSelected = e.stateChange == java.awt.event.ItemEvent.SELECTED
                                 autoCommitAfterEditsCheckBox.isEnabled = isSelected
                                 lenientEditsCheckBox.isEnabled = isSelected
-                                
+
                                 // Update commit message block checkbox state based on auto-commit
                                 if (isSelected && autoCommitAfterEditsCheckBox.isSelected) {
                                     promptAugmentationCheckBox.isSelected = true
@@ -258,7 +266,8 @@ class AiderSettingsConfigurable() : Configurable {
                     cell(lenientEditsCheckBox)
                         .component
                         .apply {
-                            toolTipText = "If enabled, the plugin will process all edit formats (diff, whole, udiff) in a single response, regardless of the configured edit format."
+                            toolTipText =
+                                "If enabled, the plugin will process all edit formats (diff, whole, udiff) in a single response, regardless of the configured edit format."
                             isEnabled = pluginBasedEditsCheckBox.isSelected
                         }
                 }
@@ -266,7 +275,8 @@ class AiderSettingsConfigurable() : Configurable {
                     cell(autoCommitAfterEditsCheckBox)
                         .component
                         .apply {
-                            toolTipText = "If enabled, changes made by plugin-based edits will be automatically committed to Git with a message extracted from the LLM response."
+                            toolTipText =
+                                "If enabled, changes made by plugin-based edits will be automatically committed to Git with a message extracted from the LLM response."
                             isEnabled = pluginBasedEditsCheckBox.isSelected
                             addItemListener { e ->
                                 val isSelected = e.stateChange == java.awt.event.ItemEvent.SELECTED
@@ -280,17 +290,17 @@ class AiderSettingsConfigurable() : Configurable {
                 }
             }
         }
-        
+
         return TabInfo(codeModificationPanel).apply {
             setText("Code Modification")
             setTooltipText("Settings for code editing and modification")
         }
     }
-    
+
     private fun createGitTab(): TabInfo {
         val gitPanel = panel {
             group("Git Integration") {
-                row { 
+                row {
                     cell(showGitComparisonToolCheckBox).applyToComponent {
                         toolTipText = "When enabled, the Git comparison tool will be shown after Aider makes changes"
                     }
@@ -299,79 +309,87 @@ class AiderSettingsConfigurable() : Configurable {
                     cell(autoCommitsComboBox)
                         .component
                         .apply {
-                            toolTipText = "Default: Use system setting. On: Aider will automatically commit changes after each successful edit. Off: Disable auto-commits."
+                            toolTipText =
+                                "Default: Use system setting. On: Aider will automatically commit changes after each successful edit. Off: Disable auto-commits."
                         }
                 }
                 row("Dirty-commits:") {
                     cell(dirtyCommitsComboBox)
                         .component
                         .apply {
-                            toolTipText = "Default: Use system setting. On: Aider will allow commits even when there are uncommitted changes in the repo. Off: Disable dirty-commits."
+                            toolTipText =
+                                "Default: Use system setting. On: Aider will allow commits even when there are uncommitted changes in the repo. Off: Disable dirty-commits."
                         }
                 }
                 row {
                     cell(includeChangeContextCheckBox)
                         .component
                         .apply {
-                            toolTipText = "If enabled, the commit messages will include the user prompt and affected files."
+                            toolTipText =
+                                "If enabled, the commit messages will include the user prompt and affected files."
                         }
                 }
             }
         }
-        
+
         return TabInfo(gitPanel).apply {
             setText("Git")
             setTooltipText("Git integration settings")
         }
     }
-    
+
     private fun createPlanTab(): TabInfo {
         val planPanel = panel {
             group("Plan Settings") {
-                row { 
+                row {
                     cell(alwaysIncludePlanContextFilesCheckBox).applyToComponent {
                         toolTipText = "When enabled, files listed in the plan context will always be included"
                     }
                 }
                 row {
                     cell(enableAutoPlanContinueCheckBox).applyToComponent {
-                        toolTipText = "If enabled, plans will automatically continue when there are open checklist items"
+                        toolTipText =
+                            "If enabled, plans will automatically continue when there are open checklist items"
                     }
                 }
                 row {
                     cell(enableSubplansCheckBox).applyToComponent {
-                        toolTipText = "If enabled, complex features will be broken down into subplans. Disable for simpler, single-file plans."
+                        toolTipText =
+                            "If enabled, complex features will be broken down into subplans. Disable for simpler, single-file plans."
                     }
                 }
             }
-            
+
             group("Documentation") {
                 row {
                     cell(enableDocumentationLookupCheckBox).applyToComponent {
-                        toolTipText = "If enabled, documentation files (*.md) in parent directories will be included in the context"
+                        toolTipText =
+                            "If enabled, documentation files (*.md) in parent directories will be included in the context"
                     }
                 }
                 row("Documentation LLM Model:") {
                     cell(documentationLlmComboBox).component.apply {
                         renderer = LlmComboBoxRenderer()
-                        toolTipText = "Select the LLM model to use for generating documentation. The default is the LLM model specified in the settings."
+                        toolTipText =
+                            "Select the LLM model to use for generating documentation. The default is the LLM model specified in the settings."
                     }
                 }
             }
         }
-        
+
         return TabInfo(planPanel).apply {
             setText("Plans & Docs")
             setTooltipText("Settings for plans and documentation")
         }
     }
-    
+
     private fun createAdvancedTab(): TabInfo {
         val advancedPanel = panel {
             group("Execution Mode") {
                 row {
                     cell(useSidecarModeCheckBox).component.apply {
-                        toolTipText = "Run Aider as a persistent process. This is experimental and may improve performance."
+                        toolTipText =
+                            "Run Aider as a persistent process. This is experimental and may improve performance."
                         addItemListener { e ->
                             sidecarModeVerboseCheckBox.isEnabled = e.stateChange == java.awt.event.ItemEvent.SELECTED
                         }
@@ -385,11 +403,12 @@ class AiderSettingsConfigurable() : Configurable {
                 }
                 row {
                     cell(mountAiderConfInDockerCheckBox).component.apply {
-                        toolTipText = "If enabled, the Aider configuration file will be mounted in the Docker container."
+                        toolTipText =
+                            "If enabled, the Aider configuration file will be mounted in the Docker container."
                     }
                 }
             }
-            
+
             group("Web Crawl") {
                 row {
                     cell(activateIdeExecutorAfterWebcrawlCheckBox)
@@ -407,36 +426,40 @@ class AiderSettingsConfigurable() : Configurable {
                     }
                 }
             }
-            
+
             group("Performance & Logging") {
                 row {
                     cell(deactivateRepoMapCheckBox)
                         .component
                         .apply {
-                            toolTipText = "This will deactivate Aider's repo map. Saves time for repo updates, but will give aider less context."
+                            toolTipText =
+                                "This will deactivate Aider's repo map. Saves time for repo updates, but will give aider less context."
                         }
                 }
                 row {
                     cell(verboseCommandLoggingCheckBox)
                         .component
                         .apply {
-                            toolTipText = "If enabled, Aider command details will be logged in the dialog shown to the user. This may show sensitive information."
+                            toolTipText =
+                                "If enabled, Aider command details will be logged in the dialog shown to the user. This may show sensitive information."
                         }
                 }
                 row {
                     cell(enableLocalModelCostMapCheckBox)
                         .applyToComponent {
-                            toolTipText = "When enabled, local model cost mapping will be activated. This will save some http requests on aider startup but may have outdated price information."
+                            toolTipText =
+                                "When enabled, local model cost mapping will be activated. This will save some http requests on aider startup but may have outdated price information."
                         }
                 }
             }
-            
+
             group("Output Dialog") {
                 row {
                     cell(enableMarkdownDialogAutocloseCheckBox)
                         .component
                         .apply {
-                            toolTipText = "If enabled, the Output Dialog will automatically close after the specified delay."
+                            toolTipText =
+                                "If enabled, the Output Dialog will automatically close after the specified delay."
                             addItemListener { e ->
                                 markdownDialogAutocloseDelayField.isEnabled =
                                     e.stateChange == java.awt.event.ItemEvent.SELECTED
@@ -447,13 +470,14 @@ class AiderSettingsConfigurable() : Configurable {
                     cell(markdownDialogAutocloseDelayField)
                         .component
                         .apply {
-                            toolTipText = "Specify the delay in seconds before the Output Dialog closes automatically. Set to 0 for immediate closing."
+                            toolTipText =
+                                "Specify the delay in seconds before the Output Dialog closes automatically. Set to 0 for immediate closing."
                             isEnabled = enableMarkdownDialogAutocloseCheckBox.isSelected
                         }
                 }
             }
         }
-        
+
         return TabInfo(advancedPanel).apply {
             setText("Advanced")
             setTooltipText("Advanced settings for Aider")
@@ -491,7 +515,7 @@ class AiderSettingsConfigurable() : Configurable {
                 enableLocalModelCostMapCheckBox.isSelected != settings.enableLocalModelCostMap ||
                 reasoningEffortComboBox.selectedItem as String != settings.reasoningEffort ||
                 defaultModeComboBox.selectedItem != settings.defaultMode ||
-                pluginBasedEditsCheckBox.isSelected != settings.pluginBasedEdits || 
+                pluginBasedEditsCheckBox.isSelected != settings.pluginBasedEdits ||
                 lenientEditsCheckBox.isSelected != settings.lenientEdits ||
                 autoCommitAfterEditsCheckBox.isSelected != settings.autoCommitAfterEdits ||
                 aiderSetupPanel.isModified()
@@ -651,7 +675,7 @@ class AiderSettingsConfigurable() : Configurable {
             llmSelectionWidget.selectedItem = currentSelection
         }
     }
-    
+
     private fun showNotification(content: String, type: com.intellij.notification.NotificationType) {
         NotificationGroupManager.getInstance()
             .getNotificationGroup("Coding Aider Notifications")
