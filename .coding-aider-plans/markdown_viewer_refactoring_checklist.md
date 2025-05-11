@@ -1,26 +1,26 @@
 # [Coding Aider Plan - Checklist] Markdown Viewer Component Refactoring
 
 ## Setup and Analysis
-- [ ] Review existing code and identify all responsibilities, create a technical documentation md
-- [ ] Define new class structure and responsibilities
-- [ ] Create interface definitions for new components
+- [x] Review existing code and identify all responsibilities, create a technical documentation md
+- [x] Define new class structure and responsibilities
+- [x] Create interface definitions for new components
 
 ## Core Component Refactoring
-- [ ] Create MarkdownRenderer interface
-- [ ] Implement JcefMarkdownRenderer class
-- [ ] Implement FallbackMarkdownRenderer class
-- [ ] Create MarkdownContentProcessor for content transformation
-- [ ] Extract HTML/CSS templates to separate files or constants
-- [ ] Implement MarkdownThemeManager for theme handling
+- [x] Create MarkdownRenderer interface
+- [x] Implement JcefMarkdownRenderer class
+- [x] Implement FallbackMarkdownRenderer class
+- [x] Create MarkdownContentProcessor for content transformation
+- [x] Extract HTML/CSS templates to separate files or constants
+- [x] Implement MarkdownThemeManager for theme handling
 
 ## Special Content Processing
-- [ ] Refactor search/replace block processing
-- [ ] Refactor collapsible panel implementation
+- [x] Refactor search/replace block processing
+- [x] Refactor collapsible panel implementation
 - [ ] Extract JavaScript functionality to separate files
-- [ ] Improve file path detection and conversion
+- [x] Improve file path detection and conversion
 
 ## Error Handling and Resource Management
-- [ ] Implement consistent error handling strategy
+- [x] Implement consistent error handling strategy
 - [ ] Add proper resource cleanup
 - [ ] Add logging throughout the component
 

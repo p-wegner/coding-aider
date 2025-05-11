@@ -8,3 +8,15 @@ files:
   readOnly: true
 - path: build.gradle.kts
   readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/outputview/markdown/MarkdownRenderer.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/outputview/markdown/MarkdownContentProcessor.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/outputview/markdown/MarkdownThemeManager.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/outputview/markdown/JcefMarkdownRenderer.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/outputview/markdown/FallbackMarkdownRenderer.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/outputview/markdown/MarkdownViewer.kt
+  readOnly: false
