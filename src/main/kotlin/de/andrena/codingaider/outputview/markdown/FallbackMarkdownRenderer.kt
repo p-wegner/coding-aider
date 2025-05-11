@@ -14,6 +14,7 @@ class FallbackMarkdownRenderer(
     private val contentProcessor: MarkdownContentProcessor,
     private val themeManager: MarkdownThemeManager
 ) : MarkdownRenderer {
+    private var isDisposed = false
 
     private val mainPanel = JPanel(BorderLayout())
     private val editorPane = JEditorPane().apply {
@@ -38,11 +39,19 @@ class FallbackMarkdownRenderer(
     }
 
     override fun setMarkdown(markdown: String) {
+        if (isDisposed) {
+            return
+        }
+        
         currentContent = markdown
         updateContent(markdown)
     }
 
     private fun updateContent(markdown: String) {
+        if (isDisposed) {
+            return
+        }
+        
         val html = contentProcessor.processMarkdown(markdown, themeManager.isDarkTheme)
 
         SwingUtilities.invokeLater {
@@ -53,8 +62,28 @@ class FallbackMarkdownRenderer(
     }
 
     override fun setDarkTheme(isDarkTheme: Boolean) {
+        if (isDisposed) {
+            return
+        }
+        
         if (themeManager.updateTheme(isDarkTheme) && currentContent.isNotEmpty()) {
             updateContent(currentContent)
+        }
+    }
+    
+    /**
+     * Releases resources used by the renderer
+     */
+    override fun dispose() {
+        if (!isDisposed) {
+            isDisposed = true
+            try {
+                mainPanel.removeAll()
+                editorPane.text = ""
+            } catch (e: Exception) {
+                println("Error disposing FallbackMarkdownRenderer: ${e.message}")
+                e.printStackTrace()
+            }
         }
     }
 }

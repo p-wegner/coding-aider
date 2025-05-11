@@ -12,6 +12,7 @@ import javax.swing.JPanel
  * with fallback to JEditorPane when JCEF is not available.
  */
 class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
+    private var isDisposed = false
 
     private val mainPanel = JPanel(BorderLayout()).apply {
         border = null
@@ -54,6 +55,9 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
      * Sets the markdown content to be displayed
      */
     fun setMarkdown(markdown: String) {
+        if (isDisposed) {
+            return
+        }
         currentContent = markdown
         renderer.setMarkdown(markdown)
     }
@@ -62,6 +66,25 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
      * Updates the theme used for rendering
      */
     fun setDarkTheme(dark: Boolean) {
+        if (isDisposed) {
+            return
+        }
         renderer.setDarkTheme(dark)
+    }
+    
+    /**
+     * Releases resources used by the viewer
+     */
+    fun dispose() {
+        if (!isDisposed) {
+            isDisposed = true
+            try {
+                renderer.dispose()
+                mainPanel.removeAll()
+            } catch (e: Exception) {
+                println("Error disposing MarkdownViewer: ${e.message}")
+                e.printStackTrace()
+            }
+        }
     }
 }

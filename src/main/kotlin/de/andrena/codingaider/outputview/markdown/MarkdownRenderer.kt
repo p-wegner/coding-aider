@@ -28,4 +28,10 @@ interface MarkdownRenderer {
      * Indicates if the renderer is ready to display content
      */
     val isReady: Boolean
+    
+    /**
+     * Releases resources used by the renderer
+     * Should be called when the component is no longer needed
+     */
+    fun dispose() {}
 }

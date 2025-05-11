@@ -20,6 +20,7 @@ class JcefMarkdownRenderer(
     private val contentProcessor: MarkdownContentProcessor,
     private val themeManager: MarkdownThemeManager
 ) : MarkdownRenderer {
+    private var isDisposed = false
 
     private val mainPanel = JPanel(BorderLayout()).apply {
         border = null
@@ -106,6 +107,10 @@ class JcefMarkdownRenderer(
     }
 
     override fun setMarkdown(markdown: String) {
+        if (isDisposed) {
+            return
+        }
+        
         currentContent = markdown
 
         if (!contentReady) {
@@ -117,6 +122,10 @@ class JcefMarkdownRenderer(
     }
 
     private fun updateContent(markdown: String) {
+        if (isDisposed) {
+            return
+        }
+        
         val html = contentProcessor.processMarkdown(markdown, themeManager.isDarkTheme)
 
         jbCefBrowser?.let { browser ->
@@ -138,10 +147,33 @@ class JcefMarkdownRenderer(
     }
 
     override fun setDarkTheme(isDarkTheme: Boolean) {
+        if (isDisposed) {
+            return
+        }
+        
         if (themeManager.updateTheme(isDarkTheme) && currentContent.isNotEmpty()) {
             // Reload with new theme
             jbCefBrowser?.loadHTML(themeManager.createBaseHtml())
             setMarkdown(currentContent)
+        }
+    }
+    
+    /**
+     * Releases resources used by the renderer
+     */
+    override fun dispose() {
+        if (!isDisposed) {
+            isDisposed = true
+            try {
+                jbCefBrowser?.let { browser ->
+                    browser.jbCefClient.dispose()
+                    mainPanel.removeAll()
+                }
+                jbCefBrowser = null
+            } catch (e: Exception) {
+                println("Error disposing JcefMarkdownRenderer: ${e.message}")
+                e.printStackTrace()
+            }
         }
     }
 }
