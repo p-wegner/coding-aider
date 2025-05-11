@@ -18,9 +18,5 @@
   - [x] Reduce code duplication in event handlers
 
 ## Remaining Tasks
-- [ ] Enhance tooltips for clarity and user guidance
-  - [ ] Review all tooltips for consistency and clarity
-  - [ ] Add more detailed explanations for complex settings
 - [ ] Add visual indicators for experimental features
   - [ ] Use consistent styling for experimental feature labels
-  - [ ] Add warning icons where appropriate
