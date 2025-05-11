@@ -1,7 +1,7 @@
 # [Coding Aider Plan - Checklist] Markdown Viewer Component Refactoring
 
 ## Setup and Analysis
-- [ ] Review existing code and identify all responsibilities
+- [ ] Review existing code and identify all responsibilities, create a technical documentation md
 - [ ] Define new class structure and responsibilities
 - [ ] Create interface definitions for new components
 
@@ -24,14 +24,3 @@
 - [ ] Add proper resource cleanup
 - [ ] Add logging throughout the component
 
-## Integration and Testing
-- [ ] Update MarkdownJcefViewer to use new components
-- [ ] Ensure backward compatibility
-- [ ] Test with various content types
-- [ ] Test theme switching
-- [ ] Test fallback mechanism
-- [ ] Test error scenarios
-
-## Documentation
-- [ ] Add comprehensive documentation to all new classes
-- [ ] Update existing documentation
