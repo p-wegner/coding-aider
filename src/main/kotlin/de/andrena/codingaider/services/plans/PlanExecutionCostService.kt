@@ -134,8 +134,9 @@ class PlanExecutionCostService() {
                         newContent.insert(insertPos + 1, structuredEntry + "\n")
                     }
 
-                    // Update the human-readable table
-                    updateHumanReadableTable(newContent, plan)
+                    // Update the human-readable table with the new entry included
+                    val allEntries = loadHistoryFromFile(planFile) + costData
+                    updateHumanReadableTableWithEntries(newContent, plan, allEntries)
 
                     historyFile.writeText(newContent.toString())
                 } else {
@@ -150,15 +151,15 @@ class PlanExecutionCostService() {
             // File doesn't exist, create it
             createHistoryFile(historyFile, plan)
 
-            // Append the entries
+            // Append the entry to the structured data section
             val content = StringBuilder(historyFile.readText())
             content.insert(
                 content.indexOf(EXECUTION_HISTORY_END),
-                EXECUTION_DATA_HEADER + "\n" + structuredEntry + "\n"
+                structuredEntry + "\n"
             )
 
-            // Add human-readable table
-            updateHumanReadableTable(content, plan)
+            // Update the human-readable table with the new entry
+            updateHumanReadableTableWithEntries(content, plan, listOf(costData))
 
             historyFile.writeText(content.toString())
         }
@@ -189,6 +190,15 @@ class PlanExecutionCostService() {
     }
 
     private fun updateHumanReadableTable(content: StringBuilder, plan: AiderPlan) {
+        // Get all executions for this plan
+        val planId = plan.mainPlanFile?.filePath ?: return
+        val executions = getExecutionHistory(planId)
+        
+        // Update the table with the executions
+        updateHumanReadableTableWithEntries(content, plan, executions)
+    }
+    
+    private fun updateHumanReadableTableWithEntries(content: StringBuilder, plan: AiderPlan, executions: List<ExecutionCostData>) {
         // Remove existing table if present
         val tableStartPattern = "\n## Execution Summary\n"
         val tableStart = content.indexOf(tableStartPattern)
@@ -199,52 +209,51 @@ class PlanExecutionCostService() {
             content.delete(tableStart, tableEnd)
         }
 
-        // Get all executions for this plan
-        val planId = plan.mainPlanFile?.filePath ?: return
-        val executions = getExecutionHistory(planId)
-
-        if (executions.isEmpty()) return
-
         // Create a new table with all executions
         val tableBuilder = StringBuilder()
         tableBuilder.append("\n## Execution Summary\n\n")
-        tableBuilder.append("| Date | Model | Tokens (Sent/Received) | Cost | Notes |\n")
-        tableBuilder.append("| ---- | ----- | --------------------- | ---- | ----- |\n")
+        
+        if (executions.isNotEmpty()) {
+            tableBuilder.append("| Date | Model | Tokens (Sent/Received) | Cost | Notes |\n")
+            tableBuilder.append("| ---- | ----- | --------------------- | ---- | ----- |\n")
 
-        // Add each execution as a row
-        executions.sortedByDescending { it.timestamp }.forEach { execution ->
-            val date = execution.getFormattedTimestamp()
-            val model = execution.model.substringAfterLast("-").take(10)
+            // Add each execution as a row
+            executions.sortedByDescending { it.timestamp }.forEach { execution ->
+                val date = execution.getFormattedTimestamp()
+                val model = execution.model.substringAfterLast("-").take(10)
 
-            // Format tokens with k suffix for thousands
-            val sentTokens = if (execution.tokensSent >= 1000)
-                String.format("%,dk", execution.tokensSent / 1000)
-            else
-                execution.tokensSent.toString()
+                // Format tokens with k suffix for thousands
+                val sentTokens = if (execution.tokensSent >= 1000)
+                    String.format("%,dk", execution.tokensSent / 1000)
+                else
+                    execution.tokensSent.toString()
 
-            val receivedTokens = if (execution.tokensReceived >= 1000)
-                String.format("%,dk", execution.tokensReceived / 1000)
-            else
-                execution.tokensReceived.toString()
+                val receivedTokens = if (execution.tokensReceived >= 1000)
+                    String.format("%,dk", execution.tokensReceived / 1000)
+                else
+                    execution.tokensReceived.toString()
 
-            val tokens = "$sentTokens / $receivedTokens"
-            val cost = String.format("$%.4f", execution.sessionCost)
-            val notes = execution.summary.takeIf { it.isNotBlank() }?.let {
-                if (it.length > 30) it.take(27) + "..." else it
-            } ?: ""
+                val tokens = "$sentTokens / $receivedTokens"
+                val cost = String.format("$%.4f", execution.sessionCost)
+                val notes = execution.summary.takeIf { it.isNotBlank() }?.let {
+                    if (it.length > 30) it.take(27) + "..." else it
+                } ?: ""
 
-            tableBuilder.append("| $date | $model | $tokens | $cost | $notes |\n")
+                tableBuilder.append("| $date | $model | $tokens | $cost | $notes |\n")
+            }
+
+            // Add total cost information
+            val totalCost = executions.sumOf { it.sessionCost }
+            val totalTokensSent = executions.sumOf { it.tokensSent }
+            val totalTokensReceived = executions.sumOf { it.tokensReceived }
+
+            tableBuilder.append("\n**Total Cost:** $${String.format("%.4f", totalCost)} | ")
+            tableBuilder.append("**Total Tokens:** ${formatTokenCount(totalTokensSent)} sent, ")
+            tableBuilder.append("${formatTokenCount(totalTokensReceived)} received | ")
+            tableBuilder.append("**Executions:** ${executions.size}\n")
+        } else {
+            tableBuilder.append("*No executions recorded yet*\n")
         }
-
-        // Add total cost information
-        val totalCost = executions.sumOf { it.sessionCost }
-        val totalTokensSent = executions.sumOf { it.tokensSent }
-        val totalTokensReceived = executions.sumOf { it.tokensReceived }
-
-        tableBuilder.append("\n**Total Cost:** $${String.format("%.4f", totalCost)} | ")
-        tableBuilder.append("**Total Tokens:** ${formatTokenCount(totalTokensSent)} sent, ")
-        tableBuilder.append("${formatTokenCount(totalTokensReceived)} received | ")
-        tableBuilder.append("**Executions:** ${executions.size}\n")
 
         // Append the table to the content
         content.append(tableBuilder)
@@ -269,6 +278,11 @@ class PlanExecutionCostService() {
             |""".trimMargin()
 
         historyFile.writeText(header)
+        
+        // Add an empty table structure that will be populated later
+        val content = StringBuilder(historyFile.readText())
+        updateHumanReadableTable(content, plan)
+        historyFile.writeText(content.toString())
     }
 
     /**
@@ -328,8 +342,8 @@ class PlanExecutionCostService() {
             )
         }
 
-        // Add human-readable table
-        updateHumanReadableTable(content, plan)
+        // Add human-readable table with all entries
+        updateHumanReadableTableWithEntries(content, plan, allEntries)
 
         historyFile.writeText(content.toString())
     }
