@@ -111,6 +111,7 @@ class CodeModificationTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(
                     cell(pluginBasedEditsCheckBox)
                         .component
                         .apply {
+                            text = "Use Plugin-Based Edits <span style='color:#FF6B00;'>[Experimental]</span>"
                             toolTipText =
                                 "If enabled, the plugin handles applying edits using /ask and a specific diff format, bypassing Aider's internal edit formats."
                             addItemListener { e ->
@@ -130,6 +131,7 @@ class CodeModificationTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(
                     cell(lenientEditsCheckBox)
                         .component
                         .apply {
+                            text = "Allow Lenient Edits <span style='color:#FF6B00;'>[Experimental]</span>"
                             toolTipText =
                                 "If enabled, the plugin will process all edit formats (diff, whole, udiff) in a single response, regardless of the configured edit format."
                             isEnabled = pluginBasedEditsCheckBox.isSelected
@@ -139,6 +141,7 @@ class CodeModificationTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(
                     cell(autoCommitAfterEditsCheckBox)
                         .component
                         .apply {
+                            text = "Auto-commit after plugin-based edits <span style='color:#FF6B00;'>[Experimental]</span>"
                             toolTipText =
                                 "If enabled, changes made by plugin-based edits will be automatically committed to Git with a message extracted from the LLM response."
                             isEnabled = pluginBasedEditsCheckBox.isSelected

@@ -18,5 +18,5 @@
   - [x] Reduce code duplication in event handlers
 
 ## Remaining Tasks
-- [ ] Add visual indicators for experimental features
-  - [ ] Use consistent styling for experimental feature labels
+- [x] Add visual indicators for experimental features
+  - [x] Use consistent styling for experimental feature labels
