@@ -24,7 +24,7 @@ class AiderSetupPanel(
     val useDockerAiderCheckBox = JBCheckBox("Use aider in Docker")
     val dockerImageField = TextFieldWithHistory()
     val aiderExecutablePathField = TextFieldWithHistory()
-
+    // TODO 11.05.2025 pwegner: this is unused but should be used somewhere
     fun createPanel(panel: Panel) {
         panel.group("Aider Setup") {
             createApiKeysGroup()
