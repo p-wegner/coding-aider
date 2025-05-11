@@ -37,6 +37,11 @@ data class ExecutionCostData(
                     model = extractedModel
                 }
             }
+            
+            // Ensure we have a default model name if none was found
+            if (model.isEmpty()) {
+                model = "unknown-model"
+            }
 
             // > Tokens: 7.2k sent, 1.3k received. Cost: $0.01 message, $0.01 session.
             val tokensRegex = listOf(
