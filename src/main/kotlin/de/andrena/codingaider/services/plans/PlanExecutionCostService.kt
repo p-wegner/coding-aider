@@ -134,8 +134,12 @@ class PlanExecutionCostService() {
                         newContent.insert(insertPos + 1, structuredEntry + "\n")
                     }
 
-                    // Update the human-readable table with the new entry included
-                    val allEntries = loadHistoryFromFile(planFile) + costData
+                    // First, add the new entry to our internal data structure
+                    // Then load all entries to ensure we have everything
+                    // This ensures we don't miss the entry we just added
+                    val allEntries = loadHistoryFromFile(planFile, newContent.toString()) + costData
+                    
+                    // Update the human-readable table with all entries
                     updateHumanReadableTableWithEntries(newContent, plan, allEntries)
 
                     historyFile.writeText(newContent.toString())
@@ -159,6 +163,7 @@ class PlanExecutionCostService() {
             )
 
             // Update the human-readable table with the new entry
+            // Make sure to include the entry we just added
             updateHumanReadableTableWithEntries(content, plan, listOf(costData))
 
             historyFile.writeText(content.toString())
@@ -199,6 +204,11 @@ class PlanExecutionCostService() {
     }
     
     private fun updateHumanReadableTableWithEntries(content: StringBuilder, plan: AiderPlan, executions: List<ExecutionCostData>) {
+        // Make sure we have a distinct list of executions (no duplicates)
+        val distinctExecutions = executions.distinctBy { 
+            "${it.timestamp}|${it.model}|${it.tokensSent}|${it.tokensReceived}|${it.sessionCost}" 
+        }
+        
         // Remove existing table if present
         val tableStartPattern = "\n## Execution Summary\n"
         val tableStart = content.indexOf(tableStartPattern)
@@ -213,12 +223,12 @@ class PlanExecutionCostService() {
         val tableBuilder = StringBuilder()
         tableBuilder.append("\n## Execution Summary\n\n")
         
-        if (executions.isNotEmpty()) {
+        if (distinctExecutions.isNotEmpty()) {
             tableBuilder.append("| Date | Model | Tokens (Sent/Received) | Cost | Notes |\n")
             tableBuilder.append("| ---- | ----- | --------------------- | ---- | ----- |\n")
 
             // Add each execution as a row
-            executions.sortedByDescending { it.timestamp }.forEach { execution ->
+            distinctExecutions.sortedByDescending { it.timestamp }.forEach { execution ->
                 val date = execution.getFormattedTimestamp()
                 val model = execution.model.substringAfterLast("-").take(10)
 
@@ -243,14 +253,14 @@ class PlanExecutionCostService() {
             }
 
             // Add total cost information
-            val totalCost = executions.sumOf { it.sessionCost }
-            val totalTokensSent = executions.sumOf { it.tokensSent }
-            val totalTokensReceived = executions.sumOf { it.tokensReceived }
+            val totalCost = distinctExecutions.sumOf { it.sessionCost }
+            val totalTokensSent = distinctExecutions.sumOf { it.tokensSent }
+            val totalTokensReceived = distinctExecutions.sumOf { it.tokensReceived }
 
             tableBuilder.append("\n**Total Cost:** $${String.format("%.4f", totalCost)} | ")
             tableBuilder.append("**Total Tokens:** ${formatTokenCount(totalTokensSent)} sent, ")
             tableBuilder.append("${formatTokenCount(totalTokensReceived)} received | ")
-            tableBuilder.append("**Executions:** ${executions.size}\n")
+            tableBuilder.append("**Executions:** ${distinctExecutions.size}\n")
         } else {
             tableBuilder.append("*No executions recorded yet*\n")
         }
@@ -281,7 +291,8 @@ class PlanExecutionCostService() {
         
         // Add an empty table structure that will be populated later
         val content = StringBuilder(historyFile.readText())
-        updateHumanReadableTable(content, plan)
+        // We don't need to call updateHumanReadableTable here as it will be populated
+        // when the first entry is added, and calling it now with no entries just adds an empty table
         historyFile.writeText(content.toString())
     }
 
@@ -317,20 +328,72 @@ class PlanExecutionCostService() {
                     logger.warn("Failed to parse existing entry (new format): ${e.message}")
                 }
             }
+            
+            // Also try to parse from the table as a fallback
+            if (existingEntries.isEmpty()) {
+                val tablePattern = Regex(
+                    "\\| (\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}) \\| ([^|]+) \\| ([^|]+) / ([^|]+) \\| \\$([^|]+) \\|",
+                    RegexOption.MULTILINE
+                )
+
+                tablePattern.findAll(content).forEach { matchResult ->
+                    try {
+                        val (timestampStr, model, sentTokensStr, receivedTokensStr, costStr) = matchResult.destructured
+
+                        // Parse timestamp
+                        val timestamp = try {
+                            LocalDateTime.parse(
+                                timestampStr.trim(),
+                                DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+                            )
+                        } catch (e: Exception) {
+                            LocalDateTime.now() // Fallback if parsing fails
+                        }
+
+                        // Parse token values (handle k suffix)
+                        val tokensSent = parseTokenCount(sentTokensStr.trim())
+                        val tokensReceived = parseTokenCount(receivedTokensStr.trim())
+
+                        // Parse cost value
+                        val sessionCost = costStr.trim().replace(",", ".").toDoubleOrNull() ?: 0.0
+
+                        existingEntries.add(
+                            ExecutionCostData(
+                                timestamp,
+                                tokensSent,
+                                tokensReceived,
+                                sessionCost, // Use session cost as message cost too
+                                sessionCost,
+                                model.trim(),
+                                ""
+                            )
+                        )
+                    } catch (e: Exception) {
+                        logger.warn("Failed to parse execution entry from table", e)
+                    }
+                }
+            }
         }
 
         // Create a new file
         createHistoryFile(historyFile, plan)
 
         // Add all existing entries plus the new one
-        val allEntries = existingEntries + costData
+        // Make sure we have no duplicates
+        val allEntries = (existingEntries + costData).distinctBy { 
+            "${it.timestamp}|${it.model}|${it.tokensSent}|${it.tokensReceived}|${it.sessionCost}" 
+        }
 
         // Add structured data
         val content = StringBuilder(historyFile.readText())
-        content.insert(
-            content.indexOf(EXECUTION_HISTORY_END),
-            EXECUTION_DATA_HEADER + "\n"
-        )
+        
+        // Only add the header if it's not already there
+        if (!content.toString().contains(EXECUTION_DATA_HEADER)) {
+            content.insert(
+                content.indexOf(EXECUTION_HISTORY_END),
+                EXECUTION_DATA_HEADER + "\n"
+            )
+        }
 
         allEntries.forEach { entry ->
             val escapedSummary = entry.summary.replace("\n", "\\n").replace(",", "\\,")
@@ -401,14 +464,14 @@ class PlanExecutionCostService() {
             .replace(",", ".")
             .toDoubleOrNull() ?: 0.0
 
-    private fun loadHistoryFromFile(planId: String): List<ExecutionCostData> {
+    private fun loadHistoryFromFile(planId: String, contentOverride: String? = null): List<ExecutionCostData> {
         try {
             val historyFile = File(planId.replace(".md", HISTORY_FILE_SUFFIX))
-            if (!historyFile.exists()) {
+            if (!historyFile.exists() && contentOverride == null) {
                 return emptyList()
             }
 
-            val content = historyFile.readText()
+            val content = contentOverride ?: historyFile.readText()
             val executionEntries = mutableListOf<ExecutionCostData>()
 
             // Try to parse both old and new format entries
@@ -481,7 +544,6 @@ class PlanExecutionCostService() {
             }
 
             // We no longer cache entries as we always read from file
-
             return executionEntries
         } catch (e: Exception) {
             logger.warn("Failed to load history from file for plan: $planId", e)

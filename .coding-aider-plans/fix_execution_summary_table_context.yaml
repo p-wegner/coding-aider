@@ -1,0 +1,8 @@
+---
+files:
+- path: src/main/kotlin/de/andrena/codingaider/services/plans/PlanExecutionCostService.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/services/plans/ExecutionCostData.kt
+  readOnly: false
+- path: exampleoutput.md
+  readOnly: true
