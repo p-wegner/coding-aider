@@ -8,13 +8,11 @@ import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.Panel
 import de.andrena.codingaider.services.AiderEditFormat
+import de.andrena.codingaider.settings.ExperimentalFeatureUtil
 import de.andrena.codingaider.utils.ApiKeyChecker
 import java.awt.event.ItemEvent
 import javax.swing.DefaultComboBoxModel
 
-/**
- * Code modification settings tab panel
- */
 class CodeModificationTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyChecker) {
 
     // UI Components
@@ -25,7 +23,7 @@ class CodeModificationTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(
     private val reasoningEffortComboBox = ComboBox(arrayOf("", "low", "medium", "high"))
     
     // Plugin-based edits settings
-    private val pluginBasedEditsCheckBox = JBCheckBox("Use Plugin-Based Edits (Experimental)")
+    private val pluginBasedEditsCheckBox = JBCheckBox("Use Plugin-Based edits (Experimental)")
     private val lenientEditsCheckBox = JBCheckBox("Allow Lenient Edits (Process multiple formats) (Experimental)")
     private val autoCommitAfterEditsCheckBox = JBCheckBox("Auto-commit after plugin-based edits (Experimental)")
 
@@ -111,7 +109,8 @@ class CodeModificationTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(
                     cell(pluginBasedEditsCheckBox)
                         .component
                         .apply {
-                            text = "Use Plugin-Based Edits <span style='color:#FF6B00;'>[Experimental]</span>"
+                            text = "Use Plugin-Based Edits"
+                            ExperimentalFeatureUtil.markAsExperimental(this)
                             toolTipText =
                                 "If enabled, the plugin handles applying edits using /ask and a specific diff format, bypassing Aider's internal edit formats."
                             addItemListener { e ->
@@ -131,7 +130,8 @@ class CodeModificationTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(
                     cell(lenientEditsCheckBox)
                         .component
                         .apply {
-                            text = "Allow Lenient Edits <span style='color:#FF6B00;'>[Experimental]</span>"
+                            text = "Allow Lenient Edits"
+                            ExperimentalFeatureUtil.markAsExperimental(this)
                             toolTipText =
                                 "If enabled, the plugin will process all edit formats (diff, whole, udiff) in a single response, regardless of the configured edit format."
                             isEnabled = pluginBasedEditsCheckBox.isSelected
@@ -141,7 +141,8 @@ class CodeModificationTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(
                     cell(autoCommitAfterEditsCheckBox)
                         .component
                         .apply {
-                            text = "Auto-commit after plugin-based edits <span style='color:#FF6B00;'>[Experimental]</span>"
+                            text = "Auto-commit after plugin-based edits"
+                            ExperimentalFeatureUtil.markAsExperimental(this)
                             toolTipText =
                                 "If enabled, changes made by plugin-based edits will be automatically committed to Git with a message extracted from the LLM response."
                             isEnabled = pluginBasedEditsCheckBox.isSelected

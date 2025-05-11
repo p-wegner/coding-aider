@@ -4,6 +4,7 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.Panel
+import de.andrena.codingaider.settings.ExperimentalFeatureUtil
 import de.andrena.codingaider.settings.LlmComboBoxRenderer
 import de.andrena.codingaider.settings.LlmSelection
 import de.andrena.codingaider.utils.ApiKeyChecker
@@ -37,7 +38,8 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
             group("Execution Mode") {
                 row {
                     cell(useSidecarModeCheckBox).component.apply {
-                        text = "Use Sidecar Mode <span style='color:#FF6B00;'>[Experimental]</span>"
+                        text = "Use Sidecar Mode"
+                        ExperimentalFeatureUtil.markAsExperimental(this)
                         toolTipText =
                             "Run Aider as a persistent process. This is experimental and may improve performance."
                         addItemListener { e ->
@@ -64,7 +66,8 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
                     cell(activateIdeExecutorAfterWebcrawlCheckBox)
                         .component
                         .apply {
-                            text = "Activate Post web crawl LLM cleanup <span style='color:#FF6B00;'>[Experimental]</span>"
+                            text = "Activate Post web crawl LLM cleanup"
+                            ExperimentalFeatureUtil.markAsExperimental(this)
                             toolTipText = "This option prompts Aider to clean up the crawled markdown. " +
                                     "Note that this experimental feature may exceed the LLM's token limit and potentially leads to high costs. " +
                                     "Use it with caution."
@@ -78,7 +81,7 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
                 }
             }
 
-            group("Performance & Logging") {
+            group("Performance and Logging") {
                 row {
                     cell(deactivateRepoMapCheckBox)
                         .component
