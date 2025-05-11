@@ -16,6 +16,7 @@ interface ApiKeyChecker {
     fun getAllApiKeyNames(): List<String>
     fun getApiKeyValue(apiKeyName: String): String?
     fun getApiKeysForDocker(): Map<String, String>
+    fun getLlmSelectionForName(webCrawlLlm: String): LlmSelection
 }
 
 @Service(Service.Level.APP)
@@ -198,7 +199,7 @@ class DefaultApiKeyChecker : ApiKeyChecker {
         return (standardKeys + customKeys).toMap()
     }
 
-    fun getLlmSelectionForName(string: String): LlmSelection {
+    override fun getLlmSelectionForName(string: String): LlmSelection {
         return getStandardOptions().find { it.name == string }
             ?: service<CustomLlmProviderService>().getProvider(string).let {
                 LlmSelection(string, provider = it, isBuiltIn = false)
