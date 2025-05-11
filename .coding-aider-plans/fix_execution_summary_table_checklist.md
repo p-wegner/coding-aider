@@ -6,5 +6,4 @@
 - [x] Ensure `updateHumanReadableTableWithEntries` includes all entries from the commented data
 - [x] Fix the logic for adding entries to ensure consistency between commented data and table
 - [x] Add additional error handling and logging for robustness
-- [ ] Test the changes with new and existing history files
-- [ ] Verify that the table is created on first execution and includes all entries
+- [ ] fix model parsing failing with empty model
