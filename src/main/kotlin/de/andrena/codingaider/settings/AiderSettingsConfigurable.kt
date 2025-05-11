@@ -49,7 +49,6 @@ class AiderSettingsConfigurable : Configurable {
         val mainPanel = JPanel(BorderLayout())
 
         // Create tabs
-        // TODO 11.05.2025 pwegner: method not present
         val setupTab = setupPanel.createTabInfo()
         val generalTab = generalPanel.createTabInfo()
         val codeModificationTab = codeModificationPanel.createTabInfo()
@@ -110,7 +109,6 @@ class AiderSettingsConfigurable : Configurable {
         customProviderService.removeSettingsChangeListener(customProviderListener)
         
         // Dispose all tab panels
-        // TODO 11.05.2025 pwegner: method not present
         setupPanel.dispose()
         generalPanel.dispose()
         codeModificationPanel.dispose()

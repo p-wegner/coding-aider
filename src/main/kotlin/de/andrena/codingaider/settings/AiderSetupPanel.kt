@@ -10,6 +10,7 @@ import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.Panel
 import de.andrena.codingaider.executors.api.CommandObserver
+import de.andrena.codingaider.settings.tabs.SettingsTabPanel
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.ApiKeyManager
 import javax.swing.*
@@ -17,15 +18,15 @@ import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
 class AiderSetupPanel(
-    private val apiKeyChecker: ApiKeyChecker,
+    apiKeyChecker: ApiKeyChecker,
     private val dockerModeChanged: (Boolean) -> Unit
-) {
+) : SettingsTabPanel(apiKeyChecker) {
     private val apiKeyFields = mutableMapOf<String, JPasswordField>()
     val useDockerAiderCheckBox = JBCheckBox("Use aider in Docker")
     val dockerImageField = TextFieldWithHistory()
     val aiderExecutablePathField = TextFieldWithHistory()
-    // TODO 11.05.2025 pwegner: this is unused but should be used somewhere
-    fun createPanel(panel: Panel) {
+    
+    override fun createPanel(panel: Panel) {
         panel.group("Aider Setup") {
             createApiKeysGroup()
             createDockerSetup()
@@ -290,7 +291,11 @@ class AiderSetupPanel(
         }
     }
 
-    fun isModified(): Boolean {
+    override fun getTabName(): String = "Setup"
+    
+    override fun getTabTooltip(): String = "Configure Aider and API keys"
+    
+    override fun isModified(): Boolean {
         val settings = AiderSettings.getInstance()
         return useDockerAiderCheckBox.isSelected != settings.useDockerAider ||
                 dockerImageField.text != settings.dockerImage ||
@@ -299,14 +304,14 @@ class AiderSetupPanel(
     }
 
 
-    fun apply() {
+    override fun apply() {
         val settings = AiderSettings.getInstance()
         settings.useDockerAider = useDockerAiderCheckBox.isSelected
         settings.dockerImage = dockerImageField.text
         settings.aiderExecutablePath = aiderExecutablePathField.text
     }
 
-    fun reset() {
+    override fun reset() {
         val settings = AiderSettings.getInstance()
         useDockerAiderCheckBox.isSelected = settings.useDockerAider
         dockerImageField.text = settings.dockerImage
