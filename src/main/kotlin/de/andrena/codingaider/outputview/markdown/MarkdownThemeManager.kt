@@ -2,13 +2,7 @@ package de.andrena.codingaider.outputview.markdown
 
 import com.intellij.ui.JBColor
 
-/**
- * Manages theme-related aspects of markdown rendering
- */
 class MarkdownThemeManager {
-    /**
-     * Current theme state
-     */
     var isDarkTheme: Boolean = !JBColor.isBright()
         private set
         
@@ -451,9 +445,6 @@ class MarkdownThemeManager {
         """.trimIndent()
     }
 
-    /**
-     * Creates HTML with content already inserted
-     */
     fun createHtmlWithContent(content: String): String {
         val baseHtml = createBaseHtml()
         return baseHtml.replace("<div id=\"content\"></div>", "<div id=\"content\">$content</div>")

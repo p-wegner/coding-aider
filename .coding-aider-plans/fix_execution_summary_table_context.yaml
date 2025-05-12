@@ -6,3 +6,5 @@ files:
   readOnly: false
 - path: exampleoutput.md
   readOnly: true
+- path: prompt.txt
+  readOnly: true

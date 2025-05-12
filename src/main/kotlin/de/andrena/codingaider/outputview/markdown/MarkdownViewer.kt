@@ -7,10 +7,6 @@ import java.awt.Dimension
 import javax.swing.JComponent
 import javax.swing.JPanel
 
-/**
- * A refactored Markdown viewer component that uses JCEF (Chromium Embedded Framework)
- * with fallback to JEditorPane when JCEF is not available.
- */
 class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
     private var isDisposed = false
 
@@ -51,9 +47,6 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
     val component: JComponent
         get() = mainPanel
 
-    /**
-     * Sets the markdown content to be displayed
-     */
     fun setMarkdown(markdown: String) {
         if (isDisposed) {
             return
@@ -62,9 +55,6 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
         renderer.setMarkdown(markdown)
     }
 
-    /**
-     * Updates the theme used for rendering
-     */
     fun setDarkTheme(dark: Boolean) {
         if (isDisposed) {
             return
@@ -72,9 +62,6 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
         renderer.setDarkTheme(dark)
     }
     
-    /**
-     * Releases resources used by the viewer
-     */
     fun dispose() {
         if (!isDisposed) {
             isDisposed = true
