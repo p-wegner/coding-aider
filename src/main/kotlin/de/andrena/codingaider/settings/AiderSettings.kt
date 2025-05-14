@@ -58,7 +58,8 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var defaultMode: AiderMode = AiderDefaults.DEFAULT_MODE,
         var pluginBasedEdits: Boolean = AiderDefaults.PLUGIN_BASED_EDITS, // Added for plugin-based edits feature
         var lenientEdits: Boolean = AiderDefaults.LENIENT_EDITS, // Allow processing of multiple edit formats
-        var autoCommitAfterEdits: Boolean = AiderDefaults.AUTO_COMMIT_AFTER_EDITS // Auto-commit after plugin-based edits
+        var autoCommitAfterEdits: Boolean = AiderDefaults.AUTO_COMMIT_AFTER_EDITS, // Auto-commit after plugin-based edits
+        var showMarkdownDevTools: Boolean = AiderDefaults.SHOW_MARKDOWN_DEV_TOOLS // Show DevTools button in markdown dialog
     )
 
 
@@ -278,6 +279,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.autoCommitAfterEdits
         set(value) {
             myState.autoCommitAfterEdits = value
+        }
+        
+    var showMarkdownDevTools: Boolean
+        get() = myState.showMarkdownDevTools
+        set(value) {
+            myState.showMarkdownDevTools = value
         }
 
 
