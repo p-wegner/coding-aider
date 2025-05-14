@@ -56,7 +56,9 @@ class FallbackMarkdownRenderer(
 
         SwingUtilities.invokeLater {
             editorPane.putClientProperty("charset", StandardCharsets.UTF_8.name())
-            editorPane.text = html
+            // Ensure body text is visible in every LAF
+            val safeHtml = html.replace("color: #2b2b2b;", "color: #bbbbbb;")
+            editorPane.text = safeHtml
             editorPane.caretPosition = 0
         }
     }

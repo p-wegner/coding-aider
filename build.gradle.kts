@@ -40,6 +40,7 @@ dependencies {
     implementation("com.knuddels:jtokkit:1.1.0")
     implementation("io.projectreactor:reactor-core:3.7.0")
     implementation("io.projectreactor.kotlin:reactor-kotlin-extensions:1.2.3")
+    implementation("org.apache.commons:commons-text:1.11.0")
     testImplementation("junit:junit:4.13.2")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.11.3")
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.11.3")

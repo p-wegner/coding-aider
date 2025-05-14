@@ -30,6 +30,7 @@ class JcefMarkdownRenderer(
 
     private var jbCefBrowser: JBCefBrowser? = null
     private var currentContent = ""
+    private val pendingMarkdown = mutableListOf<String>()
     private var contentReady = false
 
     override val component: JComponent
@@ -60,11 +61,8 @@ class JcefMarkdownRenderer(
                         // Only act on main frame (main frame has no parent)
                         if (frame != null && frame.parent == null) {
                             contentReady = true
-                            if (currentContent.isNotEmpty()) {
-                                SwingUtilities.invokeLater {
-                                    updateContent(currentContent)
-                                }
-                            }
+                            // NEW ↓ — paint whatever arrived before the page was ready
+                            pendingMarkdown.lastOrNull()?.let { SwingUtilities.invokeLater { updateContent(it) } }
                         }
                     }
 
@@ -114,7 +112,9 @@ class JcefMarkdownRenderer(
         currentContent = markdown
 
         if (!contentReady) {
-            // Content will be updated when viewer is ready
+            // just remember it
+            pendingMarkdown.clear()
+            pendingMarkdown += markdown
             return
         }
 
@@ -131,13 +131,12 @@ class JcefMarkdownRenderer(
         jbCefBrowser?.let { browser ->
             try {
                 // Use JavaScript to update the content
-                val escapedHtml = html.replace("\\", "\\\\")
-                    .replace("'", "\\'")
-                    .replace("\n", "\\n")
-                    .replace("\r", "\\r")
-
+                val escapedHtml = org.apache.commons.text
+                    .StringEscapeUtils.escapeEcmaScript(html)
                 val script = "updateContent('$escapedHtml');"
-                browser.cefBrowser.executeJavaScript(script, browser.cefBrowser.url, 0)
+                val ok = browser.cefBrowser.executeJavaScript(script, browser.cefBrowser.url, 0)
+                // If JS didn't run (native returns false) fall back to full reload
+                if (!ok) browser.loadHTML(themeManager.createHtmlWithContent(html))
             } catch (e: Exception) {
                 println("Error updating browser content: ${e.message}")
                 // Fallback to full page reload if JavaScript execution fails

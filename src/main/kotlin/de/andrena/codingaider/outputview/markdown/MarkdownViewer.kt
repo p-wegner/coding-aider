@@ -51,8 +51,9 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
         if (isDisposed) {
             return
         }
-        currentContent = markdown
-        renderer.setMarkdown(markdown)
+        // Never feed an empty string to the renderer – give it one nbsp instead
+        currentContent = markdown.ifBlank { " " }
+        renderer.setMarkdown(currentContent)
     }
 
     fun setDarkTheme(dark: Boolean) {
