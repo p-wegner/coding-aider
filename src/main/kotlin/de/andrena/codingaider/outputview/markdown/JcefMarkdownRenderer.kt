@@ -155,10 +155,6 @@ class JcefMarkdownRenderer(
         }
     }
     
-    /**
-     * Shows Chrome DevTools for the JCEF browser
-     * @return true if DevTools were shown, false otherwise
-     */
     override fun showDevTools(): Boolean {
         if (isDisposed || jbCefBrowser == null) {
             return false
