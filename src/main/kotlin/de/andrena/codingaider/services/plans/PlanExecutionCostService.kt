@@ -27,9 +27,6 @@ class PlanExecutionCostService() {
         private const val EXECUTION_DATA_SUFFIX = " -->"
     }
 
-    /**
-     * Records initial plan creation before we have a plan ID
-     */
     fun recordInitialPlanCreation(costData: ExecutionCostData, commandData: CommandData) {
         // Store the initial cost data using the command message as a temporary key
         // We'll update this with the actual plan ID once it's created

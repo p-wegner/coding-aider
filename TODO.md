@@ -1,5 +1,4 @@
 - [ ] Feature: Paste Image in aider dialog should call the clipboard image action
-- [ ] Bug: fix encoding issues with markdown viewer
 - [ ] Bug: (sidecar) verify env vars (api keys) for sidecar mode properly set
 - [ ] Bug: aiderignore not used for every action
 - [ ] Feature: stash in persistent files view in input dialog
@@ -9,3 +8,5 @@
     - [ ] collapseable panels get opened automatically when content changed
     - [x] auto scrolling not working at all
 - [ ] Feature: Extend documentation actions to allow selecting type of documentation: technical, PRD, ... (make configurable comparable to test creation?)
+- [ ] count first plan execution in history
+- [ ] Bug: automatic plan continuation fails to detect plan end properly
