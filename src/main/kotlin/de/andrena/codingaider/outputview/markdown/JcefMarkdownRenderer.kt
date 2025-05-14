@@ -156,9 +156,6 @@ class JcefMarkdownRenderer(
     }
     
     /**
-     * Releases resources used by the renderer
-     */
-    /**
      * Shows Chrome DevTools for the JCEF browser
      * @return true if DevTools were shown, false otherwise
      */
