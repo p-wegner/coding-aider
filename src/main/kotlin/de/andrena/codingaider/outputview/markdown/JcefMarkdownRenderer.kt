@@ -134,9 +134,7 @@ class JcefMarkdownRenderer(
                 val escapedHtml = org.apache.commons.text
                     .StringEscapeUtils.escapeEcmaScript(html)
                 val script = "updateContent('$escapedHtml');"
-                val ok = browser.cefBrowser.executeJavaScript(script, browser.cefBrowser.url, 0)
-                // If JS didn't run (native returns false) fall back to full reload
-                if (!ok) browser.loadHTML(themeManager.createHtmlWithContent(html))
+                browser.cefBrowser.executeJavaScript(script, browser.cefBrowser.url, 0)
             } catch (e: Exception) {
                 println("Error updating browser content: ${e.message}")
                 // Fallback to full page reload if JavaScript execution fails
