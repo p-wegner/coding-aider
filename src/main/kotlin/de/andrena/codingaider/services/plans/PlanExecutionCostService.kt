@@ -8,9 +8,6 @@ import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-/**
- * Service for tracking plan execution costs
- */
 @Service(Service.Level.APP)
 class PlanExecutionCostService() {
     private val logger = Logger.getInstance(PlanExecutionCostService::class.java)
@@ -31,24 +28,14 @@ class PlanExecutionCostService() {
         try {
             val costData = ExecutionCostData.fromCommandOutput(commandOutput)
             val planId = plan.mainPlanFile?.filePath ?: return
-
-            // We no longer cache entries, just update the history file directly
-
-            // Update the history file with the new execution and updated totals
             updateHistoryFile(plan, costData, commandData)
-
-            // Notify listeners that cost data has changed for this plan
             notifyCostChanged(planId)
-            
-            // Also notify for the root plan to ensure the entire plan tree is refreshed
             val rootPlan = plan.findRootPlan()
             if (rootPlan.mainPlanFile?.filePath != planId) {
                 rootPlan.mainPlanFile?.filePath?.let { rootPlanId ->
                     notifyCostChanged(rootPlanId)
                 }
             }
-
-            // Log the total cost for this plan
             val totalCost = getTotalCost(planId)
             val totalTokens = getTotalTokens(planId)
             logger.info(
@@ -77,7 +64,6 @@ class PlanExecutionCostService() {
     }
 
     fun getExecutionHistory(planId: String): List<ExecutionCostData> {
-        // Always load from file to ensure we have the latest data
         return loadHistoryFromFile(planId)
     }
 
@@ -212,15 +198,7 @@ class PlanExecutionCostService() {
         }
     }
 
-    private fun updateHumanReadableTable(content: StringBuilder, plan: AiderPlan) {
-        // Get all executions for this plan
-        val planId = plan.mainPlanFile?.filePath ?: return
-        val executions = getExecutionHistory(planId)
-        
-        // Update the table with the executions
-        updateHumanReadableTableWithEntries(content, plan, executions)
-    }
-    
+
     private fun updateHumanReadableTableWithEntries(content: StringBuilder, plan: AiderPlan, executions: List<ExecutionCostData>) {
         try {
             // Make sure we have a distinct list of executions (no duplicates)
@@ -251,7 +229,7 @@ class PlanExecutionCostService() {
                     val date = execution.getFormattedTimestamp()
                     // Extract a shorter model name for display
                     val model = try {
-                        execution.model.substringAfterLast("-").take(10)
+                        execution.model
                     } catch (e: Exception) {
                         execution.model.take(10)
                     }
@@ -344,7 +322,7 @@ class PlanExecutionCostService() {
                 // Parse old format entries
                 oldEntryPattern.findAll(content).forEach { matchResult ->
                     try {
-                        parseEntryFromRegexMatch(matchResult, '|', existingEntries)
+                        parseEntryFromRegexMatch(matchResult, existingEntries)
                     } catch (e: Exception) {
                         logger.warn("Failed to parse existing entry (old format): ${e.message}")
                     }
@@ -353,7 +331,7 @@ class PlanExecutionCostService() {
                 // Parse new format entries
                 newEntryPattern.findAll(content).forEach { matchResult ->
                     try {
-                        parseEntryFromRegexMatch(matchResult, ',', existingEntries)
+                        parseEntryFromRegexMatch(matchResult, existingEntries)
                     } catch (e: Exception) {
                         logger.warn("Failed to parse existing entry (new format): ${e.message}")
                     }
@@ -473,7 +451,6 @@ class PlanExecutionCostService() {
      */
     private fun parseEntryFromRegexMatch(
         matchResult: MatchResult,
-        delimiter: Char,
         entries: MutableList<ExecutionCostData>
     ) {
         val groups = matchResult.groupValues
@@ -540,7 +517,7 @@ class PlanExecutionCostService() {
             // Parse old format entries
             oldEntryPattern.findAll(content).forEach { matchResult ->
                 try {
-                    parseEntryFromRegexMatch(matchResult, '|', executionEntries)
+                    parseEntryFromRegexMatch(matchResult, executionEntries)
                 } catch (e: Exception) {
                     logger.warn("Failed to parse execution entry (old format)", e)
                 }
@@ -549,7 +526,7 @@ class PlanExecutionCostService() {
             // Parse new format entries
             newEntryPattern.findAll(content).forEach { matchResult ->
                 try {
-                    parseEntryFromRegexMatch(matchResult, ',', executionEntries)
+                    parseEntryFromRegexMatch(matchResult, executionEntries)
                 } catch (e: Exception) {
                     logger.warn("Failed to parse execution entry (new format)", e)
                 }
