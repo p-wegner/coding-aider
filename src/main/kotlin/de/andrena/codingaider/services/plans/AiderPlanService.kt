@@ -7,6 +7,7 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.model.ContextFileHandler
 import java.io.File
+import java.time.LocalDateTime
 
 
 @Service(Service.Level.PROJECT)
@@ -28,6 +29,26 @@ class AiderPlanService(private val project: Project) {
                 plansDir.mkdir()
             }
         }
+    }
+    
+    /**
+     * Tracks the creation of a new plan by recording an execution cost entry
+     */
+    fun trackPlanCreation(commandData: CommandData) {
+        // Create a default execution cost entry for plan creation
+        val costData = ExecutionCostData(
+            timestamp = LocalDateTime.now(),
+            tokensSent = 0,  // Will be updated when the actual response comes back
+            tokensReceived = 0,  // Will be updated when the actual response comes back
+            messageCost = 0.0,  // Will be updated when the actual response comes back
+            sessionCost = 0.0,  // Will be updated when the actual response comes back
+            model = commandData.llm,
+            summary = "Plan creation initiated"
+        )
+        
+        // We don't have a plan ID yet, so we'll create a temporary record
+        // The actual plan cost will be updated when the command completes
+        project.service<PlanExecutionCostService>().recordInitialPlanCreation(costData, commandData)
     }
 
     private fun extractChecklistItems(content: String): List<ChecklistItem> {

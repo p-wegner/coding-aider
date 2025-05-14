@@ -54,6 +54,12 @@ class CommandExecutor(
     fun executeCommand(): String {
         aiderPlanService.createPlanFolderIfNeeded(commandData)
         val updatedCommandData = extractFilesIfNeeded()
+        
+        // Track plan creation if this is a structured mode command
+        if (commandData.structuredMode && commandData.planId == null) {
+            aiderPlanService.trackPlanCreation(commandData)
+        }
+        
         if (commandData.sidecarMode) {
             return startSideCarAndExecuteCommand(updatedCommandData)
         }

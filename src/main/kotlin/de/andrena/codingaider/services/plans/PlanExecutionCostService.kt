@@ -7,12 +7,15 @@ import de.andrena.codingaider.command.CommandData
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.util.concurrent.ConcurrentHashMap
 
 @Service(Service.Level.APP)
 class PlanExecutionCostService() {
     private val logger = Logger.getInstance(PlanExecutionCostService::class.java)
     // No longer using a cache as we always read from file
     private val costChangeListeners = mutableListOf<(String) -> Unit>()
+    // Store pending plan creation records until we have a plan ID
+    private val pendingPlanCreations = ConcurrentHashMap<String, ExecutionCostData>()
 
     companion object {
         private const val HISTORY_FILE_SUFFIX = "_history.md"
@@ -24,11 +27,38 @@ class PlanExecutionCostService() {
         private const val EXECUTION_DATA_SUFFIX = " -->"
     }
 
+    /**
+     * Records initial plan creation before we have a plan ID
+     */
+    fun recordInitialPlanCreation(costData: ExecutionCostData, commandData: CommandData) {
+        // Store the initial cost data using the command message as a temporary key
+        // We'll update this with the actual plan ID once it's created
+        val tempKey = commandData.message.hashCode().toString()
+        pendingPlanCreations[tempKey] = costData
+        logger.info("Recorded initial plan creation for command: ${commandData.message.take(50)}...")
+    }
+
     fun recordExecutionCost(plan: AiderPlan, commandOutput: String, commandData: CommandData) {
         try {
             val costData = ExecutionCostData.fromCommandOutput(commandOutput)
             val planId = plan.mainPlanFile?.filePath ?: return
-            updateHistoryFile(plan, costData, commandData)
+            
+            // Check if this is a plan creation that we've been tracking
+            val tempKey = commandData.message.hashCode().toString()
+            val initialCostData = pendingPlanCreations.remove(tempKey)
+            
+            // If we have initial cost data and this is a new plan, merge the data
+            val finalCostData = if (initialCostData != null && commandData.structuredMode) {
+                // Use the timestamp from the initial creation but the token/cost data from the response
+                costData.copy(
+                    timestamp = initialCostData.timestamp,
+                    summary = "Plan creation completed: ${costData.summary}"
+                )
+            } else {
+                costData
+            }
+            
+            updateHistoryFile(plan, finalCostData, commandData)
             notifyCostChanged(planId)
             val rootPlan = plan.findRootPlan()
             if (rootPlan.mainPlanFile?.filePath != planId) {
