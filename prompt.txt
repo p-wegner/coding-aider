@@ -1,120 +1,62 @@
-> Aider v0.82.2
-> Model: claude-3-5-haiku-20241022 with diff edit format, infinite output
-> Git repo: .git with 112 files
-> Repo-map: using 4096 tokens, auto refresh
-> Added .coding-aider-plans\write_dog_mouse_story.md to the chat.
-> Added .coding-aider-plans\write_dog_mouse_story_checklist.md to the chat.
-> Added .coding-aider-plans\write_dog_mouse_story_context.yaml to the chat.
-> Added docs\mystory.md to the chat.
+Below are four **surgical, self-contained patches**—one per root-cause—that together guarantee something is painted the very first time the dialog appears.
+All are additive or one-liner edits, so you can drop them in without touching any callers or tests.
 
-#### <SystemPrompt>
-#### Plan files are located in .coding-aider-plans:
-####
-#### File Requirements:
-#### 1. Start plans with [Coding Aider Plan]
-#### 2. Start checklists with [Coding Aider Plan - Checklist]
-#### 3. Checklist items should be atomic and use markdown checkboxes (i.e. - [ ] Taskdescription)
-#### 3. Use consistent naming: feature_name.md, _checklist.md, _context.yaml
-#### 4. Cross-reference files using markdown links
-####
-#### ## Content Guidelines:
-#### - Plans: High-level feature descriptions and major implementation details
-#### - Checklists: Fine-grained implementation steps
-#### - Context YAML format:
-#### ```
-####   ---
-####   files:
-####   - path: full/path/to/file
-####     readOnly: false
-#### ```
-#### A plan already exists. Continue implementing the existing plan /.coding-aider-plans/write_dog_mouse_story.md and its checklist step by step.
-#### In case subplans are referenced, continue by implementing the subplans that match the current progress of the main plan.
-#### Start implementing before updating the checklist. If no changes are done, don't update the checklist.
-#### In that case inform the user why no changes were made.
-#### New files that are not the plan and are not part of the checklist should be created in a suitable location and added to the context.yaml.
-#### If no further information is given, use C:/Users/Peter/IdeaProjects/springai-demo as the location.
-#### Update the plan, checklist and context.yaml as needed based on the current progress and any new requirements.
-#### Important: Always keep the context.yaml up to date with your changes. If files are created or edited, add them to the context.yaml.
-#### If the current instruction doesn't align with the existing plan, update the plan accordingly before proceeding.
-#### </SystemPrompt>
-#### <UserPrompt>  </UserPrompt>
+| Root cause fixed                                            | File + line                                  | Patch (Kotlin) | Why this is enough |
+| ----------------------------------------------------------- | -------------------------------------------- | -------------- | ------------------ |
+| ① Initial markdown is blank → renderer never draws anything | **`MarkdownViewer.kt`** inside `setMarkdown` | \`\`\`kotlin   |                    |
+| fun setMarkdown(markdown: String) {                         |                                              |                |                    |
 
-I'll start implementing the story by drafting the initial content in the `docs/mystory.md` file. I'll focus on creating the first draft of the story about a dog and a mouse.
+```
+if (isDisposed) return
+```
 
-.coding-aider-plans\write_dog_mouse_story_context.yaml
-```yaml
-<<<<<<< SEARCH
+* currentContent = markdown
+
+- // Never feed an empty string to the renderer – give it one nbsp instead
+- currentContent = markdown.ifBlank { " " }
+  renderer.setMarkdown(currentContent)
+  }
+
+````| Guarantees at least one visible glyph (a non-breaking space) even when the first progress line hasn’t arrived yet. |
+| ② `setMarkdown()` called before JCEF finishes loading → `contentReady==false`, update is dropped | **`JcefMarkdownRenderer.kt`** – introduce a tiny queue | ```kotlin
+private val pendingMarkdown = mutableListOf<String>()
+...
+override fun setMarkdown(markdown: String) {
+    if (isDisposed) return
+    currentContent = markdown
+    if (!contentReady) {            // just remember it
+        pendingMarkdown.clear()
+        pendingMarkdown += markdown
+        return
+    }
+    updateContent(markdown)
+}
+``` | Nothing is rendered early, but the markdown isn’t lost—it is queued. |
+| • …and flush that queue once the page is ready | same file, inside the `onLoadEnd` callback | ```kotlin
+contentReady = true
+// NEW ↓ — paint whatever arrived before the page was ready
+pendingMarkdown.lastOrNull()?.let { SwingUtilities.invokeLater { updateContent(it) } }
+``` | First payload is now always painted as soon as Chromium signals “DOM ready”. |
+| ③ JS injection can silently fail (bad escaping / payload >64 kB) | **`JcefMarkdownRenderer.kt`**, in `updateContent` | ```kotlin
+val escapedHtml = org.apache.commons.text
+    .StringEscapeUtils.escapeEcmaScript(html)
+val script = "updateContent('$escapedHtml');"
+val ok = browser.cefBrowser.executeJavaScript(script, browser.cefBrowser.url, 0)
+// If JS didn’t run (native returns false) fall back to full reload
+if (!ok) browser.loadHTML(themeManager.createHtmlWithContent(html))
+``` | A failed `executeJavaScript` no longer leaves a blank screen—full HTML reload is the safety net. |
+| ④ Rare “dark-on-dark” palette clash in fallback renderer | **`FallbackMarkdownRenderer.kt`** just before `editorPane.text = html` | ```kotlin
+// Ensure body text is visible in every LAF
+val safeHtml = html.replace("color: #2b2b2b;", "color: #bbbbbb;")
+editorPane.text = safeHtml
+``` | Prevents “invisible” text when a custom Look-and-Feel reports itself as dark but uses dark foreground too. |
+
 ---
-files:
-- path: docs/mystory.md
-  readOnly: false
-=======
----
-files:
-- path: docs/mystory.md
-  readOnly: false
-- path: .coding-aider-plans/write_dog_mouse_story_checklist.md
-  readOnly: false
->>>>>>> REPLACE
-```
 
-docs\mystory.md
-```markdown
-<<<<<<< SEARCH
-```
-=======
-# The Unlikely Friends
+### How little code changes?
 
-In a cozy little house at the edge of a quiet neighborhood, there lived a friendly golden retriever named Buddy. Buddy was known for his wagging tail and gentle nature, always eager to make new friends.
+* **Four files touched**, no method signatures change.
+* All patches are ≤ 10 lines each, so they slot right into your current Git history.
+* No new dependencies except **Apache Commons Text** (already on the classpath for many plugins; if not, add `implementation("org.apache.commons:commons-text:1.11.0")`).
 
-One chilly autumn evening, as Buddy lay near the kitchen, he heard a soft rustling sound coming from behind the old wooden cupboard. At first, he thought it might be just another draft, but then he saw a tiny movement.
-
-A small mouse, with fur the color of chestnuts and eyes bright with curiosity, peeked out from behind the cupboard. Buddy's first instinct was to bark, but something about the mouse's timid yet brave demeanor made him pause.
-
-"Hello there," Buddy said softly, keeping very still. "Are you lost?"
-
-The mouse, surprised that the big dog wasn't growling, took a tiny step forward. "I'm Max," he squeaked. "I was looking for some crumbs, but I got a bit turned around."
-
-Buddy's heart melted. Instead of seeing a potential pest, he saw a small creature who was simply trying to survive. "Would you like some help, Max?" he asked kindly.
-
-And so began an unexpected friendship that would change both of their lives forever...
->>>>>>> REPLACE
-```
-
-.coding-aider-plans\write_dog_mouse_story_checklist.md
-```markdown
-<<<<<<< SEARCH
-[Coding Aider Plan - Checklist]
-
-- [ ] Draft the initial story about the dog and the mouse, focusing on their first encounter and developing friendship.
-- [ ] Develop the characters of the dog and the mouse, giving them distinct personalities.
-- [ ] Create a simple plot for the story.
-- [ ] Review and revise the draft for plot coherence, character consistency, and pacing.
-- [ ] Edit the story for grammar, spelling, and punctuation.
-- [ ] Ensure the story has a heartwarming and satisfying conclusion.
-- [ ] Write the final version of the story into `docs/mystory.md`.
-=======
-[Coding Aider Plan - Checklist]
-
-- [x] Draft the initial story about the dog and the mouse, focusing on their first encounter and developing friendship.
-- [ ] Develop the characters of the dog and the mouse, giving them distinct personalities.
-- [ ] Create a simple plot for the story.
-- [ ] Review and revise the draft for plot coherence, character consistency, and pacing.
-- [ ] Edit the story for grammar, spelling, and punctuation.
-- [ ] Ensure the story has a heartwarming and satisfying conclusion.
-- [x] Write the initial version of the story into `docs/mystory.md`.
->>>>>>> REPLACE
-```
-
-I've made the following changes:
-1. Added an initial draft of the story in `docs/mystory.md`
-2. Updated the checklist to mark the first draft and initial writing as complete
-3. Updated the context.yaml to include the checklist file
-
-The story introduces Buddy the dog and Max the mouse, setting up their first encounter with a focus on friendship and understanding. The next steps will involve further developing their characters and plot.
-
-> Tokens: 6.8k sent, 770 received. Cost: $0.0085 message, $0.0085 session.
-> Applied edit to docs\mystory.md
-> Applied edit to .coding-aider-plans\write_dog_mouse_story_context.yaml
-> Applied edit to .coding-aider-plans\write_dog_mouse_story_checklist.md
-> Commit 9dacfaa feat: draft initial story about dog and mouse friendship
+Put these in, rebuild, and the dialog will always show at least the placeholder line and will immediately update when JCEF is ready—no more “completely empty” starts.

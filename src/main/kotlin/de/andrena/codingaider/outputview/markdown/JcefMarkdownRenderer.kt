@@ -161,7 +161,7 @@ class JcefMarkdownRenderer(
         }
         
         try {
-            jbCefBrowser?.openDevTools()
+            jbCefBrowser?.openDevtools()
             return true
         } catch (e: Exception) {
             println("Error showing DevTools: ${e.message}")
