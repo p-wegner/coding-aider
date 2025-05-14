@@ -155,6 +155,10 @@ class JcefMarkdownRenderer(
         }
     }
     
+    override fun supportsDevTools(): Boolean {
+        return !isDisposed && jbCefBrowser != null
+    }
+    
     override fun showDevTools(): Boolean {
         if (isDisposed || jbCefBrowser == null) {
             return false

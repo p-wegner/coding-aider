@@ -265,7 +265,7 @@ class MarkdownDialog(
         markdownViewer.setMarkdown(initialText)
         
         // Check if DevTools are supported and make the button visible
-        showDevToolsButton.isVisible = markdownViewer.showDevTools()
+        showDevToolsButton.isVisible = markdownViewer.supportsDevTools()
         
         positionOnSameScreen()
     }

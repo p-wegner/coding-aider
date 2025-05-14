@@ -38,6 +38,14 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     }
     
     /**
+     * Checks if developer tools are supported
+     * @return true if developer tools are supported, false otherwise
+     */
+    fun supportsDevTools(): Boolean {
+        return markdownViewer.supportsDevTools()
+    }
+    
+    /**
      * Shows developer tools if supported by the renderer
      * @return true if developer tools were shown, false otherwise
      */
