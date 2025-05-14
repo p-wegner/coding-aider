@@ -58,9 +58,37 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
         if (isDisposed) {
             return
         }
+        
         // Never feed an empty string to the renderer – give it one nbsp instead
         currentContent = markdown.ifBlank { " " }
-        renderer.setMarkdown(currentContent)
+        
+        // Try multiple times with increasing delays to handle race conditions
+        // where the renderer might not be fully initialized
+        try {
+            renderer.setMarkdown(currentContent)
+            
+            // Schedule additional attempts with delays to ensure content is displayed
+            for (delay in listOf(100L, 300L, 600L)) {
+                java.util.Timer().schedule(delay) {
+                    try {
+                        if (!isDisposed) {
+                            javax.swing.SwingUtilities.invokeLater {
+                                try {
+                                    renderer.setMarkdown(currentContent)
+                                } catch (e: Exception) {
+                                    println("Error in delayed markdown update (${delay}ms): ${e.message}")
+                                }
+                            }
+                        }
+                    } catch (e: Exception) {
+                        println("Error scheduling delayed update: ${e.message}")
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            println("Error in initial markdown update: ${e.message}")
+            e.printStackTrace()
+        }
     }
 
     fun setDarkTheme(dark: Boolean) {

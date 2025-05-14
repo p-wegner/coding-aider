@@ -208,8 +208,28 @@ class MarkdownThemeManager {
         <head>
             <meta charset="UTF-8">
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+            <meta http-equiv="Pragma" content="no-cache">
+            <meta http-equiv="Expires" content="0">
             <script>
                 $jsContent
+                
+                // Add a direct content update function that doesn't rely on existing functions
+                window.directUpdateContent = function(html) {
+                    try {
+                        document.getElementById('content').innerHTML = html;
+                    } catch(e) {
+                        console.error("Error in directUpdateContent:", e);
+                    }
+                };
+                
+                // Ensure the document is ready before initializing
+                if (document.readyState === 'loading') {
+                    document.addEventListener('DOMContentLoaded', initCollapsiblePanels);
+                } else {
+                    // Document already loaded, run immediately
+                    initCollapsiblePanels();
+                }
             </script>
             <style>
                 body {
@@ -262,11 +282,7 @@ class MarkdownThemeManager {
             </style>
         </head>
         <body>
-            <div id="content"></div>
-            <script>
-                // Initialize panels when page loads
-                document.addEventListener('DOMContentLoaded', initCollapsiblePanels);
-            </script>
+            <div id="content"><!-- Content will be loaded here --></div>
         </body>
         </html>
         """.trimIndent()

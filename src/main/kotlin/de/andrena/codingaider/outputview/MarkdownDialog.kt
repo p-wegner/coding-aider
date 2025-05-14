@@ -277,6 +277,11 @@ class MarkdownDialog(
         com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
             try {
                 val newContent = output.replace("\r\n", "\n")
+                
+                // Always update title
+                this@MarkdownDialog.title = title
+                
+                // Only update content if it has changed
                 if (newContent != lastContent) {
                     lastContent = newContent
 
@@ -284,50 +289,39 @@ class MarkdownDialog(
                     val scrollBar = scrollPane.verticalScrollBar
                     val wasNearBottom = scrollBar.value >= (scrollBar.maximum - scrollBar.visibleAmount - 10)
 
-                    // Update content
-                    markdownViewer.setMarkdown(newContent)
-                    this@MarkdownDialog.title = title
+                    // Update content - force a non-empty string
+                    val contentToSet = if (newContent.isBlank()) " " else newContent
+                    markdownViewer.setMarkdown(contentToSet)
 
-                    // Schedule scroll adjustment after UI updates with a longer delay
-                    // to ensure the content is fully rendered and panel states are preserved
-                    Timer().schedule(200) {
-                        invokeLater {
-                            // Scroll to bottom if auto-scroll is enabled OR if we were already near the bottom
-                            if (shouldAutoScroll || wasNearBottom) {
+                    // Schedule multiple scroll attempts with increasing delays
+                    // This helps ensure we reach the bottom even with dynamic content rendering
+                    val scrollTimers = mutableListOf<TimerTask>()
+                    
+                    for (delay in listOf(100L, 300L, 600L, 1000L)) {
+                        scrollTimers.add(Timer().schedule(delay) {
+                            invokeLater {
                                 try {
-                                    programmaticScrolling = true // Prevent listener feedback loop
-                                    
-                                    // First scroll attempt
-                                    scrollBar.value = scrollBar.maximum
-                                    
-                                    // Multiple scroll attempts with increasing delays to handle large content
-                                    // This helps ensure we reach the bottom even with dynamic content rendering
-                                    Timer().schedule(50) {
-                                        invokeLater {
-                                            scrollBar.value = scrollBar.maximum
-                                            
-                                            // Final scroll attempt with cleanup
-                                            Timer().schedule(100) {
-                                                invokeLater {
-                                                    scrollBar.value = scrollBar.maximum
-                                                    programmaticScrolling = false
-                                                }
-                                            }
+                                    // Scroll to bottom if auto-scroll is enabled OR if we were already near the bottom
+                                    if (shouldAutoScroll || wasNearBottom) {
+                                        programmaticScrolling = true // Prevent listener feedback loop
+                                        scrollBar.value = scrollBar.maximum
+                                        
+                                        // Only the last timer should reset the flag
+                                        if (delay == 1000L) {
+                                            programmaticScrolling = false
                                         }
                                     }
                                 } catch (e: Exception) {
                                     programmaticScrolling = false
-                                    println("Error during scrolling: ${e.message}")
+                                    println("Error during scrolling at ${delay}ms: ${e.message}")
                                 }
                             }
-                        }
+                        })
                     }
-                } else {
-                    // Only title changed, no content update needed
-                    this@MarkdownDialog.title = title
                 }
             } catch (e: Exception) {
                 println("Error updating markdown dialog: ${e.message}")
+                e.printStackTrace()
             }
         }
     }

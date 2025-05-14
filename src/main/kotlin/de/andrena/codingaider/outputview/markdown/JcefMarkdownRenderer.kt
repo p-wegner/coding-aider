@@ -50,6 +50,17 @@ class JcefMarkdownRenderer(
                 throw IllegalStateException("JCEF is not supported on this platform")
             }
             
+            // Clean up any existing browser instance
+            if (jbCefBrowser != null) {
+                try {
+                    mainPanel.remove(jbCefBrowser!!.component)
+                    jbCefBrowser!!.jbCefClient.dispose()
+                    jbCefBrowser = null
+                } catch (e: Exception) {
+                    println("Error cleaning up existing browser: ${e.message}")
+                }
+            }
+            
             try {
                 jbCefBrowser = JBCefBrowser().apply {
                     component.apply {
@@ -57,8 +68,9 @@ class JcefMarkdownRenderer(
                         minimumSize = Dimension(200, 100)
                     }
     
-                    // Load the initial HTML template
-                    loadHTML(themeManager.createBaseHtml(), "http://aider.local/")
+                    // Load the initial HTML template with a unique URL to avoid caching issues
+                    val timestamp = System.currentTimeMillis()
+                    loadHTML(themeManager.createBaseHtml(), "http://aider.local/?t=$timestamp")
     
                     // Set a load handler
                     val client: JBCefClient = this.jbCefClient
@@ -67,15 +79,25 @@ class JcefMarkdownRenderer(
                             // Only act on main frame (main frame has no parent)
                             if (frame != null && frame.parent == null) {
                                 contentReady = true
-                                // Paint whatever arrived before the page was ready
-                                pendingMarkdown.lastOrNull()?.let { 
-                                    SwingUtilities.invokeLater { 
+                                // Process any pending content with a slight delay to ensure the page is fully rendered
+                                pendingMarkdown.lastOrNull()?.let { content ->
+                                    SwingUtilities.invokeLater {
                                         try {
-                                            updateContent(it)
+                                            // Small delay to ensure browser is fully initialized
+                                            javax.swing.Timer(100, { _ ->
+                                                try {
+                                                    updateContent(content)
+                                                } catch (e: Exception) {
+                                                    println("Error updating content after page load: ${e.message}")
+                                                }
+                                            }).apply {
+                                                isRepeats = false
+                                                start()
+                                            }
                                         } catch (e: Exception) {
-                                            println("Error updating content after page load: ${e.message}")
+                                            println("Error scheduling content update: ${e.message}")
                                         }
-                                    } 
+                                    }
                                 }
                             }
                         }
@@ -97,6 +119,7 @@ class JcefMarkdownRenderer(
                         ) {
                             println("JCEF load error: $errorText (code: $errorCode, URL: $failedUrl)")
                             // Don't mark as ready if there was an error loading the initial page
+                            contentReady = false
                         }
     
                         override fun onLoadingStateChange(
@@ -105,12 +128,17 @@ class JcefMarkdownRenderer(
                             canGoBack: Boolean,
                             canGoForward: Boolean
                         ) {
-                            // Not needed
+                            // When loading completes, mark as ready
+                            if (!isLoading) {
+                                contentReady = true
+                            }
                         }
                     }, this.cefBrowser)
                 }
     
                 mainPanel.add(jbCefBrowser!!.component, BorderLayout.CENTER)
+                mainPanel.revalidate()
+                mainPanel.repaint()
             } catch (e: NoClassDefFoundError) {
                 // This can happen if JCEF classes are missing at runtime
                 throw IllegalStateException("JCEF classes not available: ${e.message}")
@@ -155,36 +183,42 @@ class JcefMarkdownRenderer(
                 // Check if browser is properly initialized
                 if (browser.cefBrowser == null) {
                     println("Cannot update content: CEF browser is null")
+                    // Try to reinitialize the browser
+                    initializeJcefBrowser()
                     return
                 }
                 
-                // Use JavaScript to update the content
+                // First try direct HTML loading which is more reliable
+                try {
+                    browser.loadHTML(themeManager.createHtmlWithContent(html), "http://aider.local/")
+                    return
+                } catch (e: Exception) {
+                    println("Failed direct HTML loading, falling back to JavaScript: ${e.message}")
+                }
+                
+                // Fallback: Use JavaScript to update the content
                 val escapedHtml = org.apache.commons.text
                     .StringEscapeUtils.escapeEcmaScript(html)
-                val script = "updateContent('$escapedHtml');"
+                val script = "try { updateContent('$escapedHtml'); } catch(e) { document.getElementById('content').innerHTML = '$escapedHtml'; }"
                 
                 try {
                     browser.cefBrowser.executeJavaScript(script, browser.cefBrowser.url, 0)
-                } catch (e: NullPointerException) {
-                    println("NullPointerException during JavaScript execution: ${e.message}")
-                    // Fallback to full page reload if JavaScript execution fails due to NPE
-                    try {
-                        browser.loadHTML(themeManager.createHtmlWithContent(html))
-                    } catch (e2: Exception) {
-                        println("Failed to load HTML content: ${e2.message}")
-                    }
                 } catch (e: Exception) {
-                    println("Error updating browser content: ${e.message}")
-                    // Fallback to full page reload if JavaScript execution fails
+                    println("Error during JavaScript execution: ${e.message}")
+                    // Last resort: full page reload
                     try {
-                        browser.loadHTML(themeManager.createHtmlWithContent(html))
+                        browser.loadHTML(themeManager.createHtmlWithContent(html), "http://aider.local/")
                     } catch (e2: Exception) {
-                        println("Failed to load HTML content: ${e2.message}")
+                        println("Failed all content update methods: ${e2.message}")
                     }
                 }
             } catch (e: Exception) {
                 println("Error accessing browser: ${e.message}")
             }
+        } ?: run {
+            // Browser is null, try to reinitialize
+            println("Browser is null, attempting to reinitialize")
+            initializeJcefBrowser()
         }
     }
 
