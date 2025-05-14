@@ -116,6 +116,27 @@ class MarkdownDialog(
 //        foreground = JBColor(Color(0, 100, 0), Color(144, 238, 144)) // Dark green/light green
         addActionListener { onCreatePlanClicked() }
     }
+    
+    private var showDevToolsButton = JButton("Show DevTools").apply {
+        mnemonic = KeyEvent.VK_D
+        isVisible = false
+        toolTipText = "Open Chrome DevTools for debugging the markdown viewer"
+        icon = AllIcons.Actions.StartDebugger
+        addActionListener { 
+            isEnabled = false
+            if (markdownViewer.showDevTools()) {
+                text = "DevTools Opened"
+            } else {
+                text = "DevTools Failed"
+                Timer().schedule(2000) {
+                    invokeLater {
+                        text = "Show DevTools"
+                        isEnabled = true
+                    }
+                }
+            }
+        }
+    }
 
     private fun onCreatePlanClicked() {
         if (isProcessFinished && commandData != null) {
@@ -226,6 +247,7 @@ class MarkdownDialog(
         buttonPanel.add(closeButton)
         buttonPanel.add(closeAndContinueButton)
         buttonPanel.add(createPlanButton)
+        buttonPanel.add(showDevToolsButton)
         buttonPanel.add(keepOpenButton)
         add(buttonPanel, BorderLayout.SOUTH)
 
@@ -241,6 +263,10 @@ class MarkdownDialog(
             }
         })
         markdownViewer.setMarkdown(initialText)
+        
+        // Check if DevTools are supported and make the button visible
+        showDevToolsButton.isVisible = markdownViewer.showDevTools()
+        
         positionOnSameScreen()
     }
 

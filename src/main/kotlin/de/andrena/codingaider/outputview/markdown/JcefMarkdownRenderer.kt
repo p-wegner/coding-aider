@@ -158,6 +158,25 @@ class JcefMarkdownRenderer(
     /**
      * Releases resources used by the renderer
      */
+    /**
+     * Shows Chrome DevTools for the JCEF browser
+     * @return true if DevTools were shown, false otherwise
+     */
+    override fun showDevTools(): Boolean {
+        if (isDisposed || jbCefBrowser == null) {
+            return false
+        }
+        
+        try {
+            jbCefBrowser?.cefBrowser?.devTools?.showDevTools()
+            return true
+        } catch (e: Exception) {
+            println("Error showing DevTools: ${e.message}")
+            e.printStackTrace()
+            return false
+        }
+    }
+    
     override fun dispose() {
         if (!isDisposed) {
             isDisposed = true

@@ -36,4 +36,12 @@ class MarkdownJcefViewer(private val lookupPaths: List<String> = emptyList()) {
     fun setDarkTheme(dark: Boolean) {
         markdownViewer.setDarkTheme(dark)
     }
+    
+    /**
+     * Shows developer tools if supported by the renderer
+     * @return true if developer tools were shown, false otherwise
+     */
+    fun showDevTools(): Boolean {
+        return markdownViewer.showDevTools()
+    }
 }

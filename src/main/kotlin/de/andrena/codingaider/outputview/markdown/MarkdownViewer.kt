@@ -63,6 +63,17 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
         renderer.setDarkTheme(dark)
     }
     
+    /**
+     * Shows developer tools if supported by the renderer
+     * @return true if developer tools were shown, false otherwise
+     */
+    fun showDevTools(): Boolean {
+        if (isDisposed) {
+            return false
+        }
+        return renderer.showDevTools()
+    }
+    
     fun dispose() {
         if (!isDisposed) {
             isDisposed = true
