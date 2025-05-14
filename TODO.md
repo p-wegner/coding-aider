@@ -10,3 +10,4 @@
 - [ ] Feature: Extend documentation actions to allow selecting type of documentation: technical, PRD, ... (make configurable comparable to test creation?)
 - [ ] count first plan execution in history
 - [ ] Bug: automatic plan continuation fails to detect plan end properly
+- [ ] Bug: plan cost calculation fails to detect model properly
