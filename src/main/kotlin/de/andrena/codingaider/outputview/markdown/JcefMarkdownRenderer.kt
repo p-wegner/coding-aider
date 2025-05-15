@@ -68,11 +68,8 @@ class JcefMarkdownRenderer(
                         minimumSize = Dimension(200, 100)
                     }
 
-                    // Load a fixed URL for debugging purposes
-                    loadURL("https://www.google.com")
-                    
-                    // Uncomment this line when debugging is complete:
-                    // loadHTML(themeManager.createBaseHtml(), "http://aider.local/?t=${System.currentTimeMillis()}")
+                    // Load the base HTML template
+                    loadHTML(themeManager.createBaseHtml(), "http://aider.local/?t=${System.currentTimeMillis()}")
 
                     // Set a load handler
                     val client: JBCefClient = this.jbCefClient
@@ -178,38 +175,6 @@ class JcefMarkdownRenderer(
             return
         }
 
-        // For debugging: instead of trying to process and render markdown,
-        // just load a known working URL to verify the browser component works
-        jbCefBrowser?.let { browser ->
-            try {
-                // Log the content we're trying to render for debugging
-                println("DEBUG: Attempting to render markdown content (length: ${markdown.length})")
-                
-                // Load a fixed URL instead of trying to render custom content
-                browser.loadURL("https://www.google.com")
-                
-                // Add a debug message to the console
-                try {
-                    browser.cefBrowser.executeJavaScript(
-                        "console.log('Debug: Content update requested at ${System.currentTimeMillis()}');", 
-                        browser.cefBrowser.url, 
-                        0
-                    )
-                } catch (e: Exception) {
-                    println("Debug JS execution failed: ${e.message}")
-                }
-                
-            } catch (e: Exception) {
-                println("Error loading debug URL: ${e.message}")
-                e.printStackTrace()
-            }
-        } ?: run {
-            // Browser is null, try to reinitialize
-            println("Browser is null, attempting to reinitialize")
-            initializeJcefBrowser()
-        }
-        
-        /* Original implementation - commented out for debugging
         val html = contentProcessor.processMarkdown(markdown, themeManager.isDarkTheme)
 
         jbCefBrowser?.let { browser ->
@@ -256,8 +221,11 @@ class JcefMarkdownRenderer(
             } catch (e: Exception) {
                 println("Error accessing browser: ${e.message}")
             }
+        } ?: run {
+            // Browser is null, try to reinitialize
+            println("Browser is null, attempting to reinitialize")
+            initializeJcefBrowser()
         }
-        */
     }
 
     override fun setDarkTheme(isDarkTheme: Boolean) {
