@@ -49,7 +49,7 @@ class JcefMarkdownRenderer(
             if (!JBCefApp.isSupported()) {
                 throw IllegalStateException("JCEF is not supported on this platform")
             }
-            
+
             // Clean up any existing browser instance
             if (jbCefBrowser != null) {
                 try {
@@ -60,18 +60,20 @@ class JcefMarkdownRenderer(
                     println("Error cleaning up existing browser: ${e.message}")
                 }
             }
-            
+
             try {
                 jbCefBrowser = JBCefBrowser().apply {
                     component.apply {
                         isFocusable = true
                         minimumSize = Dimension(200, 100)
                     }
-    
+
                     // Load the initial HTML template with a unique URL to avoid caching issues
                     val timestamp = System.currentTimeMillis()
-                    loadHTML(themeManager.createBaseHtml(), "http://aider.local/?t=$timestamp")
-    
+
+//                    loadHTML(themeManager.createBaseHtml(), "http://aider.local/?t=$timestamp")
+                    loadURL("https://example.com")
+
                     // Set a load handler
                     val client: JBCefClient = this.jbCefClient
                     client.addLoadHandler(object : CefLoadHandler {
@@ -101,7 +103,7 @@ class JcefMarkdownRenderer(
                                 }
                             }
                         }
-    
+
                         override fun onLoadStart(
                             browser: CefBrowser?,
                             frame: CefFrame?,
@@ -109,7 +111,7 @@ class JcefMarkdownRenderer(
                         ) {
                             // Not needed
                         }
-    
+
                         override fun onLoadError(
                             browser: CefBrowser?,
                             frame: CefFrame?,
@@ -121,7 +123,7 @@ class JcefMarkdownRenderer(
                             // Don't mark as ready if there was an error loading the initial page
                             contentReady = false
                         }
-    
+
                         override fun onLoadingStateChange(
                             browser: CefBrowser?,
                             isLoading: Boolean,
@@ -135,7 +137,7 @@ class JcefMarkdownRenderer(
                         }
                     }, this.cefBrowser)
                 }
-    
+
                 mainPanel.add(jbCefBrowser!!.component, BorderLayout.CENTER)
                 mainPanel.revalidate()
                 mainPanel.repaint()
@@ -158,7 +160,7 @@ class JcefMarkdownRenderer(
         if (isDisposed) {
             return
         }
-        
+
         currentContent = markdown
 
         if (!contentReady) {
@@ -175,7 +177,7 @@ class JcefMarkdownRenderer(
         if (isDisposed) {
             return
         }
-        
+
         val html = contentProcessor.processMarkdown(markdown, themeManager.isDarkTheme)
 
         jbCefBrowser?.let { browser ->
@@ -187,7 +189,7 @@ class JcefMarkdownRenderer(
                     initializeJcefBrowser()
                     return
                 }
-                
+
                 // First try direct HTML loading which is more reliable
                 try {
                     browser.loadHTML(
@@ -198,12 +200,13 @@ class JcefMarkdownRenderer(
                 } catch (e: Exception) {
                     println("Failed direct HTML loading, falling back to JavaScript: ${e.message}")
                 }
-                
+
                 // Fallback: Use JavaScript to update the content
                 val escapedHtml = org.apache.commons.text
                     .StringEscapeUtils.escapeEcmaScript(html)
-                val script = "try { updateContent('$escapedHtml'); } catch(e) { document.getElementById('content').innerHTML = '$escapedHtml'; }"
-                
+                val script =
+                    "try { updateContent('$escapedHtml'); } catch(e) { document.getElementById('content').innerHTML = '$escapedHtml'; }"
+
                 try {
                     browser.cefBrowser.executeJavaScript(script, browser.cefBrowser.url, 0)
                 } catch (e: Exception) {
@@ -232,30 +235,30 @@ class JcefMarkdownRenderer(
         if (isDisposed) {
             return
         }
-        
+
         if (themeManager.updateTheme(isDarkTheme) && currentContent.isNotEmpty()) {
             // Reload with new theme
             jbCefBrowser?.loadHTML(themeManager.createBaseHtml())
             setMarkdown(currentContent)
         }
     }
-    
+
     override fun supportsDevTools(): Boolean {
         return !isDisposed && jbCefBrowser != null
     }
-    
+
     override fun showDevTools(): Boolean {
         if (isDisposed || jbCefBrowser == null) {
             return false
         }
-        
+
         try {
             // Check if browser is properly initialized
             if (jbCefBrowser?.cefBrowser == null) {
                 println("Cannot show DevTools: CEF browser is null")
                 return false
             }
-            
+
             jbCefBrowser?.openDevtools()
             return true
         } catch (e: NullPointerException) {
@@ -268,7 +271,7 @@ class JcefMarkdownRenderer(
             return false
         }
     }
-    
+
     override fun dispose() {
         if (!isDisposed) {
             isDisposed = true
