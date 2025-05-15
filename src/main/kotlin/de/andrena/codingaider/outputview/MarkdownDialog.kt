@@ -182,10 +182,17 @@ class MarkdownDialog(
                 }
             }
         })
-        // Set optimal window dimensions based on screen size
+        // Set optimal window dimensions based on screen size with better bounds checking
         val screenSize = java.awt.Toolkit.getDefaultToolkit().screenSize
-        val optimalWidth = (screenSize.width * 0.6).toInt().coerceIn(600, 1200)
-        val optimalHeight = (screenSize.height * 0.7).toInt().coerceIn(400, 800)
+        // Ensure screen size is reasonable (handle multi-monitor setups better)
+        val validScreenWidth = screenSize.width.coerceAtLeast(800)
+        val validScreenHeight = screenSize.height.coerceAtLeast(600)
+        
+        // Calculate dimensions as percentage of screen but with reasonable min/max values
+        val optimalWidth = (validScreenWidth * 0.6).toInt().coerceIn(600, 1200)
+        val optimalHeight = (validScreenHeight * 0.7).toInt().coerceIn(400, 800)
+        
+        // Set size with validated dimensions
         preferredSize = java.awt.Dimension(optimalWidth, optimalHeight)
         minimumSize = java.awt.Dimension(500, 400)
 
