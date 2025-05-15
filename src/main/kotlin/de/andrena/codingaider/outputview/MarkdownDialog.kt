@@ -396,10 +396,41 @@ class MarkdownDialog(
 
 
     fun positionOnSameScreen() {
-        // Position dialog relative to IDE window
-        val ideFrame = WindowManager.getInstance().getIdeFrame(project)
-        ideFrame?.component?.let { parent ->
-            setLocationRelativeTo(parent)
+        try {
+            // Get the IDE frame to position relative to it
+            val ideFrame = WindowManager.getInstance().getIdeFrame(project)
+            val ideComponent = ideFrame?.component
+            
+            if (ideComponent != null && ideComponent.isShowing) {
+                // Get IDE window bounds
+                val ideLocation = ideComponent.locationOnScreen
+                val ideSize = ideComponent.size
+                
+                // Get screen device where IDE is located
+                val screenDevices = java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment().screenDevices
+                val ideScreenBounds = screenDevices
+                    .flatMap { it.configurations.toList() }
+                    .map { it.bounds }
+                    .firstOrNull { it.contains(ideLocation.x + ideSize.width/2, ideLocation.y + ideSize.height/2) }
+                    ?: java.awt.Rectangle(0, 0, 1920, 1080) // Fallback if screen not found
+                
+                // Calculate centered position on the same screen as IDE
+                val dialogSize = this.size
+                val x = (ideScreenBounds.x + (ideScreenBounds.width - dialogSize.width) / 2)
+                    .coerceIn(ideScreenBounds.x, ideScreenBounds.x + ideScreenBounds.width - dialogSize.width)
+                val y = (ideScreenBounds.y + (ideScreenBounds.height - dialogSize.height) / 2)
+                    .coerceIn(ideScreenBounds.y, ideScreenBounds.y + ideScreenBounds.height - dialogSize.height)
+                
+                // Set location with validated coordinates
+                this.setLocation(x, y)
+            } else {
+                // Fallback to center on primary screen
+                this.setLocationRelativeTo(null)
+            }
+        } catch (e: Exception) {
+            // Fallback in case of any error
+            println("Error positioning dialog: ${e.message}")
+            this.setLocationRelativeTo(null)
         }
     }
 
