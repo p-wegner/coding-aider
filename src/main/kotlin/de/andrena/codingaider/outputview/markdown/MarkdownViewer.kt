@@ -4,6 +4,7 @@ import com.intellij.ui.JBColor
 import com.intellij.ui.jcef.JBCefApp
 import java.awt.BorderLayout
 import java.awt.Dimension
+import java.util.TimerTask
 import javax.swing.JComponent
 import javax.swing.JPanel
 
@@ -58,32 +59,34 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
         if (isDisposed) {
             return
         }
-        
+
         // Never feed an empty string to the renderer – give it one nbsp instead
         currentContent = markdown.ifBlank { " " }
-        
+
         // Try multiple times with increasing delays to handle race conditions
         // where the renderer might not be fully initialized
         try {
             renderer.setMarkdown(currentContent)
-            
+
             // Schedule additional attempts with delays to ensure content is displayed
             for (delay in listOf(100L, 300L, 600L)) {
-                java.util.Timer().schedule(delay) {
-                    try {
-                        if (!isDisposed) {
-                            javax.swing.SwingUtilities.invokeLater {
-                                try {
-                                    renderer.setMarkdown(currentContent)
-                                } catch (e: Exception) {
-                                    println("Error in delayed markdown update (${delay}ms): ${e.message}")
+                java.util.Timer().schedule(object : TimerTask() {
+                    override fun run() {
+                        try {
+                            if (!isDisposed) {
+                                javax.swing.SwingUtilities.invokeLater {
+                                    try {
+                                        renderer.setMarkdown(currentContent)
+                                    } catch (e: Exception) {
+                                        println("Error in delayed markdown update (${delay}ms): ${e.message}")
+                                    }
                                 }
                             }
+                        } catch (e: Exception) {
+                            println("Error scheduling delayed update: ${e.message}")
                         }
-                    } catch (e: Exception) {
-                        println("Error scheduling delayed update: ${e.message}")
                     }
-                }
+                }, delay)
             }
         } catch (e: Exception) {
             println("Error in initial markdown update: ${e.message}")
@@ -97,7 +100,7 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
         }
         renderer.setDarkTheme(dark)
     }
-    
+
     /**
      * Checks if developer tools are supported
      * @return true if developer tools are supported, false otherwise
@@ -108,7 +111,7 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
         }
         return renderer.supportsDevTools()
     }
-    
+
     /**
      * Shows developer tools if supported by the renderer
      * @return true if developer tools were shown, false otherwise
@@ -119,7 +122,7 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
         }
         return renderer.showDevTools()
     }
-    
+
     fun dispose() {
         if (!isDisposed) {
             isDisposed = true

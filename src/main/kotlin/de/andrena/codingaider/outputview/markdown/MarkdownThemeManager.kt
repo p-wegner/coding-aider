@@ -289,7 +289,10 @@ class MarkdownThemeManager {
     }
 
     fun createHtmlWithContent(content: String): String {
-        val baseHtml = createBaseHtml()
-        return baseHtml.replace("<div id=\"content\"></div>", "<div id=\"content\">$content</div>")
+        val placeholder = Regex(
+            """<div\s+id\s*=\s*["']content["'][^>]*>.*?</div>""",
+            RegexOption.DOT_MATCHES_ALL
+        )
+        return createBaseHtml().replaceFirst(placeholder, """<div id="content">$content</div>""")
     }
 }

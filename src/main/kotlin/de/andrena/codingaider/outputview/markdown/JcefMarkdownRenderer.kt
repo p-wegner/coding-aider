@@ -190,7 +190,10 @@ class JcefMarkdownRenderer(
                 
                 // First try direct HTML loading which is more reliable
                 try {
-                    browser.loadHTML(themeManager.createHtmlWithContent(html), "http://aider.local/")
+                    browser.loadHTML(
+                        themeManager.createHtmlWithContent(html),
+                        "http://aider.local/update?ts=${System.currentTimeMillis()}"
+                    )
                     return
                 } catch (e: Exception) {
                     println("Failed direct HTML loading, falling back to JavaScript: ${e.message}")
@@ -207,7 +210,10 @@ class JcefMarkdownRenderer(
                     println("Error during JavaScript execution: ${e.message}")
                     // Last resort: full page reload
                     try {
-                        browser.loadHTML(themeManager.createHtmlWithContent(html), "http://aider.local/")
+                        browser.loadHTML(
+                            themeManager.createHtmlWithContent(html),
+                            "http://aider.local/update?ts=${System.currentTimeMillis()}"
+                        )
                     } catch (e2: Exception) {
                         println("Failed all content update methods: ${e2.message}")
                     }
