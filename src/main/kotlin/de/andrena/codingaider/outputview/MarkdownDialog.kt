@@ -290,7 +290,7 @@ class MarkdownDialog(
                     val wasNearBottom = scrollBar.value >= (scrollBar.maximum - scrollBar.visibleAmount - 10)
 
                     // Update content - force a non-empty string
-                    val contentToSet = if (newContent.isBlank()) " " else newContent
+                    val contentToSet = newContent.ifBlank { " " }
                     markdownViewer.setMarkdown(contentToSet)
 
                     // Schedule multiple scroll attempts with increasing delays
