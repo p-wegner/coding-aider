@@ -116,33 +116,44 @@ class JcefMarkdownRenderer(
     }
     
     private fun loadInitialContent() {
-        // Load the initial HTML with the theme manager's base template
-        val baseHtml = themeManager.createBaseHtml()
-        browser.loadHTML(baseHtml)
-        
-        // Add a JavaScript callback to notify when the page is ready
-        if (jsQueryInitialized && jsQuery != null) {
-            try {
-                browser.cefBrowser.executeJavaScript("""
-                    if (document.readyState === 'complete') {
-                        window.javaCallback('ready');
-                    } else {
-                        document.addEventListener('DOMContentLoaded', function() {
-                            window.javaCallback = function(message) {
-                                ${jsQuery?.inject("message") ?: "console.log(message)"};
-                            };
+        try {
+            // Load the initial HTML with the theme manager's base template
+            val baseHtml = themeManager.createBaseHtml()
+            browser.loadHTML(baseHtml)
+            
+            // Add a JavaScript callback to notify when the page is ready
+            if (jsQueryInitialized && jsQuery != null) {
+                try {
+                    browser.cefBrowser.executeJavaScript("""
+                        if (document.readyState === 'complete') {
                             window.javaCallback('ready');
-                        });
-                    }
-                """.trimIndent(), browser.cefBrowser.url, 0)
-            } catch (e: Exception) {
-                logger.warn("Failed to inject JavaScript callback: ${e.message}")
-                // Mark as initialized anyway so we can continue without JS communication
+                        } else {
+                            document.addEventListener('DOMContentLoaded', function() {
+                                window.javaCallback = function(message) {
+                                    ${jsQuery?.inject("message") ?: "console.log(message)"};
+                                };
+                                window.javaCallback('ready');
+                            });
+                        }
+                    """.trimIndent(), browser.cefBrowser.url, 0)
+                } catch (e: Exception) {
+                    logger.warn("Failed to inject JavaScript callback: ${e.message}", e)
+                    // Mark as initialized anyway so we can continue without JS communication
+                    isInitialized.set(true)
+                }
+            } else {
+                // If JS bridge failed to initialize, mark as initialized anyway
                 isInitialized.set(true)
             }
-        } else {
-            // If JS bridge failed to initialize, mark as initialized anyway
-            isInitialized.set(true)
+            
+            // Force a small initial content to ensure the page is properly initialized
+            browser.cefBrowser.executeJavaScript(
+                "document.getElementById('content').innerHTML = '<p>Initializing...</p>';",
+                browser.cefBrowser.url, 0
+            )
+        } catch (e: Exception) {
+            logger.error("Error in loadInitialContent", e)
+            isInitialized.set(true) // Ensure we don't get stuck
         }
         
         // Schedule a check to ensure initialization completes
@@ -209,10 +220,12 @@ class JcefMarkdownRenderer(
             val escapedHtml = escapeJavaScriptString(html)
             
             try {
-                // First try using the updateContent function from the JS
+                // First try using directUpdateContent which is more reliable
                 val updateScript = """
                     try {
-                        if (typeof updateContent === 'function') {
+                        if (typeof directUpdateContent === 'function') {
+                            directUpdateContent(`$escapedHtml`);
+                        } else if (typeof updateContent === 'function') {
                             updateContent(`$escapedHtml`);
                         } else {
                             // Fallback to direct DOM manipulation
@@ -225,6 +238,14 @@ class JcefMarkdownRenderer(
                                 }
                             } else {
                                 console.error('Content element not found');
+                                // Try to create the content element if it doesn't exist
+                                const bodyElement = document.body;
+                                if (bodyElement) {
+                                    const newContentElement = document.createElement('div');
+                                    newContentElement.id = 'content';
+                                    newContentElement.innerHTML = `$escapedHtml`;
+                                    bodyElement.appendChild(newContentElement);
+                                }
                             }
                         }
                     } catch(e) {
@@ -236,9 +257,9 @@ class JcefMarkdownRenderer(
                 jsErrorCount = 0 // Reset error count on success
             } catch (e: Exception) {
                 jsErrorCount++
-                logger.warn("Error executing JavaScript (attempt $jsErrorCount): ${e.message}")
+                logger.warn("Error executing JavaScript (attempt $jsErrorCount): ${e.message}", e)
                 
-                if (jsErrorCount > 3) {
+                if (jsErrorCount > 2) {
                     // After multiple failures, try reloading the page with the content directly
                     try {
                         val fullHtml = themeManager.createHtmlWithContent(html)
@@ -246,6 +267,30 @@ class JcefMarkdownRenderer(
                         jsErrorCount = 0 // Reset after reload attempt
                     } catch (reloadEx: Exception) {
                         logger.error("Failed to reload page with content", reloadEx)
+                        
+                        // Last resort: try to create a completely new browser instance
+                        if (jsErrorCount > 5) {
+                            try {
+                                // Force a complete reload with minimal HTML
+                                browser.loadHTML("<html><body><div id='content'>Loading...</div></body></html>")
+                                
+                                // After a short delay, try to update the content again
+                                java.util.Timer().schedule(object : java.util.TimerTask() {
+                                    override fun run() {
+                                        try {
+                                            browser.cefBrowser.executeJavaScript(
+                                                "document.getElementById('content').innerHTML = `$escapedHtml`;",
+                                                browser.cefBrowser.url, 0
+                                            )
+                                        } catch (e: Exception) {
+                                            logger.error("Failed in last resort content update", e)
+                                        }
+                                    }
+                                }, 500)
+                            } catch (e: Exception) {
+                                logger.error("Failed in emergency reload", e)
+                            }
+                        }
                     }
                 }
             }

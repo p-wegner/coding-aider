@@ -71,7 +71,7 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
 
             // Schedule additional attempts with delays to ensure content is displayed
             // Use a more reliable approach with fewer, more strategic attempts
-            for (delay in listOf(200L, 500L, 1000L)) {
+            for (delay in listOf(200L, 500L, 1000L, 2000L)) {
                 java.util.Timer().schedule(object : TimerTask() {
                     override fun run() {
                         try {
@@ -83,17 +83,35 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
                                             renderer.setMarkdown(currentContent)
                                             
                                             // For the last attempt, try to scroll to bottom if needed
-                                            if (delay == 1000L) {
+                                            if (delay == 2000L) {
                                                 renderer.scrollToBottom()
                                             }
+                                        } else if (delay == 2000L) {
+                                            // Last attempt - force update even if not ready
+                                            println("Forcing markdown update after timeout")
+                                            renderer.setMarkdown(currentContent)
+                                            renderer.scrollToBottom()
                                         }
                                     } catch (e: Exception) {
                                         println("Error in delayed markdown update (${delay}ms): ${e.message}")
+                                        e.printStackTrace()
+                                        
+                                        // On the last attempt, try a more direct approach if everything else failed
+                                        if (delay == 2000L && renderer is JcefMarkdownRenderer) {
+                                            try {
+                                                println("Attempting emergency content update")
+                                                // Try to directly set some content to make sure something appears
+                                                (renderer as JcefMarkdownRenderer).updateContent("**Emergency content update** - Please reload the view if content is missing.")
+                                            } catch (e2: Exception) {
+                                                println("Emergency update failed: ${e2.message}")
+                                            }
+                                        }
                                     }
                                 }
                             }
                         } catch (e: Exception) {
                             println("Error scheduling delayed update: ${e.message}")
+                            e.printStackTrace()
                         }
                     }
                 }, delay)
@@ -112,11 +130,13 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
                                     renderer.setMarkdown(currentContent)
                                 } catch (e: Exception) {
                                     println("Error in recovery markdown update: ${e.message}")
+                                    e.printStackTrace()
                                 }
                             }
                         }
                     } catch (e: Exception) {
                         println("Error scheduling recovery update: ${e.message}")
+                        e.printStackTrace()
                     }
                 }
             }, 100L)
