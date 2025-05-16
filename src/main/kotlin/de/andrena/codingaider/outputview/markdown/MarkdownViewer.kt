@@ -78,6 +78,11 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
                                 javax.swing.SwingUtilities.invokeLater {
                                     try {
                                         renderer.setMarkdown(currentContent)
+                                        
+                                        // For the last attempt, try to scroll to bottom if needed
+                                        if (delay == 600L) {
+                                            renderer.scrollToBottom()
+                                        }
                                     } catch (e: Exception) {
                                         println("Error in delayed markdown update (${delay}ms): ${e.message}")
                                     }
@@ -93,6 +98,16 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
             println("Error in initial markdown update: ${e.message}")
             e.printStackTrace()
         }
+    }
+    
+    /**
+     * Scrolls to the bottom of the content
+     */
+    fun scrollToBottom() {
+        if (isDisposed) {
+            return
+        }
+        renderer.scrollToBottom()
     }
 
     fun setDarkTheme(dark: Boolean) {
