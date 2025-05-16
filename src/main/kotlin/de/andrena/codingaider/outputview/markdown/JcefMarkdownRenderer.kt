@@ -2,6 +2,7 @@ package de.andrena.codingaider.outputview.markdown
 
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.ui.jcef.JBCefBrowser
+import com.intellij.ui.jcef.JBCefBrowserBase
 import com.intellij.ui.jcef.JBCefJSQuery
 import org.cef.browser.CefBrowser
 import org.cef.handler.CefLoadHandlerAdapter
@@ -27,7 +28,7 @@ class JcefMarkdownRenderer(
     
     // Main UI components
     private val mainPanel = JPanel(BorderLayout())
-    private val browser = JBCefBrowser()
+    private val browser: JBCefBrowserBase = JBCefBrowser()
     
     // JavaScript communication
     private var jsQuery: JBCefJSQuery? = null
@@ -91,7 +92,7 @@ class JcefMarkdownRenderer(
             // Create a JavaScript query handler for communication from JS to Java
             // Wrap in try-catch to handle potential NullPointerException in JBCefJSQuery.create
             try {
-                jsQuery = JBCefJSQuery.create(browser)
+                jsQuery = JBCefJSQuery.create(browser )
             } catch (e: Exception) {
                 logger.warn("Failed to create JBCefJSQuery object: ${e.message}", e)
                 jsQuery = null
@@ -440,7 +441,7 @@ class JcefMarkdownRenderer(
                                 browser.loadHTML("<html><body><div id='content'>Loading...</div></body></html>")
                                 
                                 // After a short delay, try to update the content again
-                                java.util.Timer().schedule(object : java.util.TimerTask() {
+                                Timer().schedule(object : TimerTask() {
                                     override fun run() {
                                         try {
                                             browser.cefBrowser.executeJavaScript(
