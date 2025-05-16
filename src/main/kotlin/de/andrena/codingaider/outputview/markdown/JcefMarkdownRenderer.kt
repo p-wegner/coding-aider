@@ -90,6 +90,15 @@ class JcefMarkdownRenderer(
         try {
             // Create a JavaScript query handler for communication from JS to Java
             jsQuery = JBCefJSQuery.create(browser)
+            
+            // Verify the query object was created successfully
+            if (jsQuery == null) {
+                logger.warn("Failed to create JavaScript query object")
+                isInitialized.set(true)
+                jsQueryInitialized = false
+                return
+            }
+            
             jsQuery?.addHandler { message ->
                 when (message) {
                     "ready" -> {
@@ -108,7 +117,7 @@ class JcefMarkdownRenderer(
             }
             jsQueryInitialized = true
         } catch (e: Exception) {
-            logger.warn("Failed to initialize JavaScript bridge: ${e.message}")
+            logger.warn("Failed to initialize JavaScript bridge: ${e.message}", e)
             // Mark as initialized anyway so we can continue without JS communication
             isInitialized.set(true)
             jsQueryInitialized = false
@@ -124,18 +133,50 @@ class JcefMarkdownRenderer(
             // Add a JavaScript callback to notify when the page is ready
             if (jsQueryInitialized && jsQuery != null) {
                 try {
-                    browser.cefBrowser.executeJavaScript("""
+                    // Use a safer approach to inject the JavaScript callback
+                    val jsCallbackCode = if (jsQuery != null) {
+                        // Create a safe version of the inject call that won't fail if objId is null
+                        val safeInject = try {
+                            jsQuery?.inject("message") ?: "console.log(message)"
+                        } catch (e: Exception) {
+                            logger.warn("Failed to create inject code, using fallback", e)
+                            "console.log(message)"
+                        }
+                        
+                        """
                         if (document.readyState === 'complete') {
-                            window.javaCallback('ready');
-                        } else {
-                            document.addEventListener('DOMContentLoaded', function() {
+                            try {
                                 window.javaCallback = function(message) {
-                                    ${jsQuery?.inject("message") ?: "console.log(message)"};
+                                    try { ${safeInject} } catch(e) { console.error('Callback error:', e); }
                                 };
                                 window.javaCallback('ready');
+                            } catch(e) { console.error('Callback setup error:', e); }
+                        } else {
+                            document.addEventListener('DOMContentLoaded', function() {
+                                try {
+                                    window.javaCallback = function(message) {
+                                        try { ${safeInject} } catch(e) { console.error('Callback error:', e); }
+                                    };
+                                    window.javaCallback('ready');
+                                } catch(e) { console.error('Callback setup error:', e); }
                             });
                         }
-                    """.trimIndent(), browser.cefBrowser.url, 0)
+                        """
+                    } else {
+                        // Fallback if jsQuery is null
+                        """
+                        console.log('JavaScript bridge not available, using fallback initialization');
+                        if (document.readyState === 'complete') {
+                            console.log('Document ready');
+                        } else {
+                            document.addEventListener('DOMContentLoaded', function() {
+                                console.log('Document ready (event)');
+                            });
+                        }
+                        """
+                    }
+                    
+                    browser.cefBrowser.executeJavaScript(jsCallbackCode.trimIndent(), browser.cefBrowser.url, 0)
                 } catch (e: Exception) {
                     logger.warn("Failed to inject JavaScript callback: ${e.message}", e)
                     // Mark as initialized anyway so we can continue without JS communication
@@ -147,10 +188,14 @@ class JcefMarkdownRenderer(
             }
             
             // Force a small initial content to ensure the page is properly initialized
-            browser.cefBrowser.executeJavaScript(
-                "document.getElementById('content').innerHTML = '<p>Initializing...</p>';",
-                browser.cefBrowser.url, 0
-            )
+            try {
+                browser.cefBrowser.executeJavaScript(
+                    "try { document.getElementById('content').innerHTML = '<p>Initializing...</p>'; } catch(e) { console.error('Init error:', e); }",
+                    browser.cefBrowser.url, 0
+                )
+            } catch (e: Exception) {
+                logger.warn("Failed to set initial content", e)
+            }
         } catch (e: Exception) {
             logger.error("Error in loadInitialContent", e)
             isInitialized.set(true) // Ensure we don't get stuck
@@ -174,10 +219,18 @@ class JcefMarkdownRenderer(
                         // Inject the JavaScript callback again as a fallback
                         if (jsQueryInitialized && jsQuery != null) {
                             try {
+                                val safeInject = try {
+                                    jsQuery?.inject("message") ?: "console.log(message)"
+                                } catch (e: Exception) {
+                                    "console.log(message)"
+                                }
+                                
                                 browser.cefBrowser.executeJavaScript("""
-                                    window.javaCallback = function(message) {
-                                        ${jsQuery?.inject("message") ?: "console.log(message)"};
-                                    };
+                                    try {
+                                        window.javaCallback = function(message) {
+                                            try { ${safeInject} } catch(e) { console.error('Callback error:', e); }
+                                        };
+                                    } catch(e) { console.error('Callback setup error:', e); }
                                 """.trimIndent(), browser.cefBrowser.url, 0)
                             } catch (e: Exception) {
                                 logger.error("Error injecting JavaScript callback", e)

@@ -236,6 +236,17 @@ class MarkdownThemeManager {
                     console.log("Java callback called with: " + message);
                 };
                 
+                // Add a fallback mechanism in case the Java bridge fails
+                window.addEventListener('error', function(event) {
+                    if (event.error && event.error.message && 
+                        event.error.message.includes('javaCallback')) {
+                        console.warn('Error in Java callback, creating fallback');
+                        window.javaCallback = function(message) {
+                            console.log("Fallback Java callback: " + message);
+                        };
+                    }
+                });
+                
                 // Ensure the document is ready before initializing
                 if (document.readyState === 'loading') {
                     document.addEventListener('DOMContentLoaded', initCollapsiblePanels);
