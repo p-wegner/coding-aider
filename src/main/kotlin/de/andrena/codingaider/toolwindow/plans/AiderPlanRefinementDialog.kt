@@ -7,7 +7,7 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.AlignY
 import com.intellij.ui.dsl.builder.panel
-import de.andrena.codingaider.outputview.MarkdownJcefViewer
+import de.andrena.codingaider.outputview.markdown.MarkdownViewer
 import de.andrena.codingaider.services.plans.AiderPlan
 import de.andrena.codingaider.services.plans.AiderPlanService
 import java.awt.Dimension
@@ -52,7 +52,7 @@ Examples:
 
     override fun createCenterPanel(): JComponent {
         // Create markdown viewer and scroll pane
-        val markdownViewer = MarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
+        val markdownViewer = MarkdownViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
             setDarkTheme(!JBColor.isBright())
             setMarkdown(plan.plan)
         }

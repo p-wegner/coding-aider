@@ -22,7 +22,7 @@ import de.andrena.codingaider.actions.aider.AiderAction
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.inputdialog.AiderInputDialog
 import de.andrena.codingaider.inputdialog.AiderMode
-import de.andrena.codingaider.outputview.MarkdownJcefViewer
+import de.andrena.codingaider.outputview.markdown.MarkdownViewer
 import de.andrena.codingaider.services.FileDataCollectionService
 import de.andrena.codingaider.services.plans.AiderPlan
 import de.andrena.codingaider.services.plans.AiderPlanPromptService
@@ -44,7 +44,7 @@ class PlanViewer(private val project: Project) {
 
     init {
         // Register for cost updates
-        project.service<PlanExecutionCostService>().addCostChangeListener { planId ->
+        service<PlanExecutionCostService>().addCostChangeListener { planId ->
             // Refresh the plan list when cost data changes
             ApplicationManager.getApplication().invokeLater {
                 // Get fresh plan data to ensure we have the latest cost information
@@ -593,7 +593,7 @@ class PlanViewer(private val project: Project) {
                 }
 
                 override fun createCenterPanel(): JComponent {
-                    val markdownViewer = MarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
+                    val markdownViewer = MarkdownViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
                         setDarkTheme(!JBColor.isBright())
                         setMarkdown(selectedPlan.plan)
                     }
@@ -830,7 +830,7 @@ class PlanViewer(private val project: Project) {
                 }
 
                 override fun createCenterPanel(): JComponent {
-                    val markdownViewer = MarkdownJcefViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
+                    val markdownViewer = MarkdownViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
                         setDarkTheme(!JBColor.isBright())
                         setMarkdown(selectedPlan.plan)
                     }
