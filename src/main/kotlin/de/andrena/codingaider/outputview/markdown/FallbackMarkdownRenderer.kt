@@ -29,7 +29,6 @@ class FallbackMarkdownRenderer(
         putClientProperty("html.disable", false)
         putClientProperty(JEditorPane.W3C_LENGTH_UNITS, true)
         
-        // Configure caret for better scrolling behavior
         (caret as? DefaultCaret)?.updatePolicy = DefaultCaret.NEVER_UPDATE
     }
     
@@ -103,13 +102,8 @@ class FallbackMarkdownRenderer(
         SwingUtilities.invokeLater {
             try {
                 editorPane.putClientProperty("charset", StandardCharsets.UTF_8.name())
-                // Ensure body text is visible in every LAF
                 val safeHtml = html.replace("color: #2b2b2b;", "color: #bbbbbb;")
-                
-                // Update content
                 editorPane.text = safeHtml
-                
-                // Restore scroll position after a short delay to allow rendering
                 restoreScrollPosition()
             } catch (e: Exception) {
                 println("Error updating content in FallbackMarkdownRenderer: ${e.message}")
@@ -172,10 +166,7 @@ class FallbackMarkdownRenderer(
         }
     }
     
-    /**
-     * Scrolls to the bottom of the content
-     */
-    fun scrollToBottom() {
+    override fun scrollToBottom() {
         if (isDisposed) {
             return
         }
@@ -203,9 +194,6 @@ class FallbackMarkdownRenderer(
         }
     }
     
-    /**
-     * Releases resources used by the renderer
-     */
     override fun dispose() {
         if (!isDisposed) {
             isDisposed = true

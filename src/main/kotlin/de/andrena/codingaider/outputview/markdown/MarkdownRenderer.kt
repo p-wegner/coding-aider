@@ -9,14 +9,6 @@ interface MarkdownRenderer {
     val isReady: Boolean
     fun showDevTools(): Boolean = false
     fun supportsDevTools(): Boolean = false
-    
-    /**
-     * Scrolls to the bottom of the content if supported by the renderer
-     */
     fun scrollToBottom() {}
-    
-    /**
-     * Releases resources used by the renderer
-     */
     fun dispose() {}
 }

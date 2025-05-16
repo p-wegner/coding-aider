@@ -113,8 +113,6 @@ class MarkdownDialog(
             "Convert this command and output into a structured plan. " +
                     "This can help implement more complex features where single requests are not enough."
         icon = AllIcons.Actions.RunAll
-        // TODO 02.05.2025 pwegner: think about if colors make sense or where to place the button
-//        foreground = JBColor(Color(0, 100, 0), Color(144, 238, 144)) // Dark green/light green
         addActionListener { onCreatePlanClicked() }
     }
     
@@ -183,27 +181,21 @@ class MarkdownDialog(
                 }
             }
         })
-        // Set optimal window dimensions based on screen size with better bounds checking
         val screenSize = java.awt.Toolkit.getDefaultToolkit().screenSize
-        // Ensure screen size is reasonable (handle multi-monitor setups better)
         val validScreenWidth = screenSize.width.coerceAtLeast(800)
         val validScreenHeight = screenSize.height.coerceAtLeast(600)
         
-        // Calculate dimensions as percentage of screen but with reasonable min/max values
         val optimalWidth = (validScreenWidth * 0.6).toInt().coerceIn(600, 1200)
         val optimalHeight = (validScreenHeight * 0.7).toInt().coerceIn(400, 800)
         
-        // Set size with validated dimensions
         preferredSize = java.awt.Dimension(optimalWidth, optimalHeight)
         minimumSize = java.awt.Dimension(500, 400)
 
-        // Use weighted layout for better content scaling
         layout = BorderLayout(10, 10)
         pack()
         setLocationRelativeTo(null)
-        // Add scroll pane with proper weighting
         val contentPanel = JPanel(BorderLayout(0, 0)).apply {
-            border = javax.swing.BorderFactory.createEmptyBorder(5, 5, 5, 5)
+            border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
             add(scrollPane, BorderLayout.CENTER)
         }
         add(contentPanel, BorderLayout.CENTER)
@@ -272,8 +264,7 @@ class MarkdownDialog(
         })
         markdownViewer.setMarkdown(initialText)
         
-        // Check if DevTools are supported and if the setting is enabled
-        showDevToolsButton.isVisible = markdownViewer.supportsDevTools() && 
+        showDevToolsButton.isVisible = markdownViewer.supportsDevTools() &&
                                        getInstance().showMarkdownDevTools
         
         positionOnSameScreen()

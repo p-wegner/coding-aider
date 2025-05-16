@@ -100,16 +100,6 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
         }
     }
     
-    /**
-     * Scrolls to the bottom of the content
-     */
-    fun scrollToBottom() {
-        if (isDisposed) {
-            return
-        }
-        renderer.scrollToBottom()
-    }
-
     fun setDarkTheme(dark: Boolean) {
         if (isDisposed) {
             return
@@ -117,10 +107,6 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
         renderer.setDarkTheme(dark)
     }
 
-    /**
-     * Checks if developer tools are supported
-     * @return true if developer tools are supported, false otherwise
-     */
     fun supportsDevTools(): Boolean {
         if (isDisposed) {
             return false
@@ -128,10 +114,6 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
         return renderer.supportsDevTools()
     }
 
-    /**
-     * Shows developer tools if supported by the renderer
-     * @return true if developer tools were shown, false otherwise
-     */
     fun showDevTools(): Boolean {
         if (isDisposed) {
             return false
