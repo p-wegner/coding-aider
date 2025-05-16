@@ -3,7 +3,6 @@ package de.andrena.codingaider.outputview.markdown
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.ui.jcef.JBCefBrowser
 import com.intellij.ui.jcef.JBCefJSQuery
-import com.intellij.util.ui.UIUtil
 import org.cef.browser.CefBrowser
 import org.cef.handler.CefLoadHandlerAdapter
 import java.awt.BorderLayout
