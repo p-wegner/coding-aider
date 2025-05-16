@@ -30,12 +30,14 @@ class JcefMarkdownRenderer(
     private val browser = JBCefBrowser()
     
     // JavaScript communication
-    private val jsQuery = JBCefJSQuery.create(browser)
+    private var jsQuery: JBCefJSQuery? = null
+    private var jsQueryInitialized = false
     
     // Content state
     private var currentContent = ""
     private var pendingContent: String? = null
     private var pendingThemeUpdate = false
+    private var jsErrorCount = 0
     
     init {
         try {
@@ -85,22 +87,31 @@ class JcefMarkdownRenderer(
     }
     
     private fun setupJavaScriptBridge() {
-        // Create a JavaScript query handler for communication from JS to Java
-        jsQuery.addHandler { message ->
-            when (message) {
-                "ready" -> {
-                    isInitialized.set(true)
-                    null
-                }
-                "scrolled" -> {
-                    // Handle scroll events from JavaScript if needed
-                    null
-                }
-                else -> {
-                    logger.info("Received message from JavaScript: $message")
-                    null
+        try {
+            // Create a JavaScript query handler for communication from JS to Java
+            jsQuery = JBCefJSQuery.create(browser)
+            jsQuery?.addHandler { message ->
+                when (message) {
+                    "ready" -> {
+                        isInitialized.set(true)
+                        null
+                    }
+                    "scrolled" -> {
+                        // Handle scroll events from JavaScript if needed
+                        null
+                    }
+                    else -> {
+                        logger.info("Received message from JavaScript: $message")
+                        null
+                    }
                 }
             }
+            jsQueryInitialized = true
+        } catch (e: Exception) {
+            logger.warn("Failed to initialize JavaScript bridge: ${e.message}")
+            // Mark as initialized anyway so we can continue without JS communication
+            isInitialized.set(true)
+            jsQueryInitialized = false
         }
     }
     
@@ -110,18 +121,29 @@ class JcefMarkdownRenderer(
         browser.loadHTML(baseHtml)
         
         // Add a JavaScript callback to notify when the page is ready
-        browser.cefBrowser.executeJavaScript("""
-            if (document.readyState === 'complete') {
-                window.javaCallback('ready');
-            } else {
-                document.addEventListener('DOMContentLoaded', function() {
-                    window.javaCallback = function(message) {
-                        ${jsQuery.inject("message")};
-                    };
-                    window.javaCallback('ready');
-                });
+        if (jsQueryInitialized && jsQuery != null) {
+            try {
+                browser.cefBrowser.executeJavaScript("""
+                    if (document.readyState === 'complete') {
+                        window.javaCallback('ready');
+                    } else {
+                        document.addEventListener('DOMContentLoaded', function() {
+                            window.javaCallback = function(message) {
+                                ${jsQuery?.inject("message") ?: "console.log(message)"};
+                            };
+                            window.javaCallback('ready');
+                        });
+                    }
+                """.trimIndent(), browser.cefBrowser.url, 0)
+            } catch (e: Exception) {
+                logger.warn("Failed to inject JavaScript callback: ${e.message}")
+                // Mark as initialized anyway so we can continue without JS communication
+                isInitialized.set(true)
             }
-        """.trimIndent(), browser.cefBrowser.url, 0)
+        } else {
+            // If JS bridge failed to initialize, mark as initialized anyway
+            isInitialized.set(true)
+        }
         
         // Schedule a check to ensure initialization completes
         Timer().schedule(object : TimerTask() {
@@ -139,14 +161,16 @@ class JcefMarkdownRenderer(
                         }
                         
                         // Inject the JavaScript callback again as a fallback
-                        try {
-                            browser.cefBrowser.executeJavaScript("""
-                                window.javaCallback = function(message) {
-                                    ${jsQuery.inject("message")};
-                                };
-                            """.trimIndent(), browser.cefBrowser.url, 0)
-                        } catch (e: Exception) {
-                            logger.error("Error injecting JavaScript callback", e)
+                        if (jsQueryInitialized && jsQuery != null) {
+                            try {
+                                browser.cefBrowser.executeJavaScript("""
+                                    window.javaCallback = function(message) {
+                                        ${jsQuery?.inject("message") ?: "console.log(message)"};
+                                    };
+                                """.trimIndent(), browser.cefBrowser.url, 0)
+                            } catch (e: Exception) {
+                                logger.error("Error injecting JavaScript callback", e)
+                            }
                         }
                     }
                 }
@@ -184,30 +208,47 @@ class JcefMarkdownRenderer(
             // Use a more robust method to escape HTML for JavaScript
             val escapedHtml = escapeJavaScriptString(html)
             
-            // First try using the updateContent function from the JS
-            val updateScript = """
-                try {
-                    if (typeof updateContent === 'function') {
-                        updateContent(`$escapedHtml`);
-                    } else {
-                        // Fallback to direct DOM manipulation
-                        const contentElement = document.getElementById('content');
-                        if (contentElement) {
-                            contentElement.innerHTML = `$escapedHtml`;
-                            // Initialize any collapsible panels
-                            if (typeof initCollapsiblePanels === 'function') {
-                                initCollapsiblePanels();
-                            }
+            try {
+                // First try using the updateContent function from the JS
+                val updateScript = """
+                    try {
+                        if (typeof updateContent === 'function') {
+                            updateContent(`$escapedHtml`);
                         } else {
-                            console.error('Content element not found');
+                            // Fallback to direct DOM manipulation
+                            const contentElement = document.getElementById('content');
+                            if (contentElement) {
+                                contentElement.innerHTML = `$escapedHtml`;
+                                // Initialize any collapsible panels
+                                if (typeof initCollapsiblePanels === 'function') {
+                                    initCollapsiblePanels();
+                                }
+                            } else {
+                                console.error('Content element not found');
+                            }
                         }
+                    } catch(e) {
+                        console.error('Error updating content:', e);
                     }
-                } catch(e) {
-                    console.error('Error updating content:', e);
+                """.trimIndent()
+                
+                browser.cefBrowser.executeJavaScript(updateScript, browser.cefBrowser.url, 0)
+                jsErrorCount = 0 // Reset error count on success
+            } catch (e: Exception) {
+                jsErrorCount++
+                logger.warn("Error executing JavaScript (attempt $jsErrorCount): ${e.message}")
+                
+                if (jsErrorCount > 3) {
+                    // After multiple failures, try reloading the page with the content directly
+                    try {
+                        val fullHtml = themeManager.createHtmlWithContent(html)
+                        browser.loadHTML(fullHtml)
+                        jsErrorCount = 0 // Reset after reload attempt
+                    } catch (reloadEx: Exception) {
+                        logger.error("Failed to reload page with content", reloadEx)
+                    }
                 }
-            """.trimIndent()
-            
-            browser.cefBrowser.executeJavaScript(updateScript, browser.cefBrowser.url, 0)
+            }
         } catch (e: Exception) {
             logger.error("Error updating content in JCEF renderer", e)
         }
@@ -254,7 +295,19 @@ class JcefMarkdownRenderer(
             
             browser.cefBrowser.executeJavaScript(themeScript, browser.cefBrowser.url, 0)
         } catch (e: Exception) {
-            logger.error("Error updating theme in JCEF renderer", e)
+            logger.warn("Error updating theme in JCEF renderer: ${e.message}")
+            
+            // If JavaScript execution fails, try reloading the page with the current content
+            // and the updated theme
+            try {
+                if (currentContent.isNotEmpty()) {
+                    val html = contentProcessor.processMarkdown(currentContent, isDarkTheme)
+                    val fullHtml = themeManager.createHtmlWithContent(html)
+                    browser.loadHTML(fullHtml)
+                }
+            } catch (reloadEx: Exception) {
+                logger.error("Failed to reload page with updated theme", reloadEx)
+            }
         }
     }
     
@@ -270,7 +323,17 @@ class JcefMarkdownRenderer(
                 browser.cefBrowser.url, 0
             )
         } catch (e: Exception) {
-            logger.error("Error scrolling to bottom in JCEF renderer", e)
+            logger.warn("Error scrolling to bottom in JCEF renderer: ${e.message}")
+            
+            // Try again with a simpler approach
+            try {
+                browser.cefBrowser.executeJavaScript(
+                    "window.scrollTo(0, document.body.scrollHeight);",
+                    browser.cefBrowser.url, 0
+                )
+            } catch (e2: Exception) {
+                logger.error("Failed to scroll to bottom with fallback method", e2)
+            }
         }
     }
     
@@ -294,7 +357,7 @@ class JcefMarkdownRenderer(
         if (!isDisposed) {
             isDisposed = true
             try {
-                jsQuery.dispose()
+                jsQuery?.dispose()
                 browser.dispose()
                 mainPanel.removeAll()
             } catch (e: Exception) {
