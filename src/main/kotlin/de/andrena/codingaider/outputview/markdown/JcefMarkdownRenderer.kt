@@ -211,7 +211,7 @@ class JcefMarkdownRenderer(
         updateContent(markdown)
     }
     
-    private fun updateContent(markdown: String) {
+    fun updateContent(markdown: String) {
         try {
             // Process markdown to HTML
             val html = contentProcessor.processMarkdown(markdown, themeManager.isDarkTheme)
