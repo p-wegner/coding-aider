@@ -89,33 +89,45 @@ class JcefMarkdownRenderer(
     private fun setupJavaScriptBridge() {
         try {
             // Create a JavaScript query handler for communication from JS to Java
-            jsQuery = JBCefJSQuery.create(browser)
+            // Wrap in try-catch to handle potential NullPointerException in JBCefJSQuery.create
+            try {
+                jsQuery = JBCefJSQuery.create(browser)
+            } catch (e: Exception) {
+                logger.warn("Failed to create JBCefJSQuery object: ${e.message}", e)
+                jsQuery = null
+            }
             
             // Verify the query object was created successfully
             if (jsQuery == null) {
-                logger.warn("Failed to create JavaScript query object")
+                logger.warn("JavaScript bridge unavailable - continuing in limited mode")
                 isInitialized.set(true)
                 jsQueryInitialized = false
                 return
             }
             
-            jsQuery?.addHandler { message ->
-                when (message) {
-                    "ready" -> {
-                        isInitialized.set(true)
-                        null
-                    }
-                    "scrolled" -> {
-                        // Handle scroll events from JavaScript if needed
-                        null
-                    }
-                    else -> {
-                        logger.info("Received message from JavaScript: $message")
-                        null
+            // Try to add handler with additional error checking
+            try {
+                jsQuery?.addHandler { message ->
+                    when (message) {
+                        "ready" -> {
+                            isInitialized.set(true)
+                            null
+                        }
+                        "scrolled" -> {
+                            // Handle scroll events from JavaScript if needed
+                            null
+                        }
+                        else -> {
+                            logger.info("Received message from JavaScript: $message")
+                            null
+                        }
                     }
                 }
+                jsQueryInitialized = true
+            } catch (e: Exception) {
+                logger.warn("Failed to add handler to JavaScript bridge: ${e.message}", e)
+                jsQueryInitialized = false
             }
-            jsQueryInitialized = true
         } catch (e: Exception) {
             logger.warn("Failed to initialize JavaScript bridge: ${e.message}", e)
             // Mark as initialized anyway so we can continue without JS communication
@@ -134,13 +146,14 @@ class JcefMarkdownRenderer(
             if (jsQueryInitialized && jsQuery != null) {
                 try {
                     // Use a safer approach to inject the JavaScript callback
-                    val jsCallbackCode = if (jsQuery != null) {
+                    val jsCallbackCode = if (jsQuery != null && jsQueryInitialized) {
                         // Create a safe version of the inject call that won't fail if objId is null
                         val safeInject = try {
-                            jsQuery?.inject("message") ?: "console.log(message)"
+                            // Only attempt to get inject code if query is initialized
+                            jsQuery?.inject("message") ?: "console.log('JS bridge unavailable:', message)"
                         } catch (e: Exception) {
                             logger.warn("Failed to create inject code, using fallback", e)
-                            "console.log(message)"
+                            "console.log('JS bridge error:', message)"
                         }
                         
                         """
@@ -149,7 +162,12 @@ class JcefMarkdownRenderer(
                                 window.javaCallback = function(message) {
                                     try { ${safeInject} } catch(e) { console.error('Callback error:', e); }
                                 };
-                                window.javaCallback('ready');
+                                // Mark as ready even without callback
+                                console.log('Markdown viewer ready');
+                                setTimeout(function() { 
+                                    try { window.javaCallback('ready'); } 
+                                    catch(e) { console.error('Ready callback failed:', e); }
+                                }, 100);
                             } catch(e) { console.error('Callback setup error:', e); }
                         } else {
                             document.addEventListener('DOMContentLoaded', function() {
@@ -157,29 +175,53 @@ class JcefMarkdownRenderer(
                                     window.javaCallback = function(message) {
                                         try { ${safeInject} } catch(e) { console.error('Callback error:', e); }
                                     };
-                                    window.javaCallback('ready');
+                                    // Mark as ready even without callback
+                                    console.log('Markdown viewer ready (DOMContentLoaded)');
+                                    setTimeout(function() { 
+                                        try { window.javaCallback('ready'); } 
+                                        catch(e) { console.error('Ready callback failed:', e); }
+                                    }, 100);
                                 } catch(e) { console.error('Callback setup error:', e); }
                             });
                         }
                         """
                     } else {
-                        // Fallback if jsQuery is null
+                        // Fallback if jsQuery is null or not initialized
                         """
                         console.log('JavaScript bridge not available, using fallback initialization');
                         if (document.readyState === 'complete') {
-                            console.log('Document ready');
+                            console.log('Document ready - no JS bridge');
+                            // Force content element creation to ensure we have somewhere to put content
+                            if (!document.getElementById('content')) {
+                                const contentDiv = document.createElement('div');
+                                contentDiv.id = 'content';
+                                document.body.appendChild(contentDiv);
+                                console.log('Created content element');
+                            }
                         } else {
                             document.addEventListener('DOMContentLoaded', function() {
-                                console.log('Document ready (event)');
+                                console.log('Document ready (event) - no JS bridge');
+                                // Force content element creation
+                                if (!document.getElementById('content')) {
+                                    const contentDiv = document.createElement('div');
+                                    contentDiv.id = 'content';
+                                    document.body.appendChild(contentDiv);
+                                    console.log('Created content element (DOMContentLoaded)');
+                                }
                             });
                         }
                         """
                     }
                     
-                    browser.cefBrowser.executeJavaScript(jsCallbackCode.trimIndent(), browser.cefBrowser.url, 0)
+                    try {
+                        browser.cefBrowser.executeJavaScript(jsCallbackCode.trimIndent(), browser.cefBrowser.url, 0)
+                    } catch (e: Exception) {
+                        logger.warn("Failed to inject JavaScript callback: ${e.message}", e)
+                        // Mark as initialized anyway so we can continue without JS communication
+                        isInitialized.set(true)
+                    }
                 } catch (e: Exception) {
-                    logger.warn("Failed to inject JavaScript callback: ${e.message}", e)
-                    // Mark as initialized anyway so we can continue without JS communication
+                    logger.warn("Failed to prepare JavaScript callback: ${e.message}", e)
                     isInitialized.set(true)
                 }
             } else {
@@ -190,7 +232,28 @@ class JcefMarkdownRenderer(
             // Force a small initial content to ensure the page is properly initialized
             try {
                 browser.cefBrowser.executeJavaScript(
-                    "try { document.getElementById('content').innerHTML = '<p>Initializing...</p>'; } catch(e) { console.error('Init error:', e); }",
+                    """
+                    try { 
+                        // Create content element if it doesn't exist
+                        if (!document.getElementById('content')) {
+                            const contentDiv = document.createElement('div');
+                            contentDiv.id = 'content';
+                            document.body.appendChild(contentDiv);
+                        }
+                        document.getElementById('content').innerHTML = '<p>Initializing...</p>'; 
+                    } catch(e) { 
+                        console.error('Init error:', e); 
+                        // Last resort attempt to create content element
+                        try {
+                            const contentDiv = document.createElement('div');
+                            contentDiv.id = 'content';
+                            contentDiv.innerHTML = '<p>Initializing...</p>';
+                            document.body.appendChild(contentDiv);
+                        } catch(e2) {
+                            console.error('Emergency init failed:', e2);
+                        }
+                    }
+                    """,
                     browser.cefBrowser.url, 0
                 )
             } catch (e: Exception) {
@@ -219,19 +282,43 @@ class JcefMarkdownRenderer(
                         // Inject the JavaScript callback again as a fallback
                         if (jsQueryInitialized && jsQuery != null) {
                             try {
-                                val safeInject = try {
-                                    jsQuery?.inject("message") ?: "console.log(message)"
-                                } catch (e: Exception) {
-                                    "console.log(message)"
-                                }
-                                
-                                browser.cefBrowser.executeJavaScript("""
+                                // Only attempt to inject if JS query is available and initialized
+                                if (jsQuery != null && jsQueryInitialized) {
+                                    val safeInject = try {
+                                        jsQuery?.inject("message") ?: "console.log('Fallback callback:', message)"
+                                    } catch (e: Exception) {
+                                        "console.log('Error callback:', message)"
+                                    }
+                                    
                                     try {
-                                        window.javaCallback = function(message) {
-                                            try { ${safeInject} } catch(e) { console.error('Callback error:', e); }
-                                        };
-                                    } catch(e) { console.error('Callback setup error:', e); }
-                                """.trimIndent(), browser.cefBrowser.url, 0)
+                                        browser.cefBrowser.executeJavaScript("""
+                                            try {
+                                                window.javaCallback = function(message) {
+                                                    try { ${safeInject} } catch(e) { console.error('Callback error:', e); }
+                                                };
+                                                console.log('Fallback callback initialized');
+                                            } catch(e) { console.error('Callback setup error:', e); }
+                                        """.trimIndent(), browser.cefBrowser.url, 0)
+                                    } catch (e: Exception) {
+                                        logger.warn("Failed to inject fallback JavaScript callback", e)
+                                    }
+                                } else {
+                                    // If JS bridge isn't available, just make sure content element exists
+                                    try {
+                                        browser.cefBrowser.executeJavaScript("""
+                                            try {
+                                                if (!document.getElementById('content')) {
+                                                    const contentDiv = document.createElement('div');
+                                                    contentDiv.id = 'content';
+                                                    document.body.appendChild(contentDiv);
+                                                    console.log('Created content element in fallback');
+                                                }
+                                            } catch(e) { console.error('Fallback content creation error:', e); }
+                                        """.trimIndent(), browser.cefBrowser.url, 0)
+                                    } catch (e: Exception) {
+                                        logger.warn("Failed to ensure content element exists", e)
+                                    }
+                                }
                             } catch (e: Exception) {
                                 logger.error("Error injecting JavaScript callback", e)
                             }
@@ -282,27 +369,52 @@ class JcefMarkdownRenderer(
                             updateContent(`$escapedHtml`);
                         } else {
                             // Fallback to direct DOM manipulation
-                            const contentElement = document.getElementById('content');
+                            let contentElement = document.getElementById('content');
+                            if (!contentElement) {
+                                // Try to create the content element if it doesn't exist
+                                console.log('Content element not found, creating it');
+                                const bodyElement = document.body;
+                                if (bodyElement) {
+                                    contentElement = document.createElement('div');
+                                    contentElement.id = 'content';
+                                    bodyElement.appendChild(contentElement);
+                                }
+                            }
+                            
                             if (contentElement) {
                                 contentElement.innerHTML = `$escapedHtml`;
                                 // Initialize any collapsible panels
                                 if (typeof initCollapsiblePanels === 'function') {
                                     initCollapsiblePanels();
+                                } else {
+                                    // Basic collapsible panel initialization if function is missing
+                                    document.querySelectorAll('.collapsible-panel').forEach(panel => {
+                                        const header = panel.querySelector('.collapsible-header');
+                                        if (header) {
+                                            header.addEventListener('click', function() {
+                                                panel.classList.toggle('expanded');
+                                                const arrow = this.querySelector('.collapsible-arrow');
+                                                if (arrow) {
+                                                    arrow.textContent = panel.classList.contains('expanded') ? '▼' : '▶';
+                                                }
+                                            });
+                                        }
+                                    });
                                 }
                             } else {
-                                console.error('Content element not found');
-                                // Try to create the content element if it doesn't exist
-                                const bodyElement = document.body;
-                                if (bodyElement) {
-                                    const newContentElement = document.createElement('div');
-                                    newContentElement.id = 'content';
-                                    newContentElement.innerHTML = `$escapedHtml`;
-                                    bodyElement.appendChild(newContentElement);
-                                }
+                                console.error('Failed to find or create content element');
+                                // Last resort - try to append to body directly
+                                document.body.innerHTML += `<div id="content">${escapedHtml}</div>`;
                             }
                         }
                     } catch(e) {
                         console.error('Error updating content:', e);
+                        // Emergency fallback - replace entire body content
+                        try {
+                            document.body.innerHTML = `<div id="content">${escapedHtml}</div>`;
+                        } catch(e2) {
+                            console.error('Emergency content update failed:', e2);
+                        }
                     }
                 """.trimIndent()
                 
