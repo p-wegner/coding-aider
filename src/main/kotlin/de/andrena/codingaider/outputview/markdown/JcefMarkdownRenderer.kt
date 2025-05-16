@@ -43,7 +43,6 @@ class JcefMarkdownRenderer(
     init {
         try {
             setupBrowser()
-            setupJavaScriptBridge()
             loadInitialContent()
         } catch (e: Exception) {
             logger.error("Error initializing JCEF renderer", e)
@@ -64,6 +63,9 @@ class JcefMarkdownRenderer(
                 canGoForward: Boolean
             ) {
                 if (!isLoading && !isLoadCompleted.getAndSet(true)) {
+                    // Browser is finally connected – now it's safe
+                    SwingUtilities.invokeLater { createJsBridgeIfNeeded() }
+                    
                     // Page has finished loading for the first time
                     isInitialized.set(true)
                     
@@ -87,50 +89,29 @@ class JcefMarkdownRenderer(
         }, browser.cefBrowser)
     }
     
-    private fun setupJavaScriptBridge() {
+    private fun createJsBridgeIfNeeded() {
+        if (jsQuery != null || jsQueryInitialized) return
         try {
-            // Create a JavaScript query handler for communication from JS to Java
-            // Wrap in try-catch to handle potential NullPointerException in JBCefJSQuery.create
-            try {
-                jsQuery = JBCefJSQuery.create(browser )
-            } catch (e: Exception) {
-                logger.warn("Failed to create JBCefJSQuery object: ${e.message}", e)
-                jsQuery = null
-            }
-            
-            // Verify the query object was created successfully
-            if (jsQuery == null) {
-                logger.warn("JavaScript bridge unavailable - continuing in limited mode")
-                isInitialized.set(true)
-                jsQueryInitialized = false
-                return
-            }
-            
-            // Try to add handler with additional error checking
-            try {
-                jsQuery?.addHandler { message ->
-                    when (message) {
-                        "ready" -> {
-                            isInitialized.set(true)
-                            null
-                        }
-                        "scrolled" -> {
-                            // Handle scroll events from JavaScript if needed
-                            null
-                        }
-                        else -> {
-                            logger.info("Received message from JavaScript: $message")
-                            null
-                        }
+            jsQuery = JBCefJSQuery.create(this.browser)   // <- happens after connection
+            jsQuery!!.addHandler { message -> 
+                when (message) {
+                    "ready" -> {
+                        isInitialized.set(true)
+                        null
+                    }
+                    "scrolled" -> {
+                        // Handle scroll events from JavaScript if needed
+                        null
+                    }
+                    else -> {
+                        logger.info("Received message from JavaScript: $message")
+                        null
                     }
                 }
-                jsQueryInitialized = true
-            } catch (e: Exception) {
-                logger.warn("Failed to add handler to JavaScript bridge: ${e.message}", e)
-                jsQueryInitialized = false
             }
-        } catch (e: Exception) {
-            logger.warn("Failed to initialize JavaScript bridge: ${e.message}", e)
+            jsQueryInitialized = true
+        } catch (t: Throwable) {
+            logger.warn("Failed to initialize JavaScript bridge: ${t.message}", t)
             // Mark as initialized anyway so we can continue without JS communication
             isInitialized.set(true)
             jsQueryInitialized = false
