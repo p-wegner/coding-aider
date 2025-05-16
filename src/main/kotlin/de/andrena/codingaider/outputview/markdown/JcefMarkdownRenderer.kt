@@ -109,6 +109,20 @@ class JcefMarkdownRenderer(
         val baseHtml = themeManager.createBaseHtml()
         browser.loadHTML(baseHtml)
         
+        // Add a JavaScript callback to notify when the page is ready
+        browser.cefBrowser.executeJavaScript("""
+            if (document.readyState === 'complete') {
+                window.javaCallback('ready');
+            } else {
+                document.addEventListener('DOMContentLoaded', function() {
+                    window.javaCallback = function(message) {
+                        ${jsQuery.inject("message")};
+                    };
+                    window.javaCallback('ready');
+                });
+            }
+        """.trimIndent(), browser.cefBrowser.url, 0)
+        
         // Schedule a check to ensure initialization completes
         Timer().schedule(object : TimerTask() {
             override fun run() {
@@ -122,6 +136,17 @@ class JcefMarkdownRenderer(
                         pendingContent?.let { content ->
                             updateContent(content)
                             pendingContent = null
+                        }
+                        
+                        // Inject the JavaScript callback again as a fallback
+                        try {
+                            browser.cefBrowser.executeJavaScript("""
+                                window.javaCallback = function(message) {
+                                    ${jsQuery.inject("message")};
+                                };
+                            """.trimIndent(), browser.cefBrowser.url, 0)
+                        } catch (e: Exception) {
+                            logger.error("Error injecting JavaScript callback", e)
                         }
                     }
                 }
@@ -156,26 +181,47 @@ class JcefMarkdownRenderer(
             // Process markdown to HTML
             val html = contentProcessor.processMarkdown(markdown, themeManager.isDarkTheme)
             
-            // Use JavaScript to update the content
-            val escapedHtml = html.replace("\\", "\\\\")
-                .replace("'", "\\'")
-                .replace("\n", "\\n")
-                .replace("\r", "\\r")
+            // Use a more robust method to escape HTML for JavaScript
+            val escapedHtml = escapeJavaScriptString(html)
             
-            // Try both update methods for reliability
-            browser.cefBrowser.executeJavaScript(
-                "try { updateContent('$escapedHtml'); } catch(e) { console.error(e); }",
-                browser.cefBrowser.url, 0
-            )
+            // First try using the updateContent function from the JS
+            val updateScript = """
+                try {
+                    if (typeof updateContent === 'function') {
+                        updateContent(`$escapedHtml`);
+                    } else {
+                        // Fallback to direct DOM manipulation
+                        const contentElement = document.getElementById('content');
+                        if (contentElement) {
+                            contentElement.innerHTML = `$escapedHtml`;
+                            // Initialize any collapsible panels
+                            if (typeof initCollapsiblePanels === 'function') {
+                                initCollapsiblePanels();
+                            }
+                        } else {
+                            console.error('Content element not found');
+                        }
+                    }
+                } catch(e) {
+                    console.error('Error updating content:', e);
+                }
+            """.trimIndent()
             
-            // Also try direct update as fallback
-            browser.cefBrowser.executeJavaScript(
-                "try { document.getElementById('content').innerHTML = '$escapedHtml'; } catch(e) { console.error(e); }",
-                browser.cefBrowser.url, 0
-            )
+            browser.cefBrowser.executeJavaScript(updateScript, browser.cefBrowser.url, 0)
         } catch (e: Exception) {
             logger.error("Error updating content in JCEF renderer", e)
         }
+    }
+    
+    /**
+     * More robust JavaScript string escaping that handles multi-line content
+     */
+    private fun escapeJavaScriptString(input: String): String {
+        return input
+            .replace("\\", "\\\\")
+            .replace("`", "\\`")
+            .replace("$", "\\$")
+            .replace("\t", "\\t")
     }
     
     override fun setDarkTheme(isDarkTheme: Boolean) {

@@ -66,21 +66,26 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
         // Try multiple times with increasing delays to handle race conditions
         // where the renderer might not be fully initialized
         try {
+            // Initial update attempt
             renderer.setMarkdown(currentContent)
 
             // Schedule additional attempts with delays to ensure content is displayed
-            for (delay in listOf(100L, 300L, 600L)) {
+            // Use a more reliable approach with fewer, more strategic attempts
+            for (delay in listOf(200L, 500L, 1000L)) {
                 java.util.Timer().schedule(object : TimerTask() {
                     override fun run() {
                         try {
                             if (!isDisposed) {
                                 javax.swing.SwingUtilities.invokeLater {
                                     try {
-                                        renderer.setMarkdown(currentContent)
-                                        
-                                        // For the last attempt, try to scroll to bottom if needed
-                                        if (delay == 600L) {
-                                            renderer.scrollToBottom()
+                                        // Only update if the renderer is ready
+                                        if (renderer.isReady) {
+                                            renderer.setMarkdown(currentContent)
+                                            
+                                            // For the last attempt, try to scroll to bottom if needed
+                                            if (delay == 1000L) {
+                                                renderer.scrollToBottom()
+                                            }
                                         }
                                     } catch (e: Exception) {
                                         println("Error in delayed markdown update (${delay}ms): ${e.message}")
@@ -96,6 +101,25 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
         } catch (e: Exception) {
             println("Error in initial markdown update: ${e.message}")
             e.printStackTrace()
+            
+            // If initial attempt fails, try one more time after a short delay
+            java.util.Timer().schedule(object : TimerTask() {
+                override fun run() {
+                    try {
+                        if (!isDisposed) {
+                            javax.swing.SwingUtilities.invokeLater {
+                                try {
+                                    renderer.setMarkdown(currentContent)
+                                } catch (e: Exception) {
+                                    println("Error in recovery markdown update: ${e.message}")
+                                }
+                            }
+                        }
+                    } catch (e: Exception) {
+                        println("Error scheduling recovery update: ${e.message}")
+                    }
+                }
+            }, 100L)
         }
     }
     

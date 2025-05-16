@@ -218,9 +218,19 @@ class MarkdownThemeManager {
                 window.directUpdateContent = function(html) {
                     try {
                         document.getElementById('content').innerHTML = html;
+                        // Initialize panels after direct update
+                        if (typeof initCollapsiblePanels === 'function') {
+                            initCollapsiblePanels();
+                        }
                     } catch(e) {
                         console.error("Error in directUpdateContent:", e);
                     }
+                };
+                
+                // Add a callback function for Java communication
+                window.javaCallback = function(message) {
+                    // This will be replaced by the Java-injected function
+                    console.log("Java callback called with: " + message);
                 };
                 
                 // Ensure the document is ready before initializing
