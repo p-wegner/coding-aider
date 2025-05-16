@@ -35,7 +35,6 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
         return try {
             if (JBCefApp.isSupported()) {
                 try {
-//                    FallbackMarkdownRenderer(contentProcessor, themeManager)
                     JcefMarkdownRenderer(contentProcessor, themeManager)
                 } catch (e: Exception) {
                     println("Error initializing JCEF renderer, falling back to basic renderer: ${e.message}")
