@@ -292,30 +292,28 @@ class MarkdownDialog(
                     val contentToSet = newContent.ifBlank { " " }
                     markdownViewer.setMarkdown(contentToSet)
 
-                    // Schedule multiple scroll attempts with increasing delays
-                    // This helps ensure we reach the bottom even with dynamic content rendering
-                    val scrollTimers = mutableListOf<TimerTask>()
-                    
-                    for (delay in listOf(100L, 300L, 600L, 1000L)) {
-                        scrollTimers.add(Timer().schedule(delay) {
+                    // Only auto-scroll if explicitly enabled AND we were already at the bottom
+                    // This prevents disrupting the user's reading position
+                    if (shouldAutoScroll && wasNearBottom) {
+                        // Use fewer, more strategic scroll attempts
+                        Timer().schedule(300L) {
                             invokeLater {
                                 try {
-                                    // Scroll to bottom if auto-scroll is enabled OR if we were already near the bottom
-                                    if (shouldAutoScroll || wasNearBottom) {
-                                        programmaticScrolling = true // Prevent listener feedback loop
-                                        scrollBar.value = scrollBar.maximum
-                                        
-                                        // Only the last timer should reset the flag
-                                        if (delay == 1000L) {
+                                    programmaticScrolling = true // Prevent listener feedback loop
+                                    scrollBar.value = scrollBar.maximum
+                                    
+                                    // Reset the flag after a short delay
+                                    Timer().schedule(100L) {
+                                        invokeLater {
                                             programmaticScrolling = false
                                         }
                                     }
                                 } catch (e: Exception) {
                                     programmaticScrolling = false
-                                    println("Error during scrolling at ${delay}ms: ${e.message}")
+                                    println("Error during scrolling: ${e.message}")
                                 }
                             }
-                        })
+                        }
                     }
                 }
             } catch (e: Exception) {

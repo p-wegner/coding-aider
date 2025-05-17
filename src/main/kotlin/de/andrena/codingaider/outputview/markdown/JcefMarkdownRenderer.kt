@@ -265,7 +265,7 @@ class JcefMarkdownRenderer(
                         
                         // Override updateContent function with our enhanced version
                         originalUpdateContent = window.updateContent;
-                        window.updateContent = function(html) {
+                        window.updateContent = function(html, forceScrollToBottom = false) {
                             isUpdatingContent = true;
                         
                             // Add a class to the body during updates to disable hover effects
@@ -277,7 +277,11 @@ class JcefMarkdownRenderer(
                             const documentHeight = document.body.scrollHeight;
                             const wasAtBottom = isScrolledToBottom();
                             const scrollPercentage = documentHeight > 0 ? scrollPosition / documentHeight : 0;
-                        
+                            
+                            // Calculate visible content range
+                            const visibleStartY = scrollPosition;
+                            const visibleEndY = scrollPosition + viewportHeight;
+                            
                             // Store current panel states before updating
                             storeCurrentPanelStates();
                         
@@ -289,19 +293,24 @@ class JcefMarkdownRenderer(
                         
                             // Use requestAnimationFrame to ensure DOM is updated before scrolling
                             requestAnimationFrame(() => {
-                                // Restore scroll position with different strategies
-                                if (wasAtBottom) {
-                                    // If user was at bottom, keep them at bottom
+                                // Determine if we should scroll to bottom based on parameters and state
+                                const shouldScrollToBottom = forceScrollToBottom || 
+                                                           (window.shouldAutoScroll && wasAtBottom);
+                                
+                                if (shouldScrollToBottom) {
+                                    // If auto-scroll is enabled and user was at bottom, keep them at bottom
                                     scrollToBottom();
-                                } else if (scrollPosition > 0) {
-                                    // Try to maintain approximate scroll position
+                                } else {
+                                    // Otherwise try to maintain user's scroll position
+                                    
                                     // First try absolute position
                                     window.scrollTo(0, scrollPosition);
-                                
+                                    
                                     // If content size changed significantly, try percentage-based position
                                     setTimeout(() => {
                                         const newDocumentHeight = document.body.scrollHeight;
-                                        if (Math.abs(newDocumentHeight - documentHeight) > viewportHeight * 0.5) {
+                                        // Only apply percentage-based scrolling for significant content changes
+                                        if (Math.abs(newDocumentHeight - documentHeight) > viewportHeight * 0.3) {
                                             window.scrollTo(0, newDocumentHeight * scrollPercentage);
                                         }
                                     }, 50);
@@ -353,36 +362,45 @@ class JcefMarkdownRenderer(
             // Execute JavaScript to update content
             val script = """
                 if (typeof updateContent === 'function') {
-                    updateContent(`${escapeJsString(html)}`);
+                    // Pass shouldAutoScroll flag to the updateContent function
+                    updateContent(`${escapeJsString(html)}`, ${shouldAutoScroll});
                 } else {
                     // Fallback if our custom function isn't available
                     const wasAtBottom = (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 100);
+                    const scrollPosition = window.scrollY;
                     document.getElementById('content').innerHTML = `${escapeJsString(html)}`;
-                    if (${shouldAutoScroll} || wasAtBottom) {
+                    
+                    // Only auto-scroll if explicitly enabled or if user was already at bottom
+                    if (${shouldAutoScroll} && wasAtBottom) {
                         window.scrollTo(0, document.body.scrollHeight);
+                    } else {
+                        // Otherwise try to maintain the user's scroll position
+                        window.scrollTo(0, scrollPosition);
                     }
                 }
             """.trimIndent()
             
             executeJavaScript(script)
             
-            // Use fewer, more strategic scroll attempts to reduce interference with user scrolling
+            // Only attempt auto-scrolling if explicitly enabled
             if (shouldAutoScroll) {
-                // Use just two attempts with longer delays
-                for (delay in listOf(200L, 500L)) {
-                    Timer().schedule(delay) {
-                        if (!isDisposed) {
-                            SwingUtilities.invokeLater {
-                                // Check if we should still auto-scroll before forcing it
-                                executeJavaScript("""
-                                    if (!isUpdatingContent && ${shouldAutoScroll}) { 
+                // Use just one attempt with a reasonable delay
+                Timer().schedule(300L) {
+                    if (!isDisposed) {
+                        SwingUtilities.invokeLater {
+                            // Check if we should still auto-scroll before forcing it
+                            executeJavaScript("""
+                                if (!isUpdatingContent && ${shouldAutoScroll}) { 
+                                    // Check if user is already at bottom before forcing scroll
+                                    const isNearBottom = (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 100);
+                                    if (isNearBottom) {
                                         window.scrollTo({
                                             top: document.body.scrollHeight,
                                             behavior: 'auto'
                                         });
                                     }
-                                """.trimIndent())
-                            }
+                                }
+                            """.trimIndent())
                         }
                     }
                 }
