@@ -241,49 +241,78 @@ class JcefMarkdownRenderer(
                         });
                         
                         // Track scrolling to determine auto-scroll behavior
+                        let scrollTimeout;
                         window.addEventListener('scroll', function() {
+                            // Don't process scroll events during content updates
+                            if (isUpdatingContent) return;
+                        
                             // Check if we're near the bottom of the page
                             const isNearBottom = (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 100);
-                            
-                            // Send message to Kotlin code about scroll position
-                            if (window.scrollY > 0) {  // Only track when user has actually scrolled
-                                window.shouldAutoScroll = isNearBottom;
-                            }
+                        
+                            // Debounce scroll events to avoid excessive processing
+                            clearTimeout(scrollTimeout);
+                            scrollTimeout = setTimeout(() => {
+                                // Only update auto-scroll state on user-initiated scrolls
+                                if (window.scrollY > 0 && !isUpdatingContent) {
+                                    window.shouldAutoScroll = isNearBottom;
+                                    // Notify Kotlin about scroll state change if available
+                                    if (typeof window.updateScrollState === 'function') {
+                                        window.updateScrollState(isNearBottom);
+                                    }
+                                }
+                            }, 150);
                         });
                         
                         // Override updateContent function with our enhanced version
                         originalUpdateContent = window.updateContent;
                         window.updateContent = function(html) {
                             isUpdatingContent = true;
-                            
+                        
                             // Add a class to the body during updates to disable hover effects
                             document.body.classList.add('updating-content');
-                            
-                            // Save current scroll position
+                        
+                            // Save current scroll position and viewport height before update
                             const scrollPosition = window.scrollY;
+                            const viewportHeight = window.innerHeight;
+                            const documentHeight = document.body.scrollHeight;
                             const wasAtBottom = isScrolledToBottom();
-                            
+                            const scrollPercentage = documentHeight > 0 ? scrollPosition / documentHeight : 0;
+                        
                             // Store current panel states before updating
                             storeCurrentPanelStates();
-                            
+                        
                             // Update content
                             document.getElementById('content').innerHTML = html;
-                            
+                        
                             // Restore panel states
                             restorePanelStates();
+                        
+                            // Use requestAnimationFrame to ensure DOM is updated before scrolling
+                            requestAnimationFrame(() => {
+                                // Restore scroll position with different strategies
+                                if (wasAtBottom) {
+                                    // If user was at bottom, keep them at bottom
+                                    scrollToBottom();
+                                } else if (scrollPosition > 0) {
+                                    // Try to maintain approximate scroll position
+                                    // First try absolute position
+                                    window.scrollTo(0, scrollPosition);
+                                
+                                    // If content size changed significantly, try percentage-based position
+                                    setTimeout(() => {
+                                        const newDocumentHeight = document.body.scrollHeight;
+                                        if (Math.abs(newDocumentHeight - documentHeight) > viewportHeight * 0.5) {
+                                            window.scrollTo(0, newDocumentHeight * scrollPercentage);
+                                        }
+                                    }, 50);
+                                }
                             
-                            // Restore scroll position or scroll to bottom if we were at the bottom
-                            if (wasAtBottom) {
-                                scrollToBottom();
-                            } else {
-                                window.scrollTo(0, scrollPosition);
-                            }
-                            
-                            // Remove updating class after a short delay
-                            setTimeout(() => {
-                                document.body.classList.remove('updating-content');
-                                isUpdatingContent = false;
-                            }, 100);
+                                // Remove updating class after a short delay
+                                setTimeout(() => {
+                                    document.body.classList.remove('updating-content');
+                                    isUpdatingContent = false;
+                                }, 150);
+                            });
                         };
                     });
                 </script>
@@ -326,8 +355,10 @@ class JcefMarkdownRenderer(
                 if (typeof updateContent === 'function') {
                     updateContent(`${escapeJsString(html)}`);
                 } else {
+                    // Fallback if our custom function isn't available
+                    const wasAtBottom = (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 100);
                     document.getElementById('content').innerHTML = `${escapeJsString(html)}`;
-                    if (${shouldAutoScroll}) {
+                    if (${shouldAutoScroll} || wasAtBottom) {
                         window.scrollTo(0, document.body.scrollHeight);
                     }
                 }
@@ -335,13 +366,22 @@ class JcefMarkdownRenderer(
             
             executeJavaScript(script)
             
-            // Schedule additional scroll attempts with delays to ensure we reach the bottom
+            // Use fewer, more strategic scroll attempts to reduce interference with user scrolling
             if (shouldAutoScroll) {
-                for (delay in listOf(100L, 300L, 600L)) {
+                // Use just two attempts with longer delays
+                for (delay in listOf(200L, 500L)) {
                     Timer().schedule(delay) {
                         if (!isDisposed) {
                             SwingUtilities.invokeLater {
-                                executeJavaScript("if (${shouldAutoScroll}) { window.scrollTo(0, document.body.scrollHeight); }")
+                                // Check if we should still auto-scroll before forcing it
+                                executeJavaScript("""
+                                    if (!isUpdatingContent && ${shouldAutoScroll}) { 
+                                        window.scrollTo({
+                                            top: document.body.scrollHeight,
+                                            behavior: 'auto'
+                                        });
+                                    }
+                                """.trimIndent())
                             }
                         }
                     }
@@ -367,14 +407,37 @@ class JcefMarkdownRenderer(
         
         try {
             shouldAutoScroll = true
-            executeJavaScript("scrollToBottom();")
+            executeJavaScript("""
+                // Mark that we're doing a programmatic scroll
+                isUpdatingContent = true;
+                
+                // Use the smooth scroll function if available
+                if (typeof scrollToBottom === 'function') {
+                    scrollToBottom();
+                } else {
+                    window.scrollTo({
+                        top: document.body.scrollHeight,
+                        behavior: 'auto'
+                    });
+                }
+                
+                // Reset updating flag after scroll completes
+                setTimeout(() => { isUpdatingContent = false; }, 100);
+            """)
             
-            // Schedule multiple scroll attempts with increasing delays
-            for (delay in listOf(100L, 300L, 600L)) {
+            // Use just two strategic scroll attempts with longer delays
+            for (delay in listOf(200L, 600L)) {
                 Timer().schedule(delay) {
                     if (!isDisposed) {
                         SwingUtilities.invokeLater {
-                            executeJavaScript("window.scrollTo(0, document.body.scrollHeight);")
+                            executeJavaScript("""
+                                isUpdatingContent = true;
+                                window.scrollTo({
+                                    top: document.body.scrollHeight,
+                                    behavior: 'auto'
+                                });
+                                setTimeout(() => { isUpdatingContent = false; }, 50);
+                            """)
                         }
                     }
                 }
