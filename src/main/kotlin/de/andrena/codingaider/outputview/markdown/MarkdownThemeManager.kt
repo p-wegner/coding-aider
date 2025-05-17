@@ -6,9 +6,6 @@ class MarkdownThemeManager {
     var isDarkTheme: Boolean = !JBColor.isBright()
         private set
         
-    /**
-     * Loads JavaScript from resources
-     */
     private fun loadJavaScriptResource(): String {
         return try {
             val resourcePath = "/js/markdown-viewer.js"
@@ -21,9 +18,6 @@ class MarkdownThemeManager {
         }
     }
     
-    /**
-     * Provides default JavaScript if resource loading fails
-     */
     private fun getDefaultJavaScript(): String {
         return """
             // Persistent panel state storage
