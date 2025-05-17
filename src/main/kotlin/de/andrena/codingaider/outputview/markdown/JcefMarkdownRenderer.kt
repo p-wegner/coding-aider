@@ -18,6 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
+import kotlin.concurrent.schedule
 
 /**
  * Markdown renderer implementation using JCEF (Chromium Embedded Framework)
@@ -36,6 +37,7 @@ class JcefMarkdownRenderer(
     private var pendingContent: String? = null
     private var initializationTimer: Timer? = null
     private var devToolsOpened = false
+    private var shouldAutoScroll = true
 
     override val component: JComponent
         get() = mainPanel
@@ -59,6 +61,39 @@ class JcefMarkdownRenderer(
                 setDarkTheme(isDark)
             }
         }
+        
+        // Set up JavaScript callback to receive scroll position updates
+        val scrollCallback = JBCefJSQuery.create(browser)
+        scrollCallback.addHandler { message ->
+            try {
+                if (message == "false") {
+                    shouldAutoScroll = false
+                } else if (message == "true") {
+                    shouldAutoScroll = true
+                }
+                null
+            } catch (e: Exception) {
+                null
+            }
+        }
+        
+        // Register the callback with JavaScript
+        browser.jbCefClient.addLoadHandler(object : CefLoadHandlerAdapter() {
+            override fun onLoadEnd(browser: CefBrowser, frame: CefFrame, httpStatusCode: Int) {
+                if (frame.isMain) {
+                    executeJavaScript("""
+                        window.updateScrollState = function(isAtBottom) {
+                            ${scrollCallback.inject("isAtBottom.toString()")};
+                        };
+                        
+                        window.addEventListener('scroll', function() {
+                            const isNearBottom = (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 100);
+                            window.updateScrollState(isNearBottom);
+                        });
+                    """.trimIndent())
+                }
+            }
+        }, browser.cefBrowser)
         
         // Initialize browser with HTML template
         initializeBrowser()
@@ -205,6 +240,17 @@ class JcefMarkdownRenderer(
                             panelStates[panelId] = panel.classList.contains('expanded');
                         });
                         
+                        // Track scrolling to determine auto-scroll behavior
+                        window.addEventListener('scroll', function() {
+                            // Check if we're near the bottom of the page
+                            const isNearBottom = (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 100);
+                            
+                            // Send message to Kotlin code about scroll position
+                            if (window.scrollY > 0) {  // Only track when user has actually scrolled
+                                window.shouldAutoScroll = isNearBottom;
+                            }
+                        });
+                        
                         // Override updateContent function with our enhanced version
                         originalUpdateContent = window.updateContent;
                         window.updateContent = function(html) {
@@ -281,10 +327,26 @@ class JcefMarkdownRenderer(
                     updateContent(`${escapeJsString(html)}`);
                 } else {
                     document.getElementById('content').innerHTML = `${escapeJsString(html)}`;
+                    if (${shouldAutoScroll}) {
+                        window.scrollTo(0, document.body.scrollHeight);
+                    }
                 }
             """.trimIndent()
             
             executeJavaScript(script)
+            
+            // Schedule additional scroll attempts with delays to ensure we reach the bottom
+            if (shouldAutoScroll) {
+                for (delay in listOf(100L, 300L, 600L)) {
+                    Timer().schedule(delay) {
+                        if (!isDisposed) {
+                            SwingUtilities.invokeLater {
+                                executeJavaScript("if (${shouldAutoScroll}) { window.scrollTo(0, document.body.scrollHeight); }")
+                            }
+                        }
+                    }
+                }
+            }
         } catch (e: Exception) {
             println("Error updating content in JcefMarkdownRenderer: ${e.message}")
             e.printStackTrace()
@@ -304,7 +366,19 @@ class JcefMarkdownRenderer(
         if (isDisposed || !loadCompleted.get()) return
         
         try {
+            shouldAutoScroll = true
             executeJavaScript("scrollToBottom();")
+            
+            // Schedule multiple scroll attempts with increasing delays
+            for (delay in listOf(100L, 300L, 600L)) {
+                Timer().schedule(delay) {
+                    if (!isDisposed) {
+                        SwingUtilities.invokeLater {
+                            executeJavaScript("window.scrollTo(0, document.body.scrollHeight);")
+                        }
+                    }
+                }
+            }
         } catch (e: Exception) {
             println("Error scrolling to bottom: ${e.message}")
         }
