@@ -96,16 +96,6 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
                                         println("Error in delayed markdown update (${delay}ms): ${e.message}")
                                         e.printStackTrace()
                                         
-                                        // On the last attempt, try a more direct approach if everything else failed
-                                        if (delay == 2000L && renderer is JcefMarkdownRenderer) {
-                                            try {
-                                                println("Attempting emergency content update")
-                                                // Try to directly set some content to make sure something appears
-                                                (renderer as JcefMarkdownRenderer).updateContent("**Emergency content update** - Please reload the view if content is missing.")
-                                            } catch (e2: Exception) {
-                                                println("Emergency update failed: ${e2.message}")
-                                            }
-                                        }
                                     }
                                 }
                             }
