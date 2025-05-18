@@ -75,23 +75,34 @@ class JcefMarkdownRenderer(
                 canGoBack: Boolean,
                 canGoForward: Boolean
             ) {
-                if (!isLoading && !loadCompleted.getAndSet(true)) {
+                if (!isLoading) {
                     // Browser is ready, apply any pending content
                     SwingUtilities.invokeLater {
-                        pendingContent.getAndSet(null)?.let { content ->
-                            updateContent(content)
+                        if (loadCompleted.compareAndSet(false, true)) {
+                            pendingContent.getAndSet(null)?.let { content ->
+                                updateContent(content)
+                            }
+                            initializationFuture?.complete(true)
                         }
-                        initializationFuture?.complete(true)
                     }
                 }
             }
         }, browser.cefBrowser)
         
+        // Register load handler with parent disposable
+        Disposer.register(parentDisposable, Disposable {
+            try {
+                browser.jbCefClient.removeLoadHandler(browser.cefBrowser)
+            } catch (e: Exception) {
+                LOG.warn("Error removing load handler", e)
+            }
+        })
+        
         // Set up initialization future with timeout
         initializationFuture = CompletableFuture<Boolean>().completeOnTimeout(true, 2, TimeUnit.SECONDS)
         initializationFuture?.thenAcceptAsync({
-            if (!loadCompleted.getAndSet(true)) {
-                SwingUtilities.invokeLater {
+            SwingUtilities.invokeLater {
+                if (loadCompleted.compareAndSet(false, true)) {
                     pendingContent.getAndSet(null)?.let { content ->
                         updateContent(content)
                     }
@@ -366,18 +377,22 @@ class JcefMarkdownRenderer(
     override fun setMarkdown(markdown: String) {
         if (isDisposed.get()) return
         
-        // Store content for processing
-        currentContent = markdown
-        
         if (!loadCompleted.get()) {
             // Browser not ready yet, store content for later
             pendingContent.set(markdown)
+            // Store content for processing (only after we've saved the pending content)
+            currentContent = markdown
             return
         }
         
         // Process markdown in background thread
         AppExecutorUtil.getAppExecutorService().submit {
             try {
+                if (isDisposed.get()) return@submit
+                
+                // Store content for processing
+                currentContent = markdown
+                
                 // Process markdown to HTML
                 val html = contentProcessor.processMarkdown(markdown, themeManager.isDarkTheme)
                 
@@ -423,10 +438,31 @@ class JcefMarkdownRenderer(
         if (isDisposed.get()) return
         
         if (themeManager.updateTheme(isDarkTheme)) {
-            // Apply theme change via CSS class instead of full rerender
+            // Apply theme change via CSS variables instead of full rerender
             executeJavaScript("""
-                document.body.style.backgroundColor = '${if (isDarkTheme) "#2b2b2b" else "#ffffff"}';
-                document.body.style.color = '${if (isDarkTheme) "#ffffff" else "#000000"}';
+                (function() {
+                    // Update theme colors
+                    document.body.style.backgroundColor = '${if (isDarkTheme) "#2b2b2b" else "#ffffff"}';
+                    document.body.style.color = '${if (isDarkTheme) "#ffffff" else "#000000"}';
+                    
+                    // Add/remove theme class
+                    if (${isDarkTheme}) {
+                        document.body.classList.add('dark-theme');
+                        document.body.classList.remove('light-theme');
+                    } else {
+                        document.body.classList.add('light-theme');
+                        document.body.classList.remove('dark-theme');
+                    }
+                    
+                    // Update code blocks and other themed elements without full re-render
+                    document.querySelectorAll('.collapsible-panel').forEach(panel => {
+                        panel.style.borderColor = '${if (isDarkTheme) "rgba(200, 200, 200, 0.2)" else "rgba(0, 0, 0, 0.2)"}';
+                    });
+                    
+                    document.querySelectorAll('.collapsible-header').forEach(header => {
+                        header.style.backgroundColor = '${if (isDarkTheme) "rgba(200, 200, 200, 0.1)" else "rgba(0, 0, 0, 0.1)"}';
+                    });
+                })();
             """.trimIndent())
         }
     }
@@ -435,16 +471,18 @@ class JcefMarkdownRenderer(
         if (isDisposed.get() || !loadCompleted.get()) return
         
         try {
+            // First immediate scroll attempt
             executeJavaScript("scrollToBottom();")
             
             // Single delayed scroll attempt as backup
-            AppExecutorUtil.getAppScheduledExecutorService().schedule({
-                if (!isDisposed.get()) {
-                    SwingUtilities.invokeLater {
+            // This helps with cases where content is still being rendered
+            if (!isDisposed.get()) {
+                AppExecutorUtil.getAppScheduledExecutorService().schedule({
+                    if (!isDisposed.get()) {
                         executeJavaScript("scrollToBottom();")
                     }
-                }
-            }, 300, TimeUnit.MILLISECONDS)
+                }, 300, TimeUnit.MILLISECONDS)
+            }
         } catch (e: Exception) {
             LOG.error("Error scrolling to bottom", e)
         }
@@ -457,8 +495,29 @@ class JcefMarkdownRenderer(
         
         try {
             val devTools = browser.openDevtools()
-            synchronized(devToolsInstances) {
-                devToolsInstances.add(devTools)
+            if (devTools != null) {
+                synchronized(devToolsInstances) {
+                    devToolsInstances.add(devTools)
+                }
+                
+                // Register a listener to remove from our tracking set when closed
+                try {
+                    val devToolsBrowser = devTools.devTools
+                    if (devToolsBrowser != null) {
+                        browser.jbCefClient.addLifeSpanHandler(object : org.cef.handler.CefLifeSpanHandlerAdapter() {
+                            override fun onBeforeClose(browser: CefBrowser?) {
+                                if (browser == devToolsBrowser) {
+                                    synchronized(devToolsInstances) {
+                                        devToolsInstances.remove(devTools)
+                                    }
+                                    browser.jbCefClient.removeLifeSpanHandler(browser)
+                                }
+                            }
+                        }, devToolsBrowser)
+                    }
+                } catch (e: Exception) {
+                    LOG.warn("Error setting up DevTools lifecycle tracking", e)
+                }
             }
             return true
         } catch (e: Exception) {
@@ -471,9 +530,17 @@ class JcefMarkdownRenderer(
         if (isDisposed.get()) return
         
         try {
-            SwingUtilities.invokeLater {
+            // Check if we're already on EDT
+            if (SwingUtilities.isEventDispatchThread()) {
                 if (!isDisposed.get()) {
                     browser.cefBrowser.executeJavaScript(script, browser.cefBrowser.url, 0)
+                }
+            } else {
+                // Only use invokeLater if we're not already on EDT
+                SwingUtilities.invokeLater {
+                    if (!isDisposed.get()) {
+                        browser.cefBrowser.executeJavaScript(script, browser.cefBrowser.url, 0)
+                    }
                 }
             }
         } catch (e: Exception) {
@@ -485,14 +552,39 @@ class JcefMarkdownRenderer(
      * Properly escapes a string for use in JavaScript by converting it to a JSON string
      */
     private fun jsonEscapeString(str: String): String {
-        // Use built-in JSON escaping to handle all special characters
-        return str.replace("\\", "\\\\")
-                 .replace("\"", "\\\"")
-                 .replace("\n", "\\n")
-                 .replace("\r", "\\r")
-                 .replace("\t", "\\t")
-                 .replace("</script>", "<\\/script>")
-                 .let { "\"$it\"" }
+        // Create a StringBuilder with estimated capacity
+        val sb = StringBuilder(str.length + 10)
+        sb.append('"')
+        
+        // Manually escape all special characters
+        for (c in str) {
+            when (c) {
+                '\\' -> sb.append("\\\\")
+                '\"' -> sb.append("\\\"")
+                '\n' -> sb.append("\\n")
+                '\r' -> sb.append("\\r")
+                '\t' -> sb.append("\\t")
+                '\b' -> sb.append("\\b")
+                '\u000C' -> sb.append("\\f") // Form feed
+                '<' -> {
+                    // Special handling for </script> to prevent XSS
+                    if (str.indexOf("</script>", sb.length - 1) == sb.length - 1) {
+                        sb.append("<\\/")
+                    } else {
+                        sb.append(c)
+                    }
+                }
+                in '\u0000'..'\u001F' -> {
+                    // Control characters need unicode escape
+                    sb.append("\\u")
+                    sb.append(String.format("%04x", c.code))
+                }
+                else -> sb.append(c)
+            }
+        }
+        
+        sb.append('"')
+        return sb.toString()
     }
     
     override fun dispose() {
@@ -500,9 +592,18 @@ class JcefMarkdownRenderer(
         if (isDisposed.getAndSet(true)) return
         
         try {
+            // Cancel any pending initialization
+            initializationFuture?.cancel(true)
+            
             // Ensure we're on EDT for Swing operations
             if (!SwingUtilities.isEventDispatchThread()) {
-                SwingUtilities.invokeAndWait { disposeOnEDT() }
+                try {
+                    SwingUtilities.invokeAndWait { disposeOnEDT() }
+                } catch (e: Exception) {
+                    LOG.error("Error during invokeAndWait in dispose", e)
+                    // Try to dispose anyway as a fallback
+                    disposeOnEDT()
+                }
             } else {
                 disposeOnEDT()
             }
@@ -513,9 +614,6 @@ class JcefMarkdownRenderer(
     
     private fun disposeOnEDT() {
         try {
-            // Cancel any pending initialization
-            initializationFuture?.cancel(true)
-            
             // Close all DevTools windows
             synchronized(devToolsInstances) {
                 devToolsInstances.forEach { devTools ->
@@ -529,6 +627,7 @@ class JcefMarkdownRenderer(
             }
             
             // Dispose the parent disposable which will clean up all registered resources
+            // This will also clean up the theme change listener and load handler
             Disposer.dispose(parentDisposable)
             
             // Clear panel

@@ -109,12 +109,12 @@ class MarkdownDialog(
                 text = "DevTools Opened"
             } else {
                 text = "DevTools Failed"
-                Timer().schedule(2000) {
+                executor.schedule({
                     invokeLater {
                         text = "Show DevTools"
                         isEnabled = true
                     }
-                }
+                }, 2000, java.util.concurrent.TimeUnit.MILLISECONDS)
             }
         }
     }
