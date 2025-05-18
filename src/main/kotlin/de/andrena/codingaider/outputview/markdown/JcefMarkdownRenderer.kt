@@ -194,6 +194,7 @@ class JcefMarkdownRenderer(
                     let isUpdatingContent = false;
                     let wasAtBottom = false;
                     
+                    // Define the original function first
                     function updateContent(html) {
                         isUpdatingContent = true;
                         wasAtBottom = isScrolledToBottom();
