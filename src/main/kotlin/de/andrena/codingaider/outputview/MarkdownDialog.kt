@@ -286,7 +286,7 @@ class MarkdownDialog(
         
         // Use AtomicReference to hold the future so we can cancel it from within the task
         val timerRef = java.util.concurrent.atomic.AtomicReference<java.util.concurrent.ScheduledFuture<*>?>()
-        
+        // TODO: error occurs here: Not supported because it's bad for hibernation; use scheduleWithFixedDelay() with the same parameters instead.
         val task = executor.scheduleAtFixedRate({
             invokeLater {
                 if (remainingSeconds > 0) {
