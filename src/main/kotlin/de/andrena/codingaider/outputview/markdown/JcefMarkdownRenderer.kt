@@ -112,267 +112,56 @@ class JcefMarkdownRenderer(
     }
 
     private fun initializeBrowser() {
-        val htmlTemplate = """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Markdown Viewer</title>
-                <style>
-                    body {
-                        margin: 0;
-                        padding: 0;
-                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-                        background-color: ${if (themeManager.isDarkTheme) "#2b2b2b" else "#ffffff"};
-                        color: ${if (themeManager.isDarkTheme) "#ffffff" else "#000000"};
-                        transition: background-color 0.3s ease, color 0.3s ease;
-                    }
-                    #content {
-                        padding: 20px;
-                    }
-                    
-                    /* Collapsible panel styles */
-                    .collapsible-panel {
-                        margin-bottom: 10px;
-                        border: 1px solid rgba(127, 127, 127, 0.2);
-                        border-radius: 4px;
-                        overflow: hidden;
-                    }
-                    
-                    .collapsible-header {
-                        padding: 8px 12px;
-                        background-color: rgba(127, 127, 127, 0.1);
-                        cursor: pointer;
-                        display: flex;
-                        align-items: center;
-                        user-select: none;
-                    }
-                    
-                    .collapsible-header:hover {
-                        background-color: rgba(127, 127, 127, 0.2);
-                    }
-                    
-                    .collapsible-arrow {
-                        margin-right: 8px;
-                        font-size: 12px;
-                        width: 12px;
-                        text-align: center;
-                    }
-                    
-                    .collapsible-title {
-                        flex-grow: 1;
-                        font-weight: 500;
-                    }
-                    
-                    .collapsible-content {
-                        padding: 0;
-                        max-height: 0;
-                        overflow: hidden;
-                        transition: max-height 0.3s ease, padding 0.3s ease;
-                    }
-                    
-                    .collapsible-panel.expanded .collapsible-content {
-                        padding: 10px;
-                        max-height: 10000px; /* Large enough to contain content */
-                    }
-                    
-                    /* Disable hover effects during content updates */
-                    body.updating-content * {
-                        pointer-events: none !important;
-                    }
-                    
-                    /* Keyboard focus styles */
-                    .collapsible-header:focus {
-                        outline: 2px solid #4d90fe;
-                        outline-offset: -2px;
-                    }
-                </style>
-                <script>
-                    // Panel state tracking
-                    let panelStates = {};
-                    let isUpdatingContent = false;
-                    let wasAtBottom = false;
-                    
-                    // Define the original function first
-                    function updateContent(html) {
-                        isUpdatingContent = true;
-                        wasAtBottom = isScrolledToBottom();
-                        
-                        // Add a class to the body during updates to disable hover effects
-                        document.body.classList.add('updating-content');
-                        
-                        // Save current scroll position and viewport height before update
-                        const scrollPosition = window.scrollY;
-                        const viewportHeight = window.innerHeight;
-                        const documentHeight = document.body.scrollHeight;
-                        const scrollPercentage = documentHeight > 0 ? scrollPosition / documentHeight : 0;
-                        
-                        // Store current panel states before updating
-                        storeCurrentPanelStates();
-                        
-                        // Update content
-                        document.getElementById('content').innerHTML = html;
-                        
-                        // Restore panel states
-                        restorePanelStates();
-                        
-                        // Use requestAnimationFrame to ensure DOM is updated before scrolling
-                        requestAnimationFrame(() => {
-                            if (wasAtBottom) {
-                                // If user was at bottom, scroll to new bottom
-                                window.scrollTo(0, document.body.scrollHeight);
-                            } else {
-                                // Try to maintain user's scroll position
-                                // First try absolute position
-                                window.scrollTo(0, scrollPosition);
-                                
-                                // If content size changed significantly, try percentage-based position
-                                setTimeout(() => {
-                                    const newDocumentHeight = document.body.scrollHeight;
-                                    // Only apply percentage-based scrolling for significant content changes
-                                    if (Math.abs(newDocumentHeight - documentHeight) > viewportHeight * 0.3) {
-                                        window.scrollTo(0, newDocumentHeight * scrollPercentage);
-                                    }
-                                }, 50);
-                            }
-                            
-                            // Remove updating class after a short delay
-                            setTimeout(() => {
-                                document.body.classList.remove('updating-content');
-                                isUpdatingContent = false;
-                            }, 150);
-                        });
-                    }
-                    
-                    function isScrolledToBottom() {
-                        // More generous threshold (100px) to determine if we're at the bottom
-                        return (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 100);
-                    }
-                    
-                    function getPanelId(panel) {
-                        // Use data attribute if available (more stable)
-                        if (panel.dataset.panelId) {
-                            return panel.dataset.panelId;
+        try {
+            // Load HTML template from resources
+            val htmlTemplate = loadResourceAsString("/html/markdown-template.html")
+            
+            // Replace placeholders with actual values
+            val processedTemplate = htmlTemplate
+                .replace("\${BACKGROUND_COLOR}", if (themeManager.isDarkTheme) "#2b2b2b" else "#ffffff")
+                .replace("\${TEXT_COLOR}", if (themeManager.isDarkTheme) "#ffffff" else "#000000")
+                .replace("\${SCRIPT_PATH}", getScriptUrl())
+            
+            // Load the processed template
+            val dataUrl = "data:text/html;charset=utf-8;base64," + 
+                          Base64.getEncoder().encodeToString(processedTemplate.toByteArray(StandardCharsets.UTF_8))
+            browser.loadURL(dataUrl)
+        } catch (e: Exception) {
+            LOG.error("Error initializing browser with template", e)
+            // Fallback to minimal HTML if template loading fails
+            val fallbackHtml = """
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Markdown Viewer (Fallback)</title>
+                    <style>
+                        body { 
+                            font-family: sans-serif; 
+                            margin: 20px;
+                            background-color: ${if (themeManager.isDarkTheme) "#2b2b2b" else "#ffffff"};
+                            color: ${if (themeManager.isDarkTheme) "#ffffff" else "#000000"};
                         }
-                        
-                        // Otherwise generate from header content (more stable than using innerHTML)
-                        const header = panel.querySelector('.collapsible-header');
-                        let title = '';
-                        if (header) {
-                            const titleElement = header.querySelector('.collapsible-title');
-                            if (titleElement) {
-                                title = titleElement.textContent || '';
-                            }
+                    </style>
+                </head>
+                <body>
+                    <div id="content"></div>
+                    <script>
+                        function updateContent(html) {
+                            document.getElementById('content').innerHTML = html;
                         }
-                        
-                        // Generate a more stable ID based on title and position in document
-                        const allPanels = Array.from(document.querySelectorAll('.collapsible-panel'));
-                        const panelIndex = allPanels.indexOf(panel);
-                        const id = 'panel-' + title.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + panelIndex;
-                        
-                        // Store ID as data attribute for future lookups
-                        panel.dataset.panelId = id;
-                        return id;
-                    }
-                    
-                    function storeCurrentPanelStates() {
-                        document.querySelectorAll('.collapsible-panel').forEach(panel => {
-                            const panelId = getPanelId(panel);
-                            panelStates[panelId] = panel.classList.contains('expanded');
-                        });
-                    }
-                    
-                    function restorePanelStates() {
-                        document.querySelectorAll('.collapsible-panel').forEach(panel => {
-                            const panelId = getPanelId(panel);
-                            
-                            // Apply stored state if it exists
-                            if (panelStates.hasOwnProperty(panelId)) {
-                                if (panelStates[panelId]) {
-                                    panel.classList.add('expanded');
-                                    const arrow = panel.querySelector('.collapsible-arrow');
-                                    if (arrow) {
-                                        arrow.textContent = '▼';
-                                    }
-                                } else {
-                                    panel.classList.remove('expanded');
-                                    const arrow = panel.querySelector('.collapsible-arrow');
-                                    if (arrow) {
-                                        arrow.textContent = '▶';
-                                    }
-                                }
-                            }
-                        });
-                    }
-                    
-                    function scrollToBottom() {
-                        window.scrollTo({
-                            top: document.body.scrollHeight,
-                            behavior: 'auto'
-                        });
-                    }
-                    
-                    // Initialize when DOM is ready
-                    document.addEventListener('DOMContentLoaded', function() {
-                        // Set up collapsible panels
-                        document.addEventListener('click', function(e) {
-                            if (isUpdatingContent) return;
-                            
-                            // Find closest collapsible header
-                            const header = e.target.closest('.collapsible-header');
-                            if (!header) return;
-                            
-                            const panel = header.closest('.collapsible-panel');
-                            if (!panel) return;
-                            
-                            // Toggle expanded state
-                            panel.classList.toggle('expanded');
-                            
-                            // Update arrow
-                            const arrow = header.querySelector('.collapsible-arrow');
-                            if (arrow) {
-                                arrow.textContent = panel.classList.contains('expanded') ? '▼' : '▶';
-                            }
-                            
-                            // Store panel state
-                            const panelId = getPanelId(panel);
-                            panelStates[panelId] = panel.classList.contains('expanded');
-                        });
-                        
-                        // Add keyboard support for collapsible panels
-                        document.addEventListener('keydown', function(e) {
-                            if (isUpdatingContent) return;
-                            
-                            // Only handle Enter or Space
-                            if (e.key !== 'Enter' && e.key !== ' ') return;
-                            
-                            const activeElement = document.activeElement;
-                            if (activeElement && activeElement.classList.contains('collapsible-header')) {
-                                e.preventDefault();
-                                activeElement.click();
-                            }
-                        });
-                        
-                        // Make headers focusable
-                        document.querySelectorAll('.collapsible-header').forEach(header => {
-                            if (!header.hasAttribute('tabindex')) {
-                                header.setAttribute('tabindex', '0');
-                            }
-                        });
-                    });
-                </script>
-            </head>
-            <body>
-                <div id="content"></div>
-            </body>
-            </html>
-        """.trimIndent()
-
-        // Load the HTML template
-        val dataUrl = "data:text/html;charset=utf-8;base64," + 
-                      Base64.getEncoder().encodeToString(htmlTemplate.toByteArray(StandardCharsets.UTF_8))
-        browser.loadURL(dataUrl)
+                        function scrollToBottom() {
+                            window.scrollTo(0, document.body.scrollHeight);
+                        }
+                    </script>
+                </body>
+                </html>
+            """.trimIndent()
+            
+            val fallbackUrl = "data:text/html;charset=utf-8;base64," + 
+                              Base64.getEncoder().encodeToString(fallbackHtml.toByteArray(StandardCharsets.UTF_8))
+            browser.loadURL(fallbackUrl)
+        }
     }
 
     override fun setMarkdown(markdown: String) {
@@ -546,6 +335,49 @@ class JcefMarkdownRenderer(
             }
         } catch (e: Exception) {
             LOG.error("Error executing JavaScript", e)
+        }
+    }
+    
+    /**
+     * Gets the URL for the JavaScript file, either from resources or as a data URL
+     */
+    private fun getScriptUrl(): String {
+        try {
+            // Try to get the script as a resource URL
+            val scriptUrl = javaClass.getResource("/js/markdown-viewer.js")
+            if (scriptUrl != null) {
+                return scriptUrl.toString()
+            }
+        } catch (e: Exception) {
+            LOG.warn("Could not load script as resource URL", e)
+        }
+        
+        // Fallback: inline the script as a data URL
+        try {
+            val scriptContent = loadResourceAsString("/js/markdown-viewer.js")
+            return "data:text/javascript;charset=utf-8;base64," + 
+                   Base64.getEncoder().encodeToString(scriptContent.toByteArray(StandardCharsets.UTF_8))
+        } catch (e: Exception) {
+            LOG.error("Could not load script content", e)
+            // Return minimal script as data URL
+            val minimalScript = "function updateContent(html){document.getElementById('content').innerHTML=html;}" +
+                                "function scrollToBottom(){window.scrollTo(0,document.body.scrollHeight);}"
+            return "data:text/javascript;charset=utf-8;base64," + 
+                   Base64.getEncoder().encodeToString(minimalScript.toByteArray(StandardCharsets.UTF_8))
+        }
+    }
+    
+    /**
+     * Loads a resource file as a string
+     */
+    private fun loadResourceAsString(resourcePath: String): String {
+        val inputStream = javaClass.getResourceAsStream(resourcePath)
+            ?: throw IllegalArgumentException("Resource not found: $resourcePath")
+        
+        return inputStream.use { stream ->
+            stream.bufferedReader(StandardCharsets.UTF_8).use { reader ->
+                reader.readText()
+            }
         }
     }
     
