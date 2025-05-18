@@ -37,8 +37,6 @@ class JcefMarkdownRenderer(
     private var pendingContent: String? = null
     private var initializationTimer: Timer? = null
     private var devToolsOpened = false
-    private var shouldAutoScroll = true
-    private var isUserScrolling = false
 
     override val component: JComponent
         get() = mainPanel
@@ -63,43 +61,6 @@ class JcefMarkdownRenderer(
             }
         }
         
-        // Set up JavaScript callback to receive scroll position updates
-        val scrollCallback = JBCefJSQuery.create(browser)
-        scrollCallback.addHandler { message ->
-            try {
-                if (message == "false") {
-                    shouldAutoScroll = false
-                    isUserScrolling = true
-                } else if (message == "true") {
-                    shouldAutoScroll = true
-                    isUserScrolling = false
-                }
-                null
-            } catch (e: Exception) {
-                null
-            }
-        }
-        
-        // Register the callback with JavaScript
-        browser.jbCefClient.addLoadHandler(object : CefLoadHandlerAdapter() {
-            override fun onLoadEnd(browser: CefBrowser, frame: CefFrame, httpStatusCode: Int) {
-                if (frame.isMain) {
-                    executeJavaScript("""
-                        window.updateScrollState = function(isAtBottom) {
-                            ${scrollCallback.inject("isAtBottom.toString()")};
-                        };
-                        
-                        window.addEventListener('scroll', function() {
-                            // Don't process scroll events during content updates
-                            if (isUpdatingContent) return;
-                            
-                            const isNearBottom = (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 100);
-                            window.updateScrollState(isNearBottom);
-                        });
-                    """.trimIndent())
-                }
-            }
-        }, browser.cefBrowser)
         
         // Initialize browser with HTML template
         initializeBrowser()
@@ -246,32 +207,10 @@ class JcefMarkdownRenderer(
                             panelStates[panelId] = panel.classList.contains('expanded');
                         });
                         
-                        // Track scrolling to determine auto-scroll behavior
-                        let scrollTimeout;
-                        window.addEventListener('scroll', function() {
-                            // Don't process scroll events during content updates
-                            if (isUpdatingContent) return;
-                        
-                            // Check if we're near the bottom of the page
-                            const isNearBottom = (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 100);
-                        
-                            // Debounce scroll events to avoid excessive processing
-                            clearTimeout(scrollTimeout);
-                            scrollTimeout = setTimeout(() => {
-                                // Only update auto-scroll state on user-initiated scrolls
-                                if (window.scrollY > 0 && !isUpdatingContent) {
-                                    window.shouldAutoScroll = isNearBottom;
-                                    // Notify Kotlin about scroll state change if available
-                                    if (typeof window.updateScrollState === 'function') {
-                                        window.updateScrollState(isNearBottom);
-                                    }
-                                }
-                            }, 150);
-                        });
                         
                         // Override updateContent function with our enhanced version
                         originalUpdateContent = updateContent;
-                        window.updateContent = function(html, forceScrollToBottom = false) {
+                        window.updateContent = function(html) {
                             isUpdatingContent = true;
                         
                             // Add a class to the body during updates to disable hover effects
@@ -281,7 +220,6 @@ class JcefMarkdownRenderer(
                             const scrollPosition = window.scrollY;
                             const viewportHeight = window.innerHeight;
                             const documentHeight = document.body.scrollHeight;
-                            const wasAtBottom = isScrolledToBottom();
                             const scrollPercentage = documentHeight > 0 ? scrollPosition / documentHeight : 0;
                             
                             // Calculate visible content range
@@ -299,15 +237,7 @@ class JcefMarkdownRenderer(
                         
                             // Use requestAnimationFrame to ensure DOM is updated before scrolling
                             requestAnimationFrame(() => {
-                                // Determine if we should scroll to bottom based on parameters and state
-                                const shouldScrollToBottom = forceScrollToBottom || 
-                                                           (window.shouldAutoScroll && wasAtBottom);
-                                
-                                if (shouldScrollToBottom) {
-                                    // If auto-scroll is enabled and user was at bottom, keep them at bottom
-                                    scrollToBottom();
-                                } else {
-                                    // Otherwise try to maintain user's scroll position
+                                // Try to maintain user's scroll position
                                     
                                     // First try absolute position
                                     window.scrollTo(0, scrollPosition);
@@ -369,11 +299,9 @@ class JcefMarkdownRenderer(
             val script = """
                 try {
                     if (typeof window.updateContent === 'function') {
-                        // Pass shouldAutoScroll flag to the updateContent function
-                        window.updateContent(`${escapeJsString(html)}`, ${shouldAutoScroll});
+                        window.updateContent(`${escapeJsString(html)}`);
                     } else {
                         // Fallback if our custom function isn't available
-                        const wasAtBottom = (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 100);
                         const scrollPosition = window.scrollY;
                         
                         // Store panel states before update if function exists
@@ -388,13 +316,8 @@ class JcefMarkdownRenderer(
                             restorePanelStates();
                         }
                         
-                        // Only auto-scroll if explicitly enabled or if user was already at bottom
-                        if (${shouldAutoScroll} && wasAtBottom) {
-                            window.scrollTo(0, document.body.scrollHeight);
-                        } else {
-                            // Otherwise try to maintain the user's scroll position
-                            window.scrollTo(0, scrollPosition);
-                        }
+                        // Try to maintain the user's scroll position
+                        window.scrollTo(0, scrollPosition);
                     }
                 } catch (e) {
                     console.error("Error updating content:", e);
@@ -404,30 +327,6 @@ class JcefMarkdownRenderer(
             """.trimIndent()
             
             executeJavaScript(script)
-            
-            // Only attempt auto-scrolling if explicitly enabled
-            if (shouldAutoScroll) {
-                // Use just one attempt with a reasonable delay
-                Timer().schedule(300L) {
-                    if (!isDisposed) {
-                        SwingUtilities.invokeLater {
-                            // Check if we should still auto-scroll before forcing it
-                            executeJavaScript("""
-                                if (typeof isUpdatingContent !== 'undefined' && !isUpdatingContent && ${shouldAutoScroll}) { 
-                                    // Check if user is already at bottom before forcing scroll
-                                    const isNearBottom = (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 100);
-                                    if (isNearBottom) {
-                                        window.scrollTo({
-                                            top: document.body.scrollHeight,
-                                            behavior: 'auto'
-                                        });
-                                    }
-                                }
-                            """.trimIndent())
-                        }
-                    }
-                }
-            }
         } catch (e: Exception) {
             println("Error updating content in JcefMarkdownRenderer: ${e.message}")
             e.printStackTrace()
@@ -443,18 +342,11 @@ class JcefMarkdownRenderer(
         }
     }
     
-    /**
-     * Sets the auto-scroll behavior
-     */
-    fun setAutoScroll(autoScroll: Boolean) {
-        shouldAutoScroll = autoScroll
-    }
     
     override fun scrollToBottom() {
         if (isDisposed || !loadCompleted.get()) return
         
         try {
-            shouldAutoScroll = true
             executeJavaScript("""
                 // Mark that we're doing a programmatic scroll
                 isUpdatingContent = true;

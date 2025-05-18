@@ -53,30 +53,10 @@ class MarkdownDialog(
         horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
         verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
 
-        // Track user scrolling to determine auto-scroll behavior
-        verticalScrollBar.addAdjustmentListener { e ->
-            // Only consider manual scrolling (not programmatic)
-            if (!programmaticScrolling) {
-                val scrollBar = verticalScrollBar
-                // Check if user scrolled near the bottom (within 20 pixels)
-                val isNearBottom = scrollBar.value >= (scrollBar.maximum - scrollBar.visibleAmount - 20)
-                
-                // Only update auto-scroll state on actual user interaction
-                if (e.valueIsAdjusting) {
-                    shouldAutoScroll = isNearBottom
-                    // Also update the renderer's auto-scroll state
-                    markdownViewer.setAutoScroll(isNearBottom)
-                }
-            }
-        }
     }
 
-    // Flag to track programmatic scrolling to avoid feedback loops
-    private var programmaticScrolling = false
     private var autoCloseTimer: TimerTask? = null
     private var refreshTimer: Timer? = null
-    // Auto-scroll state - start with auto-scroll enabled
-    private var shouldAutoScroll = true
     private var keepOpenButton = JButton("Keep Open").apply {
         mnemonic = KeyEvent.VK_K
         isVisible = false
@@ -286,37 +266,9 @@ class MarkdownDialog(
                 if (newContent != lastContent) {
                     lastContent = newContent
 
-                    // Check if scrollbar is near the bottom before updating content
-                    val scrollBar = scrollPane.verticalScrollBar
-                    val wasNearBottom = scrollBar.value >= (scrollBar.maximum - scrollBar.visibleAmount - 10)
-
                     // Update content - force a non-empty string
                     val contentToSet = newContent.ifBlank { " " }
                     markdownViewer.setMarkdown(contentToSet)
-
-                    // Only auto-scroll if explicitly enabled AND we were already at the bottom
-                    // This prevents disrupting the user's reading position
-                    if (shouldAutoScroll && wasNearBottom) {
-                        // Use fewer, more strategic scroll attempts
-                        Timer().schedule(300L) {
-                            invokeLater {
-                                try {
-                                    programmaticScrolling = true // Prevent listener feedback loop
-                                    scrollBar.value = scrollBar.maximum
-                                    
-                                    // Reset the flag after a short delay
-                                    Timer().schedule(100L) {
-                                        invokeLater {
-                                            programmaticScrolling = false
-                                        }
-                                    }
-                                } catch (e: Exception) {
-                                    programmaticScrolling = false
-                                    println("Error during scrolling: ${e.message}")
-                                }
-                            }
-                        }
-                    }
                 }
             } catch (e: Exception) {
                 println("Error updating markdown dialog: ${e.message}")
