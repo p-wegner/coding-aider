@@ -236,7 +236,7 @@ class MarkdownDialog(
         defaultCloseOperation = DO_NOTHING_ON_CLOSE
         addWindowListener(object : java.awt.event.WindowAdapter() {
             override fun windowClosing(windowEvent: java.awt.event.WindowEvent?) {
-                refreshTimer?.cancel()
+                refreshTimer?.cancel(true)
                 if (isProcessFinished || onAbort == null) {
                     dispose()
                 } else {
