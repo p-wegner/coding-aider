@@ -198,6 +198,10 @@ class JcefMarkdownRenderer(
         }
     }
     
+    private fun updateContent(html: String) {
+        updateContentInBrowser(html)
+    }
+    
     private fun updateContentInBrowser(html: String) {
         if (isDisposed.get()) return
         
