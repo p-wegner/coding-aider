@@ -203,50 +203,6 @@ class JcefMarkdownRenderer(
                             const panelId = getPanelId(panel);
                             
                             // Apply stored state if it exists
-                            if (panelStates[panelId] === false) {
-                                panel.classList.remove('expanded');
-                                const arrow = panel.querySelector('.collapsible-arrow');
-                                if (arrow) {
-                                    arrow.textContent = '▶';
-                                }
-                            }
-                        });
-                    }
-                    
-                    function scrollToBottom() {
-                        // Force scroll to absolute bottom
-                        window.scrollTo({
-                            top: document.body.scrollHeight,
-                            behavior: 'auto'
-                        });
-                    }
-                    
-                    function getPanelId(panel) {
-                        const header = panel.querySelector('.collapsible-header');
-                        let title = '';
-                        if (header) {
-                            const titleElement = header.querySelector('.collapsible-title');
-                            if (titleElement) {
-                                title = titleElement.textContent || '';
-                            }
-                        }
-                        
-                        return 'panel-' + title.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + 
-                               Math.abs(panel.innerHTML.split('').reduce((a, b) => (a * 31 + b.charCodeAt(0)) & 0xFFFFFFFF, 0));
-                    }
-                    
-                    function storeCurrentPanelStates() {
-                        document.querySelectorAll('.collapsible-panel').forEach(panel => {
-                            const panelId = getPanelId(panel);
-                            panelStates[panelId] = panel.classList.contains('expanded');
-                        });
-                    }
-                    
-                    function restorePanelStates() {
-                        document.querySelectorAll('.collapsible-panel').forEach(panel => {
-                            const panelId = getPanelId(panel);
-                            
-                            // Apply stored state if it exists
                             if (panelStates.hasOwnProperty(panelId)) {
                                 if (panelStates[panelId]) {
                                     panel.classList.add('expanded');
