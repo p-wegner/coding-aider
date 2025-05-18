@@ -172,6 +172,9 @@ class JcefMarkdownRenderer(
                     // Store original update function for later override
                     let originalUpdateContent;
                     
+                    // Global variables
+                    let isUpdatingContent = false;
+                    
                     function isScrolledToBottom() {
                         // More generous threshold (100px) to determine if we're at the bottom
                         return (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 100);
@@ -314,6 +317,7 @@ class JcefMarkdownRenderer(
                         });
                         
                         // Override updateContent function with our enhanced version
+                        originalUpdateContent = updateContent;
                         window.updateContent = function(html, forceScrollToBottom = false) {
                             isUpdatingContent = true;
                         
