@@ -1,0 +1,12 @@
+---
+files:
+- path: src/main/kotlin/de/andrena/codingaider/outputview/markdown/MarkdownThemeManager.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/outputview/markdown/JcefMarkdownRenderer.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/outputview/MarkdownDialog.kt
+  readOnly: false
+- path: docs/MarkdownViewerPRD.md
+  readOnly: true
+- path: .coding-aider-docs/issues.md
+  readOnly: true

@@ -2,8 +2,12 @@ package de.andrena.codingaider.outputview.markdown
 
 import com.intellij.ide.ui.LafManager
 import com.intellij.ide.ui.LafManagerListener
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.util.Disposer
 import com.intellij.ui.JBColor
+import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
 
 /**
@@ -11,9 +15,11 @@ import java.util.concurrent.atomic.AtomicBoolean
  * and providing theme information to renderers.
  */
 class MarkdownThemeManager {
+    private val LOG = Logger.getInstance(MarkdownThemeManager::class.java)
     private val darkThemeState = AtomicBoolean(JBColor.isBright().not())
-    private val themeChangeListeners = mutableListOf<(Boolean) -> Unit>()
+    private val themeChangeListeners = CopyOnWriteArrayList<Pair<Disposable?, (Boolean) -> Unit>>()
     private var isInitialized = false
+    private var messageBusConnection = ApplicationManager.getApplication().messageBus.connect()
 
     init {
         // Initialize with current theme
@@ -21,8 +27,7 @@ class MarkdownThemeManager {
         
         // Listen for theme changes
         try {
-            val connection = ApplicationManager.getApplication().messageBus.connect()
-            connection.subscribe(LafManagerListener.TOPIC, LafManagerListener {
+            messageBusConnection.subscribe(LafManagerListener.TOPIC, LafManagerListener {
                 val isDark = JBColor.isBright().not()
                 if (darkThemeState.get() != isDark) {
                     darkThemeState.set(isDark)
@@ -32,8 +37,13 @@ class MarkdownThemeManager {
             isInitialized = true
         } catch (e: Exception) {
             // Fallback if we can't subscribe to theme changes
-            println("Warning: Could not subscribe to theme changes: ${e.message}")
+            LOG.warn("Could not subscribe to theme changes", e)
         }
+        
+        // Register self-cleanup when application is disposed
+        Disposer.register(ApplicationManager.getApplication(), Disposable {
+            cleanup()
+        })
     }
 
     /**
@@ -56,20 +66,38 @@ class MarkdownThemeManager {
 
     /**
      * Add a listener to be notified of theme changes
+     * @param parentDisposable Optional disposable that will automatically remove the listener when disposed
+     * @param listener The listener function to call when theme changes
      */
-    fun addThemeChangeListener(listener: (Boolean) -> Unit) {
-        themeChangeListeners.add(listener)
+    fun addThemeChangeListener(parentDisposable: Disposable? = null, listener: (Boolean) -> Unit) {
+        themeChangeListeners.add(Pair(parentDisposable, listener))
+        
+        // Register automatic cleanup when parent is disposed
+        if (parentDisposable != null) {
+            Disposer.register(parentDisposable, Disposable {
+                themeChangeListeners.removeIf { it.first == parentDisposable }
+            })
+        }
     }
 
     /**
      * Remove a previously added theme change listener
      */
     fun removeThemeChangeListener(listener: (Boolean) -> Unit) {
-        themeChangeListeners.remove(listener)
+        themeChangeListeners.removeIf { it.second == listener }
     }
 
     private fun notifyThemeChangeListeners() {
         val isDark = darkThemeState.get()
-        themeChangeListeners.forEach { it(isDark) }
+        themeChangeListeners.forEach { it.second(isDark) }
+    }
+    
+    private fun cleanup() {
+        try {
+            messageBusConnection.disconnect()
+            themeChangeListeners.clear()
+        } catch (e: Exception) {
+            LOG.warn("Error during MarkdownThemeManager cleanup", e)
+        }
     }
 }

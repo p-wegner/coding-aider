@@ -1,24 +1,24 @@
 package de.andrena.codingaider.outputview.markdown
 
+import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.ui.JBColor
+import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.util.Disposer
 import com.intellij.ui.jcef.JBCefBrowser
-import com.intellij.ui.jcef.JBCefJSQuery
-import com.intellij.util.ui.UIUtil
+import com.intellij.util.concurrency.AppExecutorUtil
 import org.cef.browser.CefBrowser
-import org.cef.browser.CefFrame
 import org.cef.handler.CefLoadHandlerAdapter
 import java.awt.BorderLayout
 import java.awt.Dimension
 import java.nio.charset.StandardCharsets
 import java.util.Base64
-import java.util.Timer
-import java.util.TimerTask
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 import javax.swing.JComponent
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
-import kotlin.concurrent.schedule
 
 /**
  * Markdown renderer implementation using JCEF (Chromium Embedded Framework)
@@ -28,21 +28,23 @@ class JcefMarkdownRenderer(
     private val contentProcessor: MarkdownContentProcessor,
     private val themeManager: MarkdownThemeManager
 ) : MarkdownRenderer {
-    private var isDisposed = false
+    private val LOG = Logger.getInstance(JcefMarkdownRenderer::class.java)
+    private val isDisposed = AtomicBoolean(false)
     private val browser: JBCefBrowser = JBCefBrowser()
     private val mainPanel = JPanel(BorderLayout())
     private val loadCompleted = AtomicBoolean(false)
-    private val jsQuery = JBCefJSQuery.create(browser)
+    private val pendingContent = AtomicReference<String?>(null)
+    private val devToolsInstances = mutableSetOf<CefBrowser>()
+    private val parentDisposable = Disposer.newDisposable("JcefMarkdownRenderer")
+    
     private var currentContent = ""
-    private var pendingContent: String? = null
-    private var initializationTimer: Timer? = null
-    private var devToolsOpened = false
+    private var initializationFuture: CompletableFuture<Boolean>? = null
 
     override val component: JComponent
         get() = mainPanel
 
     override val isReady: Boolean
-        get() = loadCompleted.get() && !isDisposed
+        get() = loadCompleted.get() && !isDisposed.get()
 
     init {
         // Configure browser and panel
@@ -50,17 +52,17 @@ class JcefMarkdownRenderer(
         browser.component.preferredSize = Dimension(600, 400)
         mainPanel.add(browser.component, BorderLayout.CENTER)
         
-        // Set background color to match IDE theme
-//        val bgColor = if (themeManager.isDarkTheme) "#2b2b2b" else "#ffffff"
-//        browser.cefBrowser.backgroundColor = java.awt.Color.decode(bgColor)
+        // Register browser with parent disposable
+        Disposer.register(parentDisposable, browser)
         
         // Listen for theme changes
-        themeManager.addThemeChangeListener { isDark ->
-            if (!isDisposed) {
-                setDarkTheme(isDark)
+        themeManager.addThemeChangeListener(parentDisposable) { isDark ->
+            if (!isDisposed.get()) {
+                SwingUtilities.invokeLater {
+                    setDarkTheme(isDark)
+                }
             }
         }
-        
         
         // Initialize browser with HTML template
         initializeBrowser()
@@ -76,32 +78,26 @@ class JcefMarkdownRenderer(
                 if (!isLoading && !loadCompleted.getAndSet(true)) {
                     // Browser is ready, apply any pending content
                     SwingUtilities.invokeLater {
-                        pendingContent?.let { content ->
+                        pendingContent.getAndSet(null)?.let { content ->
                             updateContent(content)
-                            pendingContent = null
                         }
+                        initializationFuture?.complete(true)
                     }
                 }
             }
         }, browser.cefBrowser)
         
-        // Set up initialization timer as a fallback
-        initializationTimer = Timer().apply {
-            schedule(object : TimerTask() {
-                override fun run() {
-                    if (!loadCompleted.getAndSet(true)) {
-                        SwingUtilities.invokeLater {
-                            pendingContent?.let { content ->
-                                updateContent(content)
-                                pendingContent = null
-                            }
-                        }
+        // Set up initialization future with timeout
+        initializationFuture = CompletableFuture<Boolean>().completeOnTimeout(true, 2, TimeUnit.SECONDS)
+        initializationFuture?.thenAcceptAsync({
+            if (!loadCompleted.getAndSet(true)) {
+                SwingUtilities.invokeLater {
+                    pendingContent.getAndSet(null)?.let { content ->
+                        updateContent(content)
                     }
-                    initializationTimer?.cancel()
-                    initializationTimer = null
                 }
-            }, 2000) // 2 second fallback
-        }
+            }
+        }, AppExecutorUtil.getAppExecutorService())
     }
 
     private fun initializeBrowser() {
@@ -119,18 +115,123 @@ class JcefMarkdownRenderer(
                         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
                         background-color: ${if (themeManager.isDarkTheme) "#2b2b2b" else "#ffffff"};
                         color: ${if (themeManager.isDarkTheme) "#ffffff" else "#000000"};
+                        transition: background-color 0.3s ease, color 0.3s ease;
                     }
                     #content {
                         padding: 20px;
+                    }
+                    
+                    /* Collapsible panel styles */
+                    .collapsible-panel {
+                        margin-bottom: 10px;
+                        border: 1px solid rgba(127, 127, 127, 0.2);
+                        border-radius: 4px;
+                        overflow: hidden;
+                    }
+                    
+                    .collapsible-header {
+                        padding: 8px 12px;
+                        background-color: rgba(127, 127, 127, 0.1);
+                        cursor: pointer;
+                        display: flex;
+                        align-items: center;
+                        user-select: none;
+                    }
+                    
+                    .collapsible-header:hover {
+                        background-color: rgba(127, 127, 127, 0.2);
+                    }
+                    
+                    .collapsible-arrow {
+                        margin-right: 8px;
+                        font-size: 12px;
+                        width: 12px;
+                        text-align: center;
+                    }
+                    
+                    .collapsible-title {
+                        flex-grow: 1;
+                        font-weight: 500;
+                    }
+                    
+                    .collapsible-content {
+                        padding: 0;
+                        max-height: 0;
+                        overflow: hidden;
+                        transition: max-height 0.3s ease, padding 0.3s ease;
+                    }
+                    
+                    .collapsible-panel.expanded .collapsible-content {
+                        padding: 10px;
+                        max-height: 10000px; /* Large enough to contain content */
+                    }
+                    
+                    /* Disable hover effects during content updates */
+                    body.updating-content * {
+                        pointer-events: none !important;
+                    }
+                    
+                    /* Keyboard focus styles */
+                    .collapsible-header:focus {
+                        outline: 2px solid #4d90fe;
+                        outline-offset: -2px;
                     }
                 </style>
                 <script>
                     // Panel state tracking
                     let panelStates = {};
                     let isUpdatingContent = false;
+                    let wasAtBottom = false;
                     
-                    // Store original update function for later override
-                    let originalUpdateContent;
+                    function updateContent(html) {
+                        isUpdatingContent = true;
+                        wasAtBottom = isScrolledToBottom();
+                        
+                        // Add a class to the body during updates to disable hover effects
+                        document.body.classList.add('updating-content');
+                        
+                        // Save current scroll position and viewport height before update
+                        const scrollPosition = window.scrollY;
+                        const viewportHeight = window.innerHeight;
+                        const documentHeight = document.body.scrollHeight;
+                        const scrollPercentage = documentHeight > 0 ? scrollPosition / documentHeight : 0;
+                        
+                        // Store current panel states before updating
+                        storeCurrentPanelStates();
+                        
+                        // Update content
+                        document.getElementById('content').innerHTML = html;
+                        
+                        // Restore panel states
+                        restorePanelStates();
+                        
+                        // Use requestAnimationFrame to ensure DOM is updated before scrolling
+                        requestAnimationFrame(() => {
+                            if (wasAtBottom) {
+                                // If user was at bottom, scroll to new bottom
+                                window.scrollTo(0, document.body.scrollHeight);
+                            } else {
+                                // Try to maintain user's scroll position
+                                // First try absolute position
+                                window.scrollTo(0, scrollPosition);
+                                
+                                // If content size changed significantly, try percentage-based position
+                                setTimeout(() => {
+                                    const newDocumentHeight = document.body.scrollHeight;
+                                    // Only apply percentage-based scrolling for significant content changes
+                                    if (Math.abs(newDocumentHeight - documentHeight) > viewportHeight * 0.3) {
+                                        window.scrollTo(0, newDocumentHeight * scrollPercentage);
+                                    }
+                                }, 50);
+                            }
+                            
+                            // Remove updating class after a short delay
+                            setTimeout(() => {
+                                document.body.classList.remove('updating-content');
+                                isUpdatingContent = false;
+                            }, 150);
+                        });
+                    }
                     
                     function isScrolledToBottom() {
                         // More generous threshold (100px) to determine if we're at the bottom
@@ -138,6 +239,12 @@ class JcefMarkdownRenderer(
                     }
                     
                     function getPanelId(panel) {
+                        // Use data attribute if available (more stable)
+                        if (panel.dataset.panelId) {
+                            return panel.dataset.panelId;
+                        }
+                        
+                        // Otherwise generate from header content (more stable than using innerHTML)
                         const header = panel.querySelector('.collapsible-header');
                         let title = '';
                         if (header) {
@@ -147,8 +254,14 @@ class JcefMarkdownRenderer(
                             }
                         }
                         
-                        return 'panel-' + title.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + 
-                               Math.abs(panel.innerHTML.split('').reduce((a, b) => (a * 31 + b.charCodeAt(0)) & 0xFFFFFFFF, 0));
+                        // Generate a more stable ID based on title and position in document
+                        const allPanels = Array.from(document.querySelectorAll('.collapsible-panel'));
+                        const panelIndex = allPanels.indexOf(panel);
+                        const id = 'panel-' + title.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + panelIndex;
+                        
+                        // Store ID as data attribute for future lookups
+                        panel.dataset.panelId = id;
+                        return id;
                     }
                     
                     function storeCurrentPanelStates() {
@@ -181,10 +294,19 @@ class JcefMarkdownRenderer(
                         });
                     }
                     
+                    function scrollToBottom() {
+                        window.scrollTo({
+                            top: document.body.scrollHeight,
+                            behavior: 'auto'
+                        });
+                    }
+                    
                     // Initialize when DOM is ready
                     document.addEventListener('DOMContentLoaded', function() {
                         // Set up collapsible panels
                         document.addEventListener('click', function(e) {
+                            if (isUpdatingContent) return;
+                            
                             // Find closest collapsible header
                             const header = e.target.closest('.collapsible-header');
                             if (!header) return;
@@ -206,58 +328,26 @@ class JcefMarkdownRenderer(
                             panelStates[panelId] = panel.classList.contains('expanded');
                         });
                         
-                        
-                        // Override updateContent function with our enhanced version
-                        originalUpdateContent = updateContent;
-                        window.updateContent = function(html) {
-                            isUpdatingContent = true;
-                        
-                            // Add a class to the body during updates to disable hover effects
-                            document.body.classList.add('updating-content');
-                        
-                            // Save current scroll position and viewport height before update
-                            const scrollPosition = window.scrollY;
-                            const viewportHeight = window.innerHeight;
-                            const documentHeight = document.body.scrollHeight;
-                            const scrollPercentage = documentHeight > 0 ? scrollPosition / documentHeight : 0;
+                        // Add keyboard support for collapsible panels
+                        document.addEventListener('keydown', function(e) {
+                            if (isUpdatingContent) return;
                             
-                            // Calculate visible content range
-                            const visibleStartY = scrollPosition;
-                            const visibleEndY = scrollPosition + viewportHeight;
+                            // Only handle Enter or Space
+                            if (e.key !== 'Enter' && e.key !== ' ') return;
                             
-                            // Store current panel states before updating
-                            storeCurrentPanelStates();
+                            const activeElement = document.activeElement;
+                            if (activeElement && activeElement.classList.contains('collapsible-header')) {
+                                e.preventDefault();
+                                activeElement.click();
+                            }
+                        });
                         
-                            // Update content
-                            document.getElementById('content').innerHTML = html;
-                        
-                            // Restore panel states
-                            restorePanelStates();
-                        
-                            // Use requestAnimationFrame to ensure DOM is updated before scrolling
-                            requestAnimationFrame(() => {
-                                // Try to maintain user's scroll position
-                                    
-                                    // First try absolute position
-                                    window.scrollTo(0, scrollPosition);
-                                    
-                                    // If content size changed significantly, try percentage-based position
-                                    setTimeout(() => {
-                                        const newDocumentHeight = document.body.scrollHeight;
-                                        // Only apply percentage-based scrolling for significant content changes
-                                        if (Math.abs(newDocumentHeight - documentHeight) > viewportHeight * 0.3) {
-                                            window.scrollTo(0, newDocumentHeight * scrollPercentage);
-                                        }
-                                    }, 50);
-                                }
-                            
-                                // Remove updating class after a short delay
-                                setTimeout(() => {
-                                    document.body.classList.remove('updating-content');
-                                    isUpdatingContent = false;
-                                }, 150);
-                            });
-                        };
+                        // Make headers focusable
+                        document.querySelectorAll('.collapsible-header').forEach(header => {
+                            if (!header.hasAttribute('tabindex')) {
+                                header.setAttribute('tabindex', '0');
+                            }
+                        });
                     });
                 </script>
             </head>
@@ -274,177 +364,177 @@ class JcefMarkdownRenderer(
     }
 
     override fun setMarkdown(markdown: String) {
-        if (isDisposed) return
+        if (isDisposed.get()) return
         
+        // Store content for processing
         currentContent = markdown
         
         if (!loadCompleted.get()) {
             // Browser not ready yet, store content for later
-            pendingContent = markdown
+            pendingContent.set(markdown)
             return
         }
         
-        updateContent(markdown)
+        // Process markdown in background thread
+        AppExecutorUtil.getAppExecutorService().submit {
+            try {
+                // Process markdown to HTML
+                val html = contentProcessor.processMarkdown(markdown, themeManager.isDarkTheme)
+                
+                // Update UI on EDT
+                SwingUtilities.invokeLater {
+                    if (!isDisposed.get()) {
+                        updateContentInBrowser(html)
+                    }
+                }
+            } catch (e: Exception) {
+                LOG.error("Error processing markdown", e)
+            }
+        }
     }
     
-    private fun updateContent(markdown: String) {
-        if (isDisposed) return
+    private fun updateContentInBrowser(html: String) {
+        if (isDisposed.get()) return
         
         try {
-            // Process markdown to HTML
-            val html = contentProcessor.processMarkdown(markdown, themeManager.isDarkTheme)
-            
             // Execute JavaScript to update content
             val script = """
                 try {
-                    if (typeof window.updateContent === 'function') {
-                        window.updateContent(`${escapeJsString(html)}`);
+                    if (typeof updateContent === 'function') {
+                        updateContent(${jsonEscapeString(html)});
                     } else {
-                        // Fallback if our custom function isn't available
-                        const scrollPosition = window.scrollY;
-                        
-                        // Store panel states before update if function exists
-                        if (typeof storeCurrentPanelStates === 'function') {
-                            storeCurrentPanelStates();
-                        }
-                        
-                        document.getElementById('content').innerHTML = `${escapeJsString(html)}`;
-                        
-                        // Restore panel states after update if function exists
-                        if (typeof restorePanelStates === 'function') {
-                            restorePanelStates();
-                        }
-                        
-                        // Try to maintain the user's scroll position
-                        window.scrollTo(0, scrollPosition);
+                        // Basic fallback
+                        document.getElementById('content').innerHTML = ${jsonEscapeString(html)};
                     }
                 } catch (e) {
                     console.error("Error updating content:", e);
-                    // Basic fallback
-                    document.getElementById('content').innerHTML = `${escapeJsString(html)}`;
+                    // Ultra basic fallback
+                    document.getElementById('content').innerHTML = ${jsonEscapeString(html)};
                 }
             """.trimIndent()
             
             executeJavaScript(script)
         } catch (e: Exception) {
-            println("Error updating content in JcefMarkdownRenderer: ${e.message}")
-            e.printStackTrace()
+            LOG.error("Error updating content in browser", e)
         }
     }
 
     override fun setDarkTheme(isDarkTheme: Boolean) {
-        if (isDisposed) return
+        if (isDisposed.get()) return
         
-        if (themeManager.updateTheme(isDarkTheme) && currentContent.isNotEmpty()) {
-            // Theme changed, update content with new theme
-            updateContent(currentContent)
+        if (themeManager.updateTheme(isDarkTheme)) {
+            // Apply theme change via CSS class instead of full rerender
+            executeJavaScript("""
+                document.body.style.backgroundColor = '${if (isDarkTheme) "#2b2b2b" else "#ffffff"}';
+                document.body.style.color = '${if (isDarkTheme) "#ffffff" else "#000000"}';
+            """.trimIndent())
         }
     }
     
-    
     override fun scrollToBottom() {
-        if (isDisposed || !loadCompleted.get()) return
+        if (isDisposed.get() || !loadCompleted.get()) return
         
         try {
-            executeJavaScript("""
-                // Mark that we're doing a programmatic scroll
-                isUpdatingContent = true;
-                
-                // Use the smooth scroll function if available
-                if (typeof scrollToBottom === 'function') {
-                    scrollToBottom();
-                } else {
-                    window.scrollTo({
-                        top: document.body.scrollHeight,
-                        behavior: 'auto'
-                    });
-                }
-                
-                // Reset updating flag after scroll completes
-                setTimeout(() => { isUpdatingContent = false; }, 100);
-            """)
+            executeJavaScript("scrollToBottom();")
             
-            // Use just two strategic scroll attempts with longer delays
-            for (delay in listOf(200L, 600L)) {
-                Timer().schedule(delay) {
-                    if (!isDisposed) {
-                        SwingUtilities.invokeLater {
-                            executeJavaScript("""
-                                isUpdatingContent = true;
-                                window.scrollTo({
-                                    top: document.body.scrollHeight,
-                                    behavior: 'auto'
-                                });
-                                setTimeout(() => { isUpdatingContent = false; }, 50);
-                            """)
-                        }
+            // Single delayed scroll attempt as backup
+            AppExecutorUtil.getAppScheduledExecutorService().schedule({
+                if (!isDisposed.get()) {
+                    SwingUtilities.invokeLater {
+                        executeJavaScript("scrollToBottom();")
                     }
                 }
-            }
+            }, 300, TimeUnit.MILLISECONDS)
         } catch (e: Exception) {
-            println("Error scrolling to bottom: ${e.message}")
+            LOG.error("Error scrolling to bottom", e)
         }
     }
     
     override fun supportsDevTools(): Boolean = true
     
     override fun showDevTools(): Boolean {
-        if (isDisposed) return false
+        if (isDisposed.get()) return false
         
         try {
-            browser.openDevtools()
-            devToolsOpened = true
+            val devTools = browser.openDevtools()
+            synchronized(devToolsInstances) {
+                devToolsInstances.add(devTools)
+            }
             return true
         } catch (e: Exception) {
-            println("Error opening DevTools: ${e.message}")
+            LOG.warn("Error opening DevTools", e)
             return false
         }
     }
     
     private fun executeJavaScript(script: String) {
-        if (isDisposed) return
+        if (isDisposed.get()) return
         
         try {
-            ApplicationManager.getApplication().invokeLater {
-                if (!isDisposed) {
+            SwingUtilities.invokeLater {
+                if (!isDisposed.get()) {
                     browser.cefBrowser.executeJavaScript(script, browser.cefBrowser.url, 0)
                 }
             }
         } catch (e: Exception) {
-            println("Error executing JavaScript: ${e.message}")
+            LOG.error("Error executing JavaScript", e)
         }
     }
     
-    private fun escapeJsString(str: String): String {
+    /**
+     * Properly escapes a string for use in JavaScript by converting it to a JSON string
+     */
+    private fun jsonEscapeString(str: String): String {
+        // Use built-in JSON escaping to handle all special characters
         return str.replace("\\", "\\\\")
-                 .replace("`", "\\`")
-                 .replace("$", "\\$")
+                 .replace("\"", "\\\"")
+                 .replace("\n", "\\n")
+                 .replace("\r", "\\r")
+                 .replace("\t", "\\t")
+                 .replace("</script>", "<\\/script>")
+                 .let { "\"$it\"" }
     }
     
     override fun dispose() {
-        if (!isDisposed) {
-            isDisposed = true
-            try {
-                initializationTimer?.cancel()
-                initializationTimer = null
-                
-                // Clean up browser resources
-                jsQuery.dispose()
-                
-                if (devToolsOpened) {
+        // Only dispose once
+        if (isDisposed.getAndSet(true)) return
+        
+        try {
+            // Ensure we're on EDT for Swing operations
+            if (!SwingUtilities.isEventDispatchThread()) {
+                SwingUtilities.invokeAndWait { disposeOnEDT() }
+            } else {
+                disposeOnEDT()
+            }
+        } catch (e: Exception) {
+            LOG.error("Error disposing JcefMarkdownRenderer", e)
+        }
+    }
+    
+    private fun disposeOnEDT() {
+        try {
+            // Cancel any pending initialization
+            initializationFuture?.cancel(true)
+            
+            // Close all DevTools windows
+            synchronized(devToolsInstances) {
+                devToolsInstances.forEach { devTools ->
                     try {
-                        browser.cefBrowser.devTools.close(true)
+                        devTools.devTools?.close(true)
                     } catch (e: Exception) {
                         // Ignore errors when closing DevTools
                     }
                 }
-                
-                browser.dispose()
-                mainPanel.removeAll()
-            } catch (e: Exception) {
-                println("Error disposing JcefMarkdownRenderer: ${e.message}")
-                e.printStackTrace()
+                devToolsInstances.clear()
             }
+            
+            // Dispose the parent disposable which will clean up all registered resources
+            Disposer.dispose(parentDisposable)
+            
+            // Clear panel
+            mainPanel.removeAll()
+        } catch (e: Exception) {
+            LOG.error("Error in disposeOnEDT", e)
         }
     }
 }

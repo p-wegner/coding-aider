@@ -55,8 +55,8 @@ class MarkdownDialog(
 
     }
 
-    private var autoCloseTimer: TimerTask? = null
-    private var refreshTimer: Timer? = null
+    private var autoCloseTimer: java.util.concurrent.ScheduledFuture<*>? = null
+    private var refreshTimer: java.util.concurrent.ScheduledFuture<*>? = null
     private var keepOpenButton = JButton("Keep Open").apply {
         mnemonic = KeyEvent.VK_K
         isVisible = false
@@ -142,7 +142,9 @@ class MarkdownDialog(
     }
 
     private var isProcessFinished = false
-    private var resizeTimer: Timer? = null
+    private var resizeTimer: java.util.concurrent.ScheduledFuture<*>? = null
+    private val executor = com.intellij.util.concurrency.AppExecutorUtil.getAppScheduledExecutorService()
+    private val logger = com.intellij.openapi.diagnostic.Logger.getInstance(MarkdownDialog::class.java)
 
     init {
         title = initialTitle
@@ -150,17 +152,15 @@ class MarkdownDialog(
         // Add resize listener with debouncing
         addComponentListener(object : java.awt.event.ComponentAdapter() {
             override fun componentResized(e: java.awt.event.ComponentEvent) {
-                resizeTimer?.cancel()
-                resizeTimer = Timer().apply {
-                    schedule(150) { // Debounce resize events
-                        invokeLater {
-                            markdownViewer.component.revalidate()
-                            markdownViewer.component.repaint()
-                            scrollPane.revalidate()
-                            scrollPane.repaint()
-                        }
+                resizeTimer?.cancel(false)
+                resizeTimer = executor.schedule({
+                    invokeLater {
+                        markdownViewer.component.revalidate()
+                        markdownViewer.component.repaint()
+                        scrollPane.revalidate()
+                        scrollPane.repaint()
                     }
-                }
+                }, 150, java.util.concurrent.TimeUnit.MILLISECONDS)
             }
         })
         val screenSize = java.awt.Toolkit.getDefaultToolkit().screenSize
@@ -186,15 +186,15 @@ class MarkdownDialog(
         addWindowListener(object : java.awt.event.WindowAdapter() {
             override fun windowClosed(e: WindowEvent?) {
                 try {
-                    refreshTimer?.cancel()
+                    refreshTimer?.cancel(false)
                     refreshTimer = null
-                    autoCloseTimer?.cancel()
+                    autoCloseTimer?.cancel(false)
                     autoCloseTimer = null
-                    resizeTimer?.cancel()
+                    resizeTimer?.cancel(false)
                     resizeTimer = null
                     project.service<RunningCommandService>().removeRunningCommand(this@MarkdownDialog)
                 } catch (ex: Exception) {
-                    println("Error during dialog cleanup: ${ex.message}")
+                    logger.error("Error during dialog cleanup", ex)
                 } finally {
                     super.windowClosed(e)
                 }
@@ -280,9 +280,14 @@ class MarkdownDialog(
     fun startAutoCloseTimer(autocloseDelay: Int) {
         val settings = getInstance()
         if (!settings.enableMarkdownDialogAutoclose) return
+        
         keepOpenButton.isVisible = true
         var remainingSeconds = max(1, autocloseDelay)
-        autoCloseTimer = Timer().scheduleAtFixedRate(0, 1000) { // Update every second
+        
+        // Use AtomicReference to hold the future so we can cancel it from within the task
+        val timerRef = java.util.concurrent.atomic.AtomicReference<java.util.concurrent.ScheduledFuture<*>?>()
+        
+        val task = executor.scheduleAtFixedRate({
             invokeLater {
                 if (remainingSeconds > 0) {
                     title = "$initialTitle - Closing in $remainingSeconds seconds"
@@ -295,22 +300,25 @@ class MarkdownDialog(
                                     project.service<ContinuePlanService>().continuePlan()
                                 }
                             } catch (e: Exception) {
-                                println("Error during autoclose continuation: ${e.message}")
+                                logger.error("Error during autoclose continuation", e)
                             }
                         }
                     } catch (e: Exception) {
-                        println("Error during autoclose continuation: ${e.message}")
+                        logger.error("Error during autoclose continuation", e)
                     } finally {
                         dispose()
-                        autoCloseTimer?.cancel()
+                        timerRef.get()?.cancel(false)
                     }
                 }
             }
-        }
+        }, 0, 1000, java.util.concurrent.TimeUnit.MILLISECONDS)
+        
+        timerRef.set(task)
+        autoCloseTimer = task
     }
 
     private fun cancelAutoClose() {
-        autoCloseTimer?.cancel()
+        autoCloseTimer?.cancel(false)
         autoCloseTimer = null
         keepOpenButton.isVisible = false
         title = initialTitle
@@ -327,7 +335,7 @@ class MarkdownDialog(
     }
 
     fun focus(delay: Long = 100) {
-        Timer().schedule(delay) {
+        executor.schedule({
             SwingUtilities.invokeLater {
                 toFront()
                 requestFocus()
@@ -335,7 +343,7 @@ class MarkdownDialog(
                 // Set dark theme based on current IDE theme
                 markdownViewer.setMarkdown(lastContent)
             }
-        }
+        }, delay, java.util.concurrent.TimeUnit.MILLISECONDS)
     }
 
 
