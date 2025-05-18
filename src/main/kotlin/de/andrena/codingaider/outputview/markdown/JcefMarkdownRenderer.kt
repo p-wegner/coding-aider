@@ -68,9 +68,9 @@ class JcefMarkdownRenderer(
         initializeBrowser()
         
         // Set up load handler to detect when browser is ready
-        browser.jbCefClient.addLoadHandler(object : CefLoadHandlerAdapter() {
+        val loadHandler = object : CefLoadHandlerAdapter() {
             override fun onLoadingStateChange(
-                browser: CefBrowser,
+                cefBrowser: CefBrowser,
                 isLoading: Boolean,
                 canGoBack: Boolean,
                 canGoForward: Boolean
@@ -87,12 +87,13 @@ class JcefMarkdownRenderer(
                     }
                 }
             }
-        }, browser.cefBrowser)
-        
+        }
+        browser.jbCefClient.addLoadHandler(loadHandler, browser.cefBrowser)
+
         // Register load handler with parent disposable
         Disposer.register(parentDisposable, Disposable {
             try {
-                browser.jbCefClient.removeLoadHandler(browser.cefBrowser)
+                browser.jbCefClient.removeLoadHandler(loadHandler, browser.cefBrowser)
             } catch (e: Exception) {
                 LOG.warn("Error removing load handler", e)
             }
@@ -286,29 +287,27 @@ class JcefMarkdownRenderer(
     
     override fun showDevTools(): Boolean {
         if (isDisposed.get()) return false
-        
+
         try {
-            val devTools = browser.openDevtools()
-            if (devTools != null) {
+            val devToolsBrowser = browser.cefBrowser.devTools
+            if (devToolsBrowser != null) {
                 synchronized(devToolsInstances) {
-                    devToolsInstances.add(devTools)
+                    devToolsInstances.add(devToolsBrowser)
                 }
-                
+
                 // Register a listener to remove from our tracking set when closed
                 try {
-                    val devToolsBrowser = devTools.devTools
-                    if (devToolsBrowser != null) {
-                        browser.jbCefClient.addLifeSpanHandler(object : org.cef.handler.CefLifeSpanHandlerAdapter() {
-                            override fun onBeforeClose(browser: CefBrowser?) {
-                                if (browser == devToolsBrowser) {
-                                    synchronized(devToolsInstances) {
-                                        devToolsInstances.remove(devTools)
-                                    }
-                                    browser.jbCefClient.removeLifeSpanHandler(this, devToolsBrowser)
+                    val lifeSpanHandler = object : org.cef.handler.CefLifeSpanHandlerAdapter() {
+                        override fun onBeforeClose(closingBrowser: CefBrowser?) {
+                            if (closingBrowser == devToolsBrowser) {
+                                synchronized(devToolsInstances) {
+                                    devToolsInstances.remove(devToolsBrowser)
                                 }
+                                browser.jbCefClient.removeLifeSpanHandler(this, devToolsBrowser)
                             }
-                        }, devToolsBrowser)
+                        }
                     }
+                    browser.jbCefClient.addLifeSpanHandler(lifeSpanHandler, devToolsBrowser)
                 } catch (e: Exception) {
                     LOG.warn("Error setting up DevTools lifecycle tracking", e)
                 }
@@ -455,18 +454,18 @@ class JcefMarkdownRenderer(
             synchronized(devToolsInstances) {
                 devToolsInstances.forEach { devToolsBrowser ->
                     try {
-                        devToolsBrowser.devTools?.close(true)
+                        devToolsBrowser.close(true)
                     } catch (e: Exception) {
                         // Ignore errors when closing DevTools
                     }
                 }
                 devToolsInstances.clear()
             }
-            
+
             // Dispose the parent disposable which will clean up all registered resources
             // This will also clean up the theme change listener and load handler
             Disposer.dispose(parentDisposable)
-            
+
             // Clear panel
             mainPanel.removeAll()
         } catch (e: Exception) {
