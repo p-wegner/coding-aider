@@ -304,7 +304,7 @@ class JcefMarkdownRenderer(
                                     synchronized(devToolsInstances) {
                                         devToolsInstances.remove(devTools)
                                     }
-                                    browser.jbCefClient.removeLifeSpanHandler(browser)
+                                    browser.jbCefClient.removeLifeSpanHandler(this, devToolsBrowser)
                                 }
                             }
                         }, devToolsBrowser)
@@ -453,9 +453,9 @@ class JcefMarkdownRenderer(
         try {
             // Close all DevTools windows
             synchronized(devToolsInstances) {
-                devToolsInstances.forEach { devTools ->
+                devToolsInstances.forEach { devToolsBrowser ->
                     try {
-                        devTools.devTools?.close(true)
+                        devToolsBrowser.devTools?.close(true)
                     } catch (e: Exception) {
                         // Ignore errors when closing DevTools
                     }
