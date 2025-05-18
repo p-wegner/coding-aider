@@ -172,6 +172,11 @@ class JcefMarkdownRenderer(
                     // Store original update function for later override
                     let originalUpdateContent;
                     
+                    function isScrolledToBottom() {
+                        // More generous threshold (100px) to determine if we're at the bottom
+                        return (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 100);
+                    }
+                    
                     function getPanelId(panel) {
                         const header = panel.querySelector('.collapsible-header');
                         let title = '';
@@ -206,11 +211,6 @@ class JcefMarkdownRenderer(
                                 }
                             }
                         });
-                    }
-                    
-                    function isScrolledToBottom() {
-                        // More generous threshold (100px) to determine if we're at the bottom
-                        return (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 100);
                     }
                     
                     function scrollToBottom() {
