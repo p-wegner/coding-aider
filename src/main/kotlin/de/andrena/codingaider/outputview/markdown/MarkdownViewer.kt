@@ -145,7 +145,7 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
             return
         }
         if (renderer is JcefMarkdownRenderer) {
-            (renderer as JcefMarkdownRenderer).setAutoScroll(autoScroll)
+            renderer.setAutoScroll(autoScroll)
         }
     }
 

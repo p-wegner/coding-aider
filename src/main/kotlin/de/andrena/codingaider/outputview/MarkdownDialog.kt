@@ -64,6 +64,8 @@ class MarkdownDialog(
                 // Only update auto-scroll state on actual user interaction
                 if (e.valueIsAdjusting) {
                     shouldAutoScroll = isNearBottom
+                    // Also update the renderer's auto-scroll state
+                    markdownViewer.setAutoScroll(isNearBottom)
                 }
             }
         }

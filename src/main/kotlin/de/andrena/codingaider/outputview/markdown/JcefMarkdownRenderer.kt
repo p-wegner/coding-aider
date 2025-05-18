@@ -421,7 +421,18 @@ class JcefMarkdownRenderer(
                     // Fallback if our custom function isn't available
                     const wasAtBottom = (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 100);
                     const scrollPosition = window.scrollY;
+                    
+                    // Store panel states before update if function exists
+                    if (typeof storeCurrentPanelStates === 'function') {
+                        storeCurrentPanelStates();
+                    }
+                    
                     document.getElementById('content').innerHTML = `${escapeJsString(html)}`;
+                    
+                    // Restore panel states after update if function exists
+                    if (typeof restorePanelStates === 'function') {
+                        restorePanelStates();
+                    }
                     
                     // Only auto-scroll if explicitly enabled or if user was already at bottom
                     if (${shouldAutoScroll} && wasAtBottom) {
