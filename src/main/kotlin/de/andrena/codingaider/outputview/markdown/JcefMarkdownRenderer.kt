@@ -127,7 +127,6 @@ class JcefMarkdownRenderer(
                 <script>
                     // Panel state tracking
                     let panelStates = {};
-                    let isScrolledToBottom = true;
                     let isUpdatingContent = false;
                     
                     // Store original update function for later override
