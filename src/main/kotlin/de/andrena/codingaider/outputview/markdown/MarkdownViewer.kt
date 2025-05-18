@@ -139,6 +139,15 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
         }
         renderer.setDarkTheme(dark)
     }
+    
+    fun setAutoScroll(autoScroll: Boolean) {
+        if (isDisposed) {
+            return
+        }
+        if (renderer is JcefMarkdownRenderer) {
+            (renderer as JcefMarkdownRenderer).setAutoScroll(autoScroll)
+        }
+    }
 
     fun supportsDevTools(): Boolean {
         if (isDisposed) {

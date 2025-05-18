@@ -38,6 +38,7 @@ class JcefMarkdownRenderer(
     private var initializationTimer: Timer? = null
     private var devToolsOpened = false
     private var shouldAutoScroll = true
+    private var isUserScrolling = false
 
     override val component: JComponent
         get() = mainPanel
@@ -68,8 +69,10 @@ class JcefMarkdownRenderer(
             try {
                 if (message == "false") {
                     shouldAutoScroll = false
+                    isUserScrolling = true
                 } else if (message == "true") {
                     shouldAutoScroll = true
+                    isUserScrolling = false
                 }
                 null
             } catch (e: Exception) {
@@ -87,6 +90,9 @@ class JcefMarkdownRenderer(
                         };
                         
                         window.addEventListener('scroll', function() {
+                            // Don't process scroll events during content updates
+                            if (isUpdatingContent) return;
+                            
                             const isNearBottom = (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 100);
                             window.updateScrollState(isNearBottom);
                         });
@@ -212,6 +218,53 @@ class JcefMarkdownRenderer(
                         window.scrollTo({
                             top: document.body.scrollHeight,
                             behavior: 'auto'
+                        });
+                    }
+                    
+                    // Panel state tracking
+                    let panelStates = {};
+                    
+                    function getPanelId(panel) {
+                        const header = panel.querySelector('.collapsible-header');
+                        let title = '';
+                        if (header) {
+                            const titleElement = header.querySelector('.collapsible-title');
+                            if (titleElement) {
+                                title = titleElement.textContent || '';
+                            }
+                        }
+                        
+                        return 'panel-' + title.toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + 
+                               Math.abs(panel.innerHTML.split('').reduce((a, b) => (a * 31 + b.charCodeAt(0)) & 0xFFFFFFFF, 0));
+                    }
+                    
+                    function storeCurrentPanelStates() {
+                        document.querySelectorAll('.collapsible-panel').forEach(panel => {
+                            const panelId = getPanelId(panel);
+                            panelStates[panelId] = panel.classList.contains('expanded');
+                        });
+                    }
+                    
+                    function restorePanelStates() {
+                        document.querySelectorAll('.collapsible-panel').forEach(panel => {
+                            const panelId = getPanelId(panel);
+                            
+                            // Apply stored state if it exists
+                            if (panelStates.hasOwnProperty(panelId)) {
+                                if (panelStates[panelId]) {
+                                    panel.classList.add('expanded');
+                                    const arrow = panel.querySelector('.collapsible-arrow');
+                                    if (arrow) {
+                                        arrow.textContent = '▼';
+                                    }
+                                } else {
+                                    panel.classList.remove('expanded');
+                                    const arrow = panel.querySelector('.collapsible-arrow');
+                                    if (arrow) {
+                                        arrow.textContent = '▶';
+                                    }
+                                }
+                            }
                         });
                     }
                     
@@ -418,6 +471,13 @@ class JcefMarkdownRenderer(
             // Theme changed, update content with new theme
             updateContent(currentContent)
         }
+    }
+    
+    /**
+     * Sets the auto-scroll behavior
+     */
+    fun setAutoScroll(autoScroll: Boolean) {
+        shouldAutoScroll = autoScroll
     }
     
     override fun scrollToBottom() {
