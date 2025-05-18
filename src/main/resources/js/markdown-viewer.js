@@ -1,12 +1,36 @@
 /**
- * JavaScript functionality for the Markdown Viewer component
+ * Markdown Viewer JavaScript
+ * Handles content updates, collapsible panels, and scroll management
  */
 
-// Persistent panel state storage
+// Track scroll state and panel expansion
+let isUserScrolled = false;
+let isUpdatingContent = false;
 const panelStates = {};
 
-// Generate a stable ID for each panel based on its content
+// Initialize when document is ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Set up scroll tracking
+    window.addEventListener('scroll', function() {
+        if (!isUpdatingContent) {
+            isUserScrolled = !isScrolledToBottom();
+        }
+    });
+    
+    // Initialize any panels that might be in the initial content
+    initCollapsiblePanels();
+});
+
+/**
+ * Generate a stable ID for each panel based on its header content
+ * This is more reliable than using innerHTML which changes with every update
+ */
 function getPanelId(panel) {
+    // Use panel's data attribute if available
+    if (panel.dataset.panelId) {
+        return panel.dataset.panelId;
+    }
+    
     const header = panel.querySelector('.collapsible-header');
     let title = '';
     if (header) {
@@ -16,164 +40,240 @@ function getPanelId(panel) {
         }
     }
     
-    // Use panel's data attribute if available
-    if (panel.dataset.panelId) {
-        return panel.dataset.panelId;
-    }
-    
     // Generate a more stable ID based on title and position in document
     const allPanels = Array.from(document.querySelectorAll('.collapsible-panel'));
     const panelIndex = allPanels.indexOf(panel);
-    const stableId = title.replace(/[^a-z0-9]/gi, '') + '-' + panelIndex;
+    
+    // Create a hash from the title for more stability
+    let hash = 0;
+    for (let i = 0; i < title.length; i++) {
+        hash = ((hash << 5) - hash) + title.charCodeAt(i);
+        hash |= 0; // Convert to 32bit integer
+    }
+    
+    const stableId = 'panel_' + Math.abs(hash).toString(36) + '_' + panelIndex;
     
     // Store the ID as a data attribute for future reference
     panel.dataset.panelId = stableId;
     return stableId;
 }
 
-// Function to initialize collapsible panels
+/**
+ * Initialize all collapsible panels in the document
+ */
 function initCollapsiblePanels() {
     document.querySelectorAll('.collapsible-panel').forEach(panel => {
         const header = panel.querySelector('.collapsible-header');
         const panelId = getPanelId(panel);
         
-        // Remove existing event listeners to prevent duplicates
-        if (header) {
-            header.removeEventListener('click', togglePanel);
-            header.addEventListener('click', togglePanel);
+        if (header && !header.hasAttribute('data-initialized')) {
+            // Add keyboard accessibility
+            header.setAttribute('tabindex', '0');
+            header.setAttribute('role', 'button');
+            header.setAttribute('aria-expanded', panel.classList.contains('expanded') ? 'true' : 'false');
+            
+            // Remove existing event listeners to prevent duplicates
+            header.removeEventListener('click', handlePanelClick);
+            header.addEventListener('click', handlePanelClick);
+            
+            // Add keyboard support
+            header.removeEventListener('keydown', handlePanelKeydown);
+            header.addEventListener('keydown', handlePanelKeydown);
+            
+            // Mark as initialized
+            header.setAttribute('data-initialized', 'true');
             
             // Restore panel state if it exists
             if (panelStates[panelId] === false) {
                 panel.classList.remove('expanded');
                 const arrow = header.querySelector('.collapsible-arrow');
                 if (arrow) {
-                    arrow.textContent = '▶';
+                    arrow.textContent = '►';
+                }
+                header.setAttribute('aria-expanded', 'false');
+            } else if (panelStates[panelId] === true) {
+                panel.classList.add('expanded');
+                const arrow = header.querySelector('.collapsible-arrow');
+                if (arrow) {
+                    arrow.textContent = '▼';
+                }
+                header.setAttribute('aria-expanded', 'true');
+            }
+        }
+    });
+}
+
+/**
+ * Handle click events on panel headers
+ */
+function handlePanelClick(event) {
+    togglePanel(this.parentElement);
+    event.stopPropagation();
+}
+
+/**
+ * Handle keyboard events on panel headers
+ */
+function handlePanelKeydown(event) {
+    if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        togglePanel(this.parentElement);
+    }
+}
+
+/**
+ * Toggle a panel's expanded state
+ */
+function togglePanel(panel) {
+    const panelId = getPanelId(panel);
+    const header = panel.querySelector('.collapsible-header');
+    const isExpanded = panel.classList.toggle('expanded');
+    
+    // Update arrow indicator
+    const arrow = panel.querySelector('.collapsible-arrow');
+    if (arrow) {
+        arrow.textContent = isExpanded ? '▼' : '►';
+    }
+    
+    // Update accessibility attributes
+    if (header) {
+        header.setAttribute('aria-expanded', isExpanded ? 'true' : 'false');
+    }
+    
+    // Store panel state
+    panelStates[panelId] = isExpanded;
+}
+
+/**
+ * Update content while preserving panel states and scroll position
+ */
+function updateContent(html) {
+    try {
+        isUpdatingContent = true;
+        
+        // Save current scroll position and bottom state
+        const scrollPosition = window.scrollY;
+        const wasAtBottom = isScrolledToBottom();
+        
+        // Store current panel states before updating
+        storeCurrentPanelStates();
+        
+        // Add updating class to prevent hover effects during update
+        document.body.classList.add('updating-content');
+        
+        // Update content
+        document.getElementById('content').innerHTML = html;
+        
+        // Initialize panels with restored states
+        initCollapsiblePanels();
+        restorePanelStates();
+        
+        // Schedule additional restoration attempts to handle race conditions
+        setTimeout(restorePanelStates, 50);
+        
+        // Restore scroll position with a slight delay to allow rendering
+        setTimeout(() => {
+            if (wasAtBottom && !isUserScrolled) {
+                scrollToBottom();
+            } else {
+                window.scrollTo(0, scrollPosition);
+            }
+            
+            // Remove updating class
+            document.body.classList.remove('updating-content');
+            isUpdatingContent = false;
+        }, 50);
+    } catch (e) {
+        console.error("Error updating content:", e);
+        
+        // Basic fallback
+        try {
+            document.getElementById('content').innerHTML = html;
+        } catch (innerError) {
+            console.error("Fallback update failed:", innerError);
+        }
+        
+        document.body.classList.remove('updating-content');
+        isUpdatingContent = false;
+    }
+}
+
+/**
+ * Restore panel states after content update
+ */
+function restorePanelStates() {
+    document.querySelectorAll('.collapsible-panel').forEach(panel => {
+        const panelId = getPanelId(panel);
+        
+        // Apply stored state if it exists
+        if (panelId in panelStates) {
+            const shouldBeExpanded = panelStates[panelId];
+            const isCurrentlyExpanded = panel.classList.contains('expanded');
+            
+            if (shouldBeExpanded && !isCurrentlyExpanded) {
+                panel.classList.add('expanded');
+                const arrow = panel.querySelector('.collapsible-arrow');
+                const header = panel.querySelector('.collapsible-header');
+                
+                if (arrow) {
+                    arrow.textContent = '▼';
+                }
+                
+                if (header) {
+                    header.setAttribute('aria-expanded', 'true');
+                }
+            } else if (!shouldBeExpanded && isCurrentlyExpanded) {
+                panel.classList.remove('expanded');
+                const arrow = panel.querySelector('.collapsible-arrow');
+                const header = panel.querySelector('.collapsible-header');
+                
+                if (arrow) {
+                    arrow.textContent = '►';
+                }
+                
+                if (header) {
+                    header.setAttribute('aria-expanded', 'false');
                 }
             }
         }
     });
 }
 
-// Toggle panel function
-function togglePanel(event) {
-    const panel = this.parentElement;
-    const panelId = getPanelId(panel);
-    const isExpanded = panel.classList.toggle('expanded');
-    
-    // Update arrow indicator
-    const arrow = this.querySelector('.collapsible-arrow');
-    if (arrow) {
-        arrow.textContent = isExpanded ? '▼' : '▶';
-    }
-    
-    // Store panel state
-    panelStates[panelId] = isExpanded;
-    
-    // Prevent event propagation
-    event.stopPropagation();
-}
-
-// Function to update content while preserving panel states
-function updateContent(html) {
-    // Save current scroll position
-    const scrollPosition = window.scrollY;
-    const wasAtBottom = isScrolledToBottom();
-    
-    // Store current panel states before updating
-    storeCurrentPanelStates();
-    
-    // Update content
-    document.getElementById('content').innerHTML = html;
-    
-    // Initialize panels with restored states - use a more reliable approach
-    // with multiple attempts to ensure states are properly restored
-    restorePanelStates();
-    
-    // Schedule additional restoration attempts to handle race conditions
-    setTimeout(restorePanelStates, 50);
-    setTimeout(restorePanelStates, 150);
-    
-    // Restore scroll position
-    setTimeout(() => {
-        if (wasAtBottom) {
-            scrollToBottom();
-            setTimeout(scrollToBottom, 100);
-        } else {
-            window.scrollTo(0, scrollPosition);
-        }
-    }, 50);
-}
-
-// More reliable panel state restoration
-function restorePanelStates() {
-    document.querySelectorAll('.collapsible-panel').forEach(panel => {
-        const panelId = getPanelId(panel);
-        
-        // Apply stored state if it exists
-        if (panelStates[panelId] === false) {
-            panel.classList.remove('expanded');
-            const arrow = panel.querySelector('.collapsible-arrow');
-            if (arrow) {
-                arrow.textContent = '▶';
-            }
-        } else if (panelStates[panelId] === true) {
-            panel.classList.add('expanded');
-            const arrow = panel.querySelector('.collapsible-arrow');
-            if (arrow) {
-                arrow.textContent = '▼';
-            }
-        }
-        
-        // Ensure event listeners are attached
-        const header = panel.querySelector('.collapsible-header');
-        if (header) {
-            header.removeEventListener('click', togglePanel);
-            header.addEventListener('click', togglePanel);
-        }
-    });
-}
-
-// Check if scrolled to bottom
+/**
+ * Check if the view is scrolled to the bottom
+ */
 function isScrolledToBottom() {
-    // More generous threshold (100px) to determine if we're at the bottom
-    return (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 100);
+    const scrollY = window.scrollY || window.pageYOffset;
+    const windowHeight = window.innerHeight;
+    const documentHeight = Math.max(
+        document.body.scrollHeight,
+        document.body.offsetHeight,
+        document.documentElement.clientHeight,
+        document.documentElement.scrollHeight,
+        document.documentElement.offsetHeight
+    );
+    
+    // Consider "bottom" if within 100px of the actual bottom
+    return scrollY + windowHeight >= documentHeight - 100;
 }
 
-// Scroll to bottom
+/**
+ * Scroll to the bottom of the content
+ */
 function scrollToBottom() {
-    // Force scroll to absolute bottom
     window.scrollTo({
         top: document.body.scrollHeight,
-        behavior: 'auto'
+        behavior: 'smooth'
     });
+    isUserScrolled = false;
 }
 
-// Store current panel states
+/**
+ * Store current panel states
+ */
 function storeCurrentPanelStates() {
     document.querySelectorAll('.collapsible-panel').forEach(panel => {
         const panelId = getPanelId(panel);
         panelStates[panelId] = panel.classList.contains('expanded');
     });
 }
-
-// Initialize panels when page loads
-document.addEventListener('DOMContentLoaded', initCollapsiblePanels);
-
-// Prevent hover effects during content updates
-let isUpdatingContent = false;
-const originalUpdateContent = updateContent;
-updateContent = function(html) {
-    isUpdatingContent = true;
-    
-    // Add a class to the body during updates to disable hover effects
-    document.body.classList.add('updating-content');
-    
-    // Call the original function
-    originalUpdateContent(html);
-    
-    // Remove the class after the update is complete
-    setTimeout(() => {
-        document.body.classList.remove('updating-content');
-        isUpdatingContent = false;
-    }, 200);
-};
