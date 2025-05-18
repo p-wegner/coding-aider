@@ -82,15 +82,11 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
                                         if (renderer.isReady) {
                                             renderer.setMarkdown(currentContent)
                                             
-                                            // For the last attempt, try to scroll to bottom if needed
-                                            if (delay == 2000L) {
-                                                renderer.scrollToBottom()
-                                            }
+                                            // No auto-scrolling
                                         } else if (delay == 2000L) {
                                             // Last attempt - force update even if not ready
                                             println("Forcing markdown update after timeout")
                                             renderer.setMarkdown(currentContent)
-                                            renderer.scrollToBottom()
                                         }
                                     } catch (e: Exception) {
                                         println("Error in delayed markdown update (${delay}ms): ${e.message}")
@@ -140,14 +136,6 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
         renderer.setDarkTheme(dark)
     }
     
-    fun setAutoScroll(autoScroll: Boolean) {
-        if (isDisposed) {
-            return
-        }
-        if (renderer is JcefMarkdownRenderer) {
-            renderer.setAutoScroll(autoScroll)
-        }
-    }
 
     fun supportsDevTools(): Boolean {
         if (isDisposed) {
