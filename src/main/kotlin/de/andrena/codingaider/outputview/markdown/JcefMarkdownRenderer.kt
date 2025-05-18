@@ -221,9 +221,6 @@ class JcefMarkdownRenderer(
                         });
                     }
                     
-                    // Panel state tracking
-                    let panelStates = {};
-                    
                     function getPanelId(panel) {
                         const header = panel.querySelector('.collapsible-header');
                         let title = '';
@@ -317,7 +314,6 @@ class JcefMarkdownRenderer(
                         });
                         
                         // Override updateContent function with our enhanced version
-                        originalUpdateContent = window.updateContent;
                         window.updateContent = function(html, forceScrollToBottom = false) {
                             isUpdatingContent = true;
                         
@@ -414,33 +410,39 @@ class JcefMarkdownRenderer(
             
             // Execute JavaScript to update content
             val script = """
-                if (typeof updateContent === 'function') {
-                    // Pass shouldAutoScroll flag to the updateContent function
-                    updateContent(`${escapeJsString(html)}`, ${shouldAutoScroll});
-                } else {
-                    // Fallback if our custom function isn't available
-                    const wasAtBottom = (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 100);
-                    const scrollPosition = window.scrollY;
-                    
-                    // Store panel states before update if function exists
-                    if (typeof storeCurrentPanelStates === 'function') {
-                        storeCurrentPanelStates();
-                    }
-                    
-                    document.getElementById('content').innerHTML = `${escapeJsString(html)}`;
-                    
-                    // Restore panel states after update if function exists
-                    if (typeof restorePanelStates === 'function') {
-                        restorePanelStates();
-                    }
-                    
-                    // Only auto-scroll if explicitly enabled or if user was already at bottom
-                    if (${shouldAutoScroll} && wasAtBottom) {
-                        window.scrollTo(0, document.body.scrollHeight);
+                try {
+                    if (typeof window.updateContent === 'function') {
+                        // Pass shouldAutoScroll flag to the updateContent function
+                        window.updateContent(`${escapeJsString(html)}`, ${shouldAutoScroll});
                     } else {
-                        // Otherwise try to maintain the user's scroll position
-                        window.scrollTo(0, scrollPosition);
+                        // Fallback if our custom function isn't available
+                        const wasAtBottom = (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 100);
+                        const scrollPosition = window.scrollY;
+                        
+                        // Store panel states before update if function exists
+                        if (typeof storeCurrentPanelStates === 'function') {
+                            storeCurrentPanelStates();
+                        }
+                        
+                        document.getElementById('content').innerHTML = `${escapeJsString(html)}`;
+                        
+                        // Restore panel states after update if function exists
+                        if (typeof restorePanelStates === 'function') {
+                            restorePanelStates();
+                        }
+                        
+                        // Only auto-scroll if explicitly enabled or if user was already at bottom
+                        if (${shouldAutoScroll} && wasAtBottom) {
+                            window.scrollTo(0, document.body.scrollHeight);
+                        } else {
+                            // Otherwise try to maintain the user's scroll position
+                            window.scrollTo(0, scrollPosition);
+                        }
                     }
+                } catch (e) {
+                    console.error("Error updating content:", e);
+                    // Basic fallback
+                    document.getElementById('content').innerHTML = `${escapeJsString(html)}`;
                 }
             """.trimIndent()
             
@@ -454,7 +456,7 @@ class JcefMarkdownRenderer(
                         SwingUtilities.invokeLater {
                             // Check if we should still auto-scroll before forcing it
                             executeJavaScript("""
-                                if (!isUpdatingContent && ${shouldAutoScroll}) { 
+                                if (typeof isUpdatingContent !== 'undefined' && !isUpdatingContent && ${shouldAutoScroll}) { 
                                     // Check if user is already at bottom before forcing scroll
                                     const isNearBottom = (window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 100);
                                     if (isNearBottom) {
