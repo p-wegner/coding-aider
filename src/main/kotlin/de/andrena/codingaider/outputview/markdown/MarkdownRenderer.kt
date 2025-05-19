@@ -7,8 +7,8 @@ interface MarkdownRenderer {
     fun setMarkdown(markdown: String)
     fun setDarkTheme(isDarkTheme: Boolean)
     val isReady: Boolean
-    fun showDevTools(): Boolean = false
-    fun supportsDevTools(): Boolean = false
     fun scrollToBottom() {}
     fun dispose() {}
+    fun supportsDevTools(): Boolean
+    fun showDevTools(): Boolean
 }

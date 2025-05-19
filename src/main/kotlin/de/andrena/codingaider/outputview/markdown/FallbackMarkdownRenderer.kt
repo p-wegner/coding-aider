@@ -206,4 +206,12 @@ class FallbackMarkdownRenderer(
             }
         }
     }
+
+    override fun supportsDevTools(): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun showDevTools(): Boolean {
+        TODO("Not yet implemented")
+    }
 }

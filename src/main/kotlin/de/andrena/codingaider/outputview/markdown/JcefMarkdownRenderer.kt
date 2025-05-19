@@ -1,7 +1,6 @@
 package de.andrena.codingaider.outputview.markdown
 
 import com.intellij.openapi.Disposable
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.util.Disposer
 import com.intellij.ui.jcef.JBCefBrowser
@@ -17,8 +16,9 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import javax.swing.JComponent
-import javax.swing.JFrame
+import javax.swing.JLabel
 import javax.swing.JPanel
+import javax.swing.SwingConstants
 import javax.swing.SwingUtilities
 
 /**
@@ -320,55 +320,8 @@ class JcefMarkdownRenderer(
         }
     }
     
-    override fun supportsDevTools(): Boolean = browser != null
-    
-    override fun showDevTools(): Boolean {
-        if (isDisposed.get() || browser == null) return false
 
-        try {
-            // Create a new DevTools browser window
-            val devToolsBrowser = browser.cefBrowser.devTools
-            if (devToolsBrowser != null) {
-                // Add to tracking set
-                synchronized(devToolsInstances) {
-                    devToolsInstances.add(devToolsBrowser)
-                }
 
-                // Create a new window for DevTools
-                val devToolsFrame = JFrame("DevTools - Markdown Viewer")
-                devToolsFrame.defaultCloseOperation = JFrame.DISPOSE_ON_CLOSE
-                devToolsFrame.setSize(900, 700)
-                devToolsFrame.layout = BorderLayout()
-                
-                // Create a component for the DevTools browser
-                val devToolsComponent = devToolsBrowser.uiComponent
-                devToolsFrame.add(devToolsComponent, BorderLayout.CENTER)
-                
-                // Register a listener to remove from our tracking set when closed
-                devToolsFrame.addWindowListener(object : java.awt.event.WindowAdapter() {
-                    override fun windowClosing(e: java.awt.event.WindowEvent?) {
-                        synchronized(devToolsInstances) {
-                            devToolsInstances.remove(devToolsBrowser)
-                        }
-                        // Explicitly close the browser to free resources
-                        devToolsBrowser.close(true)
-                    }
-                })
-                
-                // Show the window
-                devToolsFrame.isVisible = true
-                
-                return true
-            } else {
-                LOG.warn("DevTools browser is null")
-                return false
-            }
-        } catch (e: Exception) {
-            LOG.error("Error opening DevTools", e)
-            return false
-        }
-    }
-    
     private fun executeJavaScript(script: String) {
         if (isDisposed.get() || browser == null) return
         
@@ -497,7 +450,15 @@ class JcefMarkdownRenderer(
             LOG.error("Error disposing JcefMarkdownRenderer", e)
         }
     }
-    
+
+    override fun supportsDevTools(): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun showDevTools(): Boolean {
+        TODO("Not yet implemented")
+    }
+
     private fun disposeOnEDT() {
         try {
             // Close all DevTools windows
