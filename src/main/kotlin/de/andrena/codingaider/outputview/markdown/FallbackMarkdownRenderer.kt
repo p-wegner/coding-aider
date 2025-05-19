@@ -2,7 +2,6 @@ package de.andrena.codingaider.outputview.markdown
 
 import java.awt.BorderLayout
 import java.awt.Point
-import java.awt.Rectangle
 import java.nio.charset.StandardCharsets
 import javax.swing.JComponent
 import javax.swing.JEditorPane
