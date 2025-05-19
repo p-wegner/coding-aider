@@ -35,12 +35,11 @@ class JcefMarkdownRenderer(
     private val mainPanel = JPanel(BorderLayout())
     private val loadCompleted = AtomicBoolean(false)
     private val pendingContent = AtomicReference<String?>(null)
-    private val devToolsInstances = mutableSetOf<CefBrowser>()
     private val parentDisposable = Disposer.newDisposable("JcefMarkdownRenderer")
-    
+
     private var currentContent = ""
     private var initializationFuture: CompletableFuture<Boolean>? = null
-    
+
     /**
      * Creates a JCEF browser instance safely with exception handling
      */
@@ -65,7 +64,7 @@ class JcefMarkdownRenderer(
             browser.component.minimumSize = Dimension(200, 100)
             browser.component.preferredSize = Dimension(600, 400)
             mainPanel.add(browser.component, BorderLayout.CENTER)
-            
+
             // Register browser with parent disposable
             Disposer.register(parentDisposable, browser)
         } else {
@@ -74,14 +73,17 @@ class JcefMarkdownRenderer(
                 minimumSize = Dimension(200, 100)
                 preferredSize = Dimension(600, 400)
                 layout = BorderLayout()
-                add(JLabel("JCEF browser initialization failed. Using fallback renderer.", SwingConstants.CENTER), BorderLayout.CENTER)
+                add(
+                    JLabel("JCEF browser initialization failed. Using fallback renderer.", SwingConstants.CENTER),
+                    BorderLayout.CENTER
+                )
             }
             mainPanel.add(fallbackLabel, BorderLayout.CENTER)
-            
+
             // Mark as completed since we're using fallback
             loadCompleted.set(true)
         }
-        
+
         // Listen for theme changes
         themeManager.addThemeChangeListener(parentDisposable) { isDark ->
             if (!isDisposed.get()) {
@@ -90,11 +92,11 @@ class JcefMarkdownRenderer(
                 }
             }
         }
-        
+
         // Initialize browser with HTML template if browser was created successfully
         if (browser != null) {
             initializeBrowser()
-            
+
             // Set up load handler to detect when browser is ready
             val loadHandler = object : CefLoadHandlerAdapter() {
                 override fun onLoadingStateChange(
@@ -127,7 +129,7 @@ class JcefMarkdownRenderer(
                 }
             })
         }
-        
+
         // Set up initialization future with timeout
         initializationFuture = CompletableFuture<Boolean>().completeOnTimeout(true, 2, TimeUnit.SECONDS)
         initializationFuture?.thenAcceptAsync({
@@ -143,20 +145,20 @@ class JcefMarkdownRenderer(
 
     private fun initializeBrowser() {
         if (browser == null) return
-        
+
         try {
             // Load HTML template from resources
             val htmlTemplate = loadResourceAsString("/html/markdown-template.html")
-            
+
             // Replace placeholders with actual values
             val processedTemplate = htmlTemplate
                 .replace("\${BACKGROUND_COLOR}", if (themeManager.isDarkTheme) "#2b2b2b" else "#ffffff")
                 .replace("\${TEXT_COLOR}", if (themeManager.isDarkTheme) "#ffffff" else "#000000")
                 .replace("\${SCRIPT_PATH}", getScriptUrl())
-            
+
             // Load the processed template
-            val dataUrl = "data:text/html;charset=utf-8;base64," + 
-                          Base64.getEncoder().encodeToString(processedTemplate.toByteArray(StandardCharsets.UTF_8))
+            val dataUrl = "data:text/html;charset=utf-8;base64," +
+                    Base64.getEncoder().encodeToString(processedTemplate.toByteArray(StandardCharsets.UTF_8))
             browser.loadURL(dataUrl)
         } catch (e: Exception) {
             LOG.error("Error initializing browser with template", e)
@@ -189,16 +191,16 @@ class JcefMarkdownRenderer(
                 </body>
                 </html>
             """.trimIndent()
-            
-            val fallbackUrl = "data:text/html;charset=utf-8;base64," + 
-                              Base64.getEncoder().encodeToString(fallbackHtml.toByteArray(StandardCharsets.UTF_8))
+
+            val fallbackUrl = "data:text/html;charset=utf-8;base64," +
+                    Base64.getEncoder().encodeToString(fallbackHtml.toByteArray(StandardCharsets.UTF_8))
             browser?.loadURL(fallbackUrl)
         }
     }
 
     override fun setMarkdown(markdown: String) {
         if (isDisposed.get()) return
-        
+
         if (!loadCompleted.get()) {
             // Browser not ready yet, store content for later
             pendingContent.set(markdown)
@@ -206,18 +208,18 @@ class JcefMarkdownRenderer(
             currentContent = markdown
             return
         }
-        
+
         // Process markdown in background thread
         AppExecutorUtil.getAppExecutorService().submit {
             try {
                 if (isDisposed.get()) return@submit
-                
+
                 // Store content for processing
                 currentContent = markdown
-                
+
                 // Process markdown to HTML
                 val html = contentProcessor.processMarkdown(markdown, themeManager.isDarkTheme)
-                
+
                 // Update UI on EDT
                 SwingUtilities.invokeLater {
                     if (!isDisposed.get()) {
@@ -229,20 +231,20 @@ class JcefMarkdownRenderer(
             }
         }
     }
-    
+
     private fun updateContent(html: String) {
         updateContentInBrowser(html)
     }
-    
+
     private fun updateContentInBrowser(html: String) {
         if (isDisposed.get()) return
-        
+
         // If browser is null, we can't update content
         if (browser == null) {
             LOG.warn("Cannot update content: browser is null")
             return
         }
-        
+
         try {
             // Execute JavaScript to update content
             val script = """
@@ -259,7 +261,7 @@ class JcefMarkdownRenderer(
                     document.getElementById('content').innerHTML = ${jsonEscapeString(html)};
                 }
             """.trimIndent()
-            
+
             executeJavaScript(script)
         } catch (e: Exception) {
             LOG.error("Error updating content in browser", e)
@@ -268,10 +270,11 @@ class JcefMarkdownRenderer(
 
     override fun setDarkTheme(isDarkTheme: Boolean) {
         if (isDisposed.get()) return
-        
+
         if (themeManager.updateTheme(isDarkTheme) && browser != null) {
             // Apply theme change via CSS variables instead of full rerender
-            executeJavaScript("""
+            executeJavaScript(
+                """
                 (function() {
                     // Update theme colors
                     document.body.style.backgroundColor = '${if (isDarkTheme) "#2b2b2b" else "#ffffff"}';
@@ -295,17 +298,18 @@ class JcefMarkdownRenderer(
                         header.style.backgroundColor = '${if (isDarkTheme) "rgba(200, 200, 200, 0.1)" else "rgba(0, 0, 0, 0.1)"}';
                     });
                 })();
-            """.trimIndent())
+            """.trimIndent()
+            )
         }
     }
-    
+
     override fun scrollToBottom() {
         if (isDisposed.get() || !loadCompleted.get() || browser == null) return
-        
+
         try {
             // First immediate scroll attempt
             executeJavaScript("scrollToBottom();")
-            
+
             // Single delayed scroll attempt as backup
             // This helps with cases where content is still being rendered
             if (!isDisposed.get()) {
@@ -319,12 +323,11 @@ class JcefMarkdownRenderer(
             LOG.error("Error scrolling to bottom", e)
         }
     }
-    
 
 
     private fun executeJavaScript(script: String) {
         if (isDisposed.get() || browser == null) return
-        
+
         try {
             // Check if we're already on EDT
             if (SwingUtilities.isEventDispatchThread()) {
@@ -343,7 +346,7 @@ class JcefMarkdownRenderer(
             LOG.error("Error executing JavaScript", e)
         }
     }
-    
+
     /**
      * Gets the URL for the JavaScript file, either from resources or as a data URL
      */
@@ -357,36 +360,36 @@ class JcefMarkdownRenderer(
         } catch (e: Exception) {
             LOG.warn("Could not load script as resource URL", e)
         }
-        
+
         // Fallback: inline the script as a data URL
         try {
             val scriptContent = loadResourceAsString("/js/markdown-viewer.js")
-            return "data:text/javascript;charset=utf-8;base64," + 
-                   Base64.getEncoder().encodeToString(scriptContent.toByteArray(StandardCharsets.UTF_8))
+            return "data:text/javascript;charset=utf-8;base64," +
+                    Base64.getEncoder().encodeToString(scriptContent.toByteArray(StandardCharsets.UTF_8))
         } catch (e: Exception) {
             LOG.error("Could not load script content", e)
             // Return minimal script as data URL
             val minimalScript = "function updateContent(html){document.getElementById('content').innerHTML=html;}" +
-                                "function scrollToBottom(){window.scrollTo(0,document.body.scrollHeight);}"
-            return "data:text/javascript;charset=utf-8;base64," + 
-                   Base64.getEncoder().encodeToString(minimalScript.toByteArray(StandardCharsets.UTF_8))
+                    "function scrollToBottom(){window.scrollTo(0,document.body.scrollHeight);}"
+            return "data:text/javascript;charset=utf-8;base64," +
+                    Base64.getEncoder().encodeToString(minimalScript.toByteArray(StandardCharsets.UTF_8))
         }
     }
-    
+
     /**
      * Loads a resource file as a string
      */
     private fun loadResourceAsString(resourcePath: String): String {
         val inputStream = javaClass.getResourceAsStream(resourcePath)
             ?: throw IllegalArgumentException("Resource not found: $resourcePath")
-        
+
         return inputStream.use { stream ->
             stream.bufferedReader(StandardCharsets.UTF_8).use { reader ->
                 reader.readText()
             }
         }
     }
-    
+
     /**
      * Properly escapes a string for use in JavaScript by converting it to a JSON string
      */
@@ -394,7 +397,7 @@ class JcefMarkdownRenderer(
         // Create a StringBuilder with estimated capacity
         val sb = StringBuilder(str.length + 10)
         sb.append('"')
-        
+
         // Manually escape all special characters
         for (c in str) {
             when (c) {
@@ -413,27 +416,29 @@ class JcefMarkdownRenderer(
                         sb.append(c)
                     }
                 }
+
                 in '\u0000'..'\u001F' -> {
                     // Control characters need unicode escape
                     sb.append("\\u")
                     sb.append(String.format("%04x", c.code))
                 }
+
                 else -> sb.append(c)
             }
         }
-        
+
         sb.append('"')
         return sb.toString()
     }
-    
+
     override fun dispose() {
         // Only dispose once
         if (isDisposed.getAndSet(true)) return
-        
+
         try {
             // Cancel any pending initialization
             initializationFuture?.cancel(true)
-            
+
             // Ensure we're on EDT for Swing operations
             if (!SwingUtilities.isEventDispatchThread()) {
                 try {
@@ -461,33 +466,10 @@ class JcefMarkdownRenderer(
             LOG.warn("DevTools not supported: browser is null or disposed")
             return false
         }
-        
+
         try {
-            // Create a new DevTools browser window
-            val devToolsBrowser = browser!!.openDevtools()
-            
-            if (devToolsBrowser != null) {
-                // Track this DevTools instance for proper cleanup
-                synchronized(devToolsInstances) {
-                    devToolsInstances.add(devToolsBrowser)
-                }
-                
-                // Register cleanup when DevTools window is closed
-                Disposer.register(parentDisposable, Disposable {
-                    try {
-                        synchronized(devToolsInstances) {
-                            devToolsInstances.remove(devToolsBrowser)
-                        }
-                    } catch (e: Exception) {
-                        LOG.warn("Error removing DevTools instance", e)
-                    }
-                })
-                
-                return true
-            } else {
-                LOG.warn("Failed to open DevTools: null browser returned")
-                return false
-            }
+            browser!!.openDevtools()
+            return true
         } catch (e: Exception) {
             LOG.error("Error opening DevTools", e)
             return false
@@ -496,23 +478,6 @@ class JcefMarkdownRenderer(
 
     private fun disposeOnEDT() {
         try {
-            // Close all DevTools windows
-            synchronized(devToolsInstances) {
-                devToolsInstances.forEach { devToolsBrowser ->
-                    try {
-                        // Find and close any parent window containing this browser
-                        SwingUtilities.getWindowAncestor(devToolsBrowser.uiComponent)?.let { window ->
-                            window.dispose()
-                        }
-                        // Also explicitly close the browser
-                        devToolsBrowser.close(true)
-                    } catch (e: Exception) {
-                        LOG.warn("Error closing DevTools window", e)
-                    }
-                }
-                devToolsInstances.clear()
-            }
-
             // Dispose the parent disposable which will clean up all registered resources
             // This will also clean up the theme change listener and load handler
             Disposer.dispose(parentDisposable)
