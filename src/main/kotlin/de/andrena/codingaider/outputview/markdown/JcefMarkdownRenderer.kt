@@ -452,11 +452,46 @@ class JcefMarkdownRenderer(
     }
 
     override fun supportsDevTools(): Boolean {
-        TODO("Not yet implemented")
+        // DevTools are supported if we have a valid browser instance
+        return browser != null && !isDisposed.get()
     }
 
     override fun showDevTools(): Boolean {
-        TODO("Not yet implemented")
+        if (!supportsDevTools()) {
+            LOG.warn("DevTools not supported: browser is null or disposed")
+            return false
+        }
+        
+        try {
+            // Create a new DevTools browser window
+            val devToolsBrowser = browser!!.openDevtools()
+            
+            if (devToolsBrowser != null) {
+                // Track this DevTools instance for proper cleanup
+                synchronized(devToolsInstances) {
+                    devToolsInstances.add(devToolsBrowser)
+                }
+                
+                // Register cleanup when DevTools window is closed
+                Disposer.register(parentDisposable, Disposable {
+                    try {
+                        synchronized(devToolsInstances) {
+                            devToolsInstances.remove(devToolsBrowser)
+                        }
+                    } catch (e: Exception) {
+                        LOG.warn("Error removing DevTools instance", e)
+                    }
+                })
+                
+                return true
+            } else {
+                LOG.warn("Failed to open DevTools: null browser returned")
+                return false
+            }
+        } catch (e: Exception) {
+            LOG.error("Error opening DevTools", e)
+            return false
+        }
     }
 
     private fun disposeOnEDT() {
