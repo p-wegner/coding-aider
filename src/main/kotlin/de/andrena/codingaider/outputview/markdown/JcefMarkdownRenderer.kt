@@ -31,7 +31,7 @@ class JcefMarkdownRenderer(
 ) : MarkdownRenderer {
     private val LOG = Logger.getInstance(JcefMarkdownRenderer::class.java)
     private val isDisposed = AtomicBoolean(false)
-    private val browser: JBCefBrowser = JBCefBrowser()
+    private val browser: JBCefBrowser? = createBrowserSafely()
     private val mainPanel = JPanel(BorderLayout())
     private val loadCompleted = AtomicBoolean(false)
     private val pendingContent = AtomicReference<String?>(null)
@@ -40,6 +40,18 @@ class JcefMarkdownRenderer(
     
     private var currentContent = ""
     private var initializationFuture: CompletableFuture<Boolean>? = null
+    
+    /**
+     * Creates a JCEF browser instance safely with exception handling
+     */
+    private fun createBrowserSafely(): JBCefBrowser? {
+        return try {
+            JBCefBrowser()
+        } catch (e: Exception) {
+            LOG.error("Failed to create JCEF browser", e)
+            null
+        }
+    }
 
     override val component: JComponent
         get() = mainPanel
@@ -48,13 +60,27 @@ class JcefMarkdownRenderer(
         get() = loadCompleted.get() && !isDisposed.get()
 
     init {
-        // Configure browser and panel
-        browser.component.minimumSize = Dimension(200, 100)
-        browser.component.preferredSize = Dimension(600, 400)
-        mainPanel.add(browser.component, BorderLayout.CENTER)
-        
-        // Register browser with parent disposable
-        Disposer.register(parentDisposable, browser)
+        // Configure browser and panel if browser was created successfully
+        if (browser != null) {
+            browser.component.minimumSize = Dimension(200, 100)
+            browser.component.preferredSize = Dimension(600, 400)
+            mainPanel.add(browser.component, BorderLayout.CENTER)
+            
+            // Register browser with parent disposable
+            Disposer.register(parentDisposable, browser)
+        } else {
+            // Add a fallback component if browser creation failed
+            val fallbackLabel = JPanel().apply {
+                minimumSize = Dimension(200, 100)
+                preferredSize = Dimension(600, 400)
+                layout = BorderLayout()
+                add(JLabel("JCEF browser initialization failed. Using fallback renderer.", SwingConstants.CENTER), BorderLayout.CENTER)
+            }
+            mainPanel.add(fallbackLabel, BorderLayout.CENTER)
+            
+            // Mark as completed since we're using fallback
+            loadCompleted.set(true)
+        }
         
         // Listen for theme changes
         themeManager.addThemeChangeListener(parentDisposable) { isDark ->
@@ -65,40 +91,42 @@ class JcefMarkdownRenderer(
             }
         }
         
-        // Initialize browser with HTML template
-        initializeBrowser()
-        
-        // Set up load handler to detect when browser is ready
-        val loadHandler = object : CefLoadHandlerAdapter() {
-            override fun onLoadingStateChange(
-                cefBrowser: CefBrowser,
-                isLoading: Boolean,
-                canGoBack: Boolean,
-                canGoForward: Boolean
-            ) {
-                if (!isLoading) {
-                    // Browser is ready, apply any pending content
-                    SwingUtilities.invokeLater {
-                        if (loadCompleted.compareAndSet(false, true)) {
-                            pendingContent.getAndSet(null)?.let { content ->
-                                updateContent(content)
+        // Initialize browser with HTML template if browser was created successfully
+        if (browser != null) {
+            initializeBrowser()
+            
+            // Set up load handler to detect when browser is ready
+            val loadHandler = object : CefLoadHandlerAdapter() {
+                override fun onLoadingStateChange(
+                    cefBrowser: CefBrowser,
+                    isLoading: Boolean,
+                    canGoBack: Boolean,
+                    canGoForward: Boolean
+                ) {
+                    if (!isLoading) {
+                        // Browser is ready, apply any pending content
+                        SwingUtilities.invokeLater {
+                            if (loadCompleted.compareAndSet(false, true)) {
+                                pendingContent.getAndSet(null)?.let { content ->
+                                    updateContent(content)
+                                }
+                                initializationFuture?.complete(true)
                             }
-                            initializationFuture?.complete(true)
                         }
                     }
                 }
             }
-        }
-        browser.jbCefClient.addLoadHandler(loadHandler, browser.cefBrowser)
+            browser.jbCefClient.addLoadHandler(loadHandler, browser.cefBrowser)
 
-        // Register load handler with parent disposable
-        Disposer.register(parentDisposable, Disposable {
-            try {
-                browser.jbCefClient.removeLoadHandler(loadHandler, browser.cefBrowser)
-            } catch (e: Exception) {
-                LOG.warn("Error removing load handler", e)
-            }
-        })
+            // Register load handler with parent disposable
+            Disposer.register(parentDisposable, Disposable {
+                try {
+                    browser.jbCefClient.removeLoadHandler(loadHandler, browser.cefBrowser)
+                } catch (e: Exception) {
+                    LOG.warn("Error removing load handler", e)
+                }
+            })
+        }
         
         // Set up initialization future with timeout
         initializationFuture = CompletableFuture<Boolean>().completeOnTimeout(true, 2, TimeUnit.SECONDS)
@@ -114,6 +142,8 @@ class JcefMarkdownRenderer(
     }
 
     private fun initializeBrowser() {
+        if (browser == null) return
+        
         try {
             // Load HTML template from resources
             val htmlTemplate = loadResourceAsString("/html/markdown-template.html")
@@ -162,7 +192,7 @@ class JcefMarkdownRenderer(
             
             val fallbackUrl = "data:text/html;charset=utf-8;base64," + 
                               Base64.getEncoder().encodeToString(fallbackHtml.toByteArray(StandardCharsets.UTF_8))
-            browser.loadURL(fallbackUrl)
+            browser?.loadURL(fallbackUrl)
         }
     }
 
@@ -207,6 +237,12 @@ class JcefMarkdownRenderer(
     private fun updateContentInBrowser(html: String) {
         if (isDisposed.get()) return
         
+        // If browser is null, we can't update content
+        if (browser == null) {
+            LOG.warn("Cannot update content: browser is null")
+            return
+        }
+        
         try {
             // Execute JavaScript to update content
             val script = """
@@ -233,7 +269,7 @@ class JcefMarkdownRenderer(
     override fun setDarkTheme(isDarkTheme: Boolean) {
         if (isDisposed.get()) return
         
-        if (themeManager.updateTheme(isDarkTheme)) {
+        if (themeManager.updateTheme(isDarkTheme) && browser != null) {
             // Apply theme change via CSS variables instead of full rerender
             executeJavaScript("""
                 (function() {
@@ -264,7 +300,7 @@ class JcefMarkdownRenderer(
     }
     
     override fun scrollToBottom() {
-        if (isDisposed.get() || !loadCompleted.get()) return
+        if (isDisposed.get() || !loadCompleted.get() || browser == null) return
         
         try {
             // First immediate scroll attempt
@@ -284,10 +320,10 @@ class JcefMarkdownRenderer(
         }
     }
     
-    override fun supportsDevTools(): Boolean = true
+    override fun supportsDevTools(): Boolean = browser != null
     
     override fun showDevTools(): Boolean {
-        if (isDisposed.get()) return false
+        if (isDisposed.get() || browser == null) return false
 
         try {
             // Create a new DevTools browser window
@@ -334,7 +370,7 @@ class JcefMarkdownRenderer(
     }
     
     private fun executeJavaScript(script: String) {
-        if (isDisposed.get()) return
+        if (isDisposed.get() || browser == null) return
         
         try {
             // Check if we're already on EDT
