@@ -11,3 +11,4 @@
 - [ ] count first plan execution in history
 - [ ] Bug: automatic plan continuation fails to detect plan end properly
 - [ ] Bug: plan cost calculation fails to detect model properly
+- [ ] Bug: archive plan does not move history file
