@@ -7,7 +7,7 @@
 - [ ] Bug: Markdown output viewer ux issues
     - [ ] collapseable panels get opened automatically when content changed
     - [x] auto scrolling not working at all
-- [ ] Feature: Extend documentation actions to allow selecting type of documentation: technical, PRD, ... (make configurable comparable to test creation?)
+- [x] Feature: Extend documentation actions to allow selecting type of documentation: technical, PRD, ... (make configurable comparable to test creation?)
 - [ ] count first plan execution in history
 - [ ] Bug: automatic plan continuation fails to detect plan end properly
 - [ ] Bug: plan cost calculation fails to detect model properly

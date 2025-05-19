@@ -6,14 +6,17 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.CommandOptions
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
+import de.andrena.codingaider.features.documentation.DocumentTypeConfiguration
+import de.andrena.codingaider.features.documentation.DocumentationGenerationPromptService
 import de.andrena.codingaider.services.FileDataCollectionService
+import de.andrena.codingaider.settings.AiderProjectSettings
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
-import de.andrena.codingaider.utils.FileTraversal
 import de.andrena.codingaider.utils.GitUtils
 import java.io.File
 import java.util.concurrent.CountDownLatch
@@ -23,7 +26,38 @@ class DocumentEachFolderAction : AnAction() {
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val files = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY) ?: return
-        documentEachFolder(project, files)
+        
+        // Get document types from settings
+        val documentTypes = AiderProjectSettings.getInstance(project).getDocumentTypes()
+            .filter { it.isEnabled }
+        
+        if (documentTypes.isEmpty()) {
+            Messages.showErrorDialog(
+                project,
+                "No document types configured. Please configure document types in Project Settings.",
+                "Document Each Folder Error"
+            )
+            return
+        }
+        
+        // Create a dialog to select document type
+        val documentType = if (documentTypes.size == 1) {
+            documentTypes.first()
+        } else {
+            val selectedType = Messages.showChooseDialog(
+                project,
+                "Select document type to generate:",
+                "Document Each Folder",
+                null,
+                documentTypes.map { it.name }.toTypedArray(),
+                documentTypes.first().name
+            )
+            
+            if (selectedType == -1) return
+            documentTypes[selectedType]
+        }
+        
+        documentEachFolder(project, files, documentType)
     }
 
     override fun update(e: AnActionEvent) {
@@ -40,14 +74,16 @@ class DocumentEachFolderAction : AnAction() {
     )
 
     companion object {
-        fun documentEachFolder(project: Project, virtualFiles: Array<VirtualFile>) {
+        fun documentEachFolder(project: Project, virtualFiles: Array<VirtualFile>, documentType: DocumentTypeConfiguration) {
             val settings = getInstance()
             val currentCommitHash = GitUtils.getCurrentCommitHash(project)
             val documentationLlm =
                 if (settings.documentationLlm == "Default") settings.llm else settings.documentationLlm
+            
+            val promptService = project.service<DocumentationGenerationPromptService>()
+            
             val documentationActions = virtualFiles.filter { it.isDirectory }.map { folder ->
                 val allFiles = project.service<FileDataCollectionService>().collectAllFiles(arrayOf(folder))
-                val fileNames = allFiles.map { File(it.filePath).name }
                 val fileDataList = allFiles.map { FileData(it.filePath, it.isReadOnly) }
                 val filename = "${folder.name}.md"
 
@@ -59,13 +95,17 @@ class DocumentEachFolderAction : AnAction() {
                 val writableFileDataList = fileDataList + listOf(
                     FileData(markdownFile.path, false)
                 )
+                
+                // Add context files to the file list - convert relative paths to absolute
+                val absoluteDocumentType = documentType.withAbsolutePaths(project.basePath ?: "")
+                val contextFiles = absoluteDocumentType.contextFiles.map { FileData(it, false) }
 
                 val commandData = CommandData(
-                    message = getIndividualDocumentationPrompt(fileNames, folder, filename),
+                    message = promptService.buildPrompt(documentType, writableFileDataList, "$folder/$filename"),
                     useYesFlag = true,
                     llm = documentationLlm,
                     additionalArgs = settings.additionalArgs,
-                    files = writableFileDataList,
+                    files = writableFileDataList + contextFiles,
                     lintCmd = settings.lintCmd,
                     deactivateRepoMap = settings.deactivateRepoMap,
                     editFormat = settings.editFormat,
@@ -92,13 +132,17 @@ class DocumentEachFolderAction : AnAction() {
                     val writableSummaryFiles = documentationFiles + listOf(
                         FileData(overviewMarkdownFile.path, false)
                     )
+                    
+                    // Add context files to the file list - convert relative paths to absolute
+                    val absoluteDocumentType = documentType.withAbsolutePaths(project.basePath ?: "")
+                    val contextFiles = absoluteDocumentType.contextFiles.map { FileData(it, false) }
 
                     val summaryCommandData = CommandData(
                         message = getOverviewPrompt(documentationFiles),
                         useYesFlag = true,
                         llm = documentationLlm,
                         additionalArgs = settings.additionalArgs,
-                        files = writableSummaryFiles,
+                        files = writableSummaryFiles + contextFiles,
                         lintCmd = settings.lintCmd,
                         deactivateRepoMap = settings.deactivateRepoMap,
                         editFormat = settings.editFormat,
@@ -126,23 +170,6 @@ class DocumentEachFolderAction : AnAction() {
 |Store the results in the root folder of the project in the file "overview.md".
 |To calculate the dependencies, use the existing mermaid diagrams in the documentation files.
 |If an overview documentation file is already available, update it instead of creating a new one.
-|""".trimMargin()
-
-        private fun getIndividualDocumentationPrompt(
-            fileNames: List<String>,
-            folder: VirtualFile,
-            filename: String
-        ) =
-            """Generate a markdown documentation for the code in the provided files and directories: $fileNames. 
-|Store the results in $folder/$filename.
-|If there are exceptional implementation details, mention them.
-|
-|Good code documentation should provide a high-level overview of the module's purpose and functionality.
-|Important files should be clearly described and linked in the documentation file.
-|Include details on the module's public interfaces, key classes, and methods, as well as any design patterns used.
-|Document the dependencies between classes in the module $filename and classes of the project outside of the $filename module using a Mermaid diagram embedded in the markdown file.
-|Make sure files are linked using relative paths.
-|If the file already exists, update it instead.
 |""".trimMargin()
     }
 }
