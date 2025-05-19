@@ -1,0 +1,9 @@
+files:
+  - path: src/main/resources/js/markdown-viewer.js
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/outputview/markdown/JcefMarkdownRenderer.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/outputview/MarkdownDialog.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/outputview/markdown/MarkdownViewer.kt
+    readOnly: false
