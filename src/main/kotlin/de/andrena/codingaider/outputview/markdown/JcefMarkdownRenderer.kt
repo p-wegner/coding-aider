@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 import javax.swing.JComponent
+import javax.swing.JFrame
 import javax.swing.JPanel
 import javax.swing.SwingUtilities
 
@@ -289,32 +290,45 @@ class JcefMarkdownRenderer(
         if (isDisposed.get()) return false
 
         try {
+            // Create a new DevTools browser window
             val devToolsBrowser = browser.cefBrowser.devTools
             if (devToolsBrowser != null) {
+                // Add to tracking set
                 synchronized(devToolsInstances) {
                     devToolsInstances.add(devToolsBrowser)
                 }
 
+                // Create a new window for DevTools
+                val devToolsFrame = JFrame("DevTools - Markdown Viewer")
+                devToolsFrame.defaultCloseOperation = JFrame.DISPOSE_ON_CLOSE
+                devToolsFrame.setSize(900, 700)
+                devToolsFrame.layout = BorderLayout()
+                
+                // Create a component for the DevTools browser
+                val devToolsComponent = devToolsBrowser.uiComponent
+                devToolsFrame.add(devToolsComponent, BorderLayout.CENTER)
+                
                 // Register a listener to remove from our tracking set when closed
-                try {
-                    val lifeSpanHandler = object : org.cef.handler.CefLifeSpanHandlerAdapter() {
-                        override fun onBeforeClose(closingBrowser: CefBrowser?) {
-                            if (closingBrowser == devToolsBrowser) {
-                                synchronized(devToolsInstances) {
-                                    devToolsInstances.remove(devToolsBrowser)
-                                }
-                                browser.jbCefClient.removeLifeSpanHandler(this, devToolsBrowser)
-                            }
+                devToolsFrame.addWindowListener(object : java.awt.event.WindowAdapter() {
+                    override fun windowClosing(e: java.awt.event.WindowEvent?) {
+                        synchronized(devToolsInstances) {
+                            devToolsInstances.remove(devToolsBrowser)
                         }
+                        // Explicitly close the browser to free resources
+                        devToolsBrowser.close(true)
                     }
-                    browser.jbCefClient.addLifeSpanHandler(lifeSpanHandler, devToolsBrowser)
-                } catch (e: Exception) {
-                    LOG.warn("Error setting up DevTools lifecycle tracking", e)
-                }
+                })
+                
+                // Show the window
+                devToolsFrame.isVisible = true
+                
+                return true
+            } else {
+                LOG.warn("DevTools browser is null")
+                return false
             }
-            return true
         } catch (e: Exception) {
-            LOG.warn("Error opening DevTools", e)
+            LOG.error("Error opening DevTools", e)
             return false
         }
     }
@@ -454,9 +468,14 @@ class JcefMarkdownRenderer(
             synchronized(devToolsInstances) {
                 devToolsInstances.forEach { devToolsBrowser ->
                     try {
+                        // Find and close any parent window containing this browser
+                        SwingUtilities.getWindowAncestor(devToolsBrowser.uiComponent)?.let { window ->
+                            window.dispose()
+                        }
+                        // Also explicitly close the browser
                         devToolsBrowser.close(true)
                     } catch (e: Exception) {
-                        // Ignore errors when closing DevTools
+                        LOG.warn("Error closing DevTools window", e)
                     }
                 }
                 devToolsInstances.clear()
