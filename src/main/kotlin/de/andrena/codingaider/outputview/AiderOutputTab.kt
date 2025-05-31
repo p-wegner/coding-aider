@@ -181,7 +181,11 @@ class AiderOutputTab(
         isProcessFinished.set(true)
         SwingUtilities.invokeLater {
             abortButton.isVisible = false
-            closeAndContinueButton.isVisible = commandData?.structuredMode == true
+            closeAndContinueButton.isVisible = commandData?.structuredMode == true && 
+                commandData.planId?.let { planId ->
+                    project.service<de.andrena.codingaider.services.plans.ActivePlanService>()
+                        .getActivePlan()?.let { !it.isPlanComplete() } ?: false
+                } ?: false
             createPlanButton.isVisible = commandData != null && commandData.structuredMode != true
         }
     }
