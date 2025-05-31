@@ -152,7 +152,6 @@
                     class="de.andrena.codingaider.actions.ide.ShowLastCommandResultAction"
                     text="Show Last Aider Command Result"
                     description="Displays the result of the last Aider command">
-                <keyboard-shortcut keymap="$default" first-keystroke="alt L"/>
             </action>
             <separator/>
             <action id="de.andrena.codingaider.actions.aider.DocumentCodeAction"
