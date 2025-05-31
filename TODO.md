@@ -12,3 +12,4 @@
 - [ ] Bug: automatic plan continuation fails to detect plan end properly
 - [ ] Bug: plan cost calculation fails to detect model properly
 - [ ] Bug: archive plan does not move history file
+- [ ] Bug: Continue Plan doesn't properly register when plan ended

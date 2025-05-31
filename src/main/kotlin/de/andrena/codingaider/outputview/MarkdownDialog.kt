@@ -253,7 +253,6 @@ class MarkdownDialog(
     }
 
     private var lastContent = ""
-    private var isFirstUpdate = true
 
     fun updateProgress(output: String, title: String) {
         com.intellij.openapi.application.ApplicationManager.getApplication().invokeLater {
@@ -265,26 +264,10 @@ class MarkdownDialog(
                 
                 // Only update content if it has changed
                 if (newContent != lastContent) {
-                    val wasEmpty = lastContent.isBlank()
                     lastContent = newContent
-
-                    // Update content - force a non-empty string
                     val contentToSet = newContent.ifBlank { " " }
                     markdownViewer.setMarkdown(contentToSet)
                     
-                    // Smart auto-scroll: scroll to bottom for new content if this is new content
-                    // or if the previous content was empty (initial load)
-                    if (wasEmpty || isFirstUpdate) {
-                        // For initial content or when transitioning from empty, always scroll
-                        executor.schedule({
-                            invokeLater {
-                                if (!isDisposed) {
-                                    markdownViewer.scrollToBottom()
-                                }
-                            }
-                        }, 200, java.util.concurrent.TimeUnit.MILLISECONDS)
-                        isFirstUpdate = false
-                    }
                 }
             } catch (e: Exception) {
                 println("Error updating markdown dialog: ${e.message}")
