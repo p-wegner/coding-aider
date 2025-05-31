@@ -65,4 +65,5 @@ Make your changes precise and minimal."""
     const val AUTO_COMMIT_AFTER_EDITS = false // Auto-commit after plugin-based edits
     const val SHOW_MARKDOWN_DEV_TOOLS = false // Show DevTools button in markdown dialog
     const val USE_TOOL_WINDOW_OUTPUT = false // Use tool window instead of popup dialogs for output
+    const val SHOW_WORKING_DIRECTORY_PANEL = true // Show working directory panel in tool window
 }

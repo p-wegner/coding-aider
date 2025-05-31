@@ -30,6 +30,7 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
     private val enableLocalModelCostMapCheckBox = JBCheckBox("Enable local model cost mapping")
     private val showMarkdownDevToolsCheckBox = JBCheckBox("Show DevTools button in markdown viewer")
     private val useToolWindowOutputCheckBox = JBCheckBox("Use tool window for command output")
+    private val showWorkingDirectoryPanelCheckBox = JBCheckBox("Show working directory panel in tool window")
 
     override fun getTabName(): String = "Advanced"
 
@@ -147,6 +148,14 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
                                 "If enabled, command output will be displayed in a dedicated tool window with tabs instead of popup dialogs."
                         }
                 }
+                row {
+                    cell(showWorkingDirectoryPanelCheckBox)
+                        .component
+                        .apply {
+                            toolTipText =
+                                "If enabled, the working directory panel will be shown in the tool window."
+                        }
+                }
             }
         }
     }
@@ -164,6 +173,7 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
         settings.mountAiderConfInDocker = mountAiderConfInDockerCheckBox.isSelected
         settings.showMarkdownDevTools = showMarkdownDevToolsCheckBox.isSelected
         settings.useToolWindowOutput = useToolWindowOutputCheckBox.isSelected
+        settings.showWorkingDirectoryPanel = showWorkingDirectoryPanelCheckBox.isSelected
     }
 
     override fun reset() {
@@ -181,6 +191,7 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
         mountAiderConfInDockerCheckBox.isSelected = settings.mountAiderConfInDocker
         showMarkdownDevToolsCheckBox.isSelected = settings.showMarkdownDevTools
         useToolWindowOutputCheckBox.isSelected = settings.useToolWindowOutput
+        showWorkingDirectoryPanelCheckBox.isSelected = settings.showWorkingDirectoryPanel
     }
 
     override fun isModified(): Boolean {
@@ -195,7 +206,8 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
                 markdownDialogAutocloseDelayField.text.toIntOrNull() != settings.markdownDialogAutocloseDelay ||
                 mountAiderConfInDockerCheckBox.isSelected != settings.mountAiderConfInDocker ||
                 showMarkdownDevToolsCheckBox.isSelected != settings.showMarkdownDevTools ||
-                useToolWindowOutputCheckBox.isSelected != settings.useToolWindowOutput
+                useToolWindowOutputCheckBox.isSelected != settings.useToolWindowOutput ||
+                showWorkingDirectoryPanelCheckBox.isSelected != settings.showWorkingDirectoryPanel
     }
 
     fun updateLlmOptions(llmOptions: Array<LlmSelection>) {

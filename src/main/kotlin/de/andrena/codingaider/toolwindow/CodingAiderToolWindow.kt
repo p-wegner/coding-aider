@@ -69,15 +69,17 @@ class CodingAiderToolWindowContent(private val project: Project) {
                     .apply { expanded = true }
                     .topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
 
-                collapsibleGroup("Working Directory") {
-                    row {
-                        cell(workingDirectoryPanel.getContent())
-                            .align(com.intellij.ui.dsl.builder.Align.FILL)
-                            .resizableColumn()
+                if (settings.showWorkingDirectoryPanel) {
+                    collapsibleGroup("Working Directory") {
+                        row {
+                            cell(workingDirectoryPanel.getContent())
+                                .align(com.intellij.ui.dsl.builder.Align.FILL)
+                                .resizableColumn()
+                        }
                     }
+                        .apply { expanded = true }
+                        .topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
                 }
-                    .apply { expanded = true }
-                    .topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
 
                 if (!settings.useToolWindowOutput) {
                     collapsibleGroup("Running Commands") {
