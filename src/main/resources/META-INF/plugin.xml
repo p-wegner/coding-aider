@@ -367,5 +367,11 @@
                     anchor="right"
                     factoryClass="de.andrena.codingaider.toolwindow.CodingAiderToolWindow"
                     canCloseContents="false"/>
+        <toolWindow id="Aider Output"
+                    secondary="true"
+                    icon="MyIcons.Tool"
+                    anchor="bottom"
+                    factoryClass="de.andrena.codingaider.outputview.AiderOutputToolWindow"
+                    canCloseContents="true"/>
     </extensions>
 </idea-plugin>

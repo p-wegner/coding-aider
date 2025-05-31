@@ -59,7 +59,8 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var pluginBasedEdits: Boolean = AiderDefaults.PLUGIN_BASED_EDITS, // Added for plugin-based edits feature
         var lenientEdits: Boolean = AiderDefaults.LENIENT_EDITS, // Allow processing of multiple edit formats
         var autoCommitAfterEdits: Boolean = AiderDefaults.AUTO_COMMIT_AFTER_EDITS, // Auto-commit after plugin-based edits
-        var showMarkdownDevTools: Boolean = AiderDefaults.SHOW_MARKDOWN_DEV_TOOLS // Show DevTools button in markdown dialog
+        var showMarkdownDevTools: Boolean = AiderDefaults.SHOW_MARKDOWN_DEV_TOOLS, // Show DevTools button in markdown dialog
+        var useToolWindowOutput: Boolean = AiderDefaults.USE_TOOL_WINDOW_OUTPUT // Use tool window instead of popup dialogs for output
     )
 
 
@@ -285,6 +286,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.showMarkdownDevTools
         set(value) {
             myState.showMarkdownDevTools = value
+        }
+
+    var useToolWindowOutput: Boolean
+        get() = myState.useToolWindowOutput
+        set(value) {
+            myState.useToolWindowOutput = value
         }
 
 

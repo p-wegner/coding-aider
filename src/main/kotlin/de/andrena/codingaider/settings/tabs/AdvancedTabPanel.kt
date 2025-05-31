@@ -29,6 +29,7 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
     private val mountAiderConfInDockerCheckBox = JBCheckBox("Mount Aider configuration file in Docker")
     private val enableLocalModelCostMapCheckBox = JBCheckBox("Enable local model cost mapping")
     private val showMarkdownDevToolsCheckBox = JBCheckBox("Show DevTools button in markdown viewer")
+    private val useToolWindowOutputCheckBox = JBCheckBox("Use tool window for command output")
 
     override fun getTabName(): String = "Advanced"
 
@@ -138,6 +139,14 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
                                 "If enabled, a DevTools button will be shown in the markdown viewer for debugging purposes."
                         }
                 }
+                row {
+                    cell(useToolWindowOutputCheckBox)
+                        .component
+                        .apply {
+                            toolTipText =
+                                "If enabled, command output will be displayed in a dedicated tool window with tabs instead of popup dialogs."
+                        }
+                }
             }
         }
     }
@@ -154,6 +163,7 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
         settings.markdownDialogAutocloseDelay = markdownDialogAutocloseDelayField.text.toIntOrNull() ?: 10
         settings.mountAiderConfInDocker = mountAiderConfInDockerCheckBox.isSelected
         settings.showMarkdownDevTools = showMarkdownDevToolsCheckBox.isSelected
+        settings.useToolWindowOutput = useToolWindowOutputCheckBox.isSelected
     }
 
     override fun reset() {
@@ -170,6 +180,7 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
         markdownDialogAutocloseDelayField.isEnabled = settings.enableMarkdownDialogAutoclose
         mountAiderConfInDockerCheckBox.isSelected = settings.mountAiderConfInDocker
         showMarkdownDevToolsCheckBox.isSelected = settings.showMarkdownDevTools
+        useToolWindowOutputCheckBox.isSelected = settings.useToolWindowOutput
     }
 
     override fun isModified(): Boolean {
@@ -183,7 +194,8 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
                 enableMarkdownDialogAutocloseCheckBox.isSelected != settings.enableMarkdownDialogAutoclose ||
                 markdownDialogAutocloseDelayField.text.toIntOrNull() != settings.markdownDialogAutocloseDelay ||
                 mountAiderConfInDockerCheckBox.isSelected != settings.mountAiderConfInDocker ||
-                showMarkdownDevToolsCheckBox.isSelected != settings.showMarkdownDevTools
+                showMarkdownDevToolsCheckBox.isSelected != settings.showMarkdownDevTools ||
+                useToolWindowOutputCheckBox.isSelected != settings.useToolWindowOutput
     }
 
     fun updateLlmOptions(llmOptions: Array<LlmSelection>) {
