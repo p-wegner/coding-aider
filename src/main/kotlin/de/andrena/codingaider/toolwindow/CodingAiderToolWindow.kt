@@ -25,14 +25,29 @@ class CodingAiderToolWindow : ToolWindowFactory {
     }
 }
 
-class CodingAiderToolWindowContent(project: Project) {
+class CodingAiderToolWindowContent(private val project: Project) {
     private val settings = AiderSettings.getInstance()
     private val runningCommandsPanel = RunningCommandsPanel(project)
     private val plansPanel = PlansPanel(project)
     private val persistentFilesPanel = PersistentFilesPanel(project)
     private val workingDirectoryPanel = WorkingDirectoryPanel(project)
+    private var contentPanel: JComponent? = null
+
+    init {
+        // Listen for settings changes to update the tool window reactively
+        settings.addSettingsChangeListener {
+            refreshContent()
+        }
+    }
 
     fun getContent(): JComponent {
+        if (contentPanel == null) {
+            contentPanel = createContentPanel()
+        }
+        return contentPanel!!
+    }
+
+    private fun createContentPanel(): JComponent {
         val contentPanel = panel {
             indent {
                 collapsibleGroup("Persistent Files") {
@@ -78,5 +93,19 @@ class CodingAiderToolWindowContent(project: Project) {
             }
         }
         return JBScrollPane(contentPanel)
+    }
+
+    private fun refreshContent() {
+        contentPanel?.let { oldPanel ->
+            val parent = oldPanel.parent
+            if (parent != null) {
+                val newPanel = createContentPanel()
+                parent.remove(oldPanel)
+                parent.add(newPanel)
+                contentPanel = newPanel
+                parent.revalidate()
+                parent.repaint()
+            }
+        }
     }
 }
