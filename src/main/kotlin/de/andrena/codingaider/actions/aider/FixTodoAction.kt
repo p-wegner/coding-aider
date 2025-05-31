@@ -4,6 +4,7 @@ import com.intellij.codeInsight.intention.IntentionAction
 import com.intellij.codeInsight.intention.PsiElementBaseIntentionAction
 import com.intellij.openapi.actionSystem.*
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.editor.Editor
 import com.intellij.openapi.progress.ProgressIndicator
 import com.intellij.openapi.progress.ProgressManager
@@ -32,8 +33,10 @@ abstract class BaseFixTodoAction : AnAction() {
 
     companion object {
         private fun getTodos(project: Project, psiFile: PsiFile): List<PsiComment> {
-            return PsiTreeUtil.findChildrenOfType(psiFile, PsiComment::class.java)
-                .filter { it.text.contains("TODO", ignoreCase = true) }
+            return ReadAction.compute<List<PsiComment>, RuntimeException> {
+                PsiTreeUtil.findChildrenOfType(psiFile, PsiComment::class.java)
+                    .filter { it.text.contains("TODO", ignoreCase = true) }
+            }
         }
 
         fun fixTodoPrompt(todoText: String, psiFile: PsiFile) = "Fix the TODO in ${psiFile.name}:\n$todoText"
@@ -42,8 +45,11 @@ abstract class BaseFixTodoAction : AnAction() {
             getTodos(project, psiFile).isNotEmpty()
 
         fun getTodoText(project: Project, psiFile: PsiFile): String {
-            val todos = getTodos(project, psiFile)
-            return todos.joinToString("\n") { it.text }
+            return ReadAction.compute<String, RuntimeException> {
+                val todos = PsiTreeUtil.findChildrenOfType(psiFile, PsiComment::class.java)
+                    .filter { it.text.contains("TODO", ignoreCase = true) }
+                todos.joinToString("\n") { it.text }
+            }
         }
 
         fun createCommandData(
