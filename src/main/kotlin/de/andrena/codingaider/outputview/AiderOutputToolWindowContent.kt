@@ -37,44 +37,40 @@ class AiderOutputToolWindowContent(
             displayString,
             commandData
         )
-        SwingUtilities.invokeAndWait {
+        val tabId = generateTabId(commandData)
+        tabs[tabId] = tab
 
+        // Create content for the tab
+        val content = ContentFactory.getInstance().createContent(
+            tab.component,
+            generateTabTitle(commandData),
+            false
+        ).apply {
+            isCloseable = true
+            putUserData(TAB_ID_KEY, tabId)
 
-            val tabId = generateTabId(commandData)
-            tabs[tabId] = tab
+            // Set appropriate icon based on command state
+            icon = if (onAbort != null) AllIcons.Process.Step_1 else AllIcons.Process.Step_4
+        }
 
-            // Create content for the tab
-            val content = ContentFactory.getInstance().createContent(
-                tab.component,
-                generateTabTitle(commandData),
-                false
-            ).apply {
-                isCloseable = true
-                putUserData(TAB_ID_KEY, tabId)
-
-                // Set appropriate icon based on command state
-                icon = if (onAbort != null) AllIcons.Process.Step_1 else AllIcons.Process.Step_4
-            }
-
-            // Add close listener
-            content.manager?.addContentManagerListener(object : com.intellij.ui.content.ContentManagerListener {
-                override fun contentRemoved(event: com.intellij.ui.content.ContentManagerEvent) {
-                    if (event.content == content) {
-                        val removedTabId = event.content.getUserData(TAB_ID_KEY)
-                        removedTabId?.let { id ->
-                            tabs[id]?.dispose()
-                            tabs.remove(id)
-                        }
+        // Add close listener
+        content.manager?.addContentManagerListener(object : com.intellij.ui.content.ContentManagerListener {
+            override fun contentRemoved(event: com.intellij.ui.content.ContentManagerEvent) {
+                if (event.content == content) {
+                    val removedTabId = event.content.getUserData(TAB_ID_KEY)
+                    removedTabId?.let { id ->
+                        tabs[id]?.dispose()
+                        tabs.remove(id)
                     }
                 }
-            })
+            }
+        })
 
-            contentManager.addContent(content)
-            contentManager.setSelectedContent(content)
+        contentManager.addContent(content)
+        contentManager.setSelectedContent(content)
 
-            // Clean up old tabs if we exceed the limit
-            cleanupOldTabs()
-        }
+        // Clean up old tabs if we exceed the limit
+        cleanupOldTabs()
         return tab
     }
 
