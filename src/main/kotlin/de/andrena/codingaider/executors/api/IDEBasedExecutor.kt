@@ -8,6 +8,7 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.executors.CommandExecutor
 import de.andrena.codingaider.outputview.Abortable
 import de.andrena.codingaider.outputview.MarkdownDialog
+import de.andrena.codingaider.services.AiderOutputService
 import de.andrena.codingaider.services.CommandSummaryService
 import de.andrena.codingaider.services.RunningCommandService
 import de.andrena.codingaider.services.plans.AiderPlanService
@@ -27,7 +28,7 @@ class IDEBasedExecutor(
 ) : CommandObserver, Abortable {
     private val log = Logger.getInstance(IDEBasedExecutor::class.java)
     private val planExecutionActions = CommandPlanExecutionHandler(project, commandData)
-    private var markdownDialog: MarkdownDialog? = null
+    private var outputDisplay: Any? = null // Can be MarkdownDialog or AiderOutputTab
     private var currentCommitHash: String? = commandData.options.commitHashToCompareWith
     private val commandExecutor = AtomicReference<CommandExecutor?>(null)
     private var executionThread: Thread? = null
@@ -38,31 +39,34 @@ class IDEBasedExecutor(
         return finalOutput
     }
 
-    fun execute(): MarkdownDialog {
-        markdownDialog = MarkdownDialog(
-            project,
+    fun execute(): Any {
+        val outputService = project.service<AiderOutputService>()
+        outputDisplay = outputService.createOutput(
             "Aider Command Output",
             "Initializing Aider command...",
             this,
-            displayString = project.service<CommandSummaryService>().generateSummary(commandData),
-            commandData = commandData
-        ).apply {
-            isVisible = true
-            focus()
-            updateProgress("Initializing Aider command...", "Aider Command Starting")
-        }
+            project.service<CommandSummaryService>().generateSummary(commandData),
+            commandData
+        )
+        
+        outputService.updateProgress(outputDisplay!!, "Initializing Aider command...", "Aider Command Starting")
+        
         if (currentCommitHash == null) {
             currentCommitHash = GitUtils.getCurrentCommitHash(project)
         }
 
-
         planExecutionActions.beforeCommandStarted()
-        project.service<RunningCommandService>().addRunningCommand(markdownDialog!!)
+        
+        // Add to running commands (handle both dialog and tab types)
+        if (outputDisplay is MarkdownDialog) {
+            project.service<RunningCommandService>().addRunningCommand(outputDisplay as MarkdownDialog)
+        }
+        
         executionThread = thread {
             executeAiderCommand()
             isFinished.countDown()
         }
-        return markdownDialog!!
+        return outputDisplay!!
     }
 
     fun isFinished(): CountDownLatch = isFinished
@@ -84,17 +88,22 @@ class IDEBasedExecutor(
         try {
             commandExecutor.get()?.abortCommand(planId)
             executionThread?.interrupt()
-            updateDialogProgress("Aider command aborted by user", "Aider Command Aborted")
-            markdownDialog?.setProcessFinished()
+            updateOutputProgress("Aider command aborted by user", "Aider Command Aborted")
+            val outputService = project.service<AiderOutputService>()
+            outputDisplay?.let { outputService.setProcessFinished(it) }
             Thread.sleep(500)
             invokeLater {
-                markdownDialog?.dispose()
+                if (outputDisplay is MarkdownDialog) {
+                    (outputDisplay as MarkdownDialog).dispose()
+                }
             }
             isFinished.countDown()
         } catch (e: Exception) {
             log.error("Error during abort", e)
             invokeLater {
-                markdownDialog?.dispose()
+                if (outputDisplay is MarkdownDialog) {
+                    (outputDisplay as MarkdownDialog).dispose()
+                }
             }
         }
     }
@@ -107,28 +116,35 @@ class IDEBasedExecutor(
 
     private fun openGitComparisonToolIfNeeded() {
         if (getInstance().showGitComparisonTool) {
-            currentCommitHash?.let { GitUtils.openGitComparisonTool(project, it) { markdownDialog?.focus(1000) } }
+            currentCommitHash?.let { 
+                GitUtils.openGitComparisonTool(project, it) { 
+                    val outputService = project.service<AiderOutputService>()
+                    outputDisplay?.let { outputService.focus(it, 1000) }
+                } 
+            }
         }
     }
 
-    private fun updateDialogProgress(message: String, title: String) {
+    private fun updateOutputProgress(message: String, title: String) {
         invokeLater {
-            if (markdownDialog == null) return@invokeLater;
-            markdownDialog?.updateProgress(message, title)
+            if (outputDisplay == null) return@invokeLater
+            val outputService = project.service<AiderOutputService>()
+            outputService.updateProgress(outputDisplay!!, message, title)
         }
     }
 
     override fun onCommandStart(message: String) =
-        updateDialogProgress(message, "Aider Command Started")
+        updateOutputProgress(message, "Aider Command Started")
 
     override fun onCommandProgress(message: String, runningTime: Long) =
-        updateDialogProgress(message, "Aider command in progress ($runningTime seconds)")
+        updateOutputProgress(message, "Aider command in progress ($runningTime seconds)")
 
     override fun onCommandComplete(message: String, exitCode: Int) {
-        updateDialogProgress(message, "Aider Command ${if (exitCode == 0) "Completed" else "Failed"}")
-        markdownDialog?.startAutoCloseTimer(
-            commandData.options.autoCloseDelay ?: getInstance().markdownDialogAutocloseDelay
-        )
+        updateOutputProgress(message, "Aider Command ${if (exitCode == 0) "Completed" else "Failed"}")
+        val outputService = project.service<AiderOutputService>()
+        outputDisplay?.let { 
+            outputService.startAutoCloseTimer(it, commandData.options.autoCloseDelay ?: getInstance().markdownDialogAutocloseDelay)
+        }
         refreshFiles()
         planExecutionActions.commandCompleted()
         project.service<RunningCommandService>().storeCompletedCommand(commandData, message)
@@ -166,15 +182,21 @@ class IDEBasedExecutor(
     private fun presentChanges() {
         openGitComparisonToolIfNeeded()
         if (!getInstance().closeOutputDialogImmediately) {
-            markdownDialog?.setProcessFinished()
-            markdownDialog?.focus()
+            val outputService = project.service<AiderOutputService>()
+            outputDisplay?.let { 
+                outputService.setProcessFinished(it)
+                outputService.focus(it)
+            }
         }
     }
 
     override fun onCommandError(message: String) {
-        updateDialogProgress(message, "Aider Command Error")
-        markdownDialog?.setProcessFinished()
-        markdownDialog?.startAutoCloseTimer(getInstance().markdownDialogAutocloseDelay)
+        updateOutputProgress(message, "Aider Command Error")
+        val outputService = project.service<AiderOutputService>()
+        outputDisplay?.let { 
+            outputService.setProcessFinished(it)
+            outputService.startAutoCloseTimer(it, getInstance().markdownDialogAutocloseDelay)
+        }
     }
 
 }
