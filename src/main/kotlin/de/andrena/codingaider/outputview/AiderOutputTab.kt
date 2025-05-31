@@ -22,7 +22,7 @@ class AiderOutputTab(
     private val onAbort: Abortable?,
     private val displayString: String?,
     private val commandData: CommandData? = null
-) {
+): CodingAiderOutputPresentation {
     private val markdownViewer = MarkdownViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER))
     private val mainPanel = JPanel(BorderLayout())
     private val isProcessFinished = AtomicBoolean(false)
@@ -206,5 +206,8 @@ class AiderOutputTab(
             println("Error disposing AiderOutputTab: ${e.message}")
             e.printStackTrace()
         }
+    }
+
+    override fun hideElement() {
     }
 }

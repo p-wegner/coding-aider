@@ -33,7 +33,7 @@ class MarkdownDialog(
     private val onAbort: Abortable?,
     private val displayString: String?,
     private val commandData: CommandData? = null
-) : JDialog(null as Frame?, false) {
+) : JDialog(null as Frame?, false), CodingAiderOutputPresentation {
 
     companion object {
         fun create(
@@ -383,6 +383,10 @@ class MarkdownDialog(
             println("Error positioning dialog: ${e.message}")
             this.setLocationRelativeTo(null)
         }
+    }
+
+    override fun hideElement() {
+        isVisible = true
     }
 
 }

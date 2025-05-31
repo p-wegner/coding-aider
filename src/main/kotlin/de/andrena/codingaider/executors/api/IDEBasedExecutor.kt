@@ -7,6 +7,7 @@ import com.intellij.openapi.vfs.VirtualFileManager
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.executors.CommandExecutor
 import de.andrena.codingaider.outputview.Abortable
+import de.andrena.codingaider.outputview.CodingAiderOutputPresentation
 import de.andrena.codingaider.outputview.MarkdownDialog
 import de.andrena.codingaider.services.AiderOutputService
 import de.andrena.codingaider.services.CommandSummaryService
@@ -28,7 +29,7 @@ class IDEBasedExecutor(
 ) : CommandObserver, Abortable {
     private val log = Logger.getInstance(IDEBasedExecutor::class.java)
     private val planExecutionActions = CommandPlanExecutionHandler(project, commandData)
-    private var outputDisplay: Any? = null // Can be MarkdownDialog or AiderOutputTab
+    private var outputDisplay: CodingAiderOutputPresentation? = null // Can be MarkdownDialog or AiderOutputTab
     private var currentCommitHash: String? = commandData.options.commitHashToCompareWith
     private val commandExecutor = AtomicReference<CommandExecutor?>(null)
     private var executionThread: Thread? = null
@@ -80,7 +81,7 @@ class IDEBasedExecutor(
             executor.executeCommand()
         } catch (e: Exception) {
             log.error("Error executing Aider command", e)
-            updateDialogProgress("Error executing Aider command: ${e.message}", "Aider Command Error")
+            updateOutputProgress("Error executing Aider command: ${e.message}", "Aider Command Error")
         }
     }
 
@@ -111,7 +112,7 @@ class IDEBasedExecutor(
     private fun refreshFiles() {
         val files =
             commandData.files.mapNotNull { VirtualFileManager.getInstance().findFileByUrl(it.filePath) }.toTypedArray()
-        FileRefresher.refreshFiles(files, markdownDialog)
+        FileRefresher.refreshFiles(files, outputDisplay)
     }
 
     private fun openGitComparisonToolIfNeeded() {
@@ -153,7 +154,7 @@ class IDEBasedExecutor(
         if (commandData.planId != null && exitCode == 0) {
             try {
                 val planService = project.service<AiderPlanService>()
-                val costService = project.service<PlanExecutionCostService>()
+                val costService = service<PlanExecutionCostService>()
                 
                 // Find the plan by ID
                 val plans = planService.getAiderPlans()

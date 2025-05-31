@@ -5,18 +5,19 @@ import com.intellij.openapi.application.WriteAction
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.RefreshQueue
+import de.andrena.codingaider.outputview.CodingAiderOutputPresentation
 import de.andrena.codingaider.outputview.MarkdownDialog
 import java.awt.EventQueue.invokeLater
 
 object FileRefresher {
-    fun refreshFiles(files: Array<VirtualFile>, markdownDialog: MarkdownDialog? = null) {
+    fun refreshFiles(files: Array<VirtualFile>, markdownDialog: CodingAiderOutputPresentation? = null) {
         invokeLater {
             ApplicationManager.getApplication().invokeLater {
                 WriteAction.runAndWait<Throwable> {
                     VirtualFileManager.getInstance().refreshWithoutFileWatcher(false)
                     RefreshQueue.getInstance().refresh(true, true, null, *files)
                 }
-                markdownDialog?.isVisible = true
+                markdownDialog?.hideElement()
             }
         }
     }

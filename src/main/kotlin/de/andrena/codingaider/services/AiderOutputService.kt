@@ -8,6 +8,7 @@ import de.andrena.codingaider.outputview.Abortable
 import de.andrena.codingaider.outputview.AiderOutputTab
 import de.andrena.codingaider.outputview.AiderOutputToolWindow
 import de.andrena.codingaider.outputview.AiderOutputToolWindowContent
+import de.andrena.codingaider.outputview.CodingAiderOutputPresentation
 import de.andrena.codingaider.outputview.MarkdownDialog
 import de.andrena.codingaider.settings.AiderSettings
 
@@ -22,7 +23,7 @@ class AiderOutputService(private val project: Project) {
         onAbort: Abortable?,
         displayString: String?,
         commandData: CommandData?
-    ): Any { // Returns either MarkdownDialog or AiderOutputTab
+    ): CodingAiderOutputPresentation { // Returns either MarkdownDialog or AiderOutputTab
         val settings = AiderSettings.getInstance()
         
         return if (settings.useToolWindowOutput) {
