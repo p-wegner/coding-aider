@@ -5,6 +5,7 @@ import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
 import com.intellij.ui.content.ContentFactory
 import com.intellij.ui.dsl.builder.panel
+import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.toolwindow.persistentfiles.PersistentFilesPanel
 import de.andrena.codingaider.toolwindow.plans.PlansPanel
 import de.andrena.codingaider.toolwindow.runningcommands.RunningCommandsPanel
@@ -25,6 +26,7 @@ class CodingAiderToolWindow : ToolWindowFactory {
 }
 
 class CodingAiderToolWindowContent(project: Project) {
+    private val settings = AiderSettings.getInstance()
     private val runningCommandsPanel = RunningCommandsPanel(project)
     private val plansPanel = PlansPanel(project)
     private val persistentFilesPanel = PersistentFilesPanel(project)
@@ -62,15 +64,17 @@ class CodingAiderToolWindowContent(project: Project) {
                     .apply { expanded = true }
                     .topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
 
-                collapsibleGroup("Running Commands") {
-                    row {
-                        cell(runningCommandsPanel.getContent())
-                            .align(com.intellij.ui.dsl.builder.Align.FILL)
-                            .resizableColumn()
+                if (!settings.useToolWindowOutput) {
+                    collapsibleGroup("Running Commands") {
+                        row {
+                            cell(runningCommandsPanel.getContent())
+                                .align(com.intellij.ui.dsl.builder.Align.FILL)
+                                .resizableColumn()
+                        }
                     }
+                        .apply { expanded = true }
+                        .topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
                 }
-                    .apply { expanded = true }
-                    .topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
             }
         }
         return JBScrollPane(contentPanel)
