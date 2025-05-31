@@ -1,11 +1,12 @@
 /**
  * Markdown Viewer JavaScript
- * Handles content updates, collapsible panels, and scroll management
+ * Handles content updates, collapsible panels, and smart scroll management
  */
 
 // Track scroll state and panel expansion
 let isUserScrolled = false;
 let isUpdatingContent = false;
+let shouldAutoScroll = true; // Flag to control auto-scrolling behavior
 const panelStates = {};
 
 // Initialize when document is ready
@@ -13,7 +14,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set up scroll tracking
     window.addEventListener('scroll', function() {
         if (!isUpdatingContent) {
-            isUserScrolled = !isScrolledToBottom();
+            const wasAtBottom = isScrolledToBottom();
+            isUserScrolled = !wasAtBottom;
+            
+            // If user scrolls to bottom manually, enable auto-scroll again
+            if (wasAtBottom && isUserScrolled) {
+                shouldAutoScroll = true;
+            }
         }
     });
     
@@ -145,7 +152,7 @@ function togglePanel(panel) {
 }
 
 /**
- * Update content while preserving panel states and scroll position
+ * Update content while preserving panel states and implementing smart scroll
  */
 function updateContent(html) {
     try {
@@ -171,11 +178,15 @@ function updateContent(html) {
         // Schedule additional restoration attempts to handle race conditions
         setTimeout(restorePanelStates, 50);
         
-        // Restore scroll position with a slight delay to allow rendering
+        // Smart scroll logic with a slight delay to allow rendering
         setTimeout(() => {
-            if (wasAtBottom && !isUserScrolled) {
-                scrollToBottom();
+            if (shouldAutoScroll && (wasAtBottom || !isUserScrolled)) {
+                // Auto-scroll to bottom if:
+                // 1. Auto-scroll is enabled AND
+                // 2. User was at bottom OR user hasn't manually scrolled
+                scrollToBottomSmooth();
             } else {
+                // Restore previous scroll position
                 window.scrollTo(0, scrollPosition);
             }
             
@@ -258,14 +269,38 @@ function isScrolledToBottom() {
 }
 
 /**
- * Scroll to the bottom of the content
+ * Scroll to the bottom of the content (smooth)
  */
-function scrollToBottom() {
+function scrollToBottomSmooth() {
     window.scrollTo({
         top: document.body.scrollHeight,
         behavior: 'smooth'
     });
     isUserScrolled = false;
+}
+
+/**
+ * Scroll to the bottom of the content (instant)
+ */
+function scrollToBottom() {
+    window.scrollTo(0, document.body.scrollHeight);
+    isUserScrolled = false;
+}
+
+/**
+ * Enable or disable auto-scrolling
+ */
+function setAutoScroll(enabled) {
+    shouldAutoScroll = enabled;
+}
+
+/**
+ * Force scroll to bottom (used for programmatic scrolling)
+ */
+function forceScrollToBottom() {
+    shouldAutoScroll = true;
+    isUserScrolled = false;
+    scrollToBottomSmooth();
 }
 
 /**

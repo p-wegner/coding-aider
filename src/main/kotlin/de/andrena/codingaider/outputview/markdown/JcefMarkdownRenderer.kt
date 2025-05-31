@@ -307,20 +307,33 @@ class JcefMarkdownRenderer(
         if (isDisposed.get() || !loadCompleted.get() || browser == null) return
 
         try {
-            // First immediate scroll attempt
-            executeJavaScript("scrollToBottom();")
+            // Use force scroll to ensure it happens regardless of user scroll state
+            executeJavaScript("forceScrollToBottom();")
 
             // Single delayed scroll attempt as backup
             // This helps with cases where content is still being rendered
             if (!isDisposed.get()) {
                 AppExecutorUtil.getAppScheduledExecutorService().schedule({
                     if (!isDisposed.get()) {
-                        executeJavaScript("scrollToBottom();")
+                        executeJavaScript("forceScrollToBottom();")
                     }
                 }, 300, TimeUnit.MILLISECONDS)
             }
         } catch (e: Exception) {
             LOG.error("Error scrolling to bottom", e)
+        }
+    }
+
+    /**
+     * Enable or disable smart auto-scrolling
+     */
+    fun setAutoScroll(enabled: Boolean) {
+        if (isDisposed.get() || !loadCompleted.get() || browser == null) return
+
+        try {
+            executeJavaScript("setAutoScroll($enabled);")
+        } catch (e: Exception) {
+            LOG.error("Error setting auto-scroll", e)
         }
     }
 
