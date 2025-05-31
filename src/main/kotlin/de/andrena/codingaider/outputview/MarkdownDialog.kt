@@ -296,6 +296,7 @@ class MarkdownDialog(
                         if (isProcessFinished) {
                             try {
                                 if (getInstance().enableAutoPlanContinue && commandData?.structuredMode == true) {
+                                    //TODO check if plan not finished
                                     project.service<ContinuePlanService>().continuePlan()
                                 }
                             } catch (e: Exception) {
