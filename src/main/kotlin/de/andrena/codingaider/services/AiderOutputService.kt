@@ -98,6 +98,7 @@ class AiderOutputService(private val project: Project) {
     
     fun startAutoCloseTimer(output: Any, delay: Int) {
         when (output) {
+            // TODO: use polymorphism or sealed classes
             is MarkdownDialog -> output.startAutoCloseTimer(delay)
             is AiderOutputTab -> output.startAutoCloseTimer(delay)
         }
