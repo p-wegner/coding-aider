@@ -48,7 +48,7 @@ class AiderPlanService(private val project: Project) {
         
         // We don't have a plan ID yet, so we'll create a temporary record
         // The actual plan cost will be updated when the command completes
-        project.service<PlanExecutionCostService>().recordInitialPlanCreation(costData, commandData)
+        service<PlanExecutionCostService>().recordInitialPlanCreation(costData, commandData)
     }
 
     private fun extractChecklistItems(content: String): List<ChecklistItem> {
