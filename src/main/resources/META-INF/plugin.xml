@@ -287,30 +287,31 @@
             <add-to-group group-id="EditorPopupMenu" anchor="first"/>
             <add-to-group group-id="ProjectViewPopupMenu" anchor="first"/>
         </group>
-        <group
-                id="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorActionGroup"
-                text="Aider Actions"
-                class="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorActionGroup"
-        >
-            <action id="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorAction"
-                    class="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorAction"
-                    text="Fix Error with Aider (Experimental Error Detection)"
-                    icon="MyIcons.Tool"
-                    description="Group of actions to fix errors with Aider">
-                <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
-                <add-to-group group-id="RunContextPopupGroup" anchor="first"/>
-                <add-to-group group-id="TestTreePopupMenu" anchor="first"/>
-            </action>
-            <action id="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorInteractive"
-                    class="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorInteractive"
-                    icon="MyIcons.Tool"
-                    text="Fix Test with Aider (Experimental Error Detection)"
-                    description="Group of actions to fix errors with Aider">
-                <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>
-                <add-to-group group-id="RunContextPopupGroup" anchor="first"/>
-                <add-to-group group-id="TestTreePopupMenu" anchor="first"/>
-            </action>
-        </group>
+<!--        TODO reintroduce when error parsing works again-->
+<!--        <group-->
+<!--                id="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorActionGroup"-->
+<!--                text="Aider Actions"-->
+<!--                class="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorActionGroup"-->
+<!--        >-->
+<!--            <action id="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorAction"-->
+<!--                    class="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorAction"-->
+<!--                    text="Fix Error with Aider (Experimental Error Detection)"-->
+<!--                    icon="MyIcons.Tool"-->
+<!--                    description="Group of actions to fix errors with Aider">-->
+<!--                <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>-->
+<!--                <add-to-group group-id="RunContextPopupGroup" anchor="first"/>-->
+<!--                <add-to-group group-id="TestTreePopupMenu" anchor="first"/>-->
+<!--            </action>-->
+<!--            <action id="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorInteractive"-->
+<!--                    class="de.andrena.codingaider.actions.aider.FixBuildAndTestErrorInteractive"-->
+<!--                    icon="MyIcons.Tool"-->
+<!--                    text="Fix Test with Aider (Experimental Error Detection)"-->
+<!--                    description="Group of actions to fix errors with Aider">-->
+<!--                <add-to-group group-id="ConsoleEditorPopupMenu" anchor="first"/>-->
+<!--                <add-to-group group-id="RunContextPopupGroup" anchor="first"/>-->
+<!--                <add-to-group group-id="TestTreePopupMenu" anchor="first"/>-->
+<!--            </action>-->
+<!--        </group>-->
         
         <!-- Git Log Code Review Action -->
         <action id="de.andrena.codingaider.actions.git.GitLogCodeReviewAction"

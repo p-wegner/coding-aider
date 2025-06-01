@@ -39,9 +39,9 @@ Subplan Requirements:
 8. Only create subplans if necessary
     """.trimIndent()
     
-    val noSubplansGuidancePrompt = """
-Create a detailed checklist with atomic tasks that focus on clear, sequential implementation steps.
-    """.trimIndent()
+    val noSubplansGuidancePrompt =
+"""Create a detailed checklist with atomic tasks that focus on clear, sequential implementation steps.
+""".trimIndent()
 
     val planFileFormatPrompt = """
 Plan files are located in $AIDER_PLANS_FOLDER:
@@ -62,7 +62,7 @@ File Requirements:
   files:
   - path: "full/path/to/file"
     readOnly: false
-```    
+```
 """
 
     fun getExistingPlanPrompt(relativePlanPath: String) = """
@@ -78,9 +78,9 @@ If the current instruction doesn't align with the existing plan, update the plan
     """.trimIndent()
 
     fun getNewPlanPrompt(enableSubplans: Boolean) = """
-No plan exists yet. Write a detailed description of the requested feature and the needed changes.  
-The main plan file should include these sections: ## Overview, ## Problem Description, ## Goals, ## Additional Notes and Constraints, ## References  
-Save the plan in a new markdown file with a suitable name in the $AIDER_PLANS_FOLDER directory.  
+No plan exists yet. Write a detailed description of the requested feature and the needed changes.
+The main plan file should include these sections: ## Overview, ## Problem Description, ## Goals, ## Additional Notes and Constraints, ## References
+Save the plan in a new markdown file with a suitable name in the $AIDER_PLANS_FOLDER directory.
 
 ${if (enableSubplans) {
     """
@@ -89,8 +89,8 @@ Create subplans only if necessary. Use subplans when:
 2. Different team members could work on parts independently
 3. A component needs its own detailed planning
 $subplanGuidancePrompt
-Create separate checklist and context.yaml files for the main plan and each subplan to track the progress of implementing the plan.  
-    """
+Create separate checklist and context.yaml files for the main plan and each subplan to track the progress of implementing the plan.
+"""
 } else {
     ""
 }}
@@ -99,10 +99,10 @@ Create the three required files for the plan:
 2. A checklist markdown file to track implementation progress
 3. A context.yaml file listing all affected files
 
-For the context.yaml, consider all provided files and add relevant files to the affected context.yaml.  
-Only proceed with changes after creating and committing the plan files.  
-Ensure that you stick to the defined editing format when creating or editing files, e.g. only have the filepath above search blocks.  
-Make sure to commit the creation of all plan files even if you think you need additional files to implement the plan.  
+For the context.yaml, consider all provided files and add relevant files to the affected context.yaml.
+Only proceed with changes after creating and committing the plan files.
+Ensure that you stick to the defined editing format when creating or editing files, e.g. only have the filepath above search blocks.
+Make sure to commit the creation of all plan files even if you think you need additional files to implement the plan.
 Don't start the implementation until the plan files are committed. Do not ask the user if he wants to proceed with the plan.
     """.trimIndent()
 

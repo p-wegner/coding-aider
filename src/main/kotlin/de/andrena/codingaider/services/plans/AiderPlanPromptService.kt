@@ -68,10 +68,11 @@ class AiderPlanPromptService(private val project: Project) {
     private fun createFullPrompt(
         systemPrompt: String,
         commandData: CommandData
-    ): String = """<SystemPrompt>
-    $systemPrompt
-    </SystemPrompt>
-    $STRUCTURED_MODE_MESSAGE_MARKER ${commandData.message} $STRUCTURED_MODE_MESSAGE_END_MARKER
+    ): String = """
+<SystemPrompt>
+$systemPrompt
+</SystemPrompt>
+$STRUCTURED_MODE_MESSAGE_MARKER ${commandData.message} $STRUCTURED_MODE_MESSAGE_END_MARKER
                    """.trimStartingWhiteSpaces()
 
     private fun createFullPromptWithPrependedSlashCommand(

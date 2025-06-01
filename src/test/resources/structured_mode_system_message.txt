@@ -17,10 +17,11 @@ File Requirements:
   files:
   - path: "full/path/to/file"
     readOnly: false
-```    
-No plan exists yet. Write a detailed description of the requested feature and the needed changes.  
-The main plan file should include these sections: ## Overview, ## Problem Description, ## Goals, ## Additional Notes and Constraints, ## References  
-Save the plan in a new markdown file with a suitable name in the .coding-aider-plans directory.  
+```
+No plan exists yet. Write a detailed description of the requested feature and the needed changes.
+The main plan file should include these sections: ## Overview, ## Problem Description, ## Goals, ## Additional Notes and Constraints, ## References
+Save the plan in a new markdown file with a suitable name in the .coding-aider-plans directory.
+
 
 Create subplans only if necessary. Use subplans when:
 1. A feature requires many changes across plenty of components
@@ -44,10 +45,16 @@ Subplan Requirements:
 6. Ensure the main plan checklist properly delegates actual implementation to the subplans
 7. Ensure the main plan references all subplans
 8. Only create subplans if necessary
-Create separate checklist and context.yaml files for the main plan and each subplan to track the progress of implementing the plan.  
-For the context.yaml, consider all provided files and add relevant files to the affected context.yaml.  
-Only proceed with changes after creating and committing the plan files.  
-Ensure that you stick to the defined editing format when creating or editing files, e.g. only have the filepath above search blocks.  
-Make sure to commit the creation of all plan files even if you think you need additional files to implement the plan.  
+Create separate checklist and context.yaml files for the main plan and each subplan to track the progress of implementing the plan.
+
+Create the three required files for the plan:
+1. A main markdown file with the plan details
+2. A checklist markdown file to track implementation progress
+3. A context.yaml file listing all affected files
+
+For the context.yaml, consider all provided files and add relevant files to the affected context.yaml.
+Only proceed with changes after creating and committing the plan files.
+Ensure that you stick to the defined editing format when creating or editing files, e.g. only have the filepath above search blocks.
+Make sure to commit the creation of all plan files even if you think you need additional files to implement the plan.
 Don't start the implementation until the plan files are committed. Do not ask the user if he wants to proceed with the plan.
 </SystemPrompt>

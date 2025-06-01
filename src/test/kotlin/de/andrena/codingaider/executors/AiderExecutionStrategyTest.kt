@@ -152,6 +152,8 @@ class AiderExecutionStrategyTest : BasePlatformTestCase() {
     }
 
 
+    private val DOCKER_IMAGE_WITH_TAG = "paulgauthier/aider:v0.84.0"
+
     @Test
     fun `DockerAiderExecutionStrategy builds correct command`() {
         whenever(dockerManager.getCidFilePath()).thenReturn("/tmp/docker.cid")
@@ -161,7 +163,8 @@ class AiderExecutionStrategyTest : BasePlatformTestCase() {
             "-w", "/app",
             "--cidfile", "/tmp/docker.cid",
             "-v", "/project:/app",
-            "paulgauthier/aider:v0.82.2",
+            "-v", "C:\\Users\\Peter\\.aider.conf.yml:/app/.aider.conf.yml",
+            DOCKER_IMAGE_WITH_TAG,
             "--4o",
             "--file", "/app/file1.txt", "--yes", "--edit-format", "diff",
             "--no-suggest-shell-commands", "--no-pretty",
@@ -179,7 +182,8 @@ class AiderExecutionStrategyTest : BasePlatformTestCase() {
             "-w", "/app",
             "--cidfile", "/tmp/docker.cid",
             "-v", "/project:/app",
-            "paulgauthier/aider:v0.82.2",
+            "-v", "C:\\Users\\Peter\\.aider.conf.yml:/app/.aider.conf.yml",
+            DOCKER_IMAGE_WITH_TAG,
             "--file", "/app/file1.txt", "--yes", "--edit-format", "diff",
             "--no-suggest-shell-commands", "--no-pretty",
             "--no-fancy-input", "--no-detect-urls","--no-check-update", "--verbose", "--lint-cmd", "lint",
