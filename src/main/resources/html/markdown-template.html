@@ -1,81 +1,261 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Markdown Viewer</title>
     <style>
         body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            line-height: 1.6;
             margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            padding: 20px;
             background-color: ${BACKGROUND_COLOR};
             color: ${TEXT_COLOR};
-            transition: background-color 0.3s ease, color 0.3s ease;
+            transition: background-color 0.2s ease, color 0.2s ease;
         }
+        
+        body.updating-content {
+            pointer-events: none;
+        }
+        
+        body.updating-content * {
+            transition: none !important;
+        }
+        
         #content {
-            padding: 20px;
+            max-width: 100%;
+            word-wrap: break-word;
         }
         
         /* Collapsible panel styles */
         .collapsible-panel {
-            margin-bottom: 10px;
-            border: 1px solid rgba(127, 127, 127, 0.2);
-            border-radius: 4px;
+            border: 1px solid rgba(200, 200, 200, 0.2);
+            border-radius: 6px;
+            margin: 10px 0;
             overflow: hidden;
+            transition: border-color 0.2s ease;
         }
         
         .collapsible-header {
-            padding: 8px 12px;
-            background-color: rgba(127, 127, 127, 0.1);
+            background-color: rgba(200, 200, 200, 0.1);
+            padding: 12px 16px;
             cursor: pointer;
+            user-select: none;
             display: flex;
             align-items: center;
-            user-select: none;
+            gap: 8px;
+            transition: background-color 0.2s ease;
+            border: none;
+            outline: none;
         }
         
         .collapsible-header:hover {
-            background-color: rgba(127, 127, 127, 0.2);
+            background-color: rgba(200, 200, 200, 0.15);
+        }
+        
+        .collapsible-header:focus {
+            background-color: rgba(200, 200, 200, 0.2);
+            box-shadow: inset 0 0 0 2px rgba(100, 150, 255, 0.5);
         }
         
         .collapsible-arrow {
-            margin-right: 8px;
             font-size: 12px;
-            width: 12px;
-            text-align: center;
+            transition: transform 0.2s ease;
+            min-width: 12px;
         }
         
         .collapsible-title {
-            flex-grow: 1;
-            font-weight: 500;
+            font-weight: 600;
+            flex: 1;
         }
         
         .collapsible-content {
-            padding: 0;
+            padding: 0 16px;
             max-height: 0;
             overflow: hidden;
             transition: max-height 0.3s ease, padding 0.3s ease;
         }
         
         .collapsible-panel.expanded .collapsible-content {
-            padding: 10px;
-            max-height: 10000px; /* Large enough to contain content */
+            max-height: 10000px;
+            padding: 16px;
         }
         
-        /* Disable hover effects during content updates */
-        body.updating-content * {
-            pointer-events: none !important;
+        /* Code block styles */
+        pre {
+            background-color: rgba(200, 200, 200, 0.1);
+            border: 1px solid rgba(200, 200, 200, 0.2);
+            border-radius: 6px;
+            padding: 16px;
+            overflow-x: auto;
+            margin: 16px 0;
         }
         
-        /* Keyboard focus styles */
-        .collapsible-header:focus {
-            outline: 2px solid #4d90fe;
-            outline-offset: -2px;
+        code {
+            background-color: rgba(200, 200, 200, 0.1);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+        }
+        
+        pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+        
+        /* Table styles */
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 16px 0;
+        }
+        
+        th, td {
+            border: 1px solid rgba(200, 200, 200, 0.3);
+            padding: 8px 12px;
+            text-align: left;
+        }
+        
+        th {
+            background-color: rgba(200, 200, 200, 0.1);
+            font-weight: 600;
+        }
+        
+        /* Link styles */
+        a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        body.dark-theme a {
+            color: #66b3ff;
+        }
+        
+        /* Blockquote styles */
+        blockquote {
+            border-left: 4px solid rgba(200, 200, 200, 0.3);
+            margin: 16px 0;
+            padding: 0 16px;
+            font-style: italic;
+        }
+        
+        /* List styles */
+        ul, ol {
+            padding-left: 24px;
+        }
+        
+        li {
+            margin: 4px 0;
+        }
+        
+        /* Heading styles */
+        h1, h2, h3, h4, h5, h6 {
+            margin: 24px 0 16px 0;
+            font-weight: 600;
+            line-height: 1.25;
+        }
+        
+        h1 { font-size: 2em; }
+        h2 { font-size: 1.5em; }
+        h3 { font-size: 1.25em; }
+        h4 { font-size: 1.1em; }
+        h5 { font-size: 1em; }
+        h6 { font-size: 0.9em; }
+        
+        /* Dark theme adjustments */
+        body.dark-theme {
+            background-color: #2b2b2b;
+            color: #ffffff;
+        }
+        
+        body.dark-theme .collapsible-panel {
+            border-color: rgba(200, 200, 200, 0.2);
+        }
+        
+        body.dark-theme .collapsible-header {
+            background-color: rgba(200, 200, 200, 0.1);
+        }
+        
+        body.dark-theme .collapsible-header:hover {
+            background-color: rgba(200, 200, 200, 0.15);
+        }
+        
+        body.dark-theme .collapsible-header:focus {
+            background-color: rgba(200, 200, 200, 0.2);
+        }
+        
+        body.dark-theme pre {
+            background-color: #1e1e1e;
+            border-color: #666666;
+        }
+        
+        body.dark-theme code {
+            background-color: rgba(200, 200, 200, 0.1);
+        }
+        
+        body.dark-theme th, body.dark-theme td {
+            border-color: rgba(200, 200, 200, 0.3);
+        }
+        
+        body.dark-theme th {
+            background-color: rgba(200, 200, 200, 0.1);
+        }
+        
+        body.dark-theme blockquote {
+            border-left-color: rgba(200, 200, 200, 0.3);
+        }
+        
+        /* Light theme adjustments */
+        body.light-theme {
+            background-color: #ffffff;
+            color: #000000;
+        }
+        
+        body.light-theme .collapsible-panel {
+            border-color: rgba(0, 0, 0, 0.2);
+        }
+        
+        body.light-theme .collapsible-header {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        body.light-theme .collapsible-header:hover {
+            background-color: rgba(0, 0, 0, 0.15);
+        }
+        
+        body.light-theme .collapsible-header:focus {
+            background-color: rgba(0, 0, 0, 0.2);
+        }
+        
+        body.light-theme pre {
+            background-color: #f6f8fa;
+            border-color: #d1d9e0;
+        }
+        
+        body.light-theme code {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        body.light-theme th, body.light-theme td {
+            border-color: rgba(0, 0, 0, 0.3);
+        }
+        
+        body.light-theme th {
+            background-color: rgba(0, 0, 0, 0.1);
+        }
+        
+        body.light-theme blockquote {
+            border-left-color: rgba(0, 0, 0, 0.3);
         }
     </style>
-    <script src="${SCRIPT_PATH}"></script>
 </head>
 <body>
     <div id="content"></div>
+    <script src="${SCRIPT_PATH}"></script>
 </body>
 </html>

@@ -63,50 +63,14 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
         // Never feed an empty string to the renderer – give it one nbsp instead
         currentContent = markdown.ifBlank { " " }
 
-        // Try multiple times with increasing delays to handle race conditions
-        // where the renderer might not be fully initialized
+        // Simple, direct update - let the smart scrolling in JavaScript handle the rest
         try {
-            // Initial update attempt
             renderer.setMarkdown(currentContent)
-
-            // Schedule additional attempts with delays to ensure content is displayed
-            // Use a more reliable approach with fewer, more strategic attempts
-            for (delay in listOf(200L, 500L, 1000L, 2000L)) {
-                java.util.Timer().schedule(object : TimerTask() {
-                    override fun run() {
-                        try {
-                            if (!isDisposed) {
-                                javax.swing.SwingUtilities.invokeLater {
-                                    try {
-                                        // Only update if the renderer is ready
-                                        if (renderer.isReady) {
-                                            renderer.setMarkdown(currentContent)
-                                            
-                                            // No auto-scrolling
-                                        } else if (delay == 2000L) {
-                                            // Last attempt - force update even if not ready
-                                            println("Forcing markdown update after timeout")
-                                            renderer.setMarkdown(currentContent)
-                                        }
-                                    } catch (e: Exception) {
-                                        println("Error in delayed markdown update (${delay}ms): ${e.message}")
-                                        e.printStackTrace()
-                                        
-                                    }
-                                }
-                            }
-                        } catch (e: Exception) {
-                            println("Error scheduling delayed update: ${e.message}")
-                            e.printStackTrace()
-                        }
-                    }
-                }, delay)
-            }
         } catch (e: Exception) {
-            println("Error in initial markdown update: ${e.message}")
+            println("Error in markdown update: ${e.message}")
             e.printStackTrace()
             
-            // If initial attempt fails, try one more time after a short delay
+            // Single retry after a short delay
             java.util.Timer().schedule(object : TimerTask() {
                 override fun run() {
                     try {
