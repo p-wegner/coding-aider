@@ -8,25 +8,66 @@ let isUserScrolled = false;
 let isUpdatingContent = false;
 let shouldAutoScroll = true; // Flag to control auto-scrolling behavior
 const panelStates = {};
+let scrollTimeout = null;
 
 // Initialize when document is ready
 document.addEventListener('DOMContentLoaded', function() {
-    // Set up scroll tracking
+    console.log('Markdown viewer JavaScript loaded');
+    initializeScrollTracking();
+    initCollapsiblePanels();
+});
+
+// Initialize scroll tracking
+function initializeScrollTracking() {
+    // Track scroll events with debouncing
     window.addEventListener('scroll', function() {
-        if (!isUpdatingContent) {
-            const wasAtBottom = isScrolledToBottom();
-            isUserScrolled = !wasAtBottom;
-            
-            // If user scrolls to bottom manually, enable auto-scroll again
-            if (wasAtBottom && isUserScrolled) {
+        if (isUpdatingContent) return;
+        
+        // Clear existing timeout
+        if (scrollTimeout) {
+            clearTimeout(scrollTimeout);
+        }
+        
+        // Set user scrolled flag immediately
+        isUserScrolled = true;
+        
+        // Check if user scrolled back to bottom after a delay
+        scrollTimeout = setTimeout(function() {
+            if (isScrolledToBottom()) {
+                isUserScrolled = false;
                 shouldAutoScroll = true;
+            }
+        }, 150);
+    }, { passive: true });
+    
+    // Track wheel events for immediate feedback
+    window.addEventListener('wheel', function(e) {
+        if (isUpdatingContent) return;
+        if (e.deltaY !== 0) {
+            isUserScrolled = true;
+        }
+    }, { passive: true });
+    
+    // Track keyboard navigation
+    window.addEventListener('keydown', function(e) {
+        if (isUpdatingContent) return;
+        
+        const scrollKeys = ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', 'Space'];
+        if (scrollKeys.includes(e.key)) {
+            isUserScrolled = true;
+            
+            // Check if End key was pressed (scroll to bottom)
+            if (e.key === 'End' && (e.ctrlKey || e.metaKey)) {
+                setTimeout(() => {
+                    if (isScrolledToBottom()) {
+                        isUserScrolled = false;
+                        shouldAutoScroll = true;
+                    }
+                }, 100);
             }
         }
     });
-    
-    // Initialize any panels that might be in the initial content
-    initCollapsiblePanels();
-});
+}
 
 /**
  * Generate a stable ID for each panel based on its header content
@@ -156,6 +197,7 @@ function togglePanel(panel) {
  */
 function updateContent(html) {
     try {
+        console.log('Updating content, wasAtBottom:', isScrolledToBottom(), 'isUserScrolled:', isUserScrolled);
         isUpdatingContent = true;
         
         // Save current scroll position and bottom state
@@ -169,37 +211,42 @@ function updateContent(html) {
         document.body.classList.add('updating-content');
         
         // Update content
-        document.getElementById('content').innerHTML = html;
+        const contentElement = document.getElementById('content');
+        if (contentElement) {
+            contentElement.innerHTML = html;
+        } else {
+            console.error('Content element not found');
+            return;
+        }
         
         // Initialize panels with restored states
-        initCollapsiblePanels();
-        restorePanelStates();
-        
-        // Schedule additional restoration attempts to handle race conditions
-        setTimeout(restorePanelStates, 50);
-        
-        // Smart scroll logic with a slight delay to allow rendering
         setTimeout(() => {
+            initCollapsiblePanels();
+            restorePanelStates();
+            
+            // Smart scroll logic
             if (shouldAutoScroll && (wasAtBottom || !isUserScrolled)) {
-                // Auto-scroll to bottom if:
-                // 1. Auto-scroll is enabled AND
-                // 2. User was at bottom OR user hasn't manually scrolled
+                console.log('Auto-scrolling to bottom');
                 scrollToBottomSmooth();
-            } else {
-                // Restore previous scroll position
+            } else if (isUserScrolled && !wasAtBottom) {
+                console.log('Restoring scroll position:', scrollPosition);
                 window.scrollTo(0, scrollPosition);
             }
             
             // Remove updating class
             document.body.classList.remove('updating-content');
             isUpdatingContent = false;
-        }, 50);
+        }, 100);
+        
     } catch (e) {
         console.error("Error updating content:", e);
         
         // Basic fallback
         try {
-            document.getElementById('content').innerHTML = html;
+            const contentElement = document.getElementById('content');
+            if (contentElement) {
+                contentElement.innerHTML = html;
+            }
         } catch (innerError) {
             console.error("Fallback update failed:", innerError);
         }
@@ -264,16 +311,22 @@ function isScrolledToBottom() {
         document.documentElement.offsetHeight
     );
     
-    // Consider "bottom" if within 100px of the actual bottom
-    return scrollY + windowHeight >= documentHeight - 100;
+    // Consider "bottom" if within 50px of the actual bottom
+    const isAtBottom = scrollY + windowHeight >= documentHeight - 50;
+    return isAtBottom;
 }
 
 /**
  * Scroll to the bottom of the content (smooth)
  */
 function scrollToBottomSmooth() {
+    const maxHeight = Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight
+    );
+    
     window.scrollTo({
-        top: document.body.scrollHeight,
+        top: maxHeight,
         behavior: 'smooth'
     });
     isUserScrolled = false;
@@ -283,7 +336,12 @@ function scrollToBottomSmooth() {
  * Scroll to the bottom of the content (instant)
  */
 function scrollToBottom() {
-    window.scrollTo(0, document.body.scrollHeight);
+    const maxHeight = Math.max(
+        document.body.scrollHeight,
+        document.documentElement.scrollHeight
+    );
+    
+    window.scrollTo(0, maxHeight);
     isUserScrolled = false;
 }
 
@@ -291,16 +349,21 @@ function scrollToBottom() {
  * Enable or disable auto-scrolling
  */
 function setAutoScroll(enabled) {
+    console.log('Setting auto-scroll to:', enabled);
     shouldAutoScroll = enabled;
+    if (enabled && isScrolledToBottom()) {
+        isUserScrolled = false;
+    }
 }
 
 /**
  * Force scroll to bottom (used for programmatic scrolling)
  */
 function forceScrollToBottom() {
+    console.log('Force scrolling to bottom');
     shouldAutoScroll = true;
     isUserScrolled = false;
-    scrollToBottomSmooth();
+    scrollToBottom(); // Use instant scroll for force
 }
 
 /**
