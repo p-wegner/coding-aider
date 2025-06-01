@@ -13,3 +13,4 @@
 - [ ] Bug: plan cost calculation fails to detect model properly
 - [ ] Bug: archive plan does not move history file
 - [ ] Bug: Continue Plan doesn't properly register when plan ended
+- [ ] Bug: "Error executing Aider command: null" when aborting command
