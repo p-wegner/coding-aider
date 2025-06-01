@@ -179,7 +179,7 @@ class AiderPlanService(private val project: Project) {
         val filesToConsider: List<File> = this.plansDir.listFiles()?.toList() ?: listOf<File>()
         return getAiderPlans(filesToConsider)
     }
-
+    // TODO 01.06.2025 pwegner: extend to also consider cost file (if available) => archive plan will should move this file too
     fun loadPlanFromFile(file: File): AiderPlan? {
         return try {
             val content = file.readText()
