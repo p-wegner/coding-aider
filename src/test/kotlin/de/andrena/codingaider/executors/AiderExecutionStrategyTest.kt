@@ -158,12 +158,13 @@ class AiderExecutionStrategyTest : BasePlatformTestCase() {
     fun `DockerAiderExecutionStrategy builds correct command`() {
         whenever(dockerManager.getCidFilePath()).thenReturn("/tmp/docker.cid")
         val command = dockerStrategy.buildCommand(commandData)
+        val userHome = System.getProperty("user.home")
         assertThat(command).containsExactly(
             "docker", "run", "-i", "--rm",
             "-w", "/app",
             "--cidfile", "/tmp/docker.cid",
             "-v", "/project:/app",
-            "-v", "C:\\Users\\Peter\\.aider.conf.yml:/app/.aider.conf.yml",
+            "-v", "$userHome\\.aider.conf.yml:/app/.aider.conf.yml",
             DOCKER_IMAGE_WITH_TAG,
             "--4o",
             "--file", "/app/file1.txt", "--yes", "--edit-format", "diff",
@@ -177,12 +178,13 @@ class AiderExecutionStrategyTest : BasePlatformTestCase() {
     fun `DockerAiderExecutionStrategy builds correct command without llm`() {
         whenever(dockerManager.getCidFilePath()).thenReturn("/tmp/docker.cid")
         val command = dockerStrategy.buildCommand(commandData.copy(llm = ""))
+        val userHome = System.getProperty("user.home")
         assertThat(command).containsExactly(
             "docker", "run", "-i", "--rm",
             "-w", "/app",
             "--cidfile", "/tmp/docker.cid",
             "-v", "/project:/app",
-            "-v", "C:\\Users\\Peter\\.aider.conf.yml:/app/.aider.conf.yml",
+            "-v", "$userHome\\.aider.conf.yml:/app/.aider.conf.yml",
             DOCKER_IMAGE_WITH_TAG,
             "--file", "/app/file1.txt", "--yes", "--edit-format", "diff",
             "--no-suggest-shell-commands", "--no-pretty",
