@@ -1,0 +1,16 @@
+---
+files:
+- path: src\main\kotlin\de\andrena\codingaider\features\customactions\CustomActionConfiguration.kt
+  readOnly: false
+- path: src\main\kotlin\de\andrena\codingaider\features\customactions\DefaultCustomActions.kt
+  readOnly: false
+- path: src\main\kotlin\de\andrena\codingaider\features\customactions\CustomActionPromptService.kt
+  readOnly: false
+- path: src\main\kotlin\de\andrena\codingaider\features\customactions\dialogs\CustomActionDialog.kt
+  readOnly: false
+- path: src\main\kotlin\de\andrena\codingaider\features\customactions\dialogs\CustomActionTypeDialog.kt
+  readOnly: false
+- path: src\main\kotlin\de\andrena\codingaider\settings\AiderProjectSettings.kt
+  readOnly: false
+- path: src\main\kotlin\de\andrena\codingaider\settings\AiderProjectSettingsConfigurable.kt
+  readOnly: false

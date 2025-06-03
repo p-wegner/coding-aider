@@ -6,6 +6,8 @@ import de.andrena.codingaider.features.documentation.DefaultDocumentTypes
 import de.andrena.codingaider.features.documentation.DocumentTypeConfiguration
 import de.andrena.codingaider.features.testgeneration.DefaultTestTypes
 import de.andrena.codingaider.features.testgeneration.TestTypeConfiguration
+import de.andrena.codingaider.features.customactions.DefaultCustomActions
+import de.andrena.codingaider.features.customactions.CustomActionConfiguration
 
 @Service(Service.Level.PROJECT)
 @State(
@@ -18,7 +20,8 @@ class AiderProjectSettings(private val project: Project) : PersistentStateCompon
         var isContextCollapsed: Boolean = false,
         var workingDirectory: String? = null,
         var testTypes: MutableList<TestTypeConfiguration> = DefaultTestTypes.getDefaultTestTypes().toMutableList(),
-        var documentTypes: MutableList<DocumentTypeConfiguration> = DefaultDocumentTypes.getDefaultDocumentTypes().toMutableList()
+        var documentTypes: MutableList<DocumentTypeConfiguration> = DefaultDocumentTypes.getDefaultDocumentTypes().toMutableList(),
+        var customActions: MutableList<CustomActionConfiguration> = DefaultCustomActions.getDefaultCustomActions().toMutableList()
     )
 
     private var myState = State()
@@ -86,6 +89,27 @@ class AiderProjectSettings(private val project: Project) : PersistentStateCompon
     fun removeDocumentType(index: Int) {
         if (index in 0 until myState.documentTypes.size) {
             myState.documentTypes.removeAt(index)
+        }
+    }
+
+    // Custom Actions methods
+    fun getCustomActions(): List<CustomActionConfiguration> = myState.customActions.toList()
+
+    fun addCustomAction(customAction: CustomActionConfiguration) {
+        val relativePathCustomAction = customAction.withRelativePaths(project.basePath ?: "")
+        myState.customActions.add(relativePathCustomAction)
+    }
+
+    fun updateCustomAction(index: Int, customAction: CustomActionConfiguration) {
+        if (index in 0 until myState.customActions.size) {
+            val relativePathCustomAction = customAction.withRelativePaths(project.basePath ?: "")
+            myState.customActions[index] = relativePathCustomAction
+        }
+    }
+
+    fun removeCustomAction(index: Int) {
+        if (index in 0 until myState.customActions.size) {
+            myState.customActions.removeAt(index)
         }
     }
 

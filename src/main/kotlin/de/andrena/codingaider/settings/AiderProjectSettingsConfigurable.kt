@@ -12,6 +12,8 @@ import de.andrena.codingaider.features.documentation.DocumentTypeConfiguration
 import de.andrena.codingaider.features.documentation.dialogs.DocumentTypeDialog
 import de.andrena.codingaider.features.testgeneration.TestTypeConfiguration
 import de.andrena.codingaider.features.testgeneration.dialogs.TestTypeDialog
+import de.andrena.codingaider.features.customactions.CustomActionConfiguration
+import de.andrena.codingaider.features.customactions.dialogs.CustomActionTypeDialog
 import de.andrena.codingaider.services.PersistentFileService
 import java.awt.BorderLayout
 import java.awt.Component
@@ -53,6 +55,13 @@ class AiderProjectSettingsConfigurable(private val project: Project) : Configura
             group("Document Types") {
                 row {
                     scrollCell(createDocumentTypePanel())
+                        .align(Align.FILL)
+                        .resizableColumn()
+                }
+            }
+            group("Custom Actions") {
+                row {
+                    scrollCell(createCustomActionPanel())
                         .align(Align.FILL)
                         .resizableColumn()
                 }
@@ -220,6 +229,78 @@ class AiderProjectSettingsConfigurable(private val project: Project) : Configura
         }
     }
 
+    private fun createCustomActionPanel(): JPanel {
+        val panel = JPanel(BorderLayout())
+        val listModel = DefaultListModel<CustomActionConfiguration>()
+        val customActionList = JBList(listModel)
+
+        // Add existing custom actions
+        AiderProjectSettings.getInstance(project).getCustomActions().forEach {
+            listModel.addElement(it)
+        }
+
+        customActionList.cellRenderer = CustomActionRenderer()
+
+        val buttonPanel = JPanel().apply {
+            add(JButton("Add").apply {
+                addActionListener {
+                    showCustomActionDialog(null) { config ->
+                        listModel.addElement(config)
+                        AiderProjectSettings.getInstance(project).addCustomAction(config)
+                    }
+                }
+            })
+            add(JButton("Edit").apply {
+                addActionListener {
+                    val selected = customActionList.selectedValue
+                    if (selected != null) {
+                        val index = customActionList.selectedIndex
+                        showCustomActionDialog(selected) { config ->
+                            listModel.set(index, config)
+                            AiderProjectSettings.getInstance(project).updateCustomAction(index, config)
+                        }
+                    }
+                }
+            })
+            add(JButton("Remove").apply {
+                addActionListener {
+                    val index = customActionList.selectedIndex
+                    if (index != -1) {
+                        listModel.remove(index)
+                        AiderProjectSettings.getInstance(project).removeCustomAction(index)
+                    }
+                }
+            })
+            add(JButton("Copy").apply {
+                addActionListener {
+                    val selected = customActionList.selectedValue
+                    if (selected != null) {
+                        val copy = selected.copy(name = "${selected.name} (Copy)")
+                        listModel.addElement(copy)
+                        AiderProjectSettings.getInstance(project).addCustomAction(copy)
+                    }
+                }
+            })
+        }
+
+        panel.add(JScrollPane(customActionList), BorderLayout.CENTER)
+        panel.add(buttonPanel, BorderLayout.SOUTH)
+        return panel
+    }
+
+    private fun showCustomActionDialog(
+        existing: CustomActionConfiguration?,
+        onSave: (CustomActionConfiguration) -> Unit
+    ) {
+        // If we have an existing configuration with relative paths, convert to absolute for editing
+        val configForEditing = existing?.withAbsolutePaths(project.basePath ?: "")
+
+        val dialog = CustomActionTypeDialog(project, configForEditing)
+        if (dialog.showAndGet()) {
+            onSave(dialog.getCustomAction())
+        }
+    }
+
     private inner class TestTypeRenderer : DefaultListCellRenderer() {
         override fun getListCellRendererComponent(
             list: JList<*>?,
@@ -246,6 +327,22 @@ class AiderProjectSettingsConfigurable(private val project: Project) : Configura
         ): Component {
             val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
             if (component is JLabel && value is DocumentTypeConfiguration) {
+                component.text = "${value.name} ${if (!value.isEnabled) "(Disabled)" else ""}"
+            }
+            return component
+        }
+    }
+
+    private inner class CustomActionRenderer : DefaultListCellRenderer() {
+        override fun getListCellRendererComponent(
+            list: JList<*>?,
+            value: Any?,
+            index: Int,
+            isSelected: Boolean,
+            cellHasFocus: Boolean
+        ): Component {
+            val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
+            if (component is JLabel && value is CustomActionConfiguration) {
                 component.text = "${value.name} ${if (!value.isEnabled) "(Disabled)" else ""}"
             }
             return component
