@@ -185,6 +185,12 @@
                     description="Use Aider to refactor selected code to clean code">
                 <keyboard-shortcut keymap="$default" first-keystroke="alt shift R"/>
             </action>
+            <action id="de.andrena.codingaider.actions.aider.CustomActionAction"
+                    class="de.andrena.codingaider.actions.aider.CustomActionAction"
+                    text="Execute Custom Action"
+                    description="Execute a custom user-defined action with Aider">
+                <keyboard-shortcut keymap="$default" first-keystroke="alt C"/>
+            </action>
             <separator/>
             <action id="de.andrena.codingaider.CommitAction"
                     class="de.andrena.codingaider.actions.git.CommitAction"
