@@ -7,10 +7,13 @@
 - [ ] Bug: Markdown output viewer ux issues
     - [ ] collapseable panels get opened automatically when content changed
     - [x] auto scrolling not working at all
-- [x] Feature: Extend documentation actions to allow selecting type of documentation: technical, PRD, ... (make configurable comparable to test creation?)
+- [x] Feature: Extend documentation actions to allow selecting type of documentation: technical, PRD, ... (make
+  configurable comparable to test creation?)
 - [ ] count first plan execution in history
 - [ ] Bug: automatic plan continuation fails to detect plan end properly
 - [ ] Bug: plan cost calculation fails to detect model properly
 - [ ] Bug: archive plan does not move history file
 - [ ] Bug: Continue Plan doesn't properly register when plan ended
 - [ ] Bug: "Error executing Aider command: null" when aborting command
+- [ ] Feature: Add a way to add and manage simple custom user actions that execute a user defined prompt with
+  preconfigured context files (make this configurable comparable to test creation)
