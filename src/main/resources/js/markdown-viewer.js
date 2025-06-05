@@ -10,12 +10,18 @@ let shouldAutoScroll = true; // Flag to control auto-scrolling behavior
 const panelStates = {};
 let scrollTimeout = null;
 
-// Initialize when document is ready
-document.addEventListener('DOMContentLoaded', function() {
+// Initialize when document is ready or immediately if already loaded
+function initMarkdownViewer() {
     console.log('Markdown viewer JavaScript loaded');
     initializeScrollTracking();
     initCollapsiblePanels();
-});
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initMarkdownViewer);
+} else {
+    initMarkdownViewer();
+}
 
 // Initialize scroll tracking
 function initializeScrollTracking() {
