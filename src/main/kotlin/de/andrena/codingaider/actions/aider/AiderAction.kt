@@ -16,6 +16,7 @@ import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.AiderDialogStateService
 import de.andrena.codingaider.services.AiderIgnoreService
 import de.andrena.codingaider.services.FileDataCollectionService
+import de.andrena.codingaider.services.TodoPromptService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 
 
@@ -82,8 +83,10 @@ class AiderAction : AnAction() {
 
         fun collectCommandData(dialog: AiderInputDialog, project: Project): CommandData {
             val settings = getInstance()
+            val prompt = project.service<TodoPromptService>()
+                .buildPrompt(dialog.getInputText(), dialog.getAllFiles())
             return CommandData(
-                message = dialog.getInputText(),
+                message = prompt,
                 useYesFlag = dialog.isYesFlagChecked(),
                 llm = dialog.getLlm().name,
                 additionalArgs = dialog.getAdditionalArgs(),
@@ -99,8 +102,9 @@ class AiderAction : AnAction() {
 
         fun collectCommandData(files: List<FileData>, message: String, project: Project, mode: AiderMode): CommandData {
             val settings = getInstance()
+            val prompt = project.service<TodoPromptService>().buildPrompt(message, files)
             return CommandData(
-                message = message,
+                message = prompt,
                 useYesFlag = settings.useYesFlag,
                 llm = settings.llm,
                 additionalArgs = settings.additionalArgs,
