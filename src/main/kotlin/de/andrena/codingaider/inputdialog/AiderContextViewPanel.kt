@@ -8,6 +8,7 @@ import com.intellij.ui.LayeredIcon
 import com.intellij.util.ui.JBUI
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.services.AiderIgnoreService
+import com.intellij.openapi.ui.Messages
 import java.awt.BorderLayout
 import java.awt.event.InputEvent
 import java.awt.event.KeyEvent
@@ -160,6 +161,20 @@ class AiderContextViewPanel(
                     )
                 ), aiderContextView
             )
+        })
+
+        add(object : AnAction(
+            "Stash Files", "Stash selected files", AllIcons.Vcs.ShelveSilent
+        ) {
+            override fun actionPerformed(e: AnActionEvent) {
+                aiderContextView.stashSelectedFiles()
+            }
+
+            override fun update(e: AnActionEvent) {
+                e.presentation.isEnabled = aiderContextView.getSelectedFiles().isNotEmpty()
+            }
+
+            override fun getActionUpdateThread() = ActionUpdateThread.BGT
         })
     }
 
