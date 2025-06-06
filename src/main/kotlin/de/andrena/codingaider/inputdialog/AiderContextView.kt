@@ -6,6 +6,7 @@ import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.ui.IconManager
+import com.intellij.openapi.ui.Messages
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.treeStructure.Tree
@@ -321,6 +322,31 @@ class AiderContextView(
             val newPath = findUpdatedPath(path)
             tree.expandPath(newPath)
             tree.addSelectionPath(newPath)
+        }
+    }
+
+    fun stashSelectedFiles() {
+        val selectedFiles = getSelectedFiles()
+        if (selectedFiles.isEmpty()) return
+
+        val stashName = Messages.showInputDialog(
+            project,
+            "Enter a name for this stash (optional):",
+            "Stash Files",
+            Messages.getQuestionIcon()
+        ) ?: return
+
+        try {
+            persistentFileService.stashFiles(selectedFiles, stashName)
+            allFiles = allFiles.filterNot { it in selectedFiles }
+            persistentFiles = persistentFileService.getPersistentFiles()
+            selectedFilesChanged()
+        } catch (e: Exception) {
+            Messages.showErrorDialog(
+                project,
+                "Failed to stash files: ${'$'}{e.message}",
+                "Stash Error"
+            )
         }
     }
 
