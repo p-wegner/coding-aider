@@ -27,6 +27,7 @@ import de.andrena.codingaider.actions.ide.SettingsAction
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.services.AiderDialogStateService
 import de.andrena.codingaider.services.PersistentFileService
+import de.andrena.codingaider.services.TodoExtractionService
 import de.andrena.codingaider.services.TokenCountService
 import de.andrena.codingaider.services.plans.AiderPlanPromptService
 import de.andrena.codingaider.settings.AiderProjectSettings
@@ -327,8 +328,27 @@ class AiderInputDialog(
             insets = JBUI.insetsLeft(10)
         })
 
-        firstRowPanel.add(settingsButton, GridBagConstraints().apply {
+        val collectTodosButton = ActionButton(
+            object : AnAction() {
+                override fun actionPerformed(e: AnActionEvent) {
+                    collectTodosFromContext()
+                }
+            }, Presentation("Collect TODOs from Context").apply {
+                icon = AllIcons.General.TodoDefault
+                description = "Collect all TODO comments from context files and add to prompt"
+            }, "AiderCollectTodosButton", ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE
+        )
+
+        firstRowPanel.add(collectTodosButton, GridBagConstraints().apply {
             gridx = 8
+            gridy = 0
+            weightx = 0.0
+            fill = GridBagConstraints.NONE
+            insets = JBUI.insetsLeft(10)
+        })
+
+        firstRowPanel.add(settingsButton, GridBagConstraints().apply {
+            gridx = 9
             gridy = 0
             weightx = 0.0
             fill = GridBagConstraints.NONE
@@ -468,6 +488,50 @@ class AiderInputDialog(
         // Copy to clipboard
         val stringSelection = java.awt.datatransfer.StringSelection(sb.toString())
         java.awt.Toolkit.getDefaultToolkit().systemClipboard.setContents(stringSelection, null)
+    }
+
+    private fun collectTodosFromContext() {
+        val contextFiles = getAllFiles()
+        if (contextFiles.isEmpty()) {
+            // Show a message that no context files are selected
+            JOptionPane.showMessageDialog(
+                this.contentPane,
+                "No context files selected. Please add files to the context first.",
+                "No Context Files",
+                JOptionPane.INFORMATION_MESSAGE
+            )
+            return
+        }
+
+        val todoExtractionService = TodoExtractionService.getInstance(project)
+        val todosText = todoExtractionService.collectTodosFromFiles(contextFiles)
+        
+        if (todosText.isEmpty()) {
+            // Show a message that no TODOs were found
+            JOptionPane.showMessageDialog(
+                this.contentPane,
+                "No TODO comments found in the selected context files.",
+                "No TODOs Found",
+                JOptionPane.INFORMATION_MESSAGE
+            )
+            return
+        }
+
+        // Append TODOs to the existing input text
+        WriteCommandAction.runWriteCommandAction(project) {
+            val currentText = inputTextField.text
+            val newText = if (currentText.trim().isEmpty()) {
+                todosText
+            } else {
+                "$currentText\n\n$todosText"
+            }
+            inputTextField.text = newText
+            
+            // Move cursor to the end
+            SwingUtilities.invokeLater {
+                inputTextField.editor?.caretModel?.moveToOffset(newText.length)
+            }
+        }
     }
 
     override fun dispose() {

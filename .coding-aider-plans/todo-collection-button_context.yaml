@@ -1,0 +1,8 @@
+---
+files:
+- path: src/main/kotlin/de/andrena/codingaider/inputdialog/AiderInputDialog.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/actions/aider/FixTodoAction.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/services/TodoExtractionService.kt
+  readOnly: false

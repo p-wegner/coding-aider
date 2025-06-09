@@ -32,25 +32,14 @@ abstract class BaseFixTodoAction : AnAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     companion object {
-        private fun getTodos(project: Project, psiFile: PsiFile): List<PsiComment> {
-            return ReadAction.compute<List<PsiComment>, RuntimeException> {
-                PsiTreeUtil.findChildrenOfType(psiFile, PsiComment::class.java)
-                    .filter { it.text.contains("TODO", ignoreCase = true) }
-            }
-        }
-
-        fun fixTodoPrompt(todoText: String, psiFile: PsiFile) = "Fix the TODO in ${psiFile.name}:\n$todoText"
-
         fun hasTodos(project: Project, psiFile: PsiFile): Boolean =
-            getTodos(project, psiFile).isNotEmpty()
+            TodoExtractionService.getInstance(project).hasTodos(psiFile)
 
-        fun getTodoText(project: Project, psiFile: PsiFile): String {
-            return ReadAction.compute<String, RuntimeException> {
-                val todos = PsiTreeUtil.findChildrenOfType(psiFile, PsiComment::class.java)
-                    .filter { it.text.contains("TODO", ignoreCase = true) }
-                todos.joinToString("\n") { it.text }
-            }
-        }
+        fun getTodoText(project: Project, psiFile: PsiFile): String =
+            TodoExtractionService.getInstance(project).getTodoText(psiFile)
+
+        fun fixTodoPrompt(todoText: String, psiFile: PsiFile): String =
+            "Fix the TODO in ${psiFile.name}:\n$todoText"
 
         fun createCommandData(
             project: Project,
@@ -90,9 +79,10 @@ class FixTodoAction : BaseFixTodoAction() {
 
     companion object {
         fun fixTodo(project: Project, psiFile: PsiFile) {
-            val todoText = getTodoText(project, psiFile)
+            val todoExtractionService = TodoExtractionService.getInstance(project)
+            val todoText = todoExtractionService.getTodoText(psiFile)
             val files = getFiles(psiFile, project)
-            val commandData = createCommandData(project, files, fixTodoPrompt(todoText, psiFile), true)
+            val commandData = createCommandData(project, files, todoExtractionService.createFixTodoPrompt(todoText, psiFile), true)
             IDEBasedExecutor(project, commandData).execute()
         }
     }
@@ -135,13 +125,14 @@ class FixTodoInteractive : BaseFixTodoAction() {
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
     private fun showDialog(project: Project, psiFile: PsiFile) {
-        val todoText = getTodoText(project, psiFile)
+        val todoExtractionService = TodoExtractionService.getInstance(project)
+        val todoText = todoExtractionService.getTodoText(psiFile)
         ApplicationManager.getApplication().invokeAndWait {
             getFiles(psiFile, project).let { files ->
                 val dialog = AiderInputDialog(
                     project,
                     files,
-                    fixTodoPrompt(todoText, psiFile)
+                    todoExtractionService.createFixTodoPrompt(todoText, psiFile)
                 )
 
                 if (dialog.showAndGet()) {
