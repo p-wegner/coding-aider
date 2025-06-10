@@ -333,7 +333,7 @@ class AiderInputDialog(
                 override fun actionPerformed(e: AnActionEvent) {
                     collectTodosFromContext()
                 }
-            }, Presentation("Collect TODOs from Context").apply {
+            }, Presentation("Collect TODOs from Context and Add to Prompt").apply {
                 icon = AllIcons.General.TodoDefault
                 description = "Collect all TODO comments from context files and add to prompt"
             }, "AiderCollectTodosButton", ActionToolbar.DEFAULT_MINIMUM_BUTTON_SIZE

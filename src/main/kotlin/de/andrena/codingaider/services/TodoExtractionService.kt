@@ -76,7 +76,7 @@ class TodoExtractionService(private val project: Project) {
         }
         
         return if (todoSections.isNotEmpty()) {
-            "Fix the following TODOs:\n\n" + todoSections.joinToString("\n\n")
+            "Fix the following TODOs:\n" + todoSections.joinToString("\n")
         } else {
             ""
         }
@@ -95,7 +95,7 @@ class TodoExtractionService(private val project: Project) {
             } else {
                 File(filePath).name
             }
-        } catch (e: Exception) {
+        } catch (_: Exception) {
             File(filePath).name
         }
     }
