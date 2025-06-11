@@ -18,3 +18,4 @@
 - [ ] Feature: Add a way to add and manage simple custom user actions that execute a user defined prompt with
   preconfigured context files (make this configurable comparable to test creation)
 - [ ] Feature: find all TODOs in the files of the current context and add them to the prompt as in fix todos but also referencing each file 
+- [ ] Feature: adjust context yaml when moving files
