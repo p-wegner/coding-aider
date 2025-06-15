@@ -111,45 +111,43 @@ class FallbackMarkdownRenderer(
     }
     
     private fun restoreScrollPosition() {
-        // Schedule multiple scroll attempts with increasing delays
-        // This helps ensure proper scrolling even with dynamic content
-        for (delay in listOf(50L, 150L, 300L)) {
-            java.util.Timer().schedule(object : java.util.TimerTask() {
-                override fun run() {
-                    SwingUtilities.invokeLater {
-                        try {
-                            if (isDisposed) return@invokeLater
+        // Single delayed scroll attempt to avoid conflicts
+        java.util.Timer().schedule(object : java.util.TimerTask() {
+            override fun run() {
+                SwingUtilities.invokeLater {
+                    try {
+                        if (isDisposed) return@invokeLater
+                        
+                        programmaticScrolling = true
+                        
+                        if (shouldAutoScroll || wasAtBottom) {
+                            // Scroll to bottom
+                            val doc = editorPane.document
+                            editorPane.caretPosition = doc.length
                             
-                            programmaticScrolling = true
-                            
-                            if (shouldAutoScroll || wasAtBottom) {
-                                // Scroll to bottom
-                                val doc = editorPane.document
+                            // Also try scrolling to the bottom using rectangle
+                            try {
                                 val rect = editorPane.modelToView(doc.length)
                                 if (rect != null) {
                                     rect.y = rect.y + rect.height
                                     editorPane.scrollRectToVisible(rect)
-                                } else {
-                                    // Fallback method
-                                    editorPane.caretPosition = editorPane.document.length
                                 }
-                            } else if (lastScrollPosition != null) {
-                                // Restore previous position
-                                scrollPane.viewport.viewPosition = lastScrollPosition
+                            } catch (e: Exception) {
+                                // Ignore rect-based scrolling errors, caret position should work
                             }
-                            
-                            // Only reset the flag on the last timer
-                            if (delay == 300L) {
-                                programmaticScrolling = false
-                            }
-                        } catch (e: Exception) {
-                            programmaticScrolling = false
-                            println("Error restoring scroll position: ${e.message}")
+                        } else if (lastScrollPosition != null) {
+                            // Restore previous position
+                            scrollPane.viewport.viewPosition = lastScrollPosition!!
                         }
+                        
+                        programmaticScrolling = false
+                    } catch (e: Exception) {
+                        programmaticScrolling = false
+                        println("Error restoring scroll position: ${e.message}")
                     }
                 }
-            }, delay)
-        }
+            }
+        }, 100L)
     }
 
     override fun setDarkTheme(isDarkTheme: Boolean) {

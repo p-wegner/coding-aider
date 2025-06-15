@@ -230,19 +230,22 @@ function updateContent(html) {
             initCollapsiblePanels();
             restorePanelStates();
             
-            // Smart scroll logic
+            // Smart scroll logic - simplified and more reliable
             if (shouldAutoScroll && (wasAtBottom || !isUserScrolled)) {
                 console.log('Auto-scrolling to bottom');
-                scrollToBottomSmooth();
+                // Use a slight delay to ensure DOM is fully rendered
+                setTimeout(() => {
+                    scrollToBottomSmooth();
+                }, 50);
             } else if (isUserScrolled && !wasAtBottom) {
                 console.log('Restoring scroll position:', scrollPosition);
-                window.scrollTo(0, scrollPosition);
+                window.scrollTo(0, Math.min(scrollPosition, document.body.scrollHeight - window.innerHeight));
             }
             
             // Remove updating class
             document.body.classList.remove('updating-content');
             isUpdatingContent = false;
-        }, 100);
+        }, 50);
         
     } catch (e) {
         console.error("Error updating content:", e);
@@ -261,6 +264,7 @@ function updateContent(html) {
         isUpdatingContent = false;
     }
 }
+
 
 /**
  * Restore panel states after content update
@@ -317,8 +321,9 @@ function isScrolledToBottom() {
         document.documentElement.offsetHeight
     );
     
-    // Consider "bottom" if within 50px of the actual bottom
-    const isAtBottom = scrollY + windowHeight >= documentHeight - 50;
+    // Consider "bottom" if within 100px of the actual bottom (increased tolerance)
+    const isAtBottom = scrollY + windowHeight >= documentHeight - 100;
+    console.log('Scroll check - scrollY:', scrollY, 'windowHeight:', windowHeight, 'documentHeight:', documentHeight, 'isAtBottom:', isAtBottom);
     return isAtBottom;
 }
 

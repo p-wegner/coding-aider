@@ -310,14 +310,14 @@ class JcefMarkdownRenderer(
             // Use force scroll to ensure it happens regardless of user scroll state
             executeJavaScript("forceScrollToBottom();")
 
-            // Single delayed scroll attempt as backup
+            // Single delayed scroll attempt as backup with shorter delay
             // This helps with cases where content is still being rendered
             if (!isDisposed.get()) {
                 AppExecutorUtil.getAppScheduledExecutorService().schedule({
                     if (!isDisposed.get()) {
                         executeJavaScript("forceScrollToBottom();")
                     }
-                }, 300, TimeUnit.MILLISECONDS)
+                }, 100, TimeUnit.MILLISECONDS)
             }
         } catch (e: Exception) {
             LOG.error("Error scrolling to bottom", e)
