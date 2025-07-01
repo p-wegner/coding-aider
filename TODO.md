@@ -21,3 +21,4 @@
 - [ ] Feature: adjust context yaml when moving files
 - [ ] Improve: Generate Tests: make context file easier to setup
 - [ ] Improve: Generate Tests: which files to include in context? persistent files?
+- [ ] Improve: Generate Tests: respect settings for repo map
