@@ -20,5 +20,8 @@
 - [ ] Feature: find all TODOs in the files of the current context and add them to the prompt as in fix todos but also referencing each file 
 - [ ] Feature: adjust context yaml when moving files
 - [ ] Improve: Generate Tests: make context file easier to setup
-- [ ] Improve: Generate Tests: which files to include in context? persistent files?
-- [ ] Improve: Generate Tests: respect settings for repo map
+- [ ] Improve: Generate Tests: which files to include in context? persistent files? currently persistent files
+  are not used for context
+- [ ] Improve: Generate Tests: respect settings for repo mapping
+- [ ] Improve: make output viewer content copyable
+- [ ] in case of command abortion, make sure to keep output content of the command visible.
