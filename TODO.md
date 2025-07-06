@@ -25,3 +25,11 @@
 - [ ] Improve: Generate Tests: respect settings for repo mapping
 - [ ] Improve: make output viewer content copyable
 - [ ] in case of command abortion, make sure to keep output content of the command visible.
+- [ ] Feature: provide some mcp server functionality
+  - server: plan creation, crud for persistent files, repo map, 
+  - client: interpret output and call mcps and shell commands, start mcp servers
+- [ ] Feature: @context in input dialog (open files, git diff to current state, webcrawl via mcp ...)
+- [ ] aiderless toolcalling/mcp mode
+- [ ] refactor: group aider specific settings 
+- [ ] Feature: generate/adjust tests for last changes
+- [ ] Feature: TDD mode with configurable test type 
