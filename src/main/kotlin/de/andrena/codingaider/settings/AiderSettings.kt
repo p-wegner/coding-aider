@@ -61,7 +61,9 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var autoCommitAfterEdits: Boolean = AiderDefaults.AUTO_COMMIT_AFTER_EDITS, // Auto-commit after plugin-based edits
         var showMarkdownDevTools: Boolean = AiderDefaults.SHOW_MARKDOWN_DEV_TOOLS, // Show DevTools button in markdown dialog
         var useToolWindowOutput: Boolean = AiderDefaults.USE_TOOL_WINDOW_OUTPUT, // Use tool window instead of popup dialogs for output
-        var showWorkingDirectoryPanel: Boolean = AiderDefaults.SHOW_WORKING_DIRECTORY_PANEL // Show working directory panel in tool window
+        var showWorkingDirectoryPanel: Boolean = AiderDefaults.SHOW_WORKING_DIRECTORY_PANEL, // Show working directory panel in tool window
+        var mcpServerEnabled: Boolean = AiderDefaults.MCP_SERVER_ENABLED, // Enable MCP server
+        var mcpServerPort: Int = AiderDefaults.MCP_SERVER_PORT // MCP server port
     )
 
 
@@ -299,6 +301,18 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.showWorkingDirectoryPanel
         set(value) {
             myState.showWorkingDirectoryPanel = value
+        }
+
+    var mcpServerEnabled: Boolean
+        get() = myState.mcpServerEnabled
+        set(value) {
+            myState.mcpServerEnabled = value
+        }
+
+    var mcpServerPort: Int
+        get() = myState.mcpServerPort
+        set(value) {
+            myState.mcpServerPort = value
         }
 
 

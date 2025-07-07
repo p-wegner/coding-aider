@@ -48,3 +48,7 @@ bin/
 .env
 /.intellijPlatform/*
 .aider*
+
+### MCP ###
+.mcp/
+mcp-server.log
