@@ -32,4 +32,5 @@
 - [ ] aiderless toolcalling/mcp mode
 - [ ] refactor: group aider specific settings 
 - [ ] Feature: generate/adjust tests for last changes
-- [ ] Feature: TDD mode with configurable test type 
+- [ ] Feature: TDD mode with configurable test type
+- [ ] Bug: refresh files after applying clipboard edits

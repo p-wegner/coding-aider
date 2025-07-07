@@ -1,0 +1,16 @@
+---
+files:
+  - path: build.gradle.kts
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/services/AiderOutputService.kt
+    readOnly: true
+  - path: src/main/kotlin/de/andrena/codingaider/settings/AiderSettings.kt
+    readOnly: true
+  - path: src/main/kotlin/de/andrena/codingaider/settings/AiderProjectSettings.kt
+    readOnly: true
+  - path: src/main/kotlin/de/andrena/codingaider/utils/FileTraversal.kt
+    readOnly: true
+  - path: src/main/kotlin/de/andrena/codingaider/command/CommandData.kt
+    readOnly: true
+  - path: src/main/resources/META-INF/plugin.xml
+    readOnly: false
