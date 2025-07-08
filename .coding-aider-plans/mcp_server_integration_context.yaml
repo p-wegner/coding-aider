@@ -1,0 +1,12 @@
+---
+files:
+- path: build.gradle.kts
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/services/PersistentFileService.kt
+  readOnly: false
+- path: kotlin-sdk/kotlin_mcp_sdk.md
+  readOnly: true
+- path: .coding-aider-docs/mcp_server_support.md
+  readOnly: true
+- path: README.md
+  readOnly: true
