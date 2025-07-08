@@ -26,6 +26,8 @@ class PersistentFileService(private val project: Project) {
 
     init {
         loadPersistentFiles()
+        // Initialize MCP server service to ensure it starts when the project loads
+        project.service<McpServerService>()
     }
 
     private fun notifyPersistentFilesChanged() {

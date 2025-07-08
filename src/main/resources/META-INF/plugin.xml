@@ -380,5 +380,6 @@
                     anchor="bottom"
                     factoryClass="de.andrena.codingaider.outputview.AiderOutputToolWindow"
                     canCloseContents="true"/>
+        <projectService serviceImplementation="de.andrena.codingaider.services.McpServerService"/>
     </extensions>
 </idea-plugin>
