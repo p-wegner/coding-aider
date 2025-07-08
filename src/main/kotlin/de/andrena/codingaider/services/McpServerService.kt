@@ -15,10 +15,11 @@ import io.modelcontextprotocol.kotlin.sdk.ServerCapabilities
 import io.modelcontextprotocol.kotlin.sdk.server.Server
 import io.modelcontextprotocol.kotlin.sdk.server.ServerOptions
 import io.modelcontextprotocol.kotlin.sdk.server.mcp
-import kotlinx.coroutines.*
 import java.util.concurrent.atomic.AtomicBoolean
 import de.andrena.codingaider.settings.AiderSettings
 import com.intellij.openapi.application.ApplicationManager
+import java.util.concurrent.Executors
+import java.util.concurrent.ExecutorService
 
 @Service(Service.Level.PROJECT)
 class McpServerService(private val project: Project) {
@@ -26,9 +27,11 @@ class McpServerService(private val project: Project) {
     private var ktorServer: ApplicationEngine? = null
     private var mcpServer: Server? = null
     private val isRunning = AtomicBoolean(false)
-    private val serviceScope = CoroutineScope(
-        Dispatchers.IO + SupervisorJob()
-    )
+    private val executor: ExecutorService = Executors.newSingleThreadExecutor { r ->
+        Thread(r, "MCP-Server-${project.name}").apply {
+            isDaemon = true
+        }
+    }
     private val settings = AiderSettings.getInstance()
     private var currentPort: Int = DEFAULT_PORT
     
@@ -79,7 +82,7 @@ class McpServerService(private val project: Project) {
 
         logger.info("Attempting to start MCP Server on port $port")
         
-        serviceScope.launch {
+        executor.submit {
             try {
                 logger.info("Creating MCP Server instance")
                 mcpServer = createMcpServer()
@@ -98,21 +101,25 @@ class McpServerService(private val project: Project) {
                 logger.info("MCP Server successfully started on port $port")
                 
                 // Show success notification
-                showNotification(
-                    "MCP Server Started",
-                    "MCP Server is now running on port $port",
-                    NotificationType.INFORMATION
-                )
+                ApplicationManager.getApplication().invokeLater {
+                    showNotification(
+                        "MCP Server Started",
+                        "MCP Server is now running on port $port",
+                        NotificationType.INFORMATION
+                    )
+                }
             } catch (e: Exception) {
                 logger.error("Failed to start MCP Server on port $port", e)
                 isRunning.set(false)
                 
                 // Show error notification
-                showNotification(
-                    "MCP Server Start Failed",
-                    "Failed to start MCP Server on port $port: ${e.message}",
-                    NotificationType.ERROR
-                )
+                ApplicationManager.getApplication().invokeLater {
+                    showNotification(
+                        "MCP Server Start Failed",
+                        "Failed to start MCP Server on port $port: ${e.message}",
+                        NotificationType.ERROR
+                    )
+                }
             }
         }
     }
@@ -122,7 +129,7 @@ class McpServerService(private val project: Project) {
             return
         }
 
-        serviceScope.launch {
+        executor.submit {
             try {
                 ktorServer?.stop(1000, 2000)
                 ktorServer = null
@@ -131,20 +138,24 @@ class McpServerService(private val project: Project) {
                 logger.info("MCP Server stopped")
                 
                 // Show stop notification
-                showNotification(
-                    "MCP Server Stopped",
-                    "MCP Server has been stopped",
-                    NotificationType.INFORMATION
-                )
+                ApplicationManager.getApplication().invokeLater {
+                    showNotification(
+                        "MCP Server Stopped",
+                        "MCP Server has been stopped",
+                        NotificationType.INFORMATION
+                    )
+                }
             } catch (e: Exception) {
                 logger.error("Error stopping MCP Server", e)
                 
                 // Show error notification
-                showNotification(
-                    "MCP Server Stop Failed",
-                    "Error stopping MCP Server: ${e.message}",
-                    NotificationType.ERROR
-                )
+                ApplicationManager.getApplication().invokeLater {
+                    showNotification(
+                        "MCP Server Stop Failed",
+                        "Error stopping MCP Server: ${e.message}",
+                        NotificationType.ERROR
+                    )
+                }
             }
         }
     }
@@ -219,6 +230,14 @@ class McpServerService(private val project: Project) {
 
     fun dispose() {
         stopServer()
-        serviceScope.cancel()
+        executor.shutdown()
+        try {
+            if (!executor.awaitTermination(5, java.util.concurrent.TimeUnit.SECONDS)) {
+                executor.shutdownNow()
+            }
+        } catch (e: InterruptedException) {
+            executor.shutdownNow()
+            Thread.currentThread().interrupt()
+        }
     }
 }
