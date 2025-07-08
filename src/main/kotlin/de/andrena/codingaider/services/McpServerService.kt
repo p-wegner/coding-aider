@@ -27,9 +27,7 @@ class McpServerService(private val project: Project) {
     private var mcpServer: Server? = null
     private val isRunning = AtomicBoolean(false)
     private val serviceScope = CoroutineScope(
-        ApplicationManager.getApplication().coroutineScope.coroutineContext + 
-        Dispatchers.IO + 
-        SupervisorJob()
+        Dispatchers.IO + SupervisorJob()
     )
     private val settings = AiderSettings.getInstance()
     private var currentPort: Int = DEFAULT_PORT
