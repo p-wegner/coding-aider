@@ -54,8 +54,14 @@ class McpServerPanel(private val project: Project) {
                         ) {
                             override fun actionPerformed(e: AnActionEvent) {
                                 val port = portField.text.toIntOrNull() ?: settings.mcpServerPort
+                                // Update settings with the new port
+                                settings.mcpServerPort = port
                                 mcpServerService.startServer(port)
-                                updateStatus()
+                                // Update status after a short delay to allow server to start
+                                javax.swing.Timer(500) { updateStatus() }.apply {
+                                    isRepeats = false
+                                    start()
+                                }
                             }
                             
                             override fun getActionUpdateThread() = ActionUpdateThread.BGT
@@ -121,10 +127,10 @@ class McpServerPanel(private val project: Project) {
     
     private fun updateStatus() {
         val isRunning = mcpServerService.isServerRunning()
-        val port = mcpServerService.getServerPort()
+        val serverPort = mcpServerService.getServerPort()
         
         if (isRunning) {
-            statusLabel.text = "Status: Running on port $port"
+            statusLabel.text = "Status: Running on port $serverPort"
             statusLabel.foreground = Color.GREEN.darker()
             toolsLabel.text = "Active Tools: list_persistent_files, add_persistent_files, remove_persistent_files, get_persistent_file_content"
         } else {
@@ -133,9 +139,10 @@ class McpServerPanel(private val project: Project) {
             toolsLabel.text = "Active Tools: None"
         }
         
-        // Update port field if it differs from current server port
-        if (portField.text.toIntOrNull() != port) {
-            portField.text = port.toString()
+        // Only update port field if server is running and field is different from server port
+        // This prevents resetting the field when server fails to start
+        if (isRunning && portField.text.toIntOrNull() != serverPort) {
+            portField.text = serverPort.toString()
         }
     }
     
