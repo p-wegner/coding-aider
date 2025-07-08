@@ -6,6 +6,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
+import io.ktor.server.netty.*
 import io.ktor.server.sse.*
 import io.modelcontextprotocol.kotlin.sdk.Implementation
 import io.modelcontextprotocol.kotlin.sdk.ServerCapabilities
