@@ -18,6 +18,7 @@ import io.modelcontextprotocol.kotlin.sdk.server.mcp
 import kotlinx.coroutines.*
 import java.util.concurrent.atomic.AtomicBoolean
 import de.andrena.codingaider.settings.AiderSettings
+import com.intellij.openapi.application.ApplicationManager
 
 @Service(Service.Level.PROJECT)
 class McpServerService(private val project: Project) {
@@ -25,7 +26,11 @@ class McpServerService(private val project: Project) {
     private var ktorServer: ApplicationEngine? = null
     private var mcpServer: Server? = null
     private val isRunning = AtomicBoolean(false)
-    private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private val serviceScope = CoroutineScope(
+        ApplicationManager.getApplication().coroutineScope.coroutineContext + 
+        Dispatchers.IO + 
+        SupervisorJob()
+    )
     private val settings = AiderSettings.getInstance()
     private var currentPort: Int = DEFAULT_PORT
     
