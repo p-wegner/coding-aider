@@ -15,6 +15,7 @@ import io.modelcontextprotocol.kotlin.sdk.server.ServerOptions
 import io.modelcontextprotocol.kotlin.sdk.server.mcp
 import kotlinx.coroutines.*
 import java.util.concurrent.atomic.AtomicBoolean
+import de.andrena.codingaider.settings.AiderSettings
 
 @Service(Service.Level.PROJECT)
 class McpServerService(private val project: Project) {
@@ -23,11 +24,36 @@ class McpServerService(private val project: Project) {
     private var mcpServer: Server? = null
     private val isRunning = AtomicBoolean(false)
     private val serviceScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+    private val settings = AiderSettings.getInstance()
+    private var currentPort: Int = DEFAULT_PORT
     
     companion object {
         const val DEFAULT_PORT = 8080
         const val MCP_ENDPOINT = "/mcp"
         const val SSE_ENDPOINT = "/sse"
+    }
+
+    init {
+        // Start server automatically if enabled in settings
+        if (settings.mcpServerEnabled) {
+            startServer(settings.mcpServerPort)
+        }
+        
+        // Listen for settings changes
+        settings.addSettingsChangeListener {
+            if (settings.mcpServerEnabled && !isRunning.get()) {
+                startServer(settings.mcpServerPort)
+            } else if (!settings.mcpServerEnabled && isRunning.get()) {
+                stopServer()
+            } else if (settings.mcpServerEnabled && isRunning.get()) {
+                // Restart server if port changed
+                val currentPort = getServerPort()
+                if (currentPort != settings.mcpServerPort) {
+                    stopServer()
+                    startServer(settings.mcpServerPort)
+                }
+            }
+        }
     }
 
     fun startServer(port: Int = DEFAULT_PORT) {
@@ -46,11 +72,12 @@ class McpServerService(private val project: Project) {
                     }
                 }.start(wait = false)
                 
+                currentPort = port
                 isRunning.set(true)
                 logger.info("MCP Server started on port $port")
             }
         } catch (e: Exception) {
-            logger.error("Failed to start MCP Server", e)
+            logger.error("Failed to start MCP Server on port $port", e)
             isRunning.set(false)
         }
     }
@@ -75,7 +102,7 @@ class McpServerService(private val project: Project) {
 
     fun isServerRunning(): Boolean = isRunning.get()
 
-    fun getServerPort(): Int = DEFAULT_PORT
+    fun getServerPort(): Int = currentPort
 
     private fun createMcpServer(): Server {
         val server = Server(

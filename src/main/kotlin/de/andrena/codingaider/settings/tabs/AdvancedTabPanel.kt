@@ -31,6 +31,8 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
     private val showMarkdownDevToolsCheckBox = JBCheckBox("Show DevTools button in markdown viewer")
     private val useToolWindowOutputCheckBox = JBCheckBox("Use tool window for command output")
     private val showWorkingDirectoryPanelCheckBox = JBCheckBox("Show working directory panel in tool window")
+    private val mcpServerEnabledCheckBox = JBCheckBox("Enable MCP Server")
+    private val mcpServerPortField = JBTextField()
 
     override fun getTabName(): String = "Advanced"
 
@@ -157,6 +159,28 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
                         }
                 }
             }
+
+            group("MCP Server") {
+                row {
+                    cell(mcpServerEnabledCheckBox)
+                        .component
+                        .apply {
+                            toolTipText =
+                                "If enabled, an MCP server will be started to allow external MCP clients to interact with the plugin."
+                            addItemListener { e ->
+                                mcpServerPortField.isEnabled = e.stateChange == ItemEvent.SELECTED
+                            }
+                        }
+                }
+                row("MCP Server Port:") {
+                    cell(mcpServerPortField)
+                        .component
+                        .apply {
+                            toolTipText = "Port number for the MCP server (default: 8080)"
+                            isEnabled = mcpServerEnabledCheckBox.isSelected
+                        }
+                }
+            }
         }
     }
 
@@ -174,6 +198,8 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
         settings.showMarkdownDevTools = showMarkdownDevToolsCheckBox.isSelected
         settings.useToolWindowOutput = useToolWindowOutputCheckBox.isSelected
         settings.showWorkingDirectoryPanel = showWorkingDirectoryPanelCheckBox.isSelected
+        settings.mcpServerEnabled = mcpServerEnabledCheckBox.isSelected
+        settings.mcpServerPort = mcpServerPortField.text.toIntOrNull() ?: AiderDefaults.MCP_SERVER_PORT
     }
 
     override fun reset() {
@@ -192,6 +218,9 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
         showMarkdownDevToolsCheckBox.isSelected = settings.showMarkdownDevTools
         useToolWindowOutputCheckBox.isSelected = settings.useToolWindowOutput
         showWorkingDirectoryPanelCheckBox.isSelected = settings.showWorkingDirectoryPanel
+        mcpServerEnabledCheckBox.isSelected = settings.mcpServerEnabled
+        mcpServerPortField.text = settings.mcpServerPort.toString()
+        mcpServerPortField.isEnabled = settings.mcpServerEnabled
     }
 
     override fun isModified(): Boolean {
@@ -207,7 +236,9 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
                 mountAiderConfInDockerCheckBox.isSelected != settings.mountAiderConfInDocker ||
                 showMarkdownDevToolsCheckBox.isSelected != settings.showMarkdownDevTools ||
                 useToolWindowOutputCheckBox.isSelected != settings.useToolWindowOutput ||
-                showWorkingDirectoryPanelCheckBox.isSelected != settings.showWorkingDirectoryPanel
+                showWorkingDirectoryPanelCheckBox.isSelected != settings.showWorkingDirectoryPanel ||
+                mcpServerEnabledCheckBox.isSelected != settings.mcpServerEnabled ||
+                mcpServerPortField.text.toIntOrNull() != settings.mcpServerPort
     }
 
     fun updateLlmOptions(llmOptions: Array<LlmSelection>) {
