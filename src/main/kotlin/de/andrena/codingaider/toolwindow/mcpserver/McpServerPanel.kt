@@ -2,6 +2,7 @@ package de.andrena.codingaider.toolwindow.mcpserver
 
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.DefaultActionGroup
@@ -57,6 +58,8 @@ class McpServerPanel(private val project: Project) {
                                 updateStatus()
                             }
                             
+                            override fun getActionUpdateThread() = ActionUpdateThread.BGT
+                            
                             override fun update(e: AnActionEvent) {
                                 e.presentation.isEnabled = !mcpServerService.isServerRunning()
                             }
@@ -70,6 +73,8 @@ class McpServerPanel(private val project: Project) {
                                 mcpServerService.stopServer()
                                 updateStatus()
                             }
+                            
+                            override fun getActionUpdateThread() = ActionUpdateThread.BGT
                             
                             override fun update(e: AnActionEvent) {
                                 e.presentation.isEnabled = mcpServerService.isServerRunning()
