@@ -4,6 +4,7 @@ import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.Panel
+import de.andrena.codingaider.settings.AiderDefaults
 import de.andrena.codingaider.settings.ExperimentalFeatureUtil
 import de.andrena.codingaider.settings.LlmComboBoxRenderer
 import de.andrena.codingaider.settings.LlmSelection

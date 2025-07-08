@@ -25,8 +25,7 @@ class McpToolsService(private val project: Project) {
             name = "list_persistent_files",
             description = "Returns all files currently in the persistent file list",
             inputSchema = Tool.Input(
-                type = "object",
-                properties = emptyMap()
+                properties = buildJsonObject{},
             )
         ) { request ->
             try {
@@ -47,7 +46,6 @@ class McpToolsService(private val project: Project) {
                 CallToolResult(
                     content = listOf(
                         TextContent(
-                            type = "text",
                             text = result.toString()
                         )
                     )
@@ -57,7 +55,6 @@ class McpToolsService(private val project: Project) {
                 CallToolResult(
                     content = listOf(
                         TextContent(
-                            type = "text", 
                             text = "Error: ${e.message}"
                         )
                     ),
@@ -72,8 +69,7 @@ class McpToolsService(private val project: Project) {
             name = "add_persistent_files",
             description = "Adds one or more files to the persistent file list",
             inputSchema = Tool.Input(
-                type = "object",
-                properties = mapOf(
+                properties = JsonObject(mapOf(
                     "filePaths" to JsonObject(mapOf(
                         "type" to JsonPrimitive("array"),
                         "items" to JsonObject(mapOf("type" to JsonPrimitive("string"))),
@@ -84,7 +80,7 @@ class McpToolsService(private val project: Project) {
                         "description" to JsonPrimitive("Whether files should be marked as read-only"),
                         "default" to JsonPrimitive(false)
                     ))
-                ),
+                )),
                 required = listOf("filePaths")
             )
         ) { request ->
@@ -115,7 +111,6 @@ class McpToolsService(private val project: Project) {
                 CallToolResult(
                     content = listOf(
                         TextContent(
-                            type = "text",
                             text = result.toString()
                         )
                     )
@@ -125,7 +120,6 @@ class McpToolsService(private val project: Project) {
                 CallToolResult(
                     content = listOf(
                         TextContent(
-                            type = "text",
                             text = "Error: ${e.message}"
                         )
                     ),
@@ -140,14 +134,13 @@ class McpToolsService(private val project: Project) {
             name = "remove_persistent_files",
             description = "Removes files from the persistent file list",
             inputSchema = Tool.Input(
-                type = "object",
-                properties = mapOf(
+                properties = JsonObject(mapOf(
                     "filePaths" to JsonObject(mapOf(
                         "type" to JsonPrimitive("array"),
                         "items" to JsonObject(mapOf("type" to JsonPrimitive("string"))),
                         "description" to JsonPrimitive("Array of file paths to remove")
                     ))
-                ),
+                )),
                 required = listOf("filePaths")
             )
         ) { request ->
@@ -166,7 +159,6 @@ class McpToolsService(private val project: Project) {
                 CallToolResult(
                     content = listOf(
                         TextContent(
-                            type = "text",
                             text = result.toString()
                         )
                     )
@@ -176,7 +168,6 @@ class McpToolsService(private val project: Project) {
                 CallToolResult(
                     content = listOf(
                         TextContent(
-                            type = "text",
                             text = "Error: ${e.message}"
                         )
                     ),
@@ -191,13 +182,12 @@ class McpToolsService(private val project: Project) {
             name = "get_persistent_file_content",
             description = "Retrieves the content of a persistent file",
             inputSchema = Tool.Input(
-                type = "object",
-                properties = mapOf(
+                properties = JsonObject(mapOf(
                     "filePath" to JsonObject(mapOf(
                         "type" to JsonPrimitive("string"),
                         "description" to JsonPrimitive("Path of the file to read")
                     ))
-                ),
+                )),
                 required = listOf("filePath")
             )
         ) { request ->
@@ -224,7 +214,6 @@ class McpToolsService(private val project: Project) {
                 CallToolResult(
                     content = listOf(
                         TextContent(
-                            type = "text",
                             text = result.toString()
                         )
                     )
@@ -234,7 +223,6 @@ class McpToolsService(private val project: Project) {
                 CallToolResult(
                     content = listOf(
                         TextContent(
-                            type = "text",
                             text = "Error: ${e.message}"
                         )
                     ),

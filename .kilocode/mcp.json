@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "coding-aider": {
+      "url": "http://localhost:8081/mcp",
+      "name": "Coding Aider IntelliJ Plugin",
+      "description": "MCP server for the Coding Aider IntelliJ plugin providing persistent file management tools",
+      "autoApprove": [
+        "list_persistent_files",
+        "get_persistent_file_content"
+      ],
+      "timeout": 60,
+      "capabilities": {
+        "tools": true,
+        "resources": true
+      },
+      "disabled": false,
+      "alwaysAllow": []
+    }
+  }
+}
