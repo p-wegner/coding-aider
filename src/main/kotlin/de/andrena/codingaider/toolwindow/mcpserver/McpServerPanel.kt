@@ -98,6 +98,7 @@ class McpServerPanel(private val project: Project) {
                     },
                     true
                 )
+                toolbar.targetComponent = portField
                 cell(Wrapper(toolbar.component))
             }
             
