@@ -37,21 +37,30 @@ class McpServerService(private val project: Project) {
     }
 
     init {
+        logger.info("McpServerService initialized for project: ${project.name}")
+        logger.info("MCP Server enabled in settings: ${settings.mcpServerEnabled}")
+        logger.info("MCP Server port in settings: ${settings.mcpServerPort}")
+        
         // Start server automatically if enabled in settings
         if (settings.mcpServerEnabled) {
+            logger.info("Starting MCP Server automatically on initialization")
             startServer(settings.mcpServerPort)
         }
         
         // Listen for settings changes
         settings.addSettingsChangeListener {
+            logger.info("Settings changed - MCP enabled: ${settings.mcpServerEnabled}, running: ${isRunning.get()}")
             if (settings.mcpServerEnabled && !isRunning.get()) {
+                logger.info("Starting MCP Server due to settings change")
                 startServer(settings.mcpServerPort)
             } else if (!settings.mcpServerEnabled && isRunning.get()) {
+                logger.info("Stopping MCP Server due to settings change")
                 stopServer()
             } else if (settings.mcpServerEnabled && isRunning.get()) {
                 // Restart server if port changed
                 val currentPort = getServerPort()
                 if (currentPort != settings.mcpServerPort) {
+                    logger.info("Restarting MCP Server due to port change: $currentPort -> ${settings.mcpServerPort}")
                     stopServer()
                     startServer(settings.mcpServerPort)
                 }
@@ -61,30 +70,42 @@ class McpServerService(private val project: Project) {
 
     fun startServer(port: Int = DEFAULT_PORT) {
         if (isRunning.get()) {
-            logger.warn("MCP Server is already running")
+            logger.warn("MCP Server is already running on port $currentPort")
             return
         }
 
+        logger.info("Attempting to start MCP Server on port $port")
+        
         try {
             serviceScope.launch {
-                mcpServer = createMcpServer()
-                ktorServer = embeddedServer(Netty, port = port) {
-                    install(SSE)
-                    mcp {
-                        mcpServer!!
-                    }
-                }.start(wait = false)
-                
-                currentPort = port
-                isRunning.set(true)
-                logger.info("MCP Server started on port $port")
-                
-                // Show success notification
-                showNotification(
-                    "MCP Server Started",
-                    "MCP Server is now running on port $port",
-                    NotificationType.INFORMATION
-                )
+                try {
+                    logger.info("Creating MCP Server instance")
+                    mcpServer = createMcpServer()
+                    logger.info("MCP Server instance created successfully")
+                    
+                    logger.info("Starting Ktor embedded server on port $port")
+                    ktorServer = embeddedServer(Netty, port = port) {
+                        install(SSE)
+                        mcp {
+                            mcpServer!!
+                        }
+                    }.start(wait = false)
+                    
+                    currentPort = port
+                    isRunning.set(true)
+                    logger.info("MCP Server successfully started on port $port")
+                    
+                    // Show success notification
+                    showNotification(
+                        "MCP Server Started",
+                        "MCP Server is now running on port $port",
+                        NotificationType.INFORMATION
+                    )
+                } catch (e: Exception) {
+                    logger.error("Exception in server startup coroutine", e)
+                    isRunning.set(false)
+                    throw e
+                }
             }
         } catch (e: Exception) {
             logger.error("Failed to start MCP Server on port $port", e)
@@ -136,6 +157,8 @@ class McpServerService(private val project: Project) {
     fun getServerPort(): Int = currentPort
 
     private fun createMcpServer(): Server {
+        logger.info("Creating MCP Server with capabilities")
+        
         val server = Server(
             serverInfo = Implementation(
                 name = "coding-aider-mcp-server",
@@ -152,26 +175,41 @@ class McpServerService(private val project: Project) {
             )
         )
 
+        logger.info("MCP Server instance created, registering tools")
+        
         // Register MCP tools
         registerPersistentFileTools(server)
         
+        logger.info("MCP tools registered successfully")
         return server
     }
 
     private fun registerPersistentFileTools(server: Server) {
+        logger.info("Getting PersistentFileService and McpToolsService")
         val persistentFileService = project.service<PersistentFileService>()
         val mcpToolsService = project.service<McpToolsService>()
         
+        logger.info("Registering persistent file tools")
         // Register all persistent file tools
         mcpToolsService.registerPersistentFileTools(server, persistentFileService)
+        logger.info("Persistent file tools registered")
     }
 
     private fun showNotification(title: String, content: String, type: NotificationType) {
-        val notificationGroup = NotificationGroupManager.getInstance()
-            .getNotificationGroup(NOTIFICATION_GROUP_ID)
-        
-        notificationGroup.createNotification(title, content, type)
-            .notify(project)
+        try {
+            val notificationGroup = NotificationGroupManager.getInstance()
+                .getNotificationGroup(NOTIFICATION_GROUP_ID)
+            
+            if (notificationGroup != null) {
+                notificationGroup.createNotification(title, content, type)
+                    .notify(project)
+                logger.info("Notification shown: $title - $content")
+            } else {
+                logger.warn("Notification group '$NOTIFICATION_GROUP_ID' not found")
+            }
+        } catch (e: Exception) {
+            logger.error("Failed to show notification: $title", e)
+        }
     }
 
     fun dispose() {
