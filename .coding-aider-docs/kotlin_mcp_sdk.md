@@ -1,5 +1,83 @@
 # Kotlin MCP SDK Documentation
 
+## Quick Start
+
+### Installation
+Add to your `build.gradle.kts`:
+```kotlin
+dependencies {
+    implementation("io.modelcontextprotocol:kotlin-sdk:0.5.0")
+}
+```
+
+### Create a Simple Server
+```kotlin
+import io.modelcontextprotocol.kotlin.sdk.server.*
+import io.modelcontextprotocol.kotlin.sdk.*
+import kotlinx.coroutines.runBlocking
+
+fun main() = runBlocking {
+    val server = Server(
+        serverInfo = Implementation(name = "my-server", version = "1.0.0"),
+        options = ServerOptions(capabilities = ServerCapabilities(
+            tools = ServerCapabilities.Tools(listChanged = true)
+        ))
+    )
+    
+    server.addTool("greet", "Say hello") { request ->
+        val name = request.arguments["name"]?.jsonPrimitive?.content ?: "World"
+        CallToolResult(content = listOf(TextContent("Hello, $name!")))
+    }
+    
+    server.connect(StdioServerTransport())
+}
+```
+
+### Create a Simple Client
+```kotlin
+import io.modelcontextprotocol.kotlin.sdk.client.*
+import io.modelcontextprotocol.kotlin.sdk.*
+import kotlinx.coroutines.runBlocking
+
+fun main() = runBlocking {
+    val client = Client(clientInfo = Implementation(name = "my-client", version = "1.0.0"))
+    
+    // Connect to server process
+    val process = ProcessBuilder("java", "-jar", "my-server.jar").start()
+    val transport = StdioClientTransport(
+        input = process.inputStream.asSource().buffered(),
+        output = process.outputStream.asSink().buffered()
+    )
+    
+    client.connect(transport)
+    
+    // Use the server
+    val tools = client.listTools()
+    val result = client.callTool(CallToolRequest(
+        name = "greet",
+        arguments = buildJsonObject { put("name", "Alice") }
+    ))
+}
+```
+
+### Web Server with Ktor
+```kotlin
+import io.ktor.server.application.*
+import io.ktor.server.engine.*
+import io.ktor.server.netty.*
+import io.modelcontextprotocol.kotlin.sdk.server.mcp
+
+fun main() {
+    embeddedServer(Netty, port = 8080) {
+        mcp {
+            Server(/* server config */).apply {
+                addTool("web-tool", "Web tool") { /* handler */ }
+            }
+        }
+    }.start(wait = true)
+}
+```
+
 ## Overview
 
 The Kotlin MCP SDK is a comprehensive implementation of the [Model Context Protocol](https://modelcontextprotocol.io) (MCP) specification, providing both client and server capabilities for integrating with Large Language Model (LLM) surfaces. The SDK enables applications to provide context for LLMs in a standardized way, separating the concerns of providing context from the actual LLM interaction.

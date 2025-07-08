@@ -48,3 +48,7 @@ bin/
 .env
 /.intellijPlatform/*
 .aider*
+/kotlin-sdk/.aider.chat.history.md
+/kotlin-sdk/.aider.input.history
+/kotlin-sdk/.aider.tags.cache.v4/62/54/bde7e940bc13f7236b41e0ff4bc7.val
+/kotlin-sdk/.aider.tags.cache.v4/cache.db
