@@ -98,7 +98,6 @@ class McpServerPanel(private val project: Project) {
                     },
                     true
                 )
-                toolbar.targetComponent = contentPanel
                 cell(Wrapper(toolbar.component))
             }
             
