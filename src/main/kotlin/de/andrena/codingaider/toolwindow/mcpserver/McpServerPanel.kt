@@ -42,7 +42,7 @@ class McpServerPanel(private val project: Project) {
     }
 
     fun getContent(): JComponent {
-        return panel {
+        val contentPanel = panel {
             row {
                 val toolbar = ActionManager.getInstance().createActionToolbar(
                     "McpServerToolbar",
@@ -98,6 +98,7 @@ class McpServerPanel(private val project: Project) {
                     },
                     true
                 )
+                toolbar.targetComponent = contentPanel
                 cell(Wrapper(toolbar.component))
             }
             
@@ -123,6 +124,7 @@ class McpServerPanel(private val project: Project) {
                     }
             }
         }
+        return contentPanel
     }
     
     private fun updateStatus() {
