@@ -10,6 +10,7 @@ import de.andrena.codingaider.toolwindow.persistentfiles.PersistentFilesPanel
 import de.andrena.codingaider.toolwindow.plans.PlansPanel
 import de.andrena.codingaider.toolwindow.runningcommands.RunningCommandsPanel
 import de.andrena.codingaider.toolwindow.workingdirectory.WorkingDirectoryPanel
+import de.andrena.codingaider.toolwindow.mcpserver.McpServerPanel
 import com.intellij.ui.components.JBScrollPane
 import javax.swing.JComponent
 
@@ -31,6 +32,7 @@ class CodingAiderToolWindowContent(private val project: Project) {
     private val plansPanel = PlansPanel(project)
     private val persistentFilesPanel = PersistentFilesPanel(project)
     private val workingDirectoryPanel = WorkingDirectoryPanel(project)
+    private val mcpServerPanel = McpServerPanel(project)
     private var contentPanel: JComponent? = null
 
     init {
@@ -81,6 +83,16 @@ class CodingAiderToolWindowContent(private val project: Project) {
                         .topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
                 }
 
+                collapsibleGroup("MCP Server") {
+                    row {
+                        cell(mcpServerPanel.getContent())
+                            .align(com.intellij.ui.dsl.builder.Align.FILL)
+                            .resizableColumn()
+                    }
+                }
+                    .apply { expanded = false }
+                    .topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
+
                 if (!settings.useToolWindowOutput) {
                     collapsibleGroup("Running Commands") {
                         row {
@@ -101,6 +113,9 @@ class CodingAiderToolWindowContent(private val project: Project) {
         contentPanel?.let { oldPanel ->
             val parent = oldPanel.parent
             if (parent != null) {
+                // Dispose old panels to clean up resources
+                mcpServerPanel.dispose()
+                
                 val newPanel = createContentPanel()
                 parent.remove(oldPanel)
                 parent.add(newPanel)
