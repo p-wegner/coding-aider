@@ -76,47 +76,41 @@ class McpServerService(private val project: Project) {
 
         logger.info("Attempting to start MCP Server on port $port")
         
-        try {
-            serviceScope.launch {
-                try {
-                    logger.info("Creating MCP Server instance")
-                    mcpServer = createMcpServer()
-                    logger.info("MCP Server instance created successfully")
-                    
-                    logger.info("Starting Ktor embedded server on port $port")
-                    ktorServer = embeddedServer(Netty, port = port) {
-                        install(SSE)
-                        mcp {
-                            mcpServer!!
-                        }
-                    }.start(wait = false)
-                    
-                    currentPort = port
-                    isRunning.set(true)
-                    logger.info("MCP Server successfully started on port $port")
-                    
-                    // Show success notification
-                    showNotification(
-                        "MCP Server Started",
-                        "MCP Server is now running on port $port",
-                        NotificationType.INFORMATION
-                    )
-                } catch (e: Exception) {
-                    logger.error("Exception in server startup coroutine", e)
-                    isRunning.set(false)
-                    throw e
-                }
+        serviceScope.launch {
+            try {
+                logger.info("Creating MCP Server instance")
+                mcpServer = createMcpServer()
+                logger.info("MCP Server instance created successfully")
+                
+                logger.info("Starting Ktor embedded server on port $port")
+                ktorServer = embeddedServer(Netty, port = port) {
+                    install(SSE)
+                    mcp {
+                        mcpServer!!
+                    }
+                }.start(wait = false)
+                
+                currentPort = port
+                isRunning.set(true)
+                logger.info("MCP Server successfully started on port $port")
+                
+                // Show success notification
+                showNotification(
+                    "MCP Server Started",
+                    "MCP Server is now running on port $port",
+                    NotificationType.INFORMATION
+                )
+            } catch (e: Exception) {
+                logger.error("Failed to start MCP Server on port $port", e)
+                isRunning.set(false)
+                
+                // Show error notification
+                showNotification(
+                    "MCP Server Start Failed",
+                    "Failed to start MCP Server on port $port: ${e.message}",
+                    NotificationType.ERROR
+                )
             }
-        } catch (e: Exception) {
-            logger.error("Failed to start MCP Server on port $port", e)
-            isRunning.set(false)
-            
-            // Show error notification
-            showNotification(
-                "MCP Server Start Failed",
-                "Failed to start MCP Server on port $port: ${e.message}",
-                NotificationType.ERROR
-            )
         }
     }
 
@@ -125,8 +119,8 @@ class McpServerService(private val project: Project) {
             return
         }
 
-        try {
-            serviceScope.launch {
+        serviceScope.launch {
+            try {
                 ktorServer?.stop(1000, 2000)
                 ktorServer = null
                 mcpServer = null
@@ -139,16 +133,16 @@ class McpServerService(private val project: Project) {
                     "MCP Server has been stopped",
                     NotificationType.INFORMATION
                 )
+            } catch (e: Exception) {
+                logger.error("Error stopping MCP Server", e)
+                
+                // Show error notification
+                showNotification(
+                    "MCP Server Stop Failed",
+                    "Error stopping MCP Server: ${e.message}",
+                    NotificationType.ERROR
+                )
             }
-        } catch (e: Exception) {
-            logger.error("Error stopping MCP Server", e)
-            
-            // Show error notification
-            showNotification(
-                "MCP Server Stop Failed",
-                "Error stopping MCP Server: ${e.message}",
-                NotificationType.ERROR
-            )
         }
     }
 
@@ -197,15 +191,23 @@ class McpServerService(private val project: Project) {
 
     private fun showNotification(title: String, content: String, type: NotificationType) {
         try {
-            val notificationGroup = NotificationGroupManager.getInstance()
-                .getNotificationGroup(NOTIFICATION_GROUP_ID)
+            // Try to get the notification group, if it doesn't exist, create a simple notification
+            val notificationGroup = try {
+                NotificationGroupManager.getInstance().getNotificationGroup(NOTIFICATION_GROUP_ID)
+            } catch (e: Exception) {
+                logger.warn("Could not get notification group, will create simple notification", e)
+                null
+            }
             
             if (notificationGroup != null) {
                 notificationGroup.createNotification(title, content, type)
                     .notify(project)
                 logger.info("Notification shown: $title - $content")
             } else {
-                logger.warn("Notification group '$NOTIFICATION_GROUP_ID' not found")
+                // Fallback: create a simple notification without group
+                logger.info("Using fallback notification: $title - $content")
+                // Just log the notification since we can't show it properly
+                logger.info("MCP Server notification: $title - $content")
             }
         } catch (e: Exception) {
             logger.error("Failed to show notification: $title", e)
