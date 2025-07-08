@@ -1,5 +1,7 @@
 package de.andrena.codingaider.services
 
+import com.intellij.notification.NotificationGroupManager
+import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
@@ -31,6 +33,7 @@ class McpServerService(private val project: Project) {
         const val DEFAULT_PORT = 8080
         const val MCP_ENDPOINT = "/mcp"
         const val SSE_ENDPOINT = "/sse"
+        private const val NOTIFICATION_GROUP_ID = "Coding Aider MCP Server"
     }
 
     init {
@@ -75,10 +78,24 @@ class McpServerService(private val project: Project) {
                 currentPort = port
                 isRunning.set(true)
                 logger.info("MCP Server started on port $port")
+                
+                // Show success notification
+                showNotification(
+                    "MCP Server Started",
+                    "MCP Server is now running on port $port",
+                    NotificationType.INFORMATION
+                )
             }
         } catch (e: Exception) {
             logger.error("Failed to start MCP Server on port $port", e)
             isRunning.set(false)
+            
+            // Show error notification
+            showNotification(
+                "MCP Server Start Failed",
+                "Failed to start MCP Server on port $port: ${e.message}",
+                NotificationType.ERROR
+            )
         }
     }
 
@@ -94,9 +111,23 @@ class McpServerService(private val project: Project) {
                 mcpServer = null
                 isRunning.set(false)
                 logger.info("MCP Server stopped")
+                
+                // Show stop notification
+                showNotification(
+                    "MCP Server Stopped",
+                    "MCP Server has been stopped",
+                    NotificationType.INFORMATION
+                )
             }
         } catch (e: Exception) {
             logger.error("Error stopping MCP Server", e)
+            
+            // Show error notification
+            showNotification(
+                "MCP Server Stop Failed",
+                "Error stopping MCP Server: ${e.message}",
+                NotificationType.ERROR
+            )
         }
     }
 
@@ -133,6 +164,14 @@ class McpServerService(private val project: Project) {
         
         // Register all persistent file tools
         mcpToolsService.registerPersistentFileTools(server, persistentFileService)
+    }
+
+    private fun showNotification(title: String, content: String, type: NotificationType) {
+        val notificationGroup = NotificationGroupManager.getInstance()
+            .getNotificationGroup(NOTIFICATION_GROUP_ID)
+        
+        notificationGroup.createNotification(title, content, type)
+            .notify(project)
     }
 
     fun dispose() {
