@@ -52,6 +52,9 @@ class AiderWebCrawlAction : AnAction() {
             if (!file.exists()) {
                 crawlAndProcessWebPage(url, file, project)
 
+                val processedFileName = "$pageName-$combinedHash.md"
+                val processedFilePath = "$docsPath/$processedFileName"
+
                 val commandData = CommandData(
                     message = """
                         Clean up and simplify the provided file $fileName. Follow these guidelines:
@@ -67,7 +70,7 @@ class AiderWebCrawlAction : AnAction() {
                         10. Remove any content that seems out of context or irrelevant to the main topic.
                         11. Summarize lengthy paragraphs while retaining key information.
                         12. Ensure the final document is concise, well-structured, and focused on the core technical content.
-                        Important: Make sure to save the simplified markdown documentation in a separate file without the raw infix and not in the same file as the initial content.
+                        Important: Make sure to save the simplified markdown documentation in a separate file named $processedFileName and not in the same file as the initial content.
                     } 
                     """.trimIndent(),
                     useYesFlag = true,
@@ -80,18 +83,35 @@ class AiderWebCrawlAction : AnAction() {
                     aiderMode = AiderMode.NORMAL,
                     options = CommandOptions(autoCommit = false, dirtyCommits = false, promptAugmentation = false),
                 )
+                
                 if (settings.activateIdeExecutorAfterWebcrawl) {
-                    IDEBasedExecutor(project, commandData).execute()
+                    val executor = IDEBasedExecutor(project, commandData) { success ->
+                        if (success && File(processedFilePath).exists()) {
+                            // Only add the processed markdown file to persistent files
+                            refreshAndAddFile(project, processedFilePath)
+                            showNotification(
+                                project,
+                                "Web page crawled and processed. The processed file has been added to persistent files.",
+                                NotificationType.INFORMATION
+                            )
+                        } else {
+                            showNotification(
+                                project,
+                                "Web page crawled but processing failed or file not found.",
+                                NotificationType.WARNING
+                            )
+                        }
+                    }
+                    executor.execute()
+                } else {
+                    // If not using IDE executor, just add the raw file
+                    refreshAndAddFile(project, filePath)
+                    showNotification(
+                        project,
+                        "Web page crawled. Raw file has been added to persistent files.",
+                        NotificationType.INFORMATION
+                    )
                 }
-                // Refresh the file and add it to PersistentFileManager
-                refreshAndAddFile(project, filePath)
-
-                // Notify the user about the next steps
-                showNotification(
-                    project,
-                    "Web page crawled and processed. The file has been added to persistent files.",
-                    NotificationType.INFORMATION
-                )
             } else {
                 // Notify the user that the file already exists
                 showNotification(project, "The file already exists. No action taken.", NotificationType.INFORMATION)
