@@ -89,12 +89,13 @@ class McpServerService(private val project: Project) {
                 logger.info("MCP Server instance created successfully")
                 
                 logger.info("Starting Ktor embedded server on port $port")
+                // TODO 09/07/2025 PWegner: when debugging, this doenst throw but also the lines below dont hit breakpoints
                 ktorServer = embeddedServer(Netty, port = port) {
                     install(SSE)
                     mcp {
                         mcpServer!!
                     }
-                }.start(wait = false)
+                }.start(wait = true)
                 
                 currentPort = port
                 isRunning.set(true)
@@ -108,6 +109,7 @@ class McpServerService(private val project: Project) {
                         NotificationType.INFORMATION
                     )
                 }
+                ktorServer!!.start()
             } catch (e: Exception) {
                 logger.error("Failed to start MCP Server on port $port", e)
                 isRunning.set(false)
