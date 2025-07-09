@@ -1,0 +1,9 @@
+- **listChanged**: if `true`, server sends notifications on tool list changes.
+
+## Protocol Messages
+
+### Listing Tools (`tools/list`)
+
+Discover available tools (supports pagination).
+
+**Request**
