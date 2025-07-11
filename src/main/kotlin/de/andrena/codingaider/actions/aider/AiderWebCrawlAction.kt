@@ -131,8 +131,7 @@ class AiderWebCrawlAction : AnAction() {
         dialog.show()
     }
 
-    companion object {
-        private fun performWebCrawl(project: Project, url: String) {
+    private fun performWebCrawl(project: Project, url: String) {
         val settings = getInstance()
         val projectRoot = project.basePath ?: "."
         val domain = URI(url).host
@@ -215,15 +214,14 @@ class AiderWebCrawlAction : AnAction() {
             // Notify the user that the file already exists
             showNotification(project, "The file already exists. No action taken.", NotificationType.INFORMATION)
         }
-    }
-
     override fun update(e: AnActionEvent) {
         e.presentation.isEnabledAndVisible = e.project != null
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
-    private fun crawlAndProcessWebPage(url: String, file: File, project: Project) {
+    companion object {
+        private fun crawlAndProcessWebPage(url: String, file: File, project: Project) {
         val webClient = WebClient()
         webClient.options.apply {
             isJavaScriptEnabled = false
@@ -239,18 +237,17 @@ class AiderWebCrawlAction : AnAction() {
             .convertHtmlToMarkdown(htmlContent, url)
 
         file.writeText(markdown)
-    }
+        }
 
-    private fun refreshAndAddFile(project: Project, filePath: String) {
+        private fun refreshAndAddFile(project: Project, filePath: String) {
         val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(File(filePath))
         val persistentFileService = project.getService(PersistentFileService::class.java)
         persistentFileService.addFile(FileData(filePath, true))
         if (virtualFile != null) {
             FileRefresher.refreshFiles(arrayOf(virtualFile))
         }
-    }
 
-    private fun showNotification(
+        private fun showNotification(
         project: Project,
         content: String,
         type: NotificationType
@@ -259,6 +256,7 @@ class AiderWebCrawlAction : AnAction() {
             .getNotificationGroup("Aider Web Crawl")
             .createNotification(content, type)
             .notify(project)
+        }
     }
 }
 
