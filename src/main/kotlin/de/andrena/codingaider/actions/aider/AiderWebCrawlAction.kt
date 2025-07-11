@@ -88,7 +88,8 @@ class AiderWebCrawlAction : AnAction() {
         }
 
         override fun doOKAction() {
-            val selectedTab = (centerPanel as? JComponent)?.let { panel ->
+            val centerComponent = createCenterPanel()
+            val selectedTab = (centerComponent as? JComponent)?.let { panel ->
                 val tabbedPane = findTabbedPane(panel)
                 tabbedPane?.selectedIndex
             } ?: 0
@@ -130,7 +131,8 @@ class AiderWebCrawlAction : AnAction() {
         dialog.show()
     }
 
-    private fun performWebCrawl(project: Project, url: String) {
+    companion object {
+        private fun performWebCrawl(project: Project, url: String) {
         val settings = getInstance()
         val projectRoot = project.basePath ?: "."
         val domain = URI(url).host
