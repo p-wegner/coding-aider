@@ -214,6 +214,8 @@ class AiderWebCrawlAction : AnAction() {
             // Notify the user that the file already exists
             showNotification(project, "The file already exists. No action taken.", NotificationType.INFORMATION)
         }
+    }
+
     override fun update(e: AnActionEvent) {
         e.presentation.isEnabledAndVisible = e.project != null
     }
