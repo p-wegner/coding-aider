@@ -8,3 +8,7 @@ files:
   readOnly: false
 - path: src/main/kotlin/de/andrena/codingaider/utils/GitUtils.kt
   readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/services/GitRepoCloneService.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/features/documentation/dialogs/GitRepoDocumentationDialog.kt
+  readOnly: false
