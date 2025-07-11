@@ -242,11 +242,12 @@ class AiderWebCrawlAction : AnAction() {
         }
 
         private fun refreshAndAddFile(project: Project, filePath: String) {
-        val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(File(filePath))
-        val persistentFileService = project.getService(PersistentFileService::class.java)
-        persistentFileService.addFile(FileData(filePath, true))
-        if (virtualFile != null) {
-            FileRefresher.refreshFiles(arrayOf(virtualFile))
+            val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(File(filePath))
+            val persistentFileService = project.getService(PersistentFileService::class.java)
+            persistentFileService.addFile(FileData(filePath, true))
+            if (virtualFile != null) {
+                FileRefresher.refreshFiles(arrayOf(virtualFile))
+            }
         }
 
         private fun showNotification(
