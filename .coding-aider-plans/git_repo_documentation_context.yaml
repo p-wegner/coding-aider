@@ -1,0 +1,10 @@
+---
+files:
+- path: src/main/kotlin/de/andrena/codingaider/actions/aider/AiderWebCrawlAction.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/features/documentation/dialogs/DocumentationGenerationDialog.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/features/documentation/DocumentTypeConfiguration.kt
+  readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/utils/GitUtils.kt
+  readOnly: false
