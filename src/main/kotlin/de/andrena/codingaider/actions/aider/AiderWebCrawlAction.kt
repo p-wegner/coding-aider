@@ -522,7 +522,7 @@ class AiderWebCrawlAction : AnAction() {
                         // Update UI state to enable OK button
                         SwingUtilities.invokeLater {
                             repaint()
-                            revalidate()
+                            doValidate()
                         }
                         
                         Messages.showInfoMessage("Repository cloned successfully! You can now select files and generate documentation.", "Success")
