@@ -13,8 +13,8 @@ Core Implementation:
 - [x] Update AiderWebCrawlAction to use new dialog
 - [x] Add error handling for Git operations
 - [x] Implement progress indicators for long-running operations
-- [ ] proper tag and branch selection (fetch existing branches and tags from the repository)
-- [ ] allow changing tag/branch after cloning (will checkout and update filetree accordingly)
+- [x] proper tag and branch selection (fetch existing branches and tags from the repository)
+- [x] allow changing tag/branch after cloning (will checkout and update filetree accordingly)
 - [ ] optional after clone documentation generation
 UI/UX Improvements:
 - [x] Add file selection checkboxes to tree component

@@ -54,12 +54,31 @@ class GitRepoDocumentationDialog(
         addActionListener { validateRepositoryUrl() }
     }
     
-    private val branchComboBox = ComboBox<String>().apply {
-        addItem("main")
-        addItem("master")
-        isEditable = true
-        addActionListener { switchBranch() }
+    private val branchTagComboBox = ComboBox<BranchTagItem>().apply {
+        renderer = object : DefaultListCellRenderer() {
+            override fun getListCellRendererComponent(
+                list: JList<*>?,
+                value: Any?,
+                index: Int,
+                isSelected: Boolean,
+                cellHasFocus: Boolean
+            ): Component {
+                val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
+                if (component is JLabel && value is BranchTagItem) {
+                    text = value.displayName
+                    icon = if (value.isTag) AllIcons.Vcs.Tag else AllIcons.Vcs.Branch
+                }
+                return component
+            }
+        }
+        addActionListener { switchBranchOrTag() }
     }
+    
+    data class BranchTagItem(
+        val name: String,
+        val isTag: Boolean,
+        val displayName: String = if (isTag) "tag: $name" else "branch: $name"
+    )
     
     private val usernameField = JBTextField().apply {
         emptyText.text = "Username (for private repos)"
@@ -295,7 +314,9 @@ class GitRepoDocumentationDialog(
                     
                     // Set default branch if available
                     repoInfo.defaultBranch?.let { defaultBranch ->
-                        branchComboBox.selectedItem = defaultBranch
+                        val defaultItem = BranchTagItem(defaultBranch, false)
+                        branchTagComboBox.addItem(defaultItem)
+                        branchTagComboBox.selectedItem = defaultItem
                     }
                     
                     cloneButton.isEnabled = true
@@ -336,7 +357,8 @@ class GitRepoDocumentationDialog(
             return
         }
         
-        val selectedBranch = branchComboBox.selectedItem as? String
+        val selectedItem = branchTagComboBox.selectedItem as? BranchTagItem
+        val selectedBranch = selectedItem?.name
         val credentials = if (authCheckBox.isSelected) {
             val username = usernameField.text.trim()
             val password = String(passwordField.password)
@@ -366,7 +388,7 @@ class GitRepoDocumentationDialog(
                 if (result.success && result.localPath != null) {
                     clonedRepoPath = result.localPath
                     updateFileTree(result.localPath)
-                    updateBranchComboBox(result.branches)
+                    updateBranchTagComboBox(result.branches, result.tags)
                     updateRepositoryInfo(repoUrl, result.branches.size, result.tags.size)
                     Messages.showInfoMessage("Repository cloned successfully!", "Success")
                 } else if (result.requiresAuth && !authCheckBox.isSelected) {
@@ -480,34 +502,53 @@ class GitRepoDocumentationDialog(
         return shouldSelect
     }
     
-    private fun updateBranchComboBox(branches: List<String>) {
+    private fun updateBranchTagComboBox(branches: List<String>, tags: List<String>) {
         // Remove all existing action listeners
-        branchComboBox.actionListeners.forEach { branchComboBox.removeActionListener(it) }
-        branchComboBox.removeAllItems()
-        branches.forEach { branchComboBox.addItem(it) }
-        if (branches.isEmpty()) {
-            branchComboBox.addItem("main")
-            branchComboBox.addItem("master")
+        branchTagComboBox.actionListeners.forEach { branchTagComboBox.removeActionListener(it) }
+        branchTagComboBox.removeAllItems()
+        
+        // Add branches first
+        branches.forEach { branch ->
+            branchTagComboBox.addItem(BranchTagItem(branch, false))
         }
-        branchComboBox.addActionListener { switchBranch() }
+        
+        // Add tags
+        tags.forEach { tag ->
+            branchTagComboBox.addItem(BranchTagItem(tag, true))
+        }
+        
+        // Add default branches if none exist
+        if (branches.isEmpty() && tags.isEmpty()) {
+            branchTagComboBox.addItem(BranchTagItem("main", false))
+            branchTagComboBox.addItem(BranchTagItem("master", false))
+        }
+        
+        branchTagComboBox.addActionListener { switchBranchOrTag() }
     }
     
-    private fun switchBranch() {
-        val selectedBranch = branchComboBox.selectedItem as? String
+    private fun switchBranchOrTag() {
+        val selectedItem = branchTagComboBox.selectedItem as? BranchTagItem
         val repoPath = clonedRepoPath
         
-        if (selectedBranch != null && repoPath != null) {
+        if (selectedItem != null && repoPath != null) {
             val repoDir = File(repoPath)
             if (repoDir.exists()) {
-                val success = gitService.switchToBranch(repoDir, selectedBranch)
-                if (success) {
-                    // Refresh file tree after branch switch
-                    updateFileTree(repoPath)
-                    Messages.showInfoMessage("Switched to branch: $selectedBranch", "Branch Switch")
+                val success = if (selectedItem.isTag) {
+                    gitService.checkoutTag(repoDir, selectedItem.name)
                 } else {
+                    gitService.switchToBranch(repoDir, selectedItem.name)
+                }
+                
+                if (success) {
+                    // Refresh file tree after branch/tag switch
+                    updateFileTree(repoPath)
+                    val type = if (selectedItem.isTag) "tag" else "branch"
+                    Messages.showInfoMessage("Switched to $type: ${selectedItem.name}", "Checkout Success")
+                } else {
+                    val type = if (selectedItem.isTag) "tag" else "branch"
                     Messages.showErrorDialog(
-                        "Failed to switch to branch: $selectedBranch",
-                        "Branch Switch Error"
+                        "Failed to switch to $type: ${selectedItem.name}",
+                        "Checkout Error"
                     )
                 }
             }
@@ -533,7 +574,7 @@ class GitRepoDocumentationDialog(
                 }
                 row {
                     label("Branch/Tag:")
-                    cell(branchComboBox)
+                    cell(branchTagComboBox)
                         .align(AlignX.LEFT)
                     cell(checkRepoButton)
                         .align(AlignX.CENTER)

@@ -58,11 +58,30 @@ class AiderWebCrawlAction : AnAction() {
             emptyText.text = "Enter Git repository URL (https://github.com/user/repo.git)"
         }
         
-        private val branchComboBox = ComboBox<String>().apply {
-            addItem("main")
-            addItem("master")
-            isEditable = true
+        private val branchTagComboBox = ComboBox<BranchTagItem>().apply {
+            renderer = object : DefaultListCellRenderer() {
+                override fun getListCellRendererComponent(
+                    list: JList<*>?,
+                    value: Any?,
+                    index: Int,
+                    isSelected: Boolean,
+                    cellHasFocus: Boolean
+                ): Component {
+                    val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
+                    if (component is JLabel && value is BranchTagItem) {
+                        text = value.displayName
+                        icon = if (value.isTag) AllIcons.Vcs.Tag else AllIcons.Vcs.Branch
+                    }
+                    return component
+                }
+            }
         }
+        
+        data class BranchTagItem(
+            val name: String,
+            val isTag: Boolean,
+            val displayName: String = if (isTag) "tag: $name" else "branch: $name"
+        )
         
         private val usernameField = JBTextField().apply {
             emptyText.text = "Username (for private repos)"
@@ -183,7 +202,7 @@ class AiderWebCrawlAction : AnAction() {
                     }
                     row {
                         label("Branch/Tag:")
-                        cell(branchComboBox)
+                        cell(branchTagComboBox)
                             .align(AlignX.LEFT)
                         cell(checkRepoButton)
                             .align(AlignX.CENTER)
@@ -415,7 +434,9 @@ class AiderWebCrawlAction : AnAction() {
                         
                         // Set default branch if available
                         repoInfo.defaultBranch?.let { defaultBranch ->
-                            branchComboBox.selectedItem = defaultBranch
+                            val defaultItem = BranchTagItem(defaultBranch, false)
+                            branchTagComboBox.addItem(defaultItem)
+                            branchTagComboBox.selectedItem = defaultItem
                         }
                         
                         cloneButton.isEnabled = true
@@ -456,7 +477,8 @@ class AiderWebCrawlAction : AnAction() {
                 return
             }
             
-            val selectedBranch = branchComboBox.selectedItem as? String
+            val selectedItem = branchTagComboBox.selectedItem as? BranchTagItem
+            val selectedBranch = selectedItem?.name
             val credentials = if (authCheckBox.isSelected) {
                 val username = usernameField.text.trim()
                 val password = String(passwordField.password)
@@ -486,7 +508,7 @@ class AiderWebCrawlAction : AnAction() {
                     if (result.success && result.localPath != null) {
                         clonedRepoPath = result.localPath
                         updateFileTree(result.localPath)
-                        updateBranchComboBox(result.branches)
+                        updateBranchTagComboBox(result.branches, result.tags)
                         updateRepositoryInfo(repoUrl, result.branches.size, result.tags.size)
                         Messages.showInfoMessage("Repository cloned successfully!", "Success")
                     } else if (result.requiresAuth && !authCheckBox.isSelected) {
@@ -593,12 +615,23 @@ class AiderWebCrawlAction : AnAction() {
             return shouldSelect
         }
         
-        private fun updateBranchComboBox(branches: List<String>) {
-            branchComboBox.removeAllItems()
-            branches.forEach { branchComboBox.addItem(it) }
-            if (branches.isEmpty()) {
-                branchComboBox.addItem("main")
-                branchComboBox.addItem("master")
+        private fun updateBranchTagComboBox(branches: List<String>, tags: List<String>) {
+            branchTagComboBox.removeAllItems()
+            
+            // Add branches first
+            branches.forEach { branch ->
+                branchTagComboBox.addItem(BranchTagItem(branch, false))
+            }
+            
+            // Add tags
+            tags.forEach { tag ->
+                branchTagComboBox.addItem(BranchTagItem(tag, true))
+            }
+            
+            // Add default branches if none exist
+            if (branches.isEmpty() && tags.isEmpty()) {
+                branchTagComboBox.addItem(BranchTagItem("main", false))
+                branchTagComboBox.addItem(BranchTagItem("master", false))
             }
         }
         
