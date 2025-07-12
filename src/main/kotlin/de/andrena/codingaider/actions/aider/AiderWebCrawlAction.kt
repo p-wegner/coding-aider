@@ -46,9 +46,10 @@ class AiderWebCrawlAction : AnAction() {
             init()
         }
 
+
         override fun createCenterPanel(): JComponent {
             val tabbedPane = JBTabbedPane()
-            
+
             // Web Crawl Tab
             val webCrawlPanel = panel {
                 row {
@@ -63,18 +64,18 @@ class AiderWebCrawlAction : AnAction() {
                     text("This will crawl the web page and process it for documentation.")
                 }
             }
-            
+
             tabbedPane.addTab("Web Crawl", webCrawlPanel)
-            
+
             // Git Repository Tab - placeholder for now, will be replaced with actual implementation
             val gitPanel = panel {
                 row {
                     text("Git repository documentation functionality will be available here.")
                 }
             }
-            
+
             tabbedPane.addTab("Git Repository", gitPanel)
-            
+
             val mainPanel = panel {
                 row {
                     cell(tabbedPane)
@@ -82,7 +83,7 @@ class AiderWebCrawlAction : AnAction() {
                         .align(AlignX.FILL)
                 }.resizableRow()
             }
-            
+
             mainPanel.preferredSize = Dimension(600, 400)
             return mainPanel
         }
@@ -99,11 +100,12 @@ class AiderWebCrawlAction : AnAction() {
                     val url = urlField.text.trim()
                     if (url.isNotEmpty()) {
                         super.doOKAction()
-                        AiderWebCrawlAction.performWebCrawl(project, url)
+                        performWebCrawl(project, url)
                     } else {
                         Messages.showErrorDialog("Please enter a URL to crawl", "Error")
                     }
                 }
+
                 1 -> { // Git Repository
                     super.doOKAction()
                     val gitDialog = GitRepoDocumentationDialog(project)
@@ -133,29 +135,29 @@ class AiderWebCrawlAction : AnAction() {
 
     companion object {
         private fun performWebCrawl(project: Project, url: String) {
-        val settings = getInstance()
-        val projectRoot = project.basePath ?: "."
-        val domain = URI(url).host
-        val docsPath = "$projectRoot/$AIDER_DOCS_FOLDER/$domain"
-        File(docsPath).mkdirs()
+            val settings = getInstance()
+            val projectRoot = project.basePath ?: "."
+            val domain = URI(url).host
+            val docsPath = "$projectRoot/$AIDER_DOCS_FOLDER/$domain"
+            File(docsPath).mkdirs()
 
-        val combinedHash = MessageDigest.getInstance("MD5").digest(url.toByteArray()).let {
-            BigInteger(1, it).toString(16).padStart(32, '0')
-        }
+            val combinedHash = MessageDigest.getInstance("MD5").digest(url.toByteArray()).let {
+                BigInteger(1, it).toString(16).padStart(32, '0')
+            }
 
-        val pageName = URI(url).toURL().path.split("/").lastOrNull() ?: "index"
-        val fileName = "$pageName-raw-$combinedHash.md"
-        val filePath = "$docsPath/$fileName"
-        val file = File(filePath)
+            val pageName = URI(url).toURL().path.split("/").lastOrNull() ?: "index"
+            val fileName = "$pageName-raw-$combinedHash.md"
+            val filePath = "$docsPath/$fileName"
+            val file = File(filePath)
 
-        if (!file.exists()) {
-            crawlAndProcessWebPage(url, file, project)
+            if (!file.exists()) {
+                crawlAndProcessWebPage(url, file, project)
 
-            val processedFileName = "$pageName-$combinedHash.md"
-            val processedFilePath = "$docsPath/$processedFileName"
+                val processedFileName = "$pageName-$combinedHash.md"
+                val processedFilePath = "$docsPath/$processedFileName"
 
-            val commandData = CommandData(
-                message = """
+                val commandData = CommandData(
+                    message = """
                     Clean up and simplify the provided file $fileName. Follow these guidelines:
                     1. Remove all navigation elements, headers, footers, and sidebars.
                     2. Delete any advertisements, banners, or promotional content.
@@ -172,73 +174,68 @@ class AiderWebCrawlAction : AnAction() {
                     Important: Make sure to save the simplified markdown documentation in a separate file named $processedFileName and not in the same file as the initial content.
                 } 
                 """.trimIndent(),
-                useYesFlag = true,
-                llm = settings.webCrawlLlm,
-                additionalArgs = "",
-                files = listOf(FileData(filePath, false)),
-                lintCmd = "",
-                projectPath = project.basePath ?: "",
-                editFormat = AiderEditFormat.WHOLE.value,
-                aiderMode = AiderMode.NORMAL,
-                options = CommandOptions(autoCommit = false, dirtyCommits = false, promptAugmentation = false),
-            )
-            
-            if (settings.activateIdeExecutorAfterWebcrawl) {
-                val executor = IDEBasedExecutor(project, commandData) { success ->
-                    if (success && File(processedFilePath).exists()) {
-                        // Only add the processed markdown file to persistent files
-                        refreshAndAddFile(project, processedFilePath)
-                        showNotification(
-                            project,
-                            "Web page crawled and processed. The processed file has been added to persistent files.",
-                            NotificationType.INFORMATION
-                        )
-                    } else {
-                        showNotification(
-                            project,
-                            "Web page crawled but processing failed or file not found.",
-                            NotificationType.WARNING
-                        )
-                    }
-                }
-                executor.execute()
-            } else {
-                // If not using IDE executor, just add the raw file
-                refreshAndAddFile(project, filePath)
-                showNotification(
-                    project,
-                    "Web page crawled. Raw file has been added to persistent files.",
-                    NotificationType.INFORMATION
+                    useYesFlag = true,
+                    llm = settings.webCrawlLlm,
+                    additionalArgs = "",
+                    files = listOf(FileData(filePath, false)),
+                    lintCmd = "",
+                    projectPath = project.basePath ?: "",
+                    editFormat = AiderEditFormat.WHOLE.value,
+                    aiderMode = AiderMode.NORMAL,
+                    options = CommandOptions(autoCommit = false, dirtyCommits = false, promptAugmentation = false),
                 )
+
+                if (settings.activateIdeExecutorAfterWebcrawl) {
+                    val executor = IDEBasedExecutor(project, commandData) { success ->
+                        if (success && File(processedFilePath).exists()) {
+                            // Only add the processed markdown file to persistent files
+                            refreshAndAddFile(project, processedFilePath)
+                            showNotification(
+                                project,
+                                "Web page crawled and processed. The processed file has been added to persistent files.",
+                                NotificationType.INFORMATION
+                            )
+                        } else {
+                            showNotification(
+                                project,
+                                "Web page crawled but processing failed or file not found.",
+                                NotificationType.WARNING
+                            )
+                        }
+                    }
+                    executor.execute()
+                } else {
+                    // If not using IDE executor, just add the raw file
+                    refreshAndAddFile(project, filePath)
+                    showNotification(
+                        project,
+                        "Web page crawled. Raw file has been added to persistent files.",
+                        NotificationType.INFORMATION
+                    )
+                }
+            } else {
+                // Notify the user that the file already exists
+                showNotification(project, "The file already exists. No action taken.", NotificationType.INFORMATION)
             }
-        } else {
-            // Notify the user that the file already exists
-            showNotification(project, "The file already exists. No action taken.", NotificationType.INFORMATION)
         }
-    }
 
-    override fun update(e: AnActionEvent) {
-        e.presentation.isEnabledAndVisible = e.project != null
-    }
-
-    override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
         private fun crawlAndProcessWebPage(url: String, file: File, project: Project) {
-        val webClient = WebClient()
-        webClient.options.apply {
-            isJavaScriptEnabled = false
-            isThrowExceptionOnScriptError = false
-            isThrowExceptionOnFailingStatusCode = false
-            isCssEnabled = false
-        }
+            val webClient = WebClient()
+            webClient.options.apply {
+                isJavaScriptEnabled = false
+                isThrowExceptionOnScriptError = false
+                isThrowExceptionOnFailingStatusCode = false
+                isCssEnabled = false
+            }
 
-        val page: HtmlPage = webClient.getPage(url)
-        val htmlContent = page.asXml()
+            val page: HtmlPage = webClient.getPage(url)
+            val htmlContent = page.asXml()
 
-        val markdown = project.getService(MarkdownConversionService::class.java)
-            .convertHtmlToMarkdown(htmlContent, url)
+            val markdown = project.getService(MarkdownConversionService::class.java)
+                .convertHtmlToMarkdown(htmlContent, url)
 
-        file.writeText(markdown)
+            file.writeText(markdown)
         }
 
         private fun refreshAndAddFile(project: Project, filePath: String) {
@@ -251,14 +248,14 @@ class AiderWebCrawlAction : AnAction() {
         }
 
         private fun showNotification(
-        project: Project,
-        content: String,
-        type: NotificationType
-    ) {
-        NotificationGroupManager.getInstance()
-            .getNotificationGroup("Aider Web Crawl")
-            .createNotification(content, type)
-            .notify(project)
+            project: Project,
+            content: String,
+            type: NotificationType
+        ) {
+            NotificationGroupManager.getInstance()
+                .getNotificationGroup("Aider Web Crawl")
+                .createNotification(content, type)
+                .notify(project)
         }
     }
 }
