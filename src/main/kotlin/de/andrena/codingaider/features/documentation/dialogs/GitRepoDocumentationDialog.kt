@@ -19,6 +19,7 @@ import com.intellij.ui.CheckboxTree
 import com.intellij.ui.CheckedTreeNode
 import com.intellij.ui.treeStructure.Tree
 import com.intellij.ui.components.JBPasswordField
+import com.intellij.ui.layout.selected
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
@@ -296,7 +297,6 @@ class GitRepoDocumentationDialog(
         val isVisible = authCheckBox.isSelected
         usernameField.isVisible = isVisible
         passwordField.isVisible = isVisible
-        revalidate()
         repaint()
     }
     

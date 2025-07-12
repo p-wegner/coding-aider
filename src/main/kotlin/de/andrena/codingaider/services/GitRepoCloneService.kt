@@ -191,7 +191,6 @@ class GitRepoCloneService(private val project: Project) {
                 file.deleteRecursively()
             }
         } catch (e: Exception) {
-            // Log error but don't throw - cleanup is best effort
         }
     }
     
