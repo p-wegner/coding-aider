@@ -64,7 +64,6 @@ class GitRepoDocumentationDialog(
             // Update document types to ensure they're loaded
             updateDocumentTypes()
             repaint()
-            revalidate()
         }
     }
     
