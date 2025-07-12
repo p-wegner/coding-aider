@@ -56,6 +56,7 @@ class GitRepoDocumentationDialog(
         addItem("main")
         addItem("master")
         isEditable = true
+        addActionListener { switchBranch() }
     }
     
     private val cloneButton = JButton("Clone Repository").apply {
@@ -339,11 +340,35 @@ class GitRepoDocumentationDialog(
     }
     
     private fun updateBranchComboBox(branches: List<String>) {
+        branchComboBox.removeActionListeners()
         branchComboBox.removeAllItems()
         branches.forEach { branchComboBox.addItem(it) }
         if (branches.isEmpty()) {
             branchComboBox.addItem("main")
             branchComboBox.addItem("master")
+        }
+        branchComboBox.addActionListener { switchBranch() }
+    }
+    
+    private fun switchBranch() {
+        val selectedBranch = branchComboBox.selectedItem as? String
+        val repoPath = clonedRepoPath
+        
+        if (selectedBranch != null && repoPath != null) {
+            val repoDir = File(repoPath)
+            if (repoDir.exists()) {
+                val success = gitService.switchToBranch(repoDir, selectedBranch)
+                if (success) {
+                    // Refresh file tree after branch switch
+                    updateFileTree(repoPath)
+                    Messages.showInfoMessage("Switched to branch: $selectedBranch", "Branch Switch")
+                } else {
+                    Messages.showErrorDialog(
+                        "Failed to switch to branch: $selectedBranch",
+                        "Branch Switch Error"
+                    )
+                }
+            }
         }
     }
     
