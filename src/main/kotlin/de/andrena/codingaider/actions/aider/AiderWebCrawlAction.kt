@@ -99,7 +99,7 @@ class AiderWebCrawlAction : AnAction() {
                     val url = urlField.text.trim()
                     if (url.isNotEmpty()) {
                         super.doOKAction()
-                        performWebCrawl(project, url)
+                        AiderWebCrawlAction.performWebCrawl(project, url)
                     } else {
                         Messages.showErrorDialog("Please enter a URL to crawl", "Error")
                     }
@@ -131,7 +131,8 @@ class AiderWebCrawlAction : AnAction() {
         dialog.show()
     }
 
-    private fun performWebCrawl(project: Project, url: String) {
+    companion object {
+        private fun performWebCrawl(project: Project, url: String) {
         val settings = getInstance()
         val projectRoot = project.basePath ?: "."
         val domain = URI(url).host
@@ -222,7 +223,6 @@ class AiderWebCrawlAction : AnAction() {
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
-    companion object {
         private fun crawlAndProcessWebPage(url: String, file: File, project: Project) {
         val webClient = WebClient()
         webClient.options.apply {
