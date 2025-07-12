@@ -7,8 +7,7 @@ import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.Presentation
 import com.intellij.openapi.actionSystem.impl.ActionButton
 import com.intellij.openapi.components.service
-import com.intellij.openapi.fileChooser.FileChooser
-import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.options.ShowSettingsUtil
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.*
@@ -17,7 +16,6 @@ import com.intellij.ui.components.*
 import com.intellij.ui.dsl.builder.*
 import com.intellij.ui.CheckboxTree
 import com.intellij.ui.CheckedTreeNode
-import com.intellij.ui.treeStructure.Tree
 import com.intellij.ui.components.JBPasswordField
 import com.intellij.ui.layout.selected
 import de.andrena.codingaider.command.CommandData
@@ -31,19 +29,17 @@ import de.andrena.codingaider.services.GitRepoCloneService
 import de.andrena.codingaider.settings.AiderProjectSettings
 import de.andrena.codingaider.settings.AiderProjectSettingsConfigurable
 import de.andrena.codingaider.settings.AiderSettings
-import de.andrena.codingaider.utils.FileTraversal
 import java.awt.Component
 import java.awt.Dimension
 import java.io.File
 import javax.swing.*
-import javax.swing.tree.DefaultMutableTreeNode
 import javax.swing.tree.DefaultTreeModel
-import javax.swing.tree.TreePath
 
 class GitRepoDocumentationDialog(
     private val project: Project
 ) : DialogWrapper(project) {
-    
+    private val logger = Logger.getInstance(GitRepoDocumentationDialog::class.java)
+
     // Constructor for pre-selected files
     constructor(project: Project, preSelectedFiles: Array<VirtualFile>, repoPath: String) : this(project) {
         this.selectedFiles = preSelectedFiles
@@ -54,7 +50,7 @@ class GitRepoDocumentationDialog(
             updateRepositoryInfoFromPath(repoPath)
         }
     }
-    
+
     fun setPreSelectedFiles(files: Array<VirtualFile>, repoPath: String) {
         this.selectedFiles = files
         this.clonedRepoPath = repoPath
@@ -68,7 +64,7 @@ class GitRepoDocumentationDialog(
             repaint()
         }
     }
-    
+
     private fun hideGitRepositorySection() {
         // Hide the Git repository input fields since we already have a cloned repo
         repoUrlField.isVisible = false
@@ -86,17 +82,17 @@ class GitRepoDocumentationDialog(
         // applyFilterButton.isVisible = false
         // fileTree.isVisible = false
     }
-    
+
     private val settings = AiderProjectSettings.getInstance(project)
     private val gitService = project.service<GitRepoCloneService>()
     private val settingsButton = createSettingsButton()
-    
+
     // Git Repository fields
     private val repoUrlField = JBTextField().apply {
         emptyText.text = "Enter Git repository URL (https://github.com/user/repo.git)"
         addActionListener { validateRepositoryUrl() }
     }
-    
+
     private val branchTagComboBox = ComboBox<BranchTagItem>().apply {
         renderer = object : DefaultListCellRenderer() {
             override fun getListCellRendererComponent(
@@ -116,46 +112,46 @@ class GitRepoDocumentationDialog(
         }
         addActionListener { switchBranchOrTag() }
     }
-    
+
     data class BranchTagItem(
         val name: String,
         val isTag: Boolean,
         val displayName: String = if (isTag) "tag: $name" else "branch: $name"
     )
-    
+
     private val usernameField = JBTextField().apply {
         emptyText.text = "Username (for private repos)"
         isVisible = false
     }
-    
+
     private val passwordField = JBPasswordField().apply {
         emptyText.text = "Password/Token (for private repos)"
         isVisible = false
     }
-    
+
     private val authCheckBox = JCheckBox("Private repository (requires authentication)").apply {
         addActionListener { toggleAuthFields() }
     }
-    
+
     private val shallowCloneCheckBox = JCheckBox("Shallow clone (faster, recommended for large repos)", true)
-    
+
     private val checkRepoButton = JButton("Check Repository").apply {
         addActionListener { checkRepository() }
     }
-    
+
     private val cloneButton = JButton("Clone Repository").apply {
         addActionListener { cloneRepository() }
         isEnabled = false
     }
-    
+
     private val repoInfoLabel = JLabel("").apply {
         isVisible = false
     }
-    
+
     private val repoSizeLabel = JLabel("").apply {
         isVisible = false
     }
-    
+
     private val fileTree = CheckboxTree(object : CheckboxTree.CheckboxTreeCellRenderer() {
         override fun customizeRenderer(
             tree: JTree?,
@@ -184,24 +180,24 @@ class GitRepoDocumentationDialog(
         isRootVisible = true
         showsRootHandles = true
     }
-    
+
     private val selectAllButton = JButton("Select All").apply {
         addActionListener { selectAllFiles(true) }
     }
-    
+
     private val deselectAllButton = JButton("Deselect All").apply {
         addActionListener { selectAllFiles(false) }
     }
-    
+
     private val fileTypeFilterField = JBTextField().apply {
         emptyText.text = "Filter by file extensions (e.g., .kt,.java,.md)"
         addActionListener { applyFileTypeFilter() }
     }
-    
+
     private val applyFilterButton = JButton("Apply Filter").apply {
         addActionListener { applyFileTypeFilter() }
     }
-    
+
     // Documentation fields (reused from DocumentationGenerationDialog)
     private val documentTypeComboBox = ComboBox<DocumentTypeConfiguration>().apply {
         renderer = object : DefaultListCellRenderer() {
@@ -221,11 +217,11 @@ class GitRepoDocumentationDialog(
         }
         addActionListener { updatePromptTemplate() }
     }
-    
+
     private val filenameField = JBTextField().apply {
         emptyText.text = "Enter filename for documentation"
     }
-    
+
     private val promptArea = JBTextArea().apply {
         rows = 10
         lineWrap = true
@@ -233,7 +229,7 @@ class GitRepoDocumentationDialog(
         font = font.deriveFont(12f)
         emptyText.text = "Enter additional instructions (optional)"
     }
-    
+
     private var clonedRepoPath: String? = null
     private var selectedFiles: Array<VirtualFile> = emptyArray()
 
@@ -282,7 +278,7 @@ class GitRepoDocumentationDialog(
     private fun validateRepositoryUrl(): Boolean {
         val repoUrl = repoUrlField.text.trim()
         if (repoUrl.isEmpty()) return false
-        
+
         val validPatterns = listOf(
             Regex("^https://github\\.com/[\\w.-]+/[\\w.-]+(\\.git)?/?$"),
             Regex("^git@github\\.com:[\\w.-]+/[\\w.-]+\\.git$"),
@@ -292,58 +288,62 @@ class GitRepoDocumentationDialog(
             Regex("^git@bitbucket\\.org:[\\w.-]+/[\\w.-]+\\.git$"),
             Regex("^https://[\\w.-]+/[\\w.-]+/[\\w.-]+(\\.git)?/?$") // Generic Git hosting
         )
-        
+
         return validPatterns.any { it.matches(repoUrl) }
     }
-    
+
     private fun checkRepository() {
         val repoUrl = repoUrlField.text.trim()
         if (repoUrl.isEmpty()) {
             Messages.showErrorDialog("Please enter a repository URL", "Error")
             return
         }
-        
+
         if (!validateRepositoryUrl()) {
             Messages.showErrorDialog(
                 "Invalid repository URL format. Please enter a valid Git repository URL.\n" +
-                "Examples:\n" +
-                "• https://github.com/user/repo.git\n" +
-                "• git@github.com:user/repo.git\n" +
-                "• https://gitlab.com/user/repo.git",
+                        "Examples:\n" +
+                        "• https://github.com/user/repo.git\n" +
+                        "• git@github.com:user/repo.git\n" +
+                        "• https://gitlab.com/user/repo.git",
                 "Invalid URL"
             )
             return
         }
-        
+
         val credentials = if (authCheckBox.isSelected) {
             val username = usernameField.text.trim()
             val password = String(passwordField.password)
             if (username.isEmpty() || password.isEmpty()) {
-                Messages.showErrorDialog("Please enter both username and password/token for private repository", "Authentication Required")
+                Messages.showErrorDialog(
+                    "Please enter both username and password/token for private repository",
+                    "Authentication Required"
+                )
                 return
             }
             GitRepoCloneService.AuthCredentials(username, password)
         } else {
             null
         }
-        
+
         // Clear previous info
         repoInfoLabel.isVisible = false
         repoSizeLabel.isVisible = false
-        
+
         checkRepoButton.isEnabled = false
         checkRepoButton.text = "Checking..."
-        
+
         gitService.getRepositoryInfoAsync(repoUrl, credentials).thenAccept { repoInfo ->
             SwingUtilities.invokeLater {
                 checkRepoButton.isEnabled = true
                 checkRepoButton.text = "Check Repository"
-                
+
                 if (repoInfo.isAccessible) {
                     val repoName = repoUrl.substringAfterLast("/").removeSuffix(".git")
-                    repoInfoLabel.text = "✓ Repository: $repoName | Default branch: ${repoInfo.defaultBranch ?: "unknown"}"
+                    repoInfoLabel.text =
+                        "✓ Repository: $repoName | Default branch: ${repoInfo.defaultBranch ?: "unknown"}"
                     repoInfoLabel.isVisible = true
-                    
+
                     if (repoInfo.estimatedSizeMB != null) {
                         val sizeText = when {
                             repoInfo.estimatedSizeMB < 1.0 -> "< 1 MB"
@@ -353,12 +353,12 @@ class GitRepoDocumentationDialog(
                         }
                         repoSizeLabel.text = "📊 Estimated size: $sizeText"
                         repoSizeLabel.isVisible = true
-                        
+
                         if (repoInfo.estimatedSizeMB > 500.0) {
                             repoSizeLabel.text += " ⚠️ (Large repository - consider shallow clone)"
                         }
                     }
-                    
+
                     // Clear existing items and set default branch if available
                     branchTagComboBox.removeAllItems()
                     repoInfo.defaultBranch?.let { defaultBranch ->
@@ -366,9 +366,9 @@ class GitRepoDocumentationDialog(
                         branchTagComboBox.addItem(defaultItem)
                         branchTagComboBox.selectedItem = defaultItem
                     }
-                    
+
                     cloneButton.isEnabled = true
-                    
+
                     // Show success notification instead of dialog
                     val notificationGroup = com.intellij.notification.NotificationGroupManager.getInstance()
                         .getNotificationGroup("Aider Web Crawl")
@@ -377,7 +377,7 @@ class GitRepoDocumentationDialog(
                         "Repository is accessible and ready to clone!",
                         com.intellij.notification.NotificationType.INFORMATION
                     ).notify(project)
-                    
+
                 } else if (repoInfo.requiresAuth && !authCheckBox.isSelected) {
                     repoInfoLabel.text = "🔒 Authentication required for this repository"
                     repoInfoLabel.isVisible = true
@@ -410,48 +410,51 @@ class GitRepoDocumentationDialog(
             null
         }
     }
-    
+
     private fun cloneRepository() {
         val repoUrl = repoUrlField.text.trim()
         if (repoUrl.isEmpty()) {
             Messages.showErrorDialog("Please enter a repository URL", "Error")
             return
         }
-        
+
         if (!validateRepositoryUrl()) {
             Messages.showErrorDialog(
                 "Invalid repository URL format. Please enter a valid Git repository URL.\n" +
-                "Examples:\n" +
-                "• https://github.com/user/repo.git\n" +
-                "• git@github.com:user/repo.git\n" +
-                "• https://gitlab.com/user/repo.git",
+                        "Examples:\n" +
+                        "• https://github.com/user/repo.git\n" +
+                        "• git@github.com:user/repo.git\n" +
+                        "• https://gitlab.com/user/repo.git",
                 "Invalid URL"
             )
             return
         }
-        
+
         val selectedItem = branchTagComboBox.selectedItem as? BranchTagItem
         val selectedBranch = selectedItem?.name
         val credentials = if (authCheckBox.isSelected) {
             val username = usernameField.text.trim()
             val password = String(passwordField.password)
             if (username.isEmpty() || password.isEmpty()) {
-                Messages.showErrorDialog("Please enter both username and password/token for private repository", "Authentication Required")
+                Messages.showErrorDialog(
+                    "Please enter both username and password/token for private repository",
+                    "Authentication Required"
+                )
                 return
             }
             GitRepoCloneService.AuthCredentials(username, password)
         } else {
             null
         }
-        
+
         // Disable UI elements during cloning
         setUIEnabled(false)
         cloneButton.text = "Cloning..."
         // TODO 12/07/2025 PWegner: delete temp folder once docs are generated
 
         gitService.cloneRepositoryAsync(
-            repoUrl, 
-            selectedBranch, 
+            repoUrl,
+            selectedBranch,
             null, // targetCommit
             credentials,
             shallowCloneCheckBox.isSelected
@@ -459,22 +462,22 @@ class GitRepoDocumentationDialog(
             SwingUtilities.invokeLater {
                 setUIEnabled(true)
                 cloneButton.text = "Clone Repository"
-                
+
                 if (result.success && result.localPath != null) {
                     clonedRepoPath = result.localPath
                     updateFileTree(result.localPath)
                     updateBranchTagComboBox(result.branches, result.tags)
                     updateRepositoryInfo(repoUrl, result.branches.size, result.tags.size)
-                        
+
                     // Auto-populate filename if empty
                     if (filenameField.text.isBlank()) {
                         val repoName = repoUrl.substringAfterLast("/").removeSuffix(".git")
                         filenameField.text = "${repoName}_documentation.md"
                     }
-                        
+
                     // Enable OK button and show success message
                     setOKActionEnabled(true)
-                        
+
                     // Show success notification
                     val notificationGroup = com.intellij.notification.NotificationGroupManager.getInstance()
                         .getNotificationGroup("Aider Web Crawl")
@@ -483,7 +486,7 @@ class GitRepoDocumentationDialog(
                         "Repository cloned successfully! Please select files and configure documentation settings below, then click OK to generate documentation.",
                         com.intellij.notification.NotificationType.INFORMATION
                     ).notify(project)
-                    
+
                 } else if (result.requiresAuth && !authCheckBox.isSelected) {
                     Messages.showErrorDialog(
                         "This repository requires authentication. Please check 'Private repository' and enter your credentials.",
@@ -510,7 +513,7 @@ class GitRepoDocumentationDialog(
             null
         }
     }
-    
+
     private fun setUIEnabled(enabled: Boolean) {
         repoUrlField.isEnabled = enabled
         branchTagComboBox.isEnabled = enabled
@@ -521,46 +524,46 @@ class GitRepoDocumentationDialog(
         usernameField.isEnabled = enabled
         passwordField.isEnabled = enabled
     }
-    
+
     private fun toggleAuthFields() {
         val isVisible = authCheckBox.isSelected
         usernameField.isVisible = isVisible
         passwordField.isVisible = isVisible
         repaint()
     }
-    
+
     private fun updateFileTree(repoPath: String) {
         val root = CheckedTreeNode(File(repoPath).name)
         root.userObject = File(repoPath)
-        
+
         val repoDir = File(repoPath)
         if (repoDir.exists()) {
             addDirectoryToTree(root, repoDir)
         }
-        
+
         fileTree.model = DefaultTreeModel(root)
         fileTree.expandRow(0)
     }
-    
+
     private fun addDirectoryToTree(parentNode: CheckedTreeNode, directory: File) {
         directory.listFiles()?.sortedWith(compareBy<File> { !it.isDirectory }.thenBy { it.name })?.forEach { file ->
             if (!file.name.startsWith(".")) { // Skip hidden files like .git
                 val node = CheckedTreeNode(file)
                 parentNode.add(node)
-                
+
                 if (file.isDirectory) {
                     addDirectoryToTree(node, file)
                 }
             }
         }
     }
-    
+
     private fun selectAllFiles(selected: Boolean) {
         val root = fileTree.model.root as? CheckedTreeNode ?: return
         setNodeSelection(root, selected)
         fileTree.repaint()
     }
-    
+
     private fun setNodeSelection(node: CheckedTreeNode, selected: Boolean) {
         node.isChecked = selected
         for (i in 0 until node.childCount) {
@@ -570,25 +573,25 @@ class GitRepoDocumentationDialog(
             }
         }
     }
-    
+
     private fun applyFileTypeFilter() {
         val filterText = fileTypeFilterField.text.trim()
         if (filterText.isEmpty()) {
             selectAllFiles(true)
             return
         }
-        
+
         val extensions = filterText.split(",").map { it.trim().lowercase() }
         val root = fileTree.model.root as? CheckedTreeNode ?: return
-        
+
         applyFilterToNode(root, extensions)
         fileTree.repaint()
     }
-    
+
     private fun applyFilterToNode(node: CheckedTreeNode, extensions: List<String>): Boolean {
         val file = node.userObject as? File
         var hasMatchingChildren = false
-        
+
         // First, check all children
         for (i in 0 until node.childCount) {
             val child = node.getChildAt(i) as? CheckedTreeNode
@@ -597,7 +600,7 @@ class GitRepoDocumentationDialog(
                 hasMatchingChildren = hasMatchingChildren || childMatches
             }
         }
-        
+
         // For files, check if extension matches
         val fileMatches = if (file != null && file.isFile) {
             val fileExtension = file.extension.lowercase()
@@ -608,42 +611,42 @@ class GitRepoDocumentationDialog(
         } else {
             false
         }
-        
+
         // Select node if it's a matching file or has matching children
         val shouldSelect = fileMatches || hasMatchingChildren
         node.isChecked = shouldSelect
-        
+
         return shouldSelect
     }
-    
+
     private fun updateBranchTagComboBox(branches: List<String>, tags: List<String>) {
         // Remove all existing action listeners
         branchTagComboBox.actionListeners.forEach { branchTagComboBox.removeActionListener(it) }
         branchTagComboBox.removeAllItems()
-        
+
         // Add branches first
         branches.forEach { branch ->
             branchTagComboBox.addItem(BranchTagItem(branch, false))
         }
-        
+
         // Add tags
         tags.forEach { tag ->
             branchTagComboBox.addItem(BranchTagItem(tag, true))
         }
-        
+
         // Add default branches if none exist
         if (branches.isEmpty() && tags.isEmpty()) {
             branchTagComboBox.addItem(BranchTagItem("main", false))
             branchTagComboBox.addItem(BranchTagItem("master", false))
         }
-        
+
         branchTagComboBox.addActionListener { switchBranchOrTag() }
     }
-    
+
     private fun switchBranchOrTag() {
         val selectedItem = branchTagComboBox.selectedItem as? BranchTagItem
         val repoPath = clonedRepoPath
-        
+
         if (selectedItem != null && repoPath != null) {
             val repoDir = File(repoPath)
             if (repoDir.exists()) {
@@ -652,7 +655,7 @@ class GitRepoDocumentationDialog(
                 } else {
                     gitService.switchToBranch(repoDir, selectedItem.name)
                 }
-                
+
                 if (success) {
                     // Refresh file tree after branch/tag switch
                     updateFileTree(repoPath)
@@ -668,7 +671,7 @@ class GitRepoDocumentationDialog(
             }
         }
     }
-    
+
     private fun updateRepositoryInfo(repoUrl: String, branchCount: Int, tagCount: Int) {
         val repoName = repoUrl.substringAfterLast("/").removeSuffix(".git")
         repoInfoLabel.text = "Repository: $repoName | Branches: $branchCount | Tags: $tagCount"
@@ -749,7 +752,7 @@ class GitRepoDocumentationDialog(
                         .align(AlignX.FILL)
                 }.resizableRow()
             }
-            
+
             group("Documentation Generation") {
                 row {
                     label("Select the type of documentation to generate:")
@@ -785,34 +788,46 @@ class GitRepoDocumentationDialog(
                 }
             }
         }
-        
+
         panel.preferredSize = Dimension(900, 700)
         panel.minimumSize = Dimension(600, 500)
         return panel
     }
-    
 
-    
+
     override fun doValidate(): ValidationInfo? {
         val documentType = getSelectedDocumentType()
         val repoUrl = repoUrlField.text.trim()
         val filename = filenameField.text.trim()
-        
+
         return when {
             // Only validate repo URL if it's not empty (for cases where repo is already cloned)
-            repoUrl.isNotEmpty() && !validateRepositoryUrl() -> ValidationInfo("Invalid repository URL format", repoUrlField)
+            repoUrl.isNotEmpty() && !validateRepositoryUrl() -> ValidationInfo(
+                "Invalid repository URL format",
+                repoUrlField
+            )
             // Allow validation to pass if we have a cloned repo path (pre-selected scenario)
             clonedRepoPath == null && repoUrl.isEmpty() && selectedFiles.isEmpty() -> ValidationInfo("Please clone a repository first or enter a repository URL")
             documentType == null -> ValidationInfo("Please select a document type", documentTypeComboBox)
-            settings.getDocumentTypes().isEmpty() -> ValidationInfo("No document types configured. Please configure document types in Project Settings.")
+            settings.getDocumentTypes()
+                .isEmpty() -> ValidationInfo("No document types configured. Please configure document types in Project Settings.")
+
             filename.isBlank() -> ValidationInfo("Please enter a filename for the documentation", filenameField)
-            filename.isNotBlank() && !isValidFilename(filename) -> ValidationInfo("Invalid filename. Please use only valid filename characters.", filenameField)
-            documentType?.promptTemplate?.isBlank() == true -> ValidationInfo("Selected document type has no prompt template configured", documentTypeComboBox)
+            filename.isNotBlank() && !isValidFilename(filename) -> ValidationInfo(
+                "Invalid filename. Please use only valid filename characters.",
+                filenameField
+            )
+
+            documentType?.promptTemplate?.isBlank() == true -> ValidationInfo(
+                "Selected document type has no prompt template configured",
+                documentTypeComboBox
+            )
+
             selectedFiles.isEmpty() && getSelectedFiles().isEmpty() -> ValidationInfo("Please select at least one file or folder from the repository")
             else -> null
         }
     }
-    
+
     private fun isValidFilename(filename: String): Boolean {
         if (filename.isBlank()) return false
         val invalidChars = charArrayOf('<', '>', ':', '"', '|', '?', '*', '\\', '/')
@@ -822,25 +837,25 @@ class GitRepoDocumentationDialog(
     override fun doOKAction() {
         val documentType = getSelectedDocumentType() ?: return
         val filename = filenameField.text.trim()
-        
+
         // Validate inputs before proceeding
         if (filename.isEmpty()) {
             Messages.showErrorDialog("Please enter a filename for the documentation", "Validation Error")
             return
         }
-        
+
         // Use pre-selected files if available, otherwise get from tree
         val filesToDocument = if (selectedFiles.isNotEmpty()) {
             selectedFiles
         } else {
             getSelectedFiles()
         }
-        
+
         if (filesToDocument.isEmpty()) {
             Messages.showErrorDialog("Please select files or folders to document", "No Files Selected")
             return
         }
-        
+
         // Validate document type configuration
         if (documentType.promptTemplate.isBlank()) {
             Messages.showErrorDialog(
@@ -849,17 +864,17 @@ class GitRepoDocumentationDialog(
             )
             return
         }
-        
+
         // Validate repository state before proceeding
         if (!validateRepositoryState()) {
             return
         }
-        
+
         // Show confirmation dialog before proceeding
         if (!showConfirmationDialog(filesToDocument, documentType, filename)) {
             return
         }
-        
+
         val allFiles = project.service<FileDataCollectionService>().collectAllFiles(filesToDocument, false)
         val globalSettings = AiderSettings.getInstance()
 
@@ -874,7 +889,7 @@ class GitRepoDocumentationDialog(
                     null // Skip non-existent context files
                 }
             }
-        
+
             val commandData = CommandData(
                 message = buildPrompt(documentType, allFiles, filename),
                 useYesFlag = true,
@@ -890,22 +905,22 @@ class GitRepoDocumentationDialog(
             // Show progress notification
             val notificationGroup = com.intellij.notification.NotificationGroupManager.getInstance()
                 .getNotificationGroup("Aider Web Crawl")
-            
+
             val startNotification = notificationGroup.createNotification(
                 "Documentation Generation Started",
                 "Generating documentation for ${allFiles.size} files using ${documentType.name}...",
                 com.intellij.notification.NotificationType.INFORMATION
             )
             startNotification.notify(project)
-            
+
             // Execute documentation generation with proper callback and progress updates
             val executor = IDEBasedExecutor(project, commandData) { success ->
                 SwingUtilities.invokeLater {
                     // Cleanup cloned repository after documentation generation
-                    clonedRepoPath?.let { 
+                    clonedRepoPath?.let {
                         gitService.cleanupRepository(it)
                     }
-                    
+
                     // Show completion notification
                     val completionNotification = if (success) {
                         notificationGroup.createNotification(
@@ -923,13 +938,13 @@ class GitRepoDocumentationDialog(
                     completionNotification.notify(project)
                 }
             }
-            
+
             // Show progress during execution
             executor.execute()
 
             // Only close dialog after successfully starting documentation generation
             super.doOKAction()
-            
+
         } catch (e: Exception) {
             Messages.showErrorDialog(
                 project,
@@ -939,10 +954,10 @@ class GitRepoDocumentationDialog(
             // Don't close dialog on error
         }
     }
-    
+
     private fun getSelectedFiles(): Array<VirtualFile> {
         val virtualFiles = mutableListOf<VirtualFile>()
-        
+
         clonedRepoPath?.let { repoPath ->
             val repoRoot = gitService.getRepositoryRoot(repoPath)
             if (repoRoot != null) {
@@ -952,10 +967,10 @@ class GitRepoDocumentationDialog(
                 }
             }
         }
-        
+
         return virtualFiles.toTypedArray()
     }
-    
+
     private fun collectCheckedFiles(
         node: CheckedTreeNode,
         repoPath: String,
@@ -972,7 +987,7 @@ class GitRepoDocumentationDialog(
                 }
             }
         }
-        
+
         // Always check children, even if parent is not checked (for partial selections)
         for (i in 0 until node.childCount) {
             val child = node.getChildAt(i) as? CheckedTreeNode
@@ -984,40 +999,42 @@ class GitRepoDocumentationDialog(
 
     private fun buildPrompt(documentType: DocumentTypeConfiguration, files: List<FileData>, filename: String): String {
         return project.service<DocumentationGenerationPromptService>().buildPrompt(
-            documentType, 
-            files, 
+            documentType,
+            files,
             filename,
             getAdditionalPrompt()
         )
     }
 
-    private fun getSelectedDocumentType(): DocumentTypeConfiguration? = documentTypeComboBox.selectedItem as? DocumentTypeConfiguration
+    private fun getSelectedDocumentType(): DocumentTypeConfiguration? =
+        documentTypeComboBox.selectedItem as? DocumentTypeConfiguration
+
     private fun getAdditionalPrompt(): String = promptArea.text
-    
+
     private fun updateFileTreeFromVirtualFiles(files: Array<VirtualFile>, repoPath: String) {
         if (files.isNotEmpty()) {
             val root = CheckedTreeNode(File(repoPath).name)
             root.userObject = File(repoPath)
-            
+
             val repoDir = File(repoPath)
             if (repoDir.exists()) {
                 addDirectoryToTree(root, repoDir)
                 // Pre-select the provided files
                 preselectFiles(root, files, repoPath)
             }
-            
+
             fileTree.model = DefaultTreeModel(root)
             fileTree.expandRow(0)
-            
+
             // Expand some levels to show the structure
             for (i in 0 until minOf(3, fileTree.rowCount)) {
                 fileTree.expandRow(i)
             }
         }
     }
-    
+
     private fun preselectFiles(root: CheckedTreeNode, files: Array<VirtualFile>, repoPath: String) {
-        val filePaths = files.map { 
+        val filePaths = files.map {
             // Convert VirtualFile path to relative path from repo root
             val repoFile = File(repoPath)
             val virtualPath = File(it.path)
@@ -1030,7 +1047,7 @@ class GitRepoDocumentationDialog(
         }.toSet()
         preselectNodesRecursively(root, filePaths, repoPath)
     }
-    
+
     private fun preselectNodesRecursively(node: CheckedTreeNode, filePaths: Set<String>, repoPath: String) {
         val file = node.userObject as? File
         if (file != null) {
@@ -1039,20 +1056,20 @@ class GitRepoDocumentationDialog(
             } catch (e: Exception) {
                 file.name
             }
-            
+
             // Check if this file/directory should be selected
             val shouldSelect = filePaths.any { targetPath ->
-                relativePath == targetPath || 
-                relativePath.endsWith(targetPath) || 
-                targetPath.endsWith(relativePath) ||
-                file.name == targetPath
+                relativePath == targetPath ||
+                        relativePath.endsWith(targetPath) ||
+                        targetPath.endsWith(relativePath) ||
+                        file.name == targetPath
             }
-            
+
             if (shouldSelect) {
                 node.isChecked = true
             }
         }
-        
+
         for (i in 0 until node.childCount) {
             val child = node.getChildAt(i) as? CheckedTreeNode
             if (child != null) {
@@ -1060,7 +1077,7 @@ class GitRepoDocumentationDialog(
             }
         }
     }
-    
+
     private fun updateRepositoryInfoFromPath(repoPath: String) {
         val repoName = File(repoPath).name
         val fileCount = selectedFiles.size
@@ -1071,12 +1088,12 @@ class GitRepoDocumentationDialog(
         }
         repoInfoLabel.text = statusText
         repoInfoLabel.isVisible = true
-        
+
         // Also populate some default filename if empty
         if (filenameField.text.isBlank()) {
             filenameField.text = "${repoName}_documentation.md"
         }
-        
+
         // Update the document type selection to show first available if none selected
         if (documentTypeComboBox.selectedItem == null && documentTypeComboBox.itemCount > 0) {
             documentTypeComboBox.selectedIndex = 0
@@ -1088,7 +1105,7 @@ class GitRepoDocumentationDialog(
         clonedRepoPath?.let { gitService.cleanupRepository(it) }
         super.doCancelAction()
     }
-    
+
     private fun validateRepositoryState(): Boolean {
         val repoPath = clonedRepoPath
         if (repoPath != null) {
@@ -1100,7 +1117,7 @@ class GitRepoDocumentationDialog(
                 )
                 return false
             }
-            
+
             // Check if .git directory exists
             val gitDir = File(repoDir, ".git")
             if (!gitDir.exists()) {
@@ -1113,7 +1130,7 @@ class GitRepoDocumentationDialog(
         }
         return true
     }
-    
+
     private fun showConfirmationDialog(
         filesToDocument: Array<VirtualFile>,
         documentType: DocumentTypeConfiguration,
@@ -1126,7 +1143,7 @@ class GitRepoDocumentationDialog(
             totalSize < 1024 * 1024 -> "${totalSize / 1024} KB"
             else -> "${totalSize / (1024 * 1024)} MB"
         }
-        
+
         val message = buildString {
             appendLine("Ready to generate documentation with the following settings:")
             appendLine()
@@ -1149,7 +1166,7 @@ class GitRepoDocumentationDialog(
             appendLine()
             appendLine("Do you want to proceed?")
         }
-        
+
         val result = Messages.showYesNoDialog(
             project,
             message,
@@ -1158,26 +1175,26 @@ class GitRepoDocumentationDialog(
             "Cancel",
             Messages.getQuestionIcon()
         )
-        
+
         return result == Messages.YES
     }
-    
+
     private fun showDocumentationPreview(): Boolean {
         val documentType = getSelectedDocumentType() ?: return false
         val filename = filenameField.text.trim()
         val filesToDocument = if (selectedFiles.isNotEmpty()) selectedFiles else getSelectedFiles()
-        
+
         if (filesToDocument.isEmpty()) return false
-        
+
         val allFiles = project.service<FileDataCollectionService>().collectAllFiles(filesToDocument, false)
         val previewPrompt = buildPrompt(documentType, allFiles, filename)
-        
+
         val previewDialog = object : DialogWrapper(project) {
             init {
                 title = "Documentation Preview"
                 init()
             }
-            
+
             override fun createCenterPanel(): JComponent {
                 val previewArea = JBTextArea(previewPrompt).apply {
                     isEditable = false
@@ -1185,11 +1202,11 @@ class GitRepoDocumentationDialog(
                     wrapStyleWord = true
                     font = font.deriveFont(12f)
                 }
-                
+
                 val scrollPane = JBScrollPane(previewArea).apply {
                     preferredSize = Dimension(700, 500)
                 }
-                
+
                 return panel {
                     row {
                         label("This is the prompt that will be sent to generate the documentation:")
@@ -1202,10 +1219,10 @@ class GitRepoDocumentationDialog(
                     }.resizableRow()
                 }
             }
-            
+
             override fun createActions() = arrayOf(okAction, cancelAction)
         }
-        
+
         return previewDialog.showAndGet()
     }
 }
