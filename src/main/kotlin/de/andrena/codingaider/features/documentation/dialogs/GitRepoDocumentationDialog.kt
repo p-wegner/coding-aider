@@ -340,7 +340,8 @@ class GitRepoDocumentationDialog(
     }
     
     private fun updateBranchComboBox(branches: List<String>) {
-        branchComboBox.removeActionListeners()
+        // Remove all existing action listeners
+        branchComboBox.actionListeners.forEach { branchComboBox.removeActionListener(it) }
         branchComboBox.removeAllItems()
         branches.forEach { branchComboBox.addItem(it) }
         if (branches.isEmpty()) {
