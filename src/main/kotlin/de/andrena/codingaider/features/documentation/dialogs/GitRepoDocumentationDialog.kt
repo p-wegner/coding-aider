@@ -785,7 +785,13 @@ class GitRepoDocumentationDialog(
         panel.minimumSize = Dimension(600, 500)
         return panel
     }
-
+    
+    private fun isValidFilename(filename: String): Boolean {
+        if (filename.isBlank()) return false
+        val invalidChars = charArrayOf('<', '>', ':', '"', '|', '?', '*', '\\', '/')
+        return !filename.any { it in invalidChars } && filename.trim() == filename
+    }
+    
     override fun doValidate(): ValidationInfo? {
         val documentType = getSelectedDocumentType()
         val repoUrl = repoUrlField.text.trim()
