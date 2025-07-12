@@ -15,8 +15,8 @@ Core Implementation:
 - [x] Implement progress indicators for long-running operations
 - [x] Proper tag and branch selection (fetch existing branches and tags from the repository)
 - [x] Allow changing tag/branch after cloning (will checkout and update filetree accordingly)
-- [ ] stay on screen after cloning to allow file selection
-- [ ] after ok click, allow selecting documentation type and generate documentation
+- [x] stay on screen after cloning to allow file selection
+- [x] after ok click, allow selecting documentation type and generate documentation
 
 Documentation Generation:
 - [x] Fix documentation generation after cloning
@@ -29,7 +29,7 @@ Documentation Generation:
 - [x] Add validation for required documentation fields
 - [x] Implement proper cleanup after documentation generation
 - [x] Add success/failure notifications for documentation
-- [ ] Implement progress updates during documentation generation
+- [x] Implement progress updates during documentation generation
 
 UI/UX Improvements:
 - [x] Add file selection checkboxes to tree component

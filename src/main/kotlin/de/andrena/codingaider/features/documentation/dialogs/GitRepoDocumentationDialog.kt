@@ -893,29 +893,34 @@ class GitRepoDocumentationDialog(
             )
             startNotification.notify(project)
             
-            // Execute documentation generation with proper callback
-            IDEBasedExecutor(project, commandData) { success ->
-                // Cleanup cloned repository after documentation generation
-                clonedRepoPath?.let { 
-                    gitService.cleanupRepository(it)
+            // Execute documentation generation with proper callback and progress updates
+            val executor = IDEBasedExecutor(project, commandData) { success ->
+                SwingUtilities.invokeLater {
+                    // Cleanup cloned repository after documentation generation
+                    clonedRepoPath?.let { 
+                        gitService.cleanupRepository(it)
+                    }
+                    
+                    // Show completion notification
+                    val completionNotification = if (success) {
+                        notificationGroup.createNotification(
+                            "Documentation Generation Completed",
+                            "Documentation has been successfully generated as '$filename'",
+                            com.intellij.notification.NotificationType.INFORMATION
+                        )
+                    } else {
+                        notificationGroup.createNotification(
+                            "Documentation Generation Failed",
+                            "There was an error generating the documentation. Please check the output for details.",
+                            com.intellij.notification.NotificationType.ERROR
+                        )
+                    }
+                    completionNotification.notify(project)
                 }
-                
-                // Show completion notification
-                val completionNotification = if (success) {
-                    notificationGroup.createNotification(
-                        "Documentation Generation Completed",
-                        "Documentation has been successfully generated as '$filename'",
-                        com.intellij.notification.NotificationType.INFORMATION
-                    )
-                } else {
-                    notificationGroup.createNotification(
-                        "Documentation Generation Failed",
-                        "There was an error generating the documentation. Please check the output for details.",
-                        com.intellij.notification.NotificationType.ERROR
-                    )
-                }
-                completionNotification.notify(project)
-            }.execute()
+            }
+            
+            // Show progress during execution
+            executor.execute()
 
             // Only close dialog after successfully starting documentation generation
             super.doOKAction()

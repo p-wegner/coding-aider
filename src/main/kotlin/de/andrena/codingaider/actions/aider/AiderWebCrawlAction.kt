@@ -334,13 +334,14 @@ class AiderWebCrawlAction : AnAction() {
                 1 -> { // Git Repository
                     val selectedFiles = getSelectedFiles()
                     if (selectedFiles.isNotEmpty() && clonedRepoPath != null) {
-                        super.doOKAction()
-                        // Open the full GitRepoDocumentationDialog with pre-selected files and cloned repo
-                        SwingUtilities.invokeLater {
-                            val gitDialog = GitRepoDocumentationDialog(project)
-                            gitDialog.setPreSelectedFiles(selectedFiles, clonedRepoPath!!)
-                            gitDialog.show()
+                        // Don't close this dialog, instead open the documentation dialog
+                        val gitDialog = GitRepoDocumentationDialog(project)
+                        gitDialog.setPreSelectedFiles(selectedFiles, clonedRepoPath!!)
+                        if (gitDialog.showAndGet()) {
+                            // Only close the main dialog if documentation generation was successful
+                            super.doOKAction()
                         }
+                        // If user cancels documentation dialog, stay in this dialog
                     }
                 }
             }
