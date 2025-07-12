@@ -36,6 +36,7 @@ import de.andrena.codingaider.services.MarkdownConversionService
 import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileRefresher
+import java.awt.Component
 import java.awt.Dimension
 import java.io.File
 import java.math.BigInteger
