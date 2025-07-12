@@ -18,6 +18,7 @@ class PlansDocsTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyC
     private val enableAutoPlanContinueCheckBox = JBCheckBox("Enable automatic plan continuation")
     private val enableSubplansCheckBox = JBCheckBox("Enable subplans for complex features")
     private val enableDocumentationLookupCheckBox = JBCheckBox("Enable documentation lookup")
+    private val planRefinementLlmComboBox: JComboBox<LlmSelection> = ComboBox(apiKeyChecker.getAllLlmOptions().toTypedArray())
     private val documentationLlmComboBox: JComboBox<LlmSelection> = ComboBox(apiKeyChecker.getAllLlmOptions().toTypedArray())
 
     override fun getTabName(): String = "Plans & Docs"
@@ -42,6 +43,13 @@ class PlansDocsTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyC
                     cell(enableSubplansCheckBox).applyToComponent {
                         toolTipText =
                             "If enabled, complex features will be broken down into subplans. Disable for simpler, single-file plans."
+                    }
+                }
+                row("Plan Refinement LLM Model:") {
+                    cell(planRefinementLlmComboBox).component.apply {
+                        renderer = LlmComboBoxRenderer(apiKeyChecker)
+                        toolTipText =
+                            "Select the LLM model to use for plan refinement. Leave empty to use the default LLM model."
                     }
                 }
             }
@@ -69,6 +77,7 @@ class PlansDocsTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyC
         settings.enableAutoPlanContinue = enableAutoPlanContinueCheckBox.isSelected
         settings.enableSubplans = enableSubplansCheckBox.isSelected
         settings.enableDocumentationLookup = enableDocumentationLookupCheckBox.isSelected
+        settings.planRefinementLlm = planRefinementLlmComboBox.selectedItem.asSelectedItemName()
         settings.documentationLlm = documentationLlmComboBox.selectedItem.asSelectedItemName()
     }
 
@@ -77,6 +86,7 @@ class PlansDocsTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyC
         enableAutoPlanContinueCheckBox.isSelected = settings.enableAutoPlanContinue
         enableSubplansCheckBox.isSelected = settings.enableSubplans
         enableDocumentationLookupCheckBox.isSelected = settings.enableDocumentationLookup
+        planRefinementLlmComboBox.selectedItem = apiKeyChecker.getLlmSelectionForName(settings.planRefinementLlm)
         documentationLlmComboBox.selectedItem = apiKeyChecker.getLlmSelectionForName(settings.documentationLlm)
     }
 
@@ -85,14 +95,21 @@ class PlansDocsTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyC
                 enableAutoPlanContinueCheckBox.isSelected != settings.enableAutoPlanContinue ||
                 enableSubplansCheckBox.isSelected != settings.enableSubplans ||
                 enableDocumentationLookupCheckBox.isSelected != settings.enableDocumentationLookup ||
+                planRefinementLlmComboBox.selectedItem.asSelectedItemName() != settings.planRefinementLlm ||
                 documentationLlmComboBox.selectedItem.asSelectedItemName() != settings.documentationLlm
     }
 
     fun updateLlmOptions(llmOptions: Array<LlmSelection>) {
-        val currentSelection = documentationLlmComboBox.selectedItem as? LlmSelection
+        val currentPlanRefinementSelection = planRefinementLlmComboBox.selectedItem as? LlmSelection
+        planRefinementLlmComboBox.model = javax.swing.DefaultComboBoxModel(llmOptions)
+        if (currentPlanRefinementSelection != null && llmOptions.contains(currentPlanRefinementSelection)) {
+            planRefinementLlmComboBox.selectedItem = currentPlanRefinementSelection
+        }
+        
+        val currentDocumentationSelection = documentationLlmComboBox.selectedItem as? LlmSelection
         documentationLlmComboBox.model = javax.swing.DefaultComboBoxModel(llmOptions)
-        if (currentSelection != null && llmOptions.contains(currentSelection)) {
-            documentationLlmComboBox.selectedItem = currentSelection
+        if (currentDocumentationSelection != null && llmOptions.contains(currentDocumentationSelection)) {
+            documentationLlmComboBox.selectedItem = currentDocumentationSelection
         }
     }
 

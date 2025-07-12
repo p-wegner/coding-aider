@@ -657,11 +657,13 @@ class PlanViewer(private val project: Project) {
                 if (message.isNotBlank()) {
                     val promptService = project.service<AiderPlanPromptService>()
                     val refinementPrompt = promptService.createPlanRefinementPrompt(selectedPlan, message)
+                    val settings = service<de.andrena.codingaider.settings.AiderSettings>()
+                    val planRefinementLlm = if (settings.planRefinementLlm.isBlank()) null else settings.planRefinementLlm
                     val commandData = AiderAction.collectCommandData(
                         selectedPlan.allFiles,
                         refinementPrompt,
                         project,
-                        AiderMode.NORMAL
+                        AiderMode.NORMAL,
                     )
                     AiderAction.executeAiderActionWithCommandData(project, commandData)
                 }

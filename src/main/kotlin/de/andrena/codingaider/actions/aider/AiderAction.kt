@@ -79,7 +79,7 @@ class AiderAction : AnAction() {
                 IDEBasedExecutor(project, commandData).execute()
             }
         }
-
+// TODO 12/07/2025 PWegner: unify the two methods with common data structure and adjust usages
         fun collectCommandData(dialog: AiderInputDialog, project: Project): CommandData {
             val settings = getInstance()
             return CommandData(

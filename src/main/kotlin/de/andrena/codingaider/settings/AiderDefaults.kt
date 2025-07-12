@@ -48,6 +48,7 @@ Make your changes precise and minimal."""
     const val ACTIVATE_IDE_EXECUTOR_AFTER_WEBCRAWL = false
     const val WEB_CRAWL_LLM = "--mini"
     const val DOCUMENTATION_LLM = "Default"
+    const val PLAN_REFINEMENT_LLM = ""
     const val DEACTIVATE_REPO_MAP = false
     const val EDIT_FORMAT = ""
     const val VERBOSE_COMMAND_LOGGING = false

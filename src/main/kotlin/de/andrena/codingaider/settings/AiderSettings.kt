@@ -51,6 +51,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var dockerImage: String = AiderDefaults.DOCKER_IMAGE,
         var aiderExecutablePath: String = AiderDefaults.AIDER_EXECUTABLE_PATH,
         var documentationLlm: String = AiderDefaults.DOCUMENTATION_LLM,
+        var planRefinementLlm: String = AiderDefaults.PLAN_REFINEMENT_LLM,
         var enableAutoPlanContinue: Boolean = AiderDefaults.ENABLE_AUTO_PLAN_CONTINUE,
         var enableAutoPlanContinuationInPlanFamily: Boolean = AiderDefaults.ENABLE_AUTO_PLAN_CONTINUATION_IN_FAMILY,
         var optionsPanelCollapsed: Boolean = true,
@@ -89,6 +90,11 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
             myState.documentationLlm = value
         }
 
+    var planRefinementLlm: String
+        get() = myState.planRefinementLlm
+        set(value) {
+            myState.planRefinementLlm = value
+        }
 
     var enableLocalModelCostMap: Boolean
         get() = myState.enableLocalModelCostMap
