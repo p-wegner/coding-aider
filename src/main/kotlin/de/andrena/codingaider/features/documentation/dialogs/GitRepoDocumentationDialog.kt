@@ -79,11 +79,12 @@ class GitRepoDocumentationDialog(
         shallowCloneCheckBox.isVisible = false
         usernameField.isVisible = false
         passwordField.isVisible = false
-        selectAllButton.isVisible = false
-        deselectAllButton.isVisible = false
-        fileTypeFilterField.isVisible = false
-        applyFilterButton.isVisible = false
-        fileTree.isVisible = false
+        // Keep file selection visible for pre-selected scenarios
+        // selectAllButton.isVisible = false
+        // deselectAllButton.isVisible = false
+        // fileTypeFilterField.isVisible = false
+        // applyFilterButton.isVisible = false
+        // fileTree.isVisible = false
     }
     
     private val settings = AiderProjectSettings.getInstance(project)
@@ -463,19 +464,22 @@ class GitRepoDocumentationDialog(
                     updateFileTree(result.localPath)
                     updateBranchTagComboBox(result.branches, result.tags)
                     updateRepositoryInfo(repoUrl, result.branches.size, result.tags.size)
-                    
+                        
                     // Auto-populate filename if empty
                     if (filenameField.text.isBlank()) {
                         val repoName = repoUrl.substringAfterLast("/").removeSuffix(".git")
                         filenameField.text = "${repoName}_documentation.md"
                     }
-                    
+                        
+                    // Enable OK button and show success message
+                    setOKActionEnabled(true)
+                        
                     // Show success notification
                     val notificationGroup = com.intellij.notification.NotificationGroupManager.getInstance()
                         .getNotificationGroup("Aider Web Crawl")
                     notificationGroup.createNotification(
                         "Repository Cloned Successfully",
-                        "Repository cloned to temporary location. You can now select files and generate documentation.",
+                        "Repository cloned successfully! Please select files and configure documentation settings below, then click OK to generate documentation.",
                         com.intellij.notification.NotificationType.INFORMATION
                     ).notify(project)
                     

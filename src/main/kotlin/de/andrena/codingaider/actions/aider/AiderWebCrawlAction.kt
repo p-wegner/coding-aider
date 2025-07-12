@@ -308,7 +308,10 @@ class AiderWebCrawlAction : AnAction() {
                         !validateRepositoryUrl() -> ValidationInfo("Invalid repository URL format", repoUrlField)
                         clonedRepoPath == null -> ValidationInfo("Please clone the repository first")
                         getSelectedFiles().isEmpty() -> ValidationInfo("Please select at least one file or folder from the repository")
-                        else -> null
+                        else -> {
+                            // If we have files selected, show a message about proceeding to documentation
+                            null
+                        }
                     }
                 }
                 else -> null
