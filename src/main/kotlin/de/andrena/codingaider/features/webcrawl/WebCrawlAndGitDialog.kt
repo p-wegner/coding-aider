@@ -134,14 +134,6 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
             showsRootHandles = true
         }
         
-        private val selectAllButton = JButton("Select All").apply {
-            addActionListener { selectAllFiles(true) }
-        }
-        
-        private val deselectAllButton = JButton("Deselect All").apply {
-            addActionListener { selectAllFiles(false) }
-        }
-        
         private val fileTypeFilterField = JBTextField().apply {
             emptyText.text = "Filter by file extensions (e.g., .kt,.java,.md)"
         }
@@ -224,15 +216,6 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
                     }
                     row {
                         cell(repoSizeLabel)
-                            .align(AlignX.LEFT)
-                    }
-                    row {
-                        label("Select files/folders:")
-                    }
-                    row {
-                        cell(selectAllButton)
-                            .align(AlignX.LEFT)
-                        cell(deselectAllButton)
                             .align(AlignX.LEFT)
                     }
                     row {
@@ -562,7 +545,7 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
             setNodeSelection(root, selected)
             fileTree.repaint()
         }
-        
+
         private fun setNodeSelection(node: CheckedTreeNode, selected: Boolean) {
             node.isChecked = selected
             for (i in 0 until node.childCount) {

@@ -275,17 +275,8 @@ class GitRepoCloneService(private val project: Project) {
             // Log error but don't throw - cleanup is best effort
         }
     }
-    
-    fun validateClonedRepository(repoPath: String): Boolean {
-        return try {
-            val repoDir = File(repoPath)
-            val gitDir = File(repoDir, ".git")
-            repoDir.exists() && gitDir.exists()
-        } catch (e: Exception) {
-            false
-        }
-    }
-    
+    // TODO 12/07/2025 PWegner: implement a way to get tags and branches too
+
     private fun getRepositoryInfo(repoUrl: String, credentials: AuthCredentials?): RepoInfo {
         return try {
             val git = Git.getInstance()
