@@ -24,7 +24,7 @@ UI/UX Improvements:
 - [x] Add validation for Git repository URL format
 - [x] Implement branch switching after initial clone
 - [x] Add repository size estimation before cloning
-- [ ] Proper scrolling in file selection tree
+- [ ] Scrolling in file selection tree in AiderWebCrawlAction$WebCrawlAndGitDialog
 
 Git Operations Enhancements:
 - [x] Support for private repositories (authentication)
