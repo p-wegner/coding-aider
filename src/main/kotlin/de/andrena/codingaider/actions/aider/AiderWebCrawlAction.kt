@@ -258,7 +258,10 @@ class AiderWebCrawlAction : AnAction() {
                             .align(AlignX.RIGHT)
                     }
                     row {
-                        cell(JBScrollPane(fileTree))
+                        cell(JBScrollPane(fileTree).apply {
+                            preferredSize = Dimension(600, 300)
+                            minimumSize = Dimension(400, 200)
+                        })
                             .resizableColumn()
                             .align(AlignY.FILL)
                             .align(AlignX.FILL)
