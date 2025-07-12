@@ -29,6 +29,7 @@ import de.andrena.codingaider.services.plans.AiderPlanPromptService
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.services.plans.ContinuePlanService
 import de.andrena.codingaider.services.plans.PlanExecutionCostService
+import de.andrena.codingaider.utils.CommandDataCollector
 import de.andrena.codingaider.utils.FileRefresher
 import java.awt.*
 import java.awt.event.ActionEvent
@@ -658,12 +659,13 @@ class PlanViewer(private val project: Project) {
                     val promptService = project.service<AiderPlanPromptService>()
                     val refinementPrompt = promptService.createPlanRefinementPrompt(selectedPlan, message)
                     val settings = service<de.andrena.codingaider.settings.AiderSettings>()
-                    val planRefinementLlm = if (settings.planRefinementLlm.isBlank()) null else settings.planRefinementLlm
-                    val commandData = AiderAction.collectCommandData(
+                    val planRefinementLlm =
+                        if (settings.planRefinementLlm.isBlank()) null else settings.planRefinementLlm
+                    val commandData = CommandDataCollector.collectFromParameters(
                         selectedPlan.allFiles,
                         refinementPrompt,
                         project,
-                        AiderMode.NORMAL,
+                        llm = planRefinementLlm,
                     )
                     AiderAction.executeAiderActionWithCommandData(project, commandData)
                 }

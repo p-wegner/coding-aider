@@ -40,13 +40,14 @@ object CommandDataCollector {
         files: List<FileData>, 
         message: String, 
         project: Project, 
-        mode: AiderMode
+        mode: AiderMode = AiderMode.NORMAL,
+        llm: String? = null
     ): CommandData {
         val settings = getInstance()
         return CommandData(
             message = message,
             useYesFlag = settings.useYesFlag,
-            llm = settings.llm,
+            llm = llm ?: settings.llm,
             additionalArgs = settings.additionalArgs,
             files = files,
             lintCmd = settings.lintCmd,

@@ -85,9 +85,6 @@ class AiderAction : AnAction() {
             return CommandDataCollector.collectFromDialog(dialog, project)
         }
 
-        fun collectCommandData(files: List<FileData>, message: String, project: Project, mode: AiderMode): CommandData {
-            return CommandDataCollector.collectFromParameters(files, message, project, mode)
-        }
     }
 }
 
