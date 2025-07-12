@@ -44,6 +44,28 @@ class GitRepoDocumentationDialog(
     private val project: Project
 ) : DialogWrapper(project) {
     
+    // Constructor for pre-selected files
+    constructor(project: Project, preSelectedFiles: Array<VirtualFile>, repoPath: String) : this(project) {
+        this.selectedFiles = preSelectedFiles
+        this.clonedRepoPath = repoPath
+        // Initialize UI with pre-selected data
+        SwingUtilities.invokeLater {
+            updateFileTreeFromVirtualFiles(preSelectedFiles, repoPath)
+            updateRepositoryInfoFromPath(repoPath)
+        }
+    }
+    
+    fun setPreSelectedFiles(files: Array<VirtualFile>, repoPath: String) {
+        this.selectedFiles = files
+        this.clonedRepoPath = repoPath
+        SwingUtilities.invokeLater {
+            updateFileTreeFromVirtualFiles(files, repoPath)
+            updateRepositoryInfoFromPath(repoPath)
+            repaint()
+            revalidate()
+        }
+    }
+    
     private val settings = AiderProjectSettings.getInstance(project)
     private val gitService = project.service<GitRepoCloneService>()
     private val settingsButton = createSettingsButton()
@@ -785,6 +807,52 @@ class GitRepoDocumentationDialog(
     private fun getSelectedDocumentType(): DocumentTypeConfiguration? = documentTypeComboBox.selectedItem as? DocumentTypeConfiguration
     private fun getAdditionalPrompt(): String = promptArea.text
     
+    private fun updateFileTreeFromVirtualFiles(files: Array<VirtualFile>, repoPath: String) {
+        if (files.isNotEmpty()) {
+            val root = CheckedTreeNode(File(repoPath).name)
+            root.userObject = File(repoPath)
+            
+            val repoDir = File(repoPath)
+            if (repoDir.exists()) {
+                addDirectoryToTree(root, repoDir)
+                // Pre-select the provided files
+                preselectFiles(root, files, repoPath)
+            }
+            
+            fileTree.model = DefaultTreeModel(root)
+            fileTree.expandRow(0)
+        }
+    }
+    
+    private fun preselectFiles(root: CheckedTreeNode, files: Array<VirtualFile>, repoPath: String) {
+        val filePaths = files.map { it.path }.toSet()
+        preselectNodesRecursively(root, filePaths, repoPath)
+    }
+    
+    private fun preselectNodesRecursively(node: CheckedTreeNode, filePaths: Set<String>, repoPath: String) {
+        val file = node.userObject as? File
+        if (file != null) {
+            val relativePath = File(repoPath).toPath().relativize(file.toPath()).toString().replace('\\', '/')
+            val fullPath = File(repoPath).parent + "/" + relativePath
+            if (filePaths.any { it.contains(relativePath) || it.endsWith(file.name) }) {
+                node.isChecked = true
+            }
+        }
+        
+        for (i in 0 until node.childCount) {
+            val child = node.getChildAt(i) as? CheckedTreeNode
+            if (child != null) {
+                preselectNodesRecursively(child, filePaths, repoPath)
+            }
+        }
+    }
+    
+    private fun updateRepositoryInfoFromPath(repoPath: String) {
+        val repoName = File(repoPath).name
+        repoInfoLabel.text = "Repository: $repoName | Cloned locally"
+        repoInfoLabel.isVisible = true
+    }
+
     override fun doCancelAction() {
         // Cleanup cloned repository if user cancels
         clonedRepoPath?.let { gitService.cleanupRepository(it) }

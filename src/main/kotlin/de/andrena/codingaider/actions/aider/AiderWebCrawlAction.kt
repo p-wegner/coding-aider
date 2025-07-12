@@ -304,9 +304,10 @@ class AiderWebCrawlAction : AnAction() {
                 1 -> { // Git Repository
                     val repoUrl = repoUrlField.text.trim()
                     when {
-                        repoUrl.isNotEmpty() && !validateRepositoryUrl() -> ValidationInfo("Invalid repository URL format", repoUrlField)
-                        clonedRepoPath == null && repoUrl.isNotEmpty() -> ValidationInfo("Please clone the repository first")
-                        clonedRepoPath != null && getSelectedFiles().isEmpty() -> ValidationInfo("Please select at least one file or folder from the repository")
+                        repoUrl.isEmpty() -> ValidationInfo("Please enter a repository URL", repoUrlField)
+                        !validateRepositoryUrl() -> ValidationInfo("Invalid repository URL format", repoUrlField)
+                        clonedRepoPath == null -> ValidationInfo("Please clone the repository first")
+                        getSelectedFiles().isEmpty() -> ValidationInfo("Please select at least one file or folder from the repository")
                         else -> null
                     }
                 }
@@ -332,10 +333,11 @@ class AiderWebCrawlAction : AnAction() {
 
                 1 -> { // Git Repository
                     val selectedFiles = getSelectedFiles()
-                    if (selectedFiles.isNotEmpty()) {
+                    if (selectedFiles.isNotEmpty() && clonedRepoPath != null) {
                         super.doOKAction()
-                        // Open the full GitRepoDocumentationDialog with pre-selected files
+                        // Open the full GitRepoDocumentationDialog with pre-selected files and cloned repo
                         val gitDialog = GitRepoDocumentationDialog(project)
+                        gitDialog.setPreSelectedFiles(selectedFiles, clonedRepoPath!!)
                         gitDialog.show()
                     }
                 }
@@ -514,7 +516,14 @@ class AiderWebCrawlAction : AnAction() {
                         updateFileTree(result.localPath)
                         updateBranchTagComboBox(result.branches, result.tags)
                         updateRepositoryInfo(repoUrl, result.branches.size, result.tags.size)
-                        Messages.showInfoMessage("Repository cloned successfully!", "Success")
+                        
+                        // Update UI state to enable OK button
+                        SwingUtilities.invokeLater {
+                            repaint()
+                            revalidate()
+                        }
+                        
+                        Messages.showInfoMessage("Repository cloned successfully! You can now select files and generate documentation.", "Success")
                     } else if (result.requiresAuth && !authCheckBox.isSelected) {
                         Messages.showErrorDialog(
                             "This repository requires authentication. Please check 'Private repository' and enter your credentials.",
