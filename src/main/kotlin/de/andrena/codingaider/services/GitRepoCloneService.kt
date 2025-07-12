@@ -32,7 +32,9 @@ class GitRepoCloneService(private val project: Project) {
         val defaultBranch: String?,
         val isAccessible: Boolean,
         val requiresAuth: Boolean = false,
-        val error: String? = null
+        val error: String? = null,
+        val branches: List<String> = emptyList(),
+        val tags: List<String> = emptyList()
     )
     
     data class AuthCredentials(
@@ -275,14 +277,12 @@ class GitRepoCloneService(private val project: Project) {
             // Log error but don't throw - cleanup is best effort
         }
     }
-    // TODO 12/07/2025 PWegner: implement a way to get tags and branches too
-
     private fun getRepositoryInfo(repoUrl: String, credentials: AuthCredentials?): RepoInfo {
         return try {
             val git = Git.getInstance()
             val tempDir = createTempDirectory()
             
-            // Try to do a very shallow clone to get basic info
+            // Try to do a shallow clone to get basic info including branches and tags
             val handler = GitLineHandler(project, tempDir.parentFile, GitCommand.CLONE)
             
             val authenticatedUrl = if (credentials != null && !repoUrl.startsWith("git@")) {
@@ -293,7 +293,6 @@ class GitRepoCloneService(private val project: Project) {
             
             handler.addParameters(authenticatedUrl)
             handler.addParameters(tempDir.name)
-            handler.addParameters("--depth", "1")
             handler.addParameters("--bare")
             handler.addParameters("--quiet")
             
@@ -307,13 +306,19 @@ class GitRepoCloneService(private val project: Project) {
                 // Get default branch
                 val defaultBranch = getDefaultBranch(tempDir)
                 
+                // Get branches and tags
+                val branches = getBranches(tempDir)
+                val tags = getTags(tempDir)
+                
                 // Cleanup temp directory
                 tempDir.deleteRecursively()
                 
                 RepoInfo(
                     estimatedSizeMB = estimatedSizeMB * 10, // Rough estimation for full clone
                     defaultBranch = defaultBranch,
-                    isAccessible = true
+                    isAccessible = true,
+                    branches = branches,
+                    tags = tags
                 )
             } else {
                 val errorOutput = result.errorOutputAsJoinedString
@@ -323,7 +328,7 @@ class GitRepoCloneService(private val project: Project) {
                                  errorOutput.contains("403") ||
                                  errorOutput.contains("401")
                 
-                RepoInfo(null, null, false, requiresAuth, errorOutput)
+                RepoInfo(null, null, false, requiresAuth, errorOutput, emptyList(), emptyList())
             }
         } catch (e: Exception) {
             RepoInfo(null, null, false, error = e.message)
