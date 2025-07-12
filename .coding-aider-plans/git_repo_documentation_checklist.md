@@ -15,8 +15,8 @@ Core Implementation:
 - [x] Implement progress indicators for long-running operations
 
 UI/UX Improvements:
-- [ ] Add file selection checkboxes to tree component
-- [ ] Implement "Select All" / "Deselect All" functionality
+- [x] Add file selection checkboxes to tree component
+- [x] Implement "Select All" / "Deselect All" functionality
 - [ ] Add file type filtering options
 - [ ] Show repository information (commit hash, last update) in UI
 - [ ] Add validation for Git repository URL format

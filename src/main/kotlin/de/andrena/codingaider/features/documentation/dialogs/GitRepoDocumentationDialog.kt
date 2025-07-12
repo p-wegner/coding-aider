@@ -15,6 +15,8 @@ import com.intellij.openapi.ui.*
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.ui.components.*
 import com.intellij.ui.dsl.builder.*
+import com.intellij.ui.CheckboxTree
+import com.intellij.ui.CheckedTreeNode
 import com.intellij.ui.treeStructure.Tree
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
@@ -59,10 +61,41 @@ class GitRepoDocumentationDialog(
         addActionListener { cloneRepository() }
     }
     
-    private val fileTree = Tree().apply {
-        model = DefaultTreeModel(DefaultMutableTreeNode("No repository cloned"))
+    private val fileTree = CheckboxTree(object : CheckboxTree.CheckboxTreeCellRenderer() {
+        override fun customizeRenderer(
+            tree: JTree?,
+            value: Any?,
+            selected: Boolean,
+            expanded: Boolean,
+            leaf: Boolean,
+            row: Int,
+            hasFocus: Boolean
+        ) {
+            if (value is CheckedTreeNode) {
+                val userObject = value.userObject
+                if (userObject is File) {
+                    textRenderer.append(userObject.name)
+                    if (userObject.isDirectory) {
+                        textRenderer.icon = AllIcons.Nodes.Folder
+                    } else {
+                        textRenderer.icon = AllIcons.FileTypes.Text
+                    }
+                } else {
+                    textRenderer.append(userObject?.toString() ?: "")
+                }
+            }
+        }
+    }, CheckedTreeNode("No repository cloned")).apply {
         isRootVisible = true
         showsRootHandles = true
+    }
+    
+    private val selectAllButton = JButton("Select All").apply {
+        addActionListener { selectAllFiles(true) }
+    }
+    
+    private val deselectAllButton = JButton("Deselect All").apply {
+        addActionListener { selectAllFiles(false) }
     }
     
     // Documentation fields (reused from DocumentationGenerationDialog)
@@ -175,27 +208,43 @@ class GitRepoDocumentationDialog(
     }
     
     private fun updateFileTree(repoPath: String) {
-        val root = DefaultMutableTreeNode(File(repoPath).name)
-        val model = DefaultTreeModel(root)
+        val root = CheckedTreeNode(File(repoPath).name)
+        root.userObject = File(repoPath)
         
         val repoDir = File(repoPath)
         if (repoDir.exists()) {
             addDirectoryToTree(root, repoDir)
         }
         
-        fileTree.model = model
+        fileTree.model = DefaultTreeModel(root)
         fileTree.expandRow(0)
     }
     
-    private fun addDirectoryToTree(parentNode: DefaultMutableTreeNode, directory: File) {
-        directory.listFiles()?.forEach { file ->
+    private fun addDirectoryToTree(parentNode: CheckedTreeNode, directory: File) {
+        directory.listFiles()?.sortedWith(compareBy<File> { !it.isDirectory }.thenBy { it.name })?.forEach { file ->
             if (!file.name.startsWith(".")) { // Skip hidden files like .git
-                val node = DefaultMutableTreeNode(file)
+                val node = CheckedTreeNode(file)
                 parentNode.add(node)
                 
                 if (file.isDirectory) {
                     addDirectoryToTree(node, file)
                 }
+            }
+        }
+    }
+    
+    private fun selectAllFiles(selected: Boolean) {
+        val root = fileTree.model.root as? CheckedTreeNode ?: return
+        setNodeSelection(root, selected)
+        fileTree.repaint()
+    }
+    
+    private fun setNodeSelection(node: CheckedTreeNode, selected: Boolean) {
+        node.isChecked = selected
+        for (i in 0 until node.childCount) {
+            val child = node.getChildAt(i) as? CheckedTreeNode
+            if (child != null) {
+                setNodeSelection(child, selected)
             }
         }
     }
@@ -229,6 +278,12 @@ class GitRepoDocumentationDialog(
                 }
                 row {
                     label("Select files/folders:")
+                }
+                row {
+                    cell(selectAllButton)
+                        .align(AlignX.LEFT)
+                    cell(deselectAllButton)
+                        .align(AlignX.LEFT)
                 }
                 row {
                     cell(JBScrollPane(fileTree))
@@ -331,27 +386,45 @@ class GitRepoDocumentationDialog(
     }
     
     private fun getSelectedFiles(): Array<VirtualFile> {
-        val selectedPaths = fileTree.selectionPaths ?: return emptyArray()
         val virtualFiles = mutableListOf<VirtualFile>()
         
         clonedRepoPath?.let { repoPath ->
             val repoRoot = gitService.getRepositoryRoot(repoPath)
             if (repoRoot != null) {
-                selectedPaths.forEach { path ->
-                    val node = path.lastPathComponent as? DefaultMutableTreeNode
-                    val file = node?.userObject as? File
-                    if (file != null) {
-                        val relativePath = File(repoPath).toPath().relativize(file.toPath()).toString()
-                        val virtualFile = repoRoot.findFileByRelativePath(relativePath)
-                        if (virtualFile != null) {
-                            virtualFiles.add(virtualFile)
-                        }
-                    }
+                val root = fileTree.model.root as? CheckedTreeNode
+                if (root != null) {
+                    collectCheckedFiles(root, repoPath, repoRoot, virtualFiles)
                 }
             }
         }
         
         return virtualFiles.toTypedArray()
+    }
+    
+    private fun collectCheckedFiles(
+        node: CheckedTreeNode,
+        repoPath: String,
+        repoRoot: VirtualFile,
+        virtualFiles: MutableList<VirtualFile>
+    ) {
+        if (node.isChecked) {
+            val file = node.userObject as? File
+            if (file != null && file != File(repoPath)) { // Don't include the root directory itself
+                val relativePath = File(repoPath).toPath().relativize(file.toPath()).toString().replace('\\', '/')
+                val virtualFile = repoRoot.findFileByRelativePath(relativePath)
+                if (virtualFile != null) {
+                    virtualFiles.add(virtualFile)
+                }
+            }
+        }
+        
+        // Always check children, even if parent is not checked (for partial selections)
+        for (i in 0 until node.childCount) {
+            val child = node.getChildAt(i) as? CheckedTreeNode
+            if (child != null) {
+                collectCheckedFiles(child, repoPath, repoRoot, virtualFiles)
+            }
+        }
     }
 
     private fun buildPrompt(documentType: DocumentTypeConfiguration, files: List<FileData>, filename: String): String {
