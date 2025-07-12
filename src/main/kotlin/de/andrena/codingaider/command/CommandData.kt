@@ -1,6 +1,7 @@
 package de.andrena.codingaider.command
 
 import de.andrena.codingaider.inputdialog.AiderMode
+import de.andrena.codingaider.utils.CommandDataCollector
 import de.andrena.codingaider.utils.FileTraversal
 
 

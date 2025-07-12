@@ -17,6 +17,7 @@ import de.andrena.codingaider.services.AiderDialogStateService
 import de.andrena.codingaider.services.AiderIgnoreService
 import de.andrena.codingaider.services.FileDataCollectionService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
+import de.andrena.codingaider.utils.CommandDataCollector
 
 
 class AiderAction : AnAction() {
@@ -49,12 +50,12 @@ class AiderAction : AnAction() {
                 }
 
                 if (directShellMode) {
-                    val commandData = collectDefaultShellCommandData(allFiles, project)
+                    val commandData = CommandDataCollector.collectForShellMode(allFiles, project)
                     ShellExecutor(project, commandData).execute()
                 } else {
                     val dialog = AiderInputDialog(project, allFiles)
                     if (dialog.showAndGet()) {
-                        val commandData = collectCommandData(dialog, project)
+                        val commandData = CommandDataCollector.collectFromDialog(dialog, project)
                         AiderDialogStateService.getInstance(project).saveState(
                             dialog.getInputText(),
                             dialog.isYesFlagChecked(),
@@ -79,55 +80,13 @@ class AiderAction : AnAction() {
                 IDEBasedExecutor(project, commandData).execute()
             }
         }
-// TODO 12/07/2025 PWegner: extract to different (util) class and unify the two methods with common abstracted data structure and adjust usages
+
         fun collectCommandData(dialog: AiderInputDialog, project: Project): CommandData {
-            val settings = getInstance()
-            return CommandData(
-                message = dialog.getInputText(),
-                useYesFlag = dialog.isYesFlagChecked(),
-                llm = dialog.getLlm().name,
-                additionalArgs = dialog.getAdditionalArgs(),
-                files = dialog.getAllFiles(),
-                lintCmd = settings.lintCmd,
-                deactivateRepoMap = settings.deactivateRepoMap,
-                editFormat = settings.editFormat,
-                projectPath = project.basePath ?: "",
-                aiderMode = dialog.selectedMode,
-                sidecarMode = settings.useSidecarMode
-            )
+            return CommandDataCollector.collectFromDialog(dialog, project)
         }
 
         fun collectCommandData(files: List<FileData>, message: String, project: Project, mode: AiderMode): CommandData {
-            val settings = getInstance()
-            return CommandData(
-                message = message,
-                useYesFlag = settings.useYesFlag,
-                llm = settings.llm,
-                additionalArgs = settings.additionalArgs,
-                files = files,
-                lintCmd = settings.lintCmd,
-                deactivateRepoMap = settings.deactivateRepoMap,
-                editFormat = settings.editFormat,
-                projectPath = project.basePath ?: "",
-                aiderMode = mode,
-                sidecarMode = settings.useSidecarMode
-            )
-        }
-
-        private fun collectDefaultShellCommandData(files: List<FileData>, project: Project): CommandData {
-            val settings = getInstance()
-            return CommandData(
-                message = "",
-                useYesFlag = settings.useYesFlag,
-                llm = settings.llm,
-                additionalArgs = settings.additionalArgs,
-                files = files,
-                lintCmd = settings.lintCmd,
-                deactivateRepoMap = settings.deactivateRepoMap,
-                editFormat = settings.editFormat,
-                projectPath = project.basePath ?: "",
-                aiderMode = AiderMode.SHELL
-            )
+            return CommandDataCollector.collectFromParameters(files, message, project, mode)
         }
     }
 }
