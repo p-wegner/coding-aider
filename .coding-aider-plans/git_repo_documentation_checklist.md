@@ -48,6 +48,13 @@ Git Operations Enhancements:
 - [x] Add support for specific commit hash checkout
 - [x] Add support for tag based checkout
 - [x] Add support for branch based checkout
+- [ ] Add validation checks before view transition
+- [ ] Implement proper state handling during clone operation
+- [ ] Add confirmation dialog before documentation generation
+- [ ] Add recovery mechanism for failed clone operations
+- [ ] Improve error handling during checkout operations
+- [ ] Add progress indicators for clone and checkout operations
+- [ ] Implement proper cleanup on failed operations
 - [ ] (later) Handle Git LFS files properly
 - [ ] (later) Add retry mechanism for failed clone operations
 - [ ] (later) Support for Git submodules

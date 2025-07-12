@@ -32,6 +32,10 @@ Currently, the webcrawl action only supports crawling web pages. There's a need 
 - Validate documentation settings before generation
 - Provide clear error messages and status updates
 - Handle state transitions between cloning and documentation generation
+- Ensure proper UI state management during repository cloning
+- Validate cloned repository state before proceeding to documentation view
+- Add explicit user confirmation before transitioning to documentation generation
+- Implement proper error recovery if cloning or checkout fails
 
 ## References
 - [DocumentationGenerationDialog](../src/main/kotlin/de/andrena/codingaider/features/documentation/dialogs/DocumentationGenerationDialog.kt)
