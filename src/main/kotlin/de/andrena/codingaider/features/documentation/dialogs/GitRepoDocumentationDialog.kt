@@ -61,6 +61,8 @@ class GitRepoDocumentationDialog(
         SwingUtilities.invokeLater {
             updateFileTreeFromVirtualFiles(files, repoPath)
             updateRepositoryInfoFromPath(repoPath)
+            // Update document types to ensure they're loaded
+            updateDocumentTypes()
             repaint()
             revalidate()
         }
@@ -699,8 +701,10 @@ class GitRepoDocumentationDialog(
         val repoUrl = repoUrlField.text.trim()
         
         return when {
+            // Only validate repo URL if it's not empty (for cases where repo is already cloned)
             repoUrl.isNotEmpty() && !validateRepositoryUrl() -> ValidationInfo("Invalid repository URL format", repoUrlField)
-            clonedRepoPath == null -> ValidationInfo("Please clone a repository first")
+            // Allow validation to pass if we have a cloned repo path (pre-selected scenario)
+            clonedRepoPath == null && repoUrl.isEmpty() -> ValidationInfo("Please clone a repository first or enter a repository URL")
             documentType == null -> ValidationInfo("Please select a document type")
             settings.getDocumentTypes().isEmpty() -> ValidationInfo("No document types configured. Please configure document types in Project Settings.")
             filenameField.text.isBlank() -> ValidationInfo("Please enter a filename for the documentation", filenameField)
@@ -821,20 +825,47 @@ class GitRepoDocumentationDialog(
             
             fileTree.model = DefaultTreeModel(root)
             fileTree.expandRow(0)
+            
+            // Expand some levels to show the structure
+            for (i in 0 until minOf(3, fileTree.rowCount)) {
+                fileTree.expandRow(i)
+            }
         }
     }
     
     private fun preselectFiles(root: CheckedTreeNode, files: Array<VirtualFile>, repoPath: String) {
-        val filePaths = files.map { it.path }.toSet()
+        val filePaths = files.map { 
+            // Convert VirtualFile path to relative path from repo root
+            val repoFile = File(repoPath)
+            val virtualPath = File(it.path)
+            try {
+                repoFile.toPath().relativize(virtualPath.toPath()).toString().replace('\\', '/')
+            } catch (e: Exception) {
+                // Fallback to just the file name if relativization fails
+                it.name
+            }
+        }.toSet()
         preselectNodesRecursively(root, filePaths, repoPath)
     }
     
     private fun preselectNodesRecursively(node: CheckedTreeNode, filePaths: Set<String>, repoPath: String) {
         val file = node.userObject as? File
         if (file != null) {
-            val relativePath = File(repoPath).toPath().relativize(file.toPath()).toString().replace('\\', '/')
-            val fullPath = File(repoPath).parent + "/" + relativePath
-            if (filePaths.any { it.contains(relativePath) || it.endsWith(file.name) }) {
+            val relativePath = try {
+                File(repoPath).toPath().relativize(file.toPath()).toString().replace('\\', '/')
+            } catch (e: Exception) {
+                file.name
+            }
+            
+            // Check if this file/directory should be selected
+            val shouldSelect = filePaths.any { targetPath ->
+                relativePath == targetPath || 
+                relativePath.endsWith(targetPath) || 
+                targetPath.endsWith(relativePath) ||
+                file.name == targetPath
+            }
+            
+            if (shouldSelect) {
                 node.isChecked = true
             }
         }
@@ -849,8 +880,13 @@ class GitRepoDocumentationDialog(
     
     private fun updateRepositoryInfoFromPath(repoPath: String) {
         val repoName = File(repoPath).name
-        repoInfoLabel.text = "Repository: $repoName | Cloned locally"
+        repoInfoLabel.text = "Repository: $repoName | Cloned locally | Ready for documentation"
         repoInfoLabel.isVisible = true
+        
+        // Also populate some default filename if empty
+        if (filenameField.text.isBlank()) {
+            filenameField.text = "${repoName}_documentation.md"
+        }
     }
 
     override fun doCancelAction() {
