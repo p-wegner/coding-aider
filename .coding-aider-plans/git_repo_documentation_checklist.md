@@ -21,7 +21,7 @@ UI/UX Improvements:
 - [x] Show repository information (commit hash, last update) in UI
 - [x] Add validation for Git repository URL format
 - [x] Implement branch switching after initial clone
-- [ ] Add repository size estimation before cloning
+- [x] Add repository size estimation before cloning
 
 Git Operations Enhancements:
 - [x] Support for private repositories (authentication)

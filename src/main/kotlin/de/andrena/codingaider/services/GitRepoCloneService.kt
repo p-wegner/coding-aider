@@ -27,10 +27,41 @@ class GitRepoCloneService(private val project: Project) {
         val requiresAuth: Boolean = false
     )
     
+    data class RepoInfo(
+        val estimatedSizeMB: Double?,
+        val defaultBranch: String?,
+        val isAccessible: Boolean,
+        val requiresAuth: Boolean = false,
+        val error: String? = null
+    )
+    
     data class AuthCredentials(
         val username: String,
         val password: String // Can be password or personal access token
     )
+    
+    fun getRepositoryInfoAsync(
+        repoUrl: String,
+        credentials: AuthCredentials? = null
+    ): CompletableFuture<RepoInfo> {
+        val future = CompletableFuture<RepoInfo>()
+        
+        ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Checking Repository Info", true) {
+            override fun run(indicator: ProgressIndicator) {
+                try {
+                    indicator.text = "Fetching repository information..."
+                    indicator.isIndeterminate = true
+                    
+                    val repoInfo = getRepositoryInfo(repoUrl, credentials)
+                    future.complete(repoInfo)
+                } catch (e: Exception) {
+                    future.complete(RepoInfo(null, null, false, error = e.message))
+                }
+            }
+        })
+        
+        return future
+    }
     
     fun cloneRepositoryAsync(
         repoUrl: String,
@@ -192,6 +223,83 @@ class GitRepoCloneService(private val project: Project) {
             }
         } catch (e: Exception) {
         }
+    }
+    
+    private fun getRepositoryInfo(repoUrl: String, credentials: AuthCredentials?): RepoInfo {
+        return try {
+            val git = Git.getInstance()
+            val tempDir = createTempDirectory()
+            
+            // Try to do a very shallow clone to get basic info
+            val handler = GitLineHandler(project, tempDir.parentFile, GitCommand.CLONE)
+            
+            val authenticatedUrl = if (credentials != null && !repoUrl.startsWith("git@")) {
+                repoUrl.replace("https://", "https://${credentials.username}:${credentials.password}@")
+            } else {
+                repoUrl
+            }
+            
+            handler.addParameters(authenticatedUrl)
+            handler.addParameters(tempDir.name)
+            handler.addParameters("--depth", "1")
+            handler.addParameters("--bare")
+            handler.addParameters("--quiet")
+            
+            val result = git.runCommand(handler)
+            
+            if (result.success()) {
+                // Get repository size estimation
+                val sizeInBytes = calculateDirectorySize(tempDir)
+                val estimatedSizeMB = sizeInBytes / (1024.0 * 1024.0)
+                
+                // Get default branch
+                val defaultBranch = getDefaultBranch(tempDir)
+                
+                // Cleanup temp directory
+                tempDir.deleteRecursively()
+                
+                RepoInfo(
+                    estimatedSizeMB = estimatedSizeMB * 10, // Rough estimation for full clone
+                    defaultBranch = defaultBranch,
+                    isAccessible = true
+                )
+            } else {
+                val errorOutput = result.errorOutputAsJoinedString
+                val requiresAuth = errorOutput.contains("Authentication failed") || 
+                                 errorOutput.contains("access denied") ||
+                                 errorOutput.contains("repository not found") ||
+                                 errorOutput.contains("403") ||
+                                 errorOutput.contains("401")
+                
+                RepoInfo(null, null, false, requiresAuth, errorOutput)
+            }
+        } catch (e: Exception) {
+            RepoInfo(null, null, false, error = e.message)
+        }
+    }
+    
+    private fun getDefaultBranch(repoDir: File): String? {
+        return try {
+            val git = Git.getInstance()
+            val handler = GitLineHandler(project, repoDir, GitCommand.SYMBOLIC_REF)
+            handler.addParameters("HEAD")
+            
+            val result = git.runCommand(handler)
+            if (result.success() && result.output.isNotEmpty()) {
+                result.output.first().removePrefix("refs/heads/")
+            } else {
+                null
+            }
+        } catch (e: Exception) {
+            null
+        }
+    }
+    
+    private fun calculateDirectorySize(directory: File): Long {
+        return directory.walkTopDown()
+            .filter { it.isFile }
+            .map { it.length() }
+            .sum()
     }
     
     private fun createTempDirectory(): File {

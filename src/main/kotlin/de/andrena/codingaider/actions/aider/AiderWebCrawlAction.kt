@@ -80,11 +80,20 @@ class AiderWebCrawlAction : AnAction() {
         
         private val shallowCloneCheckBox = JCheckBox("Shallow clone (faster, recommended for large repos)", true)
         
+        private val checkRepoButton = JButton("Check Repository").apply {
+            addActionListener { checkRepository() }
+        }
+        
         private val cloneButton = JButton("Clone Repository").apply {
             addActionListener { cloneRepository() }
+            isEnabled = false
         }
         
         private val repoInfoLabel = JLabel("").apply {
+            isVisible = false
+        }
+        
+        private val repoSizeLabel = JLabel("").apply {
             isVisible = false
         }
         
@@ -176,6 +185,8 @@ class AiderWebCrawlAction : AnAction() {
                         label("Branch/Tag:")
                         cell(branchComboBox)
                             .align(AlignX.LEFT)
+                        cell(checkRepoButton)
+                            .align(AlignX.CENTER)
                         cell(cloneButton)
                             .align(AlignX.RIGHT)
                     }
@@ -201,6 +212,10 @@ class AiderWebCrawlAction : AnAction() {
                     }
                     row {
                         cell(repoInfoLabel)
+                            .align(AlignX.LEFT)
+                    }
+                    row {
+                        cell(repoSizeLabel)
                             .align(AlignX.LEFT)
                     }
                     row {
@@ -337,6 +352,89 @@ class AiderWebCrawlAction : AnAction() {
             )
             
             return validPatterns.any { it.matches(repoUrl) }
+        }
+        
+        private fun checkRepository() {
+            val repoUrl = repoUrlField.text.trim()
+            if (repoUrl.isEmpty()) {
+                Messages.showErrorDialog("Please enter a repository URL", "Error")
+                return
+            }
+            
+            if (!validateRepositoryUrl()) {
+                Messages.showErrorDialog(
+                    "Invalid repository URL format. Please enter a valid Git repository URL.\n" +
+                    "Examples:\n" +
+                    "• https://github.com/user/repo.git\n" +
+                    "• git@github.com:user/repo.git\n" +
+                    "• https://gitlab.com/user/repo.git",
+                    "Invalid URL"
+                )
+                return
+            }
+            
+            val credentials = if (authCheckBox.isSelected) {
+                val username = usernameField.text.trim()
+                val password = String(passwordField.password)
+                if (username.isEmpty() || password.isEmpty()) {
+                    Messages.showErrorDialog("Please enter both username and password/token for private repository", "Authentication Required")
+                    return
+                }
+                GitRepoCloneService.AuthCredentials(username, password)
+            } else {
+                null
+            }
+            
+            checkRepoButton.isEnabled = false
+            checkRepoButton.text = "Checking..."
+            
+            gitService.getRepositoryInfoAsync(repoUrl, credentials).thenAccept { repoInfo ->
+                SwingUtilities.invokeLater {
+                    checkRepoButton.isEnabled = true
+                    checkRepoButton.text = "Check Repository"
+                    
+                    if (repoInfo.isAccessible) {
+                        val repoName = repoUrl.substringAfterLast("/").removeSuffix(".git")
+                        repoInfoLabel.text = "Repository: $repoName | Default branch: ${repoInfo.defaultBranch ?: "unknown"}"
+                        repoInfoLabel.isVisible = true
+                        
+                        if (repoInfo.estimatedSizeMB != null) {
+                            val sizeText = when {
+                                repoInfo.estimatedSizeMB < 1.0 -> "< 1 MB"
+                                repoInfo.estimatedSizeMB < 100.0 -> String.format("~%.1f MB", repoInfo.estimatedSizeMB)
+                                repoInfo.estimatedSizeMB < 1000.0 -> String.format("~%.0f MB", repoInfo.estimatedSizeMB)
+                                else -> String.format("~%.1f GB", repoInfo.estimatedSizeMB / 1024.0)
+                            }
+                            repoSizeLabel.text = "Estimated size: $sizeText"
+                            repoSizeLabel.isVisible = true
+                            
+                            if (repoInfo.estimatedSizeMB > 500.0) {
+                                repoSizeLabel.text += " (Large repository - consider shallow clone)"
+                            }
+                        }
+                        
+                        // Set default branch if available
+                        repoInfo.defaultBranch?.let { defaultBranch ->
+                            branchComboBox.selectedItem = defaultBranch
+                        }
+                        
+                        cloneButton.isEnabled = true
+                        Messages.showInfoMessage("Repository is accessible and ready to clone!", "Repository Check")
+                    } else if (repoInfo.requiresAuth && !authCheckBox.isSelected) {
+                        Messages.showErrorDialog(
+                            "This repository requires authentication. Please check 'Private repository' and enter your credentials.",
+                            "Authentication Required"
+                        )
+                        authCheckBox.isSelected = true
+                        toggleAuthFields()
+                    } else {
+                        Messages.showErrorDialog(
+                            "Failed to access repository: ${repoInfo.error ?: "Unknown error"}",
+                            "Repository Check Error"
+                        )
+                    }
+                }
+            }
         }
         
         private fun cloneRepository() {
