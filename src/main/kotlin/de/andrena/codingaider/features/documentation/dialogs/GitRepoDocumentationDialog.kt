@@ -447,7 +447,8 @@ class GitRepoDocumentationDialog(
         // Disable UI elements during cloning
         setUIEnabled(false)
         cloneButton.text = "Cloning..."
-        
+        // TODO 12/07/2025 PWegner: delete temp folder once docs are generated
+
         gitService.cloneRepositoryAsync(
             repoUrl, 
             selectedBranch, 

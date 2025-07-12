@@ -42,3 +42,4 @@
   - [ ] add tests (using existing test creation feature)
 - [ ] Show some settings in tool coding aider tool window
   - [ ] main llm
+- [ ] Bug: abort command when closing tab in output tool window
