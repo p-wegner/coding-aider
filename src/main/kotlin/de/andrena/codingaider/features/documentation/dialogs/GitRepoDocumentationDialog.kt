@@ -773,6 +773,11 @@ class GitRepoDocumentationDialog(
                         .align(AlignY.FILL)
                         .align(AlignX.FILL)
                 }.resizableRow()
+                row {
+                    button("Preview Documentation Prompt") {
+                        showDocumentationPreview()
+                    }.align(AlignX.CENTER)
+                }
             }
         }
         
@@ -835,6 +840,16 @@ class GitRepoDocumentationDialog(
                 "The selected document type has no prompt template configured. Please configure it in Project Settings.",
                 "Configuration Error"
             )
+            return
+        }
+        
+        // Validate repository state before proceeding
+        if (!validateRepositoryState()) {
+            return
+        }
+        
+        // Show confirmation dialog before proceeding
+        if (!showConfirmationDialog(filesToDocument, documentType, filename)) {
             return
         }
         
@@ -1059,5 +1074,125 @@ class GitRepoDocumentationDialog(
         // Cleanup cloned repository if user cancels
         clonedRepoPath?.let { gitService.cleanupRepository(it) }
         super.doCancelAction()
+    }
+    
+    private fun validateRepositoryState(): Boolean {
+        val repoPath = clonedRepoPath
+        if (repoPath != null) {
+            val repoDir = File(repoPath)
+            if (!repoDir.exists()) {
+                Messages.showErrorDialog(
+                    "The cloned repository directory no longer exists. Please clone the repository again.",
+                    "Repository State Error"
+                )
+                return false
+            }
+            
+            // Check if .git directory exists
+            val gitDir = File(repoDir, ".git")
+            if (!gitDir.exists()) {
+                Messages.showErrorDialog(
+                    "The repository appears to be corrupted (missing .git directory). Please clone again.",
+                    "Repository State Error"
+                )
+                return false
+            }
+        }
+        return true
+    }
+    
+    private fun showConfirmationDialog(
+        filesToDocument: Array<VirtualFile>,
+        documentType: DocumentTypeConfiguration,
+        filename: String
+    ): Boolean {
+        val fileCount = filesToDocument.size
+        val totalSize = filesToDocument.sumOf { it.length }
+        val sizeText = when {
+            totalSize < 1024 -> "$totalSize bytes"
+            totalSize < 1024 * 1024 -> "${totalSize / 1024} KB"
+            else -> "${totalSize / (1024 * 1024)} MB"
+        }
+        
+        val message = buildString {
+            appendLine("Ready to generate documentation with the following settings:")
+            appendLine()
+            appendLine("📄 Document Type: ${documentType.name}")
+            appendLine("📁 Files to process: $fileCount files")
+            appendLine("📊 Total size: $sizeText")
+            appendLine("💾 Output filename: $filename")
+            appendLine()
+            if (documentType.contextFiles.isNotEmpty()) {
+                appendLine("📋 Context files: ${documentType.contextFiles.size} additional files")
+                appendLine()
+            }
+            appendLine("This will:")
+            appendLine("• Analyze all selected files")
+            appendLine("• Generate comprehensive documentation")
+            appendLine("• Save the result as '$filename'")
+            if (clonedRepoPath != null) {
+                appendLine("• Clean up the temporary repository")
+            }
+            appendLine()
+            appendLine("Do you want to proceed?")
+        }
+        
+        val result = Messages.showYesNoDialog(
+            project,
+            message,
+            "Confirm Documentation Generation",
+            "Generate Documentation",
+            "Cancel",
+            Messages.getQuestionIcon()
+        )
+        
+        return result == Messages.YES
+    }
+    
+    private fun showDocumentationPreview(): Boolean {
+        val documentType = getSelectedDocumentType() ?: return false
+        val filename = filenameField.text.trim()
+        val filesToDocument = if (selectedFiles.isNotEmpty()) selectedFiles else getSelectedFiles()
+        
+        if (filesToDocument.isEmpty()) return false
+        
+        val allFiles = project.service<FileDataCollectionService>().collectAllFiles(filesToDocument, false)
+        val previewPrompt = buildPrompt(documentType, allFiles, filename)
+        
+        val previewDialog = object : DialogWrapper(project) {
+            init {
+                title = "Documentation Preview"
+                init()
+            }
+            
+            override fun createCenterPanel(): JComponent {
+                val previewArea = JBTextArea(previewPrompt).apply {
+                    isEditable = false
+                    lineWrap = true
+                    wrapStyleWord = true
+                    font = font.deriveFont(12f)
+                }
+                
+                val scrollPane = JBScrollPane(previewArea).apply {
+                    preferredSize = Dimension(700, 500)
+                }
+                
+                return panel {
+                    row {
+                        label("This is the prompt that will be sent to generate the documentation:")
+                    }
+                    row {
+                        cell(scrollPane)
+                            .resizableColumn()
+                            .align(AlignX.FILL)
+                            .align(AlignY.FILL)
+                    }.resizableRow()
+                }
+            }
+            
+            override fun createActions() = arrayOf(okAction, cancelAction)
+        }
+        
+        return previewDialog.showAndGet()
     }
 }

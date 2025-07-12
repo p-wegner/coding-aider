@@ -256,9 +256,33 @@ class GitRepoCloneService(private val project: Project) {
         try {
             val file = File(repoPath)
             if (file.exists()) {
-                file.deleteRecursively()
+                // Add retry mechanism for Windows file locking issues
+                var attempts = 0
+                val maxAttempts = 3
+                while (attempts < maxAttempts && file.exists()) {
+                    try {
+                        file.deleteRecursively()
+                        break
+                    } catch (e: Exception) {
+                        attempts++
+                        if (attempts < maxAttempts) {
+                            Thread.sleep(1000) // Wait 1 second before retry
+                        }
+                    }
+                }
             }
         } catch (e: Exception) {
+            // Log error but don't throw - cleanup is best effort
+        }
+    }
+    
+    fun validateClonedRepository(repoPath: String): Boolean {
+        return try {
+            val repoDir = File(repoPath)
+            val gitDir = File(repoDir, ".git")
+            repoDir.exists() && gitDir.exists()
+        } catch (e: Exception) {
+            false
         }
     }
     

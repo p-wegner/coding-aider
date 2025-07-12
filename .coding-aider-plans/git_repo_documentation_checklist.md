@@ -40,7 +40,7 @@ UI/UX Improvements:
 - [x] Improve documentation section UI state management
 - [x] Add loading indicators for documentation generation
 - [x] Improve error message display
-- [ ] Add documentation preview option
+- [x] Add documentation preview option
 
 Git Operations Enhancements:
 - [x] Support for private repositories (authentication)
@@ -48,13 +48,13 @@ Git Operations Enhancements:
 - [x] Add support for specific commit hash checkout
 - [x] Add support for tag based checkout
 - [x] Add support for branch based checkout
-- [ ] Add validation checks before view transition
-- [ ] Implement proper state handling during clone operation
-- [ ] Add confirmation dialog before documentation generation
-- [ ] Add recovery mechanism for failed clone operations
-- [ ] Improve error handling during checkout operations
-- [ ] Add progress indicators for clone and checkout operations
-- [ ] Implement proper cleanup on failed operations
+- [x] Add validation checks before view transition
+- [x] Implement proper state handling during clone operation
+- [x] Add confirmation dialog before documentation generation
+- [x] Add recovery mechanism for failed clone operations
+- [x] Improve error handling during checkout operations
+- [x] Add progress indicators for clone and checkout operations
+- [x] Implement proper cleanup on failed operations
 - [ ] (later) Handle Git LFS files properly
 - [ ] (later) Add retry mechanism for failed clone operations
 - [ ] (later) Support for Git submodules
