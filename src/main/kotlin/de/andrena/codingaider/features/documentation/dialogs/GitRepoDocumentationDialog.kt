@@ -326,6 +326,10 @@ class GitRepoDocumentationDialog(
             null
         }
         
+        // Clear previous info
+        repoInfoLabel.isVisible = false
+        repoSizeLabel.isVisible = false
+        
         checkRepoButton.isEnabled = false
         checkRepoButton.text = "Checking..."
         
@@ -336,7 +340,7 @@ class GitRepoDocumentationDialog(
                 
                 if (repoInfo.isAccessible) {
                     val repoName = repoUrl.substringAfterLast("/").removeSuffix(".git")
-                    repoInfoLabel.text = "Repository: $repoName | Default branch: ${repoInfo.defaultBranch ?: "unknown"}"
+                    repoInfoLabel.text = "✓ Repository: $repoName | Default branch: ${repoInfo.defaultBranch ?: "unknown"}"
                     repoInfoLabel.isVisible = true
                     
                     if (repoInfo.estimatedSizeMB != null) {
@@ -346,15 +350,16 @@ class GitRepoDocumentationDialog(
                             repoInfo.estimatedSizeMB < 1000.0 -> String.format("~%.0f MB", repoInfo.estimatedSizeMB)
                             else -> String.format("~%.1f GB", repoInfo.estimatedSizeMB / 1024.0)
                         }
-                        repoSizeLabel.text = "Estimated size: $sizeText"
+                        repoSizeLabel.text = "📊 Estimated size: $sizeText"
                         repoSizeLabel.isVisible = true
                         
                         if (repoInfo.estimatedSizeMB > 500.0) {
-                            repoSizeLabel.text += " (Large repository - consider shallow clone)"
+                            repoSizeLabel.text += " ⚠️ (Large repository - consider shallow clone)"
                         }
                     }
                     
-                    // Set default branch if available
+                    // Clear existing items and set default branch if available
+                    branchTagComboBox.removeAllItems()
                     repoInfo.defaultBranch?.let { defaultBranch ->
                         val defaultItem = BranchTagItem(defaultBranch, false)
                         branchTagComboBox.addItem(defaultItem)
@@ -362,21 +367,46 @@ class GitRepoDocumentationDialog(
                     }
                     
                     cloneButton.isEnabled = true
-                    Messages.showInfoMessage("Repository is accessible and ready to clone!", "Repository Check")
+                    
+                    // Show success notification instead of dialog
+                    val notificationGroup = com.intellij.notification.NotificationGroupManager.getInstance()
+                        .getNotificationGroup("Aider Documentation")
+                    notificationGroup.createNotification(
+                        "Repository Check Successful",
+                        "Repository is accessible and ready to clone!",
+                        com.intellij.notification.NotificationType.INFORMATION
+                    ).notify(project)
+                    
                 } else if (repoInfo.requiresAuth && !authCheckBox.isSelected) {
-                    Messages.showErrorDialog(
-                        "This repository requires authentication. Please check 'Private repository' and enter your credentials.",
-                        "Authentication Required"
-                    )
+                    repoInfoLabel.text = "🔒 Authentication required for this repository"
+                    repoInfoLabel.isVisible = true
                     authCheckBox.isSelected = true
                     toggleAuthFields()
+                    Messages.showWarningDialog(
+                        "This repository requires authentication. Please enter your credentials below.",
+                        "Authentication Required"
+                    )
                 } else {
+                    repoInfoLabel.text = "❌ Repository check failed"
+                    repoInfoLabel.isVisible = true
                     Messages.showErrorDialog(
                         "Failed to access repository: ${repoInfo.error ?: "Unknown error"}",
                         "Repository Check Error"
                     )
                 }
             }
+        }.exceptionally { throwable ->
+            SwingUtilities.invokeLater {
+                checkRepoButton.isEnabled = true
+                checkRepoButton.text = "Check Repository"
+                repoInfoLabel.text = "❌ Repository check failed"
+                repoInfoLabel.isVisible = true
+                Messages.showErrorDialog(
+                    "Unexpected error during repository check: ${throwable.message}",
+                    "Repository Check Error"
+                )
+            }
+            null
         }
     }
     
@@ -413,7 +443,8 @@ class GitRepoDocumentationDialog(
             null
         }
         
-        cloneButton.isEnabled = false
+        // Disable UI elements during cloning
+        setUIEnabled(false)
         cloneButton.text = "Cloning..."
         
         gitService.cloneRepositoryAsync(
@@ -424,7 +455,7 @@ class GitRepoDocumentationDialog(
             shallowCloneCheckBox.isSelected
         ).thenAccept { result ->
             SwingUtilities.invokeLater {
-                cloneButton.isEnabled = true
+                setUIEnabled(true)
                 cloneButton.text = "Clone Repository"
                 
                 if (result.success && result.localPath != null) {
@@ -432,7 +463,22 @@ class GitRepoDocumentationDialog(
                     updateFileTree(result.localPath)
                     updateBranchTagComboBox(result.branches, result.tags)
                     updateRepositoryInfo(repoUrl, result.branches.size, result.tags.size)
-                    Messages.showInfoMessage("Repository cloned successfully!", "Success")
+                    
+                    // Auto-populate filename if empty
+                    if (filenameField.text.isBlank()) {
+                        val repoName = repoUrl.substringAfterLast("/").removeSuffix(".git")
+                        filenameField.text = "${repoName}_documentation.md"
+                    }
+                    
+                    // Show success notification
+                    val notificationGroup = com.intellij.notification.NotificationGroupManager.getInstance()
+                        .getNotificationGroup("Aider Documentation")
+                    notificationGroup.createNotification(
+                        "Repository Cloned Successfully",
+                        "Repository cloned to temporary location. You can now select files and generate documentation.",
+                        com.intellij.notification.NotificationType.INFORMATION
+                    ).notify(project)
+                    
                 } else if (result.requiresAuth && !authCheckBox.isSelected) {
                     Messages.showErrorDialog(
                         "This repository requires authentication. Please check 'Private repository' and enter your credentials.",
@@ -447,7 +493,28 @@ class GitRepoDocumentationDialog(
                     )
                 }
             }
+        }.exceptionally { throwable ->
+            SwingUtilities.invokeLater {
+                setUIEnabled(true)
+                cloneButton.text = "Clone Repository"
+                Messages.showErrorDialog(
+                    "Unexpected error during cloning: ${throwable.message}",
+                    "Clone Error"
+                )
+            }
+            null
         }
+    }
+    
+    private fun setUIEnabled(enabled: Boolean) {
+        repoUrlField.isEnabled = enabled
+        branchTagComboBox.isEnabled = enabled
+        checkRepoButton.isEnabled = enabled
+        cloneButton.isEnabled = enabled
+        authCheckBox.isEnabled = enabled
+        shallowCloneCheckBox.isEnabled = enabled
+        usernameField.isEnabled = enabled
+        passwordField.isEnabled = enabled
     }
     
     private fun toggleAuthFields() {
@@ -717,23 +784,38 @@ class GitRepoDocumentationDialog(
     override fun doValidate(): ValidationInfo? {
         val documentType = getSelectedDocumentType()
         val repoUrl = repoUrlField.text.trim()
+        val filename = filenameField.text.trim()
         
         return when {
             // Only validate repo URL if it's not empty (for cases where repo is already cloned)
             repoUrl.isNotEmpty() && !validateRepositoryUrl() -> ValidationInfo("Invalid repository URL format", repoUrlField)
             // Allow validation to pass if we have a cloned repo path (pre-selected scenario)
-            clonedRepoPath == null && repoUrl.isEmpty() -> ValidationInfo("Please clone a repository first or enter a repository URL")
-            documentType == null -> ValidationInfo("Please select a document type")
+            clonedRepoPath == null && repoUrl.isEmpty() && selectedFiles.isEmpty() -> ValidationInfo("Please clone a repository first or enter a repository URL")
+            documentType == null -> ValidationInfo("Please select a document type", documentTypeComboBox)
             settings.getDocumentTypes().isEmpty() -> ValidationInfo("No document types configured. Please configure document types in Project Settings.")
-            filenameField.text.isBlank() -> ValidationInfo("Please enter a filename for the documentation", filenameField)
+            filename.isBlank() -> ValidationInfo("Please enter a filename for the documentation", filenameField)
+            !isValidFilename(filename) -> ValidationInfo("Invalid filename. Please use only valid filename characters.", filenameField)
+            documentType?.promptTemplate?.isBlank() == true -> ValidationInfo("Selected document type has no prompt template configured", documentTypeComboBox)
             selectedFiles.isEmpty() && getSelectedFiles().isEmpty() -> ValidationInfo("Please select at least one file or folder from the repository")
             else -> null
         }
     }
+    
+    private fun isValidFilename(filename: String): Boolean {
+        if (filename.isBlank()) return false
+        val invalidChars = charArrayOf('<', '>', ':', '"', '|', '?', '*', '\\', '/')
+        return !filename.any { it in invalidChars } && filename.trim() == filename
+    }
 
     override fun doOKAction() {
         val documentType = getSelectedDocumentType() ?: return
-        val filename = filenameField.text
+        val filename = filenameField.text.trim()
+        
+        // Validate inputs before proceeding
+        if (filename.isEmpty()) {
+            Messages.showErrorDialog("Please enter a filename for the documentation", "Validation Error")
+            return
+        }
         
         // Use pre-selected files if available, otherwise get from tree
         val filesToDocument = if (selectedFiles.isNotEmpty()) {
@@ -747,13 +829,29 @@ class GitRepoDocumentationDialog(
             return
         }
         
+        // Validate document type configuration
+        if (documentType.promptTemplate.isBlank()) {
+            Messages.showErrorDialog(
+                "The selected document type has no prompt template configured. Please configure it in Project Settings.",
+                "Configuration Error"
+            )
+            return
+        }
+        
         val allFiles = project.service<FileDataCollectionService>().collectAllFiles(filesToDocument, false)
         val globalSettings = AiderSettings.getInstance()
 
         try {
             // Add context files to the file list - convert relative paths to absolute
             val absoluteDocumentType = documentType.withAbsolutePaths(project.basePath ?: "")
-            val contextFiles = absoluteDocumentType.contextFiles.map { FileData(it, false) }
+            val contextFiles = absoluteDocumentType.contextFiles.mapNotNull { contextPath ->
+                val contextFile = File(contextPath)
+                if (contextFile.exists()) {
+                    FileData(contextPath, false)
+                } else {
+                    null // Skip non-existent context files
+                }
+            }
         
             val commandData = CommandData(
                 message = buildPrompt(documentType, allFiles, filename),
@@ -767,11 +865,44 @@ class GitRepoDocumentationDialog(
                 sidecarMode = globalSettings.useSidecarMode,
             )
 
+            // Close dialog before starting documentation generation
             super.doOKAction()
+            
+            // Show progress notification
+            val notificationGroup = com.intellij.notification.NotificationGroupManager.getInstance()
+                .getNotificationGroup("Aider Documentation")
+            
+            val startNotification = notificationGroup.createNotification(
+                "Documentation Generation Started",
+                "Generating documentation for ${allFiles.size} files using ${documentType.name}...",
+                com.intellij.notification.NotificationType.INFORMATION
+            )
+            startNotification.notify(project)
+            
+            // Execute documentation generation with proper callback
             IDEBasedExecutor(project, commandData) { success ->
                 // Cleanup cloned repository after documentation generation
-                clonedRepoPath?.let { gitService.cleanupRepository(it) }
+                clonedRepoPath?.let { 
+                    gitService.cleanupRepository(it)
+                }
+                
+                // Show completion notification
+                val completionNotification = if (success) {
+                    notificationGroup.createNotification(
+                        "Documentation Generation Completed",
+                        "Documentation has been successfully generated as '$filename'",
+                        com.intellij.notification.NotificationType.INFORMATION
+                    )
+                } else {
+                    notificationGroup.createNotification(
+                        "Documentation Generation Failed",
+                        "There was an error generating the documentation. Please check the output for details.",
+                        com.intellij.notification.NotificationType.ERROR
+                    )
+                }
+                completionNotification.notify(project)
             }.execute()
+            
         } catch (e: Exception) {
             Messages.showErrorDialog(
                 project,
@@ -904,12 +1035,23 @@ class GitRepoDocumentationDialog(
     
     private fun updateRepositoryInfoFromPath(repoPath: String) {
         val repoName = File(repoPath).name
-        repoInfoLabel.text = "Repository: $repoName | ${selectedFiles.size} files selected | Ready for documentation"
+        val fileCount = selectedFiles.size
+        val statusText = if (fileCount > 0) {
+            "Repository: $repoName | $fileCount files selected | Ready for documentation"
+        } else {
+            "Repository: $repoName | Please select files from the tree below"
+        }
+        repoInfoLabel.text = statusText
         repoInfoLabel.isVisible = true
         
         // Also populate some default filename if empty
         if (filenameField.text.isBlank()) {
             filenameField.text = "${repoName}_documentation.md"
+        }
+        
+        // Update the document type selection to show first available if none selected
+        if (documentTypeComboBox.selectedItem == null && documentTypeComboBox.itemCount > 0) {
+            documentTypeComboBox.selectedIndex = 0
         }
     }
 

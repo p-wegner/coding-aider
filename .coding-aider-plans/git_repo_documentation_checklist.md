@@ -17,16 +17,16 @@ Core Implementation:
 - [x] Allow changing tag/branch after cloning (will checkout and update filetree accordingly)
 
 Documentation Generation:
-- [ ] Fix documentation generation after cloning
-- [ ] Validate documentation settings before generation
-- [ ] Add progress indicator during documentation generation
-- [ ] Ensure proper state handling in documentation dialog
-- [ ] Add error handling for documentation generation
-- [ ] Update UI feedback during documentation process
-- [ ] Fix dialog state after OK button press
-- [ ] Add validation for required documentation fields
-- [ ] Implement proper cleanup after documentation generation
-- [ ] Add success/failure notifications for documentation
+- [x] Fix documentation generation after cloning
+- [x] Validate documentation settings before generation
+- [x] Add progress indicator during documentation generation
+- [x] Ensure proper state handling in documentation dialog
+- [x] Add error handling for documentation generation
+- [x] Update UI feedback during documentation process
+- [x] Fix dialog state after OK button press
+- [x] Add validation for required documentation fields
+- [x] Implement proper cleanup after documentation generation
+- [x] Add success/failure notifications for documentation
 
 UI/UX Improvements:
 - [x] Add file selection checkboxes to tree component
@@ -37,9 +37,9 @@ UI/UX Improvements:
 - [x] Implement branch switching after initial clone
 - [x] Add repository size estimation before cloning
 - [x] Scrolling in file selection tree
-- [ ] Improve documentation section UI state management
-- [ ] Add loading indicators for documentation generation
-- [ ] Improve error message display
+- [x] Improve documentation section UI state management
+- [x] Add loading indicators for documentation generation
+- [x] Improve error message display
 - [ ] Add documentation preview option
 
 Git Operations Enhancements:
