@@ -10,6 +10,7 @@ Currently, the webcrawl action only supports crawling web pages. There's a need 
 - Browse and select files/folders
 - Generate documentation using existing document types
 - Maintain the simple web crawl functionality
+- Ensure seamless documentation generation after repository cloning
 
 ## Goals
 1. Add Git repository support to the webcrawl action
@@ -18,6 +19,8 @@ Currently, the webcrawl action only supports crawling web pages. There's a need 
 4. Implement file/folder selection using IntelliJ's standard UI
 5. Reuse existing documentation generation components
 6. Minimize code duplication
+7. Ensure reliable documentation generation after cloning
+8. Provide clear feedback during the documentation process
 
 ## Additional Notes and Constraints
 - Maintain backward compatibility with existing web crawl functionality
@@ -26,6 +29,9 @@ Currently, the webcrawl action only supports crawling web pages. There's a need 
 - Handle Git operations asynchronously to prevent UI freezing
 - Clean up temporary cloned repositories after documentation generation
 - Consider memory usage when cloning large repositories
+- Validate documentation settings before generation
+- Provide clear error messages and status updates
+- Handle state transitions between cloning and documentation generation
 
 ## References
 - [DocumentationGenerationDialog](../src/main/kotlin/de/andrena/codingaider/features/documentation/dialogs/DocumentationGenerationDialog.kt)

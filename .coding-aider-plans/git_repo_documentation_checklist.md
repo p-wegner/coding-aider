@@ -13,9 +13,21 @@ Core Implementation:
 - [x] Update AiderWebCrawlAction to use new dialog
 - [x] Add error handling for Git operations
 - [x] Implement progress indicators for long-running operations
-- [x] proper tag and branch selection (fetch existing branches and tags from the repository)
-- [x] allow changing tag/branch after cloning (will checkout and update filetree accordingly)
-- [ ] optional after clone documentation generation
+- [x] Proper tag and branch selection (fetch existing branches and tags from the repository)
+- [x] Allow changing tag/branch after cloning (will checkout and update filetree accordingly)
+
+Documentation Generation:
+- [ ] Fix documentation generation after cloning
+- [ ] Validate documentation settings before generation
+- [ ] Add progress indicator during documentation generation
+- [ ] Ensure proper state handling in documentation dialog
+- [ ] Add error handling for documentation generation
+- [ ] Update UI feedback during documentation process
+- [ ] Fix dialog state after OK button press
+- [ ] Add validation for required documentation fields
+- [ ] Implement proper cleanup after documentation generation
+- [ ] Add success/failure notifications for documentation
+
 UI/UX Improvements:
 - [x] Add file selection checkboxes to tree component
 - [x] Implement "Select All" / "Deselect All" functionality
@@ -24,7 +36,11 @@ UI/UX Improvements:
 - [x] Add validation for Git repository URL format
 - [x] Implement branch switching after initial clone
 - [x] Add repository size estimation before cloning
-- [x] Scrolling in file selection tree in AiderWebCrawlAction$WebCrawlAndGitDialog
+- [x] Scrolling in file selection tree
+- [ ] Improve documentation section UI state management
+- [ ] Add loading indicators for documentation generation
+- [ ] Improve error message display
+- [ ] Add documentation preview option
 
 Git Operations Enhancements:
 - [x] Support for private repositories (authentication)
