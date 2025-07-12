@@ -13,3 +13,47 @@ Core Implementation:
 - [x] Update AiderWebCrawlAction to use new dialog
 - [x] Add error handling for Git operations
 - [x] Implement progress indicators for long-running operations
+
+UI/UX Improvements:
+- [ ] Add file selection checkboxes to tree component
+- [ ] Implement "Select All" / "Deselect All" functionality
+- [ ] Add file type filtering options
+- [ ] Show repository information (commit hash, last update) in UI
+- [ ] Add validation for Git repository URL format
+- [ ] Implement branch switching after initial clone
+- [ ] Add repository size estimation before cloning
+
+Git Operations Enhancements:
+- [ ] Support for private repositories (authentication)
+- [ ] Implement shallow cloning for large repositories
+- [ ] Add support for specific commit hash checkout
+- [ ] Handle Git LFS files properly
+- [ ] Add retry mechanism for failed clone operations
+- [ ] Support for Git submodules
+
+Documentation Generation:
+- [ ] Add preview functionality for selected files
+- [ ] Implement file content filtering (exclude binary files)
+- [ ] Add support for custom ignore patterns (.gitignore-like)
+- [ ] Optimize memory usage for large file selections
+- [ ] Add progress tracking for documentation generation
+
+Error Handling & Validation:
+- [ ] Validate repository accessibility before cloning
+- [ ] Handle network connectivity issues gracefully
+- [ ] Add proper error messages for Git authentication failures
+- [ ] Implement timeout handling for long-running operations
+- [ ] Add validation for branch/tag existence
+
+Testing & Quality:
+- [ ] Add unit tests for GitRepoCloneService
+- [ ] Add integration tests for dialog functionality
+- [ ] Test with various repository types (GitHub, GitLab, Bitbucket)
+- [ ] Performance testing with large repositories
+- [ ] Test cleanup functionality under various scenarios
+
+Documentation & Help:
+- [ ] Add tooltips and help text to UI components
+- [ ] Create user documentation for Git repository feature
+- [ ] Add examples of supported repository URL formats
+- [ ] Document limitations and known issues
