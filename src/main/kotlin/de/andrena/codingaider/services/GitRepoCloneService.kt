@@ -318,12 +318,12 @@ class GitRepoCloneService(private val project: Project) {
     private fun getDefaultBranch(repoDir: File): String? {
         return try {
             val git = Git.getInstance()
-            val handler = GitLineHandler(project, repoDir, GitCommand.SYMBOLIC_REF)
-            handler.addParameters("HEAD")
+            val handler = GitLineHandler(project, repoDir, GitCommand.REV_PARSE)
+            handler.addParameters("--abbrev-ref", "HEAD")
             
             val result = git.runCommand(handler)
             if (result.success() && result.output.isNotEmpty()) {
-                result.output.first().removePrefix("refs/heads/")
+                result.output.first().trim()
             } else {
                 null
             }
