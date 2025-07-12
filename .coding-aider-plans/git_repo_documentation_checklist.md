@@ -26,9 +26,9 @@ UI/UX Improvements:
 Git Operations Enhancements:
 - [x] Support for private repositories (authentication)
 - [x] Implement shallow cloning for large repositories
-- [ ] Add support for specific commit hash checkout
-- [ ] Add support for tag based checkout
-- [ ] Add support for branch based checkout
+- [x] Add support for specific commit hash checkout
+- [x] Add support for tag based checkout
+- [x] Add support for branch based checkout
 - [ ] (later) Handle Git LFS files properly
 - [ ] (later) Add retry mechanism for failed clone operations
 - [ ] (later) Support for Git submodules

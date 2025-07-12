@@ -66,6 +66,7 @@ class GitRepoCloneService(private val project: Project) {
     fun cloneRepositoryAsync(
         repoUrl: String,
         targetBranch: String? = null,
+        targetCommit: String? = null,
         credentials: AuthCredentials? = null,
         shallowClone: Boolean = true,
         depth: Int = 1
@@ -79,7 +80,7 @@ class GitRepoCloneService(private val project: Project) {
                     indicator.isIndeterminate = true
                     
                     val tempDir = createTempDirectory()
-                    val result = cloneRepository(repoUrl, tempDir, targetBranch, credentials, shallowClone, depth, indicator)
+                    val result = cloneRepository(repoUrl, tempDir, targetBranch, targetCommit, credentials, shallowClone, depth, indicator)
                     future.complete(result)
                 } catch (e: Exception) {
                     future.complete(CloneResult(false, null, e.message))
@@ -94,6 +95,7 @@ class GitRepoCloneService(private val project: Project) {
         repoUrl: String,
         targetDir: File,
         targetBranch: String?,
+        targetCommit: String?,
         credentials: AuthCredentials?,
         shallowClone: Boolean,
         depth: Int,
@@ -119,7 +121,7 @@ class GitRepoCloneService(private val project: Project) {
                 handler.addParameters("--branch", targetBranch)
             }
             
-            if (shallowClone) {
+            if (shallowClone && targetCommit == null) {
                 handler.addParameters("--depth", depth.toString())
                 handler.addParameters("--single-branch")
             }
@@ -133,6 +135,15 @@ class GitRepoCloneService(private val project: Project) {
             val result = git.runCommand(handler)
             
             if (result.success()) {
+                // If a specific commit was requested, checkout to that commit
+                if (targetCommit != null) {
+                    indicator.text = "Checking out specific commit..."
+                    val checkoutSuccess = checkoutCommit(targetDir, targetCommit)
+                    if (!checkoutSuccess) {
+                        return CloneResult(false, null, "Failed to checkout commit: $targetCommit")
+                    }
+                }
+                
                 indicator.text = "Fetching branches and tags..."
                 val branches = getBranches(targetDir)
                 val tags = getTags(targetDir)
@@ -198,6 +209,32 @@ class GitRepoCloneService(private val project: Project) {
             val git = Git.getInstance()
             val handler = GitLineHandler(project, repoDir, GitCommand.CHECKOUT)
             handler.addParameters(branch)
+            
+            val result = git.runCommand(handler)
+            result.success()
+        } catch (e: Exception) {
+            false
+        }
+    }
+    
+    fun checkoutCommit(repoDir: File, commitHash: String): Boolean {
+        return try {
+            val git = Git.getInstance()
+            val handler = GitLineHandler(project, repoDir, GitCommand.CHECKOUT)
+            handler.addParameters(commitHash)
+            
+            val result = git.runCommand(handler)
+            result.success()
+        } catch (e: Exception) {
+            false
+        }
+    }
+    
+    fun checkoutTag(repoDir: File, tag: String): Boolean {
+        return try {
+            val git = Git.getInstance()
+            val handler = GitLineHandler(project, repoDir, GitCommand.CHECKOUT)
+            handler.addParameters("tags/$tag")
             
             val result = git.runCommand(handler)
             result.success()
