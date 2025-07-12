@@ -23,12 +23,21 @@ class GitRepoCloneService(private val project: Project) {
         val localPath: String?,
         val error: String? = null,
         val branches: List<String> = emptyList(),
-        val tags: List<String> = emptyList()
+        val tags: List<String> = emptyList(),
+        val requiresAuth: Boolean = false
+    )
+    
+    data class AuthCredentials(
+        val username: String,
+        val password: String // Can be password or personal access token
     )
     
     fun cloneRepositoryAsync(
         repoUrl: String,
-        targetBranch: String? = null
+        targetBranch: String? = null,
+        credentials: AuthCredentials? = null,
+        shallowClone: Boolean = true,
+        depth: Int = 1
     ): CompletableFuture<CloneResult> {
         val future = CompletableFuture<CloneResult>()
         
@@ -39,7 +48,7 @@ class GitRepoCloneService(private val project: Project) {
                     indicator.isIndeterminate = true
                     
                     val tempDir = createTempDirectory()
-                    val result = cloneRepository(repoUrl, tempDir, targetBranch, indicator)
+                    val result = cloneRepository(repoUrl, tempDir, targetBranch, credentials, shallowClone, depth, indicator)
                     future.complete(result)
                 } catch (e: Exception) {
                     future.complete(CloneResult(false, null, e.message))
@@ -54,17 +63,40 @@ class GitRepoCloneService(private val project: Project) {
         repoUrl: String,
         targetDir: File,
         targetBranch: String?,
+        credentials: AuthCredentials?,
+        shallowClone: Boolean,
+        depth: Int,
         indicator: ProgressIndicator
     ): CloneResult {
         try {
             val git = Git.getInstance()
             val handler = GitLineHandler(project, targetDir.parentFile, GitCommand.CLONE)
             
-            handler.addParameters(repoUrl)
+            // Add authentication if provided
+            val authenticatedUrl = if (credentials != null && !repoUrl.startsWith("git@")) {
+                // For HTTPS URLs, embed credentials
+                val urlWithAuth = repoUrl.replace("https://", "https://${credentials.username}:${credentials.password}@")
+                urlWithAuth
+            } else {
+                repoUrl
+            }
+            
+            handler.addParameters(authenticatedUrl)
             handler.addParameters(targetDir.name)
             
             if (targetBranch != null) {
                 handler.addParameters("--branch", targetBranch)
+            }
+            
+            if (shallowClone) {
+                handler.addParameters("--depth", depth.toString())
+                handler.addParameters("--single-branch")
+            }
+            
+            // Set environment variables for SSH authentication if needed
+            if (credentials != null && repoUrl.startsWith("git@")) {
+                // For SSH URLs, we would need to handle SSH key authentication
+                // This is more complex and might require additional setup
             }
             
             val result = git.runCommand(handler)
@@ -81,7 +113,13 @@ class GitRepoCloneService(private val project: Project) {
                     tags = tags
                 )
             } else {
-                return CloneResult(false, null, result.errorOutputAsJoinedString)
+                val errorOutput = result.errorOutputAsJoinedString
+                val requiresAuth = errorOutput.contains("Authentication failed") || 
+                                 errorOutput.contains("access denied") ||
+                                 errorOutput.contains("repository not found") ||
+                                 errorOutput.contains("403") ||
+                                 errorOutput.contains("401")
+                return CloneResult(false, null, errorOutput, requiresAuth = requiresAuth)
             }
         } catch (e: Exception) {
             return CloneResult(false, null, e.message)

@@ -24,8 +24,8 @@ UI/UX Improvements:
 - [ ] Add repository size estimation before cloning
 
 Git Operations Enhancements:
-- [ ] Support for private repositories (authentication)
-- [ ] Implement shallow cloning for large repositories
+- [x] Support for private repositories (authentication)
+- [x] Implement shallow cloning for large repositories
 - [ ] Add support for specific commit hash checkout
 - [ ] Add support for tag based checkout
 - [ ] Add support for branch based checkout

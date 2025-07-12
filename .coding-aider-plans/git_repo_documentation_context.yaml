@@ -12,3 +12,11 @@ files:
   readOnly: false
 - path: src/main/kotlin/de/andrena/codingaider/features/documentation/dialogs/GitRepoDocumentationDialog.kt
   readOnly: false
+- path: .coding-aider-plans/git_repo_documentation.md
+  readOnly: false
+- path: .coding-aider-plans/git_repo_documentation_checklist.md
+  readOnly: false
+- path: .coding-aider-plans/git_repo_documentation_context.yaml
+  readOnly: false
+- path: .coding-aider-plans/git_repo_documentation_history.md
+  readOnly: false

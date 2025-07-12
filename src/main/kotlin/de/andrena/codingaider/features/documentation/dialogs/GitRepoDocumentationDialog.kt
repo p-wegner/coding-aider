@@ -18,6 +18,7 @@ import com.intellij.ui.dsl.builder.*
 import com.intellij.ui.CheckboxTree
 import com.intellij.ui.CheckedTreeNode
 import com.intellij.ui.treeStructure.Tree
+import com.intellij.ui.components.JBPasswordField
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
@@ -58,6 +59,22 @@ class GitRepoDocumentationDialog(
         isEditable = true
         addActionListener { switchBranch() }
     }
+    
+    private val usernameField = JBTextField().apply {
+        emptyText.text = "Username (for private repos)"
+        isVisible = false
+    }
+    
+    private val passwordField = JBPasswordField().apply {
+        emptyText.text = "Password/Token (for private repos)"
+        isVisible = false
+    }
+    
+    private val authCheckBox = JCheckBox("Private repository (requires authentication)").apply {
+        addActionListener { toggleAuthFields() }
+    }
+    
+    private val shallowCloneCheckBox = JCheckBox("Shallow clone (faster, recommended for large repos)", true)
     
     private val cloneButton = JButton("Clone Repository").apply {
         addActionListener { cloneRepository() }
@@ -227,11 +244,27 @@ class GitRepoDocumentationDialog(
         }
         
         val selectedBranch = branchComboBox.selectedItem as? String
+        val credentials = if (authCheckBox.isSelected) {
+            val username = usernameField.text.trim()
+            val password = String(passwordField.password)
+            if (username.isEmpty() || password.isEmpty()) {
+                Messages.showErrorDialog("Please enter both username and password/token for private repository", "Authentication Required")
+                return
+            }
+            GitRepoCloneService.AuthCredentials(username, password)
+        } else {
+            null
+        }
         
         cloneButton.isEnabled = false
         cloneButton.text = "Cloning..."
         
-        gitService.cloneRepositoryAsync(repoUrl, selectedBranch).thenAccept { result ->
+        gitService.cloneRepositoryAsync(
+            repoUrl, 
+            selectedBranch, 
+            credentials,
+            shallowCloneCheckBox.isSelected
+        ).thenAccept { result ->
             SwingUtilities.invokeLater {
                 cloneButton.isEnabled = true
                 cloneButton.text = "Clone Repository"
@@ -242,6 +275,13 @@ class GitRepoDocumentationDialog(
                     updateBranchComboBox(result.branches)
                     updateRepositoryInfo(repoUrl, result.branches.size, result.tags.size)
                     Messages.showInfoMessage("Repository cloned successfully!", "Success")
+                } else if (result.requiresAuth && !authCheckBox.isSelected) {
+                    Messages.showErrorDialog(
+                        "This repository requires authentication. Please check 'Private repository' and enter your credentials.",
+                        "Authentication Required"
+                    )
+                    authCheckBox.isSelected = true
+                    toggleAuthFields()
                 } else {
                     Messages.showErrorDialog(
                         "Failed to clone repository: ${result.error ?: "Unknown error"}",
@@ -250,6 +290,14 @@ class GitRepoDocumentationDialog(
                 }
             }
         }
+    }
+    
+    private fun toggleAuthFields() {
+        val isVisible = authCheckBox.isSelected
+        usernameField.isVisible = isVisible
+        passwordField.isVisible = isVisible
+        revalidate()
+        repaint()
     }
     
     private fun updateFileTree(repoPath: String) {
@@ -396,6 +444,26 @@ class GitRepoDocumentationDialog(
                         .align(AlignX.LEFT)
                     cell(cloneButton)
                         .align(AlignX.RIGHT)
+                }
+                row {
+                    cell(authCheckBox)
+                        .align(AlignX.LEFT)
+                    cell(shallowCloneCheckBox)
+                        .align(AlignX.RIGHT)
+                }
+                row {
+                    label("Username:")
+                    cell(usernameField)
+                        .resizableColumn()
+                        .align(AlignX.FILL)
+                        .visibleIf(authCheckBox.selected)
+                }
+                row {
+                    label("Password/Token:")
+                    cell(passwordField)
+                        .resizableColumn()
+                        .align(AlignX.FILL)
+                        .visibleIf(authCheckBox.selected)
                 }
                 row {
                     cell(repoInfoLabel)
