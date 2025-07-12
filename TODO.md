@@ -36,6 +36,7 @@
 - [ ] feature: follow up command suggestion and execution (user confirmation)
 - [ ] feature: Auto Continue Plan with tool view 
 - [ ] scratchpad feature for clipboard content (reuse intellij scratchpad feature)
+- [ ] Feature: setting to define refinement llm
 - [ ] Feature: plan view  
   - [ ] refine plan variation: verify implementation and update checklist
   - [ ] add tests (using existing test creation feature)
