@@ -370,7 +370,7 @@ class GitRepoDocumentationDialog(
                     
                     // Show success notification instead of dialog
                     val notificationGroup = com.intellij.notification.NotificationGroupManager.getInstance()
-                        .getNotificationGroup("Aider Documentation")
+                        .getNotificationGroup("Aider Web Crawl")
                     notificationGroup.createNotification(
                         "Repository Check Successful",
                         "Repository is accessible and ready to clone!",
@@ -472,7 +472,7 @@ class GitRepoDocumentationDialog(
                     
                     // Show success notification
                     val notificationGroup = com.intellij.notification.NotificationGroupManager.getInstance()
-                        .getNotificationGroup("Aider Documentation")
+                        .getNotificationGroup("Aider Web Crawl")
                     notificationGroup.createNotification(
                         "Repository Cloned Successfully",
                         "Repository cloned to temporary location. You can now select files and generate documentation.",
@@ -887,7 +887,7 @@ class GitRepoDocumentationDialog(
             
             // Show progress notification
             val notificationGroup = com.intellij.notification.NotificationGroupManager.getInstance()
-                .getNotificationGroup("Aider Documentation")
+                .getNotificationGroup("Aider Web Crawl")
             
             val startNotification = notificationGroup.createNotification(
                 "Documentation Generation Started",
