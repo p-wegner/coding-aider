@@ -337,7 +337,8 @@ class AiderWebCrawlAction : AnAction() {
                         super.doOKAction()
                         // Open the full GitRepoDocumentationDialog with pre-selected files and cloned repo
                         SwingUtilities.invokeLater {
-                            val gitDialog = GitRepoDocumentationDialog(project, selectedFiles, clonedRepoPath!!)
+                            val gitDialog = GitRepoDocumentationDialog(project)
+                            gitDialog.setPreSelectedFiles(selectedFiles, clonedRepoPath!!)
                             gitDialog.show()
                         }
                     }

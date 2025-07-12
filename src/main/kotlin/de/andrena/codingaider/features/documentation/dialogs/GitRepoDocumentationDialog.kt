@@ -63,8 +63,27 @@ class GitRepoDocumentationDialog(
             updateRepositoryInfoFromPath(repoPath)
             // Update document types to ensure they're loaded
             updateDocumentTypes()
+            // Hide Git repository section since we already have the files
+            hideGitRepositorySection()
             repaint()
         }
+    }
+    
+    private fun hideGitRepositorySection() {
+        // Hide the Git repository input fields since we already have a cloned repo
+        repoUrlField.isVisible = false
+        branchTagComboBox.isVisible = false
+        checkRepoButton.isVisible = false
+        cloneButton.isVisible = false
+        authCheckBox.isVisible = false
+        shallowCloneCheckBox.isVisible = false
+        usernameField.isVisible = false
+        passwordField.isVisible = false
+        selectAllButton.isVisible = false
+        deselectAllButton.isVisible = false
+        fileTypeFilterField.isVisible = false
+        applyFilterButton.isVisible = false
+        fileTree.isVisible = false
     }
     
     private val settings = AiderProjectSettings.getInstance(project)
@@ -707,7 +726,7 @@ class GitRepoDocumentationDialog(
             documentType == null -> ValidationInfo("Please select a document type")
             settings.getDocumentTypes().isEmpty() -> ValidationInfo("No document types configured. Please configure document types in Project Settings.")
             filenameField.text.isBlank() -> ValidationInfo("Please enter a filename for the documentation", filenameField)
-            getSelectedFiles().isEmpty() -> ValidationInfo("Please select at least one file or folder from the repository")
+            selectedFiles.isEmpty() && getSelectedFiles().isEmpty() -> ValidationInfo("Please select at least one file or folder from the repository")
             else -> null
         }
     }
@@ -715,15 +734,21 @@ class GitRepoDocumentationDialog(
     override fun doOKAction() {
         val documentType = getSelectedDocumentType() ?: return
         val filename = filenameField.text
-        val selectedFiles = getSelectedFiles()
         
-        if (selectedFiles.isEmpty()) {
+        // Use pre-selected files if available, otherwise get from tree
+        val filesToDocument = if (selectedFiles.isNotEmpty()) {
+            selectedFiles
+        } else {
+            getSelectedFiles()
+        }
+        
+        if (filesToDocument.isEmpty()) {
             Messages.showErrorDialog("Please select files or folders to document", "No Files Selected")
             return
         }
         
-        val allFiles = project.service<FileDataCollectionService>().collectAllFiles(selectedFiles)
-        val settings = AiderSettings.getInstance()
+        val allFiles = project.service<FileDataCollectionService>().collectAllFiles(filesToDocument, false)
+        val globalSettings = AiderSettings.getInstance()
 
         try {
             // Add context files to the file list - convert relative paths to absolute
@@ -735,11 +760,11 @@ class GitRepoDocumentationDialog(
                 useYesFlag = true,
                 files = allFiles + contextFiles,
                 projectPath = project.basePath ?: "",
-                llm = settings.llm,
-                additionalArgs = settings.additionalArgs,
-                lintCmd = settings.lintCmd,
+                llm = globalSettings.llm,
+                additionalArgs = globalSettings.additionalArgs,
+                lintCmd = globalSettings.lintCmd,
                 aiderMode = AiderMode.NORMAL,
-                sidecarMode = settings.useSidecarMode,
+                sidecarMode = globalSettings.useSidecarMode,
             )
 
             super.doOKAction()
@@ -879,7 +904,7 @@ class GitRepoDocumentationDialog(
     
     private fun updateRepositoryInfoFromPath(repoPath: String) {
         val repoName = File(repoPath).name
-        repoInfoLabel.text = "Repository: $repoName | Cloned locally | Ready for documentation"
+        repoInfoLabel.text = "Repository: $repoName | ${selectedFiles.size} files selected | Ready for documentation"
         repoInfoLabel.isVisible = true
         
         // Also populate some default filename if empty
