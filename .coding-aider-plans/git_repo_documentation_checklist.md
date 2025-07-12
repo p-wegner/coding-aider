@@ -13,7 +13,9 @@ Core Implementation:
 - [x] Update AiderWebCrawlAction to use new dialog
 - [x] Add error handling for Git operations
 - [x] Implement progress indicators for long-running operations
-
+- [ ] proper tag and branch selection (fetch existing branches and tags from the repository)
+- [ ] allow changing tag/branch after cloning (will checkout and update filetree accordingly)
+- [ ] optional after clone documentation generation
 UI/UX Improvements:
 - [x] Add file selection checkboxes to tree component
 - [x] Implement "Select All" / "Deselect All" functionality
@@ -22,6 +24,7 @@ UI/UX Improvements:
 - [x] Add validation for Git repository URL format
 - [x] Implement branch switching after initial clone
 - [x] Add repository size estimation before cloning
+- [ ] Proper scrolling in file selection tree
 
 Git Operations Enhancements:
 - [x] Support for private repositories (authentication)
