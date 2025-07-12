@@ -27,9 +27,11 @@ Git Operations Enhancements:
 - [ ] Support for private repositories (authentication)
 - [ ] Implement shallow cloning for large repositories
 - [ ] Add support for specific commit hash checkout
-- [ ] Handle Git LFS files properly
-- [ ] Add retry mechanism for failed clone operations
-- [ ] Support for Git submodules
+- [ ] Add support for tag based checkout
+- [ ] Add support for branch based checkout
+- [ ] (later) Handle Git LFS files properly
+- [ ] (later) Add retry mechanism for failed clone operations
+- [ ] (later) Support for Git submodules
 
 Documentation Generation:
 - [ ] Add preview functionality for selected files
@@ -44,16 +46,3 @@ Error Handling & Validation:
 - [ ] Add proper error messages for Git authentication failures
 - [ ] Implement timeout handling for long-running operations
 - [ ] Add validation for branch/tag existence
-
-Testing & Quality:
-- [ ] Add unit tests for GitRepoCloneService
-- [ ] Add integration tests for dialog functionality
-- [ ] Test with various repository types (GitHub, GitLab, Bitbucket)
-- [ ] Performance testing with large repositories
-- [ ] Test cleanup functionality under various scenarios
-
-Documentation & Help:
-- [ ] Add tooltips and help text to UI components
-- [ ] Create user documentation for Git repository feature
-- [ ] Add examples of supported repository URL formats
-- [ ] Document limitations and known issues
