@@ -17,9 +17,9 @@ Core Implementation:
 UI/UX Improvements:
 - [x] Add file selection checkboxes to tree component
 - [x] Implement "Select All" / "Deselect All" functionality
-- [ ] Add file type filtering options
-- [ ] Show repository information (commit hash, last update) in UI
-- [ ] Add validation for Git repository URL format
+- [x] Add file type filtering options
+- [x] Show repository information (commit hash, last update) in UI
+- [x] Add validation for Git repository URL format
 - [ ] Implement branch switching after initial clone
 - [ ] Add repository size estimation before cloning
 

@@ -49,6 +49,7 @@ class GitRepoDocumentationDialog(
     // Git Repository fields
     private val repoUrlField = JBTextField().apply {
         emptyText.text = "Enter Git repository URL (https://github.com/user/repo.git)"
+        addActionListener { validateRepositoryUrl() }
     }
     
     private val branchComboBox = ComboBox<String>().apply {
@@ -59,6 +60,10 @@ class GitRepoDocumentationDialog(
     
     private val cloneButton = JButton("Clone Repository").apply {
         addActionListener { cloneRepository() }
+    }
+    
+    private val repoInfoLabel = JLabel("").apply {
+        isVisible = false
     }
     
     private val fileTree = CheckboxTree(object : CheckboxTree.CheckboxTreeCellRenderer() {
@@ -96,6 +101,15 @@ class GitRepoDocumentationDialog(
     
     private val deselectAllButton = JButton("Deselect All").apply {
         addActionListener { selectAllFiles(false) }
+    }
+    
+    private val fileTypeFilterField = JBTextField().apply {
+        emptyText.text = "Filter by file extensions (e.g., .kt,.java,.md)"
+        addActionListener { applyFileTypeFilter() }
+    }
+    
+    private val applyFilterButton = JButton("Apply Filter").apply {
+        addActionListener { applyFileTypeFilter() }
     }
     
     // Documentation fields (reused from DocumentationGenerationDialog)
@@ -175,10 +189,39 @@ class GitRepoDocumentationDialog(
         )
     }
 
+    private fun validateRepositoryUrl(): Boolean {
+        val repoUrl = repoUrlField.text.trim()
+        if (repoUrl.isEmpty()) return false
+        
+        val validPatterns = listOf(
+            Regex("^https://github\\.com/[\\w.-]+/[\\w.-]+(\\.git)?/?$"),
+            Regex("^git@github\\.com:[\\w.-]+/[\\w.-]+\\.git$"),
+            Regex("^https://gitlab\\.com/[\\w.-]+/[\\w.-]+(\\.git)?/?$"),
+            Regex("^git@gitlab\\.com:[\\w.-]+/[\\w.-]+\\.git$"),
+            Regex("^https://bitbucket\\.org/[\\w.-]+/[\\w.-]+(\\.git)?/?$"),
+            Regex("^git@bitbucket\\.org:[\\w.-]+/[\\w.-]+\\.git$"),
+            Regex("^https://[\\w.-]+/[\\w.-]+/[\\w.-]+(\\.git)?/?$") // Generic Git hosting
+        )
+        
+        return validPatterns.any { it.matches(repoUrl) }
+    }
+    
     private fun cloneRepository() {
         val repoUrl = repoUrlField.text.trim()
         if (repoUrl.isEmpty()) {
             Messages.showErrorDialog("Please enter a repository URL", "Error")
+            return
+        }
+        
+        if (!validateRepositoryUrl()) {
+            Messages.showErrorDialog(
+                "Invalid repository URL format. Please enter a valid Git repository URL.\n" +
+                "Examples:\n" +
+                "• https://github.com/user/repo.git\n" +
+                "• git@github.com:user/repo.git\n" +
+                "• https://gitlab.com/user/repo.git",
+                "Invalid URL"
+            )
             return
         }
         
@@ -196,6 +239,7 @@ class GitRepoDocumentationDialog(
                     clonedRepoPath = result.localPath
                     updateFileTree(result.localPath)
                     updateBranchComboBox(result.branches)
+                    updateRepositoryInfo(repoUrl, result.branches.size, result.tags.size)
                     Messages.showInfoMessage("Repository cloned successfully!", "Success")
                 } else {
                     Messages.showErrorDialog(
@@ -249,6 +293,51 @@ class GitRepoDocumentationDialog(
         }
     }
     
+    private fun applyFileTypeFilter() {
+        val filterText = fileTypeFilterField.text.trim()
+        if (filterText.isEmpty()) {
+            selectAllFiles(true)
+            return
+        }
+        
+        val extensions = filterText.split(",").map { it.trim().lowercase() }
+        val root = fileTree.model.root as? CheckedTreeNode ?: return
+        
+        applyFilterToNode(root, extensions)
+        fileTree.repaint()
+    }
+    
+    private fun applyFilterToNode(node: CheckedTreeNode, extensions: List<String>): Boolean {
+        val file = node.userObject as? File
+        var hasMatchingChildren = false
+        
+        // First, check all children
+        for (i in 0 until node.childCount) {
+            val child = node.getChildAt(i) as? CheckedTreeNode
+            if (child != null) {
+                val childMatches = applyFilterToNode(child, extensions)
+                hasMatchingChildren = hasMatchingChildren || childMatches
+            }
+        }
+        
+        // For files, check if extension matches
+        val fileMatches = if (file != null && file.isFile) {
+            val fileExtension = file.extension.lowercase()
+            extensions.any { ext ->
+                val cleanExt = ext.removePrefix(".")
+                fileExtension == cleanExt || ext == ".$fileExtension"
+            }
+        } else {
+            false
+        }
+        
+        // Select node if it's a matching file or has matching children
+        val shouldSelect = fileMatches || hasMatchingChildren
+        node.isChecked = shouldSelect
+        
+        return shouldSelect
+    }
+    
     private fun updateBranchComboBox(branches: List<String>) {
         branchComboBox.removeAllItems()
         branches.forEach { branchComboBox.addItem(it) }
@@ -256,6 +345,12 @@ class GitRepoDocumentationDialog(
             branchComboBox.addItem("main")
             branchComboBox.addItem("master")
         }
+    }
+    
+    private fun updateRepositoryInfo(repoUrl: String, branchCount: Int, tagCount: Int) {
+        val repoName = repoUrl.substringAfterLast("/").removeSuffix(".git")
+        repoInfoLabel.text = "Repository: $repoName | Branches: $branchCount | Tags: $tagCount"
+        repoInfoLabel.isVisible = true
     }
 
     override fun createCenterPanel(): JComponent {
@@ -277,6 +372,10 @@ class GitRepoDocumentationDialog(
                         .align(AlignX.RIGHT)
                 }
                 row {
+                    cell(repoInfoLabel)
+                        .align(AlignX.LEFT)
+                }
+                row {
                     label("Select files/folders:")
                 }
                 row {
@@ -284,6 +383,16 @@ class GitRepoDocumentationDialog(
                         .align(AlignX.LEFT)
                     cell(deselectAllButton)
                         .align(AlignX.LEFT)
+                }
+                row {
+                    label("File type filter:")
+                }
+                row {
+                    cell(fileTypeFilterField)
+                        .resizableColumn()
+                        .align(AlignX.FILL)
+                    cell(applyFilterButton)
+                        .align(AlignX.RIGHT)
                 }
                 row {
                     cell(JBScrollPane(fileTree))
@@ -331,7 +440,10 @@ class GitRepoDocumentationDialog(
 
     override fun doValidate(): ValidationInfo? {
         val documentType = getSelectedDocumentType()
+        val repoUrl = repoUrlField.text.trim()
+        
         return when {
+            repoUrl.isNotEmpty() && !validateRepositoryUrl() -> ValidationInfo("Invalid repository URL format", repoUrlField)
             clonedRepoPath == null -> ValidationInfo("Please clone a repository first")
             documentType == null -> ValidationInfo("Please select a document type")
             settings.getDocumentTypes().isEmpty() -> ValidationInfo("No document types configured. Please configure document types in Project Settings.")
