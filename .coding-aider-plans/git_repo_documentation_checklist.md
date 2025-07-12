@@ -15,6 +15,8 @@ Core Implementation:
 - [x] Implement progress indicators for long-running operations
 - [x] Proper tag and branch selection (fetch existing branches and tags from the repository)
 - [x] Allow changing tag/branch after cloning (will checkout and update filetree accordingly)
+- [ ] stay on screen after cloning to allow file selection
+- [ ] after ok click, allow selecting documentation type and generate documentation
 
 Documentation Generation:
 - [x] Fix documentation generation after cloning
@@ -27,6 +29,7 @@ Documentation Generation:
 - [x] Add validation for required documentation fields
 - [x] Implement proper cleanup after documentation generation
 - [x] Add success/failure notifications for documentation
+- [ ] Implement progress updates during documentation generation
 
 UI/UX Improvements:
 - [x] Add file selection checkboxes to tree component
@@ -41,6 +44,7 @@ UI/UX Improvements:
 - [x] Add loading indicators for documentation generation
 - [x] Improve error message display
 - [x] Add documentation preview option
+- [ ] Add keyboard shortcuts for common actions
 
 Git Operations Enhancements:
 - [x] Support for private repositories (authentication)
@@ -58,3 +62,5 @@ Git Operations Enhancements:
 - [ ] (later) Handle Git LFS files properly
 - [ ] (later) Add retry mechanism for failed clone operations
 - [ ] (later) Support for Git submodules
+- [ ] Implement clone depth selection
+- [ ] Add support for sparse checkout
