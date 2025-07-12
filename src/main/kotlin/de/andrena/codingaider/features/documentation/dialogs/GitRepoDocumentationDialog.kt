@@ -882,9 +882,6 @@ class GitRepoDocumentationDialog(
                 sidecarMode = globalSettings.useSidecarMode,
             )
 
-            // Close dialog before starting documentation generation
-            super.doOKAction()
-            
             // Show progress notification
             val notificationGroup = com.intellij.notification.NotificationGroupManager.getInstance()
                 .getNotificationGroup("Aider Web Crawl")
