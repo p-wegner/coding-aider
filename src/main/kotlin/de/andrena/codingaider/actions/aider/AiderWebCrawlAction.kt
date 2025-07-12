@@ -71,7 +71,7 @@ class AiderWebCrawlAction : AnAction() {
                     val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
                     if (component is JLabel && value is BranchTagItem) {
                         text = value.displayName
-                        icon = if (value.isTag) AllIcons.Vcs.Tag else AllIcons.Vcs.Branch
+                        icon = if (value.isTag) AllIcons.Nodes.Tag else AllIcons.Vcs.Branch
                     }
                     return component
                 }
