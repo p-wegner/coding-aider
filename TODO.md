@@ -40,4 +40,5 @@
 - [ ] Feature: plan view  
   - [ ] refine plan variation: verify implementation and update checklist
   - [ ] add tests (using existing test creation feature)
-  
+- [ ] Show some settings in tool coding aider tool window
+  - [ ] main llm
