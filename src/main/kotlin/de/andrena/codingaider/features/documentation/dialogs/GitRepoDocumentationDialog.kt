@@ -355,6 +355,7 @@ class GitRepoDocumentationDialog(
         gitService.cloneRepositoryAsync(
             repoUrl, 
             selectedBranch, 
+            null, // targetCommit
             credentials,
             shallowCloneCheckBox.isSelected
         ).thenAccept { result ->
