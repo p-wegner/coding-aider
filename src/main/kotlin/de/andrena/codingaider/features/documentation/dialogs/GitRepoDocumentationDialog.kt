@@ -916,6 +916,9 @@ class GitRepoDocumentationDialog(
                 }
                 completionNotification.notify(project)
             }.execute()
+
+            // Only close dialog after successfully starting documentation generation
+            super.doOKAction()
             
         } catch (e: Exception) {
             Messages.showErrorDialog(
@@ -923,6 +926,7 @@ class GitRepoDocumentationDialog(
                 "Failed to generate documentation: ${e.message}",
                 "Documentation Generation Error"
             )
+            // Don't close dialog on error
         }
     }
     
