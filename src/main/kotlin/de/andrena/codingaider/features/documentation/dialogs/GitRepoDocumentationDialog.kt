@@ -801,7 +801,7 @@ class GitRepoDocumentationDialog(
             documentType == null -> ValidationInfo("Please select a document type", documentTypeComboBox)
             settings.getDocumentTypes().isEmpty() -> ValidationInfo("No document types configured. Please configure document types in Project Settings.")
             filename.isBlank() -> ValidationInfo("Please enter a filename for the documentation", filenameField)
-            !isValidFilename(filename) -> ValidationInfo("Invalid filename. Please use only valid filename characters.", filenameField)
+            filename.isNotBlank() && !isValidFilename(filename) -> ValidationInfo("Invalid filename. Please use only valid filename characters.", filenameField)
             documentType?.promptTemplate?.isBlank() == true -> ValidationInfo("Selected document type has no prompt template configured", documentTypeComboBox)
             selectedFiles.isEmpty() && getSelectedFiles().isEmpty() -> ValidationInfo("Please select at least one file or folder from the repository")
             else -> null
