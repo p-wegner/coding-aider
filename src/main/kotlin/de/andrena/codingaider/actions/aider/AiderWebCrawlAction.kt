@@ -28,7 +28,6 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.CommandOptions
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
-import de.andrena.codingaider.features.documentation.dialogs.GitRepoDocumentationDialog
 import de.andrena.codingaider.features.webcrawl.WebCrawlAndGitDialog
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.AiderDocsService.Companion.AIDER_DOCS_FOLDER
