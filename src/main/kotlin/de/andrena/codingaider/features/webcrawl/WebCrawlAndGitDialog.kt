@@ -67,6 +67,7 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
                 return component
             }
         }
+        addActionListener { switchBranchOrTag() }
     }
 
     data class BranchTagItem(
@@ -146,6 +147,7 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
     }
 
     private var clonedRepoPath: String? = null
+    private var isUpdatingComboBox = false
 
     init {
         title = "Web Crawl & Git Repository Documentation"
@@ -595,6 +597,7 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
     }
 
     private fun updateBranchTagComboBox(branches: List<String>, tags: List<String>) {
+        isUpdatingComboBox = true
         branchTagComboBox.removeAllItems()
 
         // Add branches first
@@ -612,6 +615,7 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
             branchTagComboBox.addItem(BranchTagItem("main", false))
             branchTagComboBox.addItem(BranchTagItem("master", false))
         }
+        isUpdatingComboBox = false
     }
 
     private fun updateRepositoryInfo(repoUrl: String, branchCount: Int, tagCount: Int) {
@@ -660,6 +664,42 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
                 collectCheckedFiles(child, repoPath, repoRoot, virtualFiles)
             }
         }
+    }
+
+    private fun switchBranchOrTag() {
+        // Avoid triggering during programmatic updates
+        if (isUpdatingComboBox || clonedRepoPath == null) {
+            return
+        }
+
+        val selectedItem = branchTagComboBox.selectedItem as? BranchTagItem ?: return
+        val repoDir = File(clonedRepoPath!!)
+
+        branchTagComboBox.isEnabled = false
+        
+        // Perform checkout in background
+        Thread {
+            val success = if (selectedItem.isTag) {
+                gitService.checkoutTag(repoDir, selectedItem.name)
+            } else {
+                gitService.switchToBranch(repoDir, selectedItem.name)
+            }
+
+            SwingUtilities.invokeLater {
+                branchTagComboBox.isEnabled = true
+                
+                if (success) {
+                    // Update file tree with new branch/tag content
+                    updateFileTree(clonedRepoPath!!)
+                    logger.info("Successfully switched to ${if (selectedItem.isTag) "tag" else "branch"}: ${selectedItem.name}")
+                } else {
+                    Messages.showErrorDialog(
+                        "Failed to switch to ${if (selectedItem.isTag) "tag" else "branch"}: ${selectedItem.name}",
+                        "Checkout Error"
+                    )
+                }
+            }
+        }.start()
     }
 
     override fun doCancelAction() {
