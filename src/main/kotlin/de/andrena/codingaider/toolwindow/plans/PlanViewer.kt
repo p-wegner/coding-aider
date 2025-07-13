@@ -263,8 +263,9 @@ class PlanViewer(private val project: Project) {
                             // Handle right-click for context menu
                             if (SwingUtilities.isRightMouseButton(e)) {
                                 plansList.selectedIndex = index
+                                val cellBounds = plansList.getCellBounds(index, index)
                                 val locationOnScreen = e.component.locationOnScreen
-                                showContextMenu(e.component, locationOnScreen.x + e.x, locationOnScreen.y + e.y, plan)
+                                showContextMenu(e.component, locationOnScreen.x + cellBounds.x + cellBounds.width, locationOnScreen.y + cellBounds.y, plan)
                                 return
                             }
 
@@ -307,7 +308,12 @@ class PlanViewer(private val project: Project) {
             true
         )
 
-        popup.show(RelativePoint(component, Point(x, y)))
+        // Convert screen coordinates to component-relative coordinates
+        val componentLocation = component.locationOnScreen
+        val relativeX = x - componentLocation.x
+        val relativeY = y - componentLocation.y
+        
+        popup.show(RelativePoint(component, Point(relativeX, relativeY)))
     }
 
     private fun animateTreeExpansion(plan: AiderPlan, planId: String) {
