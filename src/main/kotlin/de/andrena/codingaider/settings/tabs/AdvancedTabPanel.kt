@@ -137,6 +137,7 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
         settings.enableLocalModelCostMap = enableLocalModelCostMapCheckBox.isSelected
         settings.mountAiderConfInDocker = mountAiderConfInDockerCheckBox.isSelected
         settings.showWorkingDirectoryPanel = showWorkingDirectoryPanelCheckBox.isSelected
+        settings.showDevTools = showDevToolsCheckBox.isSelected
     }
 
     override fun reset() {
@@ -150,6 +151,7 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
         enableLocalModelCostMapCheckBox.isSelected = settings.enableLocalModelCostMap
         mountAiderConfInDockerCheckBox.isSelected = settings.mountAiderConfInDocker
         showWorkingDirectoryPanelCheckBox.isSelected = settings.showWorkingDirectoryPanel
+        showDevToolsCheckBox.isSelected = settings.showDevTools
     }
 
     override fun isModified(): Boolean {
@@ -161,7 +163,8 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
                 verboseCommandLoggingCheckBox.isSelected != settings.verboseCommandLogging ||
                 enableLocalModelCostMapCheckBox.isSelected != settings.enableLocalModelCostMap ||
                 mountAiderConfInDockerCheckBox.isSelected != settings.mountAiderConfInDocker ||
-                showWorkingDirectoryPanelCheckBox.isSelected != settings.showWorkingDirectoryPanel
+                showWorkingDirectoryPanelCheckBox.isSelected != settings.showWorkingDirectoryPanel ||
+                showDevToolsCheckBox.isSelected != settings.showDevTools
     }
 
     fun updateLlmOptions(llmOptions: Array<LlmSelection>) {

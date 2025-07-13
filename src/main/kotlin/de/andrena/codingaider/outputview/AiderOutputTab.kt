@@ -9,6 +9,7 @@ import de.andrena.codingaider.outputview.markdown.MarkdownViewer
 import de.andrena.codingaider.services.RunningCommandService
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.services.plans.ContinuePlanService
+import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import java.awt.BorderLayout
 import java.awt.event.KeyEvent
@@ -125,7 +126,8 @@ class AiderOutputTab(
         
         markdownViewer.setMarkdown(initialText)
         
-        showDevToolsButton.isVisible = markdownViewer.supportsDevTools()
+        val settings = AiderSettings.getInstance()
+        showDevToolsButton.isVisible = markdownViewer.supportsDevTools() && settings.showDevTools
     }
     
     private fun createToolbar(): JPanel {

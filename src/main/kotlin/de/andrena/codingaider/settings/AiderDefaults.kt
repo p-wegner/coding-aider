@@ -63,4 +63,5 @@ Make your changes precise and minimal."""
     const val LENIENT_EDITS = false // Allow processing of multiple edit formats in a single response
     const val AUTO_COMMIT_AFTER_EDITS = false // Auto-commit after plugin-based edits
     const val SHOW_WORKING_DIRECTORY_PANEL = true // Show working directory panel in tool window
+    const val SHOW_DEV_TOOLS = false // Show DevTools button in markdown viewer
 }
