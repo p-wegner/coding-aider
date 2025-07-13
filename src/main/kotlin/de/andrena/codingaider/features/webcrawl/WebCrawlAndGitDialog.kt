@@ -287,8 +287,6 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
         }
 
         override fun doOKAction() {
-            // TODO 13/07/2025 PWegner: fix this, the cloned repos files should get documented (or the url webcrawled)
-            // no other ui changes needed
             val centerComponent = createCenterPanel()
             val selectedTab = (centerComponent as? JComponent)?.let { panel ->
                 val tabbedPane = findTabbedPane(panel)
