@@ -330,7 +330,7 @@ class PlanViewer(private val project: Project) {
         val popup = JBPopupFactory.getInstance().createActionGroupPopup(
             "Plan Actions",
             actionGroup,
-            null,
+            com.intellij.openapi.actionSystem.DataContext.EMPTY_CONTEXT,
             JBPopupFactory.ActionSelectionAid.SPEEDSEARCH,
             true
         )
