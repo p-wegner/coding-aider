@@ -52,20 +52,6 @@ Examples:
 
     override fun createCenterPanel(): JComponent {
         // Create markdown viewer and scroll pane
-        val markdownViewer = MarkdownViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
-            setDarkTheme(!JBColor.isBright())
-            setMarkdown(plan.plan)
-        }
-
-        val scrollPane = JBScrollPane(markdownViewer.component).apply {
-            verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
-            horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
-            border = BorderFactory.createEmptyBorder()
-
-            // Set minimum size for better initial layout
-            minimumSize = Dimension(400, 300)
-            preferredSize = Dimension(800, 600)
-        }
         val inputScrollPane = JBScrollPane(refinementInput).apply {
             minimumSize = Dimension(400, 100)
             preferredSize = Dimension(800, 200)
@@ -73,14 +59,7 @@ Examples:
         // Create a responsive split pane
         return panel {
             row { label("Plan: ${plan.id}") }
-//            row {
-//                cell(scrollPane)
-//                    .align(AlignX.FILL)
-//                    .align(AlignY.FILL)
-//                    .resizableColumn()
-//            }.resizableRow()
             row {
-//                label("Plan:")
                 cell(inputScrollPane)
                     .align(AlignX.FILL)
                     .align(AlignY.FILL)
