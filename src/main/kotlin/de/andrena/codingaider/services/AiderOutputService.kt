@@ -55,9 +55,10 @@ class AiderOutputService(private val project: Project) {
         
         val tab = toolWindowContent!!.createTab(initialTitle, initialText, onAbort, commandData)
         
-        // Show the tool window
+        // Show and focus the tool window
         val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Aider Output")
         toolWindow?.show()
+        toolWindow?.activate(null)
         
         return tab
     }
@@ -108,9 +109,10 @@ class AiderOutputService(private val project: Project) {
         when (output) {
             is MarkdownDialog -> output.focus(delay)
             is AiderOutputTab -> {
-                // For tool window tabs, just ensure the tool window is visible
+                // For tool window tabs, show and focus the tool window
                 val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Aider Output")
                 toolWindow?.show()
+                toolWindow?.activate(null)
             }
         }
     }
