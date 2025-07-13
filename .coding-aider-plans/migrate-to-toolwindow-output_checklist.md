@@ -17,14 +17,14 @@
 - [x] Remove dialog-specific logic from setProcessFinished method
 - [x] Remove dialog-specific logic from startAutoCloseTimer method
 - [x] Remove dialog-specific logic from focus method
-- [ ] Update triggerAutoContinue to work with tool window context
+- [x] Update triggerAutoContinue to work with tool window context
 
 ## RunningCommandService Updates
 - [x] Remove MarkdownDialog references from RunningCommandService
 - [x] Update addRunningCommand to work with AiderOutputTab
 - [x] Update removeRunningCommand to work with AiderOutputTab
 - [x] Modify getRunningCommandsListModel to use appropriate type
-- [ ] Update any dialog-specific functionality
+- [x] Update any dialog-specific functionality
 
 ## ShowLastCommandResultAction Fixes
 - [x] Remove MarkdownDialog creation from ShowLastCommandResultAction

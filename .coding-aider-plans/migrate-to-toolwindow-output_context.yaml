@@ -12,9 +12,11 @@ files:
     readOnly: false
   - path: src/main/kotlin/de/andrena/codingaider/executors/api/IDEBasedExecutor.kt
     readOnly: false
-  - path: src/main/kotlin/de/andrena/codingaider/outputview/MarkdownDialog.kt
-    readOnly: false
   - path: src/main/kotlin/de/andrena/codingaider/outputview/AiderOutputTab.kt
     readOnly: false
   - path: src/main/kotlin/de/andrena/codingaider/outputview/AiderOutputToolWindow.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/outputview/AiderOutputToolWindowContent.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/outputview/CodingAiderOutputPresentation.kt
     readOnly: false
