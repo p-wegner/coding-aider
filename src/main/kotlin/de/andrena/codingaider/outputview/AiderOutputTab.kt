@@ -106,10 +106,13 @@ class AiderOutputTab(
         addActionListener {
             autoCloseTimer?.cancel(false)
             isVisible = false
-            SwingUtilities.invokeLater {
-                updateProgress("Auto-continue cancelled. You can manually continue the plan.", title)
-            }
+            countdownLabel.isVisible = false
+            text = "Cancel Continue"
         }
+    }
+    
+    private val countdownLabel = JLabel().apply {
+        isVisible = false
     }
 
     val component: JComponent
@@ -154,6 +157,7 @@ class AiderOutputTab(
         toolbar.add(createPlanButton)
         toolbar.add(showDevToolsButton)
         toolbar.add(cancelContinueButton)
+        toolbar.add(countdownLabel)
         
         return toolbar
     }
@@ -214,26 +218,23 @@ class AiderOutputTab(
         if (settings.enableAutoPlanContinue && commandData?.structuredMode == true) {
             val remaining = AtomicInteger(autocloseDelay)
             cancelContinueButton.isVisible = true
-            // initial countdown message
+            countdownLabel.isVisible = true
+            
+            // Show initial countdown in toolbar
             SwingUtilities.invokeLater {
-                updateProgress(
-                    "Command finished. Continuing in ${remaining.get()} seconds... Press 'Cancel Continue' to abort.",
-                    title
-                )
+                countdownLabel.text = "Continuing in ${remaining.get()}s..."
             }
+            
             autoCloseTimer = executor.scheduleWithFixedDelay({
                 val secs = remaining.decrementAndGet()
                 if (secs > 0) {
                     SwingUtilities.invokeLater {
-                        updateProgress(
-                            "Command finished. Continuing in $secs seconds... Press 'Cancel Continue' to abort.",
-                            title
-                        )
+                        countdownLabel.text = "Continuing in ${secs}s..."
                     }
                 } else {
                     autoCloseTimer?.cancel(false)
                     SwingUtilities.invokeLater {
-                        updateProgress("Continuing plan...", title)
+                        countdownLabel.text = "Continuing plan..."
                         cancelContinueButton.isVisible = false
                     }
                     try {
