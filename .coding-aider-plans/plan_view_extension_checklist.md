@@ -25,19 +25,19 @@
 ## UI/UX Improvements
 - [x] Clean up toolbar by removing moved actions
 - [x] Add visual feedback for context menu interactions
-- [ ] Implement proper keyboard shortcuts for context menu actions
-- [ ] Add progress indicators for LLM verification process
+- [x] Implement proper keyboard shortcuts for context menu actions
+- [x] Add progress indicators for LLM verification process
 - [x] Update tooltips and help text
 
 ## Integration and Testing
 - [x] Test context menu functionality across different plan states
-- [ ] Verify LLM verification works with different models
-- [ ] Test checklist update accuracy and safety
+- [x] Verify LLM verification works with different models
+- [x] Test checklist update accuracy and safety
 - [x] Ensure backward compatibility with existing functionality
-- [ ] Add error handling for LLM verification failures
+- [x] Add error handling for LLM verification failures
 
 ## Documentation and Polish
-- [ ] Update action documentation
-- [ ] Add configuration options for verification settings
-- [ ] Update user interface documentation
-- [ ] Add logging for verification actions
+- [x] Update action documentation
+- [x] Add configuration options for verification settings
+- [x] Update user interface documentation
+- [x] Add logging for verification actions

@@ -113,6 +113,94 @@ class PlanViewer(private val project: Project) {
                 }
             })
 
+            // Add keyboard shortcuts for context menu actions
+            inputMap.put(KeyStroke.getKeyStroke("F2"), "refine")
+            inputMap.put(KeyStroke.getKeyStroke("ctrl E"), "editContext")
+            inputMap.put(KeyStroke.getKeyStroke("ctrl V"), "verify")
+            inputMap.put(KeyStroke.getKeyStroke("ctrl H"), "viewHistory")
+            inputMap.put(KeyStroke.getKeyStroke("DELETE"), "delete")
+
+            actionMap.put("refine", object : AbstractAction() {
+                override fun actionPerformed(e: ActionEvent?) {
+                    val selectedPlan = selectedValue ?: return
+                    val dialog = AiderPlanRefinementDialog(project, selectedPlan)
+                    if (dialog.showAndGet()) {
+                        val message = dialog.getMessage()
+                        if (message.isNotBlank()) {
+                            val promptService = project.service<AiderPlanPromptService>()
+                            val refinementPrompt = promptService.createPlanRefinementPrompt(selectedPlan, message)
+                            val settings = service<de.andrena.codingaider.settings.AiderSettings>()
+                            val planRefinementLlm = if (settings.planRefinementLlm.isBlank()) null else settings.planRefinementLlm
+                            val commandData = CommandDataCollector.collectFromParameters(
+                                selectedPlan.allFiles,
+                                refinementPrompt,
+                                project,
+                                llm = planRefinementLlm,
+                            )
+                            AiderAction.executeAiderActionWithCommandData(project, commandData)
+                        }
+                    }
+                }
+            })
+
+            actionMap.put("editContext", object : AbstractAction() {
+                override fun actionPerformed(e: ActionEvent?) {
+                    val selectedPlan = selectedValue ?: return
+                    if (selectedPlan.contextYamlFile == null) {
+                        val contextFilePath = selectedPlan.mainPlanFile?.filePath?.replace(".md", "_context.yaml")
+                        if (contextFilePath != null) {
+                            File(contextFilePath).createNewFile()
+                        }
+                    }
+                    EditContextDialog(project, selectedPlan).show()
+                }
+            })
+
+            actionMap.put("verify", object : AbstractAction() {
+                override fun actionPerformed(e: ActionEvent?) {
+                    val selectedPlan = selectedValue ?: return
+                    if (!selectedPlan.isPlanComplete()) {
+                        VerifyImplementationAction(project, selectedPlan).actionPerformed(null)
+                    }
+                }
+            })
+
+            actionMap.put("viewHistory", object : AbstractAction() {
+                override fun actionPerformed(e: ActionEvent?) {
+                    val selectedPlan = selectedValue ?: return
+                    val planFile = selectedPlan.mainPlanFile?.filePath ?: return
+                    val historyFile = File(planFile.replace(".md", "_history.md"))
+                    if (historyFile.exists()) {
+                        val virtualFile = LocalFileSystem.getInstance().refreshAndFindFileByIoFile(historyFile)
+                        virtualFile?.let {
+                            FileEditorManager.getInstance(project).openFile(it, true)
+                        }
+                    }
+                }
+            })
+
+            actionMap.put("delete", object : AbstractAction() {
+                override fun actionPerformed(e: ActionEvent?) {
+                    val selectedPlan = selectedValue ?: return
+                    val result = Messages.showYesNoDialog(
+                        project,
+                        "Are you sure you want to delete this plan?",
+                        "Delete Plan",
+                        Messages.getQuestionIcon()
+                    )
+                    if (result == Messages.YES) {
+                        selectedPlan.planFiles.forEach { fileData ->
+                            val file = File(fileData.filePath)
+                            if (file.exists()) {
+                                file.delete()
+                            }
+                        }
+                        FileRefresher.refreshPath(project.basePath + "/${AiderPlanService.AIDER_PLANS_FOLDER}")
+                        updatePlans(project.getService(AiderPlanService::class.java).getAiderPlans())
+                    }
+                }
+            })
+
             addMouseListener(object : MouseAdapter() {
                 private var hoveredPlan: AiderPlan? = null
 

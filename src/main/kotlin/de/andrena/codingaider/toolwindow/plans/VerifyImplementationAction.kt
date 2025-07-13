@@ -25,6 +25,7 @@ import java.awt.Dimension
 import java.io.File
 import javax.swing.JComponent
 import javax.swing.JTextArea
+import com.intellij.openapi.diagnostic.Logger
 
 class VerifyImplementationAction(
     private val project: Project,
@@ -34,6 +35,10 @@ class VerifyImplementationAction(
     "Use LLM to verify implementation status and update checklist",
     AllIcons.Actions.CheckOut
 ) {
+    
+    companion object {
+        private val LOG = Logger.getInstance(VerifyImplementationAction::class.java)
+    }
     
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
 
@@ -46,15 +51,26 @@ class VerifyImplementationAction(
     }
 
     private fun performVerification() {
+        LOG.info("Starting implementation verification for plan: ${plan.id}")
+        
         ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Verifying Implementation", true) {
             override fun run(indicator: ProgressIndicator) {
-                indicator.text = "Analyzing implementation status..."
-                indicator.isIndeterminate = true
-                
                 try {
+                    indicator.text = "Preparing verification prompt..."
+                    indicator.fraction = 0.1
+                    
                     val verificationPrompt = createVerificationPrompt(plan)
+                    LOG.debug("Created verification prompt for plan: ${plan.id}")
+                    
+                    indicator.text = "Configuring LLM settings..."
+                    indicator.fraction = 0.3
+                    
                     val settings = service<AiderSettings>()
                     val verificationLlm = if (settings.llm.isBlank()) null else settings.llm
+                    LOG.info("Using LLM for verification: ${verificationLlm ?: "default"}")
+                    
+                    indicator.text = "Collecting command data..."
+                    indicator.fraction = 0.5
                     
                     val commandData = CommandDataCollector.collectFromParameters(
                         plan.allFiles,
@@ -64,15 +80,31 @@ class VerifyImplementationAction(
                         useYesFlag = true
                     )
                     
+                    indicator.text = "Executing verification..."
+                    indicator.fraction = 0.8
+                    
                     ApplicationManager.getApplication().invokeLater {
-                        AiderAction.executeAiderActionWithCommandData(project, commandData)
+                        try {
+                            AiderAction.executeAiderActionWithCommandData(project, commandData)
+                            LOG.info("Successfully started verification execution for plan: ${plan.id}")
+                        } catch (e: Exception) {
+                            LOG.error("Failed to execute verification command for plan: ${plan.id}", e)
+                            Messages.showErrorDialog(
+                                project,
+                                "Failed to execute verification: ${e.message}",
+                                "Verification Execution Error"
+                            )
+                        }
                     }
                     
+                    indicator.fraction = 1.0
+                    
                 } catch (e: Exception) {
+                    LOG.error("Failed to perform verification for plan: ${plan.id}", e)
                     ApplicationManager.getApplication().invokeLater {
                         Messages.showErrorDialog(
                             project,
-                            "Failed to perform verification: ${e.message}",
+                            "Failed to perform verification: ${e.message}\n\nPlease check the logs for more details.",
                             "Verification Error"
                         )
                     }
