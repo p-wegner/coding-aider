@@ -161,11 +161,9 @@ class PlanViewer(private val project: Project) {
             actionMap.put("verify", object : AbstractAction() {
                 override fun actionPerformed(e: ActionEvent?) {
                     val selectedPlan = selectedValue ?: return
-                    if (!selectedPlan.isPlanComplete()) {
-                        VerifyImplementationAction(project, selectedPlan).actionPerformed(
-                            AnActionEvent.createFromDataContext("", null, DataContext.EMPTY_CONTEXT)
-                        )
-                    }
+                    VerifyImplementationAction(project, selectedPlan).actionPerformed(
+                        AnActionEvent.createFromDataContext("", null, DataContext.EMPTY_CONTEXT)
+                    )
                 }
             })
 
