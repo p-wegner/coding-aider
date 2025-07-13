@@ -17,6 +17,7 @@ import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.ui.JBColor
+import com.intellij.ui.awt.RelativePoint
 import com.intellij.ui.components.JBList
 import de.andrena.codingaider.services.PersistentFileService
 import com.intellij.ui.components.JBScrollPane
@@ -310,7 +311,7 @@ class PlanViewer(private val project: Project) {
             true
         )
 
-        popup.show(component, Point(x, y))
+        popup.show(RelativePoint(component, Point(x, y)))
     }
 
     private fun animateTreeExpansion(plan: AiderPlan, planId: String) {
