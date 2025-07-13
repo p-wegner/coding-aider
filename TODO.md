@@ -1,29 +1,22 @@
 - [ ] Feature: Paste Image in aider dialog should call the clipboard image action
 - [ ] Bug: (sidecar) verify env vars (api keys) for sidecar mode properly set
 - [ ] Bug: aiderignore not used for every action
-- [ ] Feature: stash in persistent files view in input dialog
 - [ ] Bug: Properly handle /ask with SystemPrompt for input history parsing
 - [ ] Bug: Compile Error Fix doesn't use persistent files
 - [ ] Bug: Markdown output viewer ux issues
     - [ ] collapseable panels get opened automatically when content changed
     - [x] auto scrolling not working at all
-- [x] Feature: Extend documentation actions to allow selecting type of documentation: technical, PRD, ... (make
-  configurable comparable to test creation?)
 - [ ] count first plan execution in history
 - [ ] Bug: automatic plan continuation fails to detect plan end properly
 - [ ] Bug: plan cost calculation fails to detect model properly
 - [ ] Bug: archive plan does not move history file
 - [ ] Bug: Continue Plan doesn't properly register when plan ended
 - [ ] Bug: "Error executing Aider command: null" when aborting command
-- [ ] Feature: Add a way to add and manage simple custom user actions that execute a user defined prompt with
-  preconfigured context files (make this configurable comparable to test creation)
-- [ ] Feature: find all TODOs in the files of the current context and add them to the prompt as in fix todos but also referencing each file 
 - [ ] Feature: adjust context yaml when moving files
 - [ ] Improve: Generate Tests: make context file easier to setup
 - [ ] Improve: Generate Tests: which files to include in context? persistent files? currently persistent files
   are not used for context
 - [ ] Improve: Generate Tests: respect settings for repo mapping
-- [ ] Improve: make output viewer content copyable
 - [ ] in case of command abortion, make sure to keep output content of the command visible.
 - [ ] Feature: provide some mcp server functionality
   - server: plan creation, crud for persistent files, repo map, 
@@ -34,11 +27,10 @@
 - [ ] Feature: generate/adjust tests for last changes
 - [ ] Feature: TDD mode with configurable test type
 - [ ] feature: follow up command suggestion and execution (user confirmation)
-- [ ] feature: Auto Continue Plan with tool view 
 - [ ] scratchpad feature for clipboard content (reuse intellij scratchpad feature)
 - [ ] Feature: setting to define refinement llm
-- [ ] Feature: plan view  
-  - [ ] refine plan variation: verify implementation and update checklist
+- [x] Feature: plan view
+  - [x] refine plan variation: verify implementation and update checklist
   - [ ] add tests (using existing test creation feature)
 - [ ] Show some settings in tool coding aider tool window
   - [ ] main llm
