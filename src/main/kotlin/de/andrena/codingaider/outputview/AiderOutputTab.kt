@@ -283,6 +283,11 @@ class AiderOutputTab(
         if (isDisposed.getAndSet(true)) return
         
         try {
+            // Abort the command if it's still running
+            if (!isProcessFinished.get() && onAbort != null) {
+                onAbort.abortCommand(commandData?.planId)
+            }
+            
             autoCloseTimer?.cancel(false)
             markdownViewer.dispose()
             mainPanel.removeAll()
