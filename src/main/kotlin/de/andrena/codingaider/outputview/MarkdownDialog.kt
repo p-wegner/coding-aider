@@ -4,26 +4,20 @@ import com.intellij.icons.AllIcons
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.WindowManager
-import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBScrollPane
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.outputview.markdown.MarkdownViewer
+import de.andrena.codingaider.services.AiderOutputService
 import de.andrena.codingaider.services.RunningCommandService
-import de.andrena.codingaider.services.plans.ActivePlanService
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.services.plans.ContinuePlanService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import java.awt.BorderLayout
-import java.awt.Color
 import java.awt.EventQueue.invokeLater
 import java.awt.Frame
 import java.awt.event.KeyEvent
 import java.awt.event.WindowEvent
-import java.util.*
-import java.util.Timer
 import javax.swing.*
-import kotlin.concurrent.schedule
-import kotlin.concurrent.scheduleAtFixedRate
 import kotlin.math.max
 
 
@@ -296,13 +290,7 @@ class MarkdownDialog(
                     try {
                         if (isProcessFinished) {
                             try {
-                                if (getInstance().enableAutoPlanContinue && commandData?.structuredMode == true) {
-                                    // Check if there's an active plan and it's not finished
-                                    val activePlan = project.service<ActivePlanService>().getActivePlan()
-                                    if (activePlan != null && !activePlan.isPlanComplete()) {
-                                        project.service<ContinuePlanService>().continuePlan()
-                                    }
-                                }
+                                project.service<AiderOutputService>().triggerAutoContinue(commandData)
                             } catch (e: Exception) {
                                 logger.error("Error during autoclose continuation", e)
                             }

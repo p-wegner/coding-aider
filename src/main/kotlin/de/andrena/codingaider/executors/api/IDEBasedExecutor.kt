@@ -1,5 +1,6 @@
 package de.andrena.codingaider.executors.api
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
@@ -17,7 +18,6 @@ import de.andrena.codingaider.services.plans.PlanExecutionCostService
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileRefresher
 import de.andrena.codingaider.utils.GitUtils
-import java.awt.EventQueue.invokeLater
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.atomic.AtomicReference
 import kotlin.concurrent.thread
@@ -93,7 +93,7 @@ class IDEBasedExecutor(
             val outputService = project.service<AiderOutputService>()
             outputDisplay?.let { outputService.setProcessFinished(it) }
             Thread.sleep(500)
-            invokeLater {
+            ApplicationManager.getApplication().invokeLater {
                 if (outputDisplay is MarkdownDialog) {
                     (outputDisplay as MarkdownDialog).dispose()
                 }
@@ -101,7 +101,7 @@ class IDEBasedExecutor(
             isFinished.countDown()
         } catch (e: Exception) {
             log.error("Error during abort", e)
-            invokeLater {
+            ApplicationManager.getApplication().invokeLater {
                 if (outputDisplay is MarkdownDialog) {
                     (outputDisplay as MarkdownDialog).dispose()
                 }
@@ -127,7 +127,7 @@ class IDEBasedExecutor(
     }
 
     private fun updateOutputProgress(message: String, title: String) {
-        invokeLater {
+        ApplicationManager.getApplication().invokeLater {
             if (outputDisplay == null) return@invokeLater
             val outputService = project.service<AiderOutputService>()
             outputService.updateProgress(outputDisplay!!, message, title)

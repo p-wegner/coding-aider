@@ -1,6 +1,8 @@
 package de.andrena.codingaider.services
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindowManager
 import de.andrena.codingaider.command.CommandData
@@ -10,6 +12,8 @@ import de.andrena.codingaider.outputview.AiderOutputToolWindow
 import de.andrena.codingaider.outputview.AiderOutputToolWindowContent
 import de.andrena.codingaider.outputview.CodingAiderOutputPresentation
 import de.andrena.codingaider.outputview.MarkdownDialog
+import de.andrena.codingaider.services.plans.ActivePlanService
+import de.andrena.codingaider.services.plans.ContinuePlanService
 import de.andrena.codingaider.settings.AiderSettings
 
 @Service(Service.Level.PROJECT)
@@ -43,8 +47,10 @@ class AiderOutputService(private val project: Project) {
         val contentManager = project.getUserData(AiderOutputToolWindow.CONTENT_MANAGER_KEY)
             ?: run {
                 // Tool window not initialized yet, force initialization
-                val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Aider Output")
-                toolWindow?.show()
+                ApplicationManager.getApplication().invokeAndWait {
+                    val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Aider Output")
+                    toolWindow?.show()
+                }
                 project.getUserData(AiderOutputToolWindow.CONTENT_MANAGER_KEY)
             }
             ?: throw IllegalStateException("Could not initialize Aider Output tool window")
@@ -56,9 +62,11 @@ class AiderOutputService(private val project: Project) {
         val tab = toolWindowContent!!.createTab(initialTitle, initialText, onAbort, commandData)
         
         // Show and focus the tool window
-        val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Aider Output")
-        toolWindow?.show()
-        toolWindow?.activate(null)
+        ApplicationManager.getApplication().invokeLater {
+            val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Aider Output")
+            toolWindow?.show()
+            toolWindow?.activate(null)
+        }
         
         return tab
     }
@@ -105,14 +113,34 @@ class AiderOutputService(private val project: Project) {
         }
     }
     
+    fun triggerAutoContinue(commandData: CommandData?) {
+        val settings = AiderSettings.getInstance()
+        if (!settings.enableAutoPlanContinue || commandData?.structuredMode != true) {
+            return
+        }
+        
+        try {
+            // Check if there's an active plan and it's not finished
+            val activePlan = project.service<ActivePlanService>().getActivePlan()
+            if (activePlan != null && !activePlan.isPlanComplete()) {
+                project.service<ContinuePlanService>().continuePlan()
+            }
+        } catch (e: Exception) {
+            com.intellij.openapi.diagnostic.Logger.getInstance(AiderOutputService::class.java)
+                .error("Error during auto continue", e)
+        }
+    }
+    
     fun focus(output: Any, delay: Long = 100) {
         when (output) {
             is MarkdownDialog -> output.focus(delay)
             is AiderOutputTab -> {
                 // For tool window tabs, show and focus the tool window
-                val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Aider Output")
-                toolWindow?.show()
-                toolWindow?.activate(null)
+                ApplicationManager.getApplication().invokeLater {
+                    val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Aider Output")
+                    toolWindow?.show()
+                    toolWindow?.activate(null)
+                }
             }
         }
     }

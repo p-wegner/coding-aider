@@ -194,6 +194,19 @@ class AiderOutputTab(
         val settings = getInstance()
         if (!settings.enableMarkdownDialogAutoclose) return
         setProcessFinished()
+        
+        // For tool window tabs, we don't auto-close but we can still trigger auto continue
+        if (settings.enableAutoPlanContinue && commandData?.structuredMode == true) {
+            // Use a timer to trigger auto continue after the specified delay
+            executor.schedule({
+                try {
+                    project.service<de.andrena.codingaider.services.AiderOutputService>().triggerAutoContinue(commandData)
+                } catch (e: Exception) {
+                    println("Error during auto continue: ${e.message}")
+                    e.printStackTrace()
+                }
+            }, autocloseDelay.toLong(), java.util.concurrent.TimeUnit.SECONDS)
+        }
     }
 
     fun dispose() {
