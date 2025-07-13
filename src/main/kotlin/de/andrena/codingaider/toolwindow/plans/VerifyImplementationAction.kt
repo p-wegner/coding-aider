@@ -76,8 +76,7 @@ class VerifyImplementationAction(
                         plan.allFiles,
                         verificationPrompt,
                         project,
-                        llm = verificationLlm,
-                        useYesFlag = true
+                        llm = verificationLlm
                     )
                     
                     indicator.text = "Executing verification..."
