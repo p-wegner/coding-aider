@@ -14,6 +14,7 @@ import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import java.awt.BorderLayout
 import java.awt.event.KeyEvent
 import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicInteger
 import javax.swing.*
 
 class AiderOutputTab(
@@ -98,6 +99,19 @@ class AiderOutputTab(
         }
     }
 
+    private val cancelContinueButton = JButton("Cancel Continue").apply {
+        mnemonic = KeyEvent.VK_C
+        isVisible = false
+        toolTipText = "Cancel scheduled plan continuation"
+        addActionListener {
+            autoCloseTimer?.cancel(false)
+            isVisible = false
+            SwingUtilities.invokeLater {
+                updateProgress("Auto-continue cancelled. You can manually continue the plan.", title)
+            }
+        }
+    }
+
     val component: JComponent
         get() = mainPanel
         
@@ -139,6 +153,7 @@ class AiderOutputTab(
         toolbar.add(closeAndContinueButton)
         toolbar.add(createPlanButton)
         toolbar.add(showDevToolsButton)
+        toolbar.add(cancelContinueButton)
         
         return toolbar
     }
@@ -195,17 +210,41 @@ class AiderOutputTab(
         val settings = getInstance()
         setProcessFinished()
         
-        // For tool window tabs, we don't auto-close but we can still trigger auto continue
+        // Schedule auto-continue with countdown and allow cancellation
         if (settings.enableAutoPlanContinue && commandData?.structuredMode == true) {
-            // Use a timer to trigger auto continue after the specified delay
-            executor.schedule({
-                try {
-                    project.service<de.andrena.codingaider.services.AiderOutputService>().triggerAutoContinue(commandData)
-                } catch (e: Exception) {
-                    println("Error during auto continue: ${e.message}")
-                    e.printStackTrace()
+            val remaining = AtomicInteger(autocloseDelay)
+            cancelContinueButton.isVisible = true
+            // initial countdown message
+            SwingUtilities.invokeLater {
+                updateProgress(
+                    "Command finished. Continuing in ${remaining.get()} seconds... Press 'Cancel Continue' to abort.",
+                    title
+                )
+            }
+            autoCloseTimer = executor.scheduleAtFixedRate({
+                val secs = remaining.decrementAndGet()
+                if (secs > 0) {
+                    SwingUtilities.invokeLater {
+                        updateProgress(
+                            "Command finished. Continuing in $secs seconds... Press 'Cancel Continue' to abort.",
+                            title
+                        )
+                    }
+                } else {
+                    autoCloseTimer?.cancel(false)
+                    SwingUtilities.invokeLater {
+                        updateProgress("Continuing plan...", title)
+                        cancelContinueButton.isVisible = false
+                    }
+                    try {
+                        project.service<de.andrena.codingaider.services.AiderOutputService>()
+                            .triggerAutoContinue(commandData)
+                    } catch (e: Exception) {
+                        println("Error during auto continue: ${e.message}")
+                        e.printStackTrace()
+                    }
                 }
-            }, autocloseDelay.toLong(), java.util.concurrent.TimeUnit.SECONDS)
+            }, 1, 1, java.util.concurrent.TimeUnit.SECONDS)
         }
     }
 
