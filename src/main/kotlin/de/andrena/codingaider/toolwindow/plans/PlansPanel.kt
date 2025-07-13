@@ -48,13 +48,16 @@ class PlansPanel(private val project: Project) {
                     DefaultActionGroup().apply {
                         add(planViewer.NewPlanAction())
                         addSeparator()
+                        add(planViewer.ContinuePlanAction())
+                        add(planViewer.EditContextAction())
+                        addSeparator()
+                        add(planViewer.ViewHistoryAction())
+                        add(planViewer.MoveToPersistentFilesAction())
+                        addSeparator()
+                        add(planViewer.ArchivePlanAction())
+                        add(planViewer.DeletePlanAction())
+                        addSeparator()
                         add(planViewer.RefreshPlansAction())
-                        // Removed actions that are now in context menu:
-                        // - ContinuePlanAction (available in context menu)
-                        // - ViewHistoryAction (available in context menu) 
-                        // - MoveToPersistentFilesAction (available in context menu)
-                        // - ArchivePlanAction (available in context menu)
-                        // - DeletePlanAction (available in context menu)
                     },
                     true
                 )

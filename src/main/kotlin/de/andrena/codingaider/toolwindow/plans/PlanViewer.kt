@@ -262,7 +262,8 @@ class PlanViewer(private val project: Project) {
                             // Handle right-click for context menu
                             if (SwingUtilities.isRightMouseButton(e)) {
                                 plansList.selectedIndex = index
-                                showContextMenu(e.component, e.x, e.y, plan)
+                                val locationOnScreen = e.component.locationOnScreen
+                                showContextMenu(e.component, locationOnScreen.x + e.x, locationOnScreen.y + e.y, plan)
                                 return
                             }
 
@@ -288,55 +289,28 @@ class PlanViewer(private val project: Project) {
     }
 
     private fun showContextMenu(component: Component, x: Int, y: Int, plan: AiderPlan) {
-        // Create action instances and update their state based on the selected plan
-        val continueAction = ContinuePlanAction().apply {
-            templatePresentation.isEnabled = !plan.isPlanComplete()
-        }
+        // Create only plan modification actions for context menu
         val refineAction = RefinePlanAction().apply {
             templatePresentation.isEnabled = true
-        }
-        val editContextAction = EditContextAction().apply {
-            templatePresentation.isEnabled = plan.mainPlanFile != null
-        }
-        val viewHistoryAction = ViewHistoryAction().apply {
-            templatePresentation.isEnabled = plan.mainPlanFile != null
         }
         val verifyAction = VerifyImplementationAction(project, plan).apply {
             templatePresentation.isEnabled = !plan.isPlanComplete()
         }
-        val moveToPersistentAction = MoveToPersistentFilesAction().apply {
-            templatePresentation.isEnabled = plan.contextFiles.isNotEmpty()
-        }
-        val archiveAction = ArchivePlanAction().apply {
-            templatePresentation.isEnabled = true
-        }
-        val deleteAction = DeletePlanAction().apply {
-            templatePresentation.isEnabled = true
-        }
 
         val actionGroup = DefaultActionGroup().apply {
-            add(continueAction)
-            addSeparator()
             add(refineAction)
-            add(editContextAction)
             add(verifyAction)
-            addSeparator()
-            add(viewHistoryAction)
-            add(moveToPersistentAction)
-            addSeparator()
-            add(archiveAction)
-            add(deleteAction)
         }
 
         val popup = JBPopupFactory.getInstance().createActionGroupPopup(
-            "Plan Actions",
+            "Plan Modification",
             actionGroup,
             DataContext.EMPTY_CONTEXT,
             JBPopupFactory.ActionSelectionAid.SPEEDSEARCH,
             true
         )
 
-        popup.showInScreenCoordinates(component, Point(x, y))
+        popup.show(component, Point(x, y))
     }
 
     private fun animateTreeExpansion(plan: AiderPlan, planId: String) {
