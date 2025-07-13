@@ -221,7 +221,7 @@ class AiderOutputTab(
                     title
                 )
             }
-            autoCloseTimer = executor.scheduleAtFixedRate({
+            autoCloseTimer = executor.scheduleWithFixedDelay({
                 val secs = remaining.decrementAndGet()
                 if (secs > 0) {
                     SwingUtilities.invokeLater {
