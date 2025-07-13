@@ -13,16 +13,42 @@ import com.intellij.ui.components.panels.Wrapper
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.actions.ide.ShowLastCommandResultAction
+import de.andrena.codingaider.outputview.AiderOutputTab
 import de.andrena.codingaider.services.RunningCommandService
 import de.andrena.codingaider.utils.GitUtils
+import java.awt.Component
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import javax.swing.DefaultListCellRenderer
 import javax.swing.JComponent
+import javax.swing.JList
 import javax.swing.JOptionPane
 
 class RunningCommandsPanel(private val project: Project) {
     private val runningCommandsListModel = project.service<RunningCommandService>().getRunningCommandsListModel()
-    private val runningCommandsList = JBList(runningCommandsListModel)
+    private val runningCommandsList = JBList(runningCommandsListModel).apply {
+        cellRenderer = object : DefaultListCellRenderer() {
+            override fun getListCellRendererComponent(
+                list: JList<*>?,
+                value: Any?,
+                index: Int,
+                isSelected: Boolean,
+                cellHasFocus: Boolean
+            ): Component {
+                val component = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus)
+                
+                if (value is AiderOutputTab) {
+                    text = value.title
+                    icon = AllIcons.Process.Step_1 // Running process icon
+                } else {
+                    text = value?.toString() ?: "Unknown Command"
+                    icon = null
+                }
+                
+                return component
+            }
+        }
+    }
     fun getContent(): JComponent {
         return panel {
             row {
