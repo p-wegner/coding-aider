@@ -81,17 +81,15 @@ class CodingAiderToolWindowContent(private val project: Project) {
                         .topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
                 }
 
-                if (!settings.useToolWindowOutput) {
-                    collapsibleGroup("Running Commands") {
-                        row {
-                            cell(runningCommandsPanel.getContent())
-                                .align(com.intellij.ui.dsl.builder.Align.FILL)
-                                .resizableColumn()
-                        }
+                collapsibleGroup("Running Commands") {
+                    row {
+                        cell(runningCommandsPanel.getContent())
+                            .align(com.intellij.ui.dsl.builder.Align.FILL)
+                            .resizableColumn()
                     }
-                        .apply { expanded = true }
-                        .topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
                 }
+                    .apply { expanded = true }
+                    .topGap(com.intellij.ui.dsl.builder.TopGap.SMALL)
             }
         }
         return JBScrollPane(contentPanel)

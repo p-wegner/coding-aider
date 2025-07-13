@@ -22,16 +22,7 @@ import javax.swing.JOptionPane
 
 class RunningCommandsPanel(private val project: Project) {
     private val runningCommandsListModel = project.service<RunningCommandService>().getRunningCommandsListModel()
-    private val runningCommandsList = JBList(runningCommandsListModel).apply {
-        addMouseListener(object : MouseAdapter() {
-            override fun mouseClicked(e: MouseEvent) {
-                if (e.clickCount >= 2) {
-                    selectedValue?.focus()
-                }
-            }
-        })
-    }
-
+    private val runningCommandsList = JBList(runningCommandsListModel)
     fun getContent(): JComponent {
         return panel {
             row {
@@ -39,7 +30,7 @@ class RunningCommandsPanel(private val project: Project) {
                     "RunningCommandsToolbar",
                     DefaultActionGroup().apply {
                         add(object : AnAction(
-                            "Show Last Command Result", 
+                            "Show Last Command Result",
                             "Show the result of the last command",
                             AllIcons.Actions.Show
                         ) {
@@ -48,13 +39,13 @@ class RunningCommandsPanel(private val project: Project) {
                             }
                         })
                         add(object : AnAction(
-                            "Create Plan from Last Command", 
+                            "Create Plan from Last Command",
                             "Create a structured plan from the last command's output and context",
                             AllIcons.Actions.RunAll
                         ) {
                             init {
                                 templatePresentation.putClientProperty(
-                                    "ActionButton.smallVariant", 
+                                    "ActionButton.smallVariant",
                                     true
                                 )
                                 templatePresentation.icon = AllIcons.Actions.RunAll
@@ -72,7 +63,7 @@ class RunningCommandsPanel(private val project: Project) {
                                     "No completed command available to create plan from"
                                 }
                             }
-                            
+
                             override fun actionPerformed(e: AnActionEvent) {
                                 try {
                                     project.service<RunningCommandService>().createPlanFromLastCommand(project)
@@ -94,7 +85,8 @@ class RunningCommandsPanel(private val project: Project) {
                             override fun getActionUpdateThread() = ActionUpdateThread.BGT
                             override fun update(e: AnActionEvent) {
                                 val hashes = project.service<RunningCommandService>().getLastAiderCommitHashes()
-                                e.presentation.isEnabled = hashes != null && hashes.first != null && hashes.second != null
+                                e.presentation.isEnabled =
+                                    hashes != null && hashes.first != null && hashes.second != null
                                 e.presentation.text = "Show Last Aider Diff"
                                 e.presentation.description = if (e.presentation.isEnabled) {
                                     "Show the git diff for the last Aider command"
@@ -102,6 +94,7 @@ class RunningCommandsPanel(private val project: Project) {
                                     "No Aider command with commit hashes available"
                                 }
                             }
+
                             override fun actionPerformed(e: AnActionEvent) {
                                 val hashes = project.service<RunningCommandService>().getLastAiderCommitHashes()
                                 if (hashes != null && hashes.first != null && hashes.second != null) {
