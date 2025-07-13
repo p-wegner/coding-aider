@@ -1,13 +1,16 @@
 package de.andrena.codingaider.utils
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.VcsException
+import com.intellij.util.concurrency.AppExecutorUtil
 import git4idea.GitUtil
 import git4idea.commands.GitCommand
 import git4idea.commands.GitLineHandler
 import git4idea.repo.GitRepository
 import de.andrena.codingaider.command.FileData
 import git4idea.commands.Git
+import java.util.concurrent.CompletableFuture
 
 object GitDiffUtils {
     data class DiffResult(
@@ -24,7 +27,21 @@ object GitDiffUtils {
         val repository = GitUtil.getRepositoryManager(project).repositories.firstOrNull()
             ?: throw VcsException("No Git repository found in project")
 
-        return getChangedFilesFromRepository(repository, baseCommit, targetCommit)
+        return if (ApplicationManager.getApplication().isReadAccessAllowed) {
+            // If we're in a read action, execute on background thread
+            val future = CompletableFuture<DiffResult>()
+            AppExecutorUtil.getAppExecutorService().submit {
+                try {
+                    val result = getChangedFilesFromRepository(repository, baseCommit, targetCommit)
+                    future.complete(result)
+                } catch (e: Exception) {
+                    future.completeExceptionally(e)
+                }
+            }
+            future.get()
+        } else {
+            getChangedFilesFromRepository(repository, baseCommit, targetCommit)
+        }
     }
 
     private fun getChangedFilesFromRepository(
