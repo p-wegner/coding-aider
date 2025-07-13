@@ -1,6 +1,7 @@
 package de.andrena.codingaider.services
 
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
@@ -92,7 +93,12 @@ class AiderOutputService(private val project: Project) {
             // Check if there's an active plan and it's not finished
             val activePlan = project.service<ActivePlanService>().getActivePlan()
             if (activePlan != null && !activePlan.isPlanComplete()) {
-                project.service<ContinuePlanService>().continuePlan()
+                val app = ApplicationManager.getApplication()
+                app.invokeLater {
+                    ReadAction.run<RuntimeException> {
+                        project.service<ContinuePlanService>().continuePlan()
+                    }
+                }
             }
         } catch (e: Exception) {
             com.intellij.openapi.diagnostic.Logger.getInstance(AiderOutputService::class.java)
