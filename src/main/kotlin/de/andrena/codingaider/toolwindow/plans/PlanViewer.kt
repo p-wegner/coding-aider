@@ -291,12 +291,8 @@ class PlanViewer(private val project: Project) {
 
     private fun showContextMenu(component: Component, x: Int, y: Int, plan: AiderPlan) {
         // Create only plan modification actions for context menu
-        val refineAction = RefinePlanAction().apply {
-            templatePresentation.isEnabled = true
-        }
-        val verifyAction = VerifyImplementationAction(project, plan).apply {
-            templatePresentation.isEnabled = !plan.isPlanComplete()
-        }
+        val refineAction = RefinePlanAction()
+        val verifyAction = VerifyImplementationAction(project, plan)
 
         val actionGroup = DefaultActionGroup().apply {
             add(refineAction)
