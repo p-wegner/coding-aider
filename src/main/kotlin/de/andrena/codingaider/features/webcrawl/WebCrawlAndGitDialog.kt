@@ -233,7 +233,9 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
                     cell(JBScrollPane(fileTree).apply {
                         preferredSize = Dimension(700, 400)
                         minimumSize = Dimension(500, 300)
-                        maximumSize = Dimension(Int.MAX_VALUE, Int.MAX_VALUE)
+                        verticalScrollBarPolicy = JBScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED
+                        horizontalScrollBarPolicy = JBScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+                        viewport.preferredSize = Dimension(680, 380)
                     })
                         .resizableColumn()
                         .align(AlignY.FILL)
