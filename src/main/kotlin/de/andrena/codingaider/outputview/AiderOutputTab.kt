@@ -125,8 +125,7 @@ class AiderOutputTab(
         
         markdownViewer.setMarkdown(initialText)
         
-        showDevToolsButton.isVisible = markdownViewer.supportsDevTools() &&
-                                       getInstance().showMarkdownDevTools
+        showDevToolsButton.isVisible = markdownViewer.supportsDevTools()
     }
     
     private fun createToolbar(): JPanel {

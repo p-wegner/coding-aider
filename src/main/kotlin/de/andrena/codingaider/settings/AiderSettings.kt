@@ -38,8 +38,6 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var editFormat: String = AiderDefaults.EDIT_FORMAT,
         var verboseCommandLogging: Boolean = AiderDefaults.VERBOSE_COMMAND_LOGGING,
         var useDockerAider: Boolean = AiderDefaults.USE_DOCKER_AIDER,
-        var enableMarkdownDialogAutoclose: Boolean = AiderDefaults.ENABLE_MARKDOWN_DIALOG_AUTOCLOSE,
-        var markdownDialogAutocloseDelay: Int = AiderDefaults.MARKDOWN_DIALOG_AUTOCLOSE_DELAY_IN_S,
         var mountAiderConfInDocker: Boolean = AiderDefaults.MOUNT_AIDER_CONF_IN_DOCKER,
         var includeChangeContext: Boolean = AiderDefaults.INCLUDE_CHANGE_CONTEXT,
         var autoCommits: AutoCommitSetting = AiderDefaults.AUTO_COMMITS,
@@ -60,7 +58,6 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var pluginBasedEdits: Boolean = AiderDefaults.PLUGIN_BASED_EDITS, // Added for plugin-based edits feature
         var lenientEdits: Boolean = AiderDefaults.LENIENT_EDITS, // Allow processing of multiple edit formats
         var autoCommitAfterEdits: Boolean = AiderDefaults.AUTO_COMMIT_AFTER_EDITS, // Auto-commit after plugin-based edits
-        var showMarkdownDevTools: Boolean = AiderDefaults.SHOW_MARKDOWN_DEV_TOOLS, // Show DevTools button in markdown dialog
         var useToolWindowOutput: Boolean = AiderDefaults.USE_TOOL_WINDOW_OUTPUT, // Use tool window instead of popup dialogs for output
         var showWorkingDirectoryPanel: Boolean = AiderDefaults.SHOW_WORKING_DIRECTORY_PANEL // Show working directory panel in tool window
     )
@@ -220,19 +217,6 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
             myState.sidecarModeVerbose = value
         }
 
-    var enableMarkdownDialogAutoclose: Boolean
-        get() = myState.enableMarkdownDialogAutoclose
-        set(value) {
-            myState.enableMarkdownDialogAutoclose = value
-        }
-
-    var markdownDialogAutocloseDelay: Int
-        get() = myState.markdownDialogAutocloseDelay
-        set(value) {
-            myState.markdownDialogAutocloseDelay = value
-        }
-    val closeOutputDialogImmediately: Boolean
-        get() = markdownDialogAutocloseDelay < 1 && enableMarkdownDialogAutoclose
 
     var mountAiderConfInDocker: Boolean
         get() = myState.mountAiderConfInDocker
@@ -289,11 +273,6 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
             myState.autoCommitAfterEdits = value
         }
         
-    var showMarkdownDevTools: Boolean
-        get() = myState.showMarkdownDevTools
-        set(value) {
-            myState.showMarkdownDevTools = value
-        }
 
     var useToolWindowOutput: Boolean
         get() = myState.useToolWindowOutput

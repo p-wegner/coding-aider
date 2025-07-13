@@ -144,7 +144,7 @@ class IDEBasedExecutor(
         updateOutputProgress(message, "Aider Command ${if (exitCode == 0) "Completed" else "Failed"}")
         val outputService = project.service<AiderOutputService>()
         outputDisplay?.let { 
-            outputService.startAutoCloseTimer(it, commandData.options.autoCloseDelay ?: getInstance().markdownDialogAutocloseDelay)
+            outputService.startAutoCloseTimer(it, commandData.options.autoCloseDelay ?: 10)
         }
         refreshFiles()
         planExecutionActions.commandCompleted()
@@ -182,12 +182,10 @@ class IDEBasedExecutor(
 
     private fun presentChanges() {
         openGitComparisonToolIfNeeded()
-        if (!getInstance().closeOutputDialogImmediately) {
-            val outputService = project.service<AiderOutputService>()
-            outputDisplay?.let { 
-                outputService.setProcessFinished(it)
-                outputService.focus(it)
-            }
+        val outputService = project.service<AiderOutputService>()
+        outputDisplay?.let { 
+            outputService.setProcessFinished(it)
+            outputService.focus(it)
         }
     }
 
@@ -196,7 +194,7 @@ class IDEBasedExecutor(
         val outputService = project.service<AiderOutputService>()
         outputDisplay?.let { 
             outputService.setProcessFinished(it)
-            outputService.startAutoCloseTimer(it, getInstance().markdownDialogAutocloseDelay)
+            outputService.startAutoCloseTimer(it, 10)
         }
     }
 
