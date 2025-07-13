@@ -30,13 +30,18 @@ import de.andrena.codingaider.settings.AiderProjectSettings
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.features.documentation.DocumentTypeConfiguration
 import de.andrena.codingaider.services.FileDataCollectionService
+import de.andrena.codingaider.services.AiderIgnoreService
+import de.andrena.codingaider.services.TokenCountService
 import java.awt.Component
 import java.awt.Dimension
 import java.io.File
+import java.text.NumberFormat
+import java.util.concurrent.CompletableFuture
 import javax.swing.DefaultListCellRenderer
 import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JList
+import javax.swing.SwingUtilities
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
 
@@ -45,6 +50,8 @@ class DocumentationGenerationDialog(
     private val selectedFiles: Array<VirtualFile>
 ) : DialogWrapper(project) {
     private val settings = AiderProjectSettings.getInstance(project)
+    private val aiderIgnoreService = project.service<AiderIgnoreService>()
+    private val tokenCountService = project.service<TokenCountService>()
     private val settingsButton = createSettingsButton()
     private val documentTypeComboBox = ComboBox<DocumentTypeConfiguration>().apply {
         renderer = object : DefaultListCellRenderer() {
@@ -78,11 +85,17 @@ class DocumentationGenerationDialog(
         font = font.deriveFont(12f)
         emptyText.text = "Enter additional instructions (optional)"
     }
+    
+    private val fileCountLabel = JLabel("Files: Calculating...")
+    private val tokenCountLabel = JLabel("Tokens: Calculating...")
+    private var filteredFiles: List<FileData> = emptyList()
+    private var tokenCountFuture: CompletableFuture<Int>? = null
 
     init {
         title = "Generate Documentation"
         init()
         updateDocumentTypes()
+        updateFilePresentation()
     }
 
     private fun updateDocumentTypes() {
@@ -134,6 +147,13 @@ class DocumentationGenerationDialog(
                     .align(AlignX.RIGHT)
             }
             row {
+                label("Files to be documented:")
+            }
+            row {
+                cell(fileCountLabel)
+                cell(tokenCountLabel)
+            }
+            row {
                 label("Enter filename for documentation:")
             }
             row {
@@ -171,7 +191,9 @@ class DocumentationGenerationDialog(
         val documentType = getSelectedDocumentType() ?: return
         val filename = filenameField.text
         
-        val allFiles = project.service<FileDataCollectionService>().collectAllFiles(selectedFiles)
+        // Cancel any ongoing token counting
+        tokenCountFuture?.cancel(true)
+        
         val settings = AiderSettings.getInstance()
 
         try {
@@ -180,9 +202,9 @@ class DocumentationGenerationDialog(
             val contextFiles = absoluteDocumentType.contextFiles.map { FileData(it, false) }
         
             val commandData = CommandData(
-                message = buildPrompt(documentType, allFiles, filename),
+                message = buildPrompt(documentType, filteredFiles, filename),
                 useYesFlag = true,
-                files = allFiles + contextFiles,
+                files = filteredFiles + contextFiles,
                 projectPath = project.basePath ?: "",
                 llm = settings.llm,
                 additionalArgs = settings.additionalArgs,
@@ -209,6 +231,43 @@ class DocumentationGenerationDialog(
             filename,
             getAdditionalPrompt()
         )
+    }
+
+    private fun updateFilePresentation() {
+        // Collect all files and filter out ignored ones
+        val allFiles = project.service<FileDataCollectionService>().collectAllFiles(selectedFiles)
+        filteredFiles = allFiles.filter { !aiderIgnoreService.isIgnored(it.filePath) }
+        
+        // Update file count immediately
+        val formatter = NumberFormat.getNumberInstance()
+        fileCountLabel.text = "Files: ${formatter.format(filteredFiles.size)}"
+        
+        // Cancel any previous token counting
+        tokenCountFuture?.cancel(true)
+        
+        // Start async token counting
+        tokenCountLabel.text = "Tokens: Calculating..."
+        tokenCountFuture = tokenCountService.countTokensInFilesAsync(filteredFiles)
+        
+        tokenCountFuture?.thenAccept { tokenCount ->
+            SwingUtilities.invokeLater {
+                if (!isDisposed) {
+                    tokenCountLabel.text = "Tokens: ${formatter.format(tokenCount)}"
+                }
+            }
+        }?.exceptionally { throwable ->
+            SwingUtilities.invokeLater {
+                if (!isDisposed) {
+                    tokenCountLabel.text = "Tokens: Error calculating"
+                }
+            }
+            null
+        }
+    }
+    
+    override fun dispose() {
+        tokenCountFuture?.cancel(true)
+        super.dispose()
     }
 
     private fun getSelectedDocumentType(): DocumentTypeConfiguration? = documentTypeComboBox.selectedItem as? DocumentTypeConfiguration
