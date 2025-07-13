@@ -19,7 +19,7 @@ import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.AlignY
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.layout.selected
-import de.andrena.codingaider.features.documentation.dialogs.GitRepoDocumentationDialog
+import de.andrena.codingaider.features.documentation.dialogs.DocumentationGenerationDialog
 import de.andrena.codingaider.services.GitRepoCloneService
 import java.awt.Component
 import java.awt.Dimension
@@ -303,11 +303,11 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
             1 -> { // Git Repository
                 val selectedFiles = getSelectedFiles()
                 if (selectedFiles.isNotEmpty() && clonedRepoPath != null) {
-                    // Close this dialog and open the documentation generation dialog
+                    // Close this dialog and open the standard documentation generation dialog
                     super.doOKAction()
                     
-                    // Open GitRepoDocumentationDialog with pre-selected files
-                    val documentationDialog = GitRepoDocumentationDialog(project, selectedFiles, clonedRepoPath!!)
+                    // Open DocumentationGenerationDialog with pre-selected files
+                    val documentationDialog = DocumentationGenerationDialog(project, selectedFiles)
                     documentationDialog.show()
                 }
             }
