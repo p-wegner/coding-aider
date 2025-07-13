@@ -42,32 +42,62 @@ class IDEBasedExecutor(
 
     fun execute(): Any {
         val outputService = project.service<AiderOutputService>()
+        
+        // Create output with immediate feedback
+        val initialMessage = buildInitialMessage()
         outputDisplay = outputService.createOutput(
             "Aider Command Output",
-            "Initializing Aider command...",
+            initialMessage,
             this,
             project.service<CommandSummaryService>().generateSummary(commandData),
             commandData
         )
         
-        outputService.updateProgress(outputDisplay!!, "Initializing Aider command...", "Aider Command Starting")
-        
-        if (currentCommitHash == null) {
-            currentCommitHash = GitUtils.getCurrentCommitHash(project)
-        }
-
-        planExecutionActions.beforeCommandStarted()
-        
-        // Add to running commands
+        // Add to running commands immediately
         if (outputDisplay is AiderOutputTab) {
             project.service<RunningCommandService>().addRunningCommand(outputDisplay as AiderOutputTab)
         }
         
+        // Start execution immediately in background
         executionThread = thread {
-            executeAiderCommand()
-            isFinished.countDown()
+            try {
+                // Update with preparation status
+                updateOutputProgress("Preparing Aider command...", "Aider Command Preparation")
+                
+                if (currentCommitHash == null) {
+                    currentCommitHash = GitUtils.getCurrentCommitHash(project)
+                }
+
+                planExecutionActions.beforeCommandStarted()
+                
+                executeAiderCommand()
+            } finally {
+                isFinished.countDown()
+            }
         }
         return outputDisplay!!
+    }
+    
+    private fun buildInitialMessage(): String {
+        val summary = project.service<CommandSummaryService>().generateSummary(commandData)
+        return """
+# Aider Command Starting
+
+**Command:** $summary
+
+**Status:** Preparing command execution...
+
+**Files:** ${commandData.files.size} file(s) selected
+${if (commandData.files.isNotEmpty()) "- " + commandData.files.take(5).joinToString("\n- ") { it.filePath } else ""}
+${if (commandData.files.size > 5) "\n- ... and ${commandData.files.size - 5} more files" else ""}
+
+**Mode:** ${commandData.aiderMode}
+${if (commandData.llm.isNotEmpty()) "**LLM:** ${commandData.llm}" else ""}
+
+---
+
+*Command will start shortly...*
+        """.trimIndent()
     }
 
     fun isFinished(): CountDownLatch = isFinished
@@ -140,11 +170,29 @@ class IDEBasedExecutor(
         }
     }
 
-    override fun onCommandStart(message: String) =
-        updateOutputProgress(message, "Aider Command Started")
+    override fun onCommandStart(message: String) {
+        val enhancedMessage = """
+# Aider Command Started
 
-    override fun onCommandProgress(message: String, runningTime: Long) =
-        updateOutputProgress(message, "Aider command in progress ($runningTime seconds)")
+${message.trimStart()}
+
+---
+
+*Command is now running...*
+        """.trimIndent()
+        updateOutputProgress(enhancedMessage, "Aider Command Started")
+    }
+
+    override fun onCommandProgress(message: String, runningTime: Long) {
+        val enhancedMessage = """
+# Aider Command In Progress
+
+**Running Time:** $runningTime seconds
+
+${message.trimStart()}
+        """.trimIndent()
+        updateOutputProgress(enhancedMessage, "Aider command in progress ($runningTime seconds)")
+    }
 
     override fun onCommandComplete(message: String, exitCode: Int) {
         updateOutputProgress(message, "Aider Command ${if (exitCode == 0) "Completed" else "Failed"}")
