@@ -2,7 +2,6 @@ package de.andrena.codingaider.settings.tabs
 
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.components.JBCheckBox
-import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.Panel
 import de.andrena.codingaider.settings.ExperimentalFeatureUtil
 import de.andrena.codingaider.settings.LlmComboBoxRenderer
@@ -24,12 +23,9 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
     private val webCrawlLlmComboBox: JComboBox<LlmSelection> = ComboBox(apiKeyChecker.getAllLlmOptions().toTypedArray())
     private val deactivateRepoMapCheckBox = JBCheckBox("Deactivate Aider's repo map (--map-tokens 0)")
     private val verboseCommandLoggingCheckBox = JBCheckBox("Enable verbose Aider command logging")
-    private val enableMarkdownDialogAutocloseCheckBox = JBCheckBox("Automatically close Output Dialog")
-    private val markdownDialogAutocloseDelayField = JBTextField()
     private val mountAiderConfInDockerCheckBox = JBCheckBox("Mount Aider configuration file in Docker")
     private val enableLocalModelCostMapCheckBox = JBCheckBox("Enable local model cost mapping")
-    private val showMarkdownDevToolsCheckBox = JBCheckBox("Show DevTools button in markdown viewer")
-    private val useToolWindowOutputCheckBox = JBCheckBox("Use tool window for command output")
+    private val showDevToolsCheckBox = JBCheckBox("Show DevTools button in markdown viewer")
     private val showWorkingDirectoryPanelCheckBox = JBCheckBox("Show working directory panel in tool window")
 
     override fun getTabName(): String = "Advanced"
@@ -110,42 +106,13 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
                 }
             }
 
-            group("Output Dialog") {
+            group("Output Presentation") {
                 row {
-                    cell(enableMarkdownDialogAutocloseCheckBox)
-                        .component
-                        .apply {
-                            toolTipText =
-                                "If enabled, the Output Dialog will automatically close after the specified delay."
-                            addItemListener { e ->
-                                markdownDialogAutocloseDelayField.isEnabled =
-                                    e.stateChange == ItemEvent.SELECTED
-                            }
-                        }
-                }
-                row("Autoclose delay (seconds):") {
-                    cell(markdownDialogAutocloseDelayField)
-                        .component
-                        .apply {
-                            toolTipText =
-                                "Specify the delay in seconds before the Output Dialog closes automatically. Set to 0 for immediate closing."
-                            isEnabled = enableMarkdownDialogAutocloseCheckBox.isSelected
-                        }
-                }
-                row {
-                    cell(showMarkdownDevToolsCheckBox)
+                    cell(showDevToolsCheckBox)
                         .component
                         .apply {
                             toolTipText =
                                 "If enabled, a DevTools button will be shown in the markdown viewer for debugging purposes."
-                        }
-                }
-                row {
-                    cell(useToolWindowOutputCheckBox)
-                        .component
-                        .apply {
-                            toolTipText =
-                                "If enabled, command output will be displayed in a dedicated tool window with tabs instead of popup dialogs."
                         }
                 }
                 row {
@@ -168,11 +135,7 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
         settings.deactivateRepoMap = deactivateRepoMapCheckBox.isSelected
         settings.verboseCommandLogging = verboseCommandLoggingCheckBox.isSelected
         settings.enableLocalModelCostMap = enableLocalModelCostMapCheckBox.isSelected
-        settings.enableMarkdownDialogAutoclose = enableMarkdownDialogAutocloseCheckBox.isSelected
-        settings.markdownDialogAutocloseDelay = markdownDialogAutocloseDelayField.text.toIntOrNull() ?: 10
         settings.mountAiderConfInDocker = mountAiderConfInDockerCheckBox.isSelected
-        settings.showMarkdownDevTools = showMarkdownDevToolsCheckBox.isSelected
-        settings.useToolWindowOutput = useToolWindowOutputCheckBox.isSelected
         settings.showWorkingDirectoryPanel = showWorkingDirectoryPanelCheckBox.isSelected
     }
 
@@ -185,12 +148,7 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
         deactivateRepoMapCheckBox.isSelected = settings.deactivateRepoMap
         verboseCommandLoggingCheckBox.isSelected = settings.verboseCommandLogging
         enableLocalModelCostMapCheckBox.isSelected = settings.enableLocalModelCostMap
-        enableMarkdownDialogAutocloseCheckBox.isSelected = settings.enableMarkdownDialogAutoclose
-        markdownDialogAutocloseDelayField.text = settings.markdownDialogAutocloseDelay.toString()
-        markdownDialogAutocloseDelayField.isEnabled = settings.enableMarkdownDialogAutoclose
         mountAiderConfInDockerCheckBox.isSelected = settings.mountAiderConfInDocker
-        showMarkdownDevToolsCheckBox.isSelected = settings.showMarkdownDevTools
-        useToolWindowOutputCheckBox.isSelected = settings.useToolWindowOutput
         showWorkingDirectoryPanelCheckBox.isSelected = settings.showWorkingDirectoryPanel
     }
 
@@ -202,11 +160,7 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
                 deactivateRepoMapCheckBox.isSelected != settings.deactivateRepoMap ||
                 verboseCommandLoggingCheckBox.isSelected != settings.verboseCommandLogging ||
                 enableLocalModelCostMapCheckBox.isSelected != settings.enableLocalModelCostMap ||
-                enableMarkdownDialogAutocloseCheckBox.isSelected != settings.enableMarkdownDialogAutoclose ||
-                markdownDialogAutocloseDelayField.text.toIntOrNull() != settings.markdownDialogAutocloseDelay ||
                 mountAiderConfInDockerCheckBox.isSelected != settings.mountAiderConfInDocker ||
-                showMarkdownDevToolsCheckBox.isSelected != settings.showMarkdownDevTools ||
-                useToolWindowOutputCheckBox.isSelected != settings.useToolWindowOutput ||
                 showWorkingDirectoryPanelCheckBox.isSelected != settings.showWorkingDirectoryPanel
     }
 
