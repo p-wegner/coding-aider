@@ -130,9 +130,12 @@ class VerifyImplementationAction(
             2. For each open checklist item, determine if it has been implemented
             3. Update the checklist file by marking completed items as [x] instead of [ ]
             4. Only mark items as complete if they are fully implemented and working
-            5. Add brief comments explaining what was verified for each completed item
-            6. If any items are partially complete, leave them unchecked but add progress notes
+            5. If any items are partially complete, leave them unchecked but add progress notes
+            6. If the plan requires additional steps that are not in the checklist, add them as new items
+            7. If checklist items contradict or conflict with the plan remove them from the checklist
+            8. Pay special attention between discrepancies between the provided code and the plan. If required add new items to the checklist to address these discrepancies.
             
+            Ensure you focus on the files listed in the plan context:
             Focus on updating the checklist file: ${plan.checklistPlanFile?.filePath ?: "${plan.mainPlanFile?.filePath?.replace(".md", "_checklist.md")}"}
             
             Be thorough but conservative - only mark items as complete if you're confident they work correctly.
