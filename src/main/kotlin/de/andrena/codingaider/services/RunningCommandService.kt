@@ -4,13 +4,13 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.components.service
 import de.andrena.codingaider.command.CommandData
-import de.andrena.codingaider.outputview.MarkdownDialog
+import de.andrena.codingaider.outputview.AiderOutputTab
 import javax.swing.DefaultListModel
 import javax.swing.JOptionPane
 
 @Service(Service.Level.PROJECT)
 class RunningCommandService {
-    private val runningCommandsListModel = DefaultListModel<MarkdownDialog>()
+    private val runningCommandsListModel = DefaultListModel<AiderOutputTab>()
     private var lastCompletedCommand: CommandData? = null
     private var lastCommandOutput: String? = null
 
@@ -18,15 +18,15 @@ class RunningCommandService {
     private var lastAiderCommitBefore: String? = null
     private var lastAiderCommitAfter: String? = null
 
-    fun addRunningCommand(dialog: MarkdownDialog) {
-        runningCommandsListModel.addElement(dialog)
+    fun addRunningCommand(tab: AiderOutputTab) {
+        runningCommandsListModel.addElement(tab)
     }
 
-    fun removeRunningCommand(dialog: MarkdownDialog) {
-        runningCommandsListModel.removeElement(dialog)
+    fun removeRunningCommand(tab: AiderOutputTab) {
+        runningCommandsListModel.removeElement(tab)
     }
 
-    fun getRunningCommandsListModel(): DefaultListModel<MarkdownDialog> = runningCommandsListModel
+    fun getRunningCommandsListModel(): DefaultListModel<AiderOutputTab> = runningCommandsListModel
 
     fun storeCompletedCommand(commandData: CommandData?, output: String?, commitBefore: String? = null, commitAfter: String? = null) {
         lastCompletedCommand = commandData

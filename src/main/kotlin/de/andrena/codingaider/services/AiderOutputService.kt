@@ -27,14 +27,8 @@ class AiderOutputService(private val project: Project) {
         onAbort: Abortable?,
         displayString: String?,
         commandData: CommandData?
-    ): CodingAiderOutputPresentation { // Returns either MarkdownDialog or AiderOutputTab
-        val settings = AiderSettings.getInstance()
-        
-        return if (settings.useToolWindowOutput) {
-            createToolWindowTab(initialTitle, initialText, onAbort, commandData)
-        } else {
-            createDialog(initialTitle, initialText, onAbort, displayString, commandData)
-        }
+    ): CodingAiderOutputPresentation { // Returns AiderOutputTab
+        return createToolWindowTab(initialTitle, initialText, onAbort, commandData)
     }
     
     private fun createToolWindowTab(
@@ -71,44 +65,21 @@ class AiderOutputService(private val project: Project) {
         return tab
     }
     
-    private fun createDialog(
-        initialTitle: String,
-        initialText: String,
-        onAbort: Abortable?,
-        displayString: String?,
-        commandData: CommandData?
-    ): MarkdownDialog {
-        return MarkdownDialog(
-            project,
-            initialTitle,
-            initialText,
-            onAbort,
-            displayString,
-            commandData
-        ).apply {
-            isVisible = true
-            focus()
-        }
-    }
     
     fun updateProgress(output: Any, message: String, title: String) {
         when (output) {
-            is MarkdownDialog -> output.updateProgress(message, title)
             is AiderOutputTab -> toolWindowContent?.updateTabProgress(output, message, title)
         }
     }
     
     fun setProcessFinished(output: Any) {
         when (output) {
-            is MarkdownDialog -> output.setProcessFinished()
             is AiderOutputTab -> toolWindowContent?.setTabFinished(output)
         }
     }
     
     fun startAutoCloseTimer(output: Any, delay: Int) {
         when (output) {
-            // TODO: use polymorphism or sealed classes
-            is MarkdownDialog -> output.startAutoCloseTimer(delay)
             is AiderOutputTab -> output.startAutoCloseTimer(delay)
         }
     }
@@ -133,7 +104,6 @@ class AiderOutputService(private val project: Project) {
     
     fun focus(output: Any, delay: Long = 100) {
         when (output) {
-            is MarkdownDialog -> output.focus(delay)
             is AiderOutputTab -> {
                 // For tool window tabs, show and focus the tool window
                 ApplicationManager.getApplication().invokeLater {

@@ -9,7 +9,7 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.executors.CommandExecutor
 import de.andrena.codingaider.outputview.Abortable
 import de.andrena.codingaider.outputview.CodingAiderOutputPresentation
-import de.andrena.codingaider.outputview.MarkdownDialog
+import de.andrena.codingaider.outputview.AiderOutputTab
 import de.andrena.codingaider.services.AiderOutputService
 import de.andrena.codingaider.services.CommandSummaryService
 import de.andrena.codingaider.services.RunningCommandService
@@ -29,7 +29,7 @@ class IDEBasedExecutor(
 ) : CommandObserver, Abortable {
     private val log = Logger.getInstance(IDEBasedExecutor::class.java)
     private val planExecutionActions = CommandPlanExecutionHandler(project, commandData)
-    private var outputDisplay: CodingAiderOutputPresentation? = null // Can be MarkdownDialog or AiderOutputTab
+    private var outputDisplay: CodingAiderOutputPresentation? = null // AiderOutputTab
     private var currentCommitHash: String? = commandData.options.commitHashToCompareWith
     private val commandExecutor = AtomicReference<CommandExecutor?>(null)
     private var executionThread: Thread? = null
@@ -58,9 +58,9 @@ class IDEBasedExecutor(
 
         planExecutionActions.beforeCommandStarted()
         
-        // Add to running commands (handle both dialog and tab types)
-        if (outputDisplay is MarkdownDialog) {
-            project.service<RunningCommandService>().addRunningCommand(outputDisplay as MarkdownDialog)
+        // Add to running commands
+        if (outputDisplay is AiderOutputTab) {
+            project.service<RunningCommandService>().addRunningCommand(outputDisplay as AiderOutputTab)
         }
         
         executionThread = thread {
@@ -94,16 +94,16 @@ class IDEBasedExecutor(
             outputDisplay?.let { outputService.setProcessFinished(it) }
             Thread.sleep(500)
             ApplicationManager.getApplication().invokeLater {
-                if (outputDisplay is MarkdownDialog) {
-                    (outputDisplay as MarkdownDialog).dispose()
+                if (outputDisplay is AiderOutputTab) {
+                    (outputDisplay as AiderOutputTab).dispose()
                 }
             }
             isFinished.countDown()
         } catch (e: Exception) {
             log.error("Error during abort", e)
             ApplicationManager.getApplication().invokeLater {
-                if (outputDisplay is MarkdownDialog) {
-                    (outputDisplay as MarkdownDialog).dispose()
+                if (outputDisplay is AiderOutputTab) {
+                    (outputDisplay as AiderOutputTab).dispose()
                 }
             }
         }
