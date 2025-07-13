@@ -95,9 +95,7 @@ class AiderOutputService(private val project: Project) {
             if (activePlan != null && !activePlan.isPlanComplete()) {
                 val app = ApplicationManager.getApplication()
                 app.invokeLater {
-                    ReadAction.run<RuntimeException> {
-                        project.service<ContinuePlanService>().continuePlan()
-                    }
+                    project.service<ContinuePlanService>().continuePlan()
                 }
             }
         } catch (e: Exception) {
