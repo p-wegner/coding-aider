@@ -6,7 +6,6 @@ import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.openapi.vfs.VirtualFileManager
 import com.intellij.openapi.vfs.newvfs.RefreshQueue
 import de.andrena.codingaider.outputview.CodingAiderOutputPresentation
-import de.andrena.codingaider.outputview.MarkdownDialog
 import java.awt.EventQueue.invokeLater
 
 object FileRefresher {
