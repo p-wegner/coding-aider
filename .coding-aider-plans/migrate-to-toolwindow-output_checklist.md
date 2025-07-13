@@ -40,9 +40,9 @@
 - [ ] Update presentChanges method for tool window context
 
 ## MarkdownDialog Removal
-- [ ] Delete MarkdownDialog.kt file entirely
-- [ ] Remove all imports of MarkdownDialog from other files
-- [ ] Remove MarkdownDialog references from CodingAiderOutputPresentation interface usage
+- [x] Delete MarkdownDialog.kt file entirely
+- [x] Remove all imports of MarkdownDialog from other files
+- [x] Remove MarkdownDialog references from CodingAiderOutputPresentation interface usage
 
 ## Tool Window Enhancements
 - [ ] Ensure AiderOutputTab handles all former dialog functionality

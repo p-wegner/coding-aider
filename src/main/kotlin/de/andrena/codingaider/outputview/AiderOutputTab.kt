@@ -192,7 +192,7 @@ class AiderOutputTab(
     
     fun startAutoCloseTimer(autocloseDelay: Int) {
         val settings = getInstance()
-        if (!settings.enableMarkdownDialogAutoclose) return
+        if (!settings.enableAutoPlanContinue) return
         setProcessFinished()
         
         // For tool window tabs, we don't auto-close but we can still trigger auto continue
