@@ -7,6 +7,8 @@ import com.intellij.ui.content.ContentFactory
 
 class AiderOutputToolWindow : ToolWindowFactory {
     override fun shouldBeAvailable(project: Project) = true
+    
+    override fun isDoNotActivateOnStart() = false
 
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         toolWindow.setToHideOnEmptyContent(false)
