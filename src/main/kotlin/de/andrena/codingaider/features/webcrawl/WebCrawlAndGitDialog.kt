@@ -735,31 +735,29 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
             return
         }
 
-        // Calculate token count in background to avoid UI freezing
-        Thread {
-            val tokenCount = selectedFiles.sumOf { file ->
-                if (tokenCountService.shouldSkipTokenCount(file.absolutePath)) {
-                    0
-                } else {
-                    try {
-                        val content = file.readText()
-                        tokenCountService.countTokensInText(content)
-                    } catch (e: Exception) {
-                        0
-                    }
-                }
-            }
+        // Show loading state immediately
+        tokenCountLabel.text = "Tokens: calculating..."
+        tokenCountLabel.isVisible = true
 
-            SwingUtilities.invokeLater {
-                val formattedCount = when {
-                    tokenCount < 1000 -> tokenCount.toString()
-                    tokenCount < 1000000 -> String.format("%.1fK", tokenCount / 1000.0)
-                    else -> String.format("%.1fM", tokenCount / 1000000.0)
+        // Calculate token count asynchronously
+        tokenCountService.countTokensInFilesAsync(selectedFiles.map { FileData(it.absolutePath, false) })
+            .thenAccept { tokenCount ->
+                SwingUtilities.invokeLater {
+                    val formattedCount = when {
+                        tokenCount < 1000 -> tokenCount.toString()
+                        tokenCount < 1000000 -> String.format("%.1fK", tokenCount / 1000.0)
+                        else -> String.format("%.1fM", tokenCount / 1000000.0)
+                    }
+                    tokenCountLabel.text = "Tokens: $formattedCount"
                 }
-                tokenCountLabel.text = "Tokens: $formattedCount"
-                tokenCountLabel.isVisible = true
             }
-        }.start()
+            .exceptionally { throwable ->
+                SwingUtilities.invokeLater {
+                    tokenCountLabel.text = "Tokens: error"
+                    logger.warn("Failed to calculate token count", throwable)
+                }
+                null
+            }
     }
 
     private fun getSelectedFilesForTokenCount(): List<File> {

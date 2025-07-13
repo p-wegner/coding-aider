@@ -8,24 +8,46 @@ import com.knuddels.jtokkit.api.EncodingRegistry
 import com.knuddels.jtokkit.api.ModelType
 import de.andrena.codingaider.command.FileData
 import java.io.File
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.Executors
 
 @Service(Service.Level.PROJECT)
 class TokenCountService(private val project: Project) {
 
     private val registry: EncodingRegistry = Encodings.newDefaultEncodingRegistry()
     private val encoding: Encoding = registry.getEncodingForModel(ModelType.GPT_4O)
+    private val executor = Executors.newCachedThreadPool { runnable ->
+        Thread(runnable, "TokenCountService-${System.currentTimeMillis()}").apply {
+            isDaemon = true
+        }
+    }
 
     fun countTokensInText(text: String, encoding: Encoding = this.encoding): Int {
         return encoding.countTokens(text)
     }
 
-    fun countTokensInFiles(files: List<FileData>,encoding: Encoding = this.encoding): Int {
+    fun countTokensInFiles(files: List<FileData>, encoding: Encoding = this.encoding): Int {
         return files.sumOf { fileData ->
             kotlin.runCatching {
                 val fileContent = File(fileData.filePath).readText()
                 countTokensInText(fileContent, encoding)
             }.getOrDefault(0)
         }
+    }
+
+    fun countTokensInFilesAsync(files: List<FileData>, encoding: Encoding = this.encoding): CompletableFuture<Int> {
+        return CompletableFuture.supplyAsync({
+            files.sumOf { fileData ->
+                if (shouldSkipTokenCount(fileData.filePath)) {
+                    0
+                } else {
+                    kotlin.runCatching {
+                        val fileContent = File(fileData.filePath).readText()
+                        countTokensInText(fileContent, encoding)
+                    }.getOrDefault(0)
+                }
+            }
+        }, executor)
     }
 
     companion object {
