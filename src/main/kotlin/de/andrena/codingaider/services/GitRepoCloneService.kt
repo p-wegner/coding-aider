@@ -150,6 +150,9 @@ class GitRepoCloneService(private val project: Project) {
                 val branches = getBranches(targetDir)
                 val tags = getTags(targetDir)
                 
+                // Copy .aiderignore file to cloned repository
+                copyAiderIgnoreFile(targetDir)
+                
                 return CloneResult(
                     success = true,
                     localPath = targetDir.absolutePath,
@@ -363,5 +366,20 @@ class GitRepoCloneService(private val project: Project) {
         val tempDir = Files.createTempDirectory("aider-git-clone").toFile()
         tempDir.deleteOnExit()
         return tempDir
+    }
+    
+    private fun copyAiderIgnoreFile(targetDir: File) {
+        try {
+            val projectBasePath = project.basePath ?: return
+            val sourceIgnoreFile = File(projectBasePath, ".aiderignore")
+            
+            if (sourceIgnoreFile.exists()) {
+                val targetIgnoreFile = File(targetDir, ".aiderignore")
+                sourceIgnoreFile.copyTo(targetIgnoreFile, overwrite = true)
+            }
+        } catch (e: Exception) {
+            // Log error but don't fail the clone operation
+            // The ignore file copy is a nice-to-have feature
+        }
     }
 }
