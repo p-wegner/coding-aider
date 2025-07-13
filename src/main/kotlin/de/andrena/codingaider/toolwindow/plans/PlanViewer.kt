@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.DataContext
 import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
@@ -161,7 +162,7 @@ class PlanViewer(private val project: Project) {
                     val selectedPlan = selectedValue ?: return
                     if (!selectedPlan.isPlanComplete()) {
                         VerifyImplementationAction(project, selectedPlan).actionPerformed(
-                            AnActionEvent.createFromDataContext("", null, com.intellij.openapi.actionSystem.DataContext.EMPTY_CONTEXT)
+                            AnActionEvent.createFromDataContext("", null, DataContext.EMPTY_CONTEXT)
                         )
                     }
                 }
@@ -330,7 +331,7 @@ class PlanViewer(private val project: Project) {
         val popup = JBPopupFactory.getInstance().createActionGroupPopup(
             "Plan Actions",
             actionGroup,
-            com.intellij.openapi.actionSystem.DataContext.EMPTY_CONTEXT,
+            DataContext.EMPTY_CONTEXT,
             JBPopupFactory.ActionSelectionAid.SPEEDSEARCH,
             true
         )
