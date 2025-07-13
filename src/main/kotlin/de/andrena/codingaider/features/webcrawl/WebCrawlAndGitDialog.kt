@@ -20,6 +20,7 @@ import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.AlignY
 import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.layout.selected
+import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.features.documentation.dialogs.DocumentationGenerationDialog
 import de.andrena.codingaider.services.GitRepoCloneService
 import de.andrena.codingaider.services.TokenCountService
