@@ -92,6 +92,12 @@ class IDEBasedExecutor(
             updateOutputProgress("Aider command aborted by user", "Aider Command Aborted")
             val outputService = project.service<AiderOutputService>()
             outputDisplay?.let { outputService.setProcessFinished(it) }
+            
+            // Remove from running commands when aborted
+            if (outputDisplay is AiderOutputTab) {
+                project.service<RunningCommandService>().removeRunningCommand(outputDisplay as AiderOutputTab)
+            }
+            
             Thread.sleep(500)
             ApplicationManager.getApplication().invokeLater {
                 if (outputDisplay is AiderOutputTab) {
@@ -148,7 +154,11 @@ class IDEBasedExecutor(
         }
         refreshFiles()
         planExecutionActions.commandCompleted()
-        project.service<RunningCommandService>().storeCompletedCommand(commandData, message)
+        
+        // Remove from running commands
+        if (outputDisplay is AiderOutputTab) {
+            project.service<RunningCommandService>().removeRunningCommand(outputDisplay as AiderOutputTab)
+        }
         
         // Record execution cost if this is a plan execution
         if (commandData.planId != null && exitCode == 0) {
@@ -195,6 +205,11 @@ class IDEBasedExecutor(
         outputDisplay?.let { 
             outputService.setProcessFinished(it)
             outputService.startAutoCloseTimer(it, 10)
+        }
+        
+        // Remove from running commands on error as well
+        if (outputDisplay is AiderOutputTab) {
+            project.service<RunningCommandService>().removeRunningCommand(outputDisplay as AiderOutputTab)
         }
     }
 
