@@ -70,7 +70,7 @@ class GitRepoCloneService(private val project: Project) {
         targetBranch: String? = null,
         targetCommit: String? = null,
         credentials: AuthCredentials? = null,
-        shallowClone: Boolean = true,
+        shallowClone: Boolean = false,
         depth: Int = 1
     ): CompletableFuture<CloneResult> {
         val future = CompletableFuture<CloneResult>()
