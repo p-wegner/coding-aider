@@ -69,11 +69,6 @@ class DocumentationGenerationDialog(
     
     private val filenameField = JBTextField().apply {
         emptyText.text = "Enter filename for documentation"
-        document.addDocumentListener(object : DocumentListener {
-            override fun insertUpdate(e: DocumentEvent?) = revalidateDialog()
-            override fun removeUpdate(e: DocumentEvent?) = revalidateDialog()
-            override fun changedUpdate(e: DocumentEvent?) = revalidateDialog()
-        })
     }
     
     private val promptArea = JBTextArea().apply {
@@ -164,13 +159,10 @@ class DocumentationGenerationDialog(
 
     override fun doValidate(): ValidationInfo? {
         val documentType = getSelectedDocumentType()
-        val filename = filenameField.text.trim()
         
         return when {
             documentType == null -> ValidationInfo("Please select a document type")
             settings.getDocumentTypes().isEmpty() -> ValidationInfo("No document types configured. Please configure document types in Project Settings.")
-            filename.isBlank() -> ValidationInfo("Please enter a filename for the documentation", filenameField)
-            !isValidFilename(filename) -> ValidationInfo("Please enter a valid filename (avoid special characters like < > : \" | ? * \\)", filenameField)
             else -> null
         }
     }
@@ -222,26 +214,4 @@ class DocumentationGenerationDialog(
     private fun getSelectedDocumentType(): DocumentTypeConfiguration? = documentTypeComboBox.selectedItem as? DocumentTypeConfiguration
     private fun getAdditionalPrompt(): String = promptArea.text
     
-    private fun isValidFilename(filename: String): Boolean {
-        if (filename.isBlank()) return false
-        
-        // Check for invalid characters in Windows/Unix filenames
-        val invalidChars = setOf('<', '>', ':', '"', '|', '?', '*', '\\')
-        if (filename.any { it in invalidChars }) return false
-        
-        // Check for reserved names on Windows
-        val reservedNames = setOf("CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9")
-        val nameWithoutExtension = filename.substringBeforeLast('.').uppercase()
-        if (nameWithoutExtension in reservedNames) return false
-        
-        // Check for names ending with space or dot
-        if (filename.endsWith(' ') || filename.endsWith('.')) return false
-        
-        return true
-    }
-    
-    private fun revalidateDialog() {
-        // Trigger revalidation by calling startTrackingValidation again
-        startTrackingValidation()
-    }
 }
