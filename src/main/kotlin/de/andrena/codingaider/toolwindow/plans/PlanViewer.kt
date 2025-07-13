@@ -160,13 +160,9 @@ class PlanViewer(private val project: Project) {
                 override fun actionPerformed(e: ActionEvent?) {
                     val selectedPlan = selectedValue ?: return
                     if (!selectedPlan.isPlanComplete()) {
-                        val actionEvent = AnActionEvent.createFromAnAction(
-                            VerifyImplementationAction(project, selectedPlan),
-                            null,
-                            "",
-                            com.intellij.openapi.actionSystem.DataContext.EMPTY_CONTEXT
+                        VerifyImplementationAction(project, selectedPlan).actionPerformed(
+                            AnActionEvent.createFromDataContext("", null, com.intellij.openapi.actionSystem.DataContext.EMPTY_CONTEXT)
                         )
-                        VerifyImplementationAction(project, selectedPlan).actionPerformed(actionEvent)
                     }
                 }
             })
