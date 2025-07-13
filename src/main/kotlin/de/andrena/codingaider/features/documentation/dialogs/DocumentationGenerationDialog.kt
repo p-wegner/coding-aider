@@ -170,7 +170,7 @@ class DocumentationGenerationDialog(
             documentType == null -> ValidationInfo("Please select a document type")
             settings.getDocumentTypes().isEmpty() -> ValidationInfo("No document types configured. Please configure document types in Project Settings.")
             filename.isBlank() -> ValidationInfo("Please enter a filename for the documentation", filenameField)
-            !isValidFilename(filename) -> ValidationInfo("Please enter a valid filename (avoid special characters like < > : \" | ? * \\\\)", filenameField)
+            !isValidFilename(filename) -> ValidationInfo("""Please enter a valid filename (avoid special characters like < > : " | ? * \)""", filenameField)
             else -> null
         }
     }
