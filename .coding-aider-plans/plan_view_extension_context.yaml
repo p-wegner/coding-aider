@@ -12,3 +12,5 @@ files:
     readOnly: false
   - path: src/main/kotlin/de/andrena/codingaider/toolwindow/plans/AiderPlanRefinementDialog.kt
     readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/toolwindow/plans/VerifyImplementationAction.kt
+    readOnly: false

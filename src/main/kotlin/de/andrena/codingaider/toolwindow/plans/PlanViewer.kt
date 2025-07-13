@@ -210,7 +210,7 @@ class PlanViewer(private val project: Project) {
         val viewHistoryAction = ViewHistoryAction().apply {
             templatePresentation.isEnabled = plan.mainPlanFile != null
         }
-        val verifyAction = VerifyImplementationAction().apply {
+        val verifyAction = VerifyImplementationAction(project, plan).apply {
             templatePresentation.isEnabled = !plan.isPlanComplete()
         }
         val moveToPersistentAction = MoveToPersistentFilesAction().apply {
@@ -934,37 +934,4 @@ class PlanViewer(private val project: Project) {
         }
     }
 
-    inner class VerifyImplementationAction : AnAction(
-        "Verify Implementation",
-        "Use LLM to verify implementation status and update checklist",
-        AllIcons.Actions.CheckOut
-    ) {
-        override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
-
-        override fun actionPerformed(e: AnActionEvent) {
-            val selectedPlan = plansList.selectedValue ?: return
-            
-            // Show confirmation dialog
-            val result = Messages.showYesNoDialog(
-                project,
-                "This will analyze the current implementation status and may update the checklist automatically. Continue?",
-                "Verify Implementation",
-                Messages.getQuestionIcon()
-            )
-            
-            if (result == Messages.YES) {
-                // TODO: Implement LLM verification logic
-                Messages.showInfoMessage(
-                    project,
-                    "LLM verification feature is not yet implemented. This will analyze files and update checklist items based on implementation status.",
-                    "Feature Coming Soon"
-                )
-            }
-        }
-
-        override fun update(e: AnActionEvent) {
-            val selectedPlan = plansList.selectedValue
-            e.presentation.isEnabled = selectedPlan != null && !selectedPlan.isPlanComplete()
-        }
-    }
 }
