@@ -5,12 +5,15 @@ import com.intellij.icons.AllIcons.Actions.SuggestedRefactoringBulb
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.actionSystem.ActionManager
+import com.intellij.openapi.actionSystem.DefaultActionGroup
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.service
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
+import com.intellij.openapi.ui.popup.JBPopupFactory
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.ui.JBColor
 import com.intellij.ui.components.JBList
@@ -165,6 +168,13 @@ class PlanViewer(private val project: Project) {
                             val treeAreaWidth = (depth * indentWidth) + iconWidth
                             val expandClickWidth = treeAreaWidth + 24
 
+                            // Handle right-click for context menu
+                            if (SwingUtilities.isRightMouseButton(e)) {
+                                plansList.selectedIndex = index
+                                showContextMenu(e.component, e.x, e.y, plan)
+                                return
+                            }
+
                             // Check if click was in the expand/collapse icon area
                             if (e.x < expandClickWidth && plan.childPlans.isNotEmpty()) {
                                 animateTreeExpansion(plan, planId)
@@ -184,6 +194,58 @@ class PlanViewer(private val project: Project) {
                 }
             })
         }
+    }
+
+    private fun showContextMenu(component: Component, x: Int, y: Int, plan: AiderPlan) {
+        // Create action instances and update their state based on the selected plan
+        val continueAction = ContinuePlanAction().apply {
+            templatePresentation.isEnabled = !plan.isPlanComplete()
+        }
+        val refineAction = RefinePlanAction().apply {
+            templatePresentation.isEnabled = true
+        }
+        val editContextAction = EditContextAction().apply {
+            templatePresentation.isEnabled = plan.mainPlanFile != null
+        }
+        val viewHistoryAction = ViewHistoryAction().apply {
+            templatePresentation.isEnabled = plan.mainPlanFile != null
+        }
+        val verifyAction = VerifyImplementationAction().apply {
+            templatePresentation.isEnabled = !plan.isPlanComplete()
+        }
+        val moveToPersistentAction = MoveToPersistentFilesAction().apply {
+            templatePresentation.isEnabled = plan.contextFiles.isNotEmpty()
+        }
+        val archiveAction = ArchivePlanAction().apply {
+            templatePresentation.isEnabled = true
+        }
+        val deleteAction = DeletePlanAction().apply {
+            templatePresentation.isEnabled = true
+        }
+
+        val actionGroup = DefaultActionGroup().apply {
+            add(continueAction)
+            addSeparator()
+            add(refineAction)
+            add(editContextAction)
+            add(verifyAction)
+            addSeparator()
+            add(viewHistoryAction)
+            add(moveToPersistentAction)
+            addSeparator()
+            add(archiveAction)
+            add(deleteAction)
+        }
+
+        val popup = JBPopupFactory.getInstance().createActionGroupPopup(
+            "Plan Actions",
+            actionGroup,
+            null,
+            JBPopupFactory.ActionSelectionAid.SPEEDSEARCH,
+            true
+        )
+
+        popup.showInScreenCoordinates(component, Point(x, y))
     }
 
     private fun animateTreeExpansion(plan: AiderPlan, planId: String) {
@@ -869,6 +931,40 @@ class PlanViewer(private val project: Project) {
 
         override fun update(e: AnActionEvent) {
             e.presentation.isEnabled = plansList.selectedValue != null
+        }
+    }
+
+    inner class VerifyImplementationAction : AnAction(
+        "Verify Implementation",
+        "Use LLM to verify implementation status and update checklist",
+        AllIcons.Actions.CheckOut
+    ) {
+        override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
+
+        override fun actionPerformed(e: AnActionEvent) {
+            val selectedPlan = plansList.selectedValue ?: return
+            
+            // Show confirmation dialog
+            val result = Messages.showYesNoDialog(
+                project,
+                "This will analyze the current implementation status and may update the checklist automatically. Continue?",
+                "Verify Implementation",
+                Messages.getQuestionIcon()
+            )
+            
+            if (result == Messages.YES) {
+                // TODO: Implement LLM verification logic
+                Messages.showInfoMessage(
+                    project,
+                    "LLM verification feature is not yet implemented. This will analyze files and update checklist items based on implementation status.",
+                    "Feature Coming Soon"
+                )
+            }
+        }
+
+        override fun update(e: AnActionEvent) {
+            val selectedPlan = plansList.selectedValue
+            e.presentation.isEnabled = selectedPlan != null && !selectedPlan.isPlanComplete()
         }
     }
 }
