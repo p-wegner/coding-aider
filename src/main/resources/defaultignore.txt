@@ -14,3 +14,9 @@ target/
 node_modules/
 dist/
 **/*cpython-*.pyc
+**/gradlew.bat
+**/gradle.properties
+**/gradlew
+**/.gitignore
+**/gradle-wrapper.jar
+**/gradle-wrapper.properties
