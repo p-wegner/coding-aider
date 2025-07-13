@@ -37,6 +37,8 @@ import javax.swing.DefaultListCellRenderer
 import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JList
+import javax.swing.event.DocumentEvent
+import javax.swing.event.DocumentListener
 
 class DocumentationGenerationDialog(
     private val project: Project,
@@ -67,6 +69,11 @@ class DocumentationGenerationDialog(
     
     private val filenameField = JBTextField().apply {
         emptyText.text = "Enter filename for documentation"
+        document.addDocumentListener(object : DocumentListener {
+            override fun insertUpdate(e: DocumentEvent?) = revalidateDialog()
+            override fun removeUpdate(e: DocumentEvent?) = revalidateDialog()
+            override fun changedUpdate(e: DocumentEvent?) = revalidateDialog()
+        })
     }
     
     private val promptArea = JBTextArea().apply {
@@ -231,5 +238,10 @@ class DocumentationGenerationDialog(
         if (filename.endsWith(' ') || filename.endsWith('.')) return false
         
         return true
+    }
+    
+    private fun revalidateDialog() {
+        // Trigger revalidation by calling startTrackingValidation again
+        startTrackingValidation()
     }
 }
