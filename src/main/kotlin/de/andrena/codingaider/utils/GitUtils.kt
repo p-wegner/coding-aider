@@ -20,12 +20,10 @@ object GitUtils {
         getApplication().executeOnPooledThread<Unit> {
             val repository = getGitRepository(project)
             if (repository != null) {
-                getApplication().runReadAction {
-                    val changes = getChangesSince(repository, commitHash)
-                    getApplication().invokeLater {
-                        GitDiffPresenter.presentChanges(project, changes)
-                        afterAction()
-                    }
+                val changes = getChangesSince(repository, commitHash)
+                getApplication().invokeLater {
+                    GitDiffPresenter.presentChanges(project, changes)
+                    afterAction()
                 }
             }
         }
