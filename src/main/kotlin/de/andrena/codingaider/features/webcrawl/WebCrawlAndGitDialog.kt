@@ -41,6 +41,8 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
         emptyText.text = "Enter URL to crawl"
     }
     private val logger = Logger.getInstance(WebCrawlAndGitDialog::class.java)
+    
+    private var selectedTab = 0
 
     // Git Repository fields
     private val gitService = project.service<GitRepoCloneService>()
@@ -242,6 +244,11 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
         }
 
         tabbedPane.addTab("Git Repository", gitPanel)
+        
+        // Track selected tab changes
+        tabbedPane.addChangeListener { 
+            selectedTab = tabbedPane.selectedIndex
+        }
 
         val mainPanel = panel {
             row {
@@ -258,12 +265,6 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
     }
 
     override fun doValidate(): ValidationInfo? {
-        val centerComponent = createCenterPanel()
-        val selectedTab = (centerComponent as? JComponent)?.let { panel ->
-            val tabbedPane = findTabbedPane(panel)
-            tabbedPane?.selectedIndex
-        } ?: 0
-
         return when (selectedTab) {
             0 -> { // Web Crawl
                 val url = urlField.text.trim()
@@ -290,7 +291,6 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
     }
 
     override fun doOKAction() {
-// TODO 13/07/2025 PWegner: either do web crawl or open documentation type selection
         when (selectedTab) {
             0 -> { // Web Crawl
                 val url = urlField.text.trim()
@@ -303,23 +303,17 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
             1 -> { // Git Repository
                 val selectedFiles = getSelectedFiles()
                 if (selectedFiles.isNotEmpty() && clonedRepoPath != null) {
-                    // TODO 13/07/2025 PWegner: start Documentation Generation workflow
+                    // Close this dialog and open the documentation generation dialog
                     super.doOKAction()
+                    
+                    // Open GitRepoDocumentationDialog with pre-selected files
+                    val documentationDialog = GitRepoDocumentationDialog(project, selectedFiles, clonedRepoPath!!)
+                    documentationDialog.show()
                 }
             }
         }
     }
 
-    private fun findTabbedPane(component: JComponent): JBTabbedPane? {
-        if (component is JBTabbedPane) return component
-        for (child in component.components) {
-            if (child is JComponent) {
-                val found = findTabbedPane(child)
-                if (found != null) return found
-            }
-        }
-        return null
-    }
 
     private fun toggleAuthFields() {
         val isVisible = authCheckBox.isSelected
