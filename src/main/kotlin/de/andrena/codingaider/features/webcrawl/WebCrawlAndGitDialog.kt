@@ -231,8 +231,9 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
                 }
                 row {
                     cell(JBScrollPane(fileTree).apply {
-                        preferredSize = Dimension(600, 300)
-                        minimumSize = Dimension(400, 200)
+                        preferredSize = Dimension(700, 400)
+                        minimumSize = Dimension(500, 300)
+                        maximumSize = Dimension(Int.MAX_VALUE, Int.MAX_VALUE)
                     })
                         .resizableColumn()
                         .align(AlignY.FILL)
@@ -257,8 +258,8 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
             }.resizableRow()
         }
 
-        mainPanel.preferredSize = Dimension(800, 600)
-        mainPanel.minimumSize = Dimension(600, 400)
+        mainPanel.preferredSize = Dimension(900, 700)
+        mainPanel.minimumSize = Dimension(700, 500)
         return mainPanel
     }
 
