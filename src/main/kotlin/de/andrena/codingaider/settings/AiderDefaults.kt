@@ -39,7 +39,6 @@ Make your changes precise and minimal."""
     // TODO: make enum with off, single plan, family
     const val ENABLE_AUTO_PLAN_CONTINUE = true
     const val ENABLE_AUTO_PLAN_CONTINUATION_IN_FAMILY = false
-    const val MARKDOWN_DIALOG_AUTOCLOSE_DELAY_IN_S: Int = 10
     const val USE_YES_FLAG = true
     const val LLM = ""
     const val ADDITIONAL_ARGS = ""
@@ -53,7 +52,6 @@ Make your changes precise and minimal."""
     const val EDIT_FORMAT = ""
     const val VERBOSE_COMMAND_LOGGING = false
     const val USE_DOCKER_AIDER = false
-    const val ENABLE_MARKDOWN_DIALOG_AUTOCLOSE = true
     const val MOUNT_AIDER_CONF_IN_DOCKER = true
     const val INCLUDE_CHANGE_CONTEXT = false
     val DEFAULT_MODE = AiderMode.NORMAL
@@ -64,6 +62,5 @@ Make your changes precise and minimal."""
     const val PLUGIN_BASED_EDITS = false // Added for plugin-based edits feature
     const val LENIENT_EDITS = false // Allow processing of multiple edit formats in a single response
     const val AUTO_COMMIT_AFTER_EDITS = false // Auto-commit after plugin-based edits
-    const val USE_TOOL_WINDOW_OUTPUT = true // Use tool window instead of popup dialogs for output
     const val SHOW_WORKING_DIRECTORY_PANEL = true // Show working directory panel in tool window
 }

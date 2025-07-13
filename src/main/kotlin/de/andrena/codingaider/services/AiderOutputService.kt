@@ -11,7 +11,6 @@ import de.andrena.codingaider.outputview.AiderOutputTab
 import de.andrena.codingaider.outputview.AiderOutputToolWindow
 import de.andrena.codingaider.outputview.AiderOutputToolWindowContent
 import de.andrena.codingaider.outputview.CodingAiderOutputPresentation
-import de.andrena.codingaider.outputview.MarkdownDialog
 import de.andrena.codingaider.services.plans.ActivePlanService
 import de.andrena.codingaider.services.plans.ContinuePlanService
 import de.andrena.codingaider.settings.AiderSettings

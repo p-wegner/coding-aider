@@ -4,11 +4,11 @@
 
 ## Settings and Configuration
 - [x] Update AiderDefaults.USE_TOOL_WINDOW_OUTPUT to default to true
-- [ ] Remove dialog-specific settings from AiderSettings
-- [ ] Remove enableMarkdownDialogAutoclose setting
-- [ ] Remove markdownDialogAutocloseDelay setting
-- [ ] Remove closeOutputDialogImmediately property
-- [ ] Remove showMarkdownDevTools setting (move to general setting if needed)
+- [x] Remove dialog-specific settings from AiderSettings
+- [x] Remove enableMarkdownDialogAutoclose setting
+- [x] Remove markdownDialogAutocloseDelay setting
+- [x] Remove closeOutputDialogImmediately property
+- [x] Remove showMarkdownDevTools setting (move to general setting if needed)
 
 ## AiderOutputService Modifications
 - [x] Remove createDialog method from AiderOutputService
@@ -43,10 +43,11 @@
 - [x] Delete MarkdownDialog.kt file entirely
 - [x] Remove all imports of MarkdownDialog from other files
 - [x] Remove MarkdownDialog references from CodingAiderOutputPresentation interface usage
+- [x] Remove MarkdownDialog import from AiderOutputService
 
 ## Tool Window Enhancements
-- [ ] Ensure AiderOutputTab handles all former dialog functionality
-- [ ] Verify auto-close behavior works appropriately for tool window (focus instead of close)
-- [ ] Ensure abort functionality works correctly in tool window tabs
-- [ ] Verify continue functionality works in tool window context
-- [ ] Ensure create plan functionality works in tool window tabs
+- [x] Ensure AiderOutputTab handles all former dialog functionality
+- [x] Verify auto-close behavior works appropriately for tool window (focus instead of close)
+- [x] Ensure abort functionality works correctly in tool window tabs
+- [x] Verify continue functionality works in tool window context
+- [x] Ensure create plan functionality works in tool window tabs
