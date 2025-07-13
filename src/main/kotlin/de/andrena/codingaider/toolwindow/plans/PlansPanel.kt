@@ -49,7 +49,6 @@ class PlansPanel(private val project: Project) {
                         add(planViewer.NewPlanAction())
                         addSeparator()
                         add(planViewer.ContinuePlanAction())
-                        add(planViewer.EditContextAction())
                         addSeparator()
                         add(planViewer.ViewHistoryAction())
                         add(planViewer.MoveToPersistentFilesAction())
