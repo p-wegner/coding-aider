@@ -22,7 +22,7 @@ class CommandPlanExecutionHandler(private val project: Project, private val comm
             val newPlanFiles = currentPlanFiles.subtract(initialPlanFiles)
             if (newPlanFiles.isNotEmpty()) {
                 val plans = project.service<AiderPlanService>().getAiderPlans(newPlanFiles.toList())
-                plans.first().let {
+                plans.firstOrNull()?.let {
                     project.service<ActivePlanService>().setActivePlan(it)
                     project.service<PersistentFileService>().addAllFiles(it.allFiles)
                 }
