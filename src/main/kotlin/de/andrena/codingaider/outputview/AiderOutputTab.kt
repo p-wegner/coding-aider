@@ -111,6 +111,12 @@ class AiderOutputTab(
         }
     }
     
+    private val autoContinueCheckbox = JCheckBox("Auto Continue", true).apply {
+        mnemonic = KeyEvent.VK_U
+        isVisible = false
+        toolTipText = "Automatically continue with plan when finished"
+    }
+    
     private val countdownLabel = JLabel().apply {
         isVisible = false
     }
@@ -156,6 +162,7 @@ class AiderOutputTab(
         toolbar.add(closeAndContinueButton)
         toolbar.add(createPlanButton)
         toolbar.add(showDevToolsButton)
+        toolbar.add(autoContinueCheckbox)
         toolbar.add(cancelContinueButton)
         toolbar.add(countdownLabel)
         
@@ -201,21 +208,28 @@ class AiderOutputTab(
         isProcessFinished.set(true)
         SwingUtilities.invokeLater {
             abortButton.isVisible = false
-            closeAndContinueButton.isVisible = commandData?.structuredMode == true && 
+            val hasActivePlan = commandData?.structuredMode == true && 
                 commandData.planId?.let { planId ->
                     project.service<de.andrena.codingaider.services.plans.ActivePlanService>()
                         .getActivePlan()?.let { !it.isPlanComplete() } ?: false
                 } ?: false
+            closeAndContinueButton.isVisible = hasActivePlan
+            autoContinueCheckbox.isVisible = hasActivePlan
             createPlanButton.isVisible = commandData != null && commandData.structuredMode != true
+            
+            // Initialize checkbox state based on settings
+            if (hasActivePlan) {
+                val settings = getInstance()
+                autoContinueCheckbox.isSelected = settings.enableAutoPlanContinue
+            }
         }
     }
     
     fun startAutoCloseTimer(autocloseDelay: Int) {
-        val settings = getInstance()
         setProcessFinished()
         
         // Schedule auto-continue with countdown and allow cancellation
-        if (settings.enableAutoPlanContinue && commandData?.structuredMode == true) {
+        if (commandData?.structuredMode == true && autoContinueCheckbox.isSelected) {
             val remaining = AtomicInteger(autocloseDelay)
             cancelContinueButton.isVisible = true
             countdownLabel.isVisible = true
@@ -226,6 +240,16 @@ class AiderOutputTab(
             }
             
             autoCloseTimer = executor.scheduleWithFixedDelay({
+                // Check if auto-continue is still enabled
+                if (!autoContinueCheckbox.isSelected) {
+                    autoCloseTimer?.cancel(false)
+                    SwingUtilities.invokeLater {
+                        cancelContinueButton.isVisible = false
+                        countdownLabel.isVisible = false
+                    }
+                    return@scheduleWithFixedDelay
+                }
+                
                 val secs = remaining.decrementAndGet()
                 if (secs > 0) {
                     SwingUtilities.invokeLater {

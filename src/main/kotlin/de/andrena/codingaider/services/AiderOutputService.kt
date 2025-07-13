@@ -84,8 +84,7 @@ class AiderOutputService(private val project: Project) {
     }
     
     fun triggerAutoContinue(commandData: CommandData?) {
-        val settings = AiderSettings.getInstance()
-        if (!settings.enableAutoPlanContinue || commandData?.structuredMode != true) {
+        if (commandData?.structuredMode != true) {
             return
         }
         
