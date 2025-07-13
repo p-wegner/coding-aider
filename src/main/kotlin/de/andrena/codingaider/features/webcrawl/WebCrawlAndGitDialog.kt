@@ -21,6 +21,7 @@ import com.intellij.ui.dsl.builder.panel
 import com.intellij.ui.layout.selected
 import de.andrena.codingaider.features.documentation.dialogs.DocumentationGenerationDialog
 import de.andrena.codingaider.services.GitRepoCloneService
+import de.andrena.codingaider.services.TokenCountService
 import java.awt.Component
 import java.awt.Dimension
 import java.io.File
@@ -46,6 +47,7 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
 
     // Git Repository fields
     private val gitService = project.service<GitRepoCloneService>()
+    private val tokenCountService = project.service<TokenCountService>()
     private val repoUrlField = JBTextField().apply {
         emptyText.text = "Enter Git repository URL (https://github.com/user/repo.git)"
     }
@@ -136,6 +138,11 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
     }, CheckedTreeNode("No repository cloned")).apply {
         isRootVisible = true
         showsRootHandles = true
+        addCheckboxTreeListener(object : CheckboxTreeListener {
+            override fun nodeStateChanged(node: CheckedTreeNode) {
+                updateTokenCount()
+            }
+        })
     }
 
     private val fileTypeFilterField = JBTextField().apply {
@@ -144,6 +151,10 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
 
     private val applyFilterButton = JButton("Apply Filter").apply {
         addActionListener { applyFileTypeFilter() }
+    }
+
+    private val tokenCountLabel = JLabel("Tokens: 0").apply {
+        isVisible = false
     }
 
     private var clonedRepoPath: String? = null
@@ -221,6 +232,10 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
                 }
                 row {
                     cell(repoSizeLabel)
+                        .align(AlignX.LEFT)
+                }
+                row {
+                    cell(tokenCountLabel)
                         .align(AlignX.LEFT)
                 }
                 row {
@@ -520,6 +535,7 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
 
         fileTree.model = DefaultTreeModel(root)
         fileTree.expandRow(0)
+        updateTokenCount()
     }
 
     private fun addDirectoryToTree(parentNode: CheckedTreeNode, directory: File) {
@@ -539,6 +555,7 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
         val root = fileTree.model.root as? CheckedTreeNode ?: return
         setNodeSelection(root, selected)
         fileTree.repaint()
+        updateTokenCount()
     }
 
     private fun setNodeSelection(node: CheckedTreeNode, selected: Boolean) {
@@ -563,6 +580,7 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
 
         applyFilterToNode(root, extensions)
         fileTree.repaint()
+        updateTokenCount()
     }
 
     private fun applyFilterToNode(node: CheckedTreeNode, extensions: List<String>): Boolean {
@@ -691,6 +709,7 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
                 if (success) {
                     // Update file tree with new branch/tag content
                     updateFileTree(clonedRepoPath!!)
+                    updateTokenCount()
                     logger.info("Successfully switched to ${if (selectedItem.isTag) "tag" else "branch"}: ${selectedItem.name}")
                 } else {
                     Messages.showErrorDialog(
@@ -700,6 +719,78 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
                 }
             }
         }.start()
+    }
+
+    private fun updateTokenCount() {
+        if (clonedRepoPath == null) {
+            tokenCountLabel.isVisible = false
+            return
+        }
+
+        val selectedFiles = getSelectedFilesForTokenCount()
+        if (selectedFiles.isEmpty()) {
+            tokenCountLabel.text = "Tokens: 0"
+            tokenCountLabel.isVisible = true
+            return
+        }
+
+        // Calculate token count in background to avoid UI freezing
+        Thread {
+            val tokenCount = selectedFiles.sumOf { file ->
+                if (tokenCountService.shouldSkipTokenCount(file.absolutePath)) {
+                    0
+                } else {
+                    try {
+                        val content = file.readText()
+                        tokenCountService.countTokensInText(content)
+                    } catch (e: Exception) {
+                        0
+                    }
+                }
+            }
+
+            SwingUtilities.invokeLater {
+                val formattedCount = when {
+                    tokenCount < 1000 -> tokenCount.toString()
+                    tokenCount < 1000000 -> String.format("%.1fK", tokenCount / 1000.0)
+                    else -> String.format("%.1fM", tokenCount / 1000000.0)
+                }
+                tokenCountLabel.text = "Tokens: $formattedCount"
+                tokenCountLabel.isVisible = true
+            }
+        }.start()
+    }
+
+    private fun getSelectedFilesForTokenCount(): List<File> {
+        val selectedFiles = mutableListOf<File>()
+        clonedRepoPath?.let { repoPath ->
+            val root = fileTree.model.root as? CheckedTreeNode
+            if (root != null) {
+                collectCheckedFilesForTokenCount(root, repoPath, selectedFiles)
+            }
+        }
+        return selectedFiles
+    }
+
+    private fun collectCheckedFilesForTokenCount(
+        node: CheckedTreeNode,
+        repoPath: String,
+        selectedFiles: MutableList<File>
+    ) {
+        if (node.isChecked) {
+            val file = node.userObject as? File
+            if (file != null && file.isFile && file != File(repoPath)) {
+                selectedFiles.add(file)
+            }
+        }
+
+        // Always check children, even if parent is not checked (for partial selections)
+        for (i in 0 until node.childCount) {
+            val child = node.getChildAt(i) as? CheckedTreeNode
+            if (child != null) {
+                collectCheckedFilesForTokenCount(child, repoPath, selectedFiles)
+            }
+        }
     }
 
     override fun doCancelAction() {
