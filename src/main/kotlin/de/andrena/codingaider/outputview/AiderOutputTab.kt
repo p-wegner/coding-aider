@@ -151,6 +151,18 @@ class AiderOutputTab(
         
         val settings = AiderSettings.getInstance()
         showDevToolsButton.isVisible = markdownViewer.supportsDevTools() && settings.showDevTools
+        
+        // Show auto-continue checkbox during execution if this is a structured mode command
+        val hasActivePlan = commandData?.structuredMode == true && 
+            commandData.planId?.let { planId ->
+                project.service<de.andrena.codingaider.services.plans.ActivePlanService>()
+                    .getActivePlan()?.let { !it.isPlanComplete() } ?: false
+            } ?: false
+        
+        if (hasActivePlan) {
+            autoContinueCheckbox.isVisible = true
+            autoContinueCheckbox.isSelected = settings.enableAutoPlanContinue
+        }
     }
     
     private fun createToolbar(): JPanel {
@@ -216,12 +228,6 @@ class AiderOutputTab(
             closeAndContinueButton.isVisible = hasActivePlan
             autoContinueCheckbox.isVisible = hasActivePlan
             createPlanButton.isVisible = commandData != null && commandData.structuredMode != true
-            
-            // Initialize checkbox state based on settings
-            if (hasActivePlan) {
-                val settings = getInstance()
-                autoContinueCheckbox.isSelected = settings.enableAutoPlanContinue
-            }
         }
     }
     
