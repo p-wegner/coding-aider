@@ -29,7 +29,7 @@ class McpServerService(private val project: Project) {
     private var mcpServer: Server? = null
     private val persistentFileService by lazy { project.service<PersistentFileService>() }
     private val serverPort = 8080 // Default port, could be configurable
-    private var httpServer: ApplicationEngine? = null
+    private var httpServer: EmbeddedServer<CIOApplicationEngine, CIOApplicationEngine.Configuration>? = null
     
     init {
         // Start the MCP server automatically when the service is created
