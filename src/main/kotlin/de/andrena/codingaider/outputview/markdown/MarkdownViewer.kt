@@ -100,6 +100,13 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
         renderer.setDarkTheme(dark)
     }
     
+    fun scrollToBottom() {
+        if (isDisposed) {
+            return
+        }
+        renderer.scrollToBottom()
+    }
+    
 
     fun supportsDevTools(): Boolean {
         if (isDisposed) {

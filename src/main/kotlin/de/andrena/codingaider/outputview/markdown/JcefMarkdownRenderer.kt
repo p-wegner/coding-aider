@@ -407,6 +407,16 @@ class JcefMarkdownRenderer(
         return sb.toString()
     }
 
+    override fun scrollToBottom() {
+        if (isDisposed.get() || browser == null) return
+
+        try {
+            executeJavaScript("window.scrollTo(0, document.body.scrollHeight);")
+        } catch (e: Exception) {
+            LOG.error("Error scrolling to bottom", e)
+        }
+    }
+
     override fun dispose() {
         // Only dispose once
         if (isDisposed.getAndSet(true)) return

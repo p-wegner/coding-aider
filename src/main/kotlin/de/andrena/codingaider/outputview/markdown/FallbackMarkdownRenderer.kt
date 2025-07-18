@@ -140,6 +140,33 @@ class FallbackMarkdownRenderer(
         }
     }
     
+    override fun scrollToBottom() {
+        if (isDisposed) {
+            return
+        }
+        
+        SwingUtilities.invokeLater {
+            try {
+                programmaticScrolling = true
+                
+                // Try to scroll to the end of the document
+                val doc = editorPane.document
+                editorPane.caretPosition = doc.length
+                
+                // Also try scrolling to the bottom using rectangle
+                val rect = editorPane.modelToView(doc.length)
+                if (rect != null) {
+                    rect.y = rect.y + rect.height
+                    editorPane.scrollRectToVisible(rect)
+                }
+                
+                programmaticScrolling = false
+            } catch (e: Exception) {
+                programmaticScrolling = false
+                println("Error scrolling to bottom: ${e.message}")
+            }
+        }
+    }
     
     override fun dispose() {
         if (!isDisposed) {

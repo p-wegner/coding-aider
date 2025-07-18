@@ -121,6 +121,11 @@ class AiderOutputTab(
         isVisible = false
     }
     
+    private val autoScrollCheckbox = JCheckBox("Auto Scroll", true).apply {
+        mnemonic = KeyEvent.VK_S
+        toolTipText = "Automatically scroll to bottom when content is updated"
+    }
+    
 
     val component: JComponent
         get() = mainPanel
@@ -129,15 +134,9 @@ class AiderOutputTab(
         get() = displayString ?: initialTitle
 
     init {
-        val scrollPane = JBScrollPane(markdownViewer.component).apply {
-            border = null
-            horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
-            verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED
-        }
-        
         val contentPanel = JPanel(BorderLayout(0, 0)).apply {
             border = BorderFactory.createEmptyBorder(5, 5, 5, 5)
-            add(scrollPane, BorderLayout.CENTER)
+            add(markdownViewer.component, BorderLayout.CENTER)
         }
         
         mainPanel.add(contentPanel, BorderLayout.CENTER)
@@ -177,6 +176,7 @@ class AiderOutputTab(
         toolbar.add(createPlanButton)
         toolbar.add(showDevToolsButton)
         toolbar.add(autoContinueCheckbox)
+        toolbar.add(autoScrollCheckbox)
         toolbar.add(cancelContinueButton)
         toolbar.add(countdownLabel)
         
@@ -211,6 +211,11 @@ class AiderOutputTab(
                 val newContent = output.replace("\r\n", "\n")
                 val contentToSet = newContent.ifBlank { " " }
                 markdownViewer.setMarkdown(contentToSet)
+                
+                // Auto-scroll to bottom if enabled
+                if (autoScrollCheckbox.isSelected) {
+                    markdownViewer.scrollToBottom()
+                }
                 
             } catch (e: Exception) {
                 println("Error updating tab content: ${e.message}")
