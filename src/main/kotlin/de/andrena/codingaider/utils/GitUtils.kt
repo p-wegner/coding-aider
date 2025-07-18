@@ -31,13 +31,11 @@ object GitUtils {
 
     //
     private fun getChangesSince(repository: GitRepository, commitHash: String): List<Change> {
-        return getApplication().runReadAction<List<Change>> {
-            val root = repository.root
-            val gitVcs = repository.vcs
-            val revNum = gitVcs.parseRevisionNumber(commitHash) ?: return@runReadAction emptyList()
-            val changes: Collection<Change>? = gitVcs.diffProvider.compareWithWorkingDir(root, revNum)
-            changes?.toList() ?: emptyList()
-        }
+        val root = repository.root
+        val gitVcs = repository.vcs
+        val revNum = gitVcs.parseRevisionNumber(commitHash) ?: return emptyList()
+        val changes: Collection<Change>? = gitVcs.diffProvider.compareWithWorkingDir(root, revNum)
+        return changes?.toList() ?: emptyList()
     }
 
     private fun getGitRepository(project: Project): GitRepository? {
