@@ -7,6 +7,7 @@ import de.andrena.codingaider.command.FileData
 import io.modelcontextprotocol.kotlin.sdk.*
 import io.modelcontextprotocol.kotlin.sdk.server.Server
 import io.modelcontextprotocol.kotlin.sdk.server.ServerOptions
+import io.modelcontextprotocol.kotlin.sdk.server.StdioServerTransport
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -49,11 +50,8 @@ class McpServerService(private val project: Project) {
                     // Add tools for persistent file management
                     addPersistentFileTools()
                     
-                    // Connect with HTTP transport
-                    val transport = HttpServerTransport(
-                        port = serverPort,
-                        host = "localhost"
-                    )
+                    // Connect with STDIO transport
+                    val transport = StdioServerTransport()
                     mcpServer?.connect(transport)
                     
                     isRunning.set(true)
