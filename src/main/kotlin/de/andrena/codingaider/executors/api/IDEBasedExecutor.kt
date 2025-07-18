@@ -231,9 +231,13 @@ ${message.trimStart()}
         if (!commandData.options.disablePresentation) {
             presentChanges()
         }
-        val commitBefore = currentCommitHash
-        val commitAfter = GitUtils.getCurrentCommitHash(project)
-        project.service<RunningCommandService>().storeCompletedCommand(commandData, message, commitBefore, commitAfter)
+        try {
+            val commitBefore = currentCommitHash
+            val commitAfter = GitUtils.getCurrentCommitHash(project)
+            project.service<RunningCommandService>().storeCompletedCommand(commandData, message, commitBefore, commitAfter)
+        } catch (e: InterruptedException) {
+            // aborting commands should be handled gracefully
+        }
         finalOutput = message
         commandFinishedCallback?.onCommandFinished(exitCode == 0)
     }
