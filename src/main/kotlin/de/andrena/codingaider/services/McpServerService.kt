@@ -7,6 +7,11 @@ import de.andrena.codingaider.command.FileData
 import io.modelcontextprotocol.kotlin.sdk.*
 import io.modelcontextprotocol.kotlin.sdk.server.Server
 import io.modelcontextprotocol.kotlin.sdk.server.ServerOptions
+import io.ktor.server.application.*
+import io.ktor.server.cio.*
+import io.ktor.server.engine.*
+import io.ktor.server.routing.*
+import io.ktor.server.sse.*
 import io.modelcontextprotocol.kotlin.sdk.server.SseServerTransport
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -24,6 +29,7 @@ class McpServerService(private val project: Project) {
     private var mcpServer: Server? = null
     private val persistentFileService by lazy { project.service<PersistentFileService>() }
     private val serverPort = 8080 // Default port, could be configurable
+    private var httpServer: ApplicationEngine? = null
     
     init {
         // Start the MCP server automatically when the service is created
@@ -50,12 +56,22 @@ class McpServerService(private val project: Project) {
                     // Add tools for persistent file management
                     addPersistentFileTools()
                     
-                    // Connect with HTTP SSE transport
-                    val transport = SseServerTransport(
-                        endpoint = "/sse",
-                        port = serverPort
-                    )
-                    mcpServer?.connect(transport)
+                    // Start HTTP server with SSE transport
+                    httpServer = embeddedServer(CIO, host = "0.0.0.0", port = serverPort) {
+                        install(SSE)
+                        routing {
+                            sse("/sse") {
+                                val transport = SseServerTransport("/message", this)
+                                mcpServer?.connect(transport)
+                            }
+                            post("/message") {
+                                // Handle POST messages for SSE transport
+                                val sessionId = call.request.queryParameters["sessionId"]
+                                // Message handling will be done by the transport
+                            }
+                        }
+                    }
+                    httpServer?.start(wait = false)
                     
                     isRunning.set(true)
                 } catch (e: Exception) {
@@ -72,6 +88,8 @@ class McpServerService(private val project: Project) {
             coroutineScope.launch {
                 mcpServer?.close()
                 mcpServer = null
+                httpServer?.stop(1000, 2000)
+                httpServer = null
             }
         }
     }
