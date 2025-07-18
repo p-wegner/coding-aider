@@ -3,17 +3,13 @@
  * Handles content updates, collapsible panels, and smart scroll management
  */
 
-// Track scroll state and panel expansion
-let isUserScrolled = false;
+// Track content updates and panel expansion
 let isUpdatingContent = false;
-let shouldAutoScroll = true; // Flag to control auto-scrolling behavior
 const panelStates = {};
-let scrollTimeout = null;
 
 // Initialize when document is ready or immediately if already loaded
 function initMarkdownViewer() {
     console.log('Markdown viewer JavaScript loaded');
-    initializeScrollTracking();
     initCollapsiblePanels();
 }
 
@@ -23,57 +19,6 @@ if (document.readyState === 'loading') {
     initMarkdownViewer();
 }
 
-// Initialize scroll tracking
-function initializeScrollTracking() {
-    // Track scroll events with debouncing
-    window.addEventListener('scroll', function() {
-        if (isUpdatingContent) return;
-        
-        // Clear existing timeout
-        if (scrollTimeout) {
-            clearTimeout(scrollTimeout);
-        }
-        
-        // Set user scrolled flag immediately
-        isUserScrolled = true;
-        
-        // Check if user scrolled back to bottom after a delay
-        scrollTimeout = setTimeout(function() {
-            if (isScrolledToBottom()) {
-                isUserScrolled = false;
-                shouldAutoScroll = true;
-            }
-        }, 150);
-    }, { passive: true });
-    
-    // Track wheel events for immediate feedback
-    window.addEventListener('wheel', function(e) {
-        if (isUpdatingContent) return;
-        if (e.deltaY !== 0) {
-            isUserScrolled = true;
-        }
-    }, { passive: true });
-    
-    // Track keyboard navigation
-    window.addEventListener('keydown', function(e) {
-        if (isUpdatingContent) return;
-        
-        const scrollKeys = ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', 'Space'];
-        if (scrollKeys.includes(e.key)) {
-            isUserScrolled = true;
-            
-            // Check if End key was pressed (scroll to bottom)
-            if (e.key === 'End' && (e.ctrlKey || e.metaKey)) {
-                setTimeout(() => {
-                    if (isScrolledToBottom()) {
-                        isUserScrolled = false;
-                        shouldAutoScroll = true;
-                    }
-                }, 100);
-            }
-        }
-    });
-}
 
 /**
  * Generate a stable ID for each panel based on its header content
@@ -199,16 +144,12 @@ function togglePanel(panel) {
 }
 
 /**
- * Update content while preserving panel states and implementing smart scroll
+ * Update content while preserving panel states
  */
 function updateContent(html) {
     try {
-        console.log('Updating content, wasAtBottom:', isScrolledToBottom(), 'isUserScrolled:', isUserScrolled);
+        console.log('Updating content');
         isUpdatingContent = true;
-        
-        // Save current scroll position and bottom state
-        const scrollPosition = window.scrollY;
-        const wasAtBottom = isScrolledToBottom();
         
         // Store current panel states before updating
         storeCurrentPanelStates();
@@ -229,15 +170,6 @@ function updateContent(html) {
         setTimeout(() => {
             initCollapsiblePanels();
             restorePanelStates();
-            
-            // Smart scroll logic
-            if (shouldAutoScroll && (wasAtBottom || !isUserScrolled)) {
-                console.log('Auto-scrolling to bottom');
-                scrollToBottomSmooth();
-            } else if (isUserScrolled && !wasAtBottom) {
-                console.log('Restoring scroll position:', scrollPosition);
-                window.scrollTo(0, scrollPosition);
-            }
             
             // Remove updating class
             document.body.classList.remove('updating-content');
@@ -303,74 +235,6 @@ function restorePanelStates() {
     });
 }
 
-/**
- * Check if the view is scrolled to the bottom
- */
-function isScrolledToBottom() {
-    const scrollY = window.scrollY || window.pageYOffset;
-    const windowHeight = window.innerHeight;
-    const documentHeight = Math.max(
-        document.body.scrollHeight,
-        document.body.offsetHeight,
-        document.documentElement.clientHeight,
-        document.documentElement.scrollHeight,
-        document.documentElement.offsetHeight
-    );
-    
-    // Consider "bottom" if within 50px of the actual bottom
-    const isAtBottom = scrollY + windowHeight >= documentHeight - 50;
-    return isAtBottom;
-}
-
-/**
- * Scroll to the bottom of the content (smooth)
- */
-function scrollToBottomSmooth() {
-    const maxHeight = Math.max(
-        document.body.scrollHeight,
-        document.documentElement.scrollHeight
-    );
-    
-    window.scrollTo({
-        top: maxHeight,
-        behavior: 'smooth'
-    });
-    isUserScrolled = false;
-}
-
-/**
- * Scroll to the bottom of the content (instant)
- */
-function scrollToBottom() {
-    const maxHeight = Math.max(
-        document.body.scrollHeight,
-        document.documentElement.scrollHeight
-    );
-    
-    window.scrollTo(0, maxHeight);
-    isUserScrolled = false;
-}
-
-/**
- * Enable or disable auto-scrolling
- */
-function setAutoScroll(enabled) {
-    console.log('Setting auto-scroll to:', enabled);
-    shouldAutoScroll = enabled;
-    if (enabled && isScrolledToBottom()) {
-        isUserScrolled = false;
-    }
-}
-
-/**
- * Force scroll to bottom (used for programmatic scrolling)
- */
-function forceScrollToBottom() {
-    console.log('Force scrolling to bottom');
-    shouldAutoScroll = true;
-    isUserScrolled = false;
-    scrollToBottom(); // Use instant scroll for force
-}
 
 /**
  * Store current panel states

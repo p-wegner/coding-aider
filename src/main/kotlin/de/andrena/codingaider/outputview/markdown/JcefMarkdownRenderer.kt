@@ -184,9 +184,6 @@ class JcefMarkdownRenderer(
                         function updateContent(html) {
                             document.getElementById('content').innerHTML = html;
                         }
-                        function scrollToBottom() {
-                            window.scrollTo(0, document.body.scrollHeight);
-                        }
                     </script>
                 </body>
                 </html>
@@ -303,39 +300,6 @@ class JcefMarkdownRenderer(
         }
     }
 
-    override fun scrollToBottom() {
-        if (isDisposed.get() || !loadCompleted.get() || browser == null) return
-
-        try {
-            // Use force scroll to ensure it happens regardless of user scroll state
-            executeJavaScript("forceScrollToBottom();")
-
-            // Single delayed scroll attempt as backup
-            // This helps with cases where content is still being rendered
-            if (!isDisposed.get()) {
-                AppExecutorUtil.getAppScheduledExecutorService().schedule({
-                    if (!isDisposed.get()) {
-                        executeJavaScript("forceScrollToBottom();")
-                    }
-                }, 300, TimeUnit.MILLISECONDS)
-            }
-        } catch (e: Exception) {
-            LOG.error("Error scrolling to bottom", e)
-        }
-    }
-
-    /**
-     * Enable or disable smart auto-scrolling
-     */
-    fun setAutoScroll(enabled: Boolean) {
-        if (isDisposed.get() || !loadCompleted.get() || browser == null) return
-
-        try {
-            executeJavaScript("setAutoScroll($enabled);")
-        } catch (e: Exception) {
-            LOG.error("Error setting auto-scroll", e)
-        }
-    }
 
 
     private fun executeJavaScript(script: String) {
@@ -382,8 +346,7 @@ class JcefMarkdownRenderer(
         } catch (e: Exception) {
             LOG.error("Could not load script content", e)
             // Return minimal script as data URL
-            val minimalScript = "function updateContent(html){document.getElementById('content').innerHTML=html;}" +
-                    "function scrollToBottom(){window.scrollTo(0,document.body.scrollHeight);}"
+            val minimalScript = "function updateContent(html){document.getElementById('content').innerHTML=html;}"
             return "data:text/javascript;charset=utf-8;base64," +
                     Base64.getEncoder().encodeToString(minimalScript.toByteArray(StandardCharsets.UTF_8))
         }

@@ -121,13 +121,6 @@ class AiderOutputTab(
         isVisible = false
     }
     
-    private val autoScrollCheckbox = JCheckBox("Auto Scroll", true).apply {
-        mnemonic = KeyEvent.VK_S
-        toolTipText = "Automatically scroll to bottom when content is updated"
-        addActionListener {
-            markdownViewer.setAutoScroll(isSelected)
-        }
-    }
 
     val component: JComponent
         get() = mainPanel
@@ -160,8 +153,6 @@ class AiderOutputTab(
         val settings = AiderSettings.getInstance()
         showDevToolsButton.isVisible = markdownViewer.supportsDevTools() && settings.showDevTools
         
-        // Initialize auto-scroll state
-        markdownViewer.setAutoScroll(autoScrollCheckbox.isSelected)
         
         // Show auto-continue checkbox during execution if this is a structured mode command
         val hasActivePlan = commandData?.structuredMode == true && 
@@ -186,7 +177,6 @@ class AiderOutputTab(
         toolbar.add(createPlanButton)
         toolbar.add(showDevToolsButton)
         toolbar.add(autoContinueCheckbox)
-        toolbar.add(autoScrollCheckbox)
         toolbar.add(cancelContinueButton)
         toolbar.add(countdownLabel)
         
@@ -222,10 +212,6 @@ class AiderOutputTab(
                 val contentToSet = newContent.ifBlank { " " }
                 markdownViewer.setMarkdown(contentToSet)
                 
-                // Auto-scroll to bottom if enabled
-                if (autoScrollCheckbox.isSelected) {
-                    markdownViewer.scrollToBottom()
-                }
             } catch (e: Exception) {
                 println("Error updating tab content: ${e.message}")
                 e.printStackTrace()

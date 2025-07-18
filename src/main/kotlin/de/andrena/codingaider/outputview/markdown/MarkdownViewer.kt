@@ -100,22 +100,6 @@ class MarkdownViewer(private val lookupPaths: List<String> = emptyList()) {
         renderer.setDarkTheme(dark)
     }
     
-    fun scrollToBottom() {
-        if (isDisposed) {
-            return
-        }
-        renderer.scrollToBottom()
-    }
-    
-    fun setAutoScroll(enabled: Boolean) {
-        if (isDisposed) {
-            return
-        }
-        // Only call if renderer supports it (JCEF renderer)
-        if (renderer is JcefMarkdownRenderer) {
-            renderer.setAutoScroll(enabled)
-        }
-    }
 
     fun supportsDevTools(): Boolean {
         if (isDisposed) {

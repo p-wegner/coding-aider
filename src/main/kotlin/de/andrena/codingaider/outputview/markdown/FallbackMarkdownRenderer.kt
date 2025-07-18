@@ -38,10 +38,8 @@ class FallbackMarkdownRenderer(
     }
 
     private var currentContent = ""
-    private var shouldAutoScroll = true
     private var programmaticScrolling = false
     private var lastScrollPosition: Point? = null
-    private var wasAtBottom = true
 
     override val component: JComponent
         get() = mainPanel
@@ -52,14 +50,6 @@ class FallbackMarkdownRenderer(
     init {
         mainPanel.add(scrollPane, BorderLayout.CENTER)
         
-        // Track user scrolling to determine auto-scroll behavior
-        scrollPane.verticalScrollBar.addAdjustmentListener { e ->
-            if (!programmaticScrolling && e.valueIsAdjusting) {
-                val scrollBar = scrollPane.verticalScrollBar
-                val isNearBottom = scrollBar.value >= (scrollBar.maximum - scrollBar.visibleAmount - 20)
-                shouldAutoScroll = isNearBottom
-            }
-        }
     }
 
     override fun setMarkdown(markdown: String) {
@@ -82,10 +72,6 @@ class FallbackMarkdownRenderer(
         try {
             // Save current scroll position
             lastScrollPosition = scrollPane.viewport.viewPosition
-            
-            // Check if we're at the bottom
-            val scrollBar = scrollPane.verticalScrollBar
-            wasAtBottom = scrollBar.value >= (scrollBar.maximum - scrollBar.visibleAmount - 20)
         } catch (e: Exception) {
             println("Error saving scroll state: ${e.message}")
         }
@@ -122,18 +108,7 @@ class FallbackMarkdownRenderer(
                             
                             programmaticScrolling = true
                             
-                            if (shouldAutoScroll || wasAtBottom) {
-                                // Scroll to bottom
-                                val doc = editorPane.document
-                                val rect = editorPane.modelToView(doc.length)
-                                if (rect != null) {
-                                    rect.y = rect.y + rect.height
-                                    editorPane.scrollRectToVisible(rect)
-                                } else {
-                                    // Fallback method
-                                    editorPane.caretPosition = editorPane.document.length
-                                }
-                            } else if (lastScrollPosition != null) {
+                            if (lastScrollPosition != null) {
                                 // Restore previous position
                                 scrollPane.viewport.viewPosition = lastScrollPosition
                             }
@@ -165,33 +140,6 @@ class FallbackMarkdownRenderer(
         }
     }
     
-    override fun scrollToBottom() {
-        if (isDisposed) {
-            return
-        }
-        
-        SwingUtilities.invokeLater {
-            try {
-                programmaticScrolling = true
-                
-                // Try to scroll to the end of the document
-                val doc = editorPane.document
-                editorPane.caretPosition = doc.length
-                
-                // Also try scrolling to the bottom using rectangle
-                val rect = editorPane.modelToView(doc.length)
-                if (rect != null) {
-                    rect.y = rect.y + rect.height
-                    editorPane.scrollRectToVisible(rect)
-                }
-                
-                programmaticScrolling = false
-            } catch (e: Exception) {
-                programmaticScrolling = false
-                println("Error scrolling to bottom: ${e.message}")
-            }
-        }
-    }
     
     override fun dispose() {
         if (!isDisposed) {
