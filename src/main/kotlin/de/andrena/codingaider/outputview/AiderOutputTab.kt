@@ -40,6 +40,12 @@ class AiderOutputTab(
         isVisible = onAbort != null
         addActionListener {
             if (!isProcessFinished.get()) {
+                // Preserve existing content and add abort message
+                val abortMessage = "\n\n---\n\n**Command Aborted**\n\nThe command was manually aborted by the user."
+                val currentContent = getCurrentMarkdownContent()
+                val updatedContent = currentContent + abortMessage
+                markdownViewer.setMarkdown(updatedContent)
+                
                 onAbort?.abortCommand(commandData?.planId)
                 setProcessFinished()
             }
@@ -126,6 +132,8 @@ class AiderOutputTab(
         toolTipText = "Automatically scroll to bottom when content is updated"
     }
     
+    // Track current content for abort preservation
+    private var currentMarkdownContent = initialText
 
     val component: JComponent
         get() = mainPanel
@@ -210,6 +218,7 @@ class AiderOutputTab(
             try {
                 val newContent = output.replace("\r\n", "\n")
                 val contentToSet = newContent.ifBlank { " " }
+                currentMarkdownContent = contentToSet // Track current content
                 markdownViewer.setMarkdown(contentToSet)
                 
                 // Auto-scroll to bottom if enabled
@@ -285,6 +294,10 @@ class AiderOutputTab(
                 }
             }, 1, 1, java.util.concurrent.TimeUnit.SECONDS)
         }
+    }
+
+    private fun getCurrentMarkdownContent(): String {
+        return currentMarkdownContent
     }
 
     fun dispose() {
