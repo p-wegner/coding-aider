@@ -1,7 +1,6 @@
 package de.andrena.codingaider.services
 
 import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.application.ReadAction
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
@@ -14,7 +13,6 @@ import de.andrena.codingaider.outputview.AiderOutputToolWindowContent
 import de.andrena.codingaider.outputview.CodingAiderOutputPresentation
 import de.andrena.codingaider.services.plans.ActivePlanService
 import de.andrena.codingaider.services.plans.ContinuePlanService
-import de.andrena.codingaider.settings.AiderSettings
 
 @Service(Service.Level.PROJECT)
 class AiderOutputService(private val project: Project) {
@@ -25,7 +23,6 @@ class AiderOutputService(private val project: Project) {
         initialTitle: String,
         initialText: String,
         onAbort: Abortable?,
-        displayString: String?,
         commandData: CommandData?
     ): CodingAiderOutputPresentation { // Returns AiderOutputTab
         return createToolWindowTab(initialTitle, initialText, onAbort, commandData)

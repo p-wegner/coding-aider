@@ -31,7 +31,6 @@ class ShowLastCommandResultAction : AnAction() {
                         "Last Aider Command Result",
                         lastCommandResult,
                         null,
-                        "Last Command Result",
                         null
                     )
                     outputService.focus(output)

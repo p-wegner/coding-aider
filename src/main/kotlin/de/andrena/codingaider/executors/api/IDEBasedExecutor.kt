@@ -49,7 +49,6 @@ class IDEBasedExecutor(
             "Aider Command Output",
             initialMessage,
             this,
-            project.service<CommandSummaryService>().generateSummary(commandData),
             commandData
         )
         
