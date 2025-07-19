@@ -4,6 +4,10 @@ files:
   readOnly: false
 - path: src/test/kotlin/de/andrena/codingaider/services/McpServerServiceTest.kt
   readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/toolwindow/McpServerToolWindow.kt
+  readOnly: false
+- path: src/main/resources/META-INF/plugin.xml
+  readOnly: false
 - path: build.gradle.kts
   readOnly: true
 - path: docs/mcp-sdk-docs/USER_GUIDE.md
