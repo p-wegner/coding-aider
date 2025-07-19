@@ -26,23 +26,8 @@
 - [x] Add server port configuration option
 - [x] Implement default port selection (with fallback if port is occupied)
 - [x] Add server status monitoring
-- [ ] Implement server restart capability if needed
 
 ## Error Handling and Logging
 - [x] Add comprehensive error handling for server startup failures
 - [x] Implement proper logging for server operations
 - [x] Handle port conflicts gracefully
-- [ ] Add error recovery mechanisms
-
-## Testing and Validation
-- [x] Test server startup and shutdown
-- [x] Test MCP client connectivity to the HTTP server
-- [x] Validate persistent file operations through HTTP transport
-- [x] Test error scenarios (port conflicts, server failures)
-- [x] Verify plugin lifecycle integration
-
-## Documentation and Cleanup
-- [ ] Update code documentation
-- [ ] Remove unused SSE transport code if no longer needed
-- [ ] Update any relevant configuration documentation
-- [ ] Verify no resource leaks in server lifecycle management
