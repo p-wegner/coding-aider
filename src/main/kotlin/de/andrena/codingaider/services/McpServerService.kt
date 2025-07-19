@@ -114,6 +114,7 @@ class McpServerService(private val project: Project) {
                     // Start HTTP server with MCP over HTTP
                     httpServer = embeddedServer(CIO, host = "0.0.0.0", port = serverPort) {
                         routing {
+                            // TODO 19.07.2025 pwegner: properly setup the mcp server here (see USER_GUIDE.md)
                             post("/mcp") {
                                 try {
                                     val requestBody = call.receiveText()
