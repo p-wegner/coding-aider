@@ -380,5 +380,11 @@
                     anchor="bottom"
                     factoryClass="de.andrena.codingaider.outputview.AiderOutputToolWindow"
                     canCloseContents="true"/>
+        <toolWindow id="MCP Server"
+                    secondary="true"
+                    icon="MyIcons.Tool"
+                    anchor="bottom"
+                    factoryClass="de.andrena.codingaider.toolwindow.McpServerToolWindowFactory"
+                    canCloseContents="false"/>
     </extensions>
 </idea-plugin>
