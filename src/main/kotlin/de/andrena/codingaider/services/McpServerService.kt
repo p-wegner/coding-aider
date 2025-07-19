@@ -45,6 +45,12 @@ class McpServerService(private val project: Project) {
     private var serverPort = DEFAULT_PORT
     private var httpServer: EmbeddedServer<CIOApplicationEngine, CIOApplicationEngine.Configuration>? = null
     
+    // Tool configuration
+    private var enableGetPersistentFiles = true
+    private var enableAddPersistentFiles = true
+    private var enableRemovePersistentFiles = true
+    private var enableClearPersistentFiles = true
+    
     init {
         LOG.info("Initializing MCP Server Service for project: ${project.name}")
         // Start the MCP server automatically if enabled and auto-start is configured
@@ -194,12 +200,49 @@ class McpServerService(private val project: Project) {
         }
     }
     
+    fun updateToolConfiguration(
+        enableGetPersistentFiles: Boolean,
+        enableAddPersistentFiles: Boolean,
+        enableRemovePersistentFiles: Boolean,
+        enableClearPersistentFiles: Boolean
+    ) {
+        this.enableGetPersistentFiles = enableGetPersistentFiles
+        this.enableAddPersistentFiles = enableAddPersistentFiles
+        this.enableRemovePersistentFiles = enableRemovePersistentFiles
+        this.enableClearPersistentFiles = enableClearPersistentFiles
+        
+        // If server is running, restart it to apply new tool configuration
+        if (isRunning.get()) {
+            LOG.info("Restarting MCP server to apply new tool configuration")
+            stopServer()
+            // Small delay to ensure server stops completely
+            coroutineScope.launch {
+                kotlinx.coroutines.delay(500)
+                startServer()
+            }
+        }
+    }
+    
     private fun addPersistentFileTools() {
         mcpServer?.apply {
-            addGetPersistentFilesTool()
-            addAddPersistentFilesTool()
-            addRemovePersistentFilesTool()
-            addClearPersistentFilesTool()
+            var toolCount = 0
+            if (enableGetPersistentFiles) {
+                addGetPersistentFilesTool()
+                toolCount++
+            }
+            if (enableAddPersistentFiles) {
+                addAddPersistentFilesTool()
+                toolCount++
+            }
+            if (enableRemovePersistentFiles) {
+                addRemovePersistentFilesTool()
+                toolCount++
+            }
+            if (enableClearPersistentFiles) {
+                addClearPersistentFilesTool()
+                toolCount++
+            }
+            LOG.info("Registered $toolCount MCP tools based on configuration")
         }
     }
     

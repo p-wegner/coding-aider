@@ -35,16 +35,18 @@ class McpServerToolWindow(private val project: Project) {
     private val endpointLabel = JBLabel("Endpoint: -")
     private val startButton = JButton("Start Server")
     private val stopButton = JButton("Stop Server")
-    private val toolsTextArea = JTextArea().apply {
-        isEditable = false
-        font = Font(Font.MONOSPACED, Font.PLAIN, 12)
-        text = getMcpToolsInfo()
-    }
+    
+    // Tool enable/disable checkboxes
+    private val getPersistentFilesCheckbox = JCheckBox("get_persistent_files", true)
+    private val addPersistentFilesCheckbox = JCheckBox("add_persistent_files", true)
+    private val removePersistentFilesCheckbox = JCheckBox("remove_persistent_files", true)
+    private val clearPersistentFilesCheckbox = JCheckBox("clear_persistent_files", true)
     
     private val refreshTimer = Timer(2000) { updateStatus() }
     
     init {
         setupButtons()
+        setupToolCheckboxes()
         updateStatus()
         refreshTimer.start()
     }
@@ -59,6 +61,24 @@ class McpServerToolWindow(private val project: Project) {
             mcpServerService.stopServer()
             updateStatus()
         }
+    }
+    
+    private fun setupToolCheckboxes() {
+        // Add listeners to update server configuration when checkboxes change
+        getPersistentFilesCheckbox.addActionListener { updateToolConfiguration() }
+        addPersistentFilesCheckbox.addActionListener { updateToolConfiguration() }
+        removePersistentFilesCheckbox.addActionListener { updateToolConfiguration() }
+        clearPersistentFilesCheckbox.addActionListener { updateToolConfiguration() }
+    }
+    
+    private fun updateToolConfiguration() {
+        // Update the MCP server with the new tool configuration
+        mcpServerService.updateToolConfiguration(
+            enableGetPersistentFiles = getPersistentFilesCheckbox.isSelected,
+            enableAddPersistentFiles = addPersistentFilesCheckbox.isSelected,
+            enableRemovePersistentFiles = removePersistentFilesCheckbox.isSelected,
+            enableClearPersistentFiles = clearPersistentFilesCheckbox.isSelected
+        )
     }
     
     private fun updateStatus() {
@@ -84,32 +104,14 @@ class McpServerToolWindow(private val project: Project) {
         }
     }
     
-    private fun getMcpToolsInfo(): String {
+    private fun getConnectionInfo(): String {
+        val port = if (mcpServerService.isServerRunning()) mcpServerService.getServerPort() else settings.mcpServerPort
         return """
-MCP Tools Available:
+Connection Information:
 
-1. get_persistent_files
-   Description: Get the current list of persistent files in the project context
-   Parameters: None
-   
-2. add_persistent_files  
-   Description: Add files to the persistent files context
-   Parameters:
-   - files: Array of file objects with filePath and optional isReadOnly
-
-3. remove_persistent_files
-   Description: Remove files from the persistent files context  
-   Parameters:
-   - filePaths: Array of file paths to remove
-
-4. clear_persistent_files
-   Description: Clear all files from the persistent files context
-   Parameters: None
-
-Usage:
-Connect your MCP client to: http://localhost:${settings.mcpServerPort}/sse
-Health check: http://localhost:${settings.mcpServerPort}/health
-Status: http://localhost:${settings.mcpServerPort}/status
+MCP Endpoint: http://localhost:$port/sse
+Health Check: http://localhost:$port/health
+Status: http://localhost:$port/status
 
 The server provides SSE-based MCP communication for managing
 persistent files in the Coding-Aider plugin context.
@@ -128,9 +130,35 @@ persistent files in the Coding-Aider plugin context.
                 }
             }
             
-            group("Available MCP Tools") {
+            group("MCP Tools Configuration") {
+                row { 
+                    cell(getPersistentFilesCheckbox)
+                    comment("Get the current list of persistent files")
+                }
+                row { 
+                    cell(addPersistentFilesCheckbox)
+                    comment("Add files to the persistent files context")
+                }
+                row { 
+                    cell(removePersistentFilesCheckbox)
+                    comment("Remove files from the persistent files context")
+                }
+                row { 
+                    cell(clearPersistentFilesCheckbox)
+                    comment("Clear all files from the persistent files context")
+                }
+            }
+            
+            group("Connection Information") {
                 row {
-                    cell(JBScrollPane(toolsTextArea)).align(com.intellij.ui.dsl.builder.AlignX.FILL)
+                    val connectionTextArea = JTextArea().apply {
+                        isEditable = false
+                        font = Font(Font.MONOSPACED, Font.PLAIN, 12)
+                        text = getConnectionInfo()
+                        background = null
+                        border = null
+                    }
+                    cell(JBScrollPane(connectionTextArea)).align(com.intellij.ui.dsl.builder.AlignX.FILL)
                         .resizableColumn()
                 }.resizableRow()
             }
