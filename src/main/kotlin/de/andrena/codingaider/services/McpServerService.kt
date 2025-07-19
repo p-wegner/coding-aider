@@ -2,6 +2,7 @@ package de.andrena.codingaider.services
 
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.FileData
 import io.modelcontextprotocol.kotlin.sdk.*
@@ -26,15 +27,23 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.*
 import java.util.concurrent.atomic.AtomicBoolean
+import java.net.ServerSocket
+import java.io.IOException
 
 @Service(Service.Level.PROJECT)
 class McpServerService(private val project: Project) {
+    
+    companion object {
+        private val LOG = Logger.getInstance(McpServerService::class.java)
+        private const val DEFAULT_PORT = 8080
+        private const val MAX_PORT_ATTEMPTS = 10
+    }
     
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val isRunning = AtomicBoolean(false)
     private var mcpServer: Server? = null
     private val persistentFileService by lazy { project.service<PersistentFileService>() }
-    private val serverPort = 8080 // Default port, could be configurable
+    private var serverPort = DEFAULT_PORT
     private var httpServer: EmbeddedServer<CIOApplicationEngine, CIOApplicationEngine.Configuration>? = null
     private val messageChannel = Channel<String>(Channel.UNLIMITED)
     private var serverTransport: StdioServerTransport? = null
@@ -48,6 +57,12 @@ class McpServerService(private val project: Project) {
         if (isRunning.compareAndSet(false, true)) {
             coroutineScope.launch {
                 try {
+                    LOG.info("Starting MCP server for project: ${project.name}")
+                    
+                    // Find available port
+                    serverPort = findAvailablePort(DEFAULT_PORT)
+                    LOG.info("Using port $serverPort for MCP server")
+                    
                     // Initialize MCP server
                     mcpServer = Server(
                         serverInfo = Implementation(
@@ -83,6 +98,7 @@ class McpServerService(private val project: Project) {
                             post("/mcp") {
                                 try {
                                     val requestBody = call.receiveText()
+                                    LOG.debug("Received MCP request: $requestBody")
                                     
                                     // Write request to input stream
                                     inputOutputStream.write(requestBody.toByteArray())
@@ -98,8 +114,10 @@ class McpServerService(private val project: Project) {
                                         "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32603,\"message\":\"Internal error\"}}"
                                     }
                                     
+                                    LOG.debug("Sending MCP response: $response")
                                     call.respondText(response, ContentType.Application.Json)
                                 } catch (e: Exception) {
+                                    LOG.error("Error processing MCP request", e)
                                     call.respond(
                                         HttpStatusCode.InternalServerError,
                                         "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32603,\"message\":\"${e.message}\"}}"
@@ -108,7 +126,17 @@ class McpServerService(private val project: Project) {
                             }
                             
                             get("/health") {
-                                call.respondText("MCP Server is running", ContentType.Text.Plain)
+                                call.respondText("MCP Server is running on port $serverPort", ContentType.Text.Plain)
+                            }
+                            
+                            get("/status") {
+                                val status = buildJsonObject {
+                                    put("running", isRunning.get())
+                                    put("port", serverPort)
+                                    put("project", project.name)
+                                    put("persistentFiles", persistentFileService.getPersistentFiles().size)
+                                }
+                                call.respondText(status.toString(), ContentType.Application.Json)
                             }
                         }
                     }
@@ -117,8 +145,10 @@ class McpServerService(private val project: Project) {
                     // Connect MCP server to transport
                     mcpServer?.connect(serverTransport!!)
                     
+                    LOG.info("MCP server started successfully on port $serverPort")
                     isRunning.set(true)
                 } catch (e: Exception) {
+                    LOG.error("Failed to start MCP server", e)
                     isRunning.set(false)
                     mcpServer = null
                     throw e
@@ -130,13 +160,46 @@ class McpServerService(private val project: Project) {
     fun stopServer() {
         if (isRunning.compareAndSet(true, false)) {
             coroutineScope.launch {
-                mcpServer?.close()
-                mcpServer = null
-                serverTransport = null
-                httpServer?.stop(1000, 2000)
-                httpServer = null
-                messageChannel.close()
+                try {
+                    LOG.info("Stopping MCP server on port $serverPort")
+                    mcpServer?.close()
+                    mcpServer = null
+                    serverTransport = null
+                    httpServer?.stop(1000, 2000)
+                    httpServer = null
+                    messageChannel.close()
+                    LOG.info("MCP server stopped successfully")
+                } catch (e: Exception) {
+                    LOG.error("Error stopping MCP server", e)
+                }
             }
+        }
+    }
+    
+    private fun findAvailablePort(startPort: Int): Int {
+        for (i in 0 until MAX_PORT_ATTEMPTS) {
+            val port = startPort + i
+            try {
+                ServerSocket(port).use { 
+                    return port
+                }
+            } catch (e: IOException) {
+                // Port is in use, try next one
+                continue
+            }
+        }
+        throw IOException("Could not find available port starting from $startPort")
+    }
+    
+    fun getServerPort(): Int = serverPort
+    
+    fun isServerRunning(): Boolean = isRunning.get()
+    
+    fun getServerStatus(): String {
+        return if (isRunning.get()) {
+            "Running on port $serverPort"
+        } else {
+            "Stopped"
         }
     }
     
@@ -293,6 +356,7 @@ class McpServerService(private val project: Project) {
     }
     
     fun dispose() {
+        LOG.info("Disposing MCP server service")
         stopServer()
         coroutineScope.cancel()
     }

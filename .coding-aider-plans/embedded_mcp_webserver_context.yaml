@@ -2,6 +2,8 @@
 files:
 - path: src/main/kotlin/de/andrena/codingaider/services/McpServerService.kt
   readOnly: false
+- path: src/test/kotlin/de/andrena/codingaider/services/McpServerServiceTest.kt
+  readOnly: false
 - path: build.gradle.kts
   readOnly: true
 - path: docs/mcp-sdk-docs/USER_GUIDE.md
