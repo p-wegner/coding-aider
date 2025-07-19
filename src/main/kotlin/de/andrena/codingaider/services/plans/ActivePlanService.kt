@@ -1,5 +1,6 @@
 package de.andrena.codingaider.services.plans
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
@@ -42,36 +43,68 @@ class ActivePlanService(private val project: Project) {
     }
 
     fun handlePlanActionFinished(success: Boolean = true) {
-        return
-        // TODO: decide whether to use this or not
-        refreshActivePlan()
-
         if (!success) {
             cleanupAndClearPlan()
             return
         }
 
-        val currentPlan = activePlan
-        if (currentPlan == null) {
-            return
+        val settings = AiderSettings.getInstance()
+        if (settings.enablePlanCompletionLogging) {
+            logger.info("Plan action finished, starting completion check with delay: ${settings.planCompletionCheckDelay}ms")
         }
 
-        if (!currentPlan!!.isPlanComplete()) {
-            if (AiderSettings.getInstance().enableAutoPlanContinue) {
+        // Add proper timing with delayed execution to ensure file system operations complete
+        ApplicationManager.getApplication().invokeLater {
+            // Wait for file system refresh to complete
+            Thread.sleep(settings.planCompletionCheckDelay.toLong())
+            
+            try {
+                refreshActivePlan()
+                checkAndContinuePlan()
+            } catch (e: Exception) {
+                logger.error("Error during plan completion check", e)
+                handlePlanError(e)
+            }
+        }
+    }
+
+    private fun checkAndContinuePlan() {
+        val currentPlan = activePlan ?: return
+        val settings = AiderSettings.getInstance()
+        
+        if (settings.enablePlanCompletionLogging) {
+            logger.info("Checking plan completion for plan: ${currentPlan.id}, isPlanComplete: ${currentPlan.isPlanComplete()}")
+        }
+        
+        if (!currentPlan.isPlanComplete()) {
+            if (settings.enableAutoPlanContinue) {
+                if (settings.enablePlanCompletionLogging) {
+                    logger.info("Plan not complete, continuing current plan: ${currentPlan.id}")
+                }
                 continuePlan()
                 return
             }
         }
+        
         // Try to find next uncompleted plan in hierarchy
         val nextPlans = currentPlan.getNextUncompletedPlansInSameFamily()
         if (nextPlans.isNotEmpty()) {
+            if (settings.enablePlanCompletionLogging) {
+                logger.info("Current plan complete, found ${nextPlans.size} uncompleted plans in family")
+            }
             cleanupAndClearPlan() // Cleanup current plan's resources
             setActivePlan(nextPlans.first()) // Set the first uncompleted plan as active
 
-            if (AiderSettings.getInstance().enableAutoPlanContinuationInPlanFamily) {
+            if (settings.enableAutoPlanContinuationInPlanFamily) {
+                if (settings.enablePlanCompletionLogging) {
+                    logger.info("Continuing with next plan in family: ${nextPlans.first().id}")
+                }
                 continuePlan()
             }
         } else {
+            if (settings.enablePlanCompletionLogging) {
+                logger.info("All plans in hierarchy complete, cleaning up")
+            }
             cleanupAndClearPlan()
         }
     }

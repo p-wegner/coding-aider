@@ -64,7 +64,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         // MCP Server settings
         var enableMcpServer: Boolean = AiderDefaults.ENABLE_MCP_SERVER, // Enable MCP server for persistent files
         var mcpServerPort: Int = AiderDefaults.MCP_SERVER_PORT, // Port for MCP server
-        var mcpServerAutoStart: Boolean = AiderDefaults.MCP_SERVER_AUTO_START // Auto-start MCP server with plugin
+        var mcpServerAutoStart: Boolean = AiderDefaults.MCP_SERVER_AUTO_START, // Auto-start MCP server with plugin
+        
+        // Plan completion timing settings
+        var planCompletionCheckDelay: Int = 500, // milliseconds to wait before checking plan completion
+        var planCompletionMaxRetries: Int = 3, // maximum retries for plan completion detection
+        var enablePlanCompletionLogging: Boolean = false // enable detailed logging for plan completion flow
     )
 
 
@@ -308,6 +313,25 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.mcpServerAutoStart
         set(value) {
             myState.mcpServerAutoStart = value
+        }
+
+    // Plan completion timing settings
+    var planCompletionCheckDelay: Int
+        get() = myState.planCompletionCheckDelay
+        set(value) {
+            myState.planCompletionCheckDelay = value
+        }
+
+    var planCompletionMaxRetries: Int
+        get() = myState.planCompletionMaxRetries
+        set(value) {
+            myState.planCompletionMaxRetries = value
+        }
+
+    var enablePlanCompletionLogging: Boolean
+        get() = myState.enablePlanCompletionLogging
+        set(value) {
+            myState.enablePlanCompletionLogging = value
         }
 
     enum class AutoCommitSetting {

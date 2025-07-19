@@ -199,46 +199,56 @@ ${message.trimStart()}
         outputDisplay?.let { 
             outputService.startAutoCloseTimer(it, commandData.options.autoCloseDelay ?: 10)
         }
+        
+        // First refresh files
         refreshFiles()
-        planExecutionActions.commandCompleted()
         
-        // Remove from running commands
-        if (outputDisplay is AiderOutputTab) {
-            project.service<RunningCommandService>().removeRunningCommand(outputDisplay as AiderOutputTab)
-        }
-        
-        // Record execution cost if this is a plan execution
-        if (commandData.planId != null && exitCode == 0) {
-            try {
-                val planService = project.service<AiderPlanService>()
-                val costService = service<PlanExecutionCostService>()
-                
-                // Find the plan by ID
-                val plans = planService.getAiderPlans()
-                val plan = plans.flatMap { it.getAllChildPlans() + it }
-                    .find { it.id == commandData.planId }
-                
-                // Record execution cost if plan found
-                plan?.let {
-                    costService.recordExecutionCost(it, message, commandData)
+        // Then handle plan execution with proper timing coordination
+        ApplicationManager.getApplication().invokeLater {
+            planExecutionActions.commandCompleted()
+            
+            // Remove from running commands
+            if (outputDisplay is AiderOutputTab) {
+                project.service<RunningCommandService>().removeRunningCommand(outputDisplay as AiderOutputTab)
+            }
+            
+            // Record execution cost if this is a plan execution
+            if (commandData.planId != null && exitCode == 0) {
+                try {
+                    val planService = project.service<AiderPlanService>()
+                    val costService = service<PlanExecutionCostService>()
+                    
+                    // Find the plan by ID
+                    val plans = planService.getAiderPlans()
+                    val plan = plans.flatMap { it.getAllChildPlans() + it }
+                        .find { it.id == commandData.planId }
+                    
+                    // Record execution cost if plan found
+                    plan?.let {
+                        costService.recordExecutionCost(it, message, commandData)
+                    }
+                } catch (e: Exception) {
+                    log.warn("Failed to record plan execution cost", e)
                 }
-            } catch (e: Exception) {
-                log.warn("Failed to record plan execution cost", e)
+            }
+            
+            if (!commandData.options.disablePresentation) {
+                presentChanges()
+            }
+            try {
+                val commitBefore = currentCommitHash
+                val commitAfter = GitUtils.getCurrentCommitHash(project)
+                project.service<RunningCommandService>().storeCompletedCommand(commandData, message, commitBefore, commitAfter)
+            } catch (e: InterruptedException) {
+                // aborting commands should be handled gracefully
+            }
+            finalOutput = message
+            
+            // Call the command finished callback after a short delay to ensure all file operations complete
+            ApplicationManager.getApplication().invokeLater {
+                commandFinishedCallback?.onCommandFinished(exitCode == 0)
             }
         }
-        
-        if (!commandData.options.disablePresentation) {
-            presentChanges()
-        }
-        try {
-            val commitBefore = currentCommitHash
-            val commitAfter = GitUtils.getCurrentCommitHash(project)
-            project.service<RunningCommandService>().storeCompletedCommand(commandData, message, commitBefore, commitAfter)
-        } catch (e: InterruptedException) {
-            // aborting commands should be handled gracefully
-        }
-        finalOutput = message
-        commandFinishedCallback?.onCommandFinished(exitCode == 0)
     }
 
     private fun presentChanges() {
