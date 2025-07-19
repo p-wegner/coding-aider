@@ -28,10 +28,12 @@
 - [ ] Feature: TDD mode with configurable test type
 - [ ] feature: follow up command suggestion and execution (user confirmation)
 - [ ] scratchpad feature for clipboard content (reuse intellij scratchpad feature)
-- [ ] Feature: setting to define refinement llm
+- [x] Feature: setting to define refinement llm
 - [x] Feature: plan view
   - [x] refine plan variation: verify implementation and update checklist
   - [ ] add tests (using existing test creation feature)
 - [ ] Show some settings in tool coding aider tool window
   - [ ] main llm
 - [ ] Bug: abort command when closing tab in output tool window
+- [ ] Feature: add tests for changes
+- [ ] Bug: make git doc generation create docs outside of tmp dir
