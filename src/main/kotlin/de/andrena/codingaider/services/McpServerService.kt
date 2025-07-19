@@ -107,7 +107,7 @@ class McpServerService(private val project: Project) {
                                 val sessionId = call.request.queryParameters["sessionId"]
                                 if (sessionId != null && sseTransport != null) {
                                     val body = call.receiveText()
-                                    sseTransport!!.handleMessage(sessionId, body)
+                                    sseTransport!!.handleMessage(body)
                                     call.respond(HttpStatusCode.OK)
                                 } else {
                                     call.respond(HttpStatusCode.BadRequest, "Missing sessionId or SSE transport not initialized")

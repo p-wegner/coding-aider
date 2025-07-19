@@ -44,4 +44,5 @@
 - [x] Create tool window to display server status
 - [x] Show list of available MCP tools in tool window
 - [x] Add controls to start/stop server from tool window
-- [ ] Add checkboxes to enable/disable specific MCP tools
+- [ ] Add checkboxes to enable/disable specific MCP tools in the toolwindow
+- [ ] remove the tool info from the toolsTextArea
