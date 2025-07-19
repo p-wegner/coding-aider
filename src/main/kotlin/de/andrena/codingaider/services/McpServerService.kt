@@ -20,8 +20,8 @@ import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import java.io.PipedInputStream
 import java.io.PipedOutputStream
-import okio.source
-import okio.sink
+import kotlinx.io.asSource
+import kotlinx.io.asSink
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -90,8 +90,8 @@ class McpServerService(private val project: Project) {
                     
                     // Create STDIO transport
                     serverTransport = StdioServerTransport(
-                        inputStream = inputPipe.source(),
-                        outputStream = outputPipe.sink()
+                        inputStream = inputPipe.asSource(),
+                        outputStream = outputPipe.asSink()
                     )
                     
                     // Start HTTP server with MCP over HTTP
