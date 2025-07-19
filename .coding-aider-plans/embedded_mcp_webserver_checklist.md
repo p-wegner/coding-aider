@@ -40,6 +40,6 @@
 
 
 ## Tool Window Integration
-- [ ] Create tool window to display server status
-- [ ] Show list of available MCP tools in tool window
-- [ ] Add controls to start/stop server from tool window
+- [x] Create tool window to display server status
+- [x] Show list of available MCP tools in tool window
+- [x] Add controls to start/stop server from tool window
