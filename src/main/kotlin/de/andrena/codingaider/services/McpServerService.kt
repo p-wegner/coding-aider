@@ -15,6 +15,7 @@ import io.ktor.server.engine.*
 import io.ktor.server.routing.*
 import io.ktor.server.sse.*
 import io.ktor.server.response.*
+import io.ktor.server.request.*
 import io.ktor.http.*
 import io.modelcontextprotocol.kotlin.sdk.server.SseServerTransport
 import kotlinx.coroutines.CoroutineScope
@@ -93,10 +94,24 @@ class McpServerService(private val project: Project) {
                     httpServer = embeddedServer(CIO, host = "0.0.0.0", port = serverPort) {
                         install(SSE)
                         routing {
+                            var sseTransport: SseServerTransport? = null
+                            
                             sse("/sse") {
-                                val transport = SseServerTransport("/message", this)
+                                sseTransport = SseServerTransport("/message", this)
                                 LOG.info("Connecting MCP server to SSE transport...")
-                                mcpServer?.connect(transport)
+                                mcpServer?.connect(sseTransport!!)
+                            }
+                            
+                            post("/message") {
+                                // Handle POST messages for SSE transport
+                                val sessionId = call.request.queryParameters["sessionId"]
+                                if (sessionId != null && sseTransport != null) {
+                                    val body = call.receiveText()
+                                    sseTransport!!.handleMessage(sessionId, body)
+                                    call.respond(HttpStatusCode.OK)
+                                } else {
+                                    call.respond(HttpStatusCode.BadRequest, "Missing sessionId or SSE transport not initialized")
+                                }
                             }
                             
                             get("/health") {
