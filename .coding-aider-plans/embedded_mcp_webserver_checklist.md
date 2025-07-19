@@ -14,6 +14,7 @@
 - [x] Configure MCP server with HTTP transport
 - [x] Ensure server starts automatically with plugin initialization
 - [x] Implement proper server shutdown in dispose method
+- [ ]
 
 ## MCP Tools Implementation
 - [x] Verify existing persistent file tools are working with HTTP transport
