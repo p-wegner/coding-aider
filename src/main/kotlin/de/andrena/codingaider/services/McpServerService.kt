@@ -27,6 +27,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kotlinx.io.buffered
 import kotlinx.serialization.json.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.net.ServerSocket
@@ -51,6 +52,7 @@ class McpServerService(private val project: Project) {
     private var serverTransport: StdioServerTransport? = null
     
     init {
+        LOG.info("Initializing MCP Server Service for project: ${project.name}")
         // Start the MCP server automatically when the service is created
         startServer()
     }
@@ -59,11 +61,14 @@ class McpServerService(private val project: Project) {
         if (isRunning.compareAndSet(false, true)) {
             coroutineScope.launch {
                 try {
+                    LOG.info("=== MCP Server Startup ===")
                     LOG.info("Starting MCP server for project: ${project.name}")
+                    LOG.info("Server name: coding-aider-persistent-files")
+                    LOG.info("Server version: 1.0.0")
                     
                     // Find available port
                     serverPort = findAvailablePort(DEFAULT_PORT)
-                    LOG.info("Using port $serverPort for MCP server")
+                    LOG.info("Found available port: $serverPort")
                     
                     // Initialize MCP server
                     mcpServer = Server(
@@ -79,7 +84,9 @@ class McpServerService(private val project: Project) {
                     )
                     
                     // Add tools for persistent file management
+                    LOG.info("Registering MCP tools for persistent file management...")
                     addPersistentFileTools()
+                    LOG.info("Registered 4 MCP tools: get_persistent_files, add_persistent_files, remove_persistent_files, clear_persistent_files")
                     
                     // Create pipes for STDIO transport over HTTP
                     val inputPipe = PipedInputStream()
@@ -142,12 +149,19 @@ class McpServerService(private val project: Project) {
                             }
                         }
                     }
+                    LOG.info("Starting HTTP server on 0.0.0.0:$serverPort...")
                     httpServer?.start(wait = false)
                     
                     // Connect MCP server to transport
+                    LOG.info("Connecting MCP server to STDIO transport...")
                     mcpServer?.connect(serverTransport!!)
                     
-                    LOG.info("MCP server started successfully on port $serverPort")
+                    LOG.info("=== MCP Server Started Successfully ===")
+                    LOG.info("HTTP endpoint: http://localhost:$serverPort/mcp")
+                    LOG.info("Health check: http://localhost:$serverPort/health")
+                    LOG.info("Status endpoint: http://localhost:$serverPort/status")
+                    LOG.info("MCP clients can now connect to: http://localhost:$serverPort/mcp")
+                    LOG.info("==========================================")
                     isRunning.set(true)
                 } catch (e: Exception) {
                     LOG.error("Failed to start MCP server", e)
@@ -163,14 +177,15 @@ class McpServerService(private val project: Project) {
         if (isRunning.compareAndSet(true, false)) {
             coroutineScope.launch {
                 try {
-                    LOG.info("Stopping MCP server on port $serverPort")
+                    LOG.info("=== MCP Server Shutdown ===")
+                    LOG.info("Stopping MCP server on port $serverPort for project: ${project.name}")
                     mcpServer?.close()
                     mcpServer = null
                     serverTransport = null
                     httpServer?.stop(1000, 2000)
                     httpServer = null
                     messageChannel.close()
-                    LOG.info("MCP server stopped successfully")
+                    LOG.info("=== MCP server stopped successfully ===")
                 } catch (e: Exception) {
                     LOG.error("Error stopping MCP server", e)
                 }

@@ -38,19 +38,8 @@
 - [x] Handle port conflicts gracefully
 - [x] Add proper exception handling for MCP request processing
 
-## Testing and Validation
-- [x] Create unit tests for server startup/shutdown
-- [x] Add tests for health and status endpoints
-- [ ] Add integration tests for MCP tool functionality
-- [ ] Test server behavior with multiple concurrent clients
 
-## Tool Window Integration (Future Enhancement)
+## Tool Window Integration
 - [ ] Create tool window to display server status
 - [ ] Show list of available MCP tools in tool window
-- [ ] Display server logs in tool window
 - [ ] Add controls to start/stop server from tool window
-
-## Documentation and User Experience
-- [ ] Update plugin documentation to mention MCP server functionality
-- [ ] Add configuration instructions for external MCP clients
-- [ ] Document available MCP tools and their usage

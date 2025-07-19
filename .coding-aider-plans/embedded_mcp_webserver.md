@@ -23,6 +23,7 @@ Currently, the plugin has an `McpServerService` that uses SSE (Server-Sent Event
 4. **Robust Error Handling**: Implement proper error handling and logging for server operations
 5. **Configuration Management**: Allow configuration of server port and other settings
 6. **Resource Management**: Ensure proper cleanup of server resources when the plugin is disposed
+7. **Tool window integration**: Add a toolwindow to display server status and mcp tools
 
 ## Additional Notes and Constraints
 

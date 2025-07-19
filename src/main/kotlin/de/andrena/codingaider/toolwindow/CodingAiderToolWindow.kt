@@ -11,6 +11,7 @@ import de.andrena.codingaider.toolwindow.plans.PlansPanel
 import de.andrena.codingaider.toolwindow.runningcommands.RunningCommandsPanel
 import de.andrena.codingaider.toolwindow.workingdirectory.WorkingDirectoryPanel
 import com.intellij.ui.components.JBScrollPane
+import de.andrena.codingaider.startup.McpServerStartupActivity
 import javax.swing.JComponent
 
 class CodingAiderToolWindow : ToolWindowFactory {
@@ -38,6 +39,8 @@ class CodingAiderToolWindowContent(private val project: Project) {
         settings.addSettingsChangeListener {
             refreshContent()
         }
+        // hack to ensure the MCP server is initialized when the tool window is created
+        project.getService(McpServerStartupActivity::class.java)
     }
 
     fun getContent(): JComponent {
