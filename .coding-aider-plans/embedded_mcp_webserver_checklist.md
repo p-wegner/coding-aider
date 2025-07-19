@@ -23,7 +23,8 @@
 - [x] Test add_persistent_files tool functionality
 - [x] Test remove_persistent_files tool functionality
 - [x] Test clear_persistent_files tool functionality
-- [ ] properly impleent
+- [ ] ensure the MCP tools provide relative paths when appropriate
+
 ## Configuration and Settings
 - [x] Add server port configuration option
 - [x] Implement default port selection (with fallback if port is occupied)
@@ -43,3 +44,4 @@
 - [x] Create tool window to display server status
 - [x] Show list of available MCP tools in tool window
 - [x] Add controls to start/stop server from tool window
+- [ ] Add checkboxes to enable/disable specific MCP tools
