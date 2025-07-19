@@ -110,6 +110,7 @@ Usage:
 Connect your MCP client to: http://localhost:${settings.mcpServerPort}/mcp
 Health check: http://localhost:${settings.mcpServerPort}/health
 Status: http://localhost:${settings.mcpServerPort}/status
+Tools: http://localhost:${settings.mcpServerPort}/tools
 
 The server provides HTTP-based MCP communication for managing
 persistent files in the Coding-Aider plugin context.

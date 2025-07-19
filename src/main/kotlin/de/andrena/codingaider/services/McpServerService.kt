@@ -157,6 +157,78 @@ class McpServerService(private val project: Project) {
                                 }
                                 call.respondText(status.toString(), ContentType.Application.Json)
                             }
+                            
+                            get("/tools") {
+                                val tools = buildJsonObject {
+                                    putJsonArray("tools") {
+                                        addJsonObject {
+                                            put("name", "get_persistent_files")
+                                            put("description", "Get the current list of persistent files in the project context")
+                                            putJsonObject("inputSchema") {
+                                                put("type", "object")
+                                                putJsonObject("properties") {}
+                                            }
+                                        }
+                                        addJsonObject {
+                                            put("name", "add_persistent_files")
+                                            put("description", "Add files to the persistent files context")
+                                            putJsonObject("inputSchema") {
+                                                put("type", "object")
+                                                putJsonObject("properties") {
+                                                    putJsonObject("files") {
+                                                        put("type", "array")
+                                                        putJsonObject("items") {
+                                                            put("type", "object")
+                                                            putJsonObject("properties") {
+                                                                putJsonObject("filePath") {
+                                                                    put("type", "string")
+                                                                }
+                                                                putJsonObject("isReadOnly") {
+                                                                    put("type", "boolean")
+                                                                    put("default", false)
+                                                                }
+                                                            }
+                                                            putJsonArray("required") {
+                                                                add(JsonPrimitive("filePath"))
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                putJsonArray("required") {
+                                                    add(JsonPrimitive("files"))
+                                                }
+                                            }
+                                        }
+                                        addJsonObject {
+                                            put("name", "remove_persistent_files")
+                                            put("description", "Remove files from the persistent files context")
+                                            putJsonObject("inputSchema") {
+                                                put("type", "object")
+                                                putJsonObject("properties") {
+                                                    putJsonObject("filePaths") {
+                                                        put("type", "array")
+                                                        putJsonObject("items") {
+                                                            put("type", "string")
+                                                        }
+                                                    }
+                                                }
+                                                putJsonArray("required") {
+                                                    add(JsonPrimitive("filePaths"))
+                                                }
+                                            }
+                                        }
+                                        addJsonObject {
+                                            put("name", "clear_persistent_files")
+                                            put("description", "Clear all files from the persistent files context")
+                                            putJsonObject("inputSchema") {
+                                                put("type", "object")
+                                                putJsonObject("properties") {}
+                                            }
+                                        }
+                                    }
+                                }
+                                call.respondText(tools.toString(), ContentType.Application.Json)
+                            }
                         }
                     }
                     LOG.info("Starting HTTP server on 0.0.0.0:$serverPort...")
