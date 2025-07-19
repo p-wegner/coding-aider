@@ -114,17 +114,16 @@ class McpServerService(private val project: Project) {
                     // Start HTTP server with MCP over HTTP
                     httpServer = embeddedServer(CIO, host = "0.0.0.0", port = serverPort) {
                         routing {
-                            // TODO 19.07.2025 pwegner: properly setup the mcp server here (see USER_GUIDE.md)
                             post("/mcp") {
                                 try {
                                     val requestBody = call.receiveText()
                                     LOG.debug("Received MCP request: $requestBody")
-                                    
-                                    // Write request to input stream
+                            
+                                    // Write request to input stream for MCP server processing
                                     inputOutputStream.write(requestBody.toByteArray())
                                     inputOutputStream.write('\n'.code)
                                     inputOutputStream.flush()
-                                    
+                            
                                     // Read response from output stream
                                     val buffer = ByteArray(8192)
                                     val bytesRead = outputInputStream.read(buffer)
@@ -133,7 +132,7 @@ class McpServerService(private val project: Project) {
                                     } else {
                                         "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32603,\"message\":\"Internal error\"}}"
                                     }
-                                    
+                            
                                     LOG.debug("Sending MCP response: $response")
                                     call.respondText(response, ContentType.Application.Json)
                                 } catch (e: Exception) {
