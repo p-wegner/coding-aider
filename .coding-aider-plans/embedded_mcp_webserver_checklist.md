@@ -14,7 +14,8 @@
 - [x] Configure MCP server with HTTP transport
 - [x] Ensure server starts automatically with plugin initialization
 - [x] Implement proper server shutdown in dispose method
-- [ ]
+- [x] Add HTTP endpoints for MCP communication (/mcp, /health, /status)
+- [x] Implement STDIO transport over HTTP bridge
 
 ## MCP Tools Implementation
 - [x] Verify existing persistent file tools are working with HTTP transport
@@ -27,8 +28,29 @@
 - [x] Add server port configuration option
 - [x] Implement default port selection (with fallback if port is occupied)
 - [x] Add server status monitoring
+- [ ] Add user-configurable server settings in plugin settings UI
+- [ ] Allow users to configure server port in settings
+- [ ] Add option to enable/disable MCP server
 
 ## Error Handling and Logging
 - [x] Add comprehensive error handling for server startup failures
 - [x] Implement proper logging for server operations
 - [x] Handle port conflicts gracefully
+- [x] Add proper exception handling for MCP request processing
+
+## Testing and Validation
+- [x] Create unit tests for server startup/shutdown
+- [x] Add tests for health and status endpoints
+- [ ] Add integration tests for MCP tool functionality
+- [ ] Test server behavior with multiple concurrent clients
+
+## Tool Window Integration (Future Enhancement)
+- [ ] Create tool window to display server status
+- [ ] Show list of available MCP tools in tool window
+- [ ] Display server logs in tool window
+- [ ] Add controls to start/stop server from tool window
+
+## Documentation and User Experience
+- [ ] Update plugin documentation to mention MCP server functionality
+- [ ] Add configuration instructions for external MCP clients
+- [ ] Document available MCP tools and their usage
