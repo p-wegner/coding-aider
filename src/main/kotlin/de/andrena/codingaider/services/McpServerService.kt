@@ -90,8 +90,8 @@ class McpServerService(private val project: Project) {
                     
                     // Create STDIO transport
                     serverTransport = StdioServerTransport(
-                        inputStream = inputPipe.asSource(),
-                        outputStream = outputPipe.asSink()
+                        inputStream = inputPipe.asSource().buffered(),
+                        outputStream = outputPipe.asSink().buffered()
                     )
                     
                     // Start HTTP server with MCP over HTTP
