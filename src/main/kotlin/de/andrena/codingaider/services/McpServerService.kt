@@ -11,8 +11,14 @@ import io.ktor.server.application.*
 import io.ktor.server.cio.*
 import io.ktor.server.engine.*
 import io.ktor.server.routing.*
-import io.ktor.server.sse.*
-import io.modelcontextprotocol.kotlin.sdk.server.SseServerTransport
+import io.ktor.server.request.*
+import io.ktor.server.response.*
+import io.ktor.http.*
+import io.modelcontextprotocol.kotlin.sdk.server.StdioServerTransport
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
+import java.io.PipedInputStream
+import java.io.PipedOutputStream
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -30,6 +36,8 @@ class McpServerService(private val project: Project) {
     private val persistentFileService by lazy { project.service<PersistentFileService>() }
     private val serverPort = 8080 // Default port, could be configurable
     private var httpServer: EmbeddedServer<CIOApplicationEngine, CIOApplicationEngine.Configuration>? = null
+    private val messageChannel = Channel<String>(Channel.UNLIMITED)
+    private var serverTransport: StdioServerTransport? = null
     
     init {
         // Start the MCP server automatically when the service is created
@@ -56,22 +64,58 @@ class McpServerService(private val project: Project) {
                     // Add tools for persistent file management
                     addPersistentFileTools()
                     
-                    // Start HTTP server with SSE transport
+                    // Create pipes for STDIO transport over HTTP
+                    val inputPipe = PipedInputStream()
+                    val outputPipe = PipedOutputStream()
+                    val outputInputStream = PipedInputStream()
+                    val inputOutputStream = PipedOutputStream(inputPipe)
+                    outputPipe.connect(outputInputStream)
+                    
+                    // Create STDIO transport
+                    serverTransport = StdioServerTransport(
+                        inputStream = inputPipe,
+                        outputStream = outputPipe
+                    )
+                    
+                    // Start HTTP server with MCP over HTTP
                     httpServer = embeddedServer(CIO, host = "0.0.0.0", port = serverPort) {
-                        install(SSE)
                         routing {
-                            sse("/sse") {
-                                val transport = SseServerTransport("/message", this)
-                                mcpServer?.connect(transport)
+                            post("/mcp") {
+                                try {
+                                    val requestBody = call.receiveText()
+                                    
+                                    // Write request to input stream
+                                    inputOutputStream.write(requestBody.toByteArray())
+                                    inputOutputStream.write('\n'.code)
+                                    inputOutputStream.flush()
+                                    
+                                    // Read response from output stream
+                                    val buffer = ByteArray(8192)
+                                    val bytesRead = outputInputStream.read(buffer)
+                                    val response = if (bytesRead > 0) {
+                                        String(buffer, 0, bytesRead)
+                                    } else {
+                                        "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32603,\"message\":\"Internal error\"}}"
+                                    }
+                                    
+                                    call.respondText(response, ContentType.Application.Json)
+                                } catch (e: Exception) {
+                                    call.respond(
+                                        HttpStatusCode.InternalServerError,
+                                        "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32603,\"message\":\"${e.message}\"}}"
+                                    )
+                                }
                             }
-                            post("/message") {
-                                // Handle POST messages for SSE transport
-                                val sessionId = call.request.queryParameters["sessionId"]
-                                // Message handling will be done by the transport
+                            
+                            get("/health") {
+                                call.respondText("MCP Server is running", ContentType.Text.Plain)
                             }
                         }
                     }
                     httpServer?.start(wait = false)
+                    
+                    // Connect MCP server to transport
+                    mcpServer?.connect(serverTransport!!)
                     
                     isRunning.set(true)
                 } catch (e: Exception) {
@@ -88,8 +132,10 @@ class McpServerService(private val project: Project) {
             coroutineScope.launch {
                 mcpServer?.close()
                 mcpServer = null
+                serverTransport = null
                 httpServer?.stop(1000, 2000)
                 httpServer = null
+                messageChannel.close()
             }
         }
     }
