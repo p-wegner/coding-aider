@@ -23,7 +23,7 @@
 - [x] Test add_persistent_files tool functionality
 - [x] Test remove_persistent_files tool functionality
 - [x] Test clear_persistent_files tool functionality
-- [ ] ensure the MCP tools provide relative paths when appropriate
+- [x] ensure the MCP tools provide relative paths when appropriate
 
 ## Configuration and Settings
 - [x] Add server port configuration option
