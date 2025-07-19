@@ -68,7 +68,7 @@ class McpServerToolWindow(private val project: Project) {
         statusLabel.text = "Status: ${mcpServerService.getServerStatus()}"
         portLabel.text = "Port: $port"
         endpointLabel.text = if (isRunning) {
-            "Endpoint: http://localhost:$port/mcp"
+            "Endpoint: http://localhost:$port/sse"
         } else {
             "Endpoint: Not running"
         }
@@ -107,12 +107,11 @@ MCP Tools Available:
    Parameters: None
 
 Usage:
-Connect your MCP client to: http://localhost:${settings.mcpServerPort}/mcp
+Connect your MCP client to: http://localhost:${settings.mcpServerPort}/sse
 Health check: http://localhost:${settings.mcpServerPort}/health
 Status: http://localhost:${settings.mcpServerPort}/status
-Tools: http://localhost:${settings.mcpServerPort}/tools
 
-The server provides HTTP-based MCP communication for managing
+The server provides SSE-based MCP communication for managing
 persistent files in the Coding-Aider plugin context.
         """.trimIndent()
     }

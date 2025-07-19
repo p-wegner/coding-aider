@@ -13,22 +13,15 @@ import io.ktor.server.application.*
 import io.ktor.server.cio.*
 import io.ktor.server.engine.*
 import io.ktor.server.routing.*
-import io.ktor.server.request.*
+import io.ktor.server.sse.*
 import io.ktor.server.response.*
 import io.ktor.http.*
-import io.modelcontextprotocol.kotlin.sdk.server.StdioServerTransport
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.receiveAsFlow
-import java.io.PipedInputStream
-import java.io.PipedOutputStream
-import kotlinx.io.asSource
-import kotlinx.io.asSink
+import io.modelcontextprotocol.kotlin.sdk.server.SseServerTransport
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
-import kotlinx.io.buffered
 import kotlinx.serialization.json.*
 import java.util.concurrent.atomic.AtomicBoolean
 import java.net.ServerSocket
@@ -50,8 +43,6 @@ class McpServerService(private val project: Project) {
     private val settings by lazy { AiderSettings.getInstance() }
     private var serverPort = DEFAULT_PORT
     private var httpServer: EmbeddedServer<CIOApplicationEngine, CIOApplicationEngine.Configuration>? = null
-    private val messageChannel = Channel<String>(Channel.UNLIMITED)
-    private var serverTransport: StdioServerTransport? = null
     
     init {
         LOG.info("Initializing MCP Server Service for project: ${project.name}")
@@ -98,50 +89,14 @@ class McpServerService(private val project: Project) {
                     addPersistentFileTools()
                     LOG.info("Registered 4 MCP tools: get_persistent_files, add_persistent_files, remove_persistent_files, clear_persistent_files")
                     
-                    // Create pipes for STDIO transport over HTTP
-                    val inputPipe = PipedInputStream()
-                    val outputPipe = PipedOutputStream()
-                    val outputInputStream = PipedInputStream()
-                    val inputOutputStream = PipedOutputStream(inputPipe)
-                    outputPipe.connect(outputInputStream)
-                    
-                    // Create STDIO transport
-                    serverTransport = StdioServerTransport(
-                        inputStream = inputPipe.asSource().buffered(),
-                        outputStream = outputPipe.asSink().buffered()
-                    )
-                    
-                    // Start HTTP server with MCP over HTTP
+                    // Start HTTP server with SSE transport for MCP
                     httpServer = embeddedServer(CIO, host = "0.0.0.0", port = serverPort) {
+                        install(SSE)
                         routing {
-                            post("/mcp") {
-                                try {
-                                    val requestBody = call.receiveText()
-                                    LOG.debug("Received MCP request: $requestBody")
-                            
-                                    // Write request to input stream for MCP server processing
-                                    inputOutputStream.write(requestBody.toByteArray())
-                                    inputOutputStream.write('\n'.code)
-                                    inputOutputStream.flush()
-                            
-                                    // Read response from output stream
-                                    val buffer = ByteArray(8192)
-                                    val bytesRead = outputInputStream.read(buffer)
-                                    val response = if (bytesRead > 0) {
-                                        String(buffer, 0, bytesRead)
-                                    } else {
-                                        "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32603,\"message\":\"Internal error\"}}"
-                                    }
-                            
-                                    LOG.debug("Sending MCP response: $response")
-                                    call.respondText(response, ContentType.Application.Json)
-                                } catch (e: Exception) {
-                                    LOG.error("Error processing MCP request", e)
-                                    call.respond(
-                                        HttpStatusCode.InternalServerError,
-                                        "{\"jsonrpc\":\"2.0\",\"error\":{\"code\":-32603,\"message\":\"${e.message}\"}}"
-                                    )
-                                }
+                            sse("/sse") {
+                                val transport = SseServerTransport("/message", this)
+                                LOG.info("Connecting MCP server to SSE transport...")
+                                mcpServer?.connect(transport)
                             }
                             
                             get("/health") {
@@ -157,92 +112,16 @@ class McpServerService(private val project: Project) {
                                 }
                                 call.respondText(status.toString(), ContentType.Application.Json)
                             }
-                            
-                            get("/tools") {
-                                val tools = buildJsonObject {
-                                    putJsonArray("tools") {
-                                        addJsonObject {
-                                            put("name", "get_persistent_files")
-                                            put("description", "Get the current list of persistent files in the project context")
-                                            putJsonObject("inputSchema") {
-                                                put("type", "object")
-                                                putJsonObject("properties") {}
-                                            }
-                                        }
-                                        addJsonObject {
-                                            put("name", "add_persistent_files")
-                                            put("description", "Add files to the persistent files context")
-                                            putJsonObject("inputSchema") {
-                                                put("type", "object")
-                                                putJsonObject("properties") {
-                                                    putJsonObject("files") {
-                                                        put("type", "array")
-                                                        putJsonObject("items") {
-                                                            put("type", "object")
-                                                            putJsonObject("properties") {
-                                                                putJsonObject("filePath") {
-                                                                    put("type", "string")
-                                                                }
-                                                                putJsonObject("isReadOnly") {
-                                                                    put("type", "boolean")
-                                                                    put("default", false)
-                                                                }
-                                                            }
-                                                            putJsonArray("required") {
-                                                                add(JsonPrimitive("filePath"))
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                                putJsonArray("required") {
-                                                    add(JsonPrimitive("files"))
-                                                }
-                                            }
-                                        }
-                                        addJsonObject {
-                                            put("name", "remove_persistent_files")
-                                            put("description", "Remove files from the persistent files context")
-                                            putJsonObject("inputSchema") {
-                                                put("type", "object")
-                                                putJsonObject("properties") {
-                                                    putJsonObject("filePaths") {
-                                                        put("type", "array")
-                                                        putJsonObject("items") {
-                                                            put("type", "string")
-                                                        }
-                                                    }
-                                                }
-                                                putJsonArray("required") {
-                                                    add(JsonPrimitive("filePaths"))
-                                                }
-                                            }
-                                        }
-                                        addJsonObject {
-                                            put("name", "clear_persistent_files")
-                                            put("description", "Clear all files from the persistent files context")
-                                            putJsonObject("inputSchema") {
-                                                put("type", "object")
-                                                putJsonObject("properties") {}
-                                            }
-                                        }
-                                    }
-                                }
-                                call.respondText(tools.toString(), ContentType.Application.Json)
-                            }
                         }
                     }
                     LOG.info("Starting HTTP server on 0.0.0.0:$serverPort...")
                     httpServer?.start(wait = false)
                     
-                    // Connect MCP server to transport
-                    LOG.info("Connecting MCP server to STDIO transport...")
-                    mcpServer?.connect(serverTransport!!)
-                    
                     LOG.info("=== MCP Server Started Successfully ===")
-                    LOG.info("HTTP endpoint: http://localhost:$serverPort/mcp")
+                    LOG.info("SSE endpoint: http://localhost:$serverPort/sse")
                     LOG.info("Health check: http://localhost:$serverPort/health")
                     LOG.info("Status endpoint: http://localhost:$serverPort/status")
-                    LOG.info("MCP clients can now connect to: http://localhost:$serverPort/mcp")
+                    LOG.info("MCP clients can now connect to: http://localhost:$serverPort/sse")
                     LOG.info("==========================================")
                     isRunning.set(true)
                 } catch (e: Exception) {
@@ -263,10 +142,8 @@ class McpServerService(private val project: Project) {
                     LOG.info("Stopping MCP server on port $serverPort for project: ${project.name}")
                     mcpServer?.close()
                     mcpServer = null
-                    serverTransport = null
                     httpServer?.stop(1000, 2000)
                     httpServer = null
-                    messageChannel.close()
                     LOG.info("=== MCP server stopped successfully ===")
                 } catch (e: Exception) {
                     LOG.error("Error stopping MCP server", e)
