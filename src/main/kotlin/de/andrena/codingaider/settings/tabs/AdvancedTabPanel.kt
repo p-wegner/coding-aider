@@ -27,6 +27,11 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
     private val enableLocalModelCostMapCheckBox = JBCheckBox("Enable local model cost mapping")
     private val showDevToolsCheckBox = JBCheckBox("Show DevTools button in markdown viewer")
     private val showWorkingDirectoryPanelCheckBox = JBCheckBox("Show working directory panel in tool window")
+    
+    // MCP Server settings
+    private val enableMcpServerCheckBox = JBCheckBox("Enable MCP Server")
+    private val mcpServerAutoStartCheckBox = JBCheckBox("Auto-start MCP server with plugin")
+    private val mcpServerPortField = com.intellij.ui.components.JBTextField()
 
     override fun getTabName(): String = "Advanced"
 
@@ -124,6 +129,40 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
                         }
                 }
             }
+
+            group("MCP Server") {
+                row {
+                    cell(enableMcpServerCheckBox)
+                        .component
+                        .apply {
+                            toolTipText =
+                                "Enable the Model Context Protocol (MCP) server for persistent file management. " +
+                                "This allows external MCP clients to interact with the plugin's persistent files."
+                            addItemListener { e ->
+                                val enabled = e.stateChange == java.awt.event.ItemEvent.SELECTED
+                                mcpServerAutoStartCheckBox.isEnabled = enabled
+                                mcpServerPortField.isEnabled = enabled
+                            }
+                        }
+                }
+                row {
+                    cell(mcpServerAutoStartCheckBox)
+                        .component
+                        .apply {
+                            toolTipText =
+                                "If enabled, the MCP server will start automatically when the plugin loads."
+                        }
+                }
+                row("Server Port:") {
+                    cell(mcpServerPortField)
+                        .component
+                        .apply {
+                            toolTipText =
+                                "Port number for the MCP server. Default is 8080. The server will find the next available port if this one is occupied."
+                            columns = 10
+                        }
+                }
+            }
         }
     }
 
@@ -138,6 +177,15 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
         settings.mountAiderConfInDocker = mountAiderConfInDockerCheckBox.isSelected
         settings.showWorkingDirectoryPanel = showWorkingDirectoryPanelCheckBox.isSelected
         settings.showDevTools = showDevToolsCheckBox.isSelected
+        
+        // MCP Server settings
+        settings.enableMcpServer = enableMcpServerCheckBox.isSelected
+        settings.mcpServerAutoStart = mcpServerAutoStartCheckBox.isSelected
+        try {
+            settings.mcpServerPort = mcpServerPortField.text.toIntOrNull() ?: AiderDefaults.MCP_SERVER_PORT
+        } catch (e: NumberFormatException) {
+            settings.mcpServerPort = AiderDefaults.MCP_SERVER_PORT
+        }
     }
 
     override fun reset() {
@@ -152,9 +200,22 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
         mountAiderConfInDockerCheckBox.isSelected = settings.mountAiderConfInDocker
         showWorkingDirectoryPanelCheckBox.isSelected = settings.showWorkingDirectoryPanel
         showDevToolsCheckBox.isSelected = settings.showDevTools
+        
+        // MCP Server settings
+        enableMcpServerCheckBox.isSelected = settings.enableMcpServer
+        mcpServerAutoStartCheckBox.isSelected = settings.mcpServerAutoStart
+        mcpServerAutoStartCheckBox.isEnabled = settings.enableMcpServer
+        mcpServerPortField.isEnabled = settings.enableMcpServer
+        mcpServerPortField.text = settings.mcpServerPort.toString()
     }
 
     override fun isModified(): Boolean {
+        val mcpServerPortModified = try {
+            mcpServerPortField.text.toIntOrNull() != settings.mcpServerPort
+        } catch (e: NumberFormatException) {
+            true
+        }
+        
         return useSidecarModeCheckBox.isSelected != settings.useSidecarMode ||
                 sidecarModeVerboseCheckBox.isSelected != settings.sidecarModeVerbose ||
                 activateIdeExecutorAfterWebcrawlCheckBox.isSelected != settings.activateIdeExecutorAfterWebcrawl ||
@@ -164,7 +225,10 @@ class AdvancedTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyCh
                 enableLocalModelCostMapCheckBox.isSelected != settings.enableLocalModelCostMap ||
                 mountAiderConfInDockerCheckBox.isSelected != settings.mountAiderConfInDocker ||
                 showWorkingDirectoryPanelCheckBox.isSelected != settings.showWorkingDirectoryPanel ||
-                showDevToolsCheckBox.isSelected != settings.showDevTools
+                showDevToolsCheckBox.isSelected != settings.showDevTools ||
+                enableMcpServerCheckBox.isSelected != settings.enableMcpServer ||
+                mcpServerAutoStartCheckBox.isSelected != settings.mcpServerAutoStart ||
+                mcpServerPortModified
     }
 
     fun updateLlmOptions(llmOptions: Array<LlmSelection>) {

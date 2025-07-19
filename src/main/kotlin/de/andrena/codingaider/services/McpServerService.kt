@@ -5,6 +5,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.FileData
+import de.andrena.codingaider.settings.AiderSettings
 import io.modelcontextprotocol.kotlin.sdk.*
 import io.modelcontextprotocol.kotlin.sdk.server.Server
 import io.modelcontextprotocol.kotlin.sdk.server.ServerOptions
@@ -46,6 +47,7 @@ class McpServerService(private val project: Project) {
     private val isRunning = AtomicBoolean(false)
     private var mcpServer: Server? = null
     private val persistentFileService by lazy { project.service<PersistentFileService>() }
+    private val settings by lazy { AiderSettings.getInstance() }
     private var serverPort = DEFAULT_PORT
     private var httpServer: EmbeddedServer<CIOApplicationEngine, CIOApplicationEngine.Configuration>? = null
     private val messageChannel = Channel<String>(Channel.UNLIMITED)
@@ -53,11 +55,18 @@ class McpServerService(private val project: Project) {
     
     init {
         LOG.info("Initializing MCP Server Service for project: ${project.name}")
-        // Start the MCP server automatically when the service is created
-        startServer()
+        // Start the MCP server automatically if enabled and auto-start is configured
+        if (settings.enableMcpServer && settings.mcpServerAutoStart) {
+            startServer()
+        }
     }
     
     fun startServer() {
+        if (!settings.enableMcpServer) {
+            LOG.info("MCP Server is disabled in settings")
+            return
+        }
+        
         if (isRunning.compareAndSet(false, true)) {
             coroutineScope.launch {
                 try {
@@ -66,9 +75,10 @@ class McpServerService(private val project: Project) {
                     LOG.info("Server name: coding-aider-persistent-files")
                     LOG.info("Server version: 1.0.0")
                     
-                    // Find available port
-                    serverPort = findAvailablePort(DEFAULT_PORT)
-                    LOG.info("Found available port: $serverPort")
+                    // Find available port starting from configured port
+                    val configuredPort = settings.mcpServerPort
+                    serverPort = findAvailablePort(configuredPort)
+                    LOG.info("Found available port: $serverPort (configured: $configuredPort)")
                     
                     // Initialize MCP server
                     mcpServer = Server(

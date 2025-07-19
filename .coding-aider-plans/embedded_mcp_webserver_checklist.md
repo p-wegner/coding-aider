@@ -28,9 +28,9 @@
 - [x] Add server port configuration option
 - [x] Implement default port selection (with fallback if port is occupied)
 - [x] Add server status monitoring
-- [ ] Add user-configurable server settings in plugin settings UI
-- [ ] Allow users to configure server port in settings
-- [ ] Add option to enable/disable MCP server
+- [x] Add user-configurable server settings in plugin settings UI
+- [x] Allow users to configure server port in settings
+- [x] Add option to enable/disable MCP server
 
 ## Error Handling and Logging
 - [x] Add comprehensive error handling for server startup failures

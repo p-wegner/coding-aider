@@ -64,4 +64,9 @@ Make your changes precise and minimal."""
     const val AUTO_COMMIT_AFTER_EDITS = false // Auto-commit after plugin-based edits
     const val SHOW_WORKING_DIRECTORY_PANEL = true // Show working directory panel in tool window
     const val SHOW_DEV_TOOLS = false // Show DevTools button in markdown viewer
+    
+    // MCP Server settings
+    const val ENABLE_MCP_SERVER = true // Enable MCP server for persistent files
+    const val MCP_SERVER_PORT = 8080 // Default port for MCP server
+    const val MCP_SERVER_AUTO_START = true // Auto-start MCP server with plugin
 }

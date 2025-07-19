@@ -59,7 +59,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var lenientEdits: Boolean = AiderDefaults.LENIENT_EDITS, // Allow processing of multiple edit formats
         var autoCommitAfterEdits: Boolean = AiderDefaults.AUTO_COMMIT_AFTER_EDITS, // Auto-commit after plugin-based edits
         var showWorkingDirectoryPanel: Boolean = AiderDefaults.SHOW_WORKING_DIRECTORY_PANEL, // Show working directory panel in tool window
-        var showDevTools: Boolean = AiderDefaults.SHOW_DEV_TOOLS // Show DevTools button in markdown viewer
+        var showDevTools: Boolean = AiderDefaults.SHOW_DEV_TOOLS, // Show DevTools button in markdown viewer
+        
+        // MCP Server settings
+        var enableMcpServer: Boolean = AiderDefaults.ENABLE_MCP_SERVER, // Enable MCP server for persistent files
+        var mcpServerPort: Int = AiderDefaults.MCP_SERVER_PORT, // Port for MCP server
+        var mcpServerAutoStart: Boolean = AiderDefaults.MCP_SERVER_AUTO_START // Auto-start MCP server with plugin
     )
 
 
@@ -286,6 +291,24 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
             myState.showDevTools = value
         }
 
+    // MCP Server settings
+    var enableMcpServer: Boolean
+        get() = myState.enableMcpServer
+        set(value) {
+            myState.enableMcpServer = value
+        }
+
+    var mcpServerPort: Int
+        get() = myState.mcpServerPort
+        set(value) {
+            myState.mcpServerPort = value
+        }
+
+    var mcpServerAutoStart: Boolean
+        get() = myState.mcpServerAutoStart
+        set(value) {
+            myState.mcpServerAutoStart = value
+        }
 
     enum class AutoCommitSetting {
         ON, OFF, DEFAULT;
