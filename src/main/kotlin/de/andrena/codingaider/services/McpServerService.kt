@@ -6,7 +6,6 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.services.mcp.McpToolRegistry
-import de.andrena.codingaider.services.PersistentFileService
 import io.modelcontextprotocol.kotlin.sdk.*
 import io.modelcontextprotocol.kotlin.sdk.server.Server
 import io.modelcontextprotocol.kotlin.sdk.server.ServerOptions
@@ -102,7 +101,7 @@ class McpServerService(private val project: Project) {
                             sse("/sse") {
                                 sseTransport = SseServerTransport("/message", this)
                                 LOG.info("Connecting MCP server to SSE transport...")
-                                mcpServer?.connect(sseTransport!!)
+                                mcpServer?.connect(sseTransport)
                             }
                             
                             post("/message") {
@@ -110,7 +109,7 @@ class McpServerService(private val project: Project) {
                                 val sessionId = call.request.queryParameters["sessionId"]
                                 if (sessionId != null && sseTransport != null) {
                                     val body = call.receiveText()
-                                    sseTransport!!.handleMessage(body)
+                                    sseTransport.handleMessage(body)
                                     call.respond(HttpStatusCode.OK)
                                 } else {
                                     call.respond(HttpStatusCode.BadRequest, "Missing sessionId or SSE transport not initialized")
@@ -215,10 +214,6 @@ class McpServerService(private val project: Project) {
         }
     }
     
-    fun getAvailableTools() = mcpToolRegistry.getAvailableTools()
-    
-    fun getEnabledTools() = mcpToolRegistry.getEnabledTools()
-    
     private fun registerDiscoveredTools() {
         mcpServer?.apply {
             val enabledTools = mcpToolRegistry.getEnabledTools()
@@ -232,7 +227,7 @@ class McpServerService(private val project: Project) {
                         description = metadata.description,
                         inputSchema = metadata.inputSchema
                     ) { request ->
-                        tool.execute(request.arguments ?: kotlinx.serialization.json.buildJsonObject {})
+                        tool.execute(request.arguments)
                     }
                     registeredCount++
                     LOG.debug("Registered MCP tool: ${metadata.name}")
