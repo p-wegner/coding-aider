@@ -27,7 +27,7 @@ class CreateAiderPlanTool(private val project: Project) : McpTool {
     override fun getName(): String = "create_aider_plan"
     
     override fun getDescription(): String = 
-        "Create a structured development plan using Aider's planning system. " +
+        "Create a structured development plan using Coding Aider's planning system. " +
         "Automatically generates a plan with checklist and enables step-by-step execution."
     
     override fun getInputSchema(): Tool.Input = Tool.Input(
@@ -39,7 +39,8 @@ class CreateAiderPlanTool(private val project: Project) : McpTool {
             putJsonObject("files") {
                 put("type", "array")
                 put("default", JsonArray(emptyList()))
-                put("description", "Files to include in the planning context")
+                put("description", "Files to include in the planning context and execution steps. For reliable output," +
+                        " ensure all files are relevant for the task or serve as a good example of used conventions libraries or patterns.")
                 putJsonObject("items") {
                     put("type", "object")
                     putJsonObject("properties") {
