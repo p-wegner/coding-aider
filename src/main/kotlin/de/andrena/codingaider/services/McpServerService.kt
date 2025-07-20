@@ -232,7 +232,7 @@ class McpServerService(private val project: Project) {
                         description = metadata.description,
                         inputSchema = metadata.inputSchema
                     ) { request ->
-                        tool.execute(request)
+                        tool.execute(request.arguments ?: kotlinx.serialization.json.buildJsonObject {})
                     }
                     registeredCount++
                     LOG.debug("Registered MCP tool: ${metadata.name}")

@@ -34,4 +34,14 @@ interface McpTool {
      * Whether this tool is enabled by default
      */
     fun isEnabledByDefault(): Boolean = true
+    
+    /**
+     * Get metadata for this tool
+     */
+    fun getMetadata(): McpToolMetadata = McpToolMetadata(
+        name = getName(),
+        description = getDescription(),
+        inputSchema = getInputSchema(),
+        isEnabledByDefault = isEnabledByDefault()
+    )
 }
