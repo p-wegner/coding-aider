@@ -168,6 +168,8 @@ class TestGenerationDialog(
                 llm = settings.llm,
                 additionalArgs = settings.additionalArgs,
                 lintCmd = settings.lintCmd,
+                deactivateRepoMap = settings.deactivateRepoMap,
+                editFormat = settings.editFormat,
                 aiderMode = AiderMode.NORMAL,
                 sidecarMode = settings.useSidecarMode,
             )

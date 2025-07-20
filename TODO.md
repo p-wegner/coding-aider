@@ -16,7 +16,7 @@
 - [ ] Improve: Generate Tests: make context file easier to setup
 - [ ] Improve: Generate Tests: which files to include in context? persistent files? currently persistent files
   are not used for context
-- [ ] Improve: Generate Tests: respect settings for repo mapping
+- [x] Improve: Generate Tests: respect settings for repo mapping
 - [ ] in case of command abortion, make sure to keep output content of the command visible.
 - [ ] Feature: provide some mcp server functionality
   - server: plan creation, crud for persistent files, repo map, 
