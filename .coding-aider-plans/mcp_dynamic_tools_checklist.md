@@ -19,21 +19,21 @@
 
 ## Phase 3: Service Integration
 
-- [ ] Update `McpServerService` to inject `McpToolRegistry`
-- [ ] Replace hard-coded tool registration with dynamic discovery
-- [ ] Remove individual tool enable/disable flags
-- [ ] Update tool configuration methods to use registry
-- [ ] Remove hard-coded tool methods from `McpServerService`
-- [ ] Update server startup logging to show discovered tools
+- [x] Update `McpServerService` to inject `McpToolRegistry`
+- [x] Replace hard-coded tool registration with dynamic discovery
+- [x] Remove individual tool enable/disable flags
+- [x] Update tool configuration methods to use registry
+- [x] Remove hard-coded tool methods from `McpServerService`
+- [x] Update server startup logging to show discovered tools
 
 ## Phase 4: UI Updates
 
-- [ ] Update `McpServerToolWindow` to inject `McpToolRegistry`
-- [ ] Replace hard-coded checkboxes with dynamic tool list
-- [ ] Implement dynamic checkbox generation for discovered tools
-- [ ] Update tool configuration persistence
-- [ ] Update connection information display
-- [ ] Add tool count and status to server information
+- [x] Update `McpServerToolWindow` to inject `McpToolRegistry`
+- [x] Replace hard-coded checkboxes with dynamic tool list
+- [x] Implement dynamic checkbox generation for discovered tools
+- [x] Update tool configuration persistence
+- [x] Update connection information display
+- [x] Add tool count and status to server information
 
 ## Phase 6: Cleanup and Validation
 

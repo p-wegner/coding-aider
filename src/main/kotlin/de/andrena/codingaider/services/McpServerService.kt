@@ -4,8 +4,8 @@ import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
-import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.settings.AiderSettings
+import de.andrena.codingaider.services.mcp.McpToolRegistry
 import io.modelcontextprotocol.kotlin.sdk.*
 import io.modelcontextprotocol.kotlin.sdk.server.Server
 import io.modelcontextprotocol.kotlin.sdk.server.ServerOptions
@@ -40,16 +40,10 @@ class McpServerService(private val project: Project) {
     private val coroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val isRunning = AtomicBoolean(false)
     private var mcpServer: Server? = null
-    private val persistentFileService by lazy { project.service<PersistentFileService>() }
     private val settings by lazy { AiderSettings.getInstance() }
+    private val mcpToolRegistry by lazy { McpToolRegistry.getInstance(project) }
     private var serverPort = DEFAULT_PORT
     private var httpServer: EmbeddedServer<CIOApplicationEngine, CIOApplicationEngine.Configuration>? = null
-    
-    // Tool configuration
-    private var enableGetPersistentFiles = true
-    private var enableAddPersistentFiles = true
-    private var enableRemovePersistentFiles = true
-    private var enableClearPersistentFiles = true
     
     init {
         LOG.info("Initializing MCP Server Service for project: ${project.name}")
@@ -91,10 +85,12 @@ class McpServerService(private val project: Project) {
                         )
                     )
                     
-                    // Add tools for persistent file management
-                    LOG.info("Registering MCP tools for persistent file management...")
-                    addPersistentFileTools()
-                    LOG.info("Registered 4 MCP tools: get_persistent_files, add_persistent_files, remove_persistent_files, clear_persistent_files")
+                    // Add tools using the tool registry
+                    LOG.info("Discovering and registering MCP tools...")
+                    registerDiscoveredTools()
+                    val toolCount = mcpToolRegistry.getAvailableTools().size
+                    val toolNames = mcpToolRegistry.getAvailableTools().map { it.name }
+                    LOG.info("Registered $toolCount MCP tools: ${toolNames.joinToString(", ")}")
                     
                     // Start HTTP server with SSE transport for MCP
                     httpServer = embeddedServer(CIO, host = "0.0.0.0", port = serverPort) {
@@ -200,16 +196,8 @@ class McpServerService(private val project: Project) {
         }
     }
     
-    fun updateToolConfiguration(
-        enableGetPersistentFiles: Boolean,
-        enableAddPersistentFiles: Boolean,
-        enableRemovePersistentFiles: Boolean,
-        enableClearPersistentFiles: Boolean
-    ) {
-        this.enableGetPersistentFiles = enableGetPersistentFiles
-        this.enableAddPersistentFiles = enableAddPersistentFiles
-        this.enableRemovePersistentFiles = enableRemovePersistentFiles
-        this.enableClearPersistentFiles = enableClearPersistentFiles
+    fun updateToolConfiguration(toolConfigurations: Map<String, Boolean>) {
+        mcpToolRegistry.updateToolConfiguration(toolConfigurations)
         
         // If server is running, restart it to apply new tool configuration
         if (isRunning.get()) {
@@ -223,169 +211,33 @@ class McpServerService(private val project: Project) {
         }
     }
     
-    private fun addPersistentFileTools() {
+    fun getAvailableTools() = mcpToolRegistry.getAvailableTools()
+    
+    fun getEnabledTools() = mcpToolRegistry.getEnabledTools()
+    
+    private fun registerDiscoveredTools() {
         mcpServer?.apply {
-            var toolCount = 0
-            if (enableGetPersistentFiles) {
-                addGetPersistentFilesTool()
-                toolCount++
-            }
-            if (enableAddPersistentFiles) {
-                addAddPersistentFilesTool()
-                toolCount++
-            }
-            if (enableRemovePersistentFiles) {
-                addRemovePersistentFilesTool()
-                toolCount++
-            }
-            if (enableClearPersistentFiles) {
-                addClearPersistentFilesTool()
-                toolCount++
-            }
-            LOG.info("Registered $toolCount MCP tools based on configuration")
-        }
-    }
-    
-    private fun Server.addGetPersistentFilesTool() {
-        addTool(
-            name = "get_persistent_files",
-            description = "Get the current list of persistent files in the project context",
-            inputSchema = Tool.Input(
-                properties = buildJsonObject {
-                    // No properties needed for this tool
-                }
-            )
-        ) { request ->
-            try {
-                val files = persistentFileService.getPersistentFiles()
-                val filesJson = files.map { file ->
-                    buildJsonObject {
-                        put("filePath", file.filePath)
-                        put("isReadOnly", file.isReadOnly)
-                        put("normalizedPath", file.normalizedFilePath)
+            val enabledTools = mcpToolRegistry.getEnabledTools()
+            var registeredCount = 0
+            
+            enabledTools.forEach { tool ->
+                try {
+                    val metadata = tool.getMetadata()
+                    addTool(
+                        name = metadata.name,
+                        description = metadata.description,
+                        inputSchema = metadata.inputSchema
+                    ) { request ->
+                        tool.execute(request)
                     }
+                    registeredCount++
+                    LOG.debug("Registered MCP tool: ${metadata.name}")
+                } catch (e: Exception) {
+                    LOG.error("Failed to register MCP tool: ${tool.getMetadata().name}", e)
                 }
-                
-                CallToolResult(
-                    content = listOf(
-                        TextContent("Retrieved ${files.size} persistent files"),
-                        TextContent("Files: ${filesJson.joinToString(", ")}")
-                    )
-                )
-            } catch (e: Exception) {
-                CallToolResult.error("Failed to retrieve persistent files: ${e.message}")
             }
-        }
-    }
-    
-    private fun Server.addAddPersistentFilesTool() {
-        addTool(
-            name = "add_persistent_files",
-            description = "Add files to the persistent files context",
-            inputSchema = Tool.Input(
-                properties = buildJsonObject {
-                    putJsonObject("files") {
-                        put("type", "array")
-                        putJsonObject("items") {
-                            put("type", "object")
-                            putJsonObject("properties") {
-                                putJsonObject("filePath") {
-                                    put("type", "string")
-                                }
-                                putJsonObject("isReadOnly") {
-                                    put("type", "boolean")
-                                    put("default", false)
-                                }
-                            }
-                            putJsonArray("required") {
-                                add(JsonPrimitive("filePath"))
-                            }
-                        }
-                    }
-                },
-                required = listOf("files")
-            )
-        ) { request ->
-            try {
-                val filesArray = request.arguments["files"]?.jsonArray
-                val fileDataList = filesArray?.map { fileElement ->
-                    val fileObj = fileElement.jsonObject
-                    val filePath = fileObj["filePath"]?.jsonPrimitive?.content
-                        ?: throw IllegalArgumentException("filePath is required")
-                    val isReadOnly = fileObj["isReadOnly"]?.jsonPrimitive?.booleanOrNull ?: false
-                    FileData(filePath, isReadOnly)
-                } ?: emptyList()
-                
-                persistentFileService.addAllFiles(fileDataList)
-                
-                CallToolResult(
-                    content = listOf(
-                        TextContent("Added ${fileDataList.size} files to persistent context")
-                    )
-                )
-            } catch (e: Exception) {
-                CallToolResult.error("Failed to add persistent files: ${e.message}")
-            }
-        }
-    }
-    
-    private fun Server.addRemovePersistentFilesTool() {
-        addTool(
-            name = "remove_persistent_files",
-            description = "Remove files from the persistent files context",
-            inputSchema = Tool.Input(
-                properties = buildJsonObject {
-                    putJsonObject("filePaths") {
-                        put("type", "array")
-                        putJsonObject("items") {
-                            put("type", "string")
-                        }
-                    }
-                },
-                required = listOf("filePaths")
-            )
-        ) { request ->
-            try {
-                val filePathsArray = request.arguments["filePaths"]?.jsonArray
-                val filePaths = filePathsArray?.map { it.jsonPrimitive.content } ?: emptyList()
-                
-                persistentFileService.removePersistentFiles(filePaths)
-                
-                CallToolResult(
-                    content = listOf(
-                        TextContent("Removed ${filePaths.size} files from persistent context")
-                    )
-                )
-            } catch (e: Exception) {
-                CallToolResult.error("Failed to remove persistent files: ${e.message}")
-            }
-        }
-    }
-    
-    private fun Server.addClearPersistentFilesTool() {
-        addTool(
-            name = "clear_persistent_files",
-            description = "Clear all files from the persistent files context",
-            inputSchema = Tool.Input(
-                properties = buildJsonObject {
-                    // No properties needed for this tool
-                }
-            )
-        ) { request ->
-            try {
-                val currentFiles = persistentFileService.getPersistentFiles()
-                val filePaths = currentFiles.map { it.filePath }
-                
-                persistentFileService.removePersistentFiles(filePaths)
-                
-                CallToolResult(
-                    content = listOf(
-                        TextContent("Cleared all ${currentFiles.size} files from persistent context")
-                    )
-                )
-            } catch (e: Exception) {
-                CallToolResult.error("Failed to clear persistent files: ${e.message}")
-            }
+            
+            LOG.info("Successfully registered $registeredCount out of ${enabledTools.size} enabled MCP tools")
         }
     }
     

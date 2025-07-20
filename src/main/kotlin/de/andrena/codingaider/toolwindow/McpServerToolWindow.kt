@@ -9,6 +9,7 @@ import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.content.ContentFactory
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.services.McpServerService
+import de.andrena.codingaider.services.mcp.McpToolRegistry
 import de.andrena.codingaider.settings.AiderSettings
 import java.awt.Font
 import javax.swing.*
@@ -28,6 +29,7 @@ class McpServerToolWindowFactory : ToolWindowFactory {
 class McpServerToolWindow(private val project: Project) {
     
     private val mcpServerService = project.service<McpServerService>()
+    private val mcpToolRegistry = McpToolRegistry.getInstance(project)
     private val settings = AiderSettings.getInstance()
     
     private val statusLabel = JBLabel("Status: Checking...")
@@ -36,17 +38,14 @@ class McpServerToolWindow(private val project: Project) {
     private val startButton = JButton("Start Server")
     private val stopButton = JButton("Stop Server")
     
-    // Tool enable/disable checkboxes
-    private val getPersistentFilesCheckbox = JCheckBox("get_persistent_files", true)
-    private val addPersistentFilesCheckbox = JCheckBox("add_persistent_files", true)
-    private val removePersistentFilesCheckbox = JCheckBox("remove_persistent_files", true)
-    private val clearPersistentFilesCheckbox = JCheckBox("clear_persistent_files", true)
+    // Dynamic tool checkboxes
+    private val toolCheckboxes = mutableMapOf<String, JCheckBox>()
     
     private val refreshTimer = Timer(2000) { updateStatus() }
     
     init {
         setupButtons()
-        setupToolCheckboxes()
+        setupDynamicToolCheckboxes()
         updateStatus()
         refreshTimer.start()
     }
@@ -63,22 +62,23 @@ class McpServerToolWindow(private val project: Project) {
         }
     }
     
-    private fun setupToolCheckboxes() {
-        // Add listeners to update server configuration when checkboxes change
-        getPersistentFilesCheckbox.addActionListener { updateToolConfiguration() }
-        addPersistentFilesCheckbox.addActionListener { updateToolConfiguration() }
-        removePersistentFilesCheckbox.addActionListener { updateToolConfiguration() }
-        clearPersistentFilesCheckbox.addActionListener { updateToolConfiguration() }
+    private fun setupDynamicToolCheckboxes() {
+        // Create checkboxes for all available tools
+        val availableTools = mcpToolRegistry.getAvailableTools()
+        val enabledTools = mcpToolRegistry.getEnabledTools().map { it.getMetadata().name }.toSet()
+        
+        toolCheckboxes.clear()
+        availableTools.forEach { metadata ->
+            val checkbox = JCheckBox(metadata.name, enabledTools.contains(metadata.name))
+            checkbox.addActionListener { updateToolConfiguration() }
+            toolCheckboxes[metadata.name] = checkbox
+        }
     }
     
     private fun updateToolConfiguration() {
         // Update the MCP server with the new tool configuration
-        mcpServerService.updateToolConfiguration(
-            enableGetPersistentFiles = getPersistentFilesCheckbox.isSelected,
-            enableAddPersistentFiles = addPersistentFilesCheckbox.isSelected,
-            enableRemovePersistentFiles = removePersistentFilesCheckbox.isSelected,
-            enableClearPersistentFiles = clearPersistentFilesCheckbox.isSelected
-        )
+        val toolConfigurations = toolCheckboxes.mapValues { (_, checkbox) -> checkbox.isSelected }
+        mcpServerService.updateToolConfiguration(toolConfigurations)
     }
     
     private fun updateStatus() {
@@ -106,12 +106,17 @@ class McpServerToolWindow(private val project: Project) {
     
     private fun getConnectionInfo(): String {
         val port = if (mcpServerService.isServerRunning()) mcpServerService.getServerPort() else settings.mcpServerPort
+        val enabledToolCount = mcpToolRegistry.getEnabledTools().size
+        val totalToolCount = mcpToolRegistry.getAvailableTools().size
+        
         return """
 Connection Information:
 
 MCP Endpoint: http://localhost:$port/sse
 Health Check: http://localhost:$port/health
 Status: http://localhost:$port/status
+
+Tools: $enabledToolCount/$totalToolCount enabled
 
 The server provides SSE-based MCP communication for managing
 persistent files in the Coding-Aider plugin context.
@@ -131,21 +136,21 @@ persistent files in the Coding-Aider plugin context.
             }
             
             group("MCP Tools Configuration") {
-                row { 
-                    cell(getPersistentFilesCheckbox)
-                    comment("Get the current list of persistent files")
+                val availableTools = mcpToolRegistry.getAvailableTools()
+                availableTools.forEach { metadata ->
+                    val checkbox = toolCheckboxes[metadata.name]
+                    if (checkbox != null) {
+                        row { 
+                            cell(checkbox)
+                            comment(metadata.description)
+                        }
+                    }
                 }
-                row { 
-                    cell(addPersistentFilesCheckbox)
-                    comment("Add files to the persistent files context")
-                }
-                row { 
-                    cell(removePersistentFilesCheckbox)
-                    comment("Remove files from the persistent files context")
-                }
-                row { 
-                    cell(clearPersistentFilesCheckbox)
-                    comment("Clear all files from the persistent files context")
+                
+                if (availableTools.isEmpty()) {
+                    row {
+                        label("No MCP tools available")
+                    }
                 }
             }
             
