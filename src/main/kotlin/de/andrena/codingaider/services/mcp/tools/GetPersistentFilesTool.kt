@@ -10,6 +10,7 @@ import io.modelcontextprotocol.kotlin.sdk.CallToolResult
 import io.modelcontextprotocol.kotlin.sdk.TextContent
 import io.modelcontextprotocol.kotlin.sdk.Tool
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 
 /**
@@ -34,9 +35,9 @@ class GetPersistentFilesTool(private val project: Project) : McpTool {
             val files = persistentFileService.getPersistentFiles()
             val filesJson = files.map { file: FileData ->
                 buildJsonObject {
-                    put("filePath", file.filePath)
-                    put("isReadOnly", file.isReadOnly)
-                    put("normalizedPath", file.normalizedFilePath)
+                    put("filePath", JsonPrimitive(file.filePath))
+                    put("isReadOnly", JsonPrimitive(file.isReadOnly))
+                    put("normalizedPath", JsonPrimitive(file.normalizedFilePath))
                 }
             }
             
