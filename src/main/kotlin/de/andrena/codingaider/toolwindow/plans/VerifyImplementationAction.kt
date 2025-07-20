@@ -143,7 +143,7 @@ class VerifyImplementationAction(
     }
 
     override fun update(e: AnActionEvent) {
-        e.presentation.isEnabled = !plan.isPlanComplete()
+        e.presentation.isEnabled = true
     }
 }
 
