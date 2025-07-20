@@ -10,3 +10,19 @@ files:
     readOnly: false
   - path: docs/mcp-sdk-docs/USER_GUIDE.md
     readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/services/mcp/McpTool.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/services/mcp/McpToolMetadata.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/services/mcp/McpToolRegistry.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/services/mcp/McpToolException.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/services/mcp/tools/GetPersistentFilesTool.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/services/mcp/tools/AddPersistentFilesTool.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/services/mcp/tools/RemovePersistentFilesTool.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/services/mcp/tools/ClearPersistentFilesTool.kt
+    readOnly: false

@@ -2,19 +2,19 @@
 
 ## Phase 1: Core Infrastructure
 
-- [ ] Create `McpTool` interface with methods: `getName()`, `getDescription()`, `getInputSchema()`, `execute()`
-- [ ] Create `McpToolMetadata` data class for tool information
-- [ ] Create `McpToolRegistry` service for tool discovery and management
-- [ ] Add tool registry to dependency injection configuration
-- [ ] Create base exception classes for tool errors
+- [x] Create `McpTool` interface with methods: `getName()`, `getDescription()`, `getInputSchema()`, `execute()`
+- [x] Create `McpToolMetadata` data class for tool information
+- [x] Create `McpToolRegistry` service for tool discovery and management
+- [x] Add tool registry to dependency injection configuration
+- [x] Create base exception classes for tool errors
 
 ## Phase 2: Tool Implementation
 
-- [ ] Create `GetPersistentFilesTool` class implementing `McpTool`
-- [ ] Create `AddPersistentFilesTool` class implementing `McpTool`
-- [ ] Create `RemovePersistentFilesTool` class implementing `McpTool`
-- [ ] Create `ClearPersistentFilesTool` class implementing `McpTool`
-- [ ] Register all tool implementations as IntelliJ services
+- [x] Create `GetPersistentFilesTool` class implementing `McpTool`
+- [x] Create `AddPersistentFilesTool` class implementing `McpTool`
+- [x] Create `RemovePersistentFilesTool` class implementing `McpTool`
+- [x] Create `ClearPersistentFilesTool` class implementing `McpTool`
+- [x] Register all tool implementations as IntelliJ services
 - [ ] Add tool enable/disable configuration to settings
 
 ## Phase 3: Service Integration
