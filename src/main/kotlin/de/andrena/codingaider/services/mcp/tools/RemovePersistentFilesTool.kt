@@ -10,9 +10,11 @@ import io.modelcontextprotocol.kotlin.sdk.CallToolResult
 import io.modelcontextprotocol.kotlin.sdk.TextContent
 import io.modelcontextprotocol.kotlin.sdk.Tool
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.json.putJsonObject
 
 /**
  * MCP tool for removing files from the persistent files context
@@ -30,7 +32,7 @@ class RemovePersistentFilesTool(private val project: Project) : McpTool {
             putJsonObject("filePaths") {
                 put("type", "array")
                 putJsonObject("items") {
-                    put("type", "string")
+                    put("type", JsonPrimitive("string"))
                 }
             }
         },
