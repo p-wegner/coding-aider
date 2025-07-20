@@ -30,7 +30,7 @@ class RemovePersistentFilesTool(private val project: Project) : McpTool {
     override fun getInputSchema(): Tool.Input = Tool.Input(
         properties = buildJsonObject {
             putJsonObject("filePaths") {
-                put("type", "array")
+                put("type", JsonPrimitive("array"))
                 putJsonObject("items") {
                     put("type", JsonPrimitive("string"))
                 }
