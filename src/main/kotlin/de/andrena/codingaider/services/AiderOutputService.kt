@@ -37,15 +37,17 @@ class AiderOutputService(private val project: Project) {
         // Get or create tool window content manager
         val contentManager = project.getUserData(AiderOutputToolWindow.CONTENT_MANAGER_KEY)
             ?: run {
-                // Tool window not initialized yet, initialize asynchronously
-                ApplicationManager.getApplication().invokeLater {
-                    val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Aider Output")
-                    toolWindow?.show()
-                }
-                // Try to get it again after initialization
+                // Tool window not initialized yet, force initialization
+                val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Aider Output")
+                    ?: throw IllegalStateException("Aider Output tool window not found")
+                
+                // Show the tool window to trigger initialization
+                toolWindow.show()
+                
+                // Get the content manager after showing
                 project.getUserData(AiderOutputToolWindow.CONTENT_MANAGER_KEY)
+                    ?: toolWindow.contentManager // Fallback to direct access
             }
-            ?: throw IllegalStateException("Could not initialize Aider Output tool window")
         
         if (toolWindowContent == null) {
             toolWindowContent = AiderOutputToolWindowContent(project, contentManager)
@@ -53,7 +55,7 @@ class AiderOutputService(private val project: Project) {
         
         val tab = toolWindowContent!!.createTab(initialTitle, initialText, onAbort, commandData)
         
-        // Show and focus the tool window immediately
+        // Show and focus the tool window
         val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Aider Output")
         toolWindow?.show()
         toolWindow?.activate(null)
