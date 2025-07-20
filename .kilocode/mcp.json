@@ -1,7 +1,10 @@
 {
   "mcpServers": {
     "coding-aider-persistent-files": {
-      "url": "http://localhost:8080/sse"
+      "url": "http://localhost:8080/sse",
+      "disabled": false,
+      "alwaysAllow": [],
+      "disabledTools": []
     }
   }
 }

@@ -6,6 +6,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.services.mcp.tools.AddPersistentFilesTool
 import de.andrena.codingaider.services.mcp.tools.ClearPersistentFilesTool
+import de.andrena.codingaider.services.mcp.tools.CreateAiderPlanTool
 import de.andrena.codingaider.services.mcp.tools.GetPersistentFilesTool
 import de.andrena.codingaider.services.mcp.tools.RemovePersistentFilesTool
 import de.andrena.codingaider.settings.AiderSettings
@@ -44,6 +45,9 @@ class McpToolRegistry(private val project: Project) {
         registerTool(AddPersistentFilesTool(project))
         registerTool(RemovePersistentFilesTool(project))
         registerTool(ClearPersistentFilesTool(project))
+        
+        // Register plan management tools
+        registerTool(CreateAiderPlanTool(project))
         
         LOG.info("Discovered ${tools.size} MCP tools: ${tools.keys.joinToString(", ")}")
     }
