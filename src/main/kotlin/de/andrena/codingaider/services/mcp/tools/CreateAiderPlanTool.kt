@@ -1,5 +1,6 @@
 package de.andrena.codingaider.services.mcp.tools
 
+import com.intellij.openapi.application.WriteIntentReadAction
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
@@ -102,9 +103,11 @@ class CreateAiderPlanTool(private val project: Project) : McpTool {
                 )
             )
             
-            // Execute using existing infrastructure
-            val executor = IDEBasedExecutor(project, commandData)
-            val output = executor.execute()
+            // Execute using existing infrastructure with proper thread handling
+            val output = WriteIntentReadAction.compute<String, Exception> {
+                val executor = IDEBasedExecutor(project, commandData)
+                executor.execute()
+            }
             
             CallToolResult(
                 content = listOf(
