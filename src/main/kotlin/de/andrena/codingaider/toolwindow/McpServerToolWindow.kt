@@ -66,7 +66,11 @@ class McpServerToolWindow(private val project: Project) {
         refreshTimer.start()
         
         // Listen for tool registry changes
-        mcpToolRegistry.addToolRegistryChangeListener { updateToolConfiguration() }
+        mcpToolRegistry.addToolRegistryChangeListener { 
+            // Update connection info when tools change, but don't call updateToolConfiguration
+            // to avoid circular calls
+            SwingUtilities.invokeLater { updateConnectionInfo() }
+        }
     }
     
     private fun setupButtons() {
@@ -92,8 +96,6 @@ class McpServerToolWindow(private val project: Project) {
             val checkbox = JCheckBox(metadata.name, isEnabled)
             checkbox.addActionListener { 
                 updateToolConfiguration()
-                // Update connection info when tools change
-                SwingUtilities.invokeLater { updateConnectionInfo() }
             }
             toolCheckboxes[metadata.name] = checkbox
         }
