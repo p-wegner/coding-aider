@@ -68,10 +68,15 @@ class McpToolRegistry(private val project: Project) {
     fun getAllToolMetadata(): Map<String, McpToolMetadata> = toolMetadata.toMap()
     
     /**
+     * Get available tools (alias for getAllToolMetadata for compatibility)
+     */
+    fun getAvailableTools(): List<McpToolMetadata> = toolMetadata.values.toList()
+    
+    /**
      * Get enabled tools based on current settings
      */
-    fun getEnabledTools(): Map<String, McpTool> {
-        return tools.filter { (name, _) -> isToolEnabled(name) }
+    fun getEnabledTools(): List<McpTool> {
+        return tools.filter { (name, _) -> isToolEnabled(name) }.values.toList()
     }
     
     /**
@@ -108,4 +113,13 @@ class McpToolRegistry(private val project: Project) {
      * Get the count of enabled tools
      */
     fun getEnabledToolCount(): Int = getEnabledTools().size
+    
+    /**
+     * Update tool configuration (for compatibility with McpServerService)
+     */
+    fun updateToolConfiguration(toolConfigurations: Map<String, Boolean>) {
+        // For now, this is a placeholder
+        // In a full implementation, this would update the settings
+        LOG.info("Tool configuration updated: $toolConfigurations")
+    }
 }

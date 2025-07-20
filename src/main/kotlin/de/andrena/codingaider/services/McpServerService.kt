@@ -6,6 +6,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.services.mcp.McpToolRegistry
+import de.andrena.codingaider.services.PersistentFileService
 import io.modelcontextprotocol.kotlin.sdk.*
 import io.modelcontextprotocol.kotlin.sdk.server.Server
 import io.modelcontextprotocol.kotlin.sdk.server.ServerOptions
@@ -121,11 +122,14 @@ class McpServerService(private val project: Project) {
                             }
                             
                             get("/status") {
+                                val persistentFileService = project.service<PersistentFileService>()
                                 val status = buildJsonObject {
                                     put("running", isRunning.get())
                                     put("port", serverPort)
                                     put("project", project.name)
                                     put("persistentFiles", persistentFileService.getPersistentFiles().size)
+                                    put("availableTools", mcpToolRegistry.getToolCount())
+                                    put("enabledTools", mcpToolRegistry.getEnabledToolCount())
                                 }
                                 call.respondText(status.toString(), ContentType.Application.Json)
                             }

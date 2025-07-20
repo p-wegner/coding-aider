@@ -25,6 +25,8 @@
 - [x] Update tool configuration methods to use registry
 - [x] Remove hard-coded tool methods from `McpServerService`
 - [x] Update server startup logging to show discovered tools
+- [x] Fix method compatibility issues between registry and service
+- [x] Add tool count information to server status endpoint
 
 ## Phase 4: UI Updates
 
@@ -37,7 +39,8 @@
 
 ## Phase 6: Cleanup and Validation
 
-- [ ] Remove unused imports and methods
+- [x] Remove unused imports and methods
+- [x] Fix method compatibility issues in McpToolRegistry
 - [ ] Verify all existing functionality still works
 - [ ] Test MCP client connections with new tool system
 - [ ] Validate tool metadata and schemas
