@@ -15,7 +15,6 @@
 - [x] Create `RemovePersistentFilesTool` class implementing `McpTool`
 - [x] Create `ClearPersistentFilesTool` class implementing `McpTool`
 - [x] Register all tool implementations as IntelliJ services
-- [ ] Add tool enable/disable configuration to settings
 
 ## Phase 3: Service Integration
 
@@ -36,13 +35,11 @@
 - [x] Update tool configuration persistence
 - [x] Update connection information display
 - [x] Add tool count and status to server information
+- [ ] Update Tool windows connection information when tools are added or removed
+- [ ] Add tool calling log in tool window to display tool execution logs (timestamp, tool name, status)
 
 ## Phase 6: Cleanup and Validation
 
 - [x] Remove unused imports and methods
 - [x] Fix method compatibility issues in McpToolRegistry
-- [ ] Verify all existing functionality still works
-- [ ] Test MCP client connections with new tool system
-- [ ] Validate tool metadata and schemas
 - [ ] Check error handling for tool failures
-- [ ] Verify settings persistence works correctly
