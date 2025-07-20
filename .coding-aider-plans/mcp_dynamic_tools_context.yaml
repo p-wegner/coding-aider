@@ -1,0 +1,12 @@
+---
+files:
+  - path: src/main/kotlin/de/andrena/codingaider/services/McpServerService.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/toolwindow/McpServerToolWindow.kt
+    readOnly: false
+  - path: src/main/kotlin/de/andrena/codingaider/startup/McpServerStartupActivity.kt
+    readOnly: false
+  - path: build.gradle.kts
+    readOnly: false
+  - path: docs/mcp-sdk-docs/USER_GUIDE.md
+    readOnly: false
