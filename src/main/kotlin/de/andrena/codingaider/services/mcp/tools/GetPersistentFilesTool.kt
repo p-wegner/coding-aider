@@ -2,6 +2,7 @@ package de.andrena.codingaider.services.mcp.tools
 
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.services.mcp.McpTool
 import de.andrena.codingaider.services.mcp.McpToolExecutionException
@@ -31,7 +32,7 @@ class GetPersistentFilesTool(private val project: Project) : McpTool {
     override suspend fun execute(arguments: JsonObject): CallToolResult {
         return try {
             val files = persistentFileService.getPersistentFiles()
-            val filesJson = files.map { file ->
+            val filesJson = files.map { file: FileData ->
                 buildJsonObject {
                     put("filePath", file.filePath)
                     put("isReadOnly", file.isReadOnly)
