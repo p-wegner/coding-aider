@@ -35,16 +35,6 @@
 - [ ] Update connection information display
 - [ ] Add tool count and status to server information
 
-## Phase 5: Testing and Documentation
-
-- [ ] Create unit tests for `McpTool` implementations
-- [ ] Create unit tests for `McpToolRegistry`
-- [ ] Update integration tests for dynamic tool system
-- [ ] Update user guide documentation for creating custom tools
-- [ ] Add example custom tool implementation
-- [ ] Test tool enable/disable functionality
-- [ ] Test server restart with different tool configurations
-
 ## Phase 6: Cleanup and Validation
 
 - [ ] Remove unused imports and methods

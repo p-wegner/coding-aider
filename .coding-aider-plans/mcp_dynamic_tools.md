@@ -26,10 +26,8 @@ Currently, the MCP server implementation has several limitations:
 
 ### Secondary Goals
 
-1. **Improve Testability**: Make individual tools easier to unit test
-2. **Better Separation of Concerns**: Separate tool logic from server management
-3. **Enhanced Configurability**: Allow per-tool enable/disable functionality through a unified mechanism
-4. **Documentation**: Update the user guide to explain how to create custom MCP tools
+1. **Better Separation of Concerns**: Separate tool logic from server management
+2. **Enhanced Configurability**: Allow per-tool enable/disable functionality through a unified mechanism
 
 ## Implementation Strategy
 
