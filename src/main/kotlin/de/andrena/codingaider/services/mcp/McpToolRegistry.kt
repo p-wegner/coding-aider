@@ -25,6 +25,7 @@ class McpToolRegistry(private val project: Project) {
     
     private val tools = mutableMapOf<String, McpTool>()
     private val toolMetadata = mutableMapOf<String, McpToolMetadata>()
+    private val toolConfigurations = mutableMapOf<String, Boolean>()
     private val settings by lazy { AiderSettings.getInstance() }
     
     init {
@@ -58,6 +59,10 @@ class McpToolRegistry(private val project: Project) {
             inputSchema = tool.getInputSchema(),
             isEnabledByDefault = tool.isEnabledByDefault()
         )
+        // Initialize tool configuration with default enabled state
+        if (!toolConfigurations.containsKey(name)) {
+            toolConfigurations[name] = tool.isEnabledByDefault()
+        }
         LOG.debug("Registered MCP tool: $name")
     }
     
@@ -97,15 +102,7 @@ class McpToolRegistry(private val project: Project) {
      * Check if a tool is enabled in settings
      */
     fun isToolEnabled(toolName: String): Boolean {
-        // For now, use the existing individual settings
-        // This will be refactored when we update the settings system
-        return when (toolName) {
-            "get_persistent_files" -> true // Always enabled for now
-            "add_persistent_files" -> true
-            "remove_persistent_files" -> true
-            "clear_persistent_files" -> true
-            else -> toolMetadata[toolName]?.isEnabledByDefault ?: false
-        }
+        return toolConfigurations[toolName] ?: (toolMetadata[toolName]?.isEnabledByDefault ?: false)
     }
     
     /**
@@ -119,11 +116,16 @@ class McpToolRegistry(private val project: Project) {
     fun getEnabledToolCount(): Int = getEnabledTools().size
     
     /**
-     * Update tool configuration (for compatibility with McpServerService)
+     * Update tool configuration
      */
-    fun updateToolConfiguration(toolConfigurations: Map<String, Boolean>) {
-        // For now, this is a placeholder
-        // In a full implementation, this would update the settings
-        LOG.info("Tool configuration updated: $toolConfigurations")
+    fun updateToolConfiguration(newToolConfigurations: Map<String, Boolean>) {
+        toolConfigurations.putAll(newToolConfigurations)
+        LOG.info("Tool configuration updated: $newToolConfigurations")
+        LOG.info("Current enabled tools: ${getEnabledTools().map { it.getName() }}")
     }
+    
+    /**
+     * Get current tool configurations
+     */
+    fun getToolConfigurations(): Map<String, Boolean> = toolConfigurations.toMap()
 }

@@ -65,11 +65,12 @@ class McpServerToolWindow(private val project: Project) {
     private fun setupDynamicToolCheckboxes() {
         // Create checkboxes for all available tools
         val availableTools = mcpToolRegistry.getAvailableTools()
-        val enabledTools = mcpToolRegistry.getEnabledTools().map { it.getMetadata().name }.toSet()
+        val toolConfigurations = mcpToolRegistry.getToolConfigurations()
         
         toolCheckboxes.clear()
         availableTools.forEach { metadata ->
-            val checkbox = JCheckBox(metadata.name, enabledTools.contains(metadata.name))
+            val isEnabled = toolConfigurations[metadata.name] ?: metadata.isEnabledByDefault
+            val checkbox = JCheckBox(metadata.name, isEnabled)
             checkbox.addActionListener { updateToolConfiguration() }
             toolCheckboxes[metadata.name] = checkbox
         }
@@ -101,6 +102,15 @@ class McpServerToolWindow(private val project: Project) {
             startButton.text = "Start Server (Disabled in Settings)"
         } else {
             startButton.text = "Start Server"
+        }
+        
+        // Update checkbox states to reflect current configuration
+        val toolConfigurations = mcpToolRegistry.getToolConfigurations()
+        toolCheckboxes.forEach { (toolName, checkbox) ->
+            val isEnabled = toolConfigurations[toolName] ?: mcpToolRegistry.getToolMetadata(toolName)?.isEnabledByDefault ?: false
+            if (checkbox.isSelected != isEnabled) {
+                checkbox.isSelected = isEnabled
+            }
         }
     }
     
