@@ -12,11 +12,19 @@ import de.andrena.codingaider.services.McpServerService
 import de.andrena.codingaider.services.mcp.McpToolRegistry
 import de.andrena.codingaider.settings.AiderSettings
 import java.awt.Font
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 import javax.swing.*
+import javax.swing.table.DefaultTableModel
 
 class McpServerToolWindowFactory : ToolWindowFactory {
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val mcpServerToolWindow = McpServerToolWindow(project)
+        
+        // Connect the tool window to the MCP server service for logging
+        val mcpServerService = project.service<McpServerService>()
+        mcpServerService.setToolWindow(mcpServerToolWindow)
+        
         val content = ContentFactory.getInstance().createContent(
             mcpServerToolWindow.getContent(),
             "",
@@ -41,13 +49,24 @@ class McpServerToolWindow(private val project: Project) {
     // Dynamic tool checkboxes
     private val toolCheckboxes = mutableMapOf<String, JCheckBox>()
     
+    // Tool execution log
+    private val toolLogModel = DefaultTableModel(
+        arrayOf("Timestamp", "Tool", "Status", "Message"),
+        0
+    )
+    private val toolLogTable = JTable(toolLogModel)
+    
     private val refreshTimer = Timer(2000) { updateStatus() }
     
     init {
         setupButtons()
         setupDynamicToolCheckboxes()
+        setupToolLogTable()
         updateStatus()
         refreshTimer.start()
+        
+        // Listen for tool registry changes
+        mcpToolRegistry.addToolRegistryChangeListener { updateToolConfiguration() }
     }
     
     private fun setupButtons() {
@@ -71,8 +90,22 @@ class McpServerToolWindow(private val project: Project) {
         availableTools.forEach { metadata ->
             val isEnabled = toolConfigurations[metadata.name] ?: metadata.isEnabledByDefault
             val checkbox = JCheckBox(metadata.name, isEnabled)
-            checkbox.addActionListener { updateToolConfiguration() }
+            checkbox.addActionListener { 
+                updateToolConfiguration()
+                // Update connection info when tools change
+                SwingUtilities.invokeLater { updateConnectionInfo() }
+            }
             toolCheckboxes[metadata.name] = checkbox
+        }
+    }
+    
+    private fun setupToolLogTable() {
+        toolLogTable.apply {
+            autoResizeMode = JTable.AUTO_RESIZE_LAST_COLUMN
+            columnModel.getColumn(0).preferredWidth = 120 // Timestamp
+            columnModel.getColumn(1).preferredWidth = 150 // Tool
+            columnModel.getColumn(2).preferredWidth = 80  // Status
+            columnModel.getColumn(3).preferredWidth = 300 // Message
         }
     }
     
@@ -80,6 +113,27 @@ class McpServerToolWindow(private val project: Project) {
         // Update the MCP server with the new tool configuration
         val toolConfigurations = toolCheckboxes.mapValues { (_, checkbox) -> checkbox.isSelected }
         mcpServerService.updateToolConfiguration(toolConfigurations)
+        
+        // Log the configuration change
+        addToolLogEntry("SYSTEM", "SUCCESS", "Tool configuration updated")
+    }
+    
+    fun addToolLogEntry(toolName: String, status: String, message: String) {
+        SwingUtilities.invokeLater {
+            val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("HH:mm:ss"))
+            toolLogModel.addRow(arrayOf(timestamp, toolName, status, message))
+            
+            // Keep only last 100 entries
+            while (toolLogModel.rowCount > 100) {
+                toolLogModel.removeRow(0)
+            }
+            
+            // Scroll to bottom
+            val lastRow = toolLogModel.rowCount - 1
+            if (lastRow >= 0) {
+                toolLogTable.scrollRectToVisible(toolLogTable.getCellRect(lastRow, 0, true))
+            }
+        }
     }
     
     private fun updateStatus() {
@@ -114,6 +168,8 @@ class McpServerToolWindow(private val project: Project) {
         }
     }
     
+    private var connectionInfoTextArea: JTextArea? = null
+    
     private fun getConnectionInfo(): String {
         val port = if (mcpServerService.isServerRunning()) mcpServerService.getServerPort() else settings.mcpServerPort
         val enabledToolCount = mcpToolRegistry.getEnabledTools().size
@@ -131,6 +187,10 @@ Tools: $enabledToolCount/$totalToolCount enabled
 The server provides SSE-based MCP communication for managing
 persistent files in the Coding-Aider plugin context.
         """.trimIndent()
+    }
+    
+    private fun updateConnectionInfo() {
+        connectionInfoTextArea?.text = getConnectionInfo()
     }
     
     fun getContent(): JComponent {
@@ -166,16 +226,28 @@ persistent files in the Coding-Aider plugin context.
             
             group("Connection Information") {
                 row {
-                    val connectionTextArea = JTextArea().apply {
+                    connectionInfoTextArea = JTextArea().apply {
                         isEditable = false
                         font = Font(Font.MONOSPACED, Font.PLAIN, 12)
                         text = getConnectionInfo()
                         background = null
                         border = null
                     }
-                    cell(JBScrollPane(connectionTextArea)).align(com.intellij.ui.dsl.builder.AlignX.FILL)
+                    cell(JBScrollPane(connectionInfoTextArea!!)).align(com.intellij.ui.dsl.builder.AlignX.FILL)
                         .resizableColumn()
                 }.resizableRow()
+            }
+            
+            group("Tool Execution Log") {
+                row {
+                    cell(JBScrollPane(toolLogTable)).align(com.intellij.ui.dsl.builder.AlignX.FILL)
+                        .resizableColumn()
+                }.resizableRow()
+                row {
+                    button("Clear Log") {
+                        toolLogModel.rowCount = 0
+                    }
+                }
             }
         }.apply {
             preferredSize = java.awt.Dimension(400, 600)

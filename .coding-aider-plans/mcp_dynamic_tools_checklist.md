@@ -35,11 +35,11 @@
 - [x] Update tool configuration persistence
 - [x] Update connection information display
 - [x] Add tool count and status to server information
-- [ ] Update Tool windows connection information when tools are added or removed
-- [ ] Add tool calling log in tool window to display tool execution logs (timestamp, tool name, status)
+- [x] Update Tool windows connection information when tools are added or removed
+- [x] Add tool calling log in tool window to display tool execution logs (timestamp, tool name, status)
 
 ## Phase 6: Cleanup and Validation
 
 - [x] Remove unused imports and methods
 - [x] Fix method compatibility issues in McpToolRegistry
-- [ ] Check error handling for tool failures
+- [x] Check error handling for tool failures

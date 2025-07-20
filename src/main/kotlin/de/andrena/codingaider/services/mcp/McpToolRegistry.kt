@@ -27,6 +27,7 @@ class McpToolRegistry(private val project: Project) {
     private val toolMetadata = mutableMapOf<String, McpToolMetadata>()
     private val toolConfigurations = mutableMapOf<String, Boolean>()
     private val settings by lazy { AiderSettings.getInstance() }
+    private val changeListeners = mutableListOf<() -> Unit>()
     
     init {
         discoverTools()
@@ -122,10 +123,32 @@ class McpToolRegistry(private val project: Project) {
         toolConfigurations.putAll(newToolConfigurations)
         LOG.info("Tool configuration updated: $newToolConfigurations")
         LOG.info("Current enabled tools: ${getEnabledTools().map { it.getName() }}")
+        notifyChangeListeners()
     }
     
     /**
      * Get current tool configurations
      */
     fun getToolConfigurations(): Map<String, Boolean> = toolConfigurations.toMap()
+    
+    /**
+     * Add a listener for tool registry changes
+     */
+    fun addToolRegistryChangeListener(listener: () -> Unit) {
+        changeListeners.add(listener)
+    }
+    
+    /**
+     * Remove a tool registry change listener
+     */
+    fun removeToolRegistryChangeListener(listener: () -> Unit) {
+        changeListeners.remove(listener)
+    }
+    
+    /**
+     * Notify all change listeners
+     */
+    private fun notifyChangeListeners() {
+        changeListeners.forEach { it() }
+    }
 }

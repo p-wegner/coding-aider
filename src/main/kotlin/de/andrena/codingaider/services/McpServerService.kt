@@ -6,6 +6,7 @@ import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.services.mcp.McpToolRegistry
+import de.andrena.codingaider.toolwindow.McpServerToolWindow
 import io.modelcontextprotocol.kotlin.sdk.*
 import io.modelcontextprotocol.kotlin.sdk.server.Server
 import io.modelcontextprotocol.kotlin.sdk.server.ServerOptions
@@ -44,6 +45,11 @@ class McpServerService(private val project: Project) {
     private val mcpToolRegistry by lazy { McpToolRegistry.getInstance(project) }
     private var serverPort = DEFAULT_PORT
     private var httpServer: EmbeddedServer<CIOApplicationEngine, CIOApplicationEngine.Configuration>? = null
+    private var toolWindow: McpServerToolWindow? = null
+    
+    fun setToolWindow(toolWindow: McpServerToolWindow) {
+        this.toolWindow = toolWindow
+    }
     
     init {
         LOG.info("Initializing MCP Server Service for project: ${project.name}")
@@ -227,7 +233,16 @@ class McpServerService(private val project: Project) {
                         description = metadata.description,
                         inputSchema = metadata.inputSchema
                     ) { request ->
-                        tool.execute(request.arguments)
+                        try {
+                            toolWindow?.addToolLogEntry(metadata.name, "EXECUTING", "Tool execution started")
+                            val result = tool.execute(request.arguments)
+                            toolWindow?.addToolLogEntry(metadata.name, "SUCCESS", "Tool executed successfully")
+                            result
+                        } catch (e: Exception) {
+                            LOG.error("Tool execution failed: ${metadata.name}", e)
+                            toolWindow?.addToolLogEntry(metadata.name, "ERROR", "Tool execution failed: ${e.message}")
+                            throw e
+                        }
                     }
                     registeredCount++
                     LOG.debug("Registered MCP tool: ${metadata.name}")
