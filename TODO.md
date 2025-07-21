@@ -36,4 +36,4 @@
   - [ ] main llm
 - [ ] Bug: abort command when closing tab in output tool window
 - [ ] Feature: add tests for changes
-- [ ] Bug: make git doc generation create docs outside of tmp dir
+- [x] Bug: make git doc generation create docs outside of tmp dir

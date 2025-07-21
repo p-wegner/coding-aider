@@ -34,7 +34,6 @@ import de.andrena.codingaider.services.AiderIgnoreService
 import de.andrena.codingaider.services.TokenCountService
 import java.awt.Component
 import java.awt.Dimension
-import java.io.File
 import java.text.NumberFormat
 import java.util.concurrent.CompletableFuture
 import javax.swing.DefaultListCellRenderer
@@ -42,12 +41,11 @@ import javax.swing.JComponent
 import javax.swing.JLabel
 import javax.swing.JList
 import javax.swing.SwingUtilities
-import javax.swing.event.DocumentEvent
-import javax.swing.event.DocumentListener
 
 class DocumentationGenerationDialog(
     private val project: Project,
-    private val selectedFiles: Array<VirtualFile>
+    private val selectedFiles: Array<VirtualFile>,
+    private val suggestedFilename: String? = null
 ) : DialogWrapper(project) {
     private val settings = AiderProjectSettings.getInstance(project)
     private val aiderIgnoreService = project.service<AiderIgnoreService>()
@@ -96,6 +94,11 @@ class DocumentationGenerationDialog(
         init()
         updateDocumentTypes()
         updateFilePresentation()
+        
+        // Pre-populate filename if suggested
+        suggestedFilename?.let {
+            filenameField.text = it
+        }
     }
 
     private fun updateDocumentTypes() {

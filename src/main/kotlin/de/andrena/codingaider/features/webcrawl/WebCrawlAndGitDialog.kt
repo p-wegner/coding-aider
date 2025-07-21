@@ -23,6 +23,7 @@ import com.intellij.ui.layout.selected
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.features.documentation.dialogs.DocumentationGenerationDialog
 import de.andrena.codingaider.services.GitRepoCloneService
+import de.andrena.codingaider.services.AiderDocsService.Companion.AIDER_DOCS_FOLDER
 import java.awt.Component
 import java.awt.Dimension
 import java.io.File
@@ -304,11 +305,21 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
             1 -> { // Git Repository
                 val selectedFiles = getSelectedFiles()
                 if (selectedFiles.isNotEmpty() && clonedRepoPath != null) {
+                    // Create git documentation folder structure with absolute path
+                    val repoUrl = repoUrlField.text.trim()
+                    val repoName = repoUrl.substringAfterLast("/").removeSuffix(".git")
+                    val projectRoot = project.basePath ?: "."
+                    val absoluteGitDocsPath = "$projectRoot/$AIDER_DOCS_FOLDER/git-repos/$repoName"
+                    File(absoluteGitDocsPath).mkdirs()
+                    
+                    // Use absolute path for suggested filename so aider saves to correct location
+                    val suggestedFilename = "$absoluteGitDocsPath/${repoName}-documentation.md"
+                    
                     // Close this dialog and open the standard documentation generation dialog
                     super.doOKAction()
                     
-                    // Open DocumentationGenerationDialog with pre-selected files
-                    val documentationDialog = DocumentationGenerationDialog(project, selectedFiles)
+                    // Open DocumentationGenerationDialog with pre-selected files and suggested filename
+                    val documentationDialog = DocumentationGenerationDialog(project, selectedFiles, suggestedFilename)
                     documentationDialog.show()
                 }
             }
