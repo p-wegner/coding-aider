@@ -104,7 +104,7 @@ class CreateAiderPlanTool(private val project: Project) : McpTool {
             )
             
             // Execute using existing infrastructure with proper thread handling
-            val output = WriteIntentReadAction.compute<String, Exception> {
+            WriteIntentReadAction.compute<Any, Exception> {
                 val executor = IDEBasedExecutor(project, commandData)
                 executor.execute()
             }
@@ -116,7 +116,6 @@ class CreateAiderPlanTool(private val project: Project) : McpTool {
                     TextContent("Files: ${fileDataList.size} file(s) included"),
                     TextContent("Mode: STRUCTURED (plan will be created in .coding-aider-plans directory)"),
                     TextContent("LLM: ${settings.llm}"),
-                    TextContent("Execution initiated with output: $output")
                 )
             )
         } catch (e: McpToolArgumentException) {
