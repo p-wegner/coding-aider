@@ -9,7 +9,8 @@ class TestGenerationPromptService {
     fun buildPrompt(
         testType: TestTypeConfiguration,
         files: List<FileData>,
-        additionalPrompt: String
+        additionalPrompt: String,
+        persistentFiles: List<FileData> = emptyList()
     ): String {
         // Files selected for test generation
         val selectedFiles = files.map { it.filePath }
@@ -28,14 +29,20 @@ class TestGenerationPromptService {
             appendLine()
             
             if (existingTestFiles.isNotEmpty()) {
-                appendLine("Use these existing test files as reference for patterns and conventions:")
+                appendLine("Use these existing files as reference for patterns and conventions:")
                 existingTestFiles.forEach { appendLine("- $it") }
                 appendLine()
             }
             
             if (configuredReferenceFiles.isNotEmpty()) {
-                appendLine("Additional reference materials:")
+                appendLine("Test-specific reference materials:")
                 configuredReferenceFiles.forEach { appendLine("- $it") }
+                appendLine()
+            }
+            
+            if (persistentFiles.isNotEmpty()) {
+                appendLine("Project context files:")
+                persistentFiles.forEach { appendLine("- ${it.filePath}${if (it.isReadOnly) " (read-only)" else ""}") }
                 appendLine()
             }
             

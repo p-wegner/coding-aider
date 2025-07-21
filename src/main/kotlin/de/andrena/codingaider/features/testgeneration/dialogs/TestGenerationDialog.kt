@@ -14,6 +14,7 @@ import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.ui.ValidationInfo
 import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
 import com.intellij.ui.dsl.builder.AlignX
@@ -28,6 +29,7 @@ import de.andrena.codingaider.features.testgeneration.TestGenerationPromptServic
 import de.andrena.codingaider.settings.AiderProjectSettings
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.features.testgeneration.TestTypeConfiguration
+import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.utils.FileTraversal
 import java.awt.Component
 import java.awt.Dimension
@@ -41,6 +43,7 @@ class TestGenerationDialog(
     private val selectedFiles: Array<VirtualFile>
 ) : DialogWrapper(project) {
     private val settings = AiderProjectSettings.getInstance(project)
+    private val persistentFileService = project.service<PersistentFileService>()
     private val settingsButton = createSettingsButton()
     private val testTypeComboBox = ComboBox<TestTypeConfiguration>().apply {
         renderer = object : DefaultListCellRenderer() {
@@ -70,11 +73,17 @@ class TestGenerationDialog(
         font = font.deriveFont(12f)
         emptyText.text = "Enter additional instructions (optional)"
     }
+    
+    private val includePersistentFilesCheckBox = JBCheckBox().apply {
+        text = "Include persistent files as additional context"
+        isSelected = false
+    }
 
     init {
         title = "Generate Tests"
         init()
         updateTestTypes()
+        updateCheckboxText()
     }
 
     private fun updateTestTypes() {
@@ -96,6 +105,17 @@ class TestGenerationDialog(
             }
             promptArea.emptyText.text = ellipsedTemplate
         }
+    }
+    
+    private fun updateCheckboxText() {
+        val persistentFiles = persistentFileService.getPersistentFiles()
+        val count = persistentFiles.size
+        includePersistentFilesCheckBox.text = if (count > 0) {
+            "Include persistent files as additional context ($count files available)"
+        } else {
+            "Include persistent files as additional context (no persistent files available)"
+        }
+        includePersistentFilesCheckBox.isEnabled = count > 0
     }
 
     private fun createSettingsButton(): ActionButton {
@@ -124,6 +144,10 @@ class TestGenerationDialog(
                     .align(AlignX.FILL)
                 cell(settingsButton)
                     .align(AlignX.RIGHT)
+            }
+            row {
+                cell(includePersistentFilesCheckBox)
+                    .align(AlignX.FILL)
             }
             row {
                 label("Enter any additional instructions or requirements for the test:")
@@ -159,11 +183,21 @@ class TestGenerationDialog(
             // Add context files to the file list - convert relative paths to absolute
             val absoluteTestType = testType.withAbsolutePaths(project.basePath ?: "")
             val contextFiles = absoluteTestType.contextFiles.map { FileData(it, false) }
+            
+            // Add persistent files if checkbox is selected
+            val persistentFiles = if (includePersistentFilesCheckBox.isSelected) {
+                persistentFileService.getPersistentFiles()
+            } else {
+                emptyList()
+            }
+            
+            // Combine all files, avoiding duplicates
+            val allContextFiles = (contextFiles + persistentFiles).distinctBy { it.normalizedFilePath }
         
             val commandData = CommandData(
-                message = buildPrompt(testType, allFiles),
+                message = buildPrompt(testType, allFiles, persistentFiles),
                 useYesFlag = true,
-                files = allFiles +  contextFiles,
+                files = allFiles + allContextFiles,
                 projectPath = project.basePath ?: "",
                 llm = settings.llm,
                 additionalArgs = settings.additionalArgs,
@@ -185,8 +219,8 @@ class TestGenerationDialog(
         }
     }
 
-    private fun buildPrompt(testType: TestTypeConfiguration, files: List<FileData>): String {
-        return project.service<TestGenerationPromptService>().buildPrompt(testType, files, getAdditionalPrompt())
+    private fun buildPrompt(testType: TestTypeConfiguration, files: List<FileData>, persistentFiles: List<FileData> = emptyList()): String {
+        return project.service<TestGenerationPromptService>().buildPrompt(testType, files, getAdditionalPrompt(), persistentFiles)
     }
 
     private fun getSelectedTestType(): TestTypeConfiguration? = testTypeComboBox.selectedItem as? TestTypeConfiguration
