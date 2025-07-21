@@ -1,7 +1,7 @@
 package de.andrena.codingaider.services.mcp.tools
 
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.application.WriteIntentReadAction
-import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.CommandOptions
@@ -9,13 +9,14 @@ import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.mcp.McpTool
-import de.andrena.codingaider.services.AiderEditFormat
 import de.andrena.codingaider.services.mcp.McpToolArgumentException
 import de.andrena.codingaider.services.mcp.McpToolExecutionException
 import de.andrena.codingaider.settings.AiderSettings
 import io.modelcontextprotocol.kotlin.sdk.CallToolResult
 import io.modelcontextprotocol.kotlin.sdk.TextContent
 import io.modelcontextprotocol.kotlin.sdk.Tool
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
 
 /**
@@ -104,9 +105,24 @@ class CreateAiderPlanTool(private val project: Project) : McpTool {
             )
             
             // Execute using existing infrastructure with proper thread handling
-            WriteIntentReadAction.compute<Any, Exception> {
-                val executor = IDEBasedExecutor(project, commandData)
-                executor.execute()
+            // Use CompletableDeferred to handle async execution on EDT
+            val executionResult = CompletableDeferred<Unit>()
+            
+            ApplicationManager.getApplication().invokeLater {
+                try {
+                    WriteIntentReadAction.compute<Any, Exception> {
+                        val executor = IDEBasedExecutor(project, commandData)
+                        executor.execute()
+                    }
+                    executionResult.complete(Unit)
+                } catch (e: Exception) {
+                    executionResult.completeExceptionally(e)
+                }
+            }
+            
+            // Wait for the execution to complete
+            runBlocking {
+                executionResult.await()
             }
             
             CallToolResult(
