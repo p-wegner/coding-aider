@@ -3,6 +3,7 @@ package de.andrena.codingaider.settings
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.*
 import de.andrena.codingaider.inputdialog.AiderMode
+import de.andrena.codingaider.providers.AIProvider
 
 @Service(Service.Level.APP)
 @State(
@@ -69,7 +70,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         // Plan completion timing settings
         var planCompletionCheckDelay: Int = 500, // milliseconds to wait before checking plan completion
         var planCompletionMaxRetries: Int = 3, // maximum retries for plan completion detection
-        var enablePlanCompletionLogging: Boolean = false // enable detailed logging for plan completion flow
+        var enablePlanCompletionLogging: Boolean = false, // enable detailed logging for plan completion flow
+        
+        // AI Provider settings
+        var defaultAIProvider: AIProvider = AiderDefaults.DEFAULT_AI_PROVIDER, // Default AI provider
+        var defaultExecutionStrategy: String = AiderDefaults.DEFAULT_EXECUTION_STRATEGY, // Default execution strategy
+        var claudeCodeExecutablePath: String = AiderDefaults.CLAUDE_CODE_EXECUTABLE_PATH // Path to Claude Code executable
     )
 
 
@@ -313,6 +319,25 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.mcpServerAutoStart
         set(value) {
             myState.mcpServerAutoStart = value
+        }
+
+    // AI Provider settings
+    var defaultAIProvider: AIProvider
+        get() = myState.defaultAIProvider
+        set(value) {
+            myState.defaultAIProvider = value
+        }
+
+    var defaultExecutionStrategy: String
+        get() = myState.defaultExecutionStrategy
+        set(value) {
+            myState.defaultExecutionStrategy = value
+        }
+
+    var claudeCodeExecutablePath: String
+        get() = myState.claudeCodeExecutablePath
+        set(value) {
+            myState.claudeCodeExecutablePath = value
         }
 
     // Plan completion timing settings

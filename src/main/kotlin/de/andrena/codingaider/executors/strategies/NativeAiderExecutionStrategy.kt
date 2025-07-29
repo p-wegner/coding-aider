@@ -13,6 +13,8 @@ class NativeAiderExecutionStrategy(
     private val apiKeyChecker: ApiKeyChecker,
     private val settings: AiderSettings
 ) : AiderExecutionStrategy(project) {
+    
+    override fun getStrategyType(): String = "Native"
 
     override fun buildCommand(commandData: CommandData): MutableList<String> {
         return (listOf(settings.aiderExecutablePath) + buildCommonArgs(commandData, settings)).toMutableList()

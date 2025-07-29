@@ -29,7 +29,9 @@ object CommandDataCollector {
             editFormat = settings.editFormat,
             projectPath = project.basePath ?: "",
             aiderMode = dialog.selectedMode,
-            sidecarMode = settings.useSidecarMode
+            sidecarMode = settings.useSidecarMode,
+            provider = settings.defaultAIProvider,
+            executionStrategy = settings.defaultExecutionStrategy
         )
     }
     
@@ -55,7 +57,9 @@ object CommandDataCollector {
             editFormat = settings.editFormat,
             projectPath = project.basePath ?: "",
             aiderMode = mode,
-            sidecarMode = settings.useSidecarMode
+            sidecarMode = settings.useSidecarMode,
+            provider = settings.defaultAIProvider,
+            executionStrategy = settings.defaultExecutionStrategy
         )
     }
     
@@ -75,7 +79,9 @@ object CommandDataCollector {
             editFormat = settings.editFormat,
             projectPath = project.basePath ?: "",
             aiderMode = AiderMode.SHELL,
-            sidecarMode = settings.useSidecarMode
+            sidecarMode = settings.useSidecarMode,
+            provider = settings.defaultAIProvider,
+            executionStrategy = settings.defaultExecutionStrategy
         )
     }
 }

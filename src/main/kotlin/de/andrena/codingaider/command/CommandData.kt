@@ -1,19 +1,20 @@
 package de.andrena.codingaider.command
 
 import de.andrena.codingaider.inputdialog.AiderMode
+import de.andrena.codingaider.providers.AIProvider
 import de.andrena.codingaider.utils.CommandDataCollector
 import de.andrena.codingaider.utils.FileTraversal
 
 
 /**
- * Represents the data required to execute an Aider command.
+ * Represents the data required to execute an AI provider command.
  *
- * @property message The main message or instruction for Aider.
+ * @property message The main message or instruction for the AI provider.
  * @property useYesFlag If true, automatically confirms all prompts.
  * @property llm The language model to be used (e.g., "gpt-4"). Models prefixed with -- can directly
  * be passed as options to aider, others have to be passed with --model {llm}
- * @property additionalArgs Any additional command-line arguments for Aider.
- * @property files List of files to be included in the Aider command.
+ * @property additionalArgs Any additional command-line arguments for the AI provider.
+ * @property files List of files to be included in the command.
  * @property lintCmd Command to run for linting the code.
  * @property deactivateRepoMap If true, disables the repository mapping feature.
  * @property editFormat Specifies the format for edit instructions (e.g., "diff").
@@ -21,6 +22,8 @@ import de.andrena.codingaider.utils.FileTraversal
  * @property aiderMode The mode to use for the command.
  * @property sidecarMode If true, uses the sidecar mode for the command.
  * @property planId The plan ID to use for the command.
+ * @property provider The AI provider to use for this command.
+ * @property executionStrategy The execution strategy type (e.g., "native", "docker", "sidecar").
  */
 data class CommandData(
     val message: String,
@@ -36,7 +39,9 @@ data class CommandData(
     val aiderMode: AiderMode = AiderMode.NORMAL,
     val sidecarMode: Boolean = false,
     val planId: String? = null,
-    val startTime: Long = System.currentTimeMillis()
+    val startTime: Long = System.currentTimeMillis(),
+    val provider: AIProvider = AIProvider.AIDER, // Default to Aider for backward compatibility
+    val executionStrategy: String = "native" // Default execution strategy
 ) {
 
     val isShellMode: Boolean get() = aiderMode == AiderMode.SHELL
@@ -78,12 +83,18 @@ data class FileData(val filePath: String, val isReadOnly: Boolean) {
 }
 
 /**
- * Data class representing a single step in a multi-step Aider command chain.
+ * Data class representing a single step in a multi-step AI provider command chain.
  * Each step can optionally take the previous output as input.
  */
-data class ChainedAiderCommand(
+data class ChainedAICommand(
     val commandData: CommandData,
     val transformOutputToInput: ((String) -> String)? = null // If set, will use previous output as input
 )
+
+/**
+ * Legacy alias for backward compatibility
+ */
+@Deprecated("Use ChainedAICommand instead", ReplaceWith("ChainedAICommand"))
+typealias ChainedAiderCommand = ChainedAICommand
 
 

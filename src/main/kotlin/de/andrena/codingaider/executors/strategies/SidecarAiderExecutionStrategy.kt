@@ -8,6 +8,8 @@ class SidecarAiderExecutionStrategy(
     project: Project,
     private val settings: AiderSettings
 ) : AiderExecutionStrategy(project) {
+    
+    override fun getStrategyType(): String = "Sidecar"
 
     override fun buildCommand(commandData: CommandData): MutableList<String> {
         return (listOf(settings.aiderExecutablePath) + buildCommonArgs(commandData, settings)).toMutableList()

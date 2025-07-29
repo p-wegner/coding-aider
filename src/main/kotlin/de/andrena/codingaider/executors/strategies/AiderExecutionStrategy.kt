@@ -4,16 +4,43 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.inputdialog.AiderMode
+import de.andrena.codingaider.providers.AIExecutionStrategy
+import de.andrena.codingaider.providers.AIProvider
 import de.andrena.codingaider.services.AiderPromptAugmentationService
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.settings.AiderDefaults
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.settings.CustomLlmProviderService
 
-abstract class AiderExecutionStrategy(protected val project: Project) {
-    abstract fun buildCommand(commandData: CommandData): MutableList<String>
-    abstract fun prepareEnvironment(processBuilder: ProcessBuilder, commandData: CommandData)
-    abstract fun cleanupAfterExecution()
+abstract class AiderExecutionStrategy(override val project: Project) : AIExecutionStrategy {
+    override val provider: AIProvider = AIProvider.AIDER
+    
+    abstract override fun buildCommand(commandData: CommandData): MutableList<String>
+    abstract override fun prepareEnvironment(processBuilder: ProcessBuilder, commandData: CommandData)
+    abstract override fun cleanupAfterExecution()
+    
+    /**
+     * Default implementation that checks for aider availability
+     */
+    override fun isProviderAvailable(): Boolean {
+        return try {
+            val process = ProcessBuilder("aider", "--version").start()
+            process.waitFor()
+            process.exitValue() == 0
+        } catch (e: Exception) {
+            false
+        }
+    }
+    
+    /**
+     * Gets the display name for this Aider execution strategy
+     */
+    override fun getDisplayName(): String = "Aider (${getStrategyType()})"
+    
+    /**
+     * Abstract method for concrete strategies to define their type
+     */
+    protected abstract fun getStrategyType(): String
     fun buildCommonArgs(commandData: CommandData, settings: AiderSettings): MutableList<String> {
         return buildList {
             // Check if plugin-based edits is enabled

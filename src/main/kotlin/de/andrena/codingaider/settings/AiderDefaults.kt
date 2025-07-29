@@ -1,6 +1,7 @@
 package de.andrena.codingaider.settings
 
 import de.andrena.codingaider.inputdialog.AiderMode
+import de.andrena.codingaider.providers.AIProvider
 
 object AiderDefaults {
     const val REASONING_EFFORT = "" // Can be: "", "low", "medium", "high"
@@ -69,4 +70,9 @@ Make your changes precise and minimal."""
     const val ENABLE_MCP_SERVER = true // Enable MCP server for persistent files
     const val MCP_SERVER_PORT = 8080 // Default port for MCP server
     const val MCP_SERVER_AUTO_START = true // Auto-start MCP server with plugin
+    
+    // AI Provider settings
+    val DEFAULT_AI_PROVIDER = AIProvider.AIDER // Default to Aider for backward compatibility
+    const val DEFAULT_EXECUTION_STRATEGY = "native" // Default execution strategy
+    const val CLAUDE_CODE_EXECUTABLE_PATH = "claude-code" // Default path to Claude Code executable
 }

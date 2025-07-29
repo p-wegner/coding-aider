@@ -3,7 +3,8 @@
     "allow": [
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "WebFetch(domain:modelcontextprotocol.io)"
+      "WebFetch(domain:modelcontextprotocol.io)",
+      "Bash(./gradlew:*)"
     ],
     "deny": []
   }

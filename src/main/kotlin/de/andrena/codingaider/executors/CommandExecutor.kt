@@ -12,6 +12,9 @@ import de.andrena.codingaider.executors.strategies.AiderExecutionStrategy
 import de.andrena.codingaider.executors.strategies.DockerAiderExecutionStrategy
 import de.andrena.codingaider.executors.strategies.NativeAiderExecutionStrategy
 import de.andrena.codingaider.inputdialog.AiderMode
+import de.andrena.codingaider.providers.AIExecutionStrategy
+import de.andrena.codingaider.providers.AIProvider
+import de.andrena.codingaider.providers.AIProviderRegistry
 import de.andrena.codingaider.services.FileExtractorService
 import de.andrena.codingaider.services.PluginBasedEditsService
 import de.andrena.codingaider.services.plans.AiderPlanService
@@ -39,13 +42,16 @@ class CommandExecutor(
     private val useDockerAider: Boolean
         get() = commandData.options.useDockerAider ?: settings.useDockerAider
     private val dockerManager = DockerContainerManager()
-    private val executionStrategy: AiderExecutionStrategy by lazy {
-        if (useDockerAider) DockerAiderExecutionStrategy(
-            project,
-            dockerManager,
-            apiKeyChecker,
-            settings
-        ) else NativeAiderExecutionStrategy(project, apiKeyChecker, settings)
+    private val executionStrategy: AIExecutionStrategy by lazy {
+        val providerRegistry = project.service<AIProviderRegistry>()
+        val strategy = providerRegistry.getExecutionStrategy(commandData.provider, commandData.executionStrategy)
+        
+        // Fallback to legacy Aider strategies for backward compatibility
+        strategy ?: if (useDockerAider) {
+            DockerAiderExecutionStrategy(project, dockerManager, apiKeyChecker, settings)
+        } else {
+            NativeAiderExecutionStrategy(project, apiKeyChecker, settings)
+        }
     }
     private val processInteractor: AiderProcessInteractor by lazy { DefaultAiderProcessInteractor(project) }
 
@@ -70,7 +76,7 @@ class CommandExecutor(
 
     private fun executeCommandInNewProcess(updatedCommandData: CommandData): String {
         val commandArgs = executionStrategy.buildCommand(updatedCommandData)
-        logger.info("Executing Aider command: ${commandArgs.joinToString(" ")}")
+        logger.info("Executing ${commandData.provider.displayName} command: ${commandArgs.joinToString(" ")}")
         notifyObservers {
             it.onCommandStart(
                 "\n${
@@ -134,7 +140,7 @@ class CommandExecutor(
 
     private fun executeSidecarCommand(commandData: CommandData): String {
         val commandString = buildSidecarCommandString(commandData)
-        logger.info("Executing Sidecar Aider command: $commandString")
+        logger.info("Executing Sidecar ${commandData.provider.displayName} command: $commandString")
 
         if (commandData.planId == null) {
             changeContextFiles(commandData)
@@ -243,13 +249,13 @@ class CommandExecutor(
     private fun handleProcessCompletion(process: Process, output: StringBuilder): String {
         if (!process.waitFor(5, TimeUnit.MINUTES)) {
             process.destroy()
-            val errorMessage = commandLogger.prependCommandToOutput("$output\nAider command timed out after 5 minutes")
+            val errorMessage = commandLogger.prependCommandToOutput("$output\n${commandData.provider.displayName} command timed out after 5 minutes")
             notifyObservers { it.onCommandError(errorMessage) }
             return errorMessage
         } else {
             val exitCode = process.exitValue()
             val status = if (exitCode == 0) "executed successfully" else "failed with exit code $exitCode"
-            var finalOutput = commandLogger.prependCommandToOutput("$output\nAider command $status")
+            var finalOutput = commandLogger.prependCommandToOutput("$output\n${commandData.provider.displayName} command $status")
             
             // Process plugin-based edits if enabled
             if (settings.pluginBasedEdits && exitCode == 0) {

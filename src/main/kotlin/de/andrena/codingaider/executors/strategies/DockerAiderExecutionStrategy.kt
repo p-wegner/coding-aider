@@ -19,6 +19,8 @@ class DockerAiderExecutionStrategy(
     private val apiKeyChecker: ApiKeyChecker,
     private val settings: AiderSettings
 ) : AiderExecutionStrategy(project) {
+    
+    override fun getStrategyType(): String = "Docker"
 
     override fun buildCommand(commandData: CommandData): MutableList<String> {
         val dockerArgs = mutableListOf(

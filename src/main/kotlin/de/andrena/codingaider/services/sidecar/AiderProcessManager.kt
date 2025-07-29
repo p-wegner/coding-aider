@@ -1,8 +1,9 @@
 package de.andrena.codingaider.services.sidecar
 
-import com.intellij.openapi.Disposable
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.diagnostic.Logger
+import de.andrena.codingaider.providers.AIProcessManager
+import de.andrena.codingaider.providers.AIProvider
 import io.ktor.util.collections.ConcurrentMap
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
@@ -15,7 +16,8 @@ import java.time.Duration
 import java.util.concurrent.atomic.AtomicBoolean
 
 @Service(Service.Level.PROJECT)
-class AiderProcessManager() : Disposable {
+class AiderProcessManager() : AIProcessManager {
+    override val provider: AIProvider = AIProvider.AIDER
     private val logger = Logger.getInstance(AiderProcessManager::class.java)
 
     private data class ProcessInfo(
@@ -32,11 +34,11 @@ class AiderProcessManager() : Disposable {
 
     private var verbose: Boolean = false
 
-    fun startProcess(
+    override fun startProcess(
         command: List<String>,
         workingDir: String,
-        verbose: Boolean = false,
-        planId: String? = null
+        verbose: Boolean,
+        planId: String?
     ): Mono<Void> {
         synchronized(processLock) {
             val processInfo = planId?.let {
@@ -255,7 +257,7 @@ class AiderProcessManager() : Disposable {
     private val promptRegex = Regex("^>\\s*$")
 
 
-    fun sendCommandAsync(command: String, planId: String? = null): Flux<String> {
+    override fun sendCommandAsync(command: String, planId: String?): Flux<String> {
         val processInfo = synchronized(processLock) {
             planId?.let { planProcesses[it] } ?: defaultProcess
         }
@@ -282,7 +284,7 @@ class AiderProcessManager() : Disposable {
 
     private fun String.removeNewlines() = replace("\n", " ").replace("\r", " ")
 
-    fun interruptCurrentCommand(planId: String? = null) {
+    override fun interruptCurrentCommand(planId: String?) {
         synchronized(processLock) {
             val processInfo = planId?.let { planProcesses[it] } ?: defaultProcess
             if (processInfo.process?.isAlive == true) {
@@ -366,7 +368,7 @@ class AiderProcessManager() : Disposable {
         }
     }
 
-    fun isReadyForCommand(planId: String? = null): Boolean {
+    override fun isReadyForCommand(planId: String?): Boolean {
         synchronized(processLock) {
             val processInfo = planId?.let { planProcesses[it] } ?: defaultProcess
             return checkProcessStatus(processInfo)
@@ -397,6 +399,18 @@ class AiderProcessManager() : Disposable {
             return true
         }
     }
+    
+    override fun stopProcess(planId: String?) {
+        synchronized(processLock) {
+            val processInfo = planId?.let { planProcesses[it] } ?: defaultProcess
+            disposeProcess(processInfo)
+            if (planId != null) {
+                planProcesses.remove(planId)
+            }
+        }
+    }
+    
+    override fun getDisplayName(): String = "Aider Process Manager"
 
 }
 
