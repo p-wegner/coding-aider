@@ -54,7 +54,7 @@ dependencies {
 
     intellijPlatform {
         testFramework(TestFrameworkType.Platform)
-        intellijIdeaCommunity("2025.1")
+        intellijIdeaCommunity("2025.2")
         pluginVerifier()
         instrumentationTools()
         bundledPlugin("org.jetbrains.plugins.terminal")
@@ -67,7 +67,7 @@ intellijPlatform {
         ides {
             recommended()
             ide("IC-2024.2.4")
-            ide("IC-2024.3")
+            ide("IC-2025.2")
         }
     }
 
@@ -103,7 +103,7 @@ tasks {
 
     patchPluginXml {
         sinceBuild.set("242")
-        untilBuild.set("251.*")
+        untilBuild.set("252.*")
         version = project.version.toString()
     }
 
