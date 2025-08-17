@@ -7,12 +7,10 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.outputview.markdown.MarkdownViewer
 import de.andrena.codingaider.services.RunningCommandService
 import de.andrena.codingaider.services.plans.ActivePlanService
-import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.settings.AiderSettings
 import java.awt.BorderLayout
 import java.awt.event.KeyEvent
 import java.util.concurrent.atomic.AtomicBoolean
-import java.util.concurrent.atomic.AtomicInteger
 import javax.swing.*
 
 class AiderOutputTab(
@@ -23,7 +21,7 @@ class AiderOutputTab(
     private val displayString: String?,
     private val commandData: CommandData? = null
 ): CodingAiderOutputPresentation {
-    private val markdownViewer = MarkdownViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER))
+    private val markdownViewer = MarkdownViewer(listOf(project.service<de.andrena.codingaider.services.plans.AiderPlanService>().getAiderPlansFolder()))
     private val mainPanel = JPanel(BorderLayout())
     private val isProcessFinished = AtomicBoolean(false)
     private val isDisposed = AtomicBoolean(false)

@@ -197,7 +197,7 @@ class PlanViewer(private val project: Project) {
                                 file.delete()
                             }
                         }
-                        FileRefresher.refreshPath(project.basePath + "/${AiderPlanService.AIDER_PLANS_FOLDER}")
+                        FileRefresher.refreshPath(project.basePath + "/${project.getService(AiderPlanService::class.java).getAiderPlansFolder()}")
                         updatePlans(project.getService(AiderPlanService::class.java).getAiderPlans())
                     }
                 }
@@ -724,7 +724,7 @@ class PlanViewer(private val project: Project) {
                 }
 
                 override fun createCenterPanel(): JComponent {
-                    val markdownViewer = MarkdownViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
+                    val markdownViewer = MarkdownViewer(listOf(project.getService(AiderPlanService::class.java).getAiderPlansFolder())).apply {
                         setDarkTheme(!JBColor.isBright())
                         setMarkdown(selectedPlan.plan)
                     }
@@ -760,7 +760,7 @@ class PlanViewer(private val project: Project) {
                         file.renameTo(destFile)
                     }
                 }
-                FileRefresher.refreshPath(project.basePath + "/${AiderPlanService.AIDER_PLANS_FOLDER}")
+                FileRefresher.refreshPath(project.basePath + "/${project.getService(AiderPlanService::class.java).getAiderPlansFolder()}")
                 FileRefresher.refreshPath(finishedPlansDir.absolutePath)
                 updatePlans(project.getService(AiderPlanService::class.java).getAiderPlans())
             }
@@ -964,7 +964,7 @@ class PlanViewer(private val project: Project) {
                 }
 
                 override fun createCenterPanel(): JComponent {
-                    val markdownViewer = MarkdownViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
+                    val markdownViewer = MarkdownViewer(listOf(project.getService(AiderPlanService::class.java).getAiderPlansFolder())).apply {
                         setDarkTheme(!JBColor.isBright())
                         setMarkdown(selectedPlan.plan)
                     }
@@ -992,7 +992,7 @@ class PlanViewer(private val project: Project) {
                         file.delete()
                     }
                 }
-                FileRefresher.refreshPath(project.basePath + "/${AiderPlanService.AIDER_PLANS_FOLDER}")
+                FileRefresher.refreshPath(project.basePath + "/${project.getService(AiderPlanService::class.java).getAiderPlansFolder()}")
                 updatePlans(project.getService(AiderPlanService::class.java).getAiderPlans())
             }
         }

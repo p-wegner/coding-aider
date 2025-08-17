@@ -60,7 +60,7 @@ private class SelectPlanDialog(private val project: Project) : DialogWrapper(pro
             }
         }
 
-        val markdownViewer = MarkdownViewer(listOf(AiderPlanService.AIDER_PLANS_FOLDER)).apply {
+        val markdownViewer = MarkdownViewer(listOf(project.service<de.andrena.codingaider.services.plans.AiderPlanService>().getAiderPlansFolder())).apply {
             setDarkTheme(!JBColor.isBright())
         }
 

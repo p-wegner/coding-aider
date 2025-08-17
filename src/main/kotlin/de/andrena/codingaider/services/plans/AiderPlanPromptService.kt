@@ -36,6 +36,7 @@ class AiderPlanPromptService(private val project: Project) {
 
     fun filterPlanRelevantFiles(files: List<FileData>): List<FileData> =
         files.filter {
+            // TODO 18.08.2025 pwegner: properly use project.service<AiderPlanService>() to determine if a file belongs to plans
             it.filePath.contains(AIDER_PLANS_FOLDER) && !it.filePath.contains(AiderPlanService.FINISHED_AIDER_PLANS_FOLDER)
                     && (it.filePath.endsWith(".md") || it.filePath.endsWith(".yaml"))
         }
@@ -107,7 +108,6 @@ $STRUCTURED_MODE_MESSAGE_MARKER ${commandData.message} $STRUCTURED_MODE_MESSAGE_
     companion object {
         const val AIDER_PLAN_MARKER = "[Coding Aider Plan]"
         const val AIDER_PLAN_CHECKLIST_MARKER = "[Coding Aider Plan - Checklist]"
-        const val AIDER_PLANS_FOLDER = AiderPlanService.AIDER_PLANS_FOLDER
         const val STRUCTURED_MODE_MESSAGE_MARKER = "<UserPrompt>"
         const val STRUCTURED_MODE_MESSAGE_END_MARKER = "</UserPrompt>"
     }

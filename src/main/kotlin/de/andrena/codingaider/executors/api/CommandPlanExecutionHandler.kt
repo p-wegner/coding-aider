@@ -14,7 +14,8 @@ class CommandPlanExecutionHandler(private val project: Project, private val comm
 
     fun commandCompleted() {
         if (!commandData.structuredMode) return
-        val plansFolder = File(project.basePath, AiderPlanService.AIDER_PLANS_FOLDER)
+        val planService = project.service<AiderPlanService>()
+        val plansFolder = File(project.basePath, planService.getAiderPlansFolder())
         if (plansFolder.exists() && plansFolder.isDirectory) {
             val currentPlanFiles = plansFolder.listFiles { file -> file.isFile && file.extension == "md" }
                 ?.toSet() ?: emptySet()
@@ -32,7 +33,8 @@ class CommandPlanExecutionHandler(private val project: Project, private val comm
 
     fun beforeCommandStarted() {
         if (!commandData.structuredMode) return
-        val plansFolder = File(project.basePath, AiderPlanService.AIDER_PLANS_FOLDER)
+        val planService = project.service<AiderPlanService>()
+        val plansFolder = File(project.basePath, planService.getAiderPlansFolder())
         if (plansFolder.exists() && plansFolder.isDirectory) {
             initialPlanFiles = plansFolder.listFiles { file -> file.isFile && file.extension == "md" }
                 ?.toSet() ?: emptySet()

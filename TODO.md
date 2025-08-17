@@ -39,5 +39,5 @@
 - [x] Bug: make git doc generation create docs outside of tmp dir
 - [ ] Feature: configurable plan folder
 - [ ] Feature: context view file ending options
-- [ ] Bug: auto continue plan feature continues twice
+- [x] Bug: auto continue plan feature continues twice
 - [ ] Feature: scratch file support with aider subtree only (scratch files need to be moved?)

@@ -19,17 +19,31 @@ class AiderProjectSettings(private val project: Project) : PersistentStateCompon
         var isOptionsCollapsed: Boolean = true,
         var isContextCollapsed: Boolean = false,
         var workingDirectory: String? = null,
+        var plansFolderPath: String? = null,
         var testTypes: MutableList<TestTypeConfiguration> = DefaultTestTypes.getDefaultTestTypes().toMutableList(),
         var documentTypes: MutableList<DocumentTypeConfiguration> = DefaultDocumentTypes.getDefaultDocumentTypes().toMutableList(),
         var customActions: MutableList<CustomActionConfiguration> = DefaultCustomActions.getDefaultCustomActions().toMutableList()
     )
 
     private var myState = State()
+    private val settingsChangeListeners = mutableListOf<() -> Unit>()
 
     override fun getState(): State = myState
 
     override fun loadState(state: State) {
         myState = state
+    }
+
+    fun addSettingsChangeListener(listener: () -> Unit) {
+        settingsChangeListeners.add(listener)
+    }
+
+    fun removeSettingsChangeListener(listener: () -> Unit) {
+        settingsChangeListeners.remove(listener)
+    }
+
+    private fun notifySettingsChanged() {
+        settingsChangeListeners.forEach { it() }
     }
 
     var isOptionsCollapsed: Boolean
@@ -48,6 +62,16 @@ class AiderProjectSettings(private val project: Project) : PersistentStateCompon
         get() = myState.workingDirectory
         set(value) {
             myState.workingDirectory = value
+        }
+
+    var plansFolderPath: String?
+        get() = myState.plansFolderPath
+        set(value) {
+            val oldValue = myState.plansFolderPath
+            myState.plansFolderPath = value
+            if (oldValue != value) {
+                notifySettingsChanged()
+            }
         }
 
     // Test Types methods

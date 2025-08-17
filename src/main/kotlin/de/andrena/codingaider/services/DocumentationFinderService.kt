@@ -1,6 +1,7 @@
 package de.andrena.codingaider.services
 
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.FileData
@@ -17,7 +18,7 @@ class DocumentationFinderService(private val project: Project) {
         var currentDir = file.parent
         val projectRootPath = project.basePath
         while (currentDir != null && currentDir.path.startsWith(projectRootPath ?: "") && 
-               !currentDir.path.contains(AiderPlanService.AIDER_PLANS_FOLDER)) {
+               !currentDir.path.contains(project.service<AiderPlanService>().getAiderPlansFolder())) {
             val markdownFiles = currentDir.children
                 ?.filter { it.extension?.lowercase() == "md" && !it.name.startsWith(".aider") }
                 ?.map { FileData(it.path, false) }

@@ -15,16 +15,22 @@ class AiderPlanService(private val project: Project) {
     companion object {
         const val AIDER_PLAN_MARKER = "[Coding Aider Plan]"
         const val AIDER_PLAN_CHECKLIST_MARKER = "[Coding Aider Plan - Checklist]"
-        const val AIDER_PLANS_FOLDER = ".coding-aider-plans"
+        const val DEFAULT_AIDER_PLANS_FOLDER = ".coding-aider-plans"
+        const val AIDER_PLANS_FOLDER = DEFAULT_AIDER_PLANS_FOLDER // Keep for backward compatibility
         const val FINISHED_AIDER_PLANS_FOLDER = ".coding-aider-plans-finished"
         const val STRUCTURED_MODE_MARKER = "[STRUCTURED MODE]"
         const val SUBPLAN_START_MARKER = "<!-- SUBPLAN:"
         const val SUBPLAN_END_MARKER = "<!-- END_SUBPLAN -->"
     }
 
+    fun getAiderPlansFolder(): String {
+        val settings = de.andrena.codingaider.settings.AiderProjectSettings.getInstance(project)
+        return settings.plansFolderPath ?: DEFAULT_AIDER_PLANS_FOLDER
+    }
+
     fun createPlanFolderIfNeeded(commandData: CommandData) {
         if (commandData.structuredMode) {
-            val plansDir = File(commandData.projectPath, AIDER_PLANS_FOLDER)
+            val plansDir = File(commandData.projectPath, getAiderPlansFolder())
             if (!plansDir.exists()) {
                 plansDir.mkdir()
             }
@@ -169,14 +175,13 @@ class AiderPlanService(private val project: Project) {
             }
     }
 
-    private val plansDir = File(project.basePath, AIDER_PLANS_FOLDER)
-
     fun getAiderPlans(): List<AiderPlan> {
-        if (!this.plansDir.exists()) {
-            this.plansDir.mkdir()
+        val plansDir = File(project.basePath, getAiderPlansFolder())
+        if (!plansDir.exists()) {
+            plansDir.mkdir()
         }
 
-        val filesToConsider: List<File> = this.plansDir.listFiles()?.toList() ?: listOf<File>()
+        val filesToConsider: List<File> = plansDir.listFiles()?.toList() ?: listOf<File>()
         return getAiderPlans(filesToConsider)
     }
     fun loadPlanFromFile(file: File): AiderPlan? {
@@ -188,6 +193,7 @@ class AiderPlanService(private val project: Project) {
             val planContent = content.substringAfter(AIDER_PLAN_MARKER).trim()
 
             // Process markdown references to include referenced content for checklist extraction
+            val plansDir = File(project.basePath, getAiderPlansFolder())
             val expandedContent = processMarkdownReferences(content, plansDir)
 
             // Get checklist items from expanded content
@@ -264,10 +270,11 @@ class AiderPlanService(private val project: Project) {
         }
         
         // Second pass: Establish parent-child relationships
+        val plansDir = File(project.basePath, getAiderPlansFolder())
         allPlans.forEach { plan ->
             val content = File(plan.mainPlanFile?.filePath ?: "").readText()
             val references = extractSubplanReferences(content)
-            
+
             // Get all referenced plans as children, regardless of whether they have their own subplans
             val childPlans = references.mapNotNull { referencePath ->
                 val absolutePath = File(plansDir, referencePath).absolutePath

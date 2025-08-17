@@ -109,5 +109,6 @@ Don't start the implementation until the plan files are committed. Do not ask th
     // Constants used in the templates
     const val AIDER_PLAN_MARKER = AiderPlanPromptService.AIDER_PLAN_MARKER
     const val AIDER_PLAN_CHECKLIST_MARKER = AiderPlanPromptService.AIDER_PLAN_CHECKLIST_MARKER
-    const val AIDER_PLANS_FOLDER = AiderPlanService.AIDER_PLANS_FOLDER
+    // TODO 18.08.2025 pwegner: properly mention the defined plans folder if configured
+    const val AIDER_PLANS_FOLDER = AiderPlanService.DEFAULT_AIDER_PLANS_FOLDER
 }

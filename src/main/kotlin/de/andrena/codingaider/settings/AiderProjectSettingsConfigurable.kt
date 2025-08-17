@@ -5,6 +5,7 @@ import com.intellij.openapi.fileChooser.FileChooserDescriptor
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
 import com.intellij.ui.components.JBList
+import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.command.FileData
@@ -24,6 +25,7 @@ class AiderProjectSettingsConfigurable(private val project: Project) : Configura
     private val persistentFilesListModel: DefaultListModel<FileData>
     private val persistentFilesList: JBList<FileData>
     private val persistentFileService: PersistentFileService
+    private val plansFolderPathField = JBTextField()
 
     init {
         this.persistentFileService = project.getService(PersistentFileService::class.java)
@@ -44,7 +46,37 @@ class AiderProjectSettingsConfigurable(private val project: Project) : Configura
     override fun createComponent(): JComponent {
         persistentFilesList.cellRenderer = PersistentFileRenderer()
         loadPersistentFiles()
+        loadSettings()
+        
         settingsComponent = panel {
+            group("General Settings") {
+                row("Plans Folder Path:") {
+                    cell(plansFolderPathField)
+                        .align(Align.FILL)
+                        .resizableColumn()
+                    button("Browse") {
+                        val descriptor = FileChooserDescriptor(false, true, false, false, false, false)
+                        descriptor.title = "Select Plans Folder"
+                        descriptor.description = "Choose the folder where plans will be stored"
+                        val selectedFile = FileChooser.chooseFile(descriptor, project, null)
+                        selectedFile?.let {
+                            val relativePath = project.basePath?.let { basePath ->
+                                val projectFile = java.io.File(basePath)
+                                val selectedFileObj = java.io.File(it.path)
+                                try {
+                                    projectFile.toPath().relativize(selectedFileObj.toPath()).toString().replace('\\', '/')
+                                } catch (e: IllegalArgumentException) {
+                                    it.path
+                                }
+                            } ?: it.path
+                            plansFolderPathField.text = relativePath
+                        }
+                    }
+                }
+                row {
+                    comment("Leave empty to use default (.coding-aider-plans). Path is relative to project root.")
+                }
+            }
             group("Test Types") {
                 row {
                     scrollCell(createTestTypePanel())
@@ -350,14 +382,23 @@ class AiderProjectSettingsConfigurable(private val project: Project) : Configura
     }
 
     override fun isModified(): Boolean {
-        return false
+        val settings = AiderProjectSettings.getInstance(project)
+        return plansFolderPathField.text != (settings.plansFolderPath ?: "")
     }
 
     override fun apply() {
+        val settings = AiderProjectSettings.getInstance(project)
+        settings.plansFolderPath = plansFolderPathField.text.takeIf { it.isNotBlank() }
     }
 
     override fun reset() {
         loadPersistentFiles()
+        loadSettings()
+    }
+
+    private fun loadSettings() {
+        val settings = AiderProjectSettings.getInstance(project)
+        plansFolderPathField.text = settings.plansFolderPath ?: ""
     }
 
     private fun addPersistentFiles() {

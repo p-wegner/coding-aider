@@ -19,6 +19,7 @@ class PlansPanel(private val project: Project) {
     init {
         loadPlans()
         subscribeToFileChanges()
+        subscribeToSettingsChanges()
     }
 
     private fun loadPlans() {
@@ -29,7 +30,7 @@ class PlansPanel(private val project: Project) {
         val connection = project.messageBus.connect()
         connection.subscribe(VirtualFileManager.VFS_CHANGES, object : BulkFileListener {
             override fun after(events: List<VFileEvent>) {
-                val plansPath = "${project.basePath}/${AiderPlanService.AIDER_PLANS_FOLDER}"
+                val plansPath = "${project.basePath}/${aiderPlanService.getAiderPlansFolder()}"
                 val affectsPlanFiles = events.any { event ->
                     event.path.startsWith(plansPath) && event.path.endsWith(".md")
                 }
@@ -38,6 +39,13 @@ class PlansPanel(private val project: Project) {
                 }
             }
         })
+    }
+
+    private fun subscribeToSettingsChanges() {
+        val settings = de.andrena.codingaider.settings.AiderProjectSettings.getInstance(project)
+        settings.addSettingsChangeListener {
+            loadPlans()
+        }
     }
 
     fun getContent(): JComponent {

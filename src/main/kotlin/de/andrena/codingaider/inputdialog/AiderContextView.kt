@@ -167,7 +167,7 @@ class AiderContextView(
         allUniqueFiles.forEach { fileData ->
             val node = DefaultMutableTreeNode(fileData)
             when {
-                fileData.filePath.contains(AiderPlanService.AIDER_PLANS_FOLDER) -> {
+                fileData.filePath.contains(project.service<AiderPlanService>().getAiderPlansFolder()) -> {
                     planFilesNode.add(node)
                 }
 

@@ -3,6 +3,7 @@ package de.andrena.codingaider.services
 import com.intellij.notification.NotificationGroupManager
 import com.intellij.notification.NotificationType
 import com.intellij.openapi.components.Service
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
@@ -19,7 +20,7 @@ import java.util.regex.Pattern
 class PostActionPlanCreationService(private val project: Project) {
     
     companion object {
-        private const val PLANS_FOLDER = AiderPlanService.Companion.AIDER_PLANS_FOLDER
+        private const val PLANS_FOLDER = AiderPlanService.Companion.DEFAULT_AIDER_PLANS_FOLDER
     }
     
     /**
@@ -30,7 +31,8 @@ class PostActionPlanCreationService(private val project: Project) {
      */
     fun createPlanFromCommand(commandData: CommandData, commandOutput: String): Boolean {
         try {
-            val plansDir = File(project.basePath, PLANS_FOLDER)
+            val planService = project.service<AiderPlanService>()
+            val plansDir = File(project.basePath, planService.getAiderPlansFolder())
             if (!plansDir.exists()) {
                 plansDir.mkdir()
             }
