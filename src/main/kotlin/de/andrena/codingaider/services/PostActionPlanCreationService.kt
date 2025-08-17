@@ -68,8 +68,7 @@ class PostActionPlanCreationService(private val project: Project) {
             aiderMode = AiderMode.STRUCTURED,
             planId = null,  // Ensure we're creating a new plan, not continuing an existing one
             options = commandData.options.copy(
-                disablePresentation = false,
-                autoCloseDelay = 10
+                disablePresentation = false
             )
         )
     }

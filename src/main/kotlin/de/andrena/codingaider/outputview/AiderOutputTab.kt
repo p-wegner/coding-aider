@@ -28,7 +28,6 @@ class AiderOutputTab(
     private val isProcessFinished = AtomicBoolean(false)
     private val isDisposed = AtomicBoolean(false)
     
-    private var autoCloseTimer: java.util.concurrent.ScheduledFuture<*>? = null
     private val executor = com.intellij.util.concurrency.AppExecutorUtil.getAppScheduledExecutorService()
     
     // Buttons for tab toolbar
@@ -103,26 +102,10 @@ class AiderOutputTab(
         }
     }
 
-    private val cancelContinueButton = JButton("Cancel Continue").apply {
-        mnemonic = KeyEvent.VK_C
-        isVisible = false
-        toolTipText = "Cancel scheduled plan continuation"
-        addActionListener {
-            autoCloseTimer?.cancel(false)
-            isVisible = false
-            countdownLabel.isVisible = false
-            text = "Cancel Continue"
-        }
-    }
-    
     private val autoContinueCheckbox = JCheckBox("Auto Continue", true).apply {
         mnemonic = KeyEvent.VK_U
         isVisible = false
         toolTipText = "Automatically continue with plan when finished"
-    }
-    
-    private val countdownLabel = JLabel().apply {
-        isVisible = false
     }
     
     private val autoScrollCheckbox = JCheckBox("Auto Scroll", true).apply {
@@ -183,8 +166,6 @@ class AiderOutputTab(
         toolbar.add(showDevToolsButton)
         toolbar.add(autoContinueCheckbox)
         toolbar.add(autoScrollCheckbox)
-        toolbar.add(cancelContinueButton)
-        toolbar.add(countdownLabel)
         
         return toolbar
     }
@@ -246,48 +227,6 @@ class AiderOutputTab(
         }
     }
     
-    fun startAutoCloseTimer(autocloseDelay: Int) {
-        setProcessFinished()
-        
-        // Auto-continuation is now handled by ActivePlanService after command completion
-        // This method only handles the UI countdown for user feedback
-        if (commandData?.structuredMode == true && autoContinueCheckbox.isSelected) {
-            val remaining = AtomicInteger(autocloseDelay)
-            cancelContinueButton.isVisible = true
-            countdownLabel.isVisible = true
-            
-            // Show initial countdown in toolbar
-            SwingUtilities.invokeLater {
-                countdownLabel.text = "Auto-continue in ${remaining.get()}s..."
-            }
-            
-            autoCloseTimer = executor.scheduleWithFixedDelay({
-                // Check if auto-continue is still enabled
-                if (!autoContinueCheckbox.isSelected) {
-                    autoCloseTimer?.cancel(false)
-                    SwingUtilities.invokeLater {
-                        cancelContinueButton.isVisible = false
-                        countdownLabel.isVisible = false
-                    }
-                    return@scheduleWithFixedDelay
-                }
-                
-                val secs = remaining.decrementAndGet()
-                if (secs > 0) {
-                    SwingUtilities.invokeLater {
-                        countdownLabel.text = "Auto-continue in ${secs}s..."
-                    }
-                } else {
-                    autoCloseTimer?.cancel(false)
-                    SwingUtilities.invokeLater {
-                        countdownLabel.text = "Auto-continuing..."
-                        cancelContinueButton.isVisible = false
-                        countdownLabel.isVisible = false
-                    }
-                }
-            }, 1, 1, java.util.concurrent.TimeUnit.SECONDS)
-        }
-    }
 
     private fun getCurrentMarkdownContent(): String {
         return currentMarkdownContent
@@ -302,7 +241,6 @@ class AiderOutputTab(
                 onAbort.abortCommand(commandData?.planId)
             }
             
-            autoCloseTimer?.cancel(false)
             markdownViewer.dispose()
             mainPanel.removeAll()
         } catch (e: Exception) {

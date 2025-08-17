@@ -197,7 +197,7 @@ ${message.trimStart()}
         updateOutputProgress(message, "Aider Command ${if (exitCode == 0) "Completed" else "Failed"}")
         val outputService = project.service<AiderOutputService>()
         outputDisplay?.let { 
-            outputService.startAutoCloseTimer(it, commandData.options.autoCloseDelay ?: 10)
+            outputService.setProcessFinished(it)
         }
         
         // First refresh files
@@ -265,7 +265,6 @@ ${message.trimStart()}
         val outputService = project.service<AiderOutputService>()
         outputDisplay?.let { 
             outputService.setProcessFinished(it)
-            outputService.startAutoCloseTimer(it, 10)
         }
         
         // Remove from running commands on error as well

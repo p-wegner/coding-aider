@@ -73,12 +73,6 @@ class AiderOutputService(private val project: Project) {
         }
     }
     
-    fun startAutoCloseTimer(output: Any, delay: Int) {
-        when (output) {
-            is AiderOutputTab -> output.startAutoCloseTimer(delay)
-        }
-    }
-    
     
     fun focus(output: Any) {
         when (output) {
