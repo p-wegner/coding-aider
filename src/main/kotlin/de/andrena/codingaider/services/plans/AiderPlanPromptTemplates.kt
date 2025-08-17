@@ -4,8 +4,8 @@ package de.andrena.codingaider.services.plans
  * Contains all prompt templates used by the AiderPlanPromptService.
  * Externalizing these templates makes them easier to maintain and update.
  */
-object AiderPlanPromptTemplates {
-    
+class AiderPlanPromptTemplates(private val planService: AiderPlanService) {
+
     val planFileStructurePrompt = """
 Each plan requires three files with consistent naming (feature_name as base):
 1. feature_name.md - Main plan with sections:
@@ -38,13 +38,13 @@ Subplan Requirements:
 7. Ensure the main plan references all subplans
 8. Only create subplans if necessary
     """.trimIndent()
-    
+
     val noSubplansGuidancePrompt =
-"""Create a detailed checklist with atomic tasks that focus on clear, sequential implementation steps.
+        """Create a detailed checklist with atomic tasks that focus on clear, sequential implementation steps.
 """.trimIndent()
 
     val planFileFormatPrompt = """
-Plan files are located in $AIDER_PLANS_FOLDER:
+Plan files are located in ${planService.getAiderPlansFolder()}:
 
 File Requirements:
 1. Start plans with $AIDER_PLAN_MARKER
@@ -80,10 +80,11 @@ If the current instruction doesn't align with the existing plan, update the plan
     fun getNewPlanPrompt(enableSubplans: Boolean) = """
 No plan exists yet. Write a detailed description of the requested feature and the needed changes.
 The main plan file should include these sections: ## Overview, ## Problem Description, ## Goals, ## Additional Notes and Constraints, ## References
-Save the plan in a new markdown file with a suitable name in the $AIDER_PLANS_FOLDER directory.
+Save the plan in a new markdown file with a suitable name in the ${planService.getAiderPlansFolder()} directory.
 
-${if (enableSubplans) {
-    """
+${
+        if (enableSubplans) {
+            """
 Create subplans only if necessary. Use subplans when:
 1. A feature requires many changes across plenty of components
 2. Different team members could work on parts independently
@@ -91,9 +92,10 @@ Create subplans only if necessary. Use subplans when:
 $subplanGuidancePrompt
 Create separate checklist and context.yaml files for the main plan and each subplan to track the progress of implementing the plan.
 """
-} else {
-    ""
-}}
+        } else {
+            ""
+        }
+    }
 Create the three required files for the plan:
 1. A main markdown file with the plan details
 2. A checklist markdown file to track implementation progress
@@ -107,8 +109,7 @@ Don't start the implementation until the plan files are committed. Do not ask th
     """.trimIndent()
 
     // Constants used in the templates
-    const val AIDER_PLAN_MARKER = AiderPlanPromptService.AIDER_PLAN_MARKER
-    const val AIDER_PLAN_CHECKLIST_MARKER = AiderPlanPromptService.AIDER_PLAN_CHECKLIST_MARKER
-    // TODO 18.08.2025 pwegner: properly mention the defined plans folder if configured
-    const val AIDER_PLANS_FOLDER = AiderPlanService.DEFAULT_AIDER_PLANS_FOLDER
 }
+
+const val AIDER_PLAN_MARKER = AiderPlanPromptService.AIDER_PLAN_MARKER
+const val AIDER_PLAN_CHECKLIST_MARKER = AiderPlanPromptService.AIDER_PLAN_CHECKLIST_MARKER

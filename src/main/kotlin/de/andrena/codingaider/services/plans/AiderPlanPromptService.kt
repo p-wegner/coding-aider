@@ -9,6 +9,8 @@ import de.andrena.codingaider.settings.AiderSettings
 
 @Service(Service.Level.PROJECT)
 class AiderPlanPromptService(private val project: Project) {
+    private val planService by lazy { project.service<AiderPlanService>() }
+    private val templates by lazy { AiderPlanPromptTemplates(planService) }
 
     fun createAiderPlanSystemPrompt(commandData: CommandData): String {
         if (commandData.message.startsWith("/")) {
@@ -21,9 +23,9 @@ class AiderPlanPromptService(private val project: Project) {
     fun createPlanRefinementPrompt(plan: AiderPlan, refinementRequest: String): String {
         val settings = service<AiderSettings>()
         val subplanGuidance = if (settings.enableSubplans) {
-            "Consider whether to use subplans for complex parts.\n${AiderPlanPromptTemplates.subplanGuidancePrompt}"
+            "Consider whether to use subplans for complex parts.\n${templates.subplanGuidancePrompt}"
         } else {
-            AiderPlanPromptTemplates.noSubplansGuidancePrompt
+            templates.noSubplansGuidancePrompt
         }
 
         val basePrompt = createFullPlanRefinementPrompt(plan, subplanGuidance, refinementRequest)
@@ -36,14 +38,13 @@ class AiderPlanPromptService(private val project: Project) {
 
     fun filterPlanRelevantFiles(files: List<FileData>): List<FileData> =
         files.filter {
-            // TODO 18.08.2025 pwegner: properly use project.service<AiderPlanService>() to determine if a file belongs to plans
-            it.filePath.contains(AIDER_PLANS_FOLDER) && !it.filePath.contains(AiderPlanService.FINISHED_AIDER_PLANS_FOLDER)
+            it.filePath.contains(planService.getAiderPlansFolder()) && !it.filePath.contains(AiderPlanService.FINISHED_AIDER_PLANS_FOLDER)
                     && (it.filePath.endsWith(".md") || it.filePath.endsWith(".yaml"))
         }
 
     private fun createSystemPromptContent(files: List<FileData>, projectPath: String): String {
         val existingPlan = filterPlanRelevantFiles(files)
-        val basePrompt = AiderPlanPromptTemplates.planFileFormatPrompt.trimStartingWhiteSpaces()
+        val basePrompt = templates.planFileFormatPrompt.trimStartingWhiteSpaces()
         val firstPlan = existingPlan.firstOrNull()
         val planSpecificPrompt = createNewPlanOrContinuePrompt(firstPlan, projectPath)
         return "${basePrompt}\n${planSpecificPrompt.trimStartingWhiteSpaces()}"
@@ -58,8 +59,8 @@ class AiderPlanPromptService(private val project: Project) {
     You are refining an existing plan ${plan.plan}. The plan should be extended or modified based on the refinement request. 
     Don't start the implementation until the plan files are committed. The main goal is to modify the plan files and not the implementation.
     $subplanGuidance
-    ${AiderPlanPromptTemplates.planFileStructurePrompt}
-    ${AiderPlanPromptTemplates.planFileFormatPrompt}
+    ${templates.planFileStructurePrompt}
+    ${templates.planFileFormatPrompt}
     </SystemPrompt>
     The refinement request is: <UserPrompt>$refinementRequest</UserPrompt>
             """.trimIndent()
@@ -97,10 +98,10 @@ $STRUCTURED_MODE_MESSAGE_MARKER ${commandData.message} $STRUCTURED_MODE_MESSAGE_
         val relativePlanPath = firstPlan?.filePath?.removePrefix(projectPath) ?: ""
         return firstPlan
             ?.let {
-                AiderPlanPromptTemplates.getExistingPlanPrompt(relativePlanPath)
+                templates.getExistingPlanPrompt(relativePlanPath)
                     .replace("the project path", projectPath)
             }
-            ?: AiderPlanPromptTemplates.getNewPlanPrompt(service<AiderSettings>().enableSubplans)
+            ?: templates.getNewPlanPrompt(service<AiderSettings>().enableSubplans)
     }
 
     private fun String.trimStartingWhiteSpaces() = trimIndent().trimStart { it.isWhitespace() }

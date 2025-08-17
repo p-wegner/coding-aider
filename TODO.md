@@ -37,7 +37,8 @@
 - [ ] Bug: abort command when closing tab in output tool window
 - [ ] Feature: add tests for changes
 - [x] Bug: make git doc generation create docs outside of tmp dir
-- [ ] Feature: configurable plan folder
+- [x] Feature: configurable plan folder
 - [ ] Feature: context view file ending options
 - [x] Bug: auto continue plan feature continues twice
 - [ ] Feature: scratch file support with aider subtree only (scratch files need to be moved?)
+- [ ] Feature: extend todo tool context menu with fix action (multiselect)
