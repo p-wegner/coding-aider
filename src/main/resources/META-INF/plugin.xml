@@ -378,13 +378,15 @@
                     secondary="true"
                     icon="MyIcons.Tool"
                     anchor="bottom"
-                    factoryClass="de.andrena.codingaider.outputview.AiderOutputToolWindow"
+                    doNotActivateOnStart="true"
+                    factoryClass="de.andrena.codingaider.toolwindow.AiderOutputToolWindow"
                     canCloseContents="true"/>
         <toolWindow id="MCP Server"
                     secondary="true"
+                    doNotActivateOnStart="true"
                     icon="MyIcons.Tool"
                     anchor="bottom"
                     factoryClass="de.andrena.codingaider.toolwindow.McpServerToolWindowFactory"
-                    canCloseContents="false"/>
+                    canCloseContents="true"/>
     </extensions>
 </idea-plugin>

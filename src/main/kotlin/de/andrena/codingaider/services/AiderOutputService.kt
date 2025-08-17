@@ -8,11 +8,11 @@ import com.intellij.openapi.wm.ToolWindowManager
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.outputview.Abortable
 import de.andrena.codingaider.outputview.AiderOutputTab
-import de.andrena.codingaider.outputview.AiderOutputToolWindow
 import de.andrena.codingaider.outputview.AiderOutputToolWindowContent
 import de.andrena.codingaider.outputview.CodingAiderOutputPresentation
 import de.andrena.codingaider.services.plans.ActivePlanService
 import de.andrena.codingaider.services.plans.ContinuePlanService
+import de.andrena.codingaider.toolwindow.CONTENT_MANAGER_KEY
 
 @Service(Service.Level.PROJECT)
 class AiderOutputService(private val project: Project) {
@@ -35,7 +35,7 @@ class AiderOutputService(private val project: Project) {
         commandData: CommandData?
     ): AiderOutputTab {
         // Get or create tool window content manager
-        val contentManager = project.getUserData(AiderOutputToolWindow.CONTENT_MANAGER_KEY)
+        val contentManager = project.getUserData(CONTENT_MANAGER_KEY)
             ?: run {
                 // Tool window not initialized yet, force initialization
                 val toolWindow = ToolWindowManager.getInstance(project).getToolWindow("Aider Output")
@@ -45,7 +45,7 @@ class AiderOutputService(private val project: Project) {
                 toolWindow.show()
                 
                 // Get the content manager after showing
-                project.getUserData(AiderOutputToolWindow.CONTENT_MANAGER_KEY)
+                project.getUserData(CONTENT_MANAGER_KEY)
                     ?: toolWindow.contentManager // Fallback to direct access
             }
         
