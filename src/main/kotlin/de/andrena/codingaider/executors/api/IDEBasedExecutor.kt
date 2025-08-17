@@ -155,7 +155,7 @@ ${if (commandData.llm.isNotEmpty()) "**LLM:** ${commandData.llm}" else ""}
             currentCommitHash?.let { 
                 GitUtils.openGitComparisonTool(project, it) { 
                     val outputService = project.service<AiderOutputService>()
-                    outputDisplay?.let { outputService.focus(it, 1000) }
+                    outputDisplay?.let { outputService.focus(it) }
                 } 
             }
         }

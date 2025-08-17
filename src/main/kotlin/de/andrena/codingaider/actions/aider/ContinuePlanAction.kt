@@ -13,9 +13,9 @@ import com.intellij.ui.dsl.builder.AlignX
 import com.intellij.ui.dsl.builder.AlignY
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.outputview.markdown.MarkdownViewer
+import de.andrena.codingaider.services.plans.ActivePlanService
 import de.andrena.codingaider.services.plans.AiderPlan
 import de.andrena.codingaider.services.plans.AiderPlanService
-import de.andrena.codingaider.services.plans.ContinuePlanService
 import de.andrena.codingaider.toolwindow.plans.PlanViewer
 import java.awt.Dimension
 import javax.swing.BorderFactory
@@ -28,7 +28,7 @@ class ContinuePlanAction : AnAction() {
         val project = e.project ?: return
         val dialog = SelectPlanDialog(project)
         if (dialog.showAndGet()) {
-            dialog.selectedPlan?.run { project.service<ContinuePlanService>().continuePlan(this) }
+            dialog.selectedPlan?.run { project.service<ActivePlanService>().continuePlan() }
         }
     }
 

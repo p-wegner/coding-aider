@@ -6,8 +6,8 @@ import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.outputview.markdown.MarkdownViewer
 import de.andrena.codingaider.services.RunningCommandService
+import de.andrena.codingaider.services.plans.ActivePlanService
 import de.andrena.codingaider.services.plans.AiderPlanService
-import de.andrena.codingaider.services.plans.ContinuePlanService
 import de.andrena.codingaider.settings.AiderSettings
 import java.awt.BorderLayout
 import java.awt.event.KeyEvent
@@ -59,7 +59,7 @@ class AiderOutputTab(
                 try {
                     isEnabled = false
                     text = "Continuing..."
-                    project.service<ContinuePlanService>().continuePlan()
+                    project.service<ActivePlanService>().continuePlan()
                 } catch (e: Exception) {
                     isEnabled = true
                     text = "Continue"
@@ -249,7 +249,8 @@ class AiderOutputTab(
     fun startAutoCloseTimer(autocloseDelay: Int) {
         setProcessFinished()
         
-        // Schedule auto-continue with countdown and allow cancellation
+        // Auto-continuation is now handled by ActivePlanService after command completion
+        // This method only handles the UI countdown for user feedback
         if (commandData?.structuredMode == true && autoContinueCheckbox.isSelected) {
             val remaining = AtomicInteger(autocloseDelay)
             cancelContinueButton.isVisible = true
@@ -257,7 +258,7 @@ class AiderOutputTab(
             
             // Show initial countdown in toolbar
             SwingUtilities.invokeLater {
-                countdownLabel.text = "Continuing in ${remaining.get()}s..."
+                countdownLabel.text = "Auto-continue in ${remaining.get()}s..."
             }
             
             autoCloseTimer = executor.scheduleWithFixedDelay({
@@ -274,20 +275,14 @@ class AiderOutputTab(
                 val secs = remaining.decrementAndGet()
                 if (secs > 0) {
                     SwingUtilities.invokeLater {
-                        countdownLabel.text = "Continuing in ${secs}s..."
+                        countdownLabel.text = "Auto-continue in ${secs}s..."
                     }
                 } else {
                     autoCloseTimer?.cancel(false)
                     SwingUtilities.invokeLater {
-                        countdownLabel.text = "Continuing plan..."
+                        countdownLabel.text = "Auto-continuing..."
                         cancelContinueButton.isVisible = false
-                    }
-                    try {
-                        project.service<de.andrena.codingaider.services.AiderOutputService>()
-                            .triggerAutoContinue(commandData)
-                    } catch (e: Exception) {
-                        println("Error during auto continue: ${e.message}")
-                        e.printStackTrace()
+                        countdownLabel.isVisible = false
                     }
                 }
             }, 1, 1, java.util.concurrent.TimeUnit.SECONDS)

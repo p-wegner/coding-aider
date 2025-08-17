@@ -2,7 +2,6 @@ package de.andrena.codingaider.services
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.Service
-import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindowManager
 import de.andrena.codingaider.command.CommandData
@@ -10,8 +9,6 @@ import de.andrena.codingaider.outputview.Abortable
 import de.andrena.codingaider.outputview.AiderOutputTab
 import de.andrena.codingaider.outputview.AiderOutputToolWindowContent
 import de.andrena.codingaider.outputview.CodingAiderOutputPresentation
-import de.andrena.codingaider.services.plans.ActivePlanService
-import de.andrena.codingaider.services.plans.ContinuePlanService
 import de.andrena.codingaider.toolwindow.CONTENT_MANAGER_KEY
 
 @Service(Service.Level.PROJECT)
@@ -82,27 +79,8 @@ class AiderOutputService(private val project: Project) {
         }
     }
     
-    fun triggerAutoContinue(commandData: CommandData?) {
-        if (commandData?.structuredMode != true) {
-            return
-        }
-        
-        try {
-            // Check if there's an active plan and it's not finished
-            val activePlan = project.service<ActivePlanService>().getActivePlan()
-            if (activePlan != null && !activePlan.isPlanComplete()) {
-                val app = ApplicationManager.getApplication()
-                app.invokeLater {
-                    project.service<ContinuePlanService>().continuePlan()
-                }
-            }
-        } catch (e: Exception) {
-            com.intellij.openapi.diagnostic.Logger.getInstance(AiderOutputService::class.java)
-                .error("Error during auto continue", e)
-        }
-    }
     
-    fun focus(output: Any, delay: Long = 100) {
+    fun focus(output: Any) {
         when (output) {
             is AiderOutputTab -> {
                 // For tool window tabs, show and focus the tool window

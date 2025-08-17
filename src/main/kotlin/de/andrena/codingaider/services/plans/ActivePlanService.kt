@@ -9,18 +9,19 @@ import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
-import de.andrena.codingaider.executors.api.CommandFinishedCallback
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.FileDataCollectionService
 import de.andrena.codingaider.services.sidecar.AiderProcessManager
 import de.andrena.codingaider.settings.AiderSettings
 import java.io.File
+import java.util.concurrent.atomic.AtomicBoolean
 
 @Service(Service.Level.PROJECT)
 class ActivePlanService(private val project: Project) {
     private val logger = Logger.getInstance(ActivePlanService::class.java)
     private var activePlan: AiderPlan? = null
+    private val isContinuing = AtomicBoolean(false)
 
     fun setActivePlan(plan: AiderPlan) {
         activePlan = plan
@@ -60,7 +61,7 @@ class ActivePlanService(private val project: Project) {
             
             try {
                 refreshActivePlan()
-                checkAndContinuePlan()
+                checkAndContinuePlanIfEnabled()
             } catch (e: Exception) {
                 logger.error("Error during plan completion check", e)
                 handlePlanError(e)
@@ -68,7 +69,7 @@ class ActivePlanService(private val project: Project) {
         }
     }
 
-    private fun checkAndContinuePlan() {
+    private fun checkAndContinuePlanIfEnabled() {
         val currentPlan = activePlan ?: return
         val settings = AiderSettings.getInstance()
         
@@ -134,6 +135,20 @@ class ActivePlanService(private val project: Project) {
     }
 
     fun continuePlan() {
+        // Prevent multiple simultaneous continuations
+        if (!isContinuing.compareAndSet(false, true)) {
+            logger.info("Plan continuation already in progress, skipping manual continuation")
+            return
+        }
+
+        try {
+            continuePlanInternal()
+        } finally {
+            isContinuing.set(false)
+        }
+    }
+
+    private fun continuePlanInternal() {
         try {
             validatePlanState()
             val plan = activePlan ?: throw IllegalStateException("No active plan found to continue")

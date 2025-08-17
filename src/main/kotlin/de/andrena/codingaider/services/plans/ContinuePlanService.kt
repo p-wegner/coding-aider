@@ -7,9 +7,10 @@ import com.intellij.openapi.project.Project
 @Service(Service.Level.PROJECT)
 class ContinuePlanService(private val project: Project) {
     fun continuePlan(selectedPlan: AiderPlan? = null) {
+        val activePlanService = project.service<ActivePlanService>()
         if (selectedPlan != null) {
-            project.service<ActivePlanService>().setActivePlan(selectedPlan)
+            activePlanService.setActivePlan(selectedPlan)
         }
-        project.service<ActivePlanService>().continuePlan()
+        activePlanService.continuePlan()
     }
 }
