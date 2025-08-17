@@ -3,7 +3,6 @@ package de.andrena.codingaider.outputview
 import com.intellij.icons.AllIcons
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
-import com.intellij.ui.components.JBScrollPane
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.outputview.markdown.MarkdownViewer
 import de.andrena.codingaider.services.RunningCommandService
