@@ -2,6 +2,7 @@ package de.andrena.codingaider.settings
 
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.components.*
+import com.intellij.openapi.wm.ToolWindowManager
 import de.andrena.codingaider.inputdialog.AiderMode
 
 @Service(Service.Level.APP)
@@ -18,6 +19,17 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
 
     fun notifySettingsChanged() {
         settingsChangeListeners.forEach { it() }
+        
+        // Update tool window availability when MCP server setting changes
+        ApplicationManager.getApplication().invokeLater {
+            com.intellij.openapi.project.ProjectManager.getInstance().openProjects.forEach { project ->
+                val toolWindowManager = ToolWindowManager.getInstance(project)
+                val toolWindow = toolWindowManager.getToolWindow("MCP Server")
+                if (toolWindow != null) {
+                    toolWindow.setAvailable(myState.enableMcpServer, null)
+                }
+            }
+        }
     }
 
 

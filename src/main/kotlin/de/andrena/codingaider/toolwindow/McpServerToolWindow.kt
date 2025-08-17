@@ -4,6 +4,7 @@ import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.wm.ToolWindow
 import com.intellij.openapi.wm.ToolWindowFactory
+import com.intellij.openapi.wm.ToolWindowManager
 import com.intellij.ui.components.JBLabel
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.content.ContentFactory
@@ -18,6 +19,11 @@ import javax.swing.*
 import javax.swing.table.DefaultTableModel
 
 class McpServerToolWindowFactory : ToolWindowFactory {
+    override fun shouldBeAvailable(project: Project): Boolean {
+        val settings = AiderSettings.getInstance()
+        return settings.enableMcpServer
+    }
+    
     override fun createToolWindowContent(project: Project, toolWindow: ToolWindow) {
         val mcpServerToolWindow = McpServerToolWindow(project)
         
