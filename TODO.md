@@ -42,3 +42,5 @@
 - [x] Bug: auto continue plan feature continues twice
 - [ ] Feature: scratch file support with aider subtree only (scratch files need to be moved?)
 - [ ] Feature: extend todo tool context menu with fix action (multiselect)
+- [ ] Feature: give clipboard images a name when pasting (optional)
+- [ ] Feature: rename file should update persistent files (if used)
