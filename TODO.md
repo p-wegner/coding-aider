@@ -44,3 +44,4 @@
 - [ ] Feature: extend todo tool context menu with fix action (multiselect)
 - [ ] Feature: give clipboard images a name when pasting (optional)
 - [ ] Feature: rename file should update persistent files (if used)
+- [ ] bug: fix copy paste with keyboard shortcuts in markdown viewer 
