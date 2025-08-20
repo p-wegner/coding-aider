@@ -152,7 +152,7 @@ class AiderExecutionStrategyTest : BasePlatformTestCase() {
     }
 
 
-    private val DOCKER_IMAGE_WITH_TAG = "paulgauthier/aider:v0.84.0"
+    private val DOCKER_IMAGE_WITH_TAG = "paulgauthier/aider:v0.86.1"
 
     @Test
     fun `DockerAiderExecutionStrategy builds correct command`() {
