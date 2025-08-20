@@ -2,13 +2,21 @@ package de.andrena.codingaider.services.plans
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.`when`
 
 class AiderPlanPromptTemplatesTest {
+
+    private val mockPlanService = mock(AiderPlanService::class.java).apply {
+        `when`(getAiderPlansFolder()).thenReturn(".coding-aider-plans")
+    }
+    
+    private val templates = AiderPlanPromptTemplates(mockPlanService)
 
     @Test
     fun `planFileStructurePrompt contains required sections`() {
         // Given
-        val prompt = AiderPlanPromptTemplates.planFileStructurePrompt
+        val prompt = templates.planFileStructurePrompt
         
         // When/Then
         assertThat(prompt).contains("feature_name.md")
@@ -24,7 +32,7 @@ class AiderPlanPromptTemplatesTest {
     @Test
     fun `subplanGuidancePrompt contains required guidance`() {
         // Given
-        val prompt = AiderPlanPromptTemplates.subplanGuidancePrompt
+        val prompt = templates.subplanGuidancePrompt
         
         // When/Then
         assertThat(prompt).contains("Subplan Requirements")
@@ -37,7 +45,7 @@ class AiderPlanPromptTemplatesTest {
     @Test
     fun `noSubplansGuidancePrompt contains required guidance`() {
         // Given
-        val prompt = AiderPlanPromptTemplates.noSubplansGuidancePrompt
+        val prompt = templates.noSubplansGuidancePrompt
         
         // When/Then
         assertThat(prompt).contains("Create a detailed checklist with atomic tasks")
@@ -49,7 +57,7 @@ class AiderPlanPromptTemplatesTest {
     @Test
     fun `planFileFormatPrompt contains required format instructions`() {
         // Given
-        val prompt = AiderPlanPromptTemplates.planFileFormatPrompt
+        val prompt = templates.planFileFormatPrompt
         
         // When/Then
         assertThat(prompt).contains("Plan files are located in")
@@ -70,7 +78,7 @@ class AiderPlanPromptTemplatesTest {
         val relativePlanPath = "test/plan.md"
         
         // When
-        val prompt = AiderPlanPromptTemplates.getExistingPlanPrompt(relativePlanPath)
+        val prompt = templates.getExistingPlanPrompt(relativePlanPath)
         
         // Then
         assertThat(prompt).contains("A plan already exists")
@@ -87,7 +95,7 @@ class AiderPlanPromptTemplatesTest {
         val enableSubplans = true
         
         // When
-        val prompt = AiderPlanPromptTemplates.getNewPlanPrompt(enableSubplans)
+        val prompt = templates.getNewPlanPrompt(enableSubplans)
         
         // Then
         assertThat(prompt).contains("No plan exists yet")
@@ -106,7 +114,7 @@ class AiderPlanPromptTemplatesTest {
         val enableSubplans = false
         
         // When
-        val prompt = AiderPlanPromptTemplates.getNewPlanPrompt(enableSubplans)
+        val prompt = templates.getNewPlanPrompt(enableSubplans)
         
         // Then
         assertThat(prompt).contains("No plan exists yet")
@@ -124,13 +132,13 @@ class AiderPlanPromptTemplatesTest {
     @Test
     fun `constants match the values in AiderPlanPromptService and AiderPlanService`() {
         // When/Then
-        assertThat(AiderPlanPromptTemplates.AIDER_PLAN_MARKER)
+        assertThat(AIDER_PLAN_MARKER)
             .isEqualTo(AiderPlanPromptService.AIDER_PLAN_MARKER)
         
-        assertThat(AiderPlanPromptTemplates.AIDER_PLAN_CHECKLIST_MARKER)
+        assertThat(AIDER_PLAN_CHECKLIST_MARKER)
             .isEqualTo(AiderPlanPromptService.AIDER_PLAN_CHECKLIST_MARKER)
         
-        assertThat(AiderPlanPromptTemplates.AIDER_PLANS_FOLDER)
-            .isEqualTo(AiderPlanService.AIDER_PLANS_FOLDER)
+        assertThat(mockPlanService.getAiderPlansFolder())
+            .isEqualTo(".coding-aider-plans")
     }
 }
