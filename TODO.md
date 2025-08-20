@@ -1,24 +1,14 @@
 - [ ] Feature: Paste Image in aider dialog should call the clipboard image action
 - [ ] Bug: (sidecar) verify env vars (api keys) for sidecar mode properly set
-- [ ] Bug: aiderignore not used for every action
 - [ ] Bug: Properly handle /ask with SystemPrompt for input history parsing
-- [ ] Bug: Compile Error Fix doesn't use persistent files
-- [ ] Bug: Markdown output viewer ux issues
-    - [ ] collapseable panels get opened automatically when content changed
-    - [x] auto scrolling not working at all
 - [ ] count first plan execution in history
-- [ ] Bug: automatic plan continuation fails to detect plan end properly
 - [ ] Bug: plan cost calculation fails to detect model properly
 - [ ] Bug: archive plan does not move history file
-- [ ] Bug: Continue Plan doesn't properly register when plan ended
-- [ ] Bug: "Error executing Aider command: null" when aborting command
 - [ ] Feature: adjust context yaml when moving files
 - [ ] Improve: Generate Tests: make context file easier to setup
 - [ ] Improve: Generate Tests: which files to include in context? persistent files? currently persistent files
   are not used for context
-- [x] Improve: Generate Tests: respect settings for repo mapping
-- [ ] in case of command abortion, make sure to keep output content of the command visible.
-- [ ] Feature: provide some mcp server functionality
+- [ ] (Experimental) Feature: provide some mcp server functionality
   - server: plan creation, crud for persistent files, repo map, 
   - client: interpret output and call mcps and shell commands, start mcp servers
 - [ ] Feature: @context in input dialog (open files, git diff to current state, webcrawl via mcp ...)
@@ -27,21 +17,29 @@
 - [ ] Feature: generate/adjust tests for last changes
 - [ ] Feature: TDD mode with configurable test type
 - [ ] feature: follow up command suggestion and execution (user confirmation)
-- [ ] scratchpad feature for clipboard content (reuse intellij scratchpad feature)
-- [x] Feature: setting to define refinement llm
-- [x] Feature: plan view
-  - [x] refine plan variation: verify implementation and update checklist
+- [] Feature: plan view
   - [ ] add tests (using existing test creation feature)
 - [ ] Show some settings in tool coding aider tool window
   - [ ] main llm
 - [ ] Bug: abort command when closing tab in output tool window
 - [ ] Feature: add tests for changes
-- [x] Bug: make git doc generation create docs outside of tmp dir
-- [x] Feature: configurable plan folder
 - [ ] Feature: context view file ending options
-- [x] Bug: auto continue plan feature continues twice
 - [ ] Feature: scratch file support with aider subtree only (scratch files need to be moved?)
 - [ ] Feature: extend todo tool context menu with fix action (multiselect)
 - [ ] Feature: give clipboard images a name when pasting (optional)
 - [ ] Feature: rename file should update persistent files (if used)
-- [ ] bug: fix copy paste with keyboard shortcuts in markdown viewer 
+- [ ] Feature: Consistent Model and API Key Management
+  - [ ] Streamline custom aider model/ api key setup
+
+## Prio Features
+- [ ] Feature: scratchpad feature for clipboard content and or temporary files outside aider working directory
+    (reuse intellij scratchpad feature)
+
+## Before Release
+
+- [ ] bug: fix copy paste with keyboard shortcuts in markdown viewer
+- [ ] Bug: aiderignore not used for every action
+- [ ] Bug: automatic plan continuation fails to detect plan end properly
+- [ ] Bug: Continue Plan doesn't properly register when plan ended
+- [ ] Bug: "Error executing Aider command: null" when aborting command
+    - [ ] in case of command abortion, make sure to keep output content of the command visible.
