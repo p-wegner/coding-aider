@@ -1,12 +1,11 @@
 package de.andrena.codingaider.services
 
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import de.andrena.codingaider.command.FileData
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
-import java.io.File
 import java.net.HttpURLConnection
+import java.net.URI
 import java.net.URL
 
 class McpServerServiceTest : BasePlatformTestCase() {
@@ -45,7 +44,7 @@ class McpServerServiceTest : BasePlatformTestCase() {
         delay(1000) // Give server time to start
         
         val port = mcpServerService.getServerPort()
-        val url = URL("http://localhost:$port/health")
+        val url = toUrl("http://localhost:$port/health")
         val connection = url.openConnection() as HttpURLConnection
         
         try {
@@ -66,7 +65,7 @@ class McpServerServiceTest : BasePlatformTestCase() {
         delay(1000) // Give server time to start
         
         val port = mcpServerService.getServerPort()
-        val url = URL("http://localhost:$port/status")
+        val url = toUrl("http://localhost:$port/status")
         val connection = url.openConnection() as HttpURLConnection
         
         try {
@@ -81,4 +80,6 @@ class McpServerServiceTest : BasePlatformTestCase() {
             connection.disconnect()
         }
     }
+
+    private fun toUrl(str: String): URL = URI.create(str).toURL()
 }
