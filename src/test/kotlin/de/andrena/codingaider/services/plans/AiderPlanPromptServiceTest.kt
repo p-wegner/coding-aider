@@ -1,42 +1,40 @@
 package de.andrena.codingaider.services.plans
 
-import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
-import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import com.intellij.testFramework.fixtures.IdeaProjectTestFixture
-import com.intellij.testFramework.fixtures.IdeaTestFixtureFactory
-import com.intellij.testFramework.registerServiceInstance
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.inputdialog.AiderMode
+import de.andrena.codingaider.settings.AiderProjectSettings
 import de.andrena.codingaider.settings.AiderSettings
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 
-class AiderPlanPromptServiceTest : BasePlatformTestCase() {
+class AiderPlanPromptServiceTest {
 
     private lateinit var planPromptService: AiderPlanPromptService
-    private lateinit var myProjectFixture: IdeaProjectTestFixture
-    private val myProject: Project get() = myProjectFixture.project
     private lateinit var mockSettings: AiderSettings
+    private lateinit var mockProject: Project
     private lateinit var commandData: CommandData
     private val projectPath = "/project"
 
     @BeforeEach
-    fun mySetup() {
-        myProjectFixture = IdeaTestFixtureFactory.getFixtureFactory().createFixtureBuilder(getTestName(false)).fixture
-        myProjectFixture.setUp()
-        
-        // Mock settings as application service
+    fun setUp() {
+        mockProject = mock()
         mockSettings = mock()
-        val application = ApplicationManager.getApplication()
-        application.registerServiceInstance(AiderSettings::class.java, mockSettings)
-        
+        whenever(mockProject.getService(AiderProjectSettings::class.java)).thenReturn(mock())
+        whenever(mockProject.getService(AiderSettings::class.java)).thenReturn(mockSettings)
+        whenever(mockProject.getService(AiderPlanService::class.java)).thenReturn(AiderPlanService(mockProject))
+        whenever(mockProject.getService(AiderPlanPromptService::class.java)).thenReturn(
+            AiderPlanPromptService(
+                mockProject
+            )
+        )
         // Initialize service
-        planPromptService = AiderPlanPromptService(myProject)
+        planPromptService = AiderPlanPromptService(mockProject)
         
         // Default command data
         commandData = CommandData(

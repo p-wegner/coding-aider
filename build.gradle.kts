@@ -50,7 +50,7 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.25.3")
     testImplementation("org.mockito:mockito-core:5.14.2")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
+//    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
 
     intellijPlatform {
         testFramework(TestFrameworkType.Platform)

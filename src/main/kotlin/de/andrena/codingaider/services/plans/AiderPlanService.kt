@@ -11,7 +11,7 @@ import java.time.LocalDateTime
 
 
 @Service(Service.Level.PROJECT)
-class AiderPlanService(private val project: Project) {
+open class AiderPlanService(private val project: Project) {
     companion object {
         const val AIDER_PLAN_MARKER = "[Coding Aider Plan]"
         const val AIDER_PLAN_CHECKLIST_MARKER = "[Coding Aider Plan - Checklist]"
@@ -345,7 +345,7 @@ class AiderPlanService(private val project: Project) {
         return nextLine.indentationLevel() > parentIndent && isChecklistItem(nextLine)
     }
 
-    fun createAiderPlanSystemPrompt(commandData: CommandData): String =
+    open fun createAiderPlanSystemPrompt(commandData: CommandData): String =
         project.service<AiderPlanPromptService>().createAiderPlanSystemPrompt(commandData)
 
 

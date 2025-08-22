@@ -5,6 +5,7 @@ import com.intellij.openapi.components.PersistentStateComponent
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.State
 import com.intellij.openapi.components.Storage
+import com.intellij.openapi.project.Project
 import de.andrena.codingaider.utils.ApiKeyManager
 
 @Service(Service.Level.APP)
@@ -71,8 +72,13 @@ class CustomLlmProviderService : PersistentStateComponent<CustomLlmProviderServi
 
 
     companion object {
-        fun getInstance(): CustomLlmProviderService =
-            ApplicationManager.getApplication().getService(CustomLlmProviderService::class.java)
+        fun getInstance(project: Project?): CustomLlmProviderService {
+            return if (project != null) {
+                project.getService(CustomLlmProviderService::class.java)
+            } else {
+                ApplicationManager.getApplication().getService(CustomLlmProviderService::class.java)
+            }
 
+        }
     }
 }

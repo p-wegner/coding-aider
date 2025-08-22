@@ -16,12 +16,9 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
     abstract fun cleanupAfterExecution()
     fun buildCommonArgs(commandData: CommandData, settings: AiderSettings): MutableList<String> {
         return buildList {
-            // Check if plugin-based edits is enabled
-            val isPluginBasedEdits = settings.pluginBasedEdits
-
             // Handle model selection based on provider type
             if (commandData.llm.isNotEmpty()) {
-                val customProvider = CustomLlmProviderService.Companion.getInstance().getProvider(commandData.llm)
+                val customProvider = CustomLlmProviderService.Companion.getInstance(project).getProvider(commandData.llm)
                 if (customProvider != null) {
                     // Handle model name based on provider type
                     add("--model")

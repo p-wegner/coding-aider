@@ -41,7 +41,7 @@ class AiderOptionsPanel(
         preferredSize = Dimension(200, preferredSize.height)
     }
 
-    private val customProviderService = CustomLlmProviderService.getInstance()
+    private val customProviderService = CustomLlmProviderService.getInstance(null)
     private val defaultProviderService = service<DefaultProviderSettings>()
     private val customProviderListener: () -> Unit = { updateLlmOptions() }
     private val defaultProviderListener: () -> Unit = { updateLlmOptions() }

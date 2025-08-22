@@ -23,7 +23,7 @@ class AiderSettingsConfigurable : Configurable {
     private val tabsDisposable: Disposable = Disposer.newDisposable()
     private val tabsComponent = JBEditorTabs(null, tabsDisposable)
     private val settings = AiderSettings.getInstance()
-    private val customProviderService = CustomLlmProviderService.getInstance()
+    private val customProviderService = CustomLlmProviderService.getInstance(null)
 
     // Tab panels
     private val setupPanel = AiderSetupPanel(apiKeyChecker) { useDockerAider ->

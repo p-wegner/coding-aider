@@ -21,7 +21,7 @@ class AiderPlanPromptService(private val project: Project) {
     }
 
     fun createPlanRefinementPrompt(plan: AiderPlan, refinementRequest: String): String {
-        val settings = service<AiderSettings>()
+        val settings = project.service<AiderSettings>()
         val subplanGuidance = if (settings.enableSubplans) {
             "Consider whether to use subplans for complex parts.\n${templates.subplanGuidancePrompt}"
         } else {
@@ -101,7 +101,7 @@ $STRUCTURED_MODE_MESSAGE_MARKER ${commandData.message} $STRUCTURED_MODE_MESSAGE_
                 templates.getExistingPlanPrompt(relativePlanPath)
                     .replace("the project path", projectPath)
             }
-            ?: templates.getNewPlanPrompt(service<AiderSettings>().enableSubplans)
+            ?: templates.getNewPlanPrompt(project.service<AiderSettings>().enableSubplans)
     }
 
     private fun String.trimStartingWhiteSpaces() = trimIndent().trimStart { it.isWhitespace() }

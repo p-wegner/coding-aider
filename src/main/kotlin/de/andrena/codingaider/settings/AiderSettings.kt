@@ -10,7 +10,7 @@ import de.andrena.codingaider.inputdialog.AiderMode
     name = "de.andrena.codingaider.settings.AiderSettings",
     storages = [Storage("AiderSettings.xml", roamingType = RoamingType.DISABLED)]
 )
-class AiderSettings : PersistentStateComponent<AiderSettings.State> {
+open class AiderSettings : PersistentStateComponent<AiderSettings.State> {
     private val settingsChangeListeners = mutableListOf<() -> Unit>()
 
     fun addSettingsChangeListener(listener: () -> Unit) {
@@ -148,7 +148,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
             myState.enableDocumentationLookup = value
         }
         
-    var enableSubplans: Boolean
+    open var enableSubplans: Boolean
         get() = myState.enableSubplans
         set(value) {
             myState.enableSubplans = value

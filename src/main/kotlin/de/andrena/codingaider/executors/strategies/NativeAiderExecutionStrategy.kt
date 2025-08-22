@@ -33,7 +33,7 @@ class NativeAiderExecutionStrategy(
     ) {
         val environment = processBuilder.environment()
 
-        val customProvider = CustomLlmProviderService.Companion.getInstance().getProvider(commandData.llm)
+        val customProvider = CustomLlmProviderService.Companion.getInstance(project).getProvider(commandData.llm)
         when {
             customProvider != null -> {
                 // Set provider-specific environment variables

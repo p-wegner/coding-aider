@@ -11,7 +11,7 @@ import com.intellij.ui.components.JBScrollPane
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
 
 class CustomLlmProviderDialog : DialogWrapper(null) {
-    private val providerService = CustomLlmProviderService.getInstance()
+    private val providerService = CustomLlmProviderService.getInstance(null)
     private val providersListModel = DefaultListModel<String>()
     private val providersList = JBList(providersListModel).apply {
         selectionMode = ListSelectionModel.SINGLE_SELECTION
