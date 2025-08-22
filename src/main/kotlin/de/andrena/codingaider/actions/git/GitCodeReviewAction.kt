@@ -6,6 +6,7 @@ import com.intellij.notification.NotificationType
 import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
+import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vcs.VcsException
 import com.intellij.openapi.vfs.LocalFileSystem
@@ -13,6 +14,7 @@ import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.CommandOptions
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.executors.api.IDEBasedExecutor
+import de.andrena.codingaider.services.AiderIgnoreService
 import de.andrena.codingaider.services.FileDataCollectionService
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.utils.GitDiffUtils
@@ -123,8 +125,11 @@ ${diffResult?.diffContent ?: "No diff content available"}
                     .collectAllFiles(changedVirtualFiles, true)
                     .toMutableList()
 
-                // Add the diff file with read-only flag
-                allFiles.add(FileData(diffFile.absolutePath, true))
+                // Add the diff file with read-only flag (only if not ignored)
+                val aiderIgnoreService = project.service<AiderIgnoreService>()
+                if (!aiderIgnoreService.isIgnored(diffFile.absolutePath)) {
+                    allFiles.add(FileData(diffFile.absolutePath, true))
+                }
 
                 val commandData = CommandData(
                     message = """Review the code changes between Git refs '$fromRef' and '$toRef'.

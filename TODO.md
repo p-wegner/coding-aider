@@ -38,9 +38,9 @@
 
 ## Before Release
 
-- [ ] bug: fix copy paste with keyboard shortcuts in markdown viewer
-- [ ] Bug: aiderignore not used for every action
-- [ ] Bug: automatic plan continuation fails to detect plan end properly
-- [ ] Bug: Continue Plan doesn't properly register when plan ended
-- [ ] Bug: "Error executing Aider command: null" when aborting command
-    - [ ] in case of command abortion, make sure to keep output content of the command visible.
+- [x] bug: fix copy paste with keyboard shortcuts in markdown viewer
+- [x] Bug: aiderignore not used for every action
+- [x] Bug: automatic plan continuation fails to detect plan end properly
+- [x] Bug: Continue Plan doesn't properly register when plan ended
+- [x] Bug: "Error executing Aider command: null" when aborting command
+    - [x] in case of command abortion, make sure to keep output content of the command visible.

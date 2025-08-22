@@ -10,7 +10,7 @@ import de.andrena.codingaider.inputdialog.AiderMode
     name = "de.andrena.codingaider.settings.AiderSettings",
     storages = [Storage("AiderSettings.xml", roamingType = RoamingType.DISABLED)]
 )
-open class AiderSettings : PersistentStateComponent<AiderSettings.State> {
+class AiderSettings : PersistentStateComponent<AiderSettings.State> {
     private val settingsChangeListeners = mutableListOf<() -> Unit>()
 
     fun addSettingsChangeListener(listener: () -> Unit) {
@@ -148,7 +148,7 @@ open class AiderSettings : PersistentStateComponent<AiderSettings.State> {
             myState.enableDocumentationLookup = value
         }
         
-    open var enableSubplans: Boolean
+    var enableSubplans: Boolean
         get() = myState.enableSubplans
         set(value) {
             myState.enableSubplans = value
@@ -334,11 +334,6 @@ open class AiderSettings : PersistentStateComponent<AiderSettings.State> {
             myState.planCompletionCheckDelay = value
         }
 
-    var planCompletionMaxRetries: Int
-        get() = myState.planCompletionMaxRetries
-        set(value) {
-            myState.planCompletionMaxRetries = value
-        }
 
     var enablePlanCompletionLogging: Boolean
         get() = myState.enablePlanCompletionLogging

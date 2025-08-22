@@ -31,7 +31,23 @@ class ActivePlanService(private val project: Project) {
 
     fun refreshActivePlan() {
         activePlan = activePlan?.mainPlanFile?.let { mainFile ->
-            project.service<AiderPlanService>().loadPlanFromFile(File(mainFile.filePath))
+            val file = File(mainFile.filePath)
+            // Force filesystem refresh to ensure we see latest changes
+            LocalFileSystem.getInstance().findFileByPath(file.absolutePath)?.refresh(false, false)
+            project.service<AiderPlanService>().loadPlanFromFile(file)
+        }
+    }
+
+    private fun refreshPlanFiles() {
+        activePlan?.let { plan ->
+            // Refresh all plan-related files to ensure we see the latest changes
+            plan.allFiles.forEach { fileData ->
+                LocalFileSystem.getInstance().findFileByPath(fileData.filePath)?.refresh(false, false)
+            }
+            
+            // Also refresh the plan directory itself
+            val planDir = File(project.basePath, project.service<AiderPlanService>().getAiderPlansFolder())
+            LocalFileSystem.getInstance().findFileByPath(planDir.absolutePath)?.refresh(false, true)
         }
     }
 
@@ -56,10 +72,13 @@ class ActivePlanService(private val project: Project) {
 
         // Add proper timing with delayed execution to ensure file system operations complete
         ApplicationManager.getApplication().invokeLater {
-            // Wait for file system refresh to complete
-            Thread.sleep(settings.planCompletionCheckDelay.toLong())
-            
             try {
+                // Wait for file system refresh to complete
+                Thread.sleep(settings.planCompletionCheckDelay.toLong())
+                
+                // Force a comprehensive filesystem refresh for all plan files
+                refreshPlanFiles()
+                
                 refreshActivePlan()
                 checkAndContinuePlanIfEnabled()
             } catch (e: Exception) {
@@ -170,27 +189,42 @@ class ActivePlanService(private val project: Project) {
     private fun validatePlanState() {
         val plan = activePlan ?: throw IllegalStateException("No active plan found to continue")
 
-        if (plan.isPlanComplete()) {
+        // Force refresh to ensure we have the latest plan state
+        refreshActivePlan()
+        val refreshedPlan = activePlan ?: throw IllegalStateException("Active plan was lost during refresh")
+
+        if (refreshedPlan.isPlanComplete()) {
             // Check for uncompleted child or sibling plans
-            val nextPlans = plan.getNextUncompletedPlansInSameFamily()
+            val nextPlans = refreshedPlan.getNextUncompletedPlansInSameFamily()
             if (nextPlans.isNotEmpty()) {
+                if (AiderSettings.getInstance().enablePlanCompletionLogging) {
+                    logger.info("Current plan complete, switching to next plan: ${nextPlans.first().id}")
+                }
                 setActivePlan(nextPlans.first()) // Set the first uncompleted plan as active
             } else {
+                if (AiderSettings.getInstance().enablePlanCompletionLogging) {
+                    logger.info("All plans in hierarchy complete, clearing active plan")
+                }
                 clearActivePlan()
                 throw IllegalStateException("All plans in hierarchy are complete - no further actions needed")
             }
         }
 
-        if (plan.checklist.isEmpty()) {
+        val currentActivePlan = activePlan ?: throw IllegalStateException("No active plan after validation")
+        
+        if (currentActivePlan.checklist.isEmpty()) {
             throw IllegalStateException("Plan has no checklist items")
         }
 
-        val openItems = plan.openChecklistItems()
+        val openItems = currentActivePlan.openChecklistItems()
         if (openItems.isEmpty()) {
             // If current plan has no open items but isn't complete, it might have uncompleted child plans
-            if (!plan.isPlanComplete()) {
-                val nextPlan = plan.getNextUncompletedPlansInSameFamily().firstOrNull()
+            if (!currentActivePlan.isPlanComplete()) {
+                val nextPlan = currentActivePlan.getNextUncompletedPlansInSameFamily().firstOrNull()
                 if (nextPlan != null) {
+                    if (AiderSettings.getInstance().enablePlanCompletionLogging) {
+                        logger.info("No open items in current plan, switching to next plan: ${nextPlan.id}")
+                    }
                     setActivePlan(nextPlan)
                 } else {
                     throw IllegalStateException("Inconsistent plan state: no open items but plan is not complete")

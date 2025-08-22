@@ -6,12 +6,13 @@ import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.model.ContextFileHandler
+import de.andrena.codingaider.services.AiderIgnoreService
 import java.io.File
 import java.time.LocalDateTime
 
 
 @Service(Service.Level.PROJECT)
-open class AiderPlanService(private val project: Project) {
+class AiderPlanService(private val project: Project) {
     companion object {
         const val AIDER_PLAN_MARKER = "[Coding Aider Plan]"
         const val AIDER_PLAN_CHECKLIST_MARKER = "[Coding Aider Plan - Checklist]"
@@ -161,13 +162,14 @@ open class AiderPlanService(private val project: Project) {
     }
 
     fun getContextFilesForPlans(files: List<FileData>): List<FileData> {
+        val aiderIgnoreService = project.service<AiderIgnoreService>()
         return project.service<AiderPlanPromptService>().filterPlanRelevantFiles(files)
             .filter { it.filePath.endsWith("_context.yaml") }
             .flatMap { file ->
                 val contextFile = File(file.filePath)
                 parseContextYaml(contextFile).mapNotNull {
                     val filePath = File(project.basePath, it.filePath)
-                    if (filePath.exists()) {
+                    if (filePath.exists() && !aiderIgnoreService.isIgnored(filePath.absolutePath)) {
                         FileData(filePath.absolutePath, it.isReadOnly)
                     } else null
                 }
@@ -215,22 +217,30 @@ open class AiderPlanService(private val project: Project) {
                 it.description.trim()
             }
 
-            // Include plan, checklist and context files in the files list
-            val files = mutableListOf(FileData(file.absolutePath, false))
-            if (checklistFile.exists()) {
+            // Include plan, checklist and context files in the files list (filtering with aiderignore)
+            val aiderIgnoreService = project.service<AiderIgnoreService>()
+            val files = mutableListOf<FileData>()
+            
+            // Add main plan file if not ignored
+            if (!aiderIgnoreService.isIgnored(file.absolutePath)) {
+                files.add(FileData(file.absolutePath, false))
+            }
+            
+            // Add checklist file if exists and not ignored
+            if (checklistFile.exists() && !aiderIgnoreService.isIgnored(checklistFile.absolutePath)) {
                 files.add(FileData(checklistFile.absolutePath, false))
             }
 
             // Look for associated context file
             val contextFile = File(plansDir, "${file.nameWithoutExtension}_context.yaml")
-            val contextFiles = if (contextFile.exists()) {
+            val contextFiles = if (contextFile.exists() && !aiderIgnoreService.isIgnored(contextFile.absolutePath)) {
                 files.add(FileData(contextFile.absolutePath, false))
                 parseContextYaml(contextFile)
             } else emptyList()
 
             // Look for associated history file
             val historyFile = File(plansDir, "${file.nameWithoutExtension}_history.md")
-            if (historyFile.exists()) {
+            if (historyFile.exists() && !aiderIgnoreService.isIgnored(historyFile.absolutePath)) {
                 files.add(FileData(historyFile.absolutePath, false))
             }
 
@@ -345,7 +355,7 @@ open class AiderPlanService(private val project: Project) {
         return nextLine.indentationLevel() > parentIndent && isChecklistItem(nextLine)
     }
 
-    open fun createAiderPlanSystemPrompt(commandData: CommandData): String =
+    fun createAiderPlanSystemPrompt(commandData: CommandData): String =
         project.service<AiderPlanPromptService>().createAiderPlanSystemPrompt(commandData)
 
 

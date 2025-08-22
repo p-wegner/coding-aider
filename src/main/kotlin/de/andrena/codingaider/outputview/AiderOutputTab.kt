@@ -229,6 +229,26 @@ class AiderOutputTab(
     private fun getCurrentMarkdownContent(): String {
         return currentMarkdownContent
     }
+    
+    fun appendMessage(message: String) {
+        if (isDisposed.get()) return
+        
+        SwingUtilities.invokeLater {
+            try {
+                val updatedContent = currentMarkdownContent + message
+                currentMarkdownContent = updatedContent
+                markdownViewer.setMarkdown(updatedContent)
+                
+                // Auto-scroll to bottom if enabled
+                if (autoScrollCheckbox.isSelected) {
+                    markdownViewer.scrollToBottom()
+                }
+            } catch (e: Exception) {
+                // Handle any errors gracefully
+                e.printStackTrace()
+            }
+        }
+    }
 
     fun dispose() {
         if (isDisposed.getAndSet(true)) return

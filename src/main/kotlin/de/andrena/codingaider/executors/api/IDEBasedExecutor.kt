@@ -110,7 +110,20 @@ ${if (commandData.llm.isNotEmpty()) "**LLM:** ${commandData.llm}" else ""}
             executor.executeCommand()
         } catch (e: Exception) {
             log.error("Error executing Aider command", e)
-            updateOutputProgress("Error executing Aider command: ${e.message}", "Aider Command Error")
+            val errorMessage = when {
+                e is InterruptedException -> "Command was interrupted"
+                e.message.isNullOrBlank() -> "Command execution failed"
+                else -> e.message!!
+            }
+            
+            // Don't overwrite existing content, just append error message
+            if (e is InterruptedException) {
+                // For interruptions (aborts), we want to preserve existing content
+                appendErrorMessage("Command was interrupted by user")
+            } else {
+                // For other errors, show the error message
+                updateOutputProgress("Error executing Aider command: $errorMessage", "Aider Command Error")
+            }
         }
     }
 
@@ -118,7 +131,10 @@ ${if (commandData.llm.isNotEmpty()) "**LLM:** ${commandData.llm}" else ""}
         try {
             commandExecutor.get()?.abortCommand(planId)
             executionThread?.interrupt()
-            updateOutputProgress("Aider command aborted by user", "Aider Command Aborted")
+            
+            // Preserve existing content and append abort message
+            appendErrorMessage("Command aborted by user")
+            
             val outputService = project.service<AiderOutputService>()
             outputDisplay?.let { outputService.setProcessFinished(it) }
             
@@ -127,19 +143,20 @@ ${if (commandData.llm.isNotEmpty()) "**LLM:** ${commandData.llm}" else ""}
                 project.service<RunningCommandService>().removeRunningCommand(outputDisplay as AiderOutputTab)
             }
             
-            Thread.sleep(500)
-            ApplicationManager.getApplication().invokeLater {
-                if (outputDisplay is AiderOutputTab) {
-                    (outputDisplay as AiderOutputTab).dispose()
-                }
-            }
             isFinished.countDown()
         } catch (e: Exception) {
             log.error("Error during abort", e)
+            val errorMessage = when {
+                e.message.isNullOrBlank() -> "Unknown error during command abort"
+                else -> e.message!!
+            }
+            
+            // For serious errors during abort, we can overwrite
+            updateOutputProgress("Error during abort: $errorMessage", "Abort Error")
+            
             ApplicationManager.getApplication().invokeLater {
-                if (outputDisplay is AiderOutputTab) {
-                    (outputDisplay as AiderOutputTab).dispose()
-                }
+                val outputService = project.service<AiderOutputService>()
+                outputDisplay?.let { outputService.setProcessFinished(it) }
             }
         }
     }
@@ -166,6 +183,16 @@ ${if (commandData.llm.isNotEmpty()) "**LLM:** ${commandData.llm}" else ""}
             if (outputDisplay == null) return@invokeLater
             val outputService = project.service<AiderOutputService>()
             outputService.updateProgress(outputDisplay!!, message, title)
+        }
+    }
+    
+    private fun appendErrorMessage(message: String) {
+        ApplicationManager.getApplication().invokeLater {
+            if (outputDisplay is AiderOutputTab) {
+                val tab = outputDisplay as AiderOutputTab
+                // Append the error message to existing content instead of replacing
+                tab.appendMessage("\n\n---\n\n## ⚠️ Command Status\n\n$message")
+            }
         }
     }
 

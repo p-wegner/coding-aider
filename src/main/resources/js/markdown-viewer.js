@@ -11,12 +11,39 @@ const panelStates = {};
 function initMarkdownViewer() {
     console.log('Markdown viewer JavaScript loaded');
     initCollapsiblePanels();
+    initCopyPasteSupport();
 }
 
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initMarkdownViewer);
 } else {
     initMarkdownViewer();
+}
+
+/**
+ * Initialize copy/paste support for the markdown viewer
+ */
+function initCopyPasteSupport() {
+    // Allow text selection and copy operations
+    document.addEventListener('keydown', function(event) {
+        // Allow Ctrl+C, Ctrl+A, Ctrl+V, and other standard shortcuts
+        if (event.ctrlKey || event.metaKey) {
+            // Don't prevent default for copy/paste/select operations
+            if (event.key === 'c' || event.key === 'a' || event.key === 'v' || 
+                event.key === 'x' || event.key === 'z' || event.key === 'y') {
+                // Allow these standard shortcuts to work normally
+                return true;
+            }
+        }
+    }, false);
+    
+    // Ensure text selection works properly
+    document.addEventListener('selectstart', function(event) {
+        // Don't prevent text selection unless we're updating content
+        if (isUpdatingContent) {
+            event.preventDefault();
+        }
+    }, false);
 }
 
 
@@ -114,8 +141,11 @@ function handlePanelClick(event) {
  * Handle keyboard events on panel headers
  */
 function handlePanelKeydown(event) {
-    if (event.key === 'Enter' || event.key === ' ') {
+    // Only handle Enter and Space when the header is focused
+    // Don't interfere with copy/paste or other shortcuts
+    if ((event.key === 'Enter' || event.key === ' ') && event.target === this) {
         event.preventDefault();
+        event.stopPropagation();
         togglePanel(this.parentElement);
     }
 }
