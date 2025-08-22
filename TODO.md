@@ -34,6 +34,7 @@
 ## Prio Features
 - [ ] Feature: scratchpad feature for clipboard content and or temporary files outside aider working directory
     (reuse intellij scratchpad feature)
+- [ ] plan style: - minimal, - medium, - full (custom prd template?)
 
 ## Before Release
 
