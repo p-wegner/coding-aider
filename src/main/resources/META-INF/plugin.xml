@@ -128,7 +128,11 @@
             <add-to-group group-id="MainMenu" anchor="last"/>
             <add-to-group group-id="MainToolBar" anchor="last"/>
         </action>
-
+        <action id="de.andrena.codingaider.actions.ide.CopyToScratchAction"
+                class="de.andrena.codingaider.actions.ide.CopyToScratchAction"
+                text="Copy to Scratch"
+                description="Copy selected files to scratch folder">
+        </action>
         <group id="de.andrena.codingaider.AiderActionGroup" text="Aider Actions" popup="true"
                icon="AllIcons.Actions.ListFiles">
             <add-to-group group-id="ProjectViewPopupMenu" anchor="last"/>
