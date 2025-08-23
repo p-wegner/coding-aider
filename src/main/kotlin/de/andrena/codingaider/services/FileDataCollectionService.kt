@@ -3,11 +3,13 @@ package de.andrena.codingaider.services
 import com.intellij.openapi.components.Service
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileTraversal
+import de.andrena.codingaider.utils.ScratchFileUtils
 
 @Service(Service.Level.PROJECT)
 class FileDataCollectionService(private val project: Project) {
@@ -21,7 +23,14 @@ class FileDataCollectionService(private val project: Project) {
         includePersistentFiles: Boolean = true
     ): List<FileData> {
         val traversedFiles = FileTraversal.traverseFilesOrDirectories(files)
-            .filterNot { aiderIgnoreService.isIgnored(it.filePath) }
+            .filterNot { fileData ->
+                // Allow scratch files even if they match aiderignore patterns
+                val virtualFile = LocalFileSystem.getInstance().findFileByPath(fileData.filePath)
+                val isScratchFile = virtualFile?.let { ScratchFileUtils.isScratchFile(it) } 
+                    ?: ScratchFileUtils.isScratchFileByPath(fileData.filePath)
+                
+                !isScratchFile && aiderIgnoreService.isIgnored(fileData.filePath)
+            }
             .toMutableList()
             
         if (includePersistentFiles) {
@@ -35,7 +44,12 @@ class FileDataCollectionService(private val project: Project) {
     }
     
     fun isIgnored(filePath: String): Boolean {
-        return aiderIgnoreService.isIgnored(filePath)
+        // Scratch files should never be considered ignored, even if they match aiderignore patterns
+        val virtualFile = LocalFileSystem.getInstance().findFileByPath(filePath)
+        val isScratchFile = virtualFile?.let { ScratchFileUtils.isScratchFile(it) } 
+            ?: ScratchFileUtils.isScratchFileByPath(filePath)
+            
+        return !isScratchFile && aiderIgnoreService.isIgnored(filePath)
     }
 
     private fun normalizePath(path: String): String = path.replace('\\', '/').replace("//", "/")
