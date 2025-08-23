@@ -42,15 +42,6 @@ class FileDataCollectionService(private val project: Project) {
 
         return traversedFiles.distinctBy { normalizePath(it.filePath) }
     }
-    
-    fun isIgnored(filePath: String): Boolean {
-        // Scratch files should never be considered ignored, even if they match aiderignore patterns
-        val virtualFile = LocalFileSystem.getInstance().findFileByPath(filePath)
-        val isScratchFile = virtualFile?.let { ScratchFileUtils.isScratchFile(it) } 
-            ?: ScratchFileUtils.isScratchFileByPath(filePath)
-            
-        return !isScratchFile && aiderIgnoreService.isIgnored(filePath)
-    }
 
     private fun normalizePath(path: String): String = path.replace('\\', '/').replace("//", "/")
 
