@@ -18,6 +18,14 @@ Each plan requires three files with consistent naming (feature_name as base):
 3. feature_name_context.yaml - Lists required implementation files
     """.trimIndent()
 
+    val singleFilePlanStructurePrompt = """
+Plan uses a single markdown file (feature_name.md) containing:
+1. Plan overview with sections: Overview, Problem Description, Goals, Additional Notes
+2. Embedded checklist section with - [ ] checkboxes for progress tracking  
+3. Embedded context section listing implementation files in YAML format
+4. All content in one file for simplified management
+    """.trimIndent()
+
     val subplanGuidancePrompt = """
 Subplan Requirements:
 1. Name format: mainplan_subfeature (e.g. authentication_login)
@@ -37,6 +45,28 @@ Subplan Requirements:
 6. Ensure the main plan checklist properly delegates actual implementation to the subplans
 7. Ensure the main plan references all subplans
 8. Only create subplans if necessary
+    """.trimIndent()
+
+    val singleFileSubplanGuidancePrompt = """
+Single-File Subplan Requirements:
+1. Name format: mainplan_subfeature (e.g. authentication_login)
+2. Create single markdown file per subplan: mainplan_subfeature.md
+3. Each subplan file contains:
+   - Plan content with embedded checklist section
+   - Embedded context YAML section
+   - Original creation prompt stored as HTML comment
+4. Reference format in main plan:
+   <!-- SUBPLAN:mainplan_subfeature -->
+   [Subplan: Subfeature Name](mainplan_subfeature.md)
+   <!-- END_SUBPLAN -->
+5. Add to main checklist: - [ ] Complete subfeature implementation
+6. Subplan checklists need:
+   - Atomic tasks with - [ ] checkboxes
+   - Implementation-specific details
+   - Clear dependency markers
+7. Ensure the main plan checklist properly delegates actual implementation to the subplans
+8. Ensure the main plan references all subplans
+9. Only create subplans if necessary
     """.trimIndent()
 
     val noSubplansGuidancePrompt =
@@ -65,6 +95,29 @@ File Requirements:
 ```
 """
 
+    val singleFilePlanFormatPrompt = """
+Single-file plans are located in ${planService.getAiderPlansFolder()}:
+
+File Format (feature_name.md):
+1. Start with $AIDER_PLAN_MARKER
+2. Plan content with sections: Overview, Problem Description, Goals, Additional Notes
+3. Checklist section starting with $AIDER_PLAN_CHECKLIST_MARKER
+4. Context section with embedded YAML:
+```markdown
+## Implementation Context
+```yaml
+files:
+  - path: "full/path/to/file"
+    readOnly: false
+```
+
+## Guidelines:
+- All content in one markdown file for simplified management
+- Checklist items should be atomic with - [ ] checkboxes
+- Context section contains implementation files in YAML format
+- Use markdown sections to organize content clearly
+"""
+
     fun getExistingPlanPrompt(relativePlanPath: String) = """
 A plan already exists. Continue implementing the existing plan $relativePlanPath and its checklist step by step.  
 In case subplans are referenced, continue by implementing the subplans that match the current progress of the main plan.   
@@ -74,6 +127,18 @@ New files that are not the plan and are not part of the checklist should be crea
 If no further information is given, use the project path as the location.  
 Update the plan, checklist and context.yaml as needed based on the current progress and any new requirements.  
 Important: Always keep the context.yaml up to date with your changes. If files are created or edited, add them to the context.yaml.  
+If the current instruction doesn't align with the existing plan, update the plan accordingly before proceeding.  
+    """.trimIndent()
+
+    fun getSingleFileExistingPlanPrompt(relativePlanPath: String) = """
+A single-file plan already exists. Continue implementing the existing plan $relativePlanPath and its embedded checklist step by step.  
+In case subplans are referenced, continue by implementing the subplans that match the current progress of the main plan.   
+Start implementing before updating the checklist. If no changes are done, don't update the checklist.  
+In that case inform the user why no changes were made.  
+New files should be created in a suitable location and added to the embedded context YAML section.  
+If no further information is given, use the project path as the location.  
+Update the plan content, checklist section, and embedded context YAML as needed based on current progress and new requirements.  
+Important: Always keep the embedded context YAML up to date with your changes. If files are created or edited, add them to the Implementation Context section.  
 If the current instruction doesn't align with the existing plan, update the plan accordingly before proceeding.  
     """.trimIndent()
 
@@ -106,6 +171,35 @@ Only proceed with changes after creating and committing the plan files.
 Ensure that you stick to the defined editing format when creating or editing files, e.g. only have the filepath above search blocks.
 Make sure to commit the creation of all plan files even if you think you need additional files to implement the plan.
 Don't start the implementation until the plan files are committed. Do not ask the user if he wants to proceed with the plan. Create the plan files and stop!
+    """.trimIndent()
+
+    fun getSingleFileNewPlanPrompt(enableSubplans: Boolean) = """
+No plan exists yet. Write a detailed description of the requested feature and the needed changes.
+Create a single comprehensive markdown file in the ${planService.getAiderPlansFolder()} directory with a suitable name.
+
+The file should contain:
+1. Plan sections: ## Overview, ## Problem Description, ## Goals, ## Additional Notes and Constraints, ## References  
+2. ## Checklist section with implementation tasks using - [ ] checkboxes
+3. ## Implementation Context section with embedded YAML listing all affected files
+
+${
+        if (enableSubplans) {
+            """
+Create subplans only if necessary. When creating subplans in single-file mode:
+1. Reference subplans using markdown links: [Subplan: Feature Name](subplan_file.md)
+2. Each subplan gets its own single markdown file with the same structure
+3. Keep the main plan checklist focused on delegating to subplans
+$singleFileSubplanGuidancePrompt
+"""
+        } else {
+            "Focus on creating a comprehensive checklist with atomic implementation tasks."
+        }
+    }
+
+Create one comprehensive markdown file containing all plan information.
+For the embedded context YAML, consider all provided files and include relevant implementation files.
+Only proceed with changes after creating and committing the plan file.
+Don't start the implementation until the plan file is committed. Do not ask the user if he wants to proceed with the plan. Create the plan file and stop!
     """.trimIndent()
 
     // Constants used in the templates

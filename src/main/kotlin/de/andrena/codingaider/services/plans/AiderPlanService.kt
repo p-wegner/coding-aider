@@ -191,77 +191,134 @@ class AiderPlanService(private val project: Project) {
             val content = file.readText()
             if (!content.contains(AIDER_PLAN_MARKER)) return null
 
-            // Extract plan content from the original content
-            val planContent = content.substringAfter(AIDER_PLAN_MARKER).trim()
-
-            // Process markdown references to include referenced content for checklist extraction
-            val plansDir = File(project.basePath, getAiderPlansFolder())
-            val expandedContent = processMarkdownReferences(content, plansDir)
-
-            // Get checklist items from expanded content
-            val planChecklist = extractChecklistItems(expandedContent)
-
-            // Look for associated checklist file
-            val checklistFile = File(plansDir, "${file.nameWithoutExtension}_checklist.md")
-            val checklistItems = if (checklistFile.exists()) {
-                val checklistContent = checklistFile.readText()
-                if (checklistContent.contains(AIDER_PLAN_CHECKLIST_MARKER)) {
-                    // Process references in checklist file too
-                    val expandedChecklistContent = processMarkdownReferences(checklistContent, plansDir)
-                    extractChecklistItems(expandedChecklistContent)
-                } else emptyList()
-            } else emptyList()
-
-            // Combine checklist items from both files
-            val combinedChecklist = (checklistItems + planChecklist).distinctBy {
-                it.description.trim()
-            }
-
-            // Include plan, checklist and context files in the files list (filtering with aiderignore)
-            val aiderIgnoreService = project.service<AiderIgnoreService>()
-            val files = mutableListOf<FileData>()
+            // Detect if this is a single-file plan by checking for embedded checklist marker
+            val isSingleFileFormat = content.contains(AIDER_PLAN_CHECKLIST_MARKER)
             
-            // Add main plan file if not ignored
-            if (!aiderIgnoreService.isIgnored(file.absolutePath)) {
-                files.add(FileData(file.absolutePath, false))
+            if (isSingleFileFormat) {
+                loadSingleFilePlan(file, content)
+            } else {
+                loadMultiFilePlan(file, content)
             }
-            
-            // Add checklist file if exists and not ignored
-            if (checklistFile.exists() && !aiderIgnoreService.isIgnored(checklistFile.absolutePath)) {
-                files.add(FileData(checklistFile.absolutePath, false))
-            }
-
-            // Look for associated context file
-            val contextFile = File(plansDir, "${file.nameWithoutExtension}_context.yaml")
-            val contextFiles = if (contextFile.exists() && !aiderIgnoreService.isIgnored(contextFile.absolutePath)) {
-                files.add(FileData(contextFile.absolutePath, false))
-                parseContextYaml(contextFile)
-            } else emptyList()
-
-            // Look for associated history file
-            val historyFile = File(plansDir, "${file.nameWithoutExtension}_history.md")
-            if (historyFile.exists() && !aiderIgnoreService.isIgnored(historyFile.absolutePath)) {
-                files.add(FileData(historyFile.absolutePath, false))
-            }
-
-            // Extract subplan references from the original content
-            val subplanRefs = extractSubplanReferences(content)
-            val subplans = subplanRefs.mapNotNull { subplanRef ->
-                val subplanFile = File(plansDir, subplanRef)
-                if (subplanFile.exists()) loadPlanFromFile(subplanFile) else null
-            }
-
-            AiderPlan(
-                plan = planContent,
-                checklist = combinedChecklist,
-                planFiles = files,
-                contextFiles = contextFiles,
-                childPlans = subplans
-            )
         } catch (e: Exception) {
             println("Error processing plan file ${file.name}: ${e.message}")
             null
         }
+    }
+    
+    private fun loadSingleFilePlan(file: File, content: String): AiderPlan? {
+        // Extract plan content from the original content (before checklist marker)
+        val planContent = content.substringAfter(AIDER_PLAN_MARKER).substringBefore(AIDER_PLAN_CHECKLIST_MARKER).trim()
+
+        // Process markdown references to include referenced content for checklist extraction
+        val plansDir = File(project.basePath, getAiderPlansFolder())
+        val expandedContent = processMarkdownReferences(content, plansDir)
+
+        // Extract embedded checklist items
+        val checklistContent = extractEmbeddedChecklistContent(expandedContent)
+        val combinedChecklist = extractChecklistItems(checklistContent)
+
+        // Extract embedded context files
+        val embeddedContextFiles = extractEmbeddedContextFiles(content)
+
+        // Include only the main plan file
+        val aiderIgnoreService = project.service<AiderIgnoreService>()
+        val files = mutableListOf<FileData>()
+        
+        // Add main plan file if not ignored
+        if (!aiderIgnoreService.isIgnored(file.absolutePath)) {
+            files.add(FileData(file.absolutePath, false))
+        }
+
+        // Look for associated history file
+        val historyFile = File(plansDir, "${file.nameWithoutExtension}_history.md")
+        if (historyFile.exists() && !aiderIgnoreService.isIgnored(historyFile.absolutePath)) {
+            files.add(FileData(historyFile.absolutePath, false))
+        }
+
+        // Extract subplan references from the original content
+        val subplanRefs = extractSubplanReferences(content)
+        val subplans = subplanRefs.mapNotNull { subplanRef ->
+            val subplanFile = File(plansDir, subplanRef)
+            if (subplanFile.exists()) loadPlanFromFile(subplanFile) else null
+        }
+
+        return AiderPlan(
+            plan = planContent,
+            checklist = combinedChecklist,
+            planFiles = files,
+            contextFiles = embeddedContextFiles,
+            childPlans = subplans
+        )
+    }
+
+    private fun loadMultiFilePlan(file: File, content: String): AiderPlan? {
+        // Extract plan content from the original content
+        val planContent = content.substringAfter(AIDER_PLAN_MARKER).trim()
+
+        // Process markdown references to include referenced content for checklist extraction
+        val plansDir = File(project.basePath, getAiderPlansFolder())
+        val expandedContent = processMarkdownReferences(content, plansDir)
+
+        // Get checklist items from expanded content
+        val planChecklist = extractChecklistItems(expandedContent)
+
+        // Look for associated checklist file
+        val checklistFile = File(plansDir, "${file.nameWithoutExtension}_checklist.md")
+        val checklistItems = if (checklistFile.exists()) {
+            val checklistContent = checklistFile.readText()
+            if (checklistContent.contains(AIDER_PLAN_CHECKLIST_MARKER)) {
+                // Process references in checklist file too
+                val expandedChecklistContent = processMarkdownReferences(checklistContent, plansDir)
+                extractChecklistItems(expandedChecklistContent)
+            } else emptyList()
+        } else emptyList()
+
+        // Combine checklist items from both files
+        val combinedChecklist = (checklistItems + planChecklist).distinctBy {
+            it.description.trim()
+        }
+
+        // Include plan, checklist and context files in the files list (filtering with aiderignore)
+        val aiderIgnoreService = project.service<AiderIgnoreService>()
+        val files = mutableListOf<FileData>()
+        
+        // Add main plan file if not ignored
+        if (!aiderIgnoreService.isIgnored(file.absolutePath)) {
+            files.add(FileData(file.absolutePath, false))
+        }
+        
+        // Add checklist file if exists and not ignored
+        if (checklistFile.exists() && !aiderIgnoreService.isIgnored(checklistFile.absolutePath)) {
+            files.add(FileData(checklistFile.absolutePath, false))
+        }
+
+        // Look for associated context file
+        val contextFile = File(plansDir, "${file.nameWithoutExtension}_context.yaml")
+        val contextFiles = if (contextFile.exists() && !aiderIgnoreService.isIgnored(contextFile.absolutePath)) {
+            files.add(FileData(contextFile.absolutePath, false))
+            parseContextYaml(contextFile)
+        } else emptyList()
+
+        // Look for associated history file
+        val historyFile = File(plansDir, "${file.nameWithoutExtension}_history.md")
+        if (historyFile.exists() && !aiderIgnoreService.isIgnored(historyFile.absolutePath)) {
+            files.add(FileData(historyFile.absolutePath, false))
+        }
+
+        // Extract subplan references from the original content
+        val subplanRefs = extractSubplanReferences(content)
+        val subplans = subplanRefs.mapNotNull { subplanRef ->
+            val subplanFile = File(plansDir, subplanRef)
+            if (subplanFile.exists()) loadPlanFromFile(subplanFile) else null
+        }
+
+        return AiderPlan(
+            plan = planContent,
+            checklist = combinedChecklist,
+            planFiles = files,
+            contextFiles = contextFiles,
+            childPlans = subplans
+        )
     }
 
     fun getAiderPlans(filesInPlanFolder: List<File>): List<AiderPlan> {
@@ -385,5 +442,50 @@ class AiderPlanService(private val project: Project) {
 
     private fun parseContextYaml(contextFile: File): List<FileData> =
         ContextFileHandler.readContextFile(contextFile, project.basePath.toString())
+
+    private fun extractEmbeddedChecklistContent(content: String): String {
+        val checklistStart = content.indexOf(AIDER_PLAN_CHECKLIST_MARKER)
+        if (checklistStart == -1) return ""
+        
+        // Find the end of the checklist section (before next major section or embedded YAML)
+        val checklistContent = content.substring(checklistStart + AIDER_PLAN_CHECKLIST_MARKER.length)
+        
+        // Look for the start of Implementation Context section or end of file
+        val contextSectionStart = checklistContent.indexOf("## Implementation Context")
+        val yamlStart = checklistContent.indexOf("```yaml")
+        
+        val endIndex = when {
+            contextSectionStart != -1 && yamlStart != -1 -> minOf(contextSectionStart, yamlStart)
+            contextSectionStart != -1 -> contextSectionStart
+            yamlStart != -1 -> yamlStart
+            else -> checklistContent.length
+        }
+        
+        return checklistContent.substring(0, endIndex).trim()
+    }
+
+    private fun extractEmbeddedContextFiles(content: String): List<FileData> {
+        val yamlBlockPattern = Regex("""```yaml\s*\n(.*?)\n```""", RegexOption.DOT_MATCHES_ALL)
+        val matches = yamlBlockPattern.findAll(content)
+        
+        for (match in matches) {
+            val yamlContent = match.groupValues[1]
+            if (yamlContent.contains("files:") || yamlContent.contains("path:")) {
+                return try {
+                    // Create a temporary file to parse the YAML content
+                    val tempFile = kotlin.io.path.createTempFile(suffix = ".yaml").toFile()
+                    tempFile.writeText("---\n$yamlContent")
+                    val result = parseContextYaml(tempFile)
+                    tempFile.delete()
+                    result
+                } catch (e: Exception) {
+                    println("Error parsing embedded YAML context: ${e.message}")
+                    emptyList()
+                }
+            }
+        }
+        
+        return emptyList()
+    }
 
 }

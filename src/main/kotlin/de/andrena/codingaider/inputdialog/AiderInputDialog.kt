@@ -421,7 +421,7 @@ class AiderInputDialog(
             else -> PROMPT_LABEL
         }
     }
-
+// TODO 24.08.2025 pwegner: also consider none persistent files for plan relevance
     private fun getStructuredModeMessageLabel(): String {
         val existingPlans =
             project.service<AiderPlanPromptService>()

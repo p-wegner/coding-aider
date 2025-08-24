@@ -137,7 +137,6 @@ class EditContextDialog(
     }
 
     private fun saveContextFiles() {
-        val contextFile = File(plan.contextYamlFile?.filePath ?: return)
         val files = mutableListOf<ContextYamlFile>()
         for (i in 0 until contextFilesListModel.size()) {
             val fileData = contextFilesListModel.getElementAt(i)
@@ -149,14 +148,52 @@ class EditContextDialog(
         }
         val contextData = ContextYamlData(files)
         val yamlMapper = ObjectMapper(YAMLFactory()).registerModule(KotlinModule.Builder().build())
-        yamlMapper.writeValue(contextFile, contextData)
-
-        // Ensure parent directory exists
-        contextFile.parentFile?.mkdirs()
+        
+        if (plan.isSingleFileFormat) {
+            // For single-file plans, update embedded YAML in the main plan file
+            saveSingleFileContext(contextData, yamlMapper)
+        } else {
+            // For multi-file plans, save to separate context.yaml file
+            val contextFile = File(plan.contextYamlFile?.filePath ?: return)
+            yamlMapper.writeValue(contextFile, contextData)
+            
+            // Ensure parent directory exists
+            contextFile.parentFile?.mkdirs()
+        }
 
         // Refresh plan viewer and update plan service
         VirtualFileManager.getInstance().refreshWithoutFileWatcher(true)
         project.getService(AiderPlanService::class.java).getAiderPlans()
+    }
+    
+    private fun saveSingleFileContext(contextData: ContextYamlData, yamlMapper: ObjectMapper) {
+        val mainPlanFile = File(plan.mainPlanFile?.filePath ?: return)
+        if (!mainPlanFile.exists()) return
+        
+        val content = mainPlanFile.readText()
+        val yamlContent = yamlMapper.writeValueAsString(contextData)
+            .removePrefix("---\n") // Remove YAML document separator
+            .trim()
+        
+        // Replace existing YAML block or add new one
+        val yamlBlockPattern = Regex("""```yaml\s*\n.*?\n```""", RegexOption.DOT_MATCHES_ALL)
+        val newYamlBlock = "```yaml\n$yamlContent\n```"
+        
+        val updatedContent = if (yamlBlockPattern.containsMatchIn(content)) {
+            yamlBlockPattern.replace(content, newYamlBlock)
+        } else {
+            // Add YAML block before any HTML comments at the end
+            val htmlCommentPattern = Regex("""(<!-- .* -->)$""", RegexOption.DOT_MATCHES_ALL)
+            if (htmlCommentPattern.containsMatchIn(content)) {
+                htmlCommentPattern.replace(content) { match ->
+                    "\n## Implementation Context\n$newYamlBlock\n\n${match.value}"
+                }
+            } else {
+                "$content\n\n## Implementation Context\n$newYamlBlock"
+            }
+        }
+        
+        mainPlanFile.writeText(updatedContent)
     }
 
     override fun createCenterPanel(): JComponent {

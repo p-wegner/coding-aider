@@ -148,7 +148,7 @@ class PlanViewer(private val project: Project) {
             actionMap.put("editContext", object : AbstractAction() {
                 override fun actionPerformed(e: ActionEvent?) {
                     val selectedPlan = selectedValue ?: return
-                    if (selectedPlan.contextYamlFile == null) {
+                    if (!selectedPlan.isSingleFileFormat && selectedPlan.contextYamlFile == null) {
                         val contextFilePath = selectedPlan.mainPlanFile?.filePath?.replace(".md", "_context.yaml")
                         if (contextFilePath != null) {
                             File(contextFilePath).createNewFile()
@@ -672,7 +672,7 @@ class PlanViewer(private val project: Project) {
 
         override fun actionPerformed(e: AnActionEvent) {
             val selectedPlan = plansList.selectedValue ?: return
-            if (selectedPlan.contextYamlFile == null) {
+            if (!selectedPlan.isSingleFileFormat && selectedPlan.contextYamlFile == null) {
                 val contextFilePath = selectedPlan.mainPlanFile?.filePath?.replace(".md", "_context.yaml")
                 if (contextFilePath != null) {
                     File(contextFilePath).createNewFile()

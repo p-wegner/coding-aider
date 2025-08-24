@@ -25,6 +25,8 @@ data class AiderPlan(
         get() = planFiles.firstOrNull { it.filePath.endsWith("_checklist.md") }
     val contextYamlFile: FileData?
         get() = planFiles.firstOrNull { it.filePath.endsWith("_context.yaml") }
+    val isSingleFileFormat: Boolean
+        get() = contextYamlFile == null && contextFiles.isNotEmpty()
 
 
     fun openChecklistItems(): List<ChecklistItem> {

@@ -17,6 +17,7 @@ class PlansDocsTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyC
     private val alwaysIncludePlanContextFilesCheckBox = JBCheckBox("Always include plan context files")
     private val enableAutoPlanContinueCheckBox = JBCheckBox("Enable automatic plan continuation")
     private val enableSubplansCheckBox = JBCheckBox("Enable subplans for complex features")
+    private val useSingleFilePlanModeCheckBox = JBCheckBox("Use single-file plan mode")
     private val enableDocumentationLookupCheckBox = JBCheckBox("Enable documentation lookup")
     private val planRefinementLlmComboBox: JComboBox<LlmSelection> = ComboBox(apiKeyChecker.getAllLlmOptions().toTypedArray())
     private val documentationLlmComboBox: JComboBox<LlmSelection> = ComboBox(apiKeyChecker.getAllLlmOptions().toTypedArray())
@@ -43,6 +44,12 @@ class PlansDocsTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyC
                     cell(enableSubplansCheckBox).applyToComponent {
                         toolTipText =
                             "If enabled, complex features will be broken down into subplans. Disable for simpler, single-file plans."
+                    }
+                }
+                row {
+                    cell(useSingleFilePlanModeCheckBox).applyToComponent {
+                        toolTipText =
+                            "When enabled, creates plans as single markdown files with embedded checklist and context instead of separate files"
                     }
                 }
                 row("Plan Refinement LLM Model:") {
@@ -76,6 +83,7 @@ class PlansDocsTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyC
         settings.alwaysIncludePlanContextFiles = alwaysIncludePlanContextFilesCheckBox.isSelected
         settings.enableAutoPlanContinue = enableAutoPlanContinueCheckBox.isSelected
         settings.enableSubplans = enableSubplansCheckBox.isSelected
+        settings.useSingleFilePlanMode = useSingleFilePlanModeCheckBox.isSelected
         settings.enableDocumentationLookup = enableDocumentationLookupCheckBox.isSelected
         settings.planRefinementLlm = planRefinementLlmComboBox.selectedItem.asSelectedItemName()
         settings.documentationLlm = documentationLlmComboBox.selectedItem.asSelectedItemName()
@@ -85,6 +93,7 @@ class PlansDocsTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyC
         alwaysIncludePlanContextFilesCheckBox.isSelected = settings.alwaysIncludePlanContextFiles
         enableAutoPlanContinueCheckBox.isSelected = settings.enableAutoPlanContinue
         enableSubplansCheckBox.isSelected = settings.enableSubplans
+        useSingleFilePlanModeCheckBox.isSelected = settings.useSingleFilePlanMode
         enableDocumentationLookupCheckBox.isSelected = settings.enableDocumentationLookup
         planRefinementLlmComboBox.selectedItem = apiKeyChecker.getLlmSelectionForName(settings.planRefinementLlm)
         documentationLlmComboBox.selectedItem = apiKeyChecker.getLlmSelectionForName(settings.documentationLlm)
@@ -94,6 +103,7 @@ class PlansDocsTabPanel(apiKeyChecker: ApiKeyChecker) : SettingsTabPanel(apiKeyC
         return alwaysIncludePlanContextFilesCheckBox.isSelected != settings.alwaysIncludePlanContextFiles ||
                 enableAutoPlanContinueCheckBox.isSelected != settings.enableAutoPlanContinue ||
                 enableSubplansCheckBox.isSelected != settings.enableSubplans ||
+                useSingleFilePlanModeCheckBox.isSelected != settings.useSingleFilePlanMode ||
                 enableDocumentationLookupCheckBox.isSelected != settings.enableDocumentationLookup ||
                 planRefinementLlmComboBox.selectedItem.asSelectedItemName() != settings.planRefinementLlm ||
                 documentationLlmComboBox.selectedItem.asSelectedItemName() != settings.documentationLlm
