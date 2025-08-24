@@ -56,24 +56,32 @@ class EditContextDialog(
     private fun loadContextFiles() {
         contextFilesListModel.clear()
 
-        val contextFile = File(plan.contextYamlFile?.filePath ?: return)
-        if (contextFile.exists()) {
-            val files = ContextFileHandler.readContextFile(contextFile, project.basePath ?: "")
-            files.forEach { fileData ->
-                val file = File(fileData.filePath)
-                if (file.exists()) {
-                    val absolutePath = if (file.isAbsolute) {
-                        file.canonicalPath
-                    } else {
-                        File(project.basePath ?: "", fileData.filePath).canonicalPath
-                    }
-                    contextFilesListModel.addElement(FileData(absolutePath, fileData.isReadOnly))
-                }
-            }
-        } else {
-            // Use plan's context files if context file doesn't exist
+        if (plan.isSingleFileFormat) {
+            // For single-file plans, use the embedded context files
             plan.contextFiles.forEach { file ->
                 contextFilesListModel.addElement(file)
+            }
+        } else {
+            // For multi-file plans, load from separate context.yaml file
+            val contextFile = File(plan.contextYamlFile?.filePath ?: "")
+            if (contextFile.exists()) {
+                val files = ContextFileHandler.readContextFile(contextFile, project.basePath ?: "")
+                files.forEach { fileData ->
+                    val file = File(fileData.filePath)
+                    if (file.exists()) {
+                        val absolutePath = if (file.isAbsolute) {
+                            file.canonicalPath
+                        } else {
+                            File(project.basePath ?: "", fileData.filePath).canonicalPath
+                        }
+                        contextFilesListModel.addElement(FileData(absolutePath, fileData.isReadOnly))
+                    }
+                }
+            } else {
+                // Use plan's context files if context file doesn't exist
+                plan.contextFiles.forEach { file ->
+                    contextFilesListModel.addElement(file)
+                }
             }
         }
     }

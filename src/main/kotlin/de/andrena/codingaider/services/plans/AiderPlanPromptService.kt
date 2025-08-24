@@ -156,7 +156,6 @@ $STRUCTURED_MODE_MESSAGE_MARKER ${commandData.message} $STRUCTURED_MODE_MESSAGE_
                 match.groupValues[1].trim()
             } else {
                 // Fallback to standard continuation prompt for single-file plans
-                val settings = service<AiderSettings>()
                 val relativePlanPath = planFile.filePath.removePrefix(project.basePath ?: "")
                 templates.getSingleFileExistingPlanPrompt(relativePlanPath)
             }

@@ -26,7 +26,6 @@ import de.andrena.codingaider.actions.ide.AiderClipboardImageAction
 import de.andrena.codingaider.actions.ide.SettingsAction
 import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.services.AiderDialogStateService
-import de.andrena.codingaider.services.PersistentFileService
 import de.andrena.codingaider.services.TodoExtractionService
 import de.andrena.codingaider.services.TokenCountService
 import de.andrena.codingaider.services.plans.AiderPlanPromptService
@@ -95,7 +94,7 @@ class AiderInputDialog(
                         override fun dragEnter(dtde: java.awt.dnd.DropTargetDragEvent) {
                             if (dtde.isDataFlavorSupported(java.awt.datatransfer.DataFlavor.imageFlavor) ||
                                 dtde.isDataFlavorSupported(java.awt.datatransfer.DataFlavor.javaFileListFlavor)) {
-                                editor.component.border = javax.swing.BorderFactory.createLineBorder(
+                                editor.component.border = BorderFactory.createLineBorder(
                                     java.awt.Color.BLUE, 2)
                             }
                         }
@@ -182,7 +181,7 @@ class AiderInputDialog(
         modeSegmentedButtonPanel = panel {
             row {
                 cell(JBLabel("Mode:"))
-                modeSegmentedButton = segmentedButton(AiderMode.values().map { it }) { selectedItem ->
+                modeSegmentedButton = segmentedButton(AiderMode.entries.map { it }) { selectedItem ->
                     text = selectedItem.displayName
                     toolTipText = selectedItem.tooltip
                     icon = selectedItem.icon
@@ -421,11 +420,12 @@ class AiderInputDialog(
             else -> PROMPT_LABEL
         }
     }
-// TODO 24.08.2025 pwegner: also consider none persistent files for plan relevance
     private fun getStructuredModeMessageLabel(): String {
-        val existingPlans =
-            project.service<AiderPlanPromptService>()
-                .filterPlanRelevantFiles(project.service<PersistentFileService>().getPersistentFiles())
+    val planPromptService = project.service<AiderPlanPromptService>()
+
+    val allFiles = getAllFiles()
+    val existingPlans = planPromptService.filterPlanRelevantFiles(allFiles.distinct())
+
         if (existingPlans.isNotEmpty()) {
             val firstPlan = existingPlans.first()
             val planName = firstPlan.filePath.substringAfterLast("/")
