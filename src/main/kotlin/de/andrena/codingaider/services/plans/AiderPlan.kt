@@ -10,7 +10,8 @@ data class AiderPlan(
     val contextFiles: List<FileData>,
     val parentPlan: AiderPlan? = null,
     val childPlans: List<AiderPlan> = emptyList(),
-    val depth: Int = calculateDepth(parentPlan)
+    val depth: Int = calculateDepth(parentPlan),
+    val isSingleFileFormat: Boolean = false
 ) {
     companion object {
         private fun calculateDepth(parent: AiderPlan?): Int = parent?.depth?.plus(1) ?: 0
@@ -25,8 +26,6 @@ data class AiderPlan(
         get() = planFiles.firstOrNull { it.filePath.endsWith("_checklist.md") }
     val contextYamlFile: FileData?
         get() = planFiles.firstOrNull { it.filePath.endsWith("_context.yaml") }
-    val isSingleFileFormat: Boolean
-        get() = contextYamlFile == null && contextFiles.isNotEmpty()
 
 
     fun openChecklistItems(): List<ChecklistItem> {
@@ -76,15 +75,6 @@ data class AiderPlan(
             current = current.parentPlan
         }
         return ancestors
-    }
-
-    fun isRootPlan(): Boolean {
-        return parentPlan == null && 
-            !getAllChildPlans().any { it.childPlans.any { child -> child.mainPlanFile?.filePath == mainPlanFile?.filePath } }
-    }
-
-    fun isDescendantOf(otherPlan: AiderPlan): Boolean {
-        return generateSequence(this) { it.parentPlan }.any { it == otherPlan }
     }
 
     fun getNextUncompletedPlansInSameFamily(): List<AiderPlan> {

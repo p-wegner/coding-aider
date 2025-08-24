@@ -247,7 +247,8 @@ class AiderPlanService(private val project: Project) {
             checklist = combinedChecklist,
             planFiles = files,
             contextFiles = embeddedContextFiles,
-            childPlans = subplans
+            childPlans = subplans,
+            isSingleFileFormat = true
         )
     }
 
@@ -317,7 +318,8 @@ class AiderPlanService(private val project: Project) {
             checklist = combinedChecklist,
             planFiles = files,
             contextFiles = contextFiles,
-            childPlans = subplans
+            childPlans = subplans,
+            isSingleFileFormat = false
         )
     }
 
