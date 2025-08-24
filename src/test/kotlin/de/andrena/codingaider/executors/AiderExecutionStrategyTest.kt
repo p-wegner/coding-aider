@@ -92,38 +92,7 @@ class AiderExecutionStrategyTest {
     }
 
 
-    @Test
-    fun `NativeAiderExecutionStrategy handles structured mode with existing plan`() {
-        val existingPlanFile = FileData("/project/.coding-aider-plans/existing_plan.md", false)
-        commandData = commandData.copy(
-            aiderMode = AiderMode.STRUCTURED,
-            message = "Continue with the plan",
-            files = commandData.files + existingPlanFile
-        )
 
-        val command = nativeStrategy.buildCommand(commandData)
-
-        assertThat(command).contains("-m")
-        assertThat(command.last()).contains("A plan already exists. Continue implementing the existing plan")
-        assertThat(command.last()).contains("Continue with the plan")
-    }
-
-    @Test
-    fun `DockerAiderExecutionStrategy handles structured mode with existing plan`() {
-        val existingPlanFile = FileData("/project/.coding-aider-plans/existing_plan.md", false)
-        commandData = commandData.copy(
-            aiderMode = AiderMode.STRUCTURED,
-            message = "Update the plan",
-            files = commandData.files + existingPlanFile
-        )
-        whenever(mockDockerManager.getCidFilePath()).thenReturn("/tmp/docker.cid")
-
-        val command = dockerStrategy.buildCommand(commandData)
-
-        assertThat(command).contains("-m")
-        assertThat(command.last()).contains("A plan already exists. Continue implementing the existing plan")
-        assertThat(command.last()).contains("Update the plan")
-    }
 
     @Test
     fun `NativeAiderExecutionStrategy builds correct command`() {
@@ -268,6 +237,7 @@ class AiderExecutionStrategyTest {
         assertThat(command).contains("--no-dirty-commits")
     }
 
+    // TODO 24.08.2025 pwegner: move these tests to a nested test class
     @Test
     fun `NativeAiderExecutionStrategy handles structured mode with single-line message`() {
         commandData = commandData.copy(aiderMode = AiderMode.STRUCTURED, message = "Single line message")
@@ -296,5 +266,37 @@ class AiderExecutionStrategyTest {
 
         assertThat(command).contains("-m")
         assertThat(command.last()).isEqualTo("$structuredModeSystemMessage\n<UserPrompt> $multiLineMessage </UserPrompt>")
+    }
+    @Test
+    fun `NativeAiderExecutionStrategy handles structured mode with existing plan`() {
+        val existingPlanFile = FileData("/project/.coding-aider-plans/existing_plan.md", false)
+        commandData = commandData.copy(
+            aiderMode = AiderMode.STRUCTURED,
+            message = "Continue with the plan",
+            files = commandData.files + existingPlanFile
+        )
+
+        val command = nativeStrategy.buildCommand(commandData)
+
+        assertThat(command).contains("-m")
+        assertThat(command.last()).contains("A plan already exists. Continue implementing the existing plan")
+        assertThat(command.last()).contains("Continue with the plan")
+    }
+
+    @Test
+    fun `DockerAiderExecutionStrategy handles structured mode with existing plan`() {
+        val existingPlanFile = FileData("/project/.coding-aider-plans/existing_plan.md", false)
+        commandData = commandData.copy(
+            aiderMode = AiderMode.STRUCTURED,
+            message = "Update the plan",
+            files = commandData.files + existingPlanFile
+        )
+        whenever(mockDockerManager.getCidFilePath()).thenReturn("/tmp/docker.cid")
+
+        val command = dockerStrategy.buildCommand(commandData)
+
+        assertThat(command).contains("-m")
+        assertThat(command.last()).contains("A plan already exists. Continue implementing the existing plan")
+        assertThat(command.last()).contains("Update the plan")
     }
 }
