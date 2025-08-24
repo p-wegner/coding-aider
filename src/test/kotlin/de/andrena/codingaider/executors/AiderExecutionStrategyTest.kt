@@ -237,66 +237,70 @@ class AiderExecutionStrategyTest {
         assertThat(command).contains("--no-dirty-commits")
     }
 
-    // TODO 24.08.2025 pwegner: move these tests to a nested test class
-    @Test
-    fun `NativeAiderExecutionStrategy handles structured mode with single-line message`() {
-        commandData = commandData.copy(aiderMode = AiderMode.STRUCTURED, message = "Single line message")
+    @org.junit.jupiter.api.Nested
+    inner class StructuredModeTests {
 
-        val command = nativeStrategy.buildCommand(commandData)
+        @Test
+        fun `NativeAiderExecutionStrategy handles structured mode with single-line message`() {
+            commandData = commandData.copy(aiderMode = AiderMode.STRUCTURED, message = "Single line message")
 
-        assertThat(command).contains("-m")
-        assertThat(command.last()).contains("Single line message")
-    }
+            val command = nativeStrategy.buildCommand(commandData)
 
-    @Test
-    fun `NativeAiderExecutionStrategy handles structured mode with multi-line message`() {
-        commandData = commandData.copy(aiderMode = AiderMode.STRUCTURED, message = multiLineMessage)
+            assertThat(command).contains("-m")
+            assertThat(command.last()).contains("Single line message")
+        }
 
-        val command = nativeStrategy.buildCommand(commandData)
+        @Test
+        fun `NativeAiderExecutionStrategy handles structured mode with multi-line message`() {
+            commandData = commandData.copy(aiderMode = AiderMode.STRUCTURED, message = multiLineMessage)
 
-        assertThat(command).contains("-m")
-        assertThat(command.last()).isEqualTo("$structuredModeSystemMessage\n<UserPrompt> $multiLineMessage </UserPrompt>")
-    }
+            val command = nativeStrategy.buildCommand(commandData)
 
-    @Test
-    fun `DockerAiderExecutionStrategy handles structured mode with multi-line message`() {
-        commandData = commandData.copy(aiderMode = AiderMode.STRUCTURED, message = multiLineMessage)
-        whenever(mockDockerManager.getCidFilePath()).thenReturn("/tmp/docker.cid")
-        val command = dockerStrategy.buildCommand(commandData)
+            assertThat(command).contains("-m")
+            assertThat(command.last()).isEqualTo("$structuredModeSystemMessage\n<UserPrompt> $multiLineMessage </UserPrompt>")
+        }
 
-        assertThat(command).contains("-m")
-        assertThat(command.last()).isEqualTo("$structuredModeSystemMessage\n<UserPrompt> $multiLineMessage </UserPrompt>")
-    }
-    @Test
-    fun `NativeAiderExecutionStrategy handles structured mode with existing plan`() {
-        val existingPlanFile = FileData("/project/.coding-aider-plans/existing_plan.md", false)
-        commandData = commandData.copy(
-            aiderMode = AiderMode.STRUCTURED,
-            message = "Continue with the plan",
-            files = commandData.files + existingPlanFile
-        )
+        @Test
+        fun `DockerAiderExecutionStrategy handles structured mode with multi-line message`() {
+            commandData = commandData.copy(aiderMode = AiderMode.STRUCTURED, message = multiLineMessage)
+            whenever(mockDockerManager.getCidFilePath()).thenReturn("/tmp/docker.cid")
+            val command = dockerStrategy.buildCommand(commandData)
 
-        val command = nativeStrategy.buildCommand(commandData)
+            assertThat(command).contains("-m")
+            assertThat(command.last()).isEqualTo("$structuredModeSystemMessage\n<UserPrompt> $multiLineMessage </UserPrompt>")
+        }
 
-        assertThat(command).contains("-m")
-        assertThat(command.last()).contains("A plan already exists. Continue implementing the existing plan")
-        assertThat(command.last()).contains("Continue with the plan")
-    }
+        @Test
+        fun `NativeAiderExecutionStrategy handles structured mode with existing plan`() {
+            val existingPlanFile = FileData("/project/.coding-aider-plans/existing_plan.md", false)
+            commandData = commandData.copy(
+                aiderMode = AiderMode.STRUCTURED,
+                message = "Continue with the plan",
+                files = commandData.files + existingPlanFile
+            )
 
-    @Test
-    fun `DockerAiderExecutionStrategy handles structured mode with existing plan`() {
-        val existingPlanFile = FileData("/project/.coding-aider-plans/existing_plan.md", false)
-        commandData = commandData.copy(
-            aiderMode = AiderMode.STRUCTURED,
-            message = "Update the plan",
-            files = commandData.files + existingPlanFile
-        )
-        whenever(mockDockerManager.getCidFilePath()).thenReturn("/tmp/docker.cid")
+            val command = nativeStrategy.buildCommand(commandData)
 
-        val command = dockerStrategy.buildCommand(commandData)
+            assertThat(command).contains("-m")
+            assertThat(command.last()).contains("A plan already exists. Continue implementing the existing plan")
+            assertThat(command.last()).contains("Continue with the plan")
+        }
 
-        assertThat(command).contains("-m")
-        assertThat(command.last()).contains("A plan already exists. Continue implementing the existing plan")
-        assertThat(command.last()).contains("Update the plan")
+        @Test
+        fun `DockerAiderExecutionStrategy handles structured mode with existing plan`() {
+            val existingPlanFile = FileData("/project/.coding-aider-plans/existing_plan.md", false)
+            commandData = commandData.copy(
+                aiderMode = AiderMode.STRUCTURED,
+                message = "Update the plan",
+                files = commandData.files + existingPlanFile
+            )
+            whenever(mockDockerManager.getCidFilePath()).thenReturn("/tmp/docker.cid")
+
+            val command = dockerStrategy.buildCommand(commandData)
+
+            assertThat(command).contains("-m")
+            assertThat(command.last()).contains("A plan already exists. Continue implementing the existing plan")
+            assertThat(command.last()).contains("Update the plan")
+        }
     }
 }
