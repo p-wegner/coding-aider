@@ -35,6 +35,58 @@ class AiderPlanPromptService(private val project: Project) {
         return createFullPrompt(systemPrompt, commandData)
     }
 
+    /**
+     * Creates a system prompt specifically for subplan execution
+     */
+    fun createSubplanExecutionPrompt(
+        rootPlan: AiderPlan,
+        currentSubplan: AiderPlan,
+        commandData: CommandData
+    ): String {
+        val settings = service<AiderSettings>()
+        val subplanContext = createSubplanContextPrompt(rootPlan, currentSubplan, settings.useSingleFilePlanMode)
+        val systemPrompt = createSystemPromptContent(commandData.files, commandData.projectPath)
+        val enhancedSystemPrompt = "$systemPrompt\n\n$subplanContext"
+        return createFullPrompt(enhancedSystemPrompt, commandData)
+    }
+
+    private fun createSubplanContextPrompt(
+        rootPlan: AiderPlan,
+        currentSubplan: AiderPlan,
+        useSingleFileMode: Boolean
+    ): String {
+        val rootPlanName = rootPlan.mainPlanFile?.filePath?.substringAfterLast('/')?.removeSuffix(".md") ?: "Root Plan"
+        val subplanName = currentSubplan.mainPlanFile?.filePath?.substringAfterLast('/')?.removeSuffix(".md") ?: "Current Subplan"
+        
+        val completedSubplans = rootPlan.childPlans.filter { it.isPlanComplete() }
+        val remainingSubplans = rootPlan.childPlans.filter { !it.isPlanComplete() && it != currentSubplan }
+        
+        return """
+## SUBPLAN EXECUTION CONTEXT
+
+You are currently working on a specific subplan within a larger plan hierarchy.
+
+**Root Plan**: $rootPlanName
+**Current Subplan**: $subplanName
+**Completed Subplans**: ${completedSubplans.size}/${rootPlan.childPlans.size}
+
+**Current Focus**: 
+- Work ONLY on tasks related to the current subplan: $subplanName
+- Complete the checklist items for this subplan before moving to other areas
+- The root plan files are included for context, but focus implementation on the current subplan
+
+${if (completedSubplans.isNotEmpty()) {
+    "**Already Completed Subplans**: ${completedSubplans.joinToString(", ") { it.mainPlanFile?.filePath?.substringAfterLast('/')?.removeSuffix(".md") ?: "Unknown" }}"
+} else ""}
+
+${if (remainingSubplans.isNotEmpty()) {
+    "**Remaining Subplans**: ${remainingSubplans.joinToString(", ") { it.mainPlanFile?.filePath?.substringAfterLast('/')?.removeSuffix(".md") ?: "Unknown" }}"
+} else ""}
+
+**Important**: Focus your implementation on the current subplan's requirements. Other subplans will be handled separately.
+        """.trimIndent()
+    }
+
     fun createPlanRefinementPrompt(plan: AiderPlan, refinementRequest: String): String {
         val settings = service<AiderSettings>()
         val subplanGuidance = if (settings.enableSubplans) {

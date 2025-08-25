@@ -414,8 +414,22 @@ class AiderPlanService(private val project: Project) {
         return nextLine.indentationLevel() > parentIndent && isChecklistItem(nextLine)
     }
 
-    fun createAiderPlanSystemPrompt(commandData: CommandData): String =
-        project.service<AiderPlanPromptService>().createAiderPlanSystemPrompt(commandData)
+    fun createAiderPlanSystemPrompt(commandData: CommandData): String {
+        val promptService = project.service<AiderPlanPromptService>()
+        val activePlanService = project.service<ActivePlanService>()
+        
+        // Check if we're executing a subplan
+        val activePlan = activePlanService.getActivePlan()
+        val currentSubplan = activePlanService.getCurrentSubplan()
+        
+        if (activePlan != null && currentSubplan != null && currentSubplan != activePlan) {
+            // We're executing a specific subplan
+            return promptService.createSubplanExecutionPrompt(activePlan, currentSubplan, commandData)
+        }
+        
+        // Default plan execution
+        return promptService.createAiderPlanSystemPrompt(commandData)
+    }
 
 
     private fun extractSubplanReferences(content: String): List<String> {

@@ -11,7 +11,6 @@
 - [ ] (Experimental) Feature: provide some mcp server functionality
   - server: plan creation, crud for persistent files, repo map, 
   - client: interpret output and call mcps and shell commands, start mcp servers
-- [ ] Feature: @context in input dialog (open files, git diff to current state, webcrawl via mcp ...)
 - [ ] aiderless toolcalling/mcp mode
 - [ ] refactor: group aider specific settings 
 - [ ] Feature: generate/adjust tests for last changes
@@ -30,11 +29,15 @@
 - [ ] Feature: rename file should update persistent files (if used)
 - [ ] Feature: Consistent Model and API Key Management
   - [ ] Streamline custom aider model/ api key setup
+- [ ] support different agentic clis: claude code, gemini, codex, (generic adapter setting or only limited set? usually arguments will differ and model selection is not possible for most of them)
 
 ## Prio Features
 - [ ] Feature: scratchpad feature for clipboard content and or temporary files outside aider working directory
     (reuse intellij scratchpad feature)
 - [ ] plan style: - minimal, - medium, - full (custom prd template?)
+  - [x] minimal: single plan file
+
+- [ ] Improve Subplan Feature to properly run subplans when executing the master plan
 
 ## Before Release
 
