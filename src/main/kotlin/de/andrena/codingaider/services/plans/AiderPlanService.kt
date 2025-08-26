@@ -12,7 +12,13 @@ import java.time.LocalDateTime
 
 
 @Service(Service.Level.PROJECT)
-class AiderPlanService(private val project: Project) {
+class AiderPlanService(private val project: Project, private val aiderIgnoreService: AiderIgnoreService) {
+
+    init {
+        println("AiderPlanService initialized with project: ${project.basePath}")
+    }
+
+    constructor(project: Project) : this(project, project.service<AiderIgnoreService>())
     companion object {
         const val AIDER_PLAN_MARKER = "[Coding Aider Plan]"
         const val AIDER_PLAN_CHECKLIST_MARKER = "[Coding Aider Plan - Checklist]"
@@ -26,6 +32,7 @@ class AiderPlanService(private val project: Project) {
 
     fun getAiderPlansFolder(): String {
         val settings = de.andrena.codingaider.settings.AiderProjectSettings.getInstance(project)
+        println("AiderProjectSettings instance: $settings")
         return settings.plansFolderPath ?: DEFAULT_AIDER_PLANS_FOLDER
     }
 
@@ -221,7 +228,6 @@ class AiderPlanService(private val project: Project) {
         val embeddedContextFiles = extractEmbeddedContextFiles(content)
 
         // Include only the main plan file
-        val aiderIgnoreService = project.service<AiderIgnoreService>()
         val files = mutableListOf<FileData>()
         
         // Add main plan file if not ignored
@@ -280,7 +286,6 @@ class AiderPlanService(private val project: Project) {
         }
 
         // Include plan, checklist and context files in the files list (filtering with aiderignore)
-        val aiderIgnoreService = project.service<AiderIgnoreService>()
         val files = mutableListOf<FileData>()
         
         // Add main plan file if not ignored

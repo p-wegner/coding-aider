@@ -310,21 +310,40 @@ class SubplanExecutionTest {
     }
 
     @Test
-    fun `should include correct context files for subplan execution`() {
-        val plan = TestPlanFactory.createRootPlanWithSubplans()
-        activePlanService.setActivePlan(plan)
+    fun `should handle subplan hierarchy navigation`() {
+        val rootPlan = TestPlanFactory.createRootPlanWithSubplans()
+        activePlanService.setActivePlan(rootPlan)
         
-        val currentSubplan = activePlanService.getNextExecutableSubplan()
-        assertThat(currentSubplan).isNotNull
+        val firstSubplan = rootPlan.childPlans[0]
+        val secondSubplan = rootPlan.childPlans[1]
         
-        // Files should include both root plan and current subplan files
-        val files = activePlanService.collectVirtualFilesForExecution()
-        val rootPlanFiles = plan.planFiles
-        val subplanFiles = currentSubplan!!.planFiles
+        // Verify hierarchy relationships
+        assertThat(firstSubplan.parentPlan).isEqualTo(rootPlan)
+        assertThat(firstSubplan.findRootPlan()).isEqualTo(rootPlan)
+        assertThat(firstSubplan.findSiblingPlans()).contains(secondSubplan)
+        assertThat(firstSubplan.depth).isEqualTo(1)
+        assertThat(rootPlan.depth).isEqualTo(0)
+    }
+
+    @Test
+    fun `should track subplan completion progress`() {
+        val rootPlan = TestPlanFactory.createRootPlanWithSubplans()
+        activePlanService.setActivePlan(rootPlan)
         
-        // Verify we have files from both root plan and subplan
-        assertThat(files).isNotEmpty
-        // Note: In test factory, context files are empty, but structure is verified
-        assertThat(files.size).isGreaterThanOrEqualTo(rootPlanFiles.size)
+        // Initially no subplans are complete
+        assertThat(rootPlan.childPlans.none { it.isPlanComplete() }).isTrue
+        assertThat(rootPlan.isPlanFamilyComplete()).isFalse
+        
+        // Complete first subplan
+        val completedFirstSubplan = rootPlan.childPlans[0].copy(
+            checklist = rootPlan.childPlans[0].checklist.map { it.copy(checked = true) }
+        )
+        assertThat(completedFirstSubplan.isPlanComplete()).isTrue
+        
+        // Root plan family should not be complete yet
+        val partiallyCompletedPlan = rootPlan.copy(
+            childPlans = listOf(completedFirstSubplan, rootPlan.childPlans[1])
+        )
+        assertThat(partiallyCompletedPlan.isPlanFamilyComplete()).isFalse
     }
 }

@@ -8,9 +8,9 @@ import de.andrena.codingaider.command.FileData
 import de.andrena.codingaider.settings.AiderSettings
 
 @Service(Service.Level.PROJECT)
-class AiderPlanPromptService(private val project: Project) {
-    private val planService by lazy { project.service<AiderPlanService>() }
-    private val templates by lazy { AiderPlanPromptTemplates(planService) }
+class AiderPlanPromptService(private val project: Project, private val planService: AiderPlanService, private val templates: AiderPlanPromptTemplates) {
+
+    constructor(project: Project) : this(project, project.service<AiderPlanService>(), AiderPlanPromptTemplates(project.service<AiderPlanService>()))
 
     fun createAiderPlanSystemPrompt(commandData: CommandData): String {
         if (commandData.message.startsWith("/")) {

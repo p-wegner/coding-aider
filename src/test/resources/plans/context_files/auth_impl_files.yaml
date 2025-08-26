@@ -1,0 +1,3 @@
+files:
+  - src/main/kotlin/de/andrena/codingaider/security/AuthService.kt
+  - src/main/kotlin/de/andrena/codingaider/security/AuthController.kt

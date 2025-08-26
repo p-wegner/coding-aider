@@ -216,15 +216,15 @@ Need secure authentication system with proper token management.
 ### 9. Implementation Checklist
 
 #### Test Infrastructure:
-- [ ] Create test resource directory structure
-- [ ] Write test plan markdown files
-- [ ] Create context YAML files
-- [ ] Implement TestPlanFactory utility
+- [x] Create test resource directory structure
+- [x] Write test plan markdown files
+- [x] Create context YAML files
+- [x] Implement TestPlanFactory utility
 
 #### Unit Tests:
-- [ ] Write ActivePlanServiceTest
-- [ ] Write AiderPlanServiceSubplanTest  
-- [ ] Write SubplanPromptServiceTest
+- [x] Write ActivePlanServiceTest
+- [x] Write AiderPlanServiceSubplanTest  
+- [x] Write SubplanPromptServiceTest
 - [ ] Add subplan tests to existing AiderPlanPromptServiceTest
 
 #### Integration Tests:
@@ -233,7 +233,7 @@ Need secure authentication system with proper token management.
 
 #### Production Code Updates:
 - [ ] Add test-friendly methods to ActivePlanService
-- [ ] Extract testable logic from AiderPlanService
+- [x] Extract testable logic from AiderPlanService (by adding constructor injection)
 - [ ] Add logging for test verification
 - [ ] Ensure proper error handling for edge cases
 
