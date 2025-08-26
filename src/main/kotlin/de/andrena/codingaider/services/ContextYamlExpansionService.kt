@@ -11,8 +11,9 @@ import java.io.File
 class ContextYamlExpansionService(private val project: Project) {
 
     /**
-     * Finds all .context.yaml files in the project and expands their content
+     * Finds all .context.yaml files in the provided existingFiles list and expands them
      */
+    // TODO 26.08.2025 pwegner: only expand files in that are in existingFiles
     fun expandContextYamlFiles(existingFiles: List<FileData>): List<FileData> {
         val projectBasePath = project.basePath ?: return emptyList()
         val contextYamlFiles = findContextYamlFiles(projectBasePath)
