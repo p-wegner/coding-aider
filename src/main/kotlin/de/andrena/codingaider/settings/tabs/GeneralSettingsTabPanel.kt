@@ -28,6 +28,7 @@ class GeneralSettingsTabPanel(
     private val llmComboBox: JComboBox<LlmSelection> = createLlmComboBox(llmOptions)
     private val additionalArgsField = JBTextField()
     private val alwaysIncludeOpenFilesCheckBox = JBCheckBox("Always include open files in context")
+    private val enableContextYamlExpansionCheckBox = JBCheckBox("Automatically expand context YAML files")
     private val defaultModeComboBox = ComboBox(AiderMode.values())
 
     override fun getTabName(): String = "General"
@@ -51,6 +52,11 @@ class GeneralSettingsTabPanel(
                 row {
                     cell(alwaysIncludeOpenFilesCheckBox).applyToComponent {
                         toolTipText = "When enabled, all currently open files will be included in the context"
+                    }
+                }
+                row {
+                    cell(enableContextYamlExpansionCheckBox).applyToComponent {
+                        toolTipText = "When enabled, automatically finds and expands .context.yaml files to include their referenced files"
                     }
                 }
             }
@@ -82,6 +88,7 @@ class GeneralSettingsTabPanel(
         settings.llm = llmComboBox.selectedItem.asSelectedItemName()
         settings.additionalArgs = additionalArgsField.text
         settings.alwaysIncludeOpenFiles = alwaysIncludeOpenFilesCheckBox.isSelected
+        settings.enableContextYamlExpansion = enableContextYamlExpansionCheckBox.isSelected
         settings.defaultMode = defaultModeComboBox.selectedItem as AiderMode
     }
 
@@ -90,6 +97,7 @@ class GeneralSettingsTabPanel(
         llmComboBox.selectedItem = apiKeyChecker.getLlmSelectionForName(settings.llm)
         additionalArgsField.text = settings.additionalArgs
         alwaysIncludeOpenFilesCheckBox.isSelected = settings.alwaysIncludeOpenFiles
+        enableContextYamlExpansionCheckBox.isSelected = settings.enableContextYamlExpansion
         defaultModeComboBox.selectedItem = settings.defaultMode
     }
 
@@ -98,6 +106,7 @@ class GeneralSettingsTabPanel(
                 llmComboBox.selectedItem.asSelectedItemName() != settings.llm ||
                 additionalArgsField.text != settings.additionalArgs ||
                 alwaysIncludeOpenFilesCheckBox.isSelected != settings.alwaysIncludeOpenFiles ||
+                enableContextYamlExpansionCheckBox.isSelected != settings.enableContextYamlExpansion ||
                 defaultModeComboBox.selectedItem != settings.defaultMode
     }
 

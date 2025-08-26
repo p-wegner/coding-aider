@@ -38,6 +38,7 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         var promptAugmentation: Boolean = AiderDefaults.PROMPT_AUGMENTATION,
         var includeCommitMessageBlock: Boolean = AiderDefaults.INCLUDE_COMMIT_MESSAGE_BLOCK,
         var enableDocumentationLookup: Boolean = AiderDefaults.ENABLE_DOCUMENTATION_LOOKUP,
+        var enableContextYamlExpansion: Boolean = AiderDefaults.ENABLE_CONTEXT_YAML_EXPANSION,
         var enableSubplans: Boolean = AiderDefaults.ENABLE_SUBPLANS,
         var useSingleFilePlanMode: Boolean = AiderDefaults.USE_SINGLE_FILE_PLAN_MODE,
         var useYesFlag: Boolean = AiderDefaults.USE_YES_FLAG,
@@ -147,6 +148,12 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.enableDocumentationLookup
         set(value) {
             myState.enableDocumentationLookup = value
+        }
+        
+    var enableContextYamlExpansion: Boolean
+        get() = myState.enableContextYamlExpansion
+        set(value) {
+            myState.enableContextYamlExpansion = value
         }
         
     var enableSubplans: Boolean

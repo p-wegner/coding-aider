@@ -39,7 +39,9 @@ class FileDataCollectionService(private val project: Project) {
         if (this.settings.enableDocumentationLookup) {
             traversedFiles.addAll(project.service<DocumentationFinderService>().findDocumentationFiles(files))
         }
-        // TODO 26.08.2025 pwegner: expand context yaml files if setting is on
+        if (this.settings.enableContextYamlExpansion) {
+            traversedFiles.addAll(project.service<ContextYamlExpansionService>().expandContextYamlFiles(traversedFiles))
+        }
         return traversedFiles.distinctBy { normalizePath(it.filePath) }
     }
 

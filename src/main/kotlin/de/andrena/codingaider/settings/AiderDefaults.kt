@@ -8,6 +8,7 @@ object AiderDefaults {
     const val INCLUDE_COMMIT_MESSAGE_BLOCK = false
     const val USE_SIDECAR_MODE = false
     const val ENABLE_DOCUMENTATION_LOOKUP = false
+    const val ENABLE_CONTEXT_YAML_EXPANSION = false
     const val ALWAYS_INCLUDE_OPEN_FILES = false
     const val ALWAYS_INCLUDE_PLAN_CONTEXT_FILES = true
     const val ENABLE_SUBPLANS = true
