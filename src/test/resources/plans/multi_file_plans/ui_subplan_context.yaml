@@ -1,1 +1,15 @@
 
+---
+files:
+  - path: "src/main/kotlin/de/andrena/codingaider/ui/components/Button.kt"
+    readOnly: false
+  - path: "src/main/kotlin/de/andrena/codingaider/ui/components/Input.kt"
+    readOnly: false
+  - path: "src/main/kotlin/de/andrena/codingaider/ui/components/Modal.kt"
+    readOnly: false
+  - path: "src/test/kotlin/de/andrena/codingaider/ui/components/ButtonTest.kt"
+    readOnly: false
+  - path: "src/test/kotlin/de/andrena/codingaider/ui/components/InputTest.kt"
+    readOnly: false
+  - path: "src/test/kotlin/de/andrena/codingaider/ui/components/ModalTest.kt"
+    readOnly: false

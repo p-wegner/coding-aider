@@ -1,1 +1,11 @@
 
+---
+files:
+  - path: "src/main/kotlin/de/andrena/codingaider/security/AuthService.kt"
+    readOnly: false
+  - path: "src/main/kotlin/de/andrena/codingaider/security/AuthController.kt"
+    readOnly: false
+  - path: "src/main/kotlin/de/andrena/codingaider/security/JwtTokenProvider.kt"
+    readOnly: false
+  - path: "src/main/kotlin/de/andrena/codingaider/security/UserSessionManager.kt"
+    readOnly: false

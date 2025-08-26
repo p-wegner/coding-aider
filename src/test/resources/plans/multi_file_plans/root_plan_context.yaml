@@ -1,1 +1,11 @@
 
+---
+files:
+  - path: "src/main/kotlin/de/andrena/codingaider/security/AuthService.kt"
+    readOnly: false
+  - path: "src/main/kotlin/de/andrena/codingaider/ui/components/Button.kt"
+    readOnly: false
+  - path: "src/main/kotlin/de/andrena/codingaider/ui/components/Input.kt"
+    readOnly: false
+  - path: "src/main/kotlin/de/andrena/codingaider/utils/Logger.kt"
+    readOnly: false

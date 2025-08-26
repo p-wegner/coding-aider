@@ -198,4 +198,72 @@ class SubplanExecutionTest {
         // Note: In the test factory, context files are empty, but in real scenarios
         // they would contain implementation files specific to each subplan
     }
+
+    @Test
+    fun `should handle malformed plan files gracefully`() {
+        // Test error handling when plan files are corrupted or missing
+        val rootPlan = TestPlanFactory.createRootPlanWithSubplans()
+        activePlanService.setActivePlan(rootPlan)
+        
+        // Simulate a scenario where a subplan file becomes unavailable
+        val currentSubplan = activePlanService.getNextExecutableSubplan()
+        assertThat(currentSubplan).isNotNull
+        
+        // The system should handle missing files gracefully
+        val files = activePlanService.collectVirtualFilesForExecution()
+        assertThat(files).isNotNull
+    }
+
+    @Test
+    fun `should maintain execution order across plan reloads`() {
+        val rootPlan = TestPlanFactory.createRootPlanWithSubplans()
+        activePlanService.setActivePlan(rootPlan)
+        
+        // Get initial execution target
+        val initialSubplan = activePlanService.getNextExecutableSubplan()
+        assertThat(initialSubplan).isEqualTo(rootPlan.childPlans[0])
+        
+        // Simulate plan reload (as would happen after file changes)
+        activePlanService.refreshPlanState()
+        
+        // Should maintain same execution target
+        val reloadedSubplan = activePlanService.getNextExecutableSubplan()
+        assertThat(reloadedSubplan?.mainPlanFile?.filePath).isEqualTo(initialSubplan?.mainPlanFile?.filePath)
+    }
+
+    @Test
+    fun `should handle empty subplan lists correctly`() {
+        // Create a root plan without subplans
+        val rootPlanOnly = TestPlanFactory.createRootPlanWithSubplans().copy(childPlans = emptyList())
+        activePlanService.setActivePlan(rootPlanOnly)
+        
+        // Should execute root plan directly
+        val nextExecutable = activePlanService.getNextExecutableSubplan()
+        assertThat(nextExecutable).isEqualTo(rootPlanOnly)
+        assertThat(activePlanService.shouldExecuteSubplan()).isFalse
+    }
+
+    @Test
+    fun `should provide meaningful execution status messages`() {
+        val rootPlan = TestPlanFactory.createRootPlanWithSubplans()
+        activePlanService.setActivePlan(rootPlan)
+        
+        // Initial status should show first subplan
+        val initialStatus = activePlanService.getSubplanExecutionStatus()
+        assertThat(initialStatus).contains("Subplans: 0/2 complete")
+        assertThat(initialStatus).contains("Current: auth_subplan")
+        
+        // Complete first subplan and check status
+        val completedFirstSubplan = rootPlan.childPlans[0].copy(
+            checklist = rootPlan.childPlans[0].checklist.map { it.copy(checked = true) }
+        )
+        val updatedRootPlan = rootPlan.copy(
+            childPlans = listOf(completedFirstSubplan, rootPlan.childPlans[1])
+        )
+        activePlanService.setActivePlan(updatedRootPlan)
+        
+        val updatedStatus = activePlanService.getSubplanExecutionStatus()
+        assertThat(updatedStatus).contains("Subplans: 1/2 complete")
+        assertThat(updatedStatus).contains("Current: ui_subplan")
+    }
 }

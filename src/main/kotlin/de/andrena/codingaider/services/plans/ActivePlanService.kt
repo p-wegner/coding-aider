@@ -289,6 +289,36 @@ class ActivePlanService(private val project: Project) {
         clearActivePlan()
     }
 
+    /**
+     * Collects virtual files for execution based on current plan state.
+     * Used by tests and execution logic to determine which files to include.
+     */
+    fun collectVirtualFilesForExecution(): List<FileData> {
+        val plan = activePlan ?: return emptyList()
+        val planToExecute = getEffectivePlanForExecution(plan)
+        
+        val filesToInclude = mutableSetOf<FileData>()
+        
+        if (planToExecute != plan) {
+            // Executing a subplan - include root plan files + current subplan files
+            filesToInclude.addAll(plan.planFiles)  // Always include root plan files
+            filesToInclude.addAll(planToExecute.allFiles)  // Include subplan files
+        } else {
+            // Executing root plan - include all files
+            filesToInclude.addAll(planToExecute.allFiles)
+        }
+        
+        return filesToInclude.toList()
+    }
+
+    /**
+     * Refreshes the plan state by reloading from filesystem.
+     * Used by tests to simulate plan state changes.
+     */
+    fun refreshPlanState() {
+        refreshActivePlan()
+    }
+
     fun continuePlan() {
         // Prevent multiple simultaneous continuations
         if (!isContinuing.compareAndSet(false, true)) {
