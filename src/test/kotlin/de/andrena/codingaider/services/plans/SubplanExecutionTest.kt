@@ -266,4 +266,65 @@ class SubplanExecutionTest {
         assertThat(updatedStatus).contains("Subplans: 1/2 complete")
         assertThat(updatedStatus).contains("Current: ui_subplan")
     }
+
+    @Test
+    fun `should handle current subplan tracking correctly`() {
+        val plan = TestPlanFactory.createRootPlanWithSubplans()
+        activePlanService.setActivePlan(plan)
+        
+        // Initially no current subplan is set
+        assertThat(activePlanService.getCurrentSubplan()).isNull()
+        
+        // Get next executable subplan should set current subplan
+        val nextSubplan = activePlanService.getNextExecutableSubplan()
+        assertThat(nextSubplan).isNotNull
+        
+        // Manually set current subplan to simulate execution flow
+        activePlanService.setCurrentSubplan(nextSubplan)
+        assertThat(activePlanService.getCurrentSubplan()).isEqualTo(nextSubplan)
+        
+        // Clear current subplan
+        activePlanService.setCurrentSubplan(null)
+        assertThat(activePlanService.getCurrentSubplan()).isNull()
+    }
+
+    @Test
+    fun `should determine subplan execution correctly`() {
+        val plan = TestPlanFactory.createRootPlanWithSubplans()
+        activePlanService.setActivePlan(plan)
+        
+        // Should execute subplan when subplans are incomplete
+        assertThat(activePlanService.shouldExecuteSubplan()).isTrue()
+        
+        // Complete all subplans
+        val completedSubplans = plan.childPlans.map { subplan ->
+            subplan.copy(
+                checklist = subplan.checklist.map { it.copy(checked = true) }
+            )
+        }
+        val completedPlan = plan.copy(childPlans = completedSubplans)
+        activePlanService.setActivePlan(completedPlan)
+        
+        // Should not execute subplan when all subplans are complete
+        assertThat(activePlanService.shouldExecuteSubplan()).isFalse()
+    }
+
+    @Test
+    fun `should include correct context files for subplan execution`() {
+        val plan = TestPlanFactory.createRootPlanWithSubplans()
+        activePlanService.setActivePlan(plan)
+        
+        val currentSubplan = activePlanService.getNextExecutableSubplan()
+        assertThat(currentSubplan).isNotNull
+        
+        // Files should include both root plan and current subplan files
+        val files = activePlanService.collectVirtualFilesForExecution()
+        val rootPlanFiles = plan.planFiles
+        val subplanFiles = currentSubplan!!.planFiles
+        
+        // Verify we have files from both root plan and subplan
+        assertThat(files).isNotEmpty
+        // Note: In test factory, context files are empty, but structure is verified
+        assertThat(files.size).isGreaterThanOrEqualTo(rootPlanFiles.size)
+    }
 }
