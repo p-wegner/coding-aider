@@ -13,10 +13,16 @@ class ContextYamlExpansionService(private val project: Project) {
     /**
      * Finds all .context.yaml files in the provided existingFiles list and expands them
      */
-    // TODO 26.08.2025 pwegner: only expand files in that are in existingFiles
     fun expandContextYamlFiles(existingFiles: List<FileData>): List<FileData> {
         val projectBasePath = project.basePath ?: return emptyList()
-        val contextYamlFiles = findContextYamlFiles(projectBasePath)
+        
+        // Only process .context.yaml files that are in the existingFiles list
+        val contextYamlFiles = existingFiles
+            .filter { it.filePath.endsWith(".context.yaml") }
+            .mapNotNull { fileData ->
+                val file = File(fileData.filePath)
+                if (file.exists()) file else null
+            }
         
         val expandedFiles = mutableListOf<FileData>()
         
@@ -39,38 +45,4 @@ class ContextYamlExpansionService(private val project: Project) {
         return uniqueExpandedFiles
     }
     
-    /**
-     * Recursively finds all .context.yaml files in the project directory
-     */
-    private fun findContextYamlFiles(projectBasePath: String): List<File> {
-        val projectDir = File(projectBasePath)
-        if (!projectDir.exists() || !projectDir.isDirectory) {
-            return emptyList()
-        }
-        
-        val contextFiles = mutableListOf<File>()
-        findContextYamlFilesRecursive(projectDir, contextFiles)
-        return contextFiles
-    }
-    
-    private fun findContextYamlFilesRecursive(directory: File, contextFiles: MutableList<File>) {
-        directory.listFiles()?.forEach { file ->
-            when {
-                file.isFile && file.name.endsWith(".context.yaml") -> {
-                    contextFiles.add(file)
-                }
-                file.isDirectory && !shouldSkipDirectory(file.name) -> {
-                    findContextYamlFilesRecursive(file, contextFiles)
-                }
-            }
-        }
-    }
-    
-    /**
-     * Skip common directories that typically don't contain context files
-     */
-    private fun shouldSkipDirectory(dirName: String): Boolean {
-        return dirName.startsWith(".") && dirName != ".aider" ||
-                dirName in setOf("node_modules", "target", "build", "out", "dist", ".gradle", ".idea")
-    }
 }

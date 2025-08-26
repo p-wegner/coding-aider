@@ -36,6 +36,7 @@
     (reuse intellij scratchpad feature)
 - [ ] plan style: - minimal, - medium, - full (custom prd template?)
   - [x] minimal: single plan file
+- [x] automatic yaml file inclusion as setting
 
 - [ ] Improve Subplan Feature to properly run subplans when executing the master plan
 
