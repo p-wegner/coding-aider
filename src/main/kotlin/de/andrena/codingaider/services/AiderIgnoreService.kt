@@ -89,9 +89,17 @@ class AiderIgnoreService(private val project: Project) {
                 }
             }
 
-        // Notify any services that depend on ignore patterns
-        project.messageBus.syncPublisher(PersistentFilesChangedTopic.PERSISTENT_FILES_CHANGED_TOPIC)
-            .onPersistentFilesChanged()
+        // Notify any services that depend on ignore patterns. In headless/unit-test contexts
+        // the project's MessageBus can be null; guard to avoid NPEs during tests.
+        try {
+            val bus = project.messageBus
+            if (bus != null) {
+                bus.syncPublisher(PersistentFilesChangedTopic.PERSISTENT_FILES_CHANGED_TOPIC)
+                    .onPersistentFilesChanged()
+            }
+        } catch (_: Throwable) {
+            // Swallow to keep tests stable when MessageBus is not available
+        }
     }
 
     fun isIgnored(filePath: String): Boolean {

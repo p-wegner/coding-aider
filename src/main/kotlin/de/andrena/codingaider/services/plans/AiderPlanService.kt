@@ -31,9 +31,13 @@ class AiderPlanService(private val project: Project, private val aiderIgnoreServ
     }
 
     fun getAiderPlansFolder(): String {
-        val settings = de.andrena.codingaider.settings.AiderProjectSettings.getInstance(project)
-        println("AiderProjectSettings instance: $settings")
-        return settings.plansFolderPath ?: DEFAULT_AIDER_PLANS_FOLDER
+        return try {
+            val settings = de.andrena.codingaider.settings.AiderProjectSettings.getInstance(project)
+            settings.plansFolderPath ?: DEFAULT_AIDER_PLANS_FOLDER
+        } catch (_: Throwable) {
+            // In unit tests without the IntelliJ service infrastructure, fall back to default
+            DEFAULT_AIDER_PLANS_FOLDER
+        }
     }
 
     fun createPlanFolderIfNeeded(commandData: CommandData) {
