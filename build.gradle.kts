@@ -1,4 +1,5 @@
 import org.gradle.internal.classpath.Instrumented.systemProperty
+import org.gradle.kotlin.dsl.precompile.PrecompiledProjectScript.NullPluginDependencySpec.version
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
@@ -50,24 +51,23 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.25.3")
     testImplementation("org.mockito:mockito-core:5.14.2")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
-//    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.0")
 
     intellijPlatform {
         testFramework(TestFrameworkType.Platform)
         intellijIdeaCommunity("2025.2")
         pluginVerifier()
-        instrumentationTools()
         bundledPlugin("org.jetbrains.plugins.terminal")
         bundledPlugin("Git4Idea")
 
     }
 }
+
 intellijPlatform {
     pluginVerification {
         ides {
             recommended()
-            ide("IC-2024.2.4")
-            ide("IC-2025.2")
+            version("2024.2.4")
+            version("2025.2")
         }
     }
 

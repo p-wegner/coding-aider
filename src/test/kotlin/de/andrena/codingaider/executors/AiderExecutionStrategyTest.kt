@@ -1,7 +1,6 @@
 package de.andrena.codingaider.executors
 
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
-import com.intellij.testFramework.ServiceContainerUtil
 
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.command.FileData
@@ -185,7 +184,7 @@ class AiderExecutionStrategyTest : BasePlatformTestCase() {
     }
 
     @Test
-    fun testDockerAiderExecutionStrategyHandlesFilesOutsideProjectDirectory() {
+    fun `test docker aider execution strategy handles files outside project directory`() {
         val outsideFile = FileData("/outside/file2.txt", true)
         commandData = commandData.copy(files = commandData.files + outsideFile)
         whenever(mockDockerManager.getCidFilePath()).thenReturn("/tmp/docker.cid")
@@ -195,7 +194,7 @@ class AiderExecutionStrategyTest : BasePlatformTestCase() {
     }
 
     @Test
-    fun testNativeAiderExecutionStrategyHandlesAutoCommitsSettingON() {
+    fun `test native aider execution strategy handles auto commits setting on`() {
         whenever(mockAiderSettings.autoCommits).thenReturn(AiderSettings.AutoCommitSetting.ON)
         val command = nativeStrategy.buildCommand(commandData)
         assertThat(command).contains("--auto-commits")
