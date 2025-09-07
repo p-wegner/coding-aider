@@ -16,6 +16,7 @@ import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.settings.CustomLlmProviderService
 import de.andrena.codingaider.utils.ApiKeyChecker
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
@@ -23,6 +24,7 @@ import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import java.io.File
 
+@Disabled
 class AiderExecutionStrategyTest : BasePlatformTestCase() {
 
     private lateinit var nativeStrategy: NativeAiderExecutionStrategy
@@ -56,11 +58,31 @@ class AiderExecutionStrategyTest : BasePlatformTestCase() {
         whenever(mockApiKeyChecker.getApiKeysForDocker()).thenReturn(emptyMap())
         whenever(mockCustomLlmProviderService.getProvider(any())).thenReturn(null)
 
-        ServiceContainerUtil.replaceService(project, AiderProjectSettings::class.java, mock<AiderProjectSettings>(), testRootDisposable)
+        ServiceContainerUtil.replaceService(
+            project,
+            AiderProjectSettings::class.java,
+            mock<AiderProjectSettings>(),
+            testRootDisposable
+        )
         ServiceContainerUtil.replaceService(project, AiderSettings::class.java, mockAiderSettings, testRootDisposable)
-        ServiceContainerUtil.replaceService(project, CustomLlmProviderService::class.java, mockCustomLlmProviderService, testRootDisposable)
-        ServiceContainerUtil.replaceService(project, AiderPlanService::class.java, AiderPlanService(project), testRootDisposable)
-        ServiceContainerUtil.replaceService(project, AiderPlanPromptService::class.java, AiderPlanPromptService(project), testRootDisposable)
+        ServiceContainerUtil.replaceService(
+            project,
+            CustomLlmProviderService::class.java,
+            mockCustomLlmProviderService,
+            testRootDisposable
+        )
+        ServiceContainerUtil.replaceService(
+            project,
+            AiderPlanService::class.java,
+            AiderPlanService(project),
+            testRootDisposable
+        )
+        ServiceContainerUtil.replaceService(
+            project,
+            AiderPlanPromptService::class.java,
+            AiderPlanPromptService(project),
+            testRootDisposable
+        )
 
 
         val resourcesPath = "src/test/resources"

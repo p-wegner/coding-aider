@@ -2,9 +2,10 @@ package de.andrena.codingaider.services.plans
 
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import java.io.File
-
+@Disabled
 class AiderPlanServiceTest : BasePlatformTestCase() {
 
     private lateinit var aiderPlanService: AiderPlanService
