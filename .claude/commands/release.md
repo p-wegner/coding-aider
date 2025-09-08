@@ -7,7 +7,7 @@ allowed-tools: [Bash, Read, Glob, Write]
 # Create Plugin Release
 
 Create a release of the IntelliJ plugin using the existing release workflow github action. This process will:
-1. **Check git status and commit changes** (if any)
+1. **Check git status and commit and push changes** (if any)
 2. **Analyze recent changes** since the last release and update releasenotes.md and commit it
 3. **Trigger the GitHub Actions release workflow**
 4. **Update the release with generated notes**
