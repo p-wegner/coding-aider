@@ -1,6 +1,6 @@
 ---
 description: "Analyze open issues against latest release changes and generate response files"
-argument-hint: "[release_version - leave empty for latest release]"
+argument-hint: "[release_version - leave empty for latest release] [response_style - defaults to detailed]"
 allowed-tools: [Bash, Read, Glob, Write, Task]
 ---
 
@@ -83,13 +83,25 @@ ls -la issue-responses/
 
 ## Summary
 
-This analysis has identified and generated response files for issues that appear to be resolved by the release changes. Each response file contains:
+This analysis has identified and generated response files for issues that appear to be resolved by the release changes. The response content depends on the [response_style]. Response file content depends on the used style:
+
+### response_style==detailed
 
 1. **Status**: Marked as RESOLVED with the specific version
 2. **Root Cause**: Analysis of what caused the issue
 3. **Solution**: Specific changes that fixed the issue
 4. **Verification Steps**: How users can verify the fix
 5. **Related Changes**: Other improvements in the same release
+
+### response_style==informal
+
+- Start with a personal greeting that acknowledges the user's specific issue
+- Use conversational language instead of technical jargon
+- Express empathy for the user's frustration
+- Focus on the positive outcome ("Great news!" instead of "This has been resolved")
+- Keep instructions simple and actionable
+- End with appreciation for their contribution
+- Maintain a helpful, supportive tone throughout
 
 ## Usage Instructions
 
