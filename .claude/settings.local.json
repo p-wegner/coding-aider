@@ -5,7 +5,10 @@
       "Bash(git commit:*)",
       "Bash(./gradlew test:*)",
       "Bash(git tag:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(gh release view:*)",
+      "Bash(gh issue list:*)",
+      "Bash(gh issue view:*)"
     ],
     "deny": []
   }
