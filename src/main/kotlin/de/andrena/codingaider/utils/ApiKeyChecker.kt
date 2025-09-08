@@ -24,15 +24,13 @@ class DefaultApiKeyChecker : ApiKeyChecker {
     private val llmToApiKeyMap = mapOf(
         "sonnet" to "ANTHROPIC_API_KEY",
         "haiku" to "ANTHROPIC_API_KEY",
-        "gpt4.1" to "OPENAI_API_KEY",
+        "openai/gpt-5" to "OPENAI_API_KEY",
         "gpt-4o-mini" to "OPENAI_API_KEY",
-        "o3" to "OPENAI_API_KEY",
-        "o1-mini" to "OPENAI_API_KEY",
         "o4-mini" to "OPENAI_API_KEY",
         "deepseek" to "DEEPSEEK_API_KEY",
         "r1" to "DEEPSEEK_API_KEY",
         "gemini-2.5-pro" to "GEMINI_API_KEY",
-        "gemini/gemini-2.5-flash-preview-04-17" to "GEMINI_API_KEY",
+        "gemini/gemini-2.5-flash-preview-05-20" to "GEMINI_API_KEY",
     )
 
     // API Key Cache
