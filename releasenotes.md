@@ -6,6 +6,8 @@
 - **Git Repository Documentation**: Comprehensive documentation workflow with branch/tag switching
 - **Tool Window Output Migration**: Complete migration from dialog-based to tool window-based output
 - **Enhanced Plan Management**: Configurable plans folder and single-file plan format support
+- **Subplan Execution**: Comprehensive testing and hierarchy support for complex plan execution
+- **Improved MCP Tool Window**: Dynamic tool management with execution logging
 
 ## 🚀 New Features
 
@@ -29,11 +31,23 @@
 - **Utility Actions**:
   - SymlinkToScratchAction to symlink content to scratch files, useful for multirepo projects for cross repo context
 
+- **Subplan Execution Framework**:
+  - Comprehensive testing infrastructure for hierarchical plan execution
+  - Support for complex plan hierarchies with parent-child relationships
+  - Enhanced context YAML file expansion with configurable settings
+  - Improved plan continuation and validation logic
+
+- **Enhanced MCP Tool Window**:
+  - Dynamic tool registration and management interface
+  - Real-time execution logging and status updates
+  - Tool enable/disable functionality with persistent configuration
+
 ## 💡 Improvements
 
 ### Configuration & Settings
 - Redesigned settings interface with tabbed organization
 - Improved persistent file management
+- Enhanced MCP server configuration with tool management options
 
 ## 🔧 Bug Fixes
 
@@ -51,6 +65,9 @@
 ### Architecture & Dependencies
 - Upgraded Kotlin version to 2.1.10
 - Added comprehensive documentation generation workflows
+- Enhanced MCP server infrastructure with HTTP transport
+- Improved testing infrastructure with better mock support
+- Optimized file processing and path handling utilities
 
 ---
 

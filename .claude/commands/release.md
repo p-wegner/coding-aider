@@ -28,11 +28,8 @@ cat version.txt 2>/dev/null || echo "No version.txt found"
 echo "Git status:"
 git status
 
-# Get recent changes
-echo "Recent changes since last tag:"
-LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "HEAD")
-git log --oneline $LATEST_TAG..HEAD
-```
+# Find last release tag
+
 
 Now let me examine the codebase to understand what has changed and generate meaningful release notes:
 
