@@ -155,9 +155,7 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
     }
 
     fun supportsReasoningEffort(llm: String): Boolean {
-        // TODO 08.09.2025 pwegner: use https://raw.githubusercontent.com/Aider-AI/aider/refs/heads/main/aider/resources/model-settings.yml to get all models that support reasoning-effort
-        val supportedModels = listOf<String>("gpt-5", "o3", "o1")
-        return supportedModels.any{ llm.contains(it, ignoreCase = true)}
+        return ModelConfiguration.supportsReasoningEffort(llm)
     }
 
 
