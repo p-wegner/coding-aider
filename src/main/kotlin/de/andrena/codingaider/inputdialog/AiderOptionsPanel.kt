@@ -1,5 +1,6 @@
 package de.andrena.codingaider.inputdialog
 
+import com.intellij.openapi.application.ApplicationManager.getApplication
 import com.intellij.openapi.components.service
 import com.intellij.openapi.ui.ComboBox
 import com.intellij.ui.components.JBLabel
@@ -41,7 +42,7 @@ class AiderOptionsPanel(
         preferredSize = Dimension(200, preferredSize.height)
     }
 
-    private val customProviderService = CustomLlmProviderService.getInstance(null)
+    private val customProviderService = getApplication().getService(CustomLlmProviderService::class.java)
     private val defaultProviderService = service<DefaultProviderSettings>()
     private val customProviderListener: () -> Unit = { updateLlmOptions() }
     private val defaultProviderListener: () -> Unit = { updateLlmOptions() }

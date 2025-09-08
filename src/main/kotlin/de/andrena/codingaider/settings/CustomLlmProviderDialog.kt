@@ -1,5 +1,6 @@
 package de.andrena.codingaider.settings
 
+import com.intellij.openapi.application.ApplicationManager.getApplication
 import com.intellij.openapi.components.service
 import com.intellij.openapi.ui.DialogWrapper
 import com.intellij.ui.components.JBList
@@ -11,7 +12,7 @@ import com.intellij.ui.components.JBScrollPane
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
 
 class CustomLlmProviderDialog : DialogWrapper(null) {
-    private val providerService = CustomLlmProviderService.getInstance(null)
+    private val providerService = getApplication().getService(CustomLlmProviderService::class.java)
     private val providersListModel = DefaultListModel<String>()
     private val providersList = JBList(providersListModel).apply {
         selectionMode = ListSelectionModel.SINGLE_SELECTION

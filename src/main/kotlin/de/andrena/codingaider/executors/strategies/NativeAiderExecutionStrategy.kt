@@ -1,5 +1,6 @@
 package de.andrena.codingaider.executors.strategies
 
+import com.intellij.openapi.application.ApplicationManager.getApplication
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.settings.AiderSettings
@@ -33,7 +34,8 @@ class NativeAiderExecutionStrategy(
     ) {
         val environment = processBuilder.environment()
 
-        val customProvider = CustomLlmProviderService.Companion.getInstance(project).getProvider(commandData.llm)
+        val customProvider =
+            getApplication().getService(CustomLlmProviderService::class.java).getProvider(commandData.llm)
         when {
             customProvider != null -> {
                 // Set provider-specific environment variables

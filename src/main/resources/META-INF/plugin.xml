@@ -128,10 +128,10 @@
             <add-to-group group-id="MainMenu" anchor="last"/>
             <add-to-group group-id="MainToolBar" anchor="last"/>
         </action>
-        <action id="de.andrena.codingaider.actions.ide.CopyToScratchAction"
-                class="de.andrena.codingaider.actions.ide.CopyToScratchAction"
-                text="Copy to Scratch"
-                description="Copy selected files to scratch folder">
+        <action id="de.andrena.codingaider.actions.ide.SymlinkToScratchAction"
+                class="de.andrena.codingaider.actions.ide.SymlinkToScratchAction"
+                text="Symlink to Scratch"
+                description="Create symbolic links to selected files in scratch folder">
         </action>
         <group id="de.andrena.codingaider.AiderActionGroup" text="Aider Actions" popup="true"
                icon="AllIcons.Actions.ListFiles">

@@ -116,9 +116,7 @@ ${if (commandData.llm.isNotEmpty()) "**LLM:** ${commandData.llm}" else ""}
                 else -> e.message!!
             }
             
-            // Don't overwrite existing content, just append error message
             if (e is InterruptedException) {
-                // For interruptions (aborts), we want to preserve existing content
                 appendErrorMessage("Command was interrupted by user")
             } else {
                 // For other errors, show the error message
@@ -132,7 +130,6 @@ ${if (commandData.llm.isNotEmpty()) "**LLM:** ${commandData.llm}" else ""}
             commandExecutor.get()?.abortCommand(planId)
             executionThread?.interrupt()
             
-            // Preserve existing content and append abort message
             appendErrorMessage("Command aborted by user")
             
             val outputService = project.service<AiderOutputService>()

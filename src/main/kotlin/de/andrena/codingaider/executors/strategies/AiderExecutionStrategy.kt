@@ -1,5 +1,6 @@
 package de.andrena.codingaider.executors.strategies
 
+import com.intellij.openapi.application.ApplicationManager.getApplication
 import com.intellij.openapi.components.service
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
@@ -18,7 +19,8 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
         return buildList {
             // Handle model selection based on provider type
             if (commandData.llm.isNotEmpty()) {
-                val customProvider = CustomLlmProviderService.Companion.getInstance(project).getProvider(commandData.llm)
+                val customProvider =
+                    getApplication().getService(CustomLlmProviderService::class.java).getProvider(commandData.llm)
                 if (customProvider != null) {
                     // Handle model name based on provider type
                     add("--model")
@@ -56,6 +58,7 @@ abstract class AiderExecutionStrategy(protected val project: Project) {
                 add("--no-pretty")
                 add("--no-fancy-input")
                 add("--no-detect-urls")
+                add("--no-show-model-warnings")
                 add("--no-check-update")
             }
             if (commandData.additionalArgs.isNotEmpty()) {

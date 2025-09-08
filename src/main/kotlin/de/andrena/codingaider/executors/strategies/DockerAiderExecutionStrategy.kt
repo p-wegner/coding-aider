@@ -1,10 +1,9 @@
 package de.andrena.codingaider.executors.strategies
 
-import com.intellij.openapi.components.service
+import com.intellij.openapi.application.ApplicationManager.getApplication
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.docker.DockerContainerManager
-import de.andrena.codingaider.settings.AiderDefaults
 import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.settings.CustomLlmProviderService
 import de.andrena.codingaider.settings.LlmProviderType
@@ -59,7 +58,8 @@ class DockerAiderExecutionStrategy(
         }
 
         // Add provider-specific Docker configurations
-        val customProvider = CustomLlmProviderService.getInstance(project).getProvider(commandData.llm)
+        val customProvider =
+            getApplication().getService(CustomLlmProviderService::class.java).getProvider(commandData.llm)
         when (customProvider?.type) {
             LlmProviderType.OLLAMA -> {
                 // For Ollama, we need to ensure network access to the host

@@ -1,6 +1,5 @@
 package de.andrena.codingaider.actions.ide
 
-import com.intellij.ide.scratch.ScratchFileService
 import com.intellij.ide.scratch.ScratchRootType
 import com.intellij.lang.Language
 import com.intellij.notification.NotificationGroupManager
@@ -17,20 +16,21 @@ import com.intellij.openapi.progress.Task
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import kotlinx.coroutines.runBlocking
-import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.Paths
 
-class CopyToScratchAction : AnAction() {
+class SymlinkToScratchAction : AnAction() {
     
     override fun actionPerformed(e: AnActionEvent) {
         val project = e.project ?: return
         val files = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY) ?: return
         
-        ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Copying Files to Scratch", true) {
+        ProgressManager.getInstance().run(object : Task.Backgroundable(project, "Creating symlinks to scratch", true) {
             override fun run(indicator: ProgressIndicator) {
-                val copiedFiles = mutableListOf<String>()
+                val symlinkedFiles = mutableListOf<String>()
                 val failedFiles = mutableListOf<String>()
                 
-                indicator.text = "Copying files to scratch folder..."
+                indicator.text = "Creating symlinks to scratch folder..."
                 indicator.isIndeterminate = false
                 
                 runBlocking {
@@ -40,11 +40,11 @@ class CopyToScratchAction : AnAction() {
                         
                         try {
                             if (file.isDirectory) {
-                                // For directories, copy all files recursively
-                                copyDirectoryToScratch(file, "", copiedFiles, failedFiles)
+                                // For directories, symlink all files recursively
+                                symlinkDirectoryToScratch(file, "", symlinkedFiles, failedFiles)
                             } else {
                                 // For individual files
-                                copyFileToScratch(project, file, copiedFiles, failedFiles)
+                                symlinkFileToScratch(project, file, symlinkedFiles, failedFiles)
                             }
                         } catch (e: Exception) {
                             failedFiles.add("${file.name}: ${e.message}")
@@ -53,14 +53,13 @@ class CopyToScratchAction : AnAction() {
                 }
                 
                 // Show notification with results
-                showNotification(project, copiedFiles, failedFiles)
+                showNotification(project, symlinkedFiles, failedFiles)
             }
         })
     }
     
-    private suspend fun copyFileToScratch(project: Project, file: VirtualFile, copiedFiles: MutableList<String>, failedFiles: MutableList<String>) {
+    private suspend fun symlinkFileToScratch(project: Project, file: VirtualFile, symlinkedFiles: MutableList<String>, failedFiles: MutableList<String>) {
         try {
-            val content = String(file.contentsToByteArray(), file.charset)
             val fileType = FileTypeManager.getInstance().getFileTypeByFile(file)
             val language = Language.findLanguageByID(fileType.name) ?: Language.findLanguageByID("TEXT")
             
@@ -69,29 +68,29 @@ class CopyToScratchAction : AnAction() {
                     project,
                     file.name,
                     language,
-                    content
+                    "" // Empty content, we'll create a symlink instead
                 )
                 
                 if (scratchFile != null) {
-                    copiedFiles.add(file.name)
+                    // Create symlink from scratch file to original file
+                    createSymlink(scratchFile.path, file.path, symlinkedFiles, failedFiles, file.name)
                 } else {
                     failedFiles.add("${file.name}: Failed to create scratch file")
                 }
             }
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             failedFiles.add("${file.name}: ${e.message}")
         }
     }
     
-    private suspend fun copyDirectoryToScratch(directory: VirtualFile, relativePath: String, copiedFiles: MutableList<String>, failedFiles: MutableList<String>) {
+    private suspend fun symlinkDirectoryToScratch(directory: VirtualFile, relativePath: String, symlinkedFiles: MutableList<String>, failedFiles: MutableList<String>) {
         directory.children.forEach { child ->
             val childRelativePath = if (relativePath.isEmpty()) child.name else "$relativePath/${child.name}"
             
             if (child.isDirectory) {
-                copyDirectoryToScratch(child, childRelativePath, copiedFiles, failedFiles)
+                symlinkDirectoryToScratch(child, childRelativePath, symlinkedFiles, failedFiles)
             } else {
                 try {
-                    val content = String(child.contentsToByteArray(), child.charset)
                     val fileType = FileTypeManager.getInstance().getFileTypeByFile(child)
                     val language = Language.findLanguageByID(fileType.name) ?: Language.findLanguageByID("TEXT")
                     
@@ -103,35 +102,52 @@ class CopyToScratchAction : AnAction() {
                             null, // Use null for project to make it available across all projects
                             scratchFileName,
                             language,
-                            content
+                            "" // Empty content, we'll create a symlink instead
                         )
                         
                         if (scratchFile != null) {
-                            copiedFiles.add(childRelativePath)
+                            // Create symlink from scratch file to original file
+                            createSymlink(scratchFile.path, child.path, symlinkedFiles, failedFiles, childRelativePath)
                         } else {
                             failedFiles.add("$childRelativePath: Failed to create scratch file")
                         }
                     }
-                } catch (e: IOException) {
+                } catch (e: Exception) {
                     failedFiles.add("$childRelativePath: ${e.message}")
                 }
             }
         }
     }
     
-    private fun showNotification(project: Project, copiedFiles: List<String>, failedFiles: List<String>) {
+    private fun createSymlink(scratchFilePath: String, originalFilePath: String, symlinkedFiles: MutableList<String>, failedFiles: MutableList<String>, fileName: String) {
+        try {
+            val scratchPath = Paths.get(scratchFilePath)
+            val originalPath = Paths.get(originalFilePath)
+            
+            // Delete the empty scratch file first
+            Files.deleteIfExists(scratchPath)
+            
+            // Create the symbolic link
+            Files.createSymbolicLink(scratchPath, originalPath)
+            symlinkedFiles.add(fileName)
+        } catch (e: Exception) {
+            failedFiles.add("$fileName: Failed to create symlink - ${e.message}")
+        }
+    }
+    
+    private fun showNotification(project: Project, symlinkedFiles: List<String>, failedFiles: List<String>) {
         val message = buildString {
-            if (copiedFiles.isNotEmpty()) {
-                appendLine("Successfully copied ${copiedFiles.size} file(s) to scratch:")
-                copiedFiles.take(5).forEach { appendLine("  • $it") }
-                if (copiedFiles.size > 5) {
-                    appendLine("  ... and ${copiedFiles.size - 5} more")
+            if (symlinkedFiles.isNotEmpty()) {
+                appendLine("Successfully created ${symlinkedFiles.size} symlink(s) to scratch:")
+                symlinkedFiles.take(5).forEach { appendLine("  • $it") }
+                if (symlinkedFiles.size > 5) {
+                    appendLine("  ... and ${symlinkedFiles.size - 5} more")
                 }
             }
             
             if (failedFiles.isNotEmpty()) {
-                if (copiedFiles.isNotEmpty()) appendLine()
-                appendLine("Failed to copy ${failedFiles.size} file(s):")
+                if (symlinkedFiles.isNotEmpty()) appendLine()
+                appendLine("Failed to create ${failedFiles.size} symlink(s):")
                 failedFiles.take(3).forEach { appendLine("  • $it") }
                 if (failedFiles.size > 3) {
                     appendLine("  ... and ${failedFiles.size - 3} more")

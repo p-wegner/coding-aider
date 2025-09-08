@@ -32,7 +32,7 @@
 - [ ] support different agentic clis: claude code, gemini, codex, (generic adapter setting or only limited set? usually arguments will differ and model selection is not possible for most of them)
 
 ## Prio Features
-- [ ] Feature: scratchpad feature for clipboard content and or temporary files outside aider working directory
+- [x] Feature: scratchpad feature for clipboard content and or temporary files outside aider working directory
     (reuse intellij scratchpad feature)
 - [ ] plan style: - minimal, - medium, - full (custom prd template?)
   - [x] minimal: single plan file

@@ -26,6 +26,8 @@
   - Configurable plans folder location
   - Single-file plan format support
   - Improved plan archiving and history management
+- **Utility Actions**:
+  - SymlinkToScratchAction to symlink content to scratch files, useful for multirepo projects for cross repo context
 
 ## 💡 Improvements
 

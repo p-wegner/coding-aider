@@ -71,14 +71,4 @@ class CustomLlmProviderService : PersistentStateComponent<CustomLlmProviderServi
     }
 
 
-    companion object {
-        fun getInstance(project: Project?): CustomLlmProviderService {
-            return if (project != null) {
-                project.getService(CustomLlmProviderService::class.java)
-            } else {
-                ApplicationManager.getApplication().getService(CustomLlmProviderService::class.java)
-            }
-
-        }
-    }
 }

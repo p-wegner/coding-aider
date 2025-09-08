@@ -1,10 +1,10 @@
 package de.andrena.codingaider.settings
 
 import com.intellij.openapi.Disposable
+import com.intellij.openapi.application.ApplicationManager.getApplication
 import com.intellij.openapi.components.service
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.util.Disposer
-import com.intellij.ui.tabs.TabInfo
 import com.intellij.ui.tabs.impl.JBEditorTabs
 import de.andrena.codingaider.settings.tabs.*
 import de.andrena.codingaider.utils.ApiKeyChecker
@@ -23,7 +23,7 @@ class AiderSettingsConfigurable : Configurable {
     private val tabsDisposable: Disposable = Disposer.newDisposable()
     private val tabsComponent = JBEditorTabs(null, tabsDisposable)
     private val settings = AiderSettings.getInstance()
-    private val customProviderService = CustomLlmProviderService.getInstance(null)
+    private val customProviderService = getApplication().getService(CustomLlmProviderService::class.java)
 
     // Tab panels
     private val setupPanel = AiderSetupPanel(apiKeyChecker) { useDockerAider ->
