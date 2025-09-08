@@ -1,3 +1,57 @@
+# Coding-Aider Plugin Release Notes - v1.2.11
+
+## 🌟 Key Highlights
+
+- **MCP Server Integration**: Full HTTP-based MCP server with dynamic tool registration
+- **Git Repository Documentation**: Comprehensive documentation workflow with branch/tag switching
+- **Tool Window Output Migration**: Complete migration from dialog-based to tool window-based output
+- **Enhanced Plan Management**: Configurable plans folder and single-file plan format support
+
+## 🚀 New Features
+
+- **MCP Server Integration**:
+  - Full HTTP-based MCP server with dynamic tool registration,
+  - Embedded web server for MCP tool management
+  - Configurable MCP tools with enable/disable options
+  - Enhanced persistent file management through MCP tools
+
+- **Git Repository Documentation**:
+  - Comprehensive documentation workflow for Git repositories
+  - Branch and tag switching capabilities
+  - File selection with filtering and token counting
+  - Authentication and shallow clone support
+  - Repository size estimation and pre-clone checking
+
+- **Enhanced Plan Management**:
+  - Configurable plans folder location
+  - Single-file plan format support
+  - Improved plan archiving and history management
+
+## 💡 Improvements
+
+### Configuration & Settings
+- Redesigned settings interface with tabbed organization
+- Improved persistent file management
+
+## 🔧 Bug Fixes
+
+- Fixed EDT access violations and threading issues
+- Improved Swing component lifecycle management
+- Fixed markdown rendering problems with JCEF integration
+
+### File & Path Handling
+- Improved file path normalization and cross-platform compatibility
+- Enhanced persistent file management
+- Fixed duplicate file detection and handling
+
+## 🛠 Technical Improvements
+
+### Architecture & Dependencies
+- Upgraded Kotlin version to 2.1.10
+- Added comprehensive documentation generation workflows
+
+---
+
 # Coding-Aider Plugin Release Notes - v1.2.10
 
 ## 🌟 Key Highlights
