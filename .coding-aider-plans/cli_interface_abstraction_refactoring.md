@@ -34,11 +34,6 @@ This plan outlines the refactoring required to make the coding-aider plugin supp
 - **API key management**: `ApiKeyChecker` with hardcoded model-to-API-key mappings
 - **Provider types**: `LlmProviderType` enum with Aider-specific prefixes and configurations
 
-#### 5. Feature Integration (High Priority)
-- **Plugin-based edits**: `PluginBasedEditsService` uses Aider-specific search/replace format
-- **Plan system**: `AiderPlanService` heavily integrated with Aider's workflow
-- **Auto-commit**: `AutoCommitService` coupled with Aider's commit detection
-- **Structured mode**: Aider-specific prompt engineering and system messages
 
 ## Target Architecture
 
@@ -303,35 +298,11 @@ class ClaudeCodeSpecificSettings : PersistentStateComponent<ClaudeCodeSpecificSe
 ### Phase 4: Feature Adaptation (Week 7-8)
 
 #### Tasks:
-1. **Adapt or remove high-cost features**
-   - **Plugin-based edits**: Evaluate if this can be generalized or should be Aider-only
-   - **Plan system**: Refactor to work with multiple CLIs or make Aider-specific
-   - **Auto-commit integration**: Make CLI-agnostic or CLI-specific
-   - **Structured mode**: Adapt for different CLI prompt formats
-
-2. **Create CLI-specific feature implementations**
+1. **Create CLI-specific feature implementations**
    - Implement Aider-specific features in `AiderCli`
    - Create Claude Code-specific features
    - Build feature compatibility matrix
    - Create feature toggles and settings
-
-3. **Update testing infrastructure**
-   - Create CLI-specific test fixtures
-   - Update integration tests to work with multiple CLIs
-   - Create CLI compatibility tests
-   - Build performance benchmarks for different CLIs
-
-4. **Documentation and migration**
-   - Create CLI implementation guide
-   - Write migration documentation
-   - Update user documentation
-   - Create developer documentation for new CLI implementations
-
-#### Deliverables:
-- Adapted or removed high-cost features
-- CLI-specific feature implementations
-- Updated testing infrastructure
-- Complete documentation
 
 ## Features to Remove or Modify
 
@@ -343,23 +314,11 @@ class ClaudeCodeSpecificSettings : PersistentStateComponent<ClaudeCodeSpecificSe
 - **Decision**: Make Aider-only or remove entirely
 - **Impact**: Users will lose in-IDE editing capabilities for other CLIs
 
-#### 2. Plan System (Major refactor or Aider-only)
-- **Current**: `AiderPlanService` heavily integrated with Aider's workflow
-- **Issue**: Plan structure and prompts are Aider-specific
-- **Decision**: Major refactor to make generic or keep Aider-only
-- **Impact**: Loss of structured planning for other CLIs
-
-#### 3. Auto-commit Integration (Refactor)
+#### 2. Auto-commit Integration (Refactor)
 - **Current**: `AutoCommitService` coupled with Aider's commit detection
 - **Issue**: Different CLIs may have different commit behaviors
 - **Decision**: Make CLI-agnostic with CLI-specific implementations
 - **Impact**: May need to simplify auto-commit features
-
-#### 4. Structured Mode (Major refactor)
-- **Current**: Aider-specific prompt engineering and system messages
-- **Issue**: Other CLIs may not support structured prompts
-- **Decision**: Refactor for CLI compatibility or remove
-- **Impact**: Loss of structured development workflow
 
 ### Conditional Features
 
@@ -402,40 +361,3 @@ class ClaudeCodeSpecificSettings : PersistentStateComponent<ClaudeCodeSpecificSe
 2. **Breaking Changes**: Provide migration guide and settings migration
 3. **Performance**: Benchmark performance impact of abstraction layer
 4. **Compatibility**: Ensure existing Aider functionality is preserved
-
-## Success Criteria
-
-1. **CLI Interchangeability**: Users can select between Aider, Claude Code, and other CLIs
-2. **Feature Preservation**: Core functionality preserved for Aider
-3. **Extensibility**: Easy to add new CLI implementations
-4. **Maintainability**: Clear separation between generic and CLI-specific code
-5. **User Experience**: Smooth transition with minimal disruption
-
-## Estimated Timeline
-
-- **Phase 1**: 2 weeks (Core Abstraction)
-- **Phase 2**: 2 weeks (Implementation Refactoring)
-- **Phase 3**: 2 weeks (UI and Actions Update)
-- **Phase 4**: 2 weeks (Feature Adaptation)
-
-**Total Estimated Time**: 8 weeks
-
-## Dependencies
-
-- **Kotlin 1.9+**: For enhanced type safety and features
-- **IntelliJ Platform 2023.2+**: For latest platform features
-- **Existing Test Infrastructure**: For maintaining test coverage
-- **Documentation Updates**: Required for user and developer guidance
-
-## Rollback Strategy
-
-1. **Feature Flags**: Implement feature flags for new CLI support
-2. **Branch Strategy**: Work in feature branch with regular merges
-3. **Testing**: Comprehensive testing before each phase
-4. **Documentation**: Maintain rollback documentation
-
-## Conclusion
-
-This refactoring will transform the coding-aider plugin from an Aider-specific tool into a flexible, CLI-agnostic platform that supports multiple AI coding assistants. While some Aider-specific features may be lost or modified, the benefits of CLI interchangeability and improved maintainability justify the investment.
-
-The key to success is careful planning, clear communication about feature changes, and thorough testing throughout the refactoring process.
