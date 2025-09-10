@@ -8,7 +8,9 @@
       "Bash(cat:*)",
       "Bash(gh release view:*)",
       "Bash(gh issue list:*)",
-      "Bash(gh issue view:*)"
+      "Bash(gh issue view:*)",
+      "Bash(find:*)",
+      "Bash(./gradlew:*)"
     ],
     "deny": []
   }

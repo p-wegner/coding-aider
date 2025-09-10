@@ -140,17 +140,27 @@
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
 
 
+            <action id="de.andrena.codingaider.actions.aider.GenericAiderAction"
+                    class="de.andrena.codingaider.actions.aider.GenericAiderAction"
+                    text="Start AI Assistant Action"
+                    description="This will instruct the AI assistant to do something">
+                <keyboard-shortcut keymap="$default" first-keystroke="alt A"/>
+            </action>
+            <action id="de.andrena.codingaider.actions.aider.GenericAiderShellAction"
+                    class="de.andrena.codingaider.actions.aider.GenericAiderShellAction"
+                    text="Start AI Assistant in Shell Mode"
+                    description="This will start the AI assistant in shell mode with default settings">
+                <keyboard-shortcut keymap="$default" first-keystroke="alt shift D"/>
+            </action>
             <action id="de.andrena.codingaider.actions.aider.AiderAction"
                     class="de.andrena.codingaider.actions.aider.AiderAction"
-                    text="Start Aider Action"
+                    text="Start Aider Action (Legacy)"
                     description="This will instruct aider to do something">
-                <keyboard-shortcut keymap="$default" first-keystroke="alt A"/>
             </action>
             <action id="de.andrena.codingaider.actions.aider.AiderShellAction"
                     class="de.andrena.codingaider.actions.aider.AiderShellAction"
-                    text="Start Aider in Shell Mode"
+                    text="Start Aider in Shell Mode (Legacy)"
                     description="This will start aider in shell mode with default settings">
-                <keyboard-shortcut keymap="$default" first-keystroke="alt shift D"/>
             </action>
             <action id="de.andrena.codingaider.actions.ide.ShowLastCommandResultAction"
                     class="de.andrena.codingaider.actions.ide.ShowLastCommandResultAction"
@@ -266,8 +276,8 @@
             <separator/>
             <action id="de.andrena.codingaider.SettingsAction"
                     class="de.andrena.codingaider.actions.ide.SettingsAction"
-                    text="Open Aider Settings"
-                    description="Open Aider Settings dialog"
+                    text="Open AI Assistant Settings"
+                    description="Open AI Assistant Settings dialog"
                     icon="AllIcons.General.Settings">
             </action>
         </group>
@@ -338,15 +348,20 @@
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
         <applicationConfigurable
+                instance="de.andrena.codingaider.settings.GenericCliSettingsConfigurable"
+                displayName="Coding Assistant Settings"
+                id="de.andrena.codingaider.settings.GenericCliSettingsConfigurable"
+                parentId="tools"/>
+        <applicationConfigurable
                 instance="de.andrena.codingaider.settings.AiderSettingsConfigurable"
                 displayName="Aider Settings"
                 id="de.andrena.codingaider.settings.AiderSettingsConfigurable"
-                parentId="tools"/>
+                parentId="de.andrena.codingaider.settings.GenericCliSettingsConfigurable"/>
         <projectConfigurable
                 instance="de.andrena.codingaider.settings.AiderProjectSettingsConfigurable"
                 displayName="Aider Project Settings"
                 id="de.andrena.codingaider.settings.AiderProjectSettingsConfigurable"
-                parentId="tools"/>
+                parentId="de.andrena.codingaider.settings.GenericCliSettingsConfigurable"/>
         <notificationGroup id="Coding Aider Notifications" displayType="BALLOON"/>
         <notificationGroup id="Aider Web Crawl" displayType="BALLOON"/>
         <notificationGroup id="Aider Clipboard Image" displayType="BALLOON"/>
