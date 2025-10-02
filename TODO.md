@@ -30,6 +30,7 @@
 - [ ] Feature: Consistent Model and API Key Management
   - [ ] Streamline custom aider model/ api key setup
 - [ ] support different agentic clis: claude code, gemini, codex, (generic adapter setting or only limited set? usually arguments will differ and model selection is not possible for most of them)
+- [ ] allow using env vars in provider config (for custom providers)
 
 ## Prio Features
 - [x] Feature: scratchpad feature for clipboard content and or temporary files outside aider working directory

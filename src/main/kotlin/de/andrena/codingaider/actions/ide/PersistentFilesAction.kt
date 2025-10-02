@@ -6,6 +6,7 @@ import com.intellij.openapi.actionSystem.ActionUpdateThread
 import com.intellij.openapi.actionSystem.AnAction
 import com.intellij.openapi.actionSystem.AnActionEvent
 import com.intellij.openapi.actionSystem.CommonDataKeys
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.vfs.VirtualFile
 import de.andrena.codingaider.services.PersistentFileService
@@ -56,16 +57,33 @@ class PersistentFilesAction : AnAction() {
     override fun update(e: AnActionEvent) {
         val project: Project? = e.project
         val files: Array<VirtualFile>? = e.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)
-        val persistentFileService = project?.basePath?.let { PersistentFileService(project) }
-        val persistentFiles = persistentFileService?.getPersistentFiles() ?: emptyList()
-
-        val allFiles = files?.let { FileTraversal.traverseFilesOrDirectories(it) } ?: emptyList()
-        val allFilesContained = allFiles.isNotEmpty() && allFiles.all { file ->
-            persistentFiles.any { it.filePath == file.filePath }
-        }
 
         e.presentation.isEnabledAndVisible = project != null && !files.isNullOrEmpty()
-        e.presentation.text = if (allFilesContained) "Remove from Persistent Files" else "Add to Persistent Files"
+
+        // Set default text and run file traversal in background
+        e.presentation.text = "Add to Persistent Files"
+
+        if (project != null && !files.isNullOrEmpty()) {
+            val persistentFileService = project.getService(PersistentFileService::class.java)
+
+            // Run file traversal on background thread to prevent UI freeze
+            ApplicationManager.getApplication().executeOnPooledThread {
+                try {
+                    val persistentFiles = persistentFileService.getPersistentFiles()
+                    val allFiles = FileTraversal.traverseFilesOrDirectories(files)
+                    val allFilesContained = allFiles.isNotEmpty() && allFiles.all { file ->
+                        persistentFiles.any { it.hasSameNormalizedPath(file) }
+                    }
+
+                    // Update UI on EDT
+                    ApplicationManager.getApplication().invokeLater {
+                        e.presentation.text = if (allFilesContained) "Remove from Persistent Files" else "Add to Persistent Files"
+                    }
+                } catch (ex: Exception) {
+                    // Keep default text if traversal fails
+                }
+            }
+        }
     }
 
     override fun getActionUpdateThread(): ActionUpdateThread = ActionUpdateThread.BGT
