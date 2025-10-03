@@ -33,19 +33,8 @@
 - [ ] allow using env vars in provider config (for custom providers)
 
 ## Prio Features
-- [x] Feature: scratchpad feature for clipboard content and or temporary files outside aider working directory
-    (reuse intellij scratchpad feature)
 - [ ] plan style: - minimal, - medium, - full (custom prd template?)
   - [x] minimal: single plan file
-- [x] automatic yaml file inclusion as setting
-
 - [ ] Improve Subplan Feature to properly run subplans when executing the master plan
 
 ## Before Release
-
-- [x] bug: fix copy paste with keyboard shortcuts in markdown viewer
-- [x] Bug: aiderignore not used for every action
-- [x] Bug: automatic plan continuation fails to detect plan end properly
-- [x] Bug: Continue Plan doesn't properly register when plan ended
-- [x] Bug: "Error executing Aider command: null" when aborting command
-    - [x] in case of command abortion, make sure to keep output content of the command visible.
