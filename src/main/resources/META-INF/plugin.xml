@@ -353,9 +353,9 @@
                 id="de.andrena.codingaider.settings.GenericCliSettingsConfigurable"
                 parentId="tools"/>
         <applicationConfigurable
-                instance="de.andrena.codingaider.settings.AiderSettingsConfigurable"
-                displayName="Aider Settings"
-                id="de.andrena.codingaider.settings.AiderSettingsConfigurable"
+                instance="de.andrena.codingaider.settings.cli.CliSettingsConfigurable"
+                displayName="CLI Tools Settings"
+                id="de.andrena.codingaider.settings.cli.CliSettingsConfigurable"
                 parentId="de.andrena.codingaider.settings.GenericCliSettingsConfigurable"/>
         <projectConfigurable
                 instance="de.andrena.codingaider.settings.AiderProjectSettingsConfigurable"
