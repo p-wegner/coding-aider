@@ -1,0 +1,46 @@
+- `reasoningEffort` – Aider-related: Yes (passes reasoning effort flag to Aider commands).
+- `promptAugmentation` – Aider-related: Yes (controls automatic augmentation of prompts sent to Aider).
+- `includeCommitMessageBlock` – Aider-related: No (adds commit message context for Aider generation).
+- `enableDocumentationLookup` – Aider-related: No (enables fetching documentation as Aider context).
+- `enableContextYamlExpansion` – Aider-related: No (adjusts how plan context YAML is built for Aider).
+- `enableSubplans` – Aider-related: No (turns on Aider structured subplan workflow).
+- `useSingleFilePlanMode` – Aider-related: No (switches structured mode to single-file plan handling).
+- `useYesFlag` – Aider-related: Yes (toggles `--yes` usage when invoking Aider).
+- `llm` – Aider-related: Yes (selects underlying model for Aider sessions).
+- `additionalArgs` – Aider-related: No (injects extra CLI arguments when running Aider).
+- `lintCmd` – Aider-related: No (configures lint command passed into Aider workflows).
+- `showGitComparisonTool` – Aider-related: No (IDE convenience after runs only).
+- `activateIdeExecutorAfterWebcrawl` – Aider-related: No (UI behavior after web crawl completion).
+- `webCrawlLlm` – Aider-related: Yes (sets the model used for Aider web crawl requests).
+- `deactivateRepoMap` – Aider-related: Yes (disables Aider repo-map usage).
+- `editFormat` – Aider-related: Yes (chooses edit format expected from Aider).
+- `verboseCommandLogging` – Aider-related: Yes (enables verbose logging while running Aider commands).
+- `useDockerAider` – Aider-related: Yes (selects Docker-based Aider execution).
+- `mountAiderConfInDocker` – Aider-related: Yes (controls mounting of config into Docker Aider).
+- `includeChangeContext` – Aider-related: Yes (decides whether to send git diff context to Aider).
+- `autoCommits` – Aider-related: Yes (governs IDE auto-commit behavior, not Aider itself).
+- `dirtyCommits` – Aider-related: Yes (controls commit handling for dirty state outside Aider).
+- `useSidecarMode` – Aider-related: Yes (switches to sidecar-based Aider execution).
+- `sidecarModeVerbose` – Aider-related: Yes (toggles verbose logging for the sidecar Aider process).
+- `alwaysIncludeOpenFiles` – Aider-related: No (adds open files to Aider context automatically).
+- `alwaysIncludePlanContextFiles` – Aider-related: No (ensures plan context files reach Aider).
+- `dockerImage` – Aider-related: Yes (specifies Docker image for Aider runs).
+- `aiderExecutablePath` – Aider-related: Yes (points to the local Aider binary).
+- `documentationLlm` – Aider-related: Yes (model for Aider-powered documentation generation).
+- `planRefinementLlm` – Aider-related: Yes (model for plan refinement interactions with Aider).
+- `enableAutoPlanContinue` – Aider-related: No (lets Aider continue plans automatically).
+- `enableAutoPlanContinuationInPlanFamily` – Aider-related: No (extends auto continuation to plan families).
+- `optionsPanelCollapsed` – Aider-related: No (stores UI state of settings panel).
+- `enableLocalModelCostMap` – Aider-related: Yes (enables local cost map for Aider model selection).
+- `defaultMode` – Aider-related: No (choose default Aider interaction mode).
+- `pluginBasedEdits` – Aider-related: NO (enables plugin-supplied edits for Aider interaction).
+- `lenientEdits` – Aider-related: No (allows multiple edit formats from Aider responses).
+- `autoCommitAfterEdits` – Aider-related: No (controls IDE auto-commit after processing edits).
+- `showWorkingDirectoryPanel` – Aider-related: No (UI visibility for working directory selector).
+- `showDevTools` – Aider-related: No (UI option for developer tools in viewer).
+- `enableMcpServer` – Aider-related: No (manages plugin MCP server lifecycle).
+- `mcpServerPort` – Aider-related: No (port configuration for MCP server).
+- `mcpServerAutoStart` – Aider-related: No (auto-start behavior for MCP server).
+- `planCompletionCheckDelay` – Aider-related: No (timing for IDE plan completion polling).
+- `planCompletionMaxRetries` – Aider-related: No (maximum retries for plan completion detection).
+- `enablePlanCompletionLogging` – Aider-related: No (diagnostic logging for plan completion flow).
