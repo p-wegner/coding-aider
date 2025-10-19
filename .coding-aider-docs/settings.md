@@ -79,3 +79,49 @@ The provider editor dialog shows real-time status for API key availability:
 - Test your configuration using the "Test Connection" button
 - Use meaningful display names for custom providers
 - Ensure proper base URLs for Ollama and OpenAI-compatible providers
+
+### Common Configuration Examples
+
+#### OpenAI-Compatible Provider with Environment Variable
+```
+Provider Name: My OpenAI
+Provider Type: OpenAI
+Base URL: https://api.openai.com/v1
+Model Name: gpt-4o
+API Key: (leave empty to use OPENAI_API_KEY environment variable)
+```
+
+#### Ollama Local Setup
+```
+Provider Name: Local Ollama
+Provider Type: Ollama
+Base URL: http://127.0.0.1:11434
+Model Name: llama3:70b
+API Key: (not required)
+```
+
+#### OpenRouter with Custom Environment Variable
+```
+Provider Name: OpenRouter Claude
+Provider Type: OpenRouter
+Model Name: anthropic/claude-3.5-sonnet
+API Key: (leave empty)
+Custom Environment Variable: MY_OPENROUTER_KEY
+```
+
+#### LM Studio Local Setup
+```
+Provider Name: LM Studio Local
+Provider Type: LM Studio
+Base URL: http://127.0.0.1:1234
+Model Name: mistral-7b
+API Key: (optional - leave empty if no authentication)
+```
+
+#### Gemini with Environment Fallback
+```
+Provider Name: Google Gemini
+Provider Type: Gemini
+Model Name: gemini-2.5-pro
+API Key: (leave empty to use GEMINI_API_KEY environment variable)
+```

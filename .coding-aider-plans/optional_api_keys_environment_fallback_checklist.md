@@ -6,7 +6,7 @@
 - [x] Add `apiKeyOptional` flag to all relevant provider types (OPENAI, OPENROUTER, GEMINI)
 - [x] Define default environment variable names for each provider type
 - [x] Enhance `getApiKeyName()` method to return default environment variable names
-- [ ] Update provider documentation with environment variable requirements
+- [x] Update provider documentation with environment variable requirements
 
 ## CustomLlmProvider Class Updates
 - [x] Add optional API key field with null/empty support
@@ -43,13 +43,13 @@
 - [x] Design and implement visual indicators for API key status
 - [x] Create tooltips and inline help for environment variable usage
 - [x] Update settings panels to show API key source (stored/environment/not available)
-- [ ] Add configuration examples for common provider setups
+- [x] Add configuration examples for common provider setups
 - [x] Implement real-time feedback for environment variable availability
 
 ## Integration with Execution Strategies
 - [x] Update NativeAiderExecutionStrategy to handle optional API keys
 - [x] Update DockerAiderExecutionStrategy for environment variable passthrough
-- [ ] Update SidecarAiderExecutionStrategy for environment variable handling
+- [x] Update SidecarAiderExecutionStrategy for environment variable handling
 - [x] Ensure all strategies handle empty API keys with environment fallback
 - [x] Update command generation logic to include environment variables when needed
 
