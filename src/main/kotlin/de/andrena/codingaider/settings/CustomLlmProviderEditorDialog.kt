@@ -10,7 +10,11 @@ import com.intellij.ui.dsl.builder.columns
 import com.intellij.ui.dsl.builder.panel
 import de.andrena.codingaider.utils.ApiKeyManager
 import de.andrena.codingaider.utils.DefaultApiKeyChecker
+import de.andrena.codingaider.utils.EnvironmentVariableManager
 import javax.swing.JComponent
+import javax.swing.JLabel
+import com.intellij.util.ui.JBUI
+import java.awt.Color
 
 class CustomLlmProviderEditorDialog(
     private val existingProvider: CustomLlmProvider? = null
@@ -22,11 +26,14 @@ class CustomLlmProviderEditorDialog(
     private val apiKeyField = JBPasswordField()
     private val projectIdField = JBTextField()
     private val locationField = JBTextField()
+    private val customEnvVarField = JBTextField()
     private lateinit var baseUrlRow: Row
     private lateinit var apiKeyRow: Row
+    private lateinit var customEnvVarRow: Row
     private lateinit var projectIdRow: Row
     private lateinit var locationRow: Row
     private val providerTypeComboBox = com.intellij.openapi.ui.ComboBox(LlmProviderType.values())
+    private var apiKeyStatusLabel = JLabel()
 
     init {
         title = if (existingProvider == null) "Add Custom LLM Provider" else "Edit Custom LLM Provider"
@@ -37,6 +44,7 @@ class CustomLlmProviderEditorDialog(
         baseUrlField.document.addDocumentListener(createValidationListener())
         modelNameField.document.addDocumentListener(createValidationListener())
         apiKeyField.document.addDocumentListener(createValidationListener())
+        customEnvVarField.document.addDocumentListener(createValidationListener())
 
         providerTypeComboBox.addActionListener {
             updateProviderTypeUI()
@@ -50,6 +58,7 @@ class CustomLlmProviderEditorDialog(
             providerTypeComboBox.selectedItem = existingProvider.type
             projectIdField.text = existingProvider.projectId
             locationField.text = existingProvider.location
+            customEnvVarField.text = existingProvider.customEnvironmentVariable
 
             // Retrieve and mask existing API key
             ApiKeyManager.getCustomModelKey(existingProvider.name)?.let {
@@ -132,6 +141,7 @@ class CustomLlmProviderEditorDialog(
         // Update row visibility and tooltips based on provider requirements
         baseUrlRow.visible(selectedType.requiresBaseUrl)
         apiKeyRow.visible(selectedType.supportsApiKey)
+        customEnvVarRow.visible(selectedType.supportsApiKey && selectedType.apiKeyOptional)
         projectIdRow.visible(selectedType == LlmProviderType.VERTEX_EXPERIMENTAL)
         locationRow.visible(selectedType == LlmProviderType.VERTEX_EXPERIMENTAL)
 
@@ -139,6 +149,56 @@ class CustomLlmProviderEditorDialog(
         modelNameField.toolTipText = when (selectedType) {
             LlmProviderType.VERTEX_EXPERIMENTAL -> "Model name without vertex_ai/ prefix. ${selectedType.exampleModels}"
             else -> selectedType.exampleModels
+        }
+        
+        // Update API key status
+        updateApiKeyStatus()
+    }
+    
+    private fun updateApiKeyStatus() {
+        val selectedType = providerTypeComboBox.selectedItem as LlmProviderType
+        
+        if (!selectedType.supportsApiKey) {
+            apiKeyStatusLabel.text = "No authentication required"
+            apiKeyStatusLabel.foreground = JBUI.CurrentTheme.Label.foreground()
+            return
+        }
+        
+        val envManager = service<EnvironmentVariableManager>()
+        val hasApiKey = String(apiKeyField.password).isNotBlank() && String(apiKeyField.password) != "*".repeat(16)
+        val customEnvVar = customEnvVarField.text.trim()
+        
+        when {
+            hasApiKey -> {
+                apiKeyStatusLabel.text = "✓ API key provided"
+                apiKeyStatusLabel.foreground = Color(0, 128, 0) // Green
+            }
+            selectedType.apiKeyOptional -> {
+                val hasCustomEnvVar = customEnvVar.isNotBlank() && envManager.isEnvironmentVariableAvailable(customEnvVar)
+                val hasDefaultEnvVars = envManager.areAnyEnvironmentVariablesAvailable(selectedType.getDefaultEnvironmentVariables())
+                
+                when {
+                    hasCustomEnvVar -> {
+                        apiKeyStatusLabel.text = "✓ Custom environment variable available: $customEnvVar"
+                        apiKeyStatusLabel.foreground = Color(0, 128, 0) // Green
+                    }
+                    hasDefaultEnvVars -> {
+                        val availableVars = selectedType.getDefaultEnvironmentVariables().filter { 
+                            envManager.isEnvironmentVariableAvailable(it) 
+                        }
+                        apiKeyStatusLabel.text = "✓ Environment variables available: ${availableVars.joinToString(", ")}"
+                        apiKeyStatusLabel.foreground = Color(0, 128, 0) // Green
+                    }
+                    else -> {
+                        apiKeyStatusLabel.text = "⚠ No API key or environment variables available"
+                        apiKeyStatusLabel.foreground = Color(255, 140, 0) // Orange
+                    }
+                }
+            }
+            else -> {
+                apiKeyStatusLabel.text = "✗ API key required"
+                apiKeyStatusLabel.foreground = Color(255, 0, 0) // Red
+            }
         }
     }
 
@@ -169,6 +229,12 @@ class CustomLlmProviderEditorDialog(
             cell(apiKeyField)
                 .columns(30)
                 .comment("Secure API key for the provider")
+            cell(apiKeyStatusLabel)
+        }
+        customEnvVarRow = row("Custom Environment Variable:") {
+            cell(customEnvVarField)
+                .columns(30)
+                .comment("Optional custom environment variable name for API key")
         }
         projectIdRow = row("Project ID:") {
             cell(projectIdField)
@@ -239,15 +305,19 @@ class CustomLlmProviderEditorDialog(
             val hasApiKey = apiKeyText.isNotBlank() && apiKeyText != "*".repeat(16)
             
             if (!hasApiKey) {
-                // Check if environment variables are available
-                val apiKeyChecker = service<DefaultApiKeyChecker>()
-                val hasEnvironmentVars = selectedType.getDefaultEnvironmentVariables().any { envVar ->
-                    apiKeyChecker.getApiKeyValue(envVar) != null
-                }
+                val envManager = service<EnvironmentVariableManager>()
+                val customEnvVar = customEnvVarField.text.trim()
+                val hasCustomEnvVar = customEnvVar.isNotBlank() && envManager.isEnvironmentVariableAvailable(customEnvVar)
+                val hasDefaultEnvVars = envManager.areAnyEnvironmentVariablesAvailable(selectedType.getDefaultEnvironmentVariables())
                 
-                if (!hasEnvironmentVars) {
+                if (!hasCustomEnvVar && !hasDefaultEnvVars) {
+                    val envVarOptions = if (customEnvVar.isNotBlank()) {
+                        "$customEnvVar or ${selectedType.getDefaultEnvironmentVariables().joinToString(", ")}"
+                    } else {
+                        selectedType.getDefaultEnvironmentVariables().joinToString(", ")
+                    }
                     return ValidationInfo(
-                        "Either provide an API key or ensure environment variables (${selectedType.getDefaultEnvironmentVariables().joinToString(", ")}) are set",
+                        "Either provide an API key or ensure environment variables ($envVarOptions) are set",
                         apiKeyField
                     )
                 }
@@ -302,11 +372,15 @@ class CustomLlmProviderEditorDialog(
 
         private fun revalidate() {
             isOKActionEnabled = true  // Reset OK button state
+            updateApiKeyStatus()  // Update API key status when fields change
         }
     }
 
     fun getProvider(): CustomLlmProvider {
         val type: LlmProviderType = providerTypeComboBox.selectedItem as LlmProviderType
+        val apiKeyText = String(apiKeyField.password)
+        val hasExplicitApiKey = apiKeyText.isNotBlank() && apiKeyText != "*".repeat(16)
+        
         val provider = CustomLlmProvider(
             name = nameField.text,
             type = type,
@@ -314,12 +388,13 @@ class CustomLlmProviderEditorDialog(
             modelName = modelNameField.text,
             projectId = projectIdField.text.trim(),
             location = locationField.text.trim(),
+            hasExplicitApiKey = hasExplicitApiKey,
+            customEnvironmentVariable = customEnvVarField.text.trim()
         )
 
         // Save API key if provided and not masked, except for Ollama and Vertex AI
         if (type.supportsApiKey && type != LlmProviderType.VERTEX_EXPERIMENTAL) {
-            val apiKeyText = String(apiKeyField.password)
-            if (apiKeyText.isNotBlank() && apiKeyText != "*".repeat(16)) {
+            if (hasExplicitApiKey) {
                 // New key entered
                 ApiKeyManager.saveCustomModelKey(provider.name, apiKeyText)
             } else if (existingProvider != null) {

@@ -9,35 +9,35 @@
 - [ ] Update provider documentation with environment variable requirements
 
 ## CustomLlmProvider Class Updates
-- [ ] Add optional API key field with null/empty support
-- [ ] Add field to track whether API key was explicitly provided
-- [ ] Add validation for environment variable fallback logic
+- [x] Add optional API key field with null/empty support
+- [x] Add field to track whether API key was explicitly provided
+- [x] Add validation for environment variable fallback logic
 - [ ] Update serialization/deserialization to handle optional keys
 
 ## ApiKeyChecker Enhancements
 - [x] Modify `isApiKeyAvailableForLlm()` to handle optional API keys
 - [x] Add method to check environment variable availability specifically
-- [ ] Enhance `getApiKeyForLlm()` to support environment variable fallback
-- [ ] Update key retrieval logic for fallback chain: provider key → environment variable → default provider variable
+- [x] Enhance `getApiKeyForLlm()` to support environment variable fallback
+- [x] Update key retrieval logic for fallback chain: provider key → environment variable → default provider variable
 - [ ] Update `getAllLlmOptions()` to reflect API key availability with environment fallbacks
 - [x] Enhance `getApiKeysForDocker()` to handle environment variable passthrough
-- [ ] Update caching mechanism to work with environment variable lookups
+- [x] Update caching mechanism to work with environment variable lookups
 
 ## CustomLlmProviderEditorDialog Updates
 - [x] Modify validation logic to allow empty API keys for optional providers
-- [ ] Add visual indicators (icons/colors) for optional vs required API keys
+- [x] Add visual indicators (icons/colors) for optional vs required API keys
 - [x] Implement real-time environment variable validation and availability checking
 - [x] Update tooltips to explain environment variable fallback behavior
-- [ ] Add environment variable name field for custom variable specification
+- [x] Add environment variable name field for custom variable specification
 - [ ] Update provider type selection to show API key requirements clearly
 - [x] Enhance error messages with environment variable guidance
 
 ## Environment Variable Management
-- [ ] Create utility class for environment variable management
-- [ ] Implement caching for environment variable lookups
-- [ ] Add support for custom environment variable names
-- [ ] Handle environment variable precedence and override rules
-- [ ] Add validation for environment variable format and accessibility
+- [x] Create utility class for environment variable management
+- [x] Implement caching for environment variable lookups
+- [x] Add support for custom environment variable names
+- [x] Handle environment variable precedence and override rules
+- [x] Add validation for environment variable format and accessibility
 
 ## UI/UX Improvements
 - [ ] Design and implement visual indicators for API key status

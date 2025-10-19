@@ -39,9 +39,17 @@ class DefaultApiKeyChecker : ApiKeyChecker {
 
     // Cached API Key data class
     private data class CachedApiKey(
-        val value: String,
+        val value: String?,
         val timestamp: Instant = Instant.now()
     )
+
+    fun clearCache() {
+        apiKeyCache.clear()
+    }
+
+    fun clearCacheForKey(apiKeyName: String) {
+        apiKeyCache.remove(apiKeyName)
+    }
 
     private fun getCustomProvider(llm: String): CustomLlmProvider? {
         return service<CustomLlmProviderService>().getProvider(llm)
@@ -105,13 +113,34 @@ class DefaultApiKeyChecker : ApiKeyChecker {
     }
 
     override fun getApiKeyForLlm(llm: String): String? {
-        // Check standard providers
-        llmToApiKeyMap[llm]?.let { return it }
+        // Check standard providers first
+        val standardApiKey = llmToApiKeyMap[llm]
+        if (standardApiKey != null) {
+            return getApiKeyValue(standardApiKey)
+        }
 
         // Check custom providers
         val customProvider = getCustomProvider(llm)
         if (customProvider != null) {
-            return customProvider.type.getApiKeyName()
+            // For providers that don't require API keys
+            if (!customProvider.type.supportsApiKey) {
+                return null
+            }
+
+            // Check custom API key first
+            val customKey = ApiKeyManager.getCustomModelKey(customProvider.name)
+            if (customKey != null && customKey.isNotBlank()) {
+                return customKey
+            }
+
+            // For optional API keys, fall back to environment variables
+            if (customProvider.type.apiKeyOptional) {
+                return customProvider.type.getDefaultEnvironmentVariables()
+                    .firstNotNullOfOrNull { envVar -> getApiKeyValue(envVar) }
+            }
+
+            // For required API keys, return the API key name for environment lookup
+            return getApiKeyValue(customProvider.type.getApiKeyName())
         }
 
         return null
@@ -146,10 +175,8 @@ class DefaultApiKeyChecker : ApiKeyChecker {
         // Retrieve API key
         val apiKey = retrieveApiKey(apiKeyName)
 
-        // Cache the result if found
-        apiKey?.let {
-            apiKeyCache[apiKeyName] = CachedApiKey(it)
-        }
+        // Cache the result (including null values to avoid repeated lookups)
+        apiKeyCache[apiKeyName] = CachedApiKey(apiKey)
 
         return apiKey
     }
@@ -183,7 +210,7 @@ class DefaultApiKeyChecker : ApiKeyChecker {
     }
 
     private fun isEnvironmentVariableAvailable(envVarName: String): Boolean {
-        return getApiKeyValue(envVarName) != null
+        return service<EnvironmentVariableManager>().isEnvironmentVariableAvailable(envVarName)
     }
 
     override fun getApiKeysForDocker(): Map<String, String> {

@@ -48,9 +48,32 @@ You can add custom providers through the "Manage Custom Providers" dialog:
 ### API Key Management
 - API keys are stored securely in IntelliJ's credential store
 - Keys can be provided through:
-  - Settings UI
-  - Environment variables
-  - .env files
+  - Settings UI (explicit API key entry)
+  - Environment variables (automatic fallback)
+  - .env files (in home directory or project root)
+  - Custom environment variable names (for advanced configurations)
+
+#### Optional API Key Support
+Many providers now support optional API keys with environment variable fallback:
+- **OpenAI**: Falls back to `OPENAI_API_KEY` environment variable
+- **OpenRouter**: Falls back to `OPENROUTER_API_KEY` environment variable  
+- **Gemini**: Falls back to `GEMINI_API_KEY` environment variable
+- **LM Studio**: Falls back to `LM_STUDIO_API_KEY` or `OPENAI_API_KEY` environment variables
+
+#### Environment Variable Priority
+The plugin checks for API keys in the following order:
+1. Explicitly provided API key in the provider configuration
+2. Custom environment variable (if specified)
+3. Default environment variables for the provider type
+4. System environment variables
+5. .env file in user home directory
+6. .env file in current working directory
+
+#### Visual Indicators
+The provider editor dialog shows real-time status for API key availability:
+- ✓ Green: API key or environment variables are available
+- ⚠ Orange: Optional API key missing but may work with environment variables
+- ✗ Red: Required API key is missing
 
 ### Configuration Tips
 - Test your configuration using the "Test Connection" button

@@ -9,6 +9,8 @@ files:
   readOnly: false
 - path: src/main/kotlin/de/andrena/codingaider/utils/ApiKeyManager.kt
   readOnly: false
+- path: src/main/kotlin/de/andrena/codingaider/utils/EnvironmentVariableManager.kt
+  readOnly: false
 - path: src/main/kotlin/de/andrena/codingaider/executors/strategies/AiderExecutionStrategy.kt
   readOnly: false
 - path: src/main/kotlin/de/andrena/codingaider/executors/strategies/NativeAiderExecutionStrategy.kt
