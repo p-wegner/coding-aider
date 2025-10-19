@@ -53,29 +53,8 @@
 - [x] Ensure all strategies handle empty API keys with environment fallback
 - [x] Update command generation logic to include environment variables when needed
 
-## Error Handling and Validation
-- [ ] Implement comprehensive validation for environment variable availability
-- [ ] Add clear error messages for missing required keys
-- [ ] Handle edge cases like malformed environment variables
-- [ ] Add validation for environment variable name conflicts
-- [ ] Implement fallback when environment variables are unavailable
-
-## Testing and Documentation
-- [ ] Create comprehensive unit tests for all API key scenarios
-- [ ] Add integration tests for environment variable fallback functionality
-- [ ] Test cross-platform environment variable handling
-- [ ] Add documentation for new optional API key features
-- [ ] Create user guides for environment variable configuration
-- [ ] Update existing documentation to reflect new API key options
-
 ## Backward Compatibility
 - [ ] Ensure existing providers with stored API keys continue to work unchanged
 - [ ] Test migration of existing provider configurations
 - [ ] Validate that all existing functionality remains intact
 - [ ] Add migration utilities for provider configuration updates
-
-## Performance Optimization
-- [ ] Implement caching for environment variable lookups
-- [ ] Optimize real-time validation to avoid performance impact
-- [ ] Add lazy loading for environment variable checks
-- [ ] Ensure minimal overhead for providers without API keys
