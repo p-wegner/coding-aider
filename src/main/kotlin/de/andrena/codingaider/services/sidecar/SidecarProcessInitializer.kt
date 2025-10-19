@@ -10,8 +10,8 @@ import de.andrena.codingaider.executors.strategies.SidecarAiderExecutionStrategy
 import de.andrena.codingaider.inputdialog.AiderMode
 import de.andrena.codingaider.services.plans.AiderPlanService
 import de.andrena.codingaider.settings.MySettingsService
+import de.andrena.codingaider.utils.DefaultApiKeyChecker
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import java.io.File
 
 @Service(Service.Level.PROJECT)
@@ -48,7 +48,7 @@ class SidecarProcessInitializer(private val project: Project, private val cs: Co
             return
         }
         logger.info("Starting Sidecar process ")
-        val strategy = SidecarAiderExecutionStrategy(project, settings)
+        val strategy = SidecarAiderExecutionStrategy(project, service<DefaultApiKeyChecker>(), settings)
 
         val command = strategy.buildCommand(createInitializationCommandData(planId))
 
