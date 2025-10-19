@@ -1,0 +1,8 @@
+---
+files:
+  - path: "{{MAIN_SOURCE_FILE}}"
+    readOnly: false
+  - path: "{{TEST_FILE}}"
+    readOnly: false
+  - path: "{{CONFIG_FILE}}"
+    readOnly: true
