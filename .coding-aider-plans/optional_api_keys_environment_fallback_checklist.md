@@ -12,7 +12,7 @@
 - [x] Add optional API key field with null/empty support
 - [x] Add field to track whether API key was explicitly provided
 - [x] Add validation for environment variable fallback logic
-- [ ] Update serialization/deserialization to handle optional keys
+- [x] Update serialization/deserialization to handle optional keys
 
 ## ApiKeyChecker Enhancements
 - [x] Modify `isApiKeyAvailableForLlm()` to handle optional API keys
@@ -54,7 +54,7 @@
 - [x] Update command generation logic to include environment variables when needed
 
 ## Backward Compatibility
-- [ ] Ensure existing providers with stored API keys continue to work unchanged
-- [ ] Test migration of existing provider configurations
-- [ ] Validate that all existing functionality remains intact
-- [ ] Add migration utilities for provider configuration updates
+- [x] Ensure existing providers with stored API keys continue to work unchanged
+- [x] Test migration of existing provider configurations
+- [x] Validate that all existing functionality remains intact
+- [x] Add migration utilities for provider configuration updates

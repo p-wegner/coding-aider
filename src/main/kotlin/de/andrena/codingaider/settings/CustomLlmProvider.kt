@@ -15,6 +15,15 @@ data class CustomLlmProvider(
     var customEnvironmentVariable: String = ""  // Custom environment variable name
 ) {
     
+    // Ensure backward compatibility during deserialization
+    init {
+        // If we're loading an existing provider that had an API key stored,
+        // mark it as having an explicit API key
+        if (hasExplicitApiKey == false && ApiKeyManager.getCustomModelKey(name) != null) {
+            hasExplicitApiKey = true
+        }
+    }
+    
     /**
      * Check if this provider has authentication available
      */
