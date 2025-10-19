@@ -3,9 +3,9 @@
 # Implementation Checklist - Optional API Keys with Environment Variable Fallback
 
 ## LlmProviderType Enhancements
-- [ ] Add `apiKeyOptional` flag to all relevant provider types (OPENAI, OPENROUTER, GEMINI)
-- [ ] Define default environment variable names for each provider type
-- [ ] Enhance `getApiKeyName()` method to return default environment variable names
+- [x] Add `apiKeyOptional` flag to all relevant provider types (OPENAI, OPENROUTER, GEMINI)
+- [x] Define default environment variable names for each provider type
+- [x] Enhance `getApiKeyName()` method to return default environment variable names
 - [ ] Update provider documentation with environment variable requirements
 
 ## CustomLlmProvider Class Updates
@@ -15,22 +15,22 @@
 - [ ] Update serialization/deserialization to handle optional keys
 
 ## ApiKeyChecker Enhancements
-- [ ] Modify `isApiKeyAvailableForLlm()` to handle optional API keys
-- [ ] Add method to check environment variable availability specifically
+- [x] Modify `isApiKeyAvailableForLlm()` to handle optional API keys
+- [x] Add method to check environment variable availability specifically
 - [ ] Enhance `getApiKeyForLlm()` to support environment variable fallback
 - [ ] Update key retrieval logic for fallback chain: provider key → environment variable → default provider variable
 - [ ] Update `getAllLlmOptions()` to reflect API key availability with environment fallbacks
-- [ ] Enhance `getApiKeysForDocker()` to handle environment variable passthrough
+- [x] Enhance `getApiKeysForDocker()` to handle environment variable passthrough
 - [ ] Update caching mechanism to work with environment variable lookups
 
 ## CustomLlmProviderEditorDialog Updates
-- [ ] Modify validation logic to allow empty API keys for optional providers
+- [x] Modify validation logic to allow empty API keys for optional providers
 - [ ] Add visual indicators (icons/colors) for optional vs required API keys
-- [ ] Implement real-time environment variable validation and availability checking
-- [ ] Update tooltips to explain environment variable fallback behavior
+- [x] Implement real-time environment variable validation and availability checking
+- [x] Update tooltips to explain environment variable fallback behavior
 - [ ] Add environment variable name field for custom variable specification
 - [ ] Update provider type selection to show API key requirements clearly
-- [ ] Enhance error messages with environment variable guidance
+- [x] Enhance error messages with environment variable guidance
 
 ## Environment Variable Management
 - [ ] Create utility class for environment variable management

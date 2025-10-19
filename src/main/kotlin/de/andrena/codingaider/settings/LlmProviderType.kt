@@ -12,7 +12,7 @@ enum class LlmProviderType(
 ) {
     OPENAI(
         "OpenAI", supportsApiKey = true, requiresBaseUrl = true, "openai",
-        "Examples: o1-preview, gpt-4o"
+        "Examples: o1-preview, gpt-4o", apiKeyOptional = true
     ),
     CUSTOM_AIDERMODEL(
         "Custom", false, false, "",
@@ -25,7 +25,8 @@ enum class LlmProviderType(
     ),
     OPENROUTER(
         "OpenRouter", supportsApiKey = true, requiresBaseUrl = false, "openrouter",
-        "Examples: anthropic/claude-3.5-sonnet, openai/gpt-4o, qwen/qwen-2.5-coder-32b-instruct"
+        "Examples: anthropic/claude-3.5-sonnet, openai/gpt-4o, qwen/qwen-2.5-coder-32b-instruct",
+        apiKeyOptional = true
     ),
     VERTEX_EXPERIMENTAL(
         "Vertex AI",
@@ -43,7 +44,8 @@ enum class LlmProviderType(
         modelNamePrefix = "gemini",
         exampleModels = "Examples: gemini-2.5-pro, gemini-2.0-flash",
         authType = AuthType.API_KEY,
-        requiresModelPrefix = false
+        requiresModelPrefix = false,
+        apiKeyOptional = true
     ),
     LMSTUDIO(
         "LM Studio",
@@ -67,11 +69,24 @@ enum class LlmProviderType(
                 OPENAI -> "OPENAI_API_KEY"
                 OPENROUTER -> "OPENROUTER_API_KEY"
                 GEMINI -> "GEMINI_API_KEY"
+                LMSTUDIO -> "LM_STUDIO_API_KEY"
                 else -> ""
             }
 
             AuthType.NONE, AuthType.GCLOUD -> ""
 
+        }
+    }
+
+    fun getDefaultEnvironmentVariables(): List<String> {
+        return when (this) {
+            OPENAI -> listOf("OPENAI_API_KEY")
+            OPENROUTER -> listOf("OPENROUTER_API_KEY")
+            GEMINI -> listOf("GEMINI_API_KEY")
+            LMSTUDIO -> listOf("LM_STUDIO_API_KEY", "OPENAI_API_KEY")
+            VERTEX_EXPERIMENTAL -> listOf("GOOGLE_APPLICATION_CREDENTIALS", "VERTEXAI_PROJECT", "VERTEXAI_LOCATION")
+            OLLAMA -> listOf("OLLAMA_API_BASE")
+            CUSTOM_AIDERMODEL -> emptyList()
         }
     }
 

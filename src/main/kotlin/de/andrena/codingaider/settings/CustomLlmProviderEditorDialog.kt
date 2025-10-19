@@ -85,7 +85,7 @@ class CustomLlmProviderEditorDialog(
                 baseUrlField.isEnabled = true
                 baseUrlField.toolTipText = "OpenRouter API base URL"
                 apiKeyField.isEnabled = true
-                apiKeyField.toolTipText = "OpenRouter API key (required)"
+                apiKeyField.toolTipText = "OpenRouter API key (optional - will fall back to OPENROUTER_API_KEY environment variable)"
             }
 
             LlmProviderType.OPENAI -> {
@@ -95,7 +95,7 @@ class CustomLlmProviderEditorDialog(
                 baseUrlField.isEnabled = true
                 baseUrlField.toolTipText = "OpenAI API base URL"
                 apiKeyField.isEnabled = true
-                apiKeyField.toolTipText = "OpenAI API key (required)"
+                apiKeyField.toolTipText = "OpenAI API key (optional - will fall back to OPENAI_API_KEY environment variable)"
             }
 
             LlmProviderType.VERTEX_EXPERIMENTAL -> {
@@ -109,13 +109,21 @@ class CustomLlmProviderEditorDialog(
                 if (existingProvider == null) {
                     baseUrlField.text = "http://127.0.0.1:1234"
                 }
+                baseUrlField.isEnabled = true
+                baseUrlField.toolTipText = "LM Studio API base URL"
+                apiKeyField.isEnabled = true
+                apiKeyField.toolTipText = "LM Studio API key (optional - will fall back to LM_STUDIO_API_KEY or OPENAI_API_KEY environment variables)"
             }
 
             else -> {
                 baseUrlField.isEnabled = true
                 baseUrlField.toolTipText = "API endpoint URL"
                 apiKeyField.isEnabled = selectedType.supportsApiKey
-                apiKeyField.toolTipText = "API key"
+                apiKeyField.toolTipText = if (selectedType.apiKeyOptional) {
+                    "API key (optional - will fall back to environment variables: ${selectedType.getDefaultEnvironmentVariables().joinToString(", ")})"
+                } else {
+                    "API key (required)"
+                }
                 projectIdField.isEnabled = false
                 locationField.isEnabled = false
             }
@@ -215,12 +223,33 @@ class CustomLlmProviderEditorDialog(
             }
         }
 
-        if (selectedType.supportsApiKey && !selectedType.apiKeyOptional ) {
+        if (selectedType.supportsApiKey && !selectedType.apiKeyOptional) {
             val apiKeyText = String(apiKeyField.password)
             // For new providers or when a new key is being set
             if (existingProvider == null || apiKeyText != "*".repeat(16)) {
                 if (apiKeyText.isBlank()) {
                     return ValidationInfo("API key is required for ${selectedType.name}", apiKeyField)
+                }
+            }
+        }
+
+        // For optional API keys, validate that either API key or environment variables are available
+        if (selectedType.supportsApiKey && selectedType.apiKeyOptional) {
+            val apiKeyText = String(apiKeyField.password)
+            val hasApiKey = apiKeyText.isNotBlank() && apiKeyText != "*".repeat(16)
+            
+            if (!hasApiKey) {
+                // Check if environment variables are available
+                val apiKeyChecker = service<DefaultApiKeyChecker>()
+                val hasEnvironmentVars = selectedType.getDefaultEnvironmentVariables().any { envVar ->
+                    apiKeyChecker.getApiKeyValue(envVar) != null
+                }
+                
+                if (!hasEnvironmentVars) {
+                    return ValidationInfo(
+                        "Either provide an API key or ensure environment variables (${selectedType.getDefaultEnvironmentVariables().joinToString(", ")}) are set",
+                        apiKeyField
+                    )
                 }
             }
         }

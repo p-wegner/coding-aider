@@ -78,7 +78,21 @@ class DefaultApiKeyChecker : ApiKeyChecker {
                 return true
             }
 
-            // Check for API key
+            // For optional API keys, check both custom key and environment variables
+            if (customProvider.type.apiKeyOptional) {
+                // Check if custom API key is available
+                val customKey = ApiKeyManager.getCustomModelKey(customProvider.name)
+                if (customKey != null && customKey.isNotBlank()) {
+                    return true
+                }
+                
+                // Check environment variables as fallback
+                return customProvider.type.getDefaultEnvironmentVariables().any { envVar ->
+                    isEnvironmentVariableAvailable(envVar)
+                }
+            }
+
+            // For required API keys, check for API key
             val apiKeyName = customProvider.type.getApiKeyName()
             return isApiKeyAvailable(apiKeyName)
         }
@@ -168,6 +182,10 @@ class DefaultApiKeyChecker : ApiKeyChecker {
             }
     }
 
+    private fun isEnvironmentVariableAvailable(envVarName: String): Boolean {
+        return getApiKeyValue(envVarName) != null
+    }
+
     override fun getApiKeysForDocker(): Map<String, String> {
         val standardKeys = llmToApiKeyMap.values.distinct()
             .mapNotNull { apiKeyName ->
@@ -194,7 +212,16 @@ class DefaultApiKeyChecker : ApiKeyChecker {
                 }
             }
 
-        return (standardKeys + customKeys).toMap()
+        // Add environment variable fallbacks for custom providers
+        val environmentFallbacks = service<CustomLlmProviderService>().getAllProviders()
+            .filter { it.type.apiKeyOptional }
+            .flatMap { provider ->
+                provider.type.getDefaultEnvironmentVariables().mapNotNull { envVar ->
+                    getApiKeyValue(envVar)?.let { envVar to it }
+                }
+            }
+
+        return (standardKeys + customKeys + environmentFallbacks).toMap()
     }
 
     override fun getLlmSelectionForName(string: String): LlmSelection {
