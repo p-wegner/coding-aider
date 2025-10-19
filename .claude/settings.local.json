@@ -9,7 +9,8 @@
       "Bash(gh release view:*)",
       "Bash(gh issue list:*)",
       "Bash(gh issue view:*)",
-      "Skill(skill-command-creator:skill-creator)"
+      "Skill(skill-command-creator:skill-creator)",
+      "Bash(git fetch:*)"
     ],
     "deny": []
   }

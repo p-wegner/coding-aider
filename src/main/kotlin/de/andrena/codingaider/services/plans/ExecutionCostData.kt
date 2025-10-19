@@ -28,13 +28,24 @@ data class ExecutionCostData(
             var model = ""
             var summary = ""
 
+            // Handle multiple model output formats:
             // > Model: claude-3-5-haiku-20241022 with diff edit format
-            val modelRegex = Regex("(?:>\\s*)?(?:Model|Using model):\\s*([^\\n]+?)(?:\\s+with\\s+|\\s*$)")
+            // > Main model: o3-mini with diff edit format
+            // > Model: deepseek/deepseek-chat with diff edit format, infinite output
+            val modelRegexPatterns = listOf(
+                // Try to capture model name before "with" but allow for additional details after
+                Regex("(?:>\\s*)?(?:Main model|Model|Using model):\\s*([^\\n]+?)(?:\\s+with\\s+)"),
+                // Fallback: capture everything after "Model:" until end of line
+                Regex("(?:>\\s*)?(?:Main model|Model|Using model):\\s*([^\\n]+)\\s*$")
+            )
 
-            modelRegex.find(output)?.let {
-                val extractedModel = it.groupValues[1].trim()
-                if (extractedModel.isNotEmpty()) {
-                    model = extractedModel
+            for (regex in modelRegexPatterns) {
+                regex.find(output)?.let {
+                    val extractedModel = it.groupValues[1].trim()
+                    if (extractedModel.isNotEmpty()) {
+                        model = extractedModel
+                        return@let
+                    }
                 }
             }
             
