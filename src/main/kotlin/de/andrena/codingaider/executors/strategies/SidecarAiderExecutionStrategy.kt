@@ -1,11 +1,17 @@
 package de.andrena.codingaider.executors.strategies
 
+import com.intellij.openapi.application.ApplicationManager.getApplication
 import com.intellij.openapi.project.Project
 import de.andrena.codingaider.command.CommandData
 import de.andrena.codingaider.settings.AiderSettings
+import de.andrena.codingaider.settings.CustomLlmProviderService
+import de.andrena.codingaider.settings.LlmProviderType
+import de.andrena.codingaider.utils.ApiKeyChecker
+import de.andrena.codingaider.utils.ApiKeyManager
 
 class SidecarAiderExecutionStrategy(
     project: Project,
+    private val apiKeyChecker: ApiKeyChecker,
     private val settings: AiderSettings
 ) : AiderExecutionStrategy(project) {
 
@@ -14,12 +20,91 @@ class SidecarAiderExecutionStrategy(
     }
 
     override fun prepareEnvironment(processBuilder: ProcessBuilder, commandData: CommandData) {
-        if (settings.enableLocalModelCostMap) {
-            processBuilder.environment()["LITELLM_LOCAL_MODEL_COST_MAP"] = "True"
-        }
+        setApiKeyEnvironmentVariables(processBuilder, apiKeyChecker, commandData)
     }
 
     override fun cleanupAfterExecution() {
         // Cleanup handled by AiderProcessManager
+    }
+
+    private fun setApiKeyEnvironmentVariables(
+        processBuilder: ProcessBuilder,
+        apiKeyChecker: ApiKeyChecker,
+        commandData: CommandData
+    ) {
+        val environment = processBuilder.environment()
+
+        val customProvider =
+            getApplication().getService(CustomLlmProviderService::class.java).getProvider(commandData.llm)
+        when {
+            customProvider != null -> {
+                // Set provider-specific environment variables
+                when (customProvider.type) {
+                    LlmProviderType.OPENAI -> {
+                        // Use effective API key which handles environment variable fallback
+                        customProvider.getEffectiveApiKey()?.let { apiKey ->
+                            environment["OPENAI_API_KEY"] = apiKey
+                        }
+                        if (customProvider.baseUrl.isNotEmpty()) {
+                            environment["OPENAI_API_BASE"] = customProvider.baseUrl
+                        }
+                    }
+
+                    LlmProviderType.OLLAMA -> {
+                        environment["OLLAMA_API_BASE"] = customProvider.baseUrl
+                    }
+
+                    LlmProviderType.OPENROUTER -> {
+                        customProvider.getEffectiveApiKey()?.let { apiKey ->
+                            environment["OPENROUTER_API_KEY"] = apiKey
+                        }
+                    }
+
+                    LlmProviderType.VERTEX_EXPERIMENTAL -> {
+                        ApiKeyManager.getCustomModelKey(customProvider.name)?.let { credentials ->
+                            environment["GOOGLE_APPLICATION_CREDENTIALS"] = credentials
+                        }
+                        if (customProvider.projectId.isNotEmpty()) {
+                            environment["VERTEXAI_PROJECT"] = customProvider.projectId
+                        }
+                        if (customProvider.location.isNotEmpty()) {
+                            environment["VERTEXAI_LOCATION"] = customProvider.location
+                        }
+                    }
+
+                    LlmProviderType.GEMINI -> {
+                        customProvider.getEffectiveApiKey()?.let { apiKey ->
+                            environment["GEMINI_API_KEY"] = apiKey
+                        }
+                    }
+
+                    LlmProviderType.CUSTOM_AIDERMODEL -> {
+                    }
+
+                    LlmProviderType.LMSTUDIO -> {
+                        if (customProvider.baseUrl.isNotEmpty()) {
+                            environment["LM_STUDIO_API_BASE"] = customProvider.baseUrl
+                        }
+                        customProvider.getEffectiveApiKey()?.let { apiKey ->
+                            environment["LM_STUDIO_API_KEY"] = apiKey
+                        }
+                    }
+                }
+            }
+
+            else -> {
+                // Set standard API keys
+                apiKeyChecker.getAllApiKeyNames().forEach { keyName ->
+                    apiKeyChecker.getApiKeyValue(keyName)?.let { value ->
+                        environment[keyName] = value
+                    }
+                }
+            }
+        }
+
+        // Add local model cost mapping if enabled
+        if (settings.enableLocalModelCostMap) {
+            environment["LITELLM_LOCAL_MODEL_COST_MAP"] = "True"
+        }
     }
 }
