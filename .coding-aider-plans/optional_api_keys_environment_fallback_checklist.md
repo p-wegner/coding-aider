@@ -29,7 +29,7 @@
 - [x] Implement real-time environment variable validation and availability checking
 - [x] Update tooltips to explain environment variable fallback behavior
 - [x] Add environment variable name field for custom variable specification
-- [ ] Update provider type selection to show API key requirements clearly
+- [x] Update provider type selection to show API key requirements clearly
 - [x] Enhance error messages with environment variable guidance
 
 ## Environment Variable Management
@@ -40,11 +40,11 @@
 - [x] Add validation for environment variable format and accessibility
 
 ## UI/UX Improvements
-- [ ] Design and implement visual indicators for API key status
-- [ ] Create tooltips and inline help for environment variable usage
-- [ ] Update settings panels to show API key source (stored/environment/not available)
+- [x] Design and implement visual indicators for API key status
+- [x] Create tooltips and inline help for environment variable usage
+- [x] Update settings panels to show API key source (stored/environment/not available)
 - [ ] Add configuration examples for common provider setups
-- [ ] Implement real-time feedback for environment variable availability
+- [x] Implement real-time feedback for environment variable availability
 
 ## Integration with Execution Strategies
 - [x] Update NativeAiderExecutionStrategy to handle optional API keys

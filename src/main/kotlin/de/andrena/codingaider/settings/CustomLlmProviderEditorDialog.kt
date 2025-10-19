@@ -73,6 +73,14 @@ class CustomLlmProviderEditorDialog(
 
     private fun updateProviderTypeUI() {
         val selectedType = providerTypeComboBox.selectedItem as LlmProviderType
+        
+        // Update provider type tooltip with authentication info
+        val authInfo = when {
+            !selectedType.supportsApiKey -> "No authentication required"
+            selectedType.apiKeyOptional -> "API key optional - falls back to environment variables: ${selectedType.getDefaultEnvironmentVariables().joinToString(", ")}"
+            else -> "API key required - set ${selectedType.getApiKeyName()} environment variable or provide explicit key"
+        }
+        providerTypeComboBox.toolTipText = "${selectedType.displayName}: $authInfo"
 
         when (selectedType) {
             LlmProviderType.OLLAMA -> {
@@ -159,8 +167,9 @@ class CustomLlmProviderEditorDialog(
         val selectedType = providerTypeComboBox.selectedItem as LlmProviderType
         
         if (!selectedType.supportsApiKey) {
-            apiKeyStatusLabel.text = "No authentication required"
+            apiKeyStatusLabel.text = "🔓 No authentication required"
             apiKeyStatusLabel.foreground = JBUI.CurrentTheme.Label.foreground()
+            apiKeyStatusLabel.toolTipText = "This provider type does not require authentication"
             return
         }
         
@@ -170,8 +179,9 @@ class CustomLlmProviderEditorDialog(
         
         when {
             hasApiKey -> {
-                apiKeyStatusLabel.text = "✓ API key provided"
+                apiKeyStatusLabel.text = "🔑 API key provided"
                 apiKeyStatusLabel.foreground = Color(0, 128, 0) // Green
+                apiKeyStatusLabel.toolTipText = "API key is explicitly provided and will be used for authentication"
             }
             selectedType.apiKeyOptional -> {
                 val hasCustomEnvVar = customEnvVar.isNotBlank() && envManager.isEnvironmentVariableAvailable(customEnvVar)
@@ -179,25 +189,34 @@ class CustomLlmProviderEditorDialog(
                 
                 when {
                     hasCustomEnvVar -> {
-                        apiKeyStatusLabel.text = "✓ Custom environment variable available: $customEnvVar"
+                        apiKeyStatusLabel.text = "🌍 Custom environment variable: $customEnvVar"
                         apiKeyStatusLabel.foreground = Color(0, 128, 0) // Green
+                        apiKeyStatusLabel.toolTipText = "Custom environment variable '$customEnvVar' is available and will be used for authentication"
                     }
                     hasDefaultEnvVars -> {
                         val availableVars = selectedType.getDefaultEnvironmentVariables().filter { 
                             envManager.isEnvironmentVariableAvailable(it) 
                         }
-                        apiKeyStatusLabel.text = "✓ Environment variables available: ${availableVars.joinToString(", ")}"
+                        apiKeyStatusLabel.text = "🌍 Environment variables: ${availableVars.joinToString(", ")}"
                         apiKeyStatusLabel.foreground = Color(0, 128, 0) // Green
+                        apiKeyStatusLabel.toolTipText = "Default environment variables are available: ${availableVars.joinToString(", ")}"
                     }
                     else -> {
-                        apiKeyStatusLabel.text = "⚠ No API key or environment variables available"
+                        val expectedVars = if (customEnvVar.isNotBlank()) {
+                            listOf(customEnvVar) + selectedType.getDefaultEnvironmentVariables()
+                        } else {
+                            selectedType.getDefaultEnvironmentVariables()
+                        }
+                        apiKeyStatusLabel.text = "⚠️ No authentication available"
                         apiKeyStatusLabel.foreground = Color(255, 140, 0) // Orange
+                        apiKeyStatusLabel.toolTipText = "No API key provided and no environment variables found. Expected: ${expectedVars.joinToString(", ")}"
                     }
                 }
             }
             else -> {
-                apiKeyStatusLabel.text = "✗ API key required"
+                apiKeyStatusLabel.text = "❌ API key required"
                 apiKeyStatusLabel.foreground = Color(255, 0, 0) // Red
+                apiKeyStatusLabel.toolTipText = "This provider requires an API key. Please provide one or set the ${selectedType.getApiKeyName()} environment variable"
             }
         }
     }
@@ -212,7 +231,7 @@ class CustomLlmProviderEditorDialog(
         row("Provider Type:") {
             cell(providerTypeComboBox)
                 .columns(30)
-                .comment("Select the type of LLM provider")
+                .comment("Select the type of LLM provider. Different types have different authentication requirements.")
         }
         baseUrlRow = row("Base URL:") {
             cell(baseUrlField)
