@@ -41,11 +41,12 @@ class NativeAiderExecutionStrategy(
                 // Set provider-specific environment variables
                 when (customProvider.type) {
                     LlmProviderType.OPENAI -> {
-                        ApiKeyManager.getCustomModelKey(customProvider.name)?.let { apiKey ->
+                        // Use effective API key which handles environment variable fallback
+                        customProvider.getEffectiveApiKey()?.let { apiKey ->
                             environment["OPENAI_API_KEY"] = apiKey
-                            if (customProvider.baseUrl.isNotEmpty()) {
-                                environment["OPENAI_API_BASE"] = customProvider.baseUrl
-                            }
+                        }
+                        if (customProvider.baseUrl.isNotEmpty()) {
+                            environment["OPENAI_API_BASE"] = customProvider.baseUrl
                         }
                     }
 
@@ -54,7 +55,7 @@ class NativeAiderExecutionStrategy(
                     }
 
                     LlmProviderType.OPENROUTER -> {
-                        ApiKeyManager.getCustomModelKey(customProvider.name)?.let { apiKey ->
+                        customProvider.getEffectiveApiKey()?.let { apiKey ->
                             environment["OPENROUTER_API_KEY"] = apiKey
                         }
                     }
@@ -72,7 +73,7 @@ class NativeAiderExecutionStrategy(
                     }
 
                     LlmProviderType.GEMINI -> {
-                        ApiKeyManager.getCustomModelKey(customProvider.name)?.let { apiKey ->
+                        customProvider.getEffectiveApiKey()?.let { apiKey ->
                             environment["GEMINI_API_KEY"] = apiKey
                         }
                     }
@@ -84,7 +85,7 @@ class NativeAiderExecutionStrategy(
                         if (customProvider.baseUrl.isNotEmpty()) {
                             environment["LM_STUDIO_API_BASE"] = customProvider.baseUrl
                         }
-                        ApiKeyManager.getCustomModelKey(customProvider.name)?.let { apiKey ->
+                        customProvider.getEffectiveApiKey()?.let { apiKey ->
                             environment["LM_STUDIO_API_KEY"] = apiKey
                         }
                     }

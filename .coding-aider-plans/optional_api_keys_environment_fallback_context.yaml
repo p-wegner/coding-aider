@@ -19,9 +19,7 @@ files:
   readOnly: false
 - path: src/main/kotlin/de/andrena/codingaider/settings/CustomLlmProviderService.kt
   readOnly: false
-- path: src/test/kotlin/de/andrena/codingaider/utils/ApiKeyCheckerTest.kt
-  readOnly: false
-- path: src/test/kotlin/de/andrena/codingaider/settings/CustomLlmProviderTest.kt
+- path: .coding-aider-plans/optional_api_keys_environment_fallback_checklist.md
   readOnly: false
 - path: .coding-aider-docs/settings.md
   readOnly: false

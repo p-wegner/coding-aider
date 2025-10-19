@@ -70,16 +70,16 @@ class DockerAiderExecutionStrategy(
             }
 
             LlmProviderType.OPENAI -> {
-                ApiKeyManager.getCustomModelKey(customProvider.name)?.let { apiKey ->
+                customProvider.getEffectiveApiKey()?.let { apiKey ->
                     dockerArgs.addAll(listOf("-e", "OPENAI_API_KEY=$apiKey"))
-                    if (customProvider.baseUrl.isNotEmpty()) {
-                        dockerArgs.addAll(listOf("-e", "OPENAI_API_BASE=${customProvider.baseUrl}"))
-                    }
+                }
+                if (customProvider.baseUrl.isNotEmpty()) {
+                    dockerArgs.addAll(listOf("-e", "OPENAI_API_BASE=${customProvider.baseUrl}"))
                 }
             }
 
             LlmProviderType.OPENROUTER -> {
-                ApiKeyManager.getCustomModelKey(customProvider.name)?.let { apiKey ->
+                customProvider.getEffectiveApiKey()?.let { apiKey ->
                     dockerArgs.addAll(listOf("-e", "OPENROUTER_API_KEY=$apiKey"))
                 }
             }
@@ -100,7 +100,7 @@ class DockerAiderExecutionStrategy(
             }
 
             LlmProviderType.GEMINI -> {
-                ApiKeyManager.getCustomModelKey(customProvider.name)?.let { apiKey ->
+                customProvider.getEffectiveApiKey()?.let { apiKey ->
                     dockerArgs.addAll(listOf("-e", "GEMINI_API_KEY=$apiKey"))
                 }
             }
@@ -109,10 +109,9 @@ class DockerAiderExecutionStrategy(
             LlmProviderType.LMSTUDIO -> {
                 // For LMStudio, we need to ensure network access to the host
                 dockerArgs.addAll(listOf("--network", "host"))
-                ApiKeyManager.getCustomModelKey(customProvider.name)?.let { apiKey ->
+                customProvider.getEffectiveApiKey()?.let { apiKey ->
                     dockerArgs.addAll(listOf("-e", "LM_STUDIO_API_KEY=$apiKey"))
                 }
-
                 customProvider.baseUrl.takeIf { it.isNotEmpty() }?.let { baseUrl ->
                     dockerArgs.addAll(listOf("-e", "LM_STUDIO_API_BASE=$baseUrl"))
                 }

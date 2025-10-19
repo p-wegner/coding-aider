@@ -19,7 +19,7 @@
 - [x] Add method to check environment variable availability specifically
 - [x] Enhance `getApiKeyForLlm()` to support environment variable fallback
 - [x] Update key retrieval logic for fallback chain: provider key → environment variable → default provider variable
-- [ ] Update `getAllLlmOptions()` to reflect API key availability with environment fallbacks
+- [x] Update `getAllLlmOptions()` to reflect API key availability with environment fallbacks
 - [x] Enhance `getApiKeysForDocker()` to handle environment variable passthrough
 - [x] Update caching mechanism to work with environment variable lookups
 
@@ -47,11 +47,11 @@
 - [ ] Implement real-time feedback for environment variable availability
 
 ## Integration with Execution Strategies
-- [ ] Update NativeAiderExecutionStrategy to handle optional API keys
-- [ ] Update DockerAiderExecutionStrategy for environment variable passthrough
+- [x] Update NativeAiderExecutionStrategy to handle optional API keys
+- [x] Update DockerAiderExecutionStrategy for environment variable passthrough
 - [ ] Update SidecarAiderExecutionStrategy for environment variable handling
-- [ ] Ensure all strategies handle empty API keys with environment fallback
-- [ ] Update command generation logic to include environment variables when needed
+- [x] Ensure all strategies handle empty API keys with environment fallback
+- [x] Update command generation logic to include environment variables when needed
 
 ## Error Handling and Validation
 - [ ] Implement comprehensive validation for environment variable availability

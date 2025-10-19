@@ -150,6 +150,10 @@ class DefaultApiKeyChecker : ApiKeyChecker {
         val defaultSettings = service<DefaultProviderSettings>()
         val standardOptions = getStandardOptions(defaultSettings)
         val customOptions = service<CustomLlmProviderService>().getVisibleProviders()
+            .filter { provider ->
+                // Include providers that have authentication available or don't require it
+                !provider.type.supportsApiKey || provider.hasAuthenticationAvailable()
+            }
             .map { LlmSelection(it.name, provider = it, isBuiltIn = false) }
         return standardOptions + customOptions
     }

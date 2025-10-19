@@ -1,5 +1,7 @@
 package de.andrena.codingaider.settings
 
+import de.andrena.codingaider.utils.ApiKeyManager
+
 data class CustomLlmProvider(
     var name: String = "",
     var type: LlmProviderType = LlmProviderType.OPENAI,
