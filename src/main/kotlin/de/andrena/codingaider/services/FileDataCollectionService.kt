@@ -10,7 +10,6 @@ import de.andrena.codingaider.settings.AiderSettings
 import de.andrena.codingaider.settings.AiderSettings.Companion.getInstance
 import de.andrena.codingaider.utils.FileTraversal
 import de.andrena.codingaider.utils.ScratchFileUtils
-import fleet.tracing.meter
 
 @Service(Service.Level.PROJECT)
 class FileDataCollectionService(private val project: Project) {

@@ -39,13 +39,15 @@ class CommandExecutor(
     private val useDockerAider: Boolean
         get() = commandData.options.useDockerAider ?: settings.useDockerAider
     private val dockerManager = DockerContainerManager()
+    private val useCopilotCli: Boolean
+        get() = settings.useCopilotCli
+
     private val executionStrategy: AiderExecutionStrategy by lazy {
-        if (useDockerAider) DockerAiderExecutionStrategy(
-            project,
-            dockerManager,
-            apiKeyChecker,
-            settings
-        ) else NativeAiderExecutionStrategy(project, apiKeyChecker, settings)
+        when {
+            useCopilotCli -> de.andrena.codingaider.executors.strategies.GithubCopilotCliExecutionStrategy(project, settings)
+            useDockerAider -> DockerAiderExecutionStrategy(project, dockerManager, apiKeyChecker, settings)
+            else -> NativeAiderExecutionStrategy(project, apiKeyChecker, settings)
+        }
     }
     private val processInteractor: AiderProcessInteractor by lazy { DefaultAiderProcessInteractor(project) }
 
@@ -60,6 +62,9 @@ class CommandExecutor(
             aiderPlanService.trackPlanCreation(commandData)
         }
         
+        if (commandData.sidecarMode && settings.useCopilotCli) {
+            throw IllegalStateException("Sidecar mode is not supported with the GitHub Copilot CLI strategy. Please disable sidecar mode when using GitHub Copilot CLI.")
+        }
         if (commandData.sidecarMode) {
             return startSideCarAndExecuteCommand(updatedCommandData)
         }
@@ -70,7 +75,8 @@ class CommandExecutor(
 
     private fun executeCommandInNewProcess(updatedCommandData: CommandData): String {
         val commandArgs = executionStrategy.buildCommand(updatedCommandData)
-        logger.info("Executing Aider command: ${commandArgs.joinToString(" ")}")
+        val backendName = if (useCopilotCli) "Copilot CLI" else "Aider"
+        logger.info("Executing $backendName command: ${commandArgs.joinToString(" ")}")
         notifyObservers {
             it.onCommandStart(
                 "\n${
@@ -111,8 +117,8 @@ class CommandExecutor(
                 val workingDirFile = File(normalizedWorkingDir)
                 if (workingDirFile.exists() && workingDirFile.isDirectory) {
                     directory(workingDirFile)
-                    // Add --subtree-only flag when working directory is set
-                    if (!commandArgs.contains("--subtree-only")) {
+                    // Add --subtree-only flag when working directory is set (Aider-only, not for Copilot CLI)
+                    if (!useCopilotCli && !commandArgs.contains("--subtree-only")) {
                         commandArgs.add("--subtree-only")
                     }
                 } else {

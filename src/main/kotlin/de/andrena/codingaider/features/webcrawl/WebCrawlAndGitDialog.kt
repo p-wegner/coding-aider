@@ -107,8 +107,8 @@ class WebCrawlAndGitDialog(private val project: Project) : DialogWrapper(project
 
     private val fileTree = CheckboxTree(object : CheckboxTree.CheckboxTreeCellRenderer() {
         override fun customizeRenderer(
-            tree: JTree?,
-            value: Any?,
+            tree: JTree,
+            value: Any,
             selected: Boolean,
             expanded: Boolean,
             leaf: Boolean,

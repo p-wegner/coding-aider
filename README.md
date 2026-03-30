@@ -10,20 +10,76 @@ while allowing you complete control over the context utilized by the LLM.
 
 ## Important Note
 
-To utilize this plugin, you need either:
+To utilize this plugin, you need one of:
 
 1. A functional Aider installation (version 0.82.2 or higher):
    - On Mac/Linux: Ensure aider is in your PATH or set the path manually in Settings
    - On Windows: Aider should be available in PATH or set manually
-   
+
 2. OR Docker installed and running:
    - On Mac: Ensure docker command is in PATH (usually in /usr/local/bin)
    - On Windows: Docker Desktop should add docker to PATH automatically
+
+3. OR the **GitHub Copilot CLI** (`gh` v2.89.0+) — see [GitHub Copilot CLI Setup](#github-copilot-cli-setup) below
 
 ### Mac Users
 
 If you encounter "command not found" errors, you can:
 - Set the full path to the aider executable in Tools > Aider Settings
+
+## GitHub Copilot CLI Setup
+
+The plugin supports using the **GitHub Copilot CLI** (`gh copilot`) as a full alternative to Aider. The CLI (v2.89.0+) is an agentic coding assistant that can edit files directly, run shell commands, and select AI models.
+
+### Prerequisites
+
+- GitHub CLI (`gh`) v2.89.0 or higher — [install instructions](https://cli.github.com)
+- A GitHub account with a Copilot subscription (or a custom BYOK provider — see below)
+
+### Quick Setup
+
+1. Install `gh`: https://cli.github.com
+2. Authenticate: `gh auth login`
+3. Open **Settings > Tools > Aider Settings > Setup**
+4. Check **"Use GitHub Copilot CLI instead of Aider"**
+5. Optionally set the full path to `gh` if it is not on your PATH
+6. Click **"Check GitHub Auth Status"** to verify authentication
+
+### Available Modes (Copilot CLI)
+
+| Mode | Supported | Notes |
+|---|---|---|
+| Normal | ✅ | Standard prompt execution |
+| Architect | ✅ | Prefixes prompt with `/architect` |
+| Structured | ❌ | Requires Aider's multi-turn plan protocol |
+| Shell | ❌ | Terminal passthrough — Aider only |
+
+### BYOK (Bring Your Own Key)
+
+Use any OpenAI-compatible endpoint instead of GitHub's Copilot routing. GitHub authentication is **not** required in BYOK mode.
+
+In **Settings > Setup > GitHub Copilot CLI > Custom Provider (BYOK)**:
+
+| Field | Environment variable | Example |
+|---|---|---|
+| Provider Base URL | `COPILOT_PROVIDER_BASE_URL` | `http://localhost:11434/v1` (Ollama) |
+| Provider Type | `COPILOT_PROVIDER_TYPE` | `openai` / `azure` / `anthropic` |
+| Provider API Key | `COPILOT_PROVIDER_API_KEY` | your API key (stored in credential store) |
+
+When BYOK is configured, set the model via the **LLM selector** in the input dialog — it maps to the `COPILOT_MODEL` environment variable.
+
+### Known Limitations vs. Aider
+
+| Feature | Aider | GitHub Copilot CLI |
+|---|---|---|
+| Structured / plan mode | ✅ | ❌ Not supported |
+| Shell mode | ✅ | ❌ Not supported |
+| Sidecar (persistent process) | ✅ | ❌ Not supported |
+| Docker execution | ✅ | ❌ Not supported |
+| Plugin-based edits (SEARCH/REPLACE) | Optional | Not needed — CLI edits files natively |
+| History file (`.aider.chat.history.md`) | ✅ | ❌ Sessions stored in `~/.copilot/logs/` |
+| Model selection | ✅ | ✅ via `--model` or BYOK env vars |
+| Custom instructions | `.aider.conf.yml` | `AGENTS.md` (auto-loaded) |
 
 ## LLM Provider Configuration
 

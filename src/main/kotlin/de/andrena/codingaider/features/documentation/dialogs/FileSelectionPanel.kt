@@ -23,8 +23,8 @@ class FileSelectionPanel(private val project: Project) {
     
     private val fileTree = CheckboxTree(object : CheckboxTree.CheckboxTreeCellRenderer() {
         override fun customizeRenderer(
-            tree: JTree?,
-            value: Any?,
+            tree: JTree,
+            value: Any,
             selected: Boolean,
             expanded: Boolean,
             leaf: Boolean,

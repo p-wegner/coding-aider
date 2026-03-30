@@ -110,7 +110,7 @@ class CreateAiderPlanTool(private val project: Project) : McpTool {
             
             ApplicationManager.getApplication().invokeLater {
                 try {
-                    WriteIntentReadAction.compute<Any, Exception> {
+                    WriteIntentReadAction.compute<Any> {
                         val executor = IDEBasedExecutor(project, commandData)
                         executor.execute()
                     }

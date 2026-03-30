@@ -7,12 +7,15 @@ import com.intellij.ui.TextFieldWithHistory
 import com.intellij.ui.components.JBCheckBox
 import com.intellij.ui.components.JBScrollPane
 import com.intellij.ui.components.JBTextArea
+import com.intellij.ui.components.JBTextField
 import com.intellij.ui.dsl.builder.Align
 import com.intellij.ui.dsl.builder.Panel
 import de.andrena.codingaider.executors.api.CommandObserver
+import de.andrena.codingaider.executors.strategies.GithubCopilotCliExecutionStrategy
 import de.andrena.codingaider.settings.tabs.SettingsTabPanel
 import de.andrena.codingaider.utils.ApiKeyChecker
 import de.andrena.codingaider.utils.ApiKeyManager
+import de.andrena.codingaider.utils.CopilotAuthChecker
 import javax.swing.*
 import javax.swing.event.DocumentEvent
 import javax.swing.event.DocumentListener
@@ -25,12 +28,18 @@ class AiderSetupPanel(
     val useDockerAiderCheckBox = JBCheckBox("Use aider in Docker")
     val dockerImageField = TextFieldWithHistory()
     val aiderExecutablePathField = TextFieldWithHistory()
+    val useCopilotCliCheckBox = JBCheckBox("Use GitHub Copilot CLI instead of Aider")
+    val ghExecutablePathField = TextFieldWithHistory()
+    val copilotProviderBaseUrlField = JBTextField()
+    val copilotProviderTypeField = TextFieldWithHistory()
+    private val copilotApiKeyField = JPasswordField()
     
     override fun createPanel(panel: Panel) {
         panel.group("Aider Setup") {
             createApiKeysGroup()
             createDockerSetup()
             createAiderExecutableGroup()
+            createCopilotCliGroup()
 
             row {
                 button("Test Aider Installation") {
@@ -153,6 +162,134 @@ class AiderSetupPanel(
                 }
             }
         }
+    }
+
+    private fun Panel.createCopilotCliGroup() {
+        group("GitHub Copilot CLI") {
+            row {
+                cell(useCopilotCliCheckBox)
+                    .component
+                    .apply {
+                        toolTipText =
+                            "Use GitHub Copilot CLI (gh copilot) as the AI backend instead of Aider. " +
+                            "Requires 'gh' CLI v2.89.0+ to be installed. Incompatible with Docker and Sidecar modes."
+                    }
+            }
+            row("gh Executable Path:") {
+                cell(ghExecutablePathField)
+                    .resizableColumn()
+                    .align(Align.FILL)
+                    .component
+                    .apply {
+                        toolTipText =
+                            "Path to the 'gh' CLI executable. Leave as 'gh' if it is on your system PATH."
+                        setHistory(listOf(AiderDefaults.GH_EXECUTABLE_PATH))
+                    }
+                button("Reset to Default") {
+                    ghExecutablePathField.text = AiderDefaults.GH_EXECUTABLE_PATH
+                }
+            }
+            row {
+                button("Check GitHub Auth Status") {
+                    val settings = AiderSettings.getInstance()
+                    val checker = CopilotAuthChecker(settings)
+                    val status = checker.checkAuth()
+                    val (title, message) = when (status) {
+                        is CopilotAuthChecker.AuthStatus.Authenticated ->
+                            "Authenticated" to "Successfully authenticated with GitHub Copilot."
+                        is CopilotAuthChecker.AuthStatus.ByokConfigured ->
+                            "BYOK Configured" to "Using custom provider (BYOK mode). GitHub authentication not required."
+                        is CopilotAuthChecker.AuthStatus.NotAuthenticated ->
+                            "Not Authenticated" to status.message
+                        is CopilotAuthChecker.AuthStatus.GhNotFound ->
+                            "gh CLI Not Found" to status.message
+                    }
+                    Messages.showInfoMessage(message, title)
+                }
+            }
+            group("Custom Provider (BYOK - optional)") {
+                row {
+                    label("Leave empty to use GitHub Copilot's default model routing.")
+                }
+                row("Provider Base URL:") {
+                    cell(copilotProviderBaseUrlField)
+                        .resizableColumn()
+                        .align(Align.FILL)
+                        .component
+                        .apply {
+                            toolTipText =
+                                "Set COPILOT_PROVIDER_BASE_URL to use a custom OpenAI-compatible endpoint. " +
+                                "Example: http://localhost:11434/v1 for Ollama."
+                        }
+                }
+                row("Provider Type:") {
+                    cell(copilotProviderTypeField)
+                        .resizableColumn()
+                        .align(Align.FILL)
+                        .component
+                        .apply {
+                            toolTipText =
+                                "Provider type: 'openai' (default), 'azure', or 'anthropic'."
+                            setHistory(listOf("openai", "azure", "anthropic"))
+                        }
+                }
+                row("Provider API Key:") {
+                    cell(copilotApiKeyField)
+                        .resizableColumn()
+                        .align(Align.FILL)
+                    val saveKeyButton = JButton("Save")
+                    saveKeyButton.addActionListener {
+                        val apiKey = String(copilotApiKeyField.password)
+                        if (apiKey.isNotEmpty()) {
+                            ApiKeyManager.saveApiKey(
+                                GithubCopilotCliExecutionStrategy.COPILOT_PROVIDER_API_KEY_STORE,
+                                apiKey
+                            )
+                            Messages.showInfoMessage(
+                                "Copilot provider API key has been saved.",
+                                "API Key Saved"
+                            )
+                            copilotApiKeyField.text = "*".repeat(16)
+                            copilotApiKeyField.isEditable = false
+                            saveKeyButton.isEnabled = false
+                        }
+                    }
+                    cell(saveKeyButton)
+                    button("Clear") {
+                        ApiKeyManager.removeApiKey(
+                            GithubCopilotCliExecutionStrategy.COPILOT_PROVIDER_API_KEY_STORE
+                        )
+                        copilotApiKeyField.text = ""
+                        copilotApiKeyField.isEditable = true
+                        Messages.showInfoMessage(
+                            "Copilot provider API key has been cleared.",
+                            "API Key Cleared"
+                        )
+                    }
+                    updateCopilotApiKeyField(saveKeyButton)
+                }
+            }
+        }
+    }
+
+    private fun updateCopilotApiKeyField(saveButton: JButton) {
+        val hasStoredKey = ApiKeyManager.getApiKey(
+            GithubCopilotCliExecutionStrategy.COPILOT_PROVIDER_API_KEY_STORE
+        ) != null
+        if (hasStoredKey) {
+            copilotApiKeyField.text = "*".repeat(16)
+            copilotApiKeyField.isEditable = false
+            saveButton.isEnabled = false
+        }
+        copilotApiKeyField.document.addDocumentListener(object : DocumentListener {
+            override fun insertUpdate(e: DocumentEvent) = updateButton()
+            override fun removeUpdate(e: DocumentEvent) = updateButton()
+            override fun changedUpdate(e: DocumentEvent) = updateButton()
+            private fun updateButton() {
+                saveButton.isEnabled = copilotApiKeyField.password.isNotEmpty() &&
+                        String(copilotApiKeyField.password) != "*".repeat(16)
+            }
+        })
     }
 
     private fun showTestCommandResult() {
@@ -299,8 +436,11 @@ class AiderSetupPanel(
         val settings = AiderSettings.getInstance()
         return useDockerAiderCheckBox.isSelected != settings.useDockerAider ||
                 dockerImageField.text != settings.dockerImage ||
-                aiderExecutablePathField.text != settings.aiderExecutablePath
-
+                aiderExecutablePathField.text != settings.aiderExecutablePath ||
+                useCopilotCliCheckBox.isSelected != settings.useCopilotCli ||
+                ghExecutablePathField.text != settings.ghExecutablePath ||
+                copilotProviderBaseUrlField.text != settings.copilotProviderBaseUrl ||
+                copilotProviderTypeField.text != settings.copilotProviderType
     }
 
 
@@ -309,6 +449,10 @@ class AiderSetupPanel(
         settings.useDockerAider = useDockerAiderCheckBox.isSelected
         settings.dockerImage = dockerImageField.text
         settings.aiderExecutablePath = aiderExecutablePathField.text
+        settings.useCopilotCli = useCopilotCliCheckBox.isSelected
+        settings.ghExecutablePath = ghExecutablePathField.text
+        settings.copilotProviderBaseUrl = copilotProviderBaseUrlField.text
+        settings.copilotProviderType = copilotProviderTypeField.text
     }
 
     override fun reset() {
@@ -317,7 +461,10 @@ class AiderSetupPanel(
         dockerImageField.text = settings.dockerImage
         dockerImageField.isEnabled = settings.useDockerAider
         aiderExecutablePathField.text = settings.aiderExecutablePath
+        useCopilotCliCheckBox.isSelected = settings.useCopilotCli
+        ghExecutablePathField.text = settings.ghExecutablePath.ifBlank { AiderDefaults.GH_EXECUTABLE_PATH }
+        copilotProviderBaseUrlField.text = settings.copilotProviderBaseUrl
+        copilotProviderTypeField.text = settings.copilotProviderType.ifBlank { AiderDefaults.COPILOT_PROVIDER_TYPE }
         updateApiKeyFieldsOnClose()
-
     }
 }

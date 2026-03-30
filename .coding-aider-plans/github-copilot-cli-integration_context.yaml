@@ -1,0 +1,40 @@
+---
+files:
+  - path: "src/main/kotlin/de/andrena/codingaider/executors/strategies/AiderExecutionStrategy.kt"
+    readOnly: false
+  - path: "src/main/kotlin/de/andrena/codingaider/executors/strategies/NativeAiderExecutionStrategy.kt"
+    readOnly: true
+  - path: "src/main/kotlin/de/andrena/codingaider/executors/strategies/DockerAiderExecutionStrategy.kt"
+    readOnly: true
+  - path: "src/main/kotlin/de/andrena/codingaider/executors/strategies/SidecarAiderExecutionStrategy.kt"
+    readOnly: true
+  - path: "src/main/kotlin/de/andrena/codingaider/executors/strategies/ModelConfiguration.kt"
+    readOnly: true
+  - path: "src/main/kotlin/de/andrena/codingaider/executors/CommandExecutor.kt"
+    readOnly: false
+  - path: "src/main/kotlin/de/andrena/codingaider/command/CommandData.kt"
+    readOnly: false
+  - path: "src/main/kotlin/de/andrena/codingaider/settings/AiderSettings.kt"
+    readOnly: false
+  - path: "src/main/kotlin/de/andrena/codingaider/settings/AiderDefaults.kt"
+    readOnly: false
+  - path: "src/main/kotlin/de/andrena/codingaider/settings/AiderSettingsConfigurable.kt"
+    readOnly: false
+  - path: "src/main/kotlin/de/andrena/codingaider/settings/AiderSetupPanel.kt"
+    readOnly: false
+  - path: "src/main/kotlin/de/andrena/codingaider/settings/LlmProviderType.kt"
+    readOnly: true
+  - path: "src/main/kotlin/de/andrena/codingaider/settings/CustomLlmProviderService.kt"
+    readOnly: true
+  - path: "src/main/kotlin/de/andrena/codingaider/inputdialog/AiderMode.kt"
+    readOnly: false
+  - path: "src/main/kotlin/de/andrena/codingaider/inputdialog/AiderInputDialog.kt"
+    readOnly: false
+  - path: "src/main/kotlin/de/andrena/codingaider/utils/ApiKeyChecker.kt"
+    readOnly: false
+  - path: "src/main/kotlin/de/andrena/codingaider/services/AiderHistoryService.kt"
+    readOnly: false
+  - path: "src/main/resources/META-INF/plugin.xml"
+    readOnly: false
+  - path: "build.gradle.kts"
+    readOnly: true

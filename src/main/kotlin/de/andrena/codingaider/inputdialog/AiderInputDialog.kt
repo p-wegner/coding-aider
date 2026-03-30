@@ -181,7 +181,12 @@ class AiderInputDialog(
         modeSegmentedButtonPanel = panel {
             row {
                 cell(JBLabel("Mode:"))
-                modeSegmentedButton = segmentedButton(AiderMode.entries.map { it }) { selectedItem ->
+                val availableModes = if (settings.useCopilotCli) {
+                    listOf(AiderMode.NORMAL, AiderMode.ARCHITECT)
+                } else {
+                    AiderMode.entries.toList()
+                }
+                modeSegmentedButton = segmentedButton(availableModes) { selectedItem ->
                     text = selectedItem.displayName
                     toolTipText = selectedItem.tooltip
                     icon = selectedItem.icon
@@ -441,9 +446,14 @@ class AiderInputDialog(
             optionsPanel.yesCheckBox.isSelected = state.useYesFlag
             optionsPanel.llmComboBox.selectedItem = state.llm
             optionsPanel.additionalArgsField.text = state.additionalArgs
-            initialMode = if (state.isShellMode) AiderMode.SHELL
+            val rawMode = if (state.isShellMode) AiderMode.SHELL
             else if (state.isStructuredMode) AiderMode.STRUCTURED
             else AiderMode.NORMAL
+            initialMode = if (settings.useCopilotCli && rawMode !in listOf(AiderMode.NORMAL, AiderMode.ARCHITECT)) {
+                AiderMode.NORMAL
+            } else {
+                rawMode
+            }
             modeSegmentedButton?.selectedItem = initialMode
             aiderContextView.setFiles(state.files)
         }

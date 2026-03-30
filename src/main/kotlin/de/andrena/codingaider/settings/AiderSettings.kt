@@ -83,7 +83,13 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         // Plan completion timing settings
         var planCompletionCheckDelay: Int = 500, // milliseconds to wait before checking plan completion
         var planCompletionMaxRetries: Int = 3, // maximum retries for plan completion detection
-        var enablePlanCompletionLogging: Boolean = false // enable detailed logging for plan completion flow
+        var enablePlanCompletionLogging: Boolean = false, // enable detailed logging for plan completion flow
+
+        // GitHub Copilot CLI settings
+        var useCopilotCli: Boolean = AiderDefaults.USE_COPILOT_CLI,
+        var ghExecutablePath: String = AiderDefaults.GH_EXECUTABLE_PATH,
+        var copilotProviderBaseUrl: String = AiderDefaults.COPILOT_PROVIDER_BASE_URL,
+        var copilotProviderType: String = AiderDefaults.COPILOT_PROVIDER_TYPE,
     )
 
 
@@ -353,6 +359,30 @@ class AiderSettings : PersistentStateComponent<AiderSettings.State> {
         get() = myState.enablePlanCompletionLogging
         set(value) {
             myState.enablePlanCompletionLogging = value
+        }
+
+    var useCopilotCli: Boolean
+        get() = myState.useCopilotCli
+        set(value) {
+            myState.useCopilotCli = value
+        }
+
+    var ghExecutablePath: String
+        get() = myState.ghExecutablePath
+        set(value) {
+            myState.ghExecutablePath = value
+        }
+
+    var copilotProviderBaseUrl: String
+        get() = myState.copilotProviderBaseUrl
+        set(value) {
+            myState.copilotProviderBaseUrl = value
+        }
+
+    var copilotProviderType: String
+        get() = myState.copilotProviderType
+        set(value) {
+            myState.copilotProviderType = value
         }
 
     enum class AutoCommitSetting {

@@ -71,4 +71,10 @@ Make your changes precise and minimal."""
     const val ENABLE_MCP_SERVER = false // Enable MCP server for persistent files
     const val MCP_SERVER_PORT = 8080 // Default port for MCP server
     const val MCP_SERVER_AUTO_START = true // Auto-start MCP server with plugin
+
+    // GitHub Copilot CLI settings
+    const val USE_COPILOT_CLI = false
+    const val GH_EXECUTABLE_PATH = "gh"
+    const val COPILOT_PROVIDER_BASE_URL = ""
+    const val COPILOT_PROVIDER_TYPE = "openai"
 }
